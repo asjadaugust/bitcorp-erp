@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: bitcorp-postgres-prod
+    environment:
+      POSTGRES_USER: bitcorp
+      POSTGRES_PASSWORD: bitcorp_password
+      POSTGRES_DB: bitcorp_prod
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    ports:
+      - "3440:5432"
+    restart: always
+    networks:
+      - bitcorp-network
+
+  redis:
+    image: redis:alpine
+    container_name: bitcorp-redis-prod
+    ports:
+      - "3460:6379"
+    restart: always
+    networks:
+      - bitcorp-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend.prod.Dockerfile
+    container_name: bitcorp-backend-prod
+    environment:
+      NODE_ENV: production
+      PORT: 3400
+      DB_HOST: postgres
+      DB_PORT: 5432
+      POSTGRES_USER: bitcorp
+      POSTGRES_PASSWORD: bitcorp_password
+      POSTGRES_DB: bitcorp_prod
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-production_secret_key_change_me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-production_refresh_secret_key_change_me}
+      CORS_ORIGIN: http://bitcorp.mohammadasjad.com,http://localhost,http://localhost:3420
+    ports:
+      - "3400:3400"
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+    networks:
+      - bitcorp-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend.prod.Dockerfile
+    container_name: bitcorp-frontend-prod
+    ports:
+      - "3420:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - bitcorp-network
+
+networks:
+  bitcorp-network:
+    driver: bridge
+
+volumes:
+  postgres_data_prod:

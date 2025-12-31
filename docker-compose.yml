@@ -1,0 +1,140 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bitcorp-postgres-dev
+    environment:
+      POSTGRES_DB: bitcorp_dev
+      POSTGRES_USER: bitcorp
+      POSTGRES_PASSWORD: dev_password_change_me
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "3440:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/migrations:/migrations
+    networks:
+      - bitcorp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bitcorp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bitcorp-redis-dev
+    ports:
+      - "3460:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - bitcorp-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+      target: development
+    container_name: bitcorp-backend-dev
+    environment:
+      NODE_ENV: development
+      PORT: 3400
+      DB_HOST: postgres
+      DB_PORT: 5432
+      POSTGRES_DB: bitcorp_dev
+      POSTGRES_USER: bitcorp
+      POSTGRES_PASSWORD: dev_password_change_me
+      DATABASE_URL: postgresql://bitcorp:dev_password_change_me@postgres:5432/bitcorp_dev
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      JWT_REFRESH_SECRET: dev_refresh_secret_change_in_production
+      CORS_ORIGIN: http://localhost:3420
+      LOG_LEVEL: debug
+    ports:
+      - "3400:3400"
+      - "3429:9229" # Node.js debugging
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./docs:/app/docs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bitcorp-network
+    command: npm run dev
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      target: development
+    container_name: bitcorp-frontend-dev
+    environment:
+      API_URL: http://localhost:3400
+      NODE_ENV: development
+    ports:
+      - "3420:3420"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_angular_cache:/app/.angular
+    networks:
+      - bitcorp-network
+    command: ["sh", "-c", "npm install && npm start -- --poll 2000"]
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bitcorp-pgadmin-dev
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@bitcorp.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "3450:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - bitcorp-network
+    depends_on:
+      - postgres
+
+  e2e:
+    build:
+      context: .
+      dockerfile: docker/e2e.Dockerfile
+    container_name: bitcorp-e2e
+    environment:
+      - CI=true
+      - FRONTEND_URL=http://frontend:3420
+      - SKIP_WEBSERVER=true
+    ipc: host
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_started
+    networks:
+      - bitcorp-network
+    profiles:
+      - test
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  pgadmin_data:
+  frontend_node_modules:
+  frontend_angular_cache:
+
+networks:
+  bitcorp-network:
+    driver: bridge

@@ -1,0 +1,716 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { DailyReportService } from '../../core/services/daily-report.service';
+import { AuthService } from '../../core/services/auth.service';
+import { DailyReport } from '../../core/models/daily-report.model';
+import { ExcelExportService } from '../../core/services/excel-export.service';
+import {
+  ExportDropdownComponent,
+  ExportFormat,
+} from '../../shared/components/export-dropdown/export-dropdown.component';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../shared/components/filter-bar/filter-bar.component';
+import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+
+@Component({
+  selector: 'app-daily-report-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    PageLayoutComponent,
+    FilterBarComponent,
+    ExportDropdownComponent,
+    ActionsContainerComponent,
+  ],
+  template: `
+    <app-page-layout
+      title="Partes Diarios"
+      icon="fa-clipboard-list"
+      [breadcrumbs]="[
+        { label: 'Dashboard', url: '/app' },
+        { label: 'Equipos', url: '/equipment' },
+        { label: 'Partes Diarios' },
+      ]"
+      [loading]="loading"
+      [tabs]="tabs"
+    >
+      <app-actions-container actions>
+        <app-export-dropdown [disabled]="reports.length === 0" (export)="handleExport($event)">
+        </app-export-dropdown>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="createNewReport()"
+          data-testid="btn-new-report"
+        >
+          <i class="fa-solid fa-file-pen"></i> Nuevo Parte
+        </button>
+      </app-actions-container>
+
+      <app-filter-bar
+        [config]="filterConfig"
+        (filterChange)="onFilterChange($event)"
+      ></app-filter-bar>
+
+      <div *ngIf="!loading && reports.length > 0" class="reports-grid" data-testid="reports-grid">
+        <div
+          *ngFor="let report of reports"
+          class="report-card"
+          (click)="viewReport(report)"
+          [attr.data-testid]="'report-card-' + report.id"
+        >
+          <!-- Card Header -->
+          <div class="report-card__header">
+            <div class="report-card__status-row">
+              <span [class]="'report-card__status report-card__status--' + report.status">
+                <i [class]="getStatusIcon(report.status)"></i>
+                {{ getStatusLabel(report.status) }}
+              </span>
+              <span class="report-card__date">
+                <i class="fa-regular fa-calendar"></i>
+                {{ report.report_date | date: 'dd/MM/yyyy' }}
+              </span>
+            </div>
+            <h3 class="report-card__title">
+              {{ report.equipment_name || report.equipment_code || 'Sin Equipo' }}
+            </h3>
+          </div>
+
+          <!-- Card Body -->
+          <div class="report-card__body">
+            <div class="report-card__info-grid">
+              <div class="report-card__info-item">
+                <i class="fa-solid fa-hard-hat"></i>
+                <span class="report-card__info-label">Operador</span>
+                <span class="report-card__info-value">{{
+                  report.operator_name || 'Sin asignar'
+                }}</span>
+              </div>
+              <div class="report-card__info-item">
+                <i class="fa-solid fa-clock"></i>
+                <span class="report-card__info-label">Horario</span>
+                <span class="report-card__info-value"
+                  >{{ report.start_time || '--:--' }} - {{ report.end_time || '--:--' }}</span
+                >
+              </div>
+              <div class="report-card__info-item">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span class="report-card__info-label">Horas</span>
+                <span class="report-card__info-value report-card__info-value--highlight"
+                  >{{ report.worked_hours || report.hourmeter_difference || 0 }}h</span
+                >
+              </div>
+              <div class="report-card__info-item">
+                <i class="fa-solid fa-gas-pump"></i>
+                <span class="report-card__info-label">Combustible</span>
+                <span class="report-card__info-value">{{ report.fuel_consumed || 0 }} gal</span>
+              </div>
+            </div>
+
+            <div *ngIf="report.observations" class="report-card__observations">
+              <p>
+                {{ report.observations | slice: 0 : 100
+                }}{{ report.observations.length > 100 ? '...' : '' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="report-card__footer">
+            <span class="report-card__timestamp">
+              <i class="fa-regular fa-clock"></i>
+              {{ report.created_at | date: 'dd/MM HH:mm' }}
+            </span>
+            <div class="report-card__actions">
+              <button
+                *ngIf="report.status === 'submitted' || report.status === 'draft'"
+                type="button"
+                class="report-card__btn report-card__btn--approve"
+                (click)="approveReport($event, report)"
+                title="Aprobar"
+                data-testid="btn-approve"
+              >
+                <i class="fa-solid fa-check"></i>
+              </button>
+              <button
+                *ngIf="report.status === 'submitted' || report.status === 'draft'"
+                type="button"
+                class="report-card__btn report-card__btn--reject"
+                (click)="rejectReport($event, report)"
+                title="Rechazar"
+                data-testid="btn-reject"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <button
+                type="button"
+                class="report-card__btn report-card__btn--edit"
+                (click)="editReport($event, report)"
+                title="Editar"
+                data-testid="btn-edit"
+              >
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button
+                type="button"
+                class="report-card__btn report-card__btn--view"
+                (click)="viewReport(report)"
+                title="Ver detalles"
+                data-testid="btn-view"
+              >
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && reports.length === 0" class="empty-state" data-testid="empty-state">
+        <div class="empty-state__icon">
+          <i class="fa-solid fa-clipboard-list"></i>
+        </div>
+        <h3 class="empty-state__title">No se encontraron partes diarios</h3>
+        <p class="empty-state__description">
+          Comience creando su primer parte diario para registrar el uso de equipos
+        </p>
+        <button type="button" class="btn btn-primary" (click)="createNewReport()">
+          <i class="fa-solid fa-plus"></i> Crear Parte Diario
+        </button>
+      </div>
+    </app-page-layout>
+  `,
+  styles: [
+    `
+      /* Grid Layout */
+      .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.25rem;
+      }
+
+      /* Report Card */
+      .report-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e8e8e8;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .report-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        border-color: #d0d0d0;
+      }
+
+      /* Card Header */
+      .report-card__header {
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .report-card__status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .report-card__status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+
+      .report-card__status--draft {
+        background: #f5f5f5;
+        color: #666666;
+      }
+
+      .report-card__status--submitted {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+
+      .report-card__status--approved,
+      .report-card__status--finance_approved {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .report-card__status--rejected {
+        background: #ffebee;
+        color: #c62828;
+      }
+
+      .report-card__status--pending_supervisor,
+      .report-card__status--pending_cost_engineer,
+      .report-card__status--pending_finance {
+        background: #fff3e0;
+        color: #e65100;
+      }
+
+      .report-card__status--supervisor_approved {
+        background: #e8f5e9;
+        color: #388e3c;
+      }
+
+      .report-card__status--cost_reviewed {
+        background: #e1f5fe;
+        color: #0277bd;
+      }
+
+      .report-card__date {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.8125rem;
+        color: #666666;
+      }
+
+      .report-card__title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* Card Body */
+      .report-card__body {
+        padding: 1rem 1.25rem;
+        flex: 1;
+      }
+
+      .report-card__info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.875rem;
+      }
+
+      .report-card__info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+      }
+
+      .report-card__info-item i {
+        font-size: 0.875rem;
+        color: #9e9e9e;
+        margin-bottom: 0.125rem;
+      }
+
+      .report-card__info-label {
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #9e9e9e;
+        font-weight: 500;
+      }
+
+      .report-card__info-value {
+        font-size: 0.875rem;
+        color: #333333;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .report-card__info-value--highlight {
+        color: #1565c0;
+        font-weight: 700;
+      }
+
+      .report-card__observations {
+        margin-top: 0.875rem;
+        padding-top: 0.875rem;
+        border-top: 1px dashed #e8e8e8;
+      }
+
+      .report-card__observations p {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: #666666;
+        line-height: 1.5;
+      }
+
+      /* Card Footer */
+      .report-card__footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        background: #fafafa;
+        border-top: 1px solid #f0f0f0;
+      }
+
+      .report-card__timestamp {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.75rem;
+        color: #9e9e9e;
+      }
+
+      .report-card__actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .report-card__btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+        font-size: 0.875rem;
+      }
+
+      .report-card__btn--approve {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .report-card__btn--approve:hover {
+        background: #2e7d32;
+        color: white;
+      }
+
+      .report-card__btn--reject {
+        background: #ffebee;
+        color: #c62828;
+      }
+
+      .report-card__btn--reject:hover {
+        background: #c62828;
+        color: white;
+      }
+
+      .report-card__btn--edit {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+
+      .report-card__btn--edit:hover {
+        background: #1565c0;
+        color: white;
+      }
+
+      .report-card__btn--view {
+        background: #f5f5f5;
+        color: #666666;
+      }
+
+      .report-card__btn--view:hover {
+        background: #666666;
+        color: white;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        border: 2px dashed #e0e0e0;
+      }
+
+      .empty-state__icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .empty-state__icon i {
+        font-size: 2rem;
+        color: #1565c0;
+      }
+
+      .empty-state__title {
+        margin: 0 0 0.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333333;
+      }
+
+      .empty-state__description {
+        margin: 0 0 1.5rem;
+        font-size: 0.9375rem;
+        color: #666666;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Actions Container */
+      .actions-container {
+        display: flex;
+        gap: var(--s-8);
+        align-items: center;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .reports-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .report-card__info-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+
+        .report-card__actions {
+          gap: 0.375rem;
+        }
+
+        .report-card__btn {
+          width: 28px;
+          height: 28px;
+          font-size: 0.8125rem;
+        }
+      }
+    `,
+  ],
+})
+export class DailyReportListComponent implements OnInit {
+  private dailyReportService = inject(DailyReportService);
+  private router = inject(Router);
+  authService = inject(AuthService);
+  excelService = inject(ExcelExportService);
+
+  reports: DailyReport[] = [];
+  loading = false;
+
+  tabs: TabItem[] = [
+    { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
+    { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
+    { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
+    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
+  ];
+
+  filters = {
+    status: '',
+    date: '',
+    equipment: '',
+    project: '',
+  };
+
+  filterConfig: FilterConfig[] = [
+    {
+      key: 'status',
+      label: 'Estado',
+      type: 'select',
+      options: [
+        { label: 'Borrador', value: 'draft' },
+        { label: 'Enviado', value: 'submitted' },
+        { label: 'Aprobado', value: 'approved' },
+        { label: 'Rechazado', value: 'rejected' },
+      ],
+    },
+    {
+      key: 'date',
+      label: 'Fecha',
+      type: 'date',
+    },
+  ];
+
+  currentFilters: any = { status: '', date: '' };
+
+  ngOnInit(): void {
+    this.loadReports();
+  }
+
+  getStatusIcon(status: string): string {
+    const icons: Record<string, string> = {
+      draft: 'fa-solid fa-file',
+      submitted: 'fa-solid fa-paper-plane',
+      approved: 'fa-solid fa-check-circle',
+      rejected: 'fa-solid fa-times-circle',
+      pending_supervisor: 'fa-solid fa-user-clock',
+      pending_cost_engineer: 'fa-solid fa-calculator',
+      pending_finance: 'fa-solid fa-coins',
+      supervisor_approved: 'fa-solid fa-user-check',
+      cost_reviewed: 'fa-solid fa-file-invoice-dollar',
+      finance_approved: 'fa-solid fa-check-double',
+    };
+    return icons[status] || 'fa-solid fa-file';
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      draft: 'Borrador',
+      submitted: 'Enviado',
+      approved: 'Aprobado',
+      rejected: 'Rechazado',
+      pending_supervisor: 'Pend. Supervisor',
+      pending_cost_engineer: 'Pend. Costos',
+      pending_finance: 'Pend. Finanzas',
+      supervisor_approved: 'Aprob. Supervisor',
+      cost_reviewed: 'Revisado Costos',
+      finance_approved: 'Aprob. Finanzas',
+    };
+    return labels[status] || status;
+  }
+
+  onFilterChange(filters: any) {
+    this.currentFilters = { ...this.currentFilters, ...filters };
+    this.loadReports();
+  }
+
+  loadReports(): void {
+    this.loading = true;
+    this.dailyReportService.getAll(this.currentFilters).subscribe({
+      next: (data) => {
+        this.reports = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
+  }
+
+  viewReport(report: DailyReport): void {
+    this.router.navigate(['/equipment/daily-reports', report.id]);
+  }
+
+  approveReport(event: Event, report: DailyReport): void {
+    event.stopPropagation();
+    this.dailyReportService.approve(report.id).subscribe({
+      next: () => {
+        this.loadReports();
+      },
+    });
+  }
+
+  rejectReport(event: Event, report: DailyReport): void {
+    event.stopPropagation();
+    const reason = prompt('Razón del rechazo:');
+    if (reason) {
+      this.dailyReportService.reject(report.id, reason).subscribe({
+        next: () => {
+          this.loadReports();
+        },
+      });
+    }
+  }
+
+  editReport(event: Event, report: DailyReport): void {
+    event.stopPropagation();
+    this.router.navigate(['/equipment/daily-reports', report.id, 'edit']);
+  }
+
+  createNewReport(): void {
+    this.router.navigate(['/equipment/daily-reports/new']);
+  }
+
+  handleExport(format: ExportFormat): void {
+    if (format === 'excel') {
+      this.exportToExcel();
+    } else if (format === 'csv') {
+      this.exportToCSV();
+    }
+  }
+
+  exportToExcel(): void {
+    if (this.reports.length === 0) {
+      alert('No hay partes diarios para exportar');
+      return;
+    }
+
+    const exportData = this.reports.map((report) => {
+      const startTime = new Date(`1970-01-01T${report.start_time}`);
+      const endTime = new Date(`1970-01-01T${report.end_time}`);
+      const hoursWorked = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+
+      return {
+        ID: report.id || '',
+        Equipo: report.equipment_code || '',
+        Operador: report.operator_name || '',
+        Fecha: report.report_date ? new Date(report.report_date).toLocaleDateString('es-PE') : '',
+        'Hora Inicio': report.start_time || '',
+        'Hora Fin': report.end_time || '',
+        'Horas Trabajadas': hoursWorked.toFixed(2),
+        'Horómetro Inicial': report.hourmeter_start || 0,
+        'Horómetro Final': report.hourmeter_end || 0,
+        'Combustible (gal)': report.fuel_consumed || 0,
+        Estado: report.status || '',
+        Observaciones: report.notes || '',
+        Creado: report.created_at ? new Date(report.created_at).toLocaleDateString('es-PE') : '',
+      };
+    });
+
+    this.excelService.exportToExcel(exportData, {
+      filename: 'partes_diarios',
+      sheetName: 'Partes Diarios',
+    });
+  }
+
+  exportToCSV(): void {
+    if (this.reports.length === 0) {
+      alert('No hay partes diarios para exportar');
+      return;
+    }
+
+    const exportData = this.reports.map((report) => {
+      const startTime = new Date(`1970-01-01T${report.start_time}`);
+      const endTime = new Date(`1970-01-01T${report.end_time}`);
+      const hoursWorked = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+
+      return {
+        ID: report.id || '',
+        Equipo: report.equipment_code || '',
+        Operador: report.operator_name || '',
+        Fecha: report.report_date ? new Date(report.report_date).toLocaleDateString('es-PE') : '',
+        'Hora Inicio': report.start_time || '',
+        'Hora Fin': report.end_time || '',
+        'Horas Trabajadas': hoursWorked.toFixed(2),
+        'Horómetro Inicial': report.hourmeter_start || 0,
+        'Horómetro Final': report.hourmeter_end || 0,
+        'Combustible (gal)': report.fuel_consumed || 0,
+        Estado: report.status || '',
+        Observaciones: report.notes || '',
+        Creado: report.created_at ? new Date(report.created_at).toLocaleDateString('es-PE') : '',
+      };
+    });
+
+    this.excelService.exportToCSV(exportData, 'partes_diarios');
+  }
+}

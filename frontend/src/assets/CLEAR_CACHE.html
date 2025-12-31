@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Bitcorp ERP Cache</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+    }
+    .container {
+      background: white;
+      border-radius: 10px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #667eea;
+      margin-top: 0;
+    }
+    .button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 5px;
+      transition: all 0.3s;
+    }
+    .button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .button.danger {
+      background: #e74c3c;
+    }
+    .button.danger:hover {
+      background: #c0392b;
+    }
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #667eea;
+      padding-left: 10px;
+    }
+    .log-entry.success {
+      border-left-color: #27ae60;
+      color: #27ae60;
+    }
+    .log-entry.error {
+      border-left-color: #e74c3c;
+      color: #e74c3c;
+    }
+    .instructions {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .instructions h3 {
+      margin-top: 0;
+      color: #856404;
+    }
+    .status {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .status.active {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧹 Bitcorp ERP Cache Cleaner</h1>
+    
+    <div class="instructions">
+      <h3>⚠️ Use this page when you see old application after updates</h3>
+      <p>This tool will clear all caches, unregister service workers, and force a fresh reload.</p>
+    </div>
+
+    <div style="margin: 20px 0;">
+      <button class="button" onclick="checkStatus()">🔍 Check Cache Status</button>
+      <button class="button" onclick="clearServiceWorkers()">🔄 Clear Service Workers</button>
+      <button class="button" onclick="clearCaches()">🗑️ Clear Caches</button>
+      <button class="button danger" onclick="clearEverything()">💣 Nuclear Clear (Everything)</button>
+    </div>
+
+    <div id="status" style="margin: 20px 0;"></div>
+
+    <div class="log" id="log">
+      <div class="log-entry">Ready to clear caches. Click a button above to start.</div>
+    </div>
+
+    <div style="margin-top: 20px; font-size: 14px; color: #666;">
+      <strong>Keyboard Shortcuts:</strong>
+      <ul>
+        <li><strong>Hard Reload:</strong> Cmd+Shift+R (Mac) or Ctrl+Shift+R (Windows)</li>
+        <li><strong>Clear Cache & Hard Reload:</strong> Right-click reload button → "Empty Cache and Hard Reload"</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function log(message, type = 'info') {
+      const logDiv = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+      logDiv.appendChild(entry);
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    async function checkStatus() {
+      log('Checking cache status...');
+      const statusDiv = document.getElementById('status');
+      let html = '<h3>Current Status:</h3>';
+
+      // Check service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        html += `<p>🔧 Service Workers: <span class="status ${registrations.length > 0 ? 'active' : 'inactive'}">${registrations.length} registered</span></p>`;
+        log(`Found ${registrations.length} service worker(s)`, 'success');
+      }
+
+      // Check caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        html += `<p>💾 Caches: <span class="status ${cacheNames.length > 0 ? 'active' : 'inactive'}">${cacheNames.length} cache(s)</span></p>`;
+        log(`Found ${cacheNames.length} cache(s): ${cacheNames.join(', ')}`, 'success');
+      }
+
+      // Check storage
+      const localStorageSize = Object.keys(localStorage).length;
+      html += `<p>📦 localStorage: <span class="status ${localStorageSize > 0 ? 'active' : 'inactive'}">${localStorageSize} items</span></p>`;
+
+      statusDiv.innerHTML = html;
+      log('Status check complete', 'success');
+    }
+
+    async function clearServiceWorkers() {
+      if (!('serviceWorker' in navigator)) {
+        log('Service Workers not supported', 'error');
+        return;
+      }
+
+      log('Unregistering service workers...');
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      
+      for (const registration of registrations) {
+        await registration.unregister();
+        log(`Unregistered service worker: ${registration.scope}`, 'success');
+      }
+
+      log(`✅ ${registrations.length} service worker(s) unregistered`, 'success');
+      await checkStatus();
+    }
+
+    async function clearCaches() {
+      if (!('caches' in window)) {
+        log('Cache API not supported', 'error');
+        return;
+      }
+
+      log('Clearing caches...');
+      const cacheNames = await caches.keys();
+      
+      for (const cacheName of cacheNames) {
+        await caches.delete(cacheName);
+        log(`Deleted cache: ${cacheName}`, 'success');
+      }
+
+      log(`✅ ${cacheNames.length} cache(s) cleared`, 'success');
+      await checkStatus();
+    }
+
+    async function clearEverything() {
+      log('🚀 Starting nuclear clear...', 'info');
+
+      // 1. Service Workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+        log(`✅ Unregistered ${registrations.length} service worker(s)`, 'success');
+      }
+
+      // 2. Caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+          await caches.delete(cacheName);
+        }
+        log(`✅ Cleared ${cacheNames.length} cache(s)`, 'success');
+      }
+
+      // 3. localStorage
+      const localItems = Object.keys(localStorage).length;
+      localStorage.clear();
+      log(`✅ Cleared ${localItems} localStorage items`, 'success');
+
+      // 4. sessionStorage
+      const sessionItems = Object.keys(sessionStorage).length;
+      sessionStorage.clear();
+      log(`✅ Cleared ${sessionItems} sessionStorage items`, 'success');
+
+      // 5. IndexedDB
+      if ('indexedDB' in window) {
+        try {
+          const databases = await indexedDB.databases();
+          for (const db of databases) {
+            if (db.name) {
+              indexedDB.deleteDatabase(db.name);
+              log(`✅ Deleted IndexedDB: ${db.name}`, 'success');
+            }
+          }
+        } catch (error) {
+          log('IndexedDB clear skipped (not supported)', 'info');
+        }
+      }
+
+      log('🎉 Nuclear clear complete! Reloading in 2 seconds...', 'success');
+      
+      setTimeout(() => {
+        window.location.reload(true);
+      }, 2000);
+    }
+
+    // Check status on load
+    window.addEventListener('load', () => {
+      checkStatus();
+    });
+  </script>
+</body>
+</html>

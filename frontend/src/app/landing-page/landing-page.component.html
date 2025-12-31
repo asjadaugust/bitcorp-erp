@@ -1,0 +1,127 @@
+<div class="landing-container">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-wrapper">
+            <div class="brand">
+                <img src="/assets/logo.svg" alt="Bitcorp ERP" class="logo">
+                <span class="brand-name">Bitcorp ERP</span>
+            </div>
+
+            <div class="nav-links">
+                <a href="#home" class="nav-link">{{ t.nav.home }}</a>
+                <a href="#features" class="nav-link">{{ t.nav.features }}</a>
+                <a href="#pricing" class="nav-link">{{ t.nav.pricing }}</a>
+                <a href="#contact" class="nav-link">{{ t.nav.contact }}</a>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-lang" (click)="toggleLang()">
+                    <i class="fas fa-globe"></i> {{ t.nav.lang }}
+                </button>
+                <button class="btn-login" (click)="navigateToLogin()">
+                    {{ t.nav.login }}
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero-section">
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    {{ t.hero.title }}
+                </h1>
+                <p class="hero-subtitle">
+                    {{ t.hero.subtitle }}
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn-primary-lg">{{ t.hero.cta }}</button>
+                    <button class="btn-secondary-lg">
+                        <i class="fas fa-play-circle"></i> {{ t.hero.secondary }}
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="visual-card">
+                    <!-- Placeholder for Hero Image -->
+                    <img src="/assets/images/hero-construction.jpg" alt="Construction Site" class="hero-img-real" style="width: 100%; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                    <!-- Floating Badge -->
+                    <div class="floating-badge">
+                        <i class="fas fa-check-circle"></i>
+                        <span>98% Efficiency</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>{{ t.features.title }}</h2>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" *ngFor="let feature of t.features.list">
+                    <div class="icon-wrapper">
+                        <i class="fas" [ngClass]="feature.icon"></i>
+                    </div>
+                    <h3>{{ feature.title }}</h3>
+                    <p>{{ feature.desc }}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase Section -->
+    <section class="showcase-section">
+        <div class="container">
+            <div class="showcase-content">
+                <h2>{{ t.showcase.title }}</h2>
+                <p>{{ t.showcase.desc }}</p>
+            </div>
+            <div class="showcase-visual">
+                <!-- Placeholder for Dashboard Image -->
+                <img src="/assets/images/dashboard-mockup.jpg" alt="App Dashboard" class="dashboard-img-real" style="width: 100%; height: auto; display: block;">
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>{{ t.pricing.title }}</h2>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card" *ngFor="let plan of t.pricing.tiers"
+                    [class.featured]="plan.name === 'Profesional' || plan.name === 'Professional'">
+                    <div class="plan-header">
+                        <h3>{{ plan.name }}</h3>
+                        <div class="price">{{ plan.price }}</div>
+                    </div>
+                    <ul class="plan-features">
+                        <li *ngFor="let feature of plan.features">
+                            <i class="fas fa-check"></i> {{ feature }}
+                        </li>
+                    </ul>
+                    <button class="btn-plan">Choose {{ plan.name }}</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact/Footer -->
+    <footer id="contact" class="footer-section">
+        <div class="container footer-grid">
+            <div class="footer-cta">
+                <h3>{{ t.contact.title }}</h3>
+                <a href="mailto:{{ t.contact.email }}" class="email-link">{{ t.contact.email }}</a>
+            </div>
+            <div class="footer-bottom">
+                <p>{{ t.footer.rights }}</p>
+            </div>
+        </div>
+    </footer>
+</div>

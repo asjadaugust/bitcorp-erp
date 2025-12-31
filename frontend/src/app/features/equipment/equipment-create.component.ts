@@ -1,0 +1,337 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { EquipmentService } from '../../core/services/equipment.service';
+import { Equipment } from '../../core/models/equipment.model';
+
+@Component({
+  selector: 'app-equipment-create',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  template: `
+    <div class="equipment-edit-container">
+      <div class="container">
+        <div class="breadcrumb">
+          <a routerLink="/dashboard" class="breadcrumb-link">Dashboard</a>
+          <span class="separator">/</span>
+          <a routerLink="/equipment" class="breadcrumb-link">Equipment</a>
+          <span class="separator">/</span>
+          <span>New</span>
+        </div>
+
+        <div class="form-header">
+          <h1>Register New Equipment</h1>
+          <p>Enter the details of the new equipment to add to the fleet.</p>
+        </div>
+
+        <div class="card">
+          <form (ngSubmit)="saveEquipment()" #equipForm="ngForm">
+            <div class="form-sections">
+              <section class="form-section">
+                <h2>Basic Information</h2>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="code">Equipment Code *</label>
+                    <input
+                      type="text"
+                      id="code"
+                      name="code"
+                      [(ngModel)]="equipment.code"
+                      required
+                      placeholder="e.g., EQ-2025-001"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="name">Name/Description *</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      [(ngModel)]="equipment.name"
+                      required
+                      placeholder="e.g., Caterpillar Excavator 320"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="brand">Brand *</label>
+                    <input
+                      type="text"
+                      id="brand"
+                      name="brand"
+                      [(ngModel)]="equipment.brand"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="model">Model *</label>
+                    <input
+                      type="text"
+                      id="model"
+                      name="model"
+                      [(ngModel)]="equipment.model"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="year_manufactured">Year</label>
+                    <input
+                      type="number"
+                      id="year_manufactured"
+                      name="year_manufactured"
+                      [(ngModel)]="equipment['año_fabricacion']"
+                      min="1950"
+                      [max]="currentYear"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="status">Status *</label>
+                    <select
+                      id="status"
+                      name="status"
+                      [(ngModel)]="equipment.status"
+                      required
+                    >
+                      <option value="available">Available</option>
+                      <option value="in_use">In Use</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="retired">Retired</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h2>Financial Information</h2>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="hourly_rate">Hourly Rate ($) *</label>
+                    <input
+                      type="number"
+                      id="hourly_rate"
+                      name="hourly_rate"
+                      [(ngModel)]="equipment.hourly_rate"
+                      step="0.01"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h2>Operational Data</h2>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="fuel_type">Fuel Type</label>
+                    <select
+                      id="fuel_type"
+                      name="fuel_type"
+                      [(ngModel)]="equipment.fuel_type"
+                    >
+                      <option value="">Select Fuel Type</option>
+                      <option value="diesel">Diesel</option>
+                      <option value="gasoline">Gasoline</option>
+                      <option value="electric">Electric</option>
+                      <option value="hybrid">Hybrid</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="hourmeter_reading">Hourmeter Reading (hrs)</label>
+                    <input
+                      type="number"
+                      id="hourmeter_reading"
+                      name="hourmeter_reading"
+                      [(ngModel)]="equipment.hourmeter_reading"
+                      step="0.1"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div *ngIf="errorMessage" class="alert alert-error">
+              {{ errorMessage }}
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success">
+              {{ successMessage }}
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="cancel()">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="equipForm.invalid || saving"
+              >
+                {{ saving ? 'Saving...' : 'Create Equipment' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .equipment-edit-container {
+      min-height: 100vh;
+      background: #f5f5f5;
+      padding: 2rem 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .breadcrumb {
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #6b7280;
+    }
+    .breadcrumb-link {
+      color: #0077cd;
+      text-decoration: none;
+    }
+    .breadcrumb-link:hover { text-decoration: underline; }
+    .form-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .form-header h1 {
+      font-size: 28px;
+      color: #111827;
+      margin-bottom: 0.5rem;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+    .form-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .form-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .form-group label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+    .form-group input, .form-group select {
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: #0077cd;
+      color: white;
+    }
+    .btn-primary:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+    .alert {
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+  `]
+})
+export class EquipmentCreateComponent {
+  private equipmentService = inject(EquipmentService);
+  private router = inject(Router);
+
+  equipment: Partial<Equipment> = {
+    status: 'available',
+    fuel_type: 'diesel'
+  };
+  
+  saving = false;
+  errorMessage = '';
+  successMessage = '';
+  currentYear = new Date().getFullYear();
+
+  saveEquipment(): void {
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.equipmentService.create(this.equipment).subscribe({
+      next: () => {
+        this.successMessage = 'Equipment created successfully!';
+        this.saving = false;
+        setTimeout(() => {
+          this.router.navigate(['/equipment']);
+        }, 1500);
+      },
+      error: (error) => {
+        this.errorMessage = error.error?.error || 'Failed to create equipment';
+        this.saving = false;
+      }
+    });
+  }
+
+  cancel(): void {
+    this.router.navigate(['/equipment']);
+  }
+}

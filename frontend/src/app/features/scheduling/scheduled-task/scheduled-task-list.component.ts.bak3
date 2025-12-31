@@ -1,0 +1,477 @@
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ScheduledTaskService } from '../../../core/services/scheduled-task.service';
+import { ScheduledTask } from '../../../core/models/scheduled-task.model';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
+import {
+  ExportDropdownComponent,
+  ExportFormat,
+} from '../../../shared/components/export-dropdown/export-dropdown.component';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../../shared/components/page-layout/page-layout.component';
+import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
+
+@Component({
+  selector: 'app-scheduled-task-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ExportDropdownComponent,
+    PageLayoutComponent,
+    ActionsContainerComponent,
+  ],
+  template: `
+    <app-page-layout
+      title="Programación de Tareas"
+      icon="fa-calendar-check"
+      [breadcrumbs]="[
+        { label: 'Dashboard', url: '/app' },
+        { label: 'Operaciones', url: '/operaciones' },
+        { label: 'Programación' },
+      ]"
+      [loading]="loading"
+      [tabs]="tabs"
+    >
+      <app-actions-container actions>
+        <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
+
+        <button type="button" class="btn btn-secondary" (click)="viewCalendar()">
+          <i class="fa-solid fa-calendar"></i> Ver Calendario
+        </button>
+
+        <button type="button" class="btn btn-primary" (click)="createTask()">
+          <i class="fa-solid fa-plus"></i> Nueva Tarea
+        </button>
+      </app-actions-container>
+
+      <!-- Filters -->
+      <div class="filters-card">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Estado</label>
+            <select [(ngModel)]="filters.status" (change)="loadTasks()" class="form-select">
+              <option value="">Todos</option>
+              <option value="pending">Pendiente</option>
+              <option value="assigned">Asignado</option>
+              <option value="in_progress">En Progreso</option>
+              <option value="completed">Completado</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Desde</label>
+            <input
+              type="date"
+              [(ngModel)]="filters.date_from"
+              (change)="loadTasks()"
+              class="form-control"
+            />
+          </div>
+          <div class="filter-group">
+            <label>Hasta</label>
+            <input
+              type="date"
+              [(ngModel)]="filters.date_to"
+              (change)="loadTasks()"
+              class="form-control"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error" class="error-message">
+        <p>❌ Error: {{ error }}</p>
+        <button class="btn btn-secondary" (click)="loadTasks()">Reintentar</button>
+      </div>
+
+      <!-- Tasks List -->
+      <div *ngIf="!loading && !error" class="tasks-grid">
+        <div
+          *ngFor="let task of tasks"
+          class="task-card"
+          [class.priority-high]="task.priority === 'high' || task.priority === 'critical'"
+        >
+          <div class="card-header">
+            <div class="header-top">
+              <span class="task-type">{{ task.task_type | titlecase }}</span>
+              <span class="priority-badge" [class]="'priority-' + task.priority">{{
+                task.priority
+              }}</span>
+            </div>
+            <h3>{{ task.title || task.description }}</h3>
+          </div>
+
+          <div class="card-body">
+            <div class="info-row">
+              <i class="fa-solid fa-truck-front"></i>
+              <span>{{
+                task.equipment_code || task.equipment?.code || 'Equipo #' + task.equipment_id
+              }}</span>
+            </div>
+            <div class="info-row">
+              <i class="fa-solid fa-calendar-day"></i>
+              <span>{{ (task.start_date || (task.start_date || task.scheduled_date)) | date: 'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="info-row">
+              <i class="fa-solid fa-user"></i>
+              <span *ngIf="task.operator_name || task.operator">{{
+                task.operator_name || task.operator?.name
+              }}</span>
+              <span *ngIf="!task.operator_name && !task.operator" class="text-muted"
+                >Sin asignar</span
+              >
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <span class="status-badge" [class]="'status-' + task.status">
+              {{ task.status | uppercase }}
+            </span>
+            <div class="actions">
+              <button class="btn-icon" (click)="editTask(task.id)" title="Editar">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn-icon" (click)="deleteTask(task.id)" title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="tasks.length === 0" class="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>No hay tareas programadas</h3>
+          <p>Ajusta los filtros o crea una nueva tarea.</p>
+        </div>
+      </div>
+    </app-page-layout>
+  `,
+  styles: [
+    `
+      .filters-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .filter-group label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #718096;
+      }
+
+      .tasks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .task-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+        border-left: 4px solid #cbd5e0;
+      }
+      .task-card:hover {
+        transform: translateY(-4px);
+      }
+      .task-card.priority-high {
+        border-left-color: #e53e3e;
+      }
+
+      .card-header {
+        margin-bottom: 1rem;
+      }
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .task-type {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .priority-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+      }
+      .priority-low {
+        background: #e6fffa;
+        color: #2c7a7b;
+      }
+      .priority-medium {
+        background: #fffaf0;
+        color: #c05621;
+      }
+      .priority-high {
+        background: #fff5f5;
+        color: #c53030;
+      }
+      .priority-critical {
+        background: #9b2c2c;
+        color: white;
+      }
+
+      .card-header h3 {
+        margin: 0;
+        font-size: 1.125rem;
+        color: #2d3748;
+      }
+
+      .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .info-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #4a5568;
+        font-size: 0.9rem;
+      }
+      .info-row i {
+        width: 20px;
+        color: #a0aec0;
+      }
+
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .status-pending {
+        background: #ebf8ff;
+        color: #2b6cb0;
+      }
+      .status-assigned {
+        background: #e6fffa;
+        color: #2c7a7b;
+      }
+      .status-in_progress {
+        background: #fffaf0;
+        color: #c05621;
+      }
+      .status-completed {
+        background: #f0fff4;
+        color: #2f855a;
+      }
+
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .btn-icon {
+        background: none;
+        border: none;
+        color: #a0aec0;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+      }
+      .btn-icon:hover {
+        color: #4a5568;
+      }
+
+      .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 12px;
+      }
+      .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      .form-control,
+      .form-select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+      }
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+      }
+      .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-primary {
+        background: #3182ce;
+        color: white;
+      }
+      .btn-secondary {
+        background: #e2e8f0;
+        color: #2d3748;
+      }
+    `,
+  ],
+})
+export class ScheduledTaskListComponent implements OnInit {
+  private taskService = inject(ScheduledTaskService);
+  private router = inject(Router);
+  private excelService = inject(ExcelExportService);
+
+  tasks: ScheduledTask[] = [];
+  loading = false;
+  error: string | null = null;
+
+  tabs: TabItem[] = [
+    { label: 'Proyectos', route: '/operaciones/projects', icon: 'fa-folder-open' },
+    { label: 'Programación', route: '/operaciones/scheduling', icon: 'fa-calendar-days' },
+    { label: 'Planillas', route: '/operaciones/timesheets', icon: 'fa-clipboard-user' },
+  ];
+
+  filters = {
+    status: '',
+    date_from: '',
+    date_to: '',
+  };
+
+  ngOnInit() {
+    this.loadTasks();
+  }
+
+  loadTasks() {
+    this.loading = true;
+    this.error = null;
+
+    this.taskService.getAll(this.filters).subscribe({
+      next: (res: any) => {
+        // Handle both wrapped and unwrapped responses
+        this.tasks = Array.isArray(res) ? res : res.data || res || [];
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error('Error loading tasks:', err);
+        this.error = 'Error al cargar tareas';
+        this.loading = false;
+      },
+    });
+  }
+
+  createTask() {
+    this.router.navigate(['/operaciones/scheduling/tasks/new']);
+  }
+
+  editTask(id: number) {
+    this.router.navigate(['/operaciones/scheduling/tasks', id, 'edit']);
+  }
+
+  deleteTask(id: number) {
+    if (confirm('¿Estás seguro de eliminar esta tarea?')) {
+      this.taskService.delete(id).subscribe({
+        next: () => this.loadTasks(),
+        error: (err: any) => alert('Error al eliminar: ' + err.message),
+      });
+    }
+  }
+
+  viewCalendar() {
+    this.router.navigate(['/operaciones/scheduling/calendar']);
+  }
+
+  handleExport(format: ExportFormat): void {
+    if (format === 'excel') {
+      this.exportToExcel();
+    } else if (format === 'csv') {
+      this.exportToCSV();
+    }
+  }
+
+  exportToExcel(): void {
+    if (this.tasks.length === 0) {
+      alert('No hay tareas programadas para exportar');
+      return;
+    }
+
+    const exportData = this.tasks.map((task) => ({
+      Tipo: task.task_type || '',
+      Título: task.title || task.description || '',
+      Equipo: task.equipment_code || task.equipment?.code || 'N/A',
+      Operador: task.operator_name || task.operator?.name || 'Sin asignar',
+      'Fecha Programada': (task.start_date || task.scheduled_date)
+        ? new Date((task.start_date || task.scheduled_date)!).toLocaleDateString('es-PE')
+        : '',
+      'Duración (min)': task.duration_minutes || 0,
+      Prioridad: task.priority || '',
+      Estado: task.status || '',
+      'Notas Completación': task.completion_notes || '',
+      Creado: task.created_at ? new Date(task.created_at).toLocaleDateString('es-PE') : '',
+    }));
+
+    this.excelService.exportToExcel(exportData, {
+      filename: 'tareas-programadas',
+      sheetName: 'Tareas',
+    });
+  }
+
+  exportToCSV(): void {
+    if (this.tasks.length === 0) {
+      alert('No hay tareas programadas para exportar');
+      return;
+    }
+
+    const exportData = this.tasks.map((task) => ({
+      Tipo: task.task_type || '',
+      Título: task.title || task.description || '',
+      Equipo: task.equipment_code || task.equipment?.code || 'N/A',
+      Operador: task.operator_name || task.operator?.name || 'Sin asignar',
+      'Fecha Programada': (task.start_date || task.scheduled_date)
+        ? new Date((task.start_date || task.scheduled_date)!).toLocaleDateString('es-PE')
+        : '',
+      'Duración (min)': task.duration_minutes || 0,
+      Prioridad: task.priority || '',
+      Estado: task.status || '',
+      'Notas Completación': task.completion_notes || '',
+      Creado: task.created_at ? new Date(task.created_at).toLocaleDateString('es-PE') : '',
+    }));
+
+    this.excelService.exportToCSV(exportData, 'tareas-programadas');
+  }
+}
