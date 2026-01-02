@@ -1,16 +1,17 @@
 export interface Provider {
   id: number;
-  code: string;
-  business_name: string; // razon_social
-  tax_id: string; // ruc
-  commercial_name?: string; // nombre_comercial
-  provider_type: 'rental' | 'owned' | 'service' | 'material'; // tipo_proveedor
-  address?: string;
-  phone?: string;
+  legacy_id?: string;
+  // code: string; // Not in backend entity
+  razon_social: string;
+  ruc: string;
+  nombre_comercial?: string;
+  tipo_proveedor?: 'equipment' | 'services' | 'supplies' | 'fuel' | 'other';
+  direccion?: string;
+  telefono?: string;
   email?: string;
-  contact_name?: string;
-  payment_terms?: string; // condiciones_pago
-  status: 'active' | 'inactive' | 'blacklisted';
-  created_at?: string;
-  updated_at?: string;
+  // contact_name?: string; // Not in backend
+  // payment_terms?: string; // Not in backend
+  is_active: boolean;
+  created_at: Date | string;
+  updated_at: Date | string;
 }

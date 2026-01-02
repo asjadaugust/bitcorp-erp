@@ -113,9 +113,9 @@ export class CostCenterListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'code', label: 'Código', type: 'text' },
-    { key: 'name', label: 'Nombre', type: 'text' },
-    { key: 'budget', label: 'Presupuesto', type: 'currency', format: 'PEN' }
+    { key: 'codigo', label: 'Código', type: 'text' },
+    { key: 'nombre', label: 'Nombre', type: 'text' },
+    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', format: 'PEN' }
   ];
 
   ngOnInit() {
@@ -144,8 +144,8 @@ export class CostCenterListComponent implements OnInit {
   applyFilters(): void {
     this.filteredCostCenters = this.costCenters.filter(cc => {
       const matchesSearch = !this.filters.search || 
-        cc.name?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        cc.code?.toLowerCase().includes(this.filters.search.toLowerCase());
+        cc.nombre?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        cc.codigo?.toLowerCase().includes(this.filters.search.toLowerCase());
       
       return matchesSearch;
     });

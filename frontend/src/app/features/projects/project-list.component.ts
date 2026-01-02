@@ -75,7 +75,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
-        <span class="code-badge">{{ row.codigo_proyecto }}</span>
+        <span class="code-badge">{{ row.codigo }}</span>
       </ng-template>
 
       <ng-template #projectTemplate let-row>
@@ -86,12 +86,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       </ng-template>
 
       <ng-template #datesTemplate let-row>
-        <div class="date-range" *ngIf="row.fecha_inicio && row.fecha_fin_estimada">
-          <span>{{ row.fecha_inicio | date: 'dd/MM/yyyy' }}</span>
+        <div class="date-range" *ngIf="row.fechaInicio && row.fechaFin">
+          <span>{{ row.fechaInicio | date: 'dd/MM/yyyy' }}</span>
           <i class="fa-solid fa-arrow-right"></i>
-          <span>{{ row.fecha_fin_estimada | date: 'dd/MM/yyyy' }}</span>
+          <span>{{ row.fechaFin | date: 'dd/MM/yyyy' }}</span>
         </div>
-        <span *ngIf="!row.fecha_inicio || !row.fecha_fin_estimada">-</span>
+        <span *ngIf="!row.fechaInicio || !row.fechaFin">-</span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -243,10 +243,11 @@ export class ProjectListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Activo', value: 'active' },
-        { label: 'Completado', value: 'completed' },
-        { label: 'En Pausa', value: 'on-hold' },
-        { label: 'Cancelado', value: 'cancelled' },
+        { label: 'Planificación', value: 'PLANIFICACION' },
+        { label: 'Activo', value: 'ACTIVO' },
+        { label: 'Pausado', value: 'PAUSADO' },
+        { label: 'Completado', value: 'COMPLETADO' },
+        { label: 'Cancelado', value: 'CANCELADO' },
       ],
     },
   ];
@@ -257,16 +258,17 @@ export class ProjectListComponent implements OnInit {
     { key: 'cliente', label: 'Cliente', type: 'text' },
     { key: 'ubicacion', label: 'Ubicación', type: 'text' },
     { key: 'dates', label: 'Fechas', type: 'template' },
-    { key: 'presupuesto_total', label: 'Presupuesto', type: 'currency', format: 'PEN' },
+    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', format: 'PEN' },
     {
       key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        active: { label: 'Activo', class: 'badge status-active' },
-        completed: { label: 'Completado', class: 'badge status-completed' },
-        'on-hold': { label: 'En Pausa', class: 'badge status-on-hold' },
-        cancelled: { label: 'Cancelado', class: 'badge status-cancelled' },
+        PLANIFICACION: { label: 'Planificación', class: 'badge status-on-hold' },
+        ACTIVO: { label: 'Activo', class: 'badge status-active' },
+        PAUSADO: { label: 'Pausado', class: 'badge status-on-hold' },
+        COMPLETADO: { label: 'Completado', class: 'badge status-completed' },
+        CANCELADO: { label: 'Cancelado', class: 'badge status-cancelled' },
       },
     },
   ];
@@ -321,23 +323,23 @@ export class ProjectListComponent implements OnInit {
     }
 
     const exportData = this.projects.map((project) => ({
-      Código: project.codigo_proyecto || '',
+      Código: project.codigo || '',
       Nombre: project.nombre || '',
       Cliente: project.cliente || '',
       Ubicación: project.ubicacion || '',
-      'Fecha Inicio': project.fecha_inicio
-        ? new Date(project.fecha_inicio).toLocaleDateString('es-PE')
+      'Fecha Inicio': project.fechaInicio
+        ? new Date(project.fechaInicio).toLocaleDateString('es-PE')
         : '',
-      'Fecha Fin': project.fecha_fin_estimada
-        ? new Date(project.fecha_fin_estimada).toLocaleDateString('es-PE')
+      'Fecha Fin': project.fechaFin
+        ? new Date(project.fechaFin).toLocaleDateString('es-PE')
         : '',
-      'Presupuesto Total': project.presupuesto_total
-        ? `S/ ${project.presupuesto_total.toFixed(2)}`
+      'Presupuesto Total': project.presupuesto
+        ? `S/ ${project.presupuesto.toFixed(2)}`
         : '',
       Estado: project.estado || '',
       Descripción: project.descripcion || '',
-      Activo: project.is_active ? 'Sí' : 'No',
-      Creado: project.created_at ? new Date(project.created_at).toLocaleDateString('es-PE') : '',
+      Activo: project.isActive ? 'Sí' : 'No',
+      Creado: project.createdAt ? new Date(project.createdAt).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToExcel(exportData, {
@@ -354,23 +356,23 @@ export class ProjectListComponent implements OnInit {
     }
 
     const exportData = this.projects.map((project) => ({
-      Código: project.codigo_proyecto || '',
+      Código: project.codigo || '',
       Nombre: project.nombre || '',
       Cliente: project.cliente || '',
       Ubicación: project.ubicacion || '',
-      'Fecha Inicio': project.fecha_inicio
-        ? new Date(project.fecha_inicio).toLocaleDateString('es-PE')
+      'Fecha Inicio': project.fechaInicio
+        ? new Date(project.fechaInicio).toLocaleDateString('es-PE')
         : '',
-      'Fecha Fin': project.fecha_fin_estimada
-        ? new Date(project.fecha_fin_estimada).toLocaleDateString('es-PE')
+      'Fecha Fin': project.fechaFin
+        ? new Date(project.fechaFin).toLocaleDateString('es-PE')
         : '',
-      'Presupuesto Total': project.presupuesto_total
-        ? `S/ ${project.presupuesto_total.toFixed(2)}`
+      'Presupuesto Total': project.presupuesto
+        ? `S/ ${project.presupuesto.toFixed(2)}`
         : '',
       Estado: project.estado || '',
       Descripción: project.descripcion || '',
-      Activo: project.is_active ? 'Sí' : 'No',
-      Creado: project.created_at ? new Date(project.created_at).toLocaleDateString('es-PE') : '',
+      Activo: project.isActive ? 'Sí' : 'No',
+      Creado: project.createdAt ? new Date(project.createdAt).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'proyectos');

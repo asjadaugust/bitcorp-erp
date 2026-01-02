@@ -20,18 +20,18 @@ export class ProjectService {
   private mapApiToProject(apiProject: any): Project {
     return {
       id: apiProject.id,
-      codigo_proyecto: apiProject.project_code || apiProject.code || '',
+      codigo: apiProject.project_code || apiProject.code || '',
       nombre: apiProject.project_name || apiProject.name || '',
       descripcion: apiProject.description || '',
       ubicacion: apiProject.location || '',
-      fecha_inicio: apiProject.start_date || '',
-      fecha_fin_estimada: apiProject.end_date || apiProject.estimated_end_date || '',
-      estado: apiProject.status || 'active',
-      presupuesto_total: apiProject.budget || apiProject.total_budget || 0,
+      fechaInicio: apiProject.start_date || '',
+      fechaFin: apiProject.end_date || apiProject.estimated_end_date || '',
+      estado: apiProject.status || 'ACTIVO',
+      presupuesto: apiProject.budget || apiProject.total_budget || 0,
       cliente: apiProject.client || apiProject.client_name || '',
-      is_active: apiProject.status === 'active',
-      created_at: apiProject.created_at,
-      updated_at: apiProject.updated_at
+      isActive: apiProject.status === 'ACTIVO',
+      createdAt: apiProject.created_at,
+      updatedAt: apiProject.updated_at
     };
   }
 
@@ -63,14 +63,14 @@ export class ProjectService {
 
   create(project: Partial<Project>): Observable<Project> {
     const apiData = {
-      project_code: project.codigo_proyecto,
+      project_code: project.codigo,
       project_name: project.nombre,
       description: project.descripcion,
       location: project.ubicacion,
-      start_date: project.fecha_inicio,
-      end_date: project.fecha_fin_estimada,
+      start_date: project.fechaInicio,
+      end_date: project.fechaFin,
       status: project.estado,
-      budget: project.presupuesto_total,
+      budget: project.presupuesto,
       client: project.cliente
     };
     return this.http.post<ApiResponse<any> | any>(this.apiUrl, apiData).pipe(
@@ -79,17 +79,17 @@ export class ProjectService {
   }
 
   update(id: string, project: Partial<Project>): Observable<Project> {
-    const apiData = {
-      project_code: project.codigo_proyecto,
-      project_name: project.nombre,
-      description: project.descripcion,
-      location: project.ubicacion,
-      start_date: project.fecha_inicio,
-      end_date: project.fecha_fin_estimada,
-      status: project.estado,
-      budget: project.presupuesto_total,
-      client: project.cliente
-    };
+    const apiData: any = {};
+    if (project.codigo) apiData.project_code = project.codigo;
+    if (project.nombre) apiData.project_name = project.nombre;
+    if (project.descripcion) apiData.description = project.descripcion;
+    if (project.ubicacion) apiData.location = project.ubicacion;
+    if (project.fechaInicio) apiData.start_date = project.fechaInicio;
+    if (project.fechaFin) apiData.end_date = project.fechaFin;
+    if (project.estado) apiData.status = project.estado;
+    if (project.presupuesto) apiData.budget = project.presupuesto;
+    if (project.cliente) apiData.client = project.cliente;
+
     return this.http.put<ApiResponse<any> | any>(`${this.apiUrl}/${id}`, apiData).pipe(
       map(response => this.mapApiToProject(response.data || response))
     );

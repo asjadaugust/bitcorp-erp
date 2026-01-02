@@ -47,24 +47,24 @@ import { Project } from '../../core/models/project.model';
             <h3>Información Básica</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="codigo_proyecto">Código del Proyecto *</label>
+                <label for="codigo">Código del Proyecto *</label>
                 <input
-                  id="codigo_proyecto"
+                  id="codigo"
                   type="text"
-                  formControlName="codigo_proyecto"
+                  formControlName="codigo"
                   class="form-control"
                   placeholder="ej. PRJ-2025-001"
                 />
-                <div class="error-msg" *ngIf="hasError('codigo_proyecto')">Código es requerido</div>
+                <div class="error-msg" *ngIf="hasError('codigo')">Código es requerido</div>
               </div>
 
               <div class="form-group">
                 <label for="estado">Estado *</label>
                 <select id="estado" formControlName="estado" class="form-select">
-                  <option value="active">Activo</option>
-                  <option value="completed">Completado</option>
-                  <option value="on-hold">En Pausa</option>
-                  <option value="cancelled">Cancelado</option>
+                  <option value="ACTIVO">Activo</option>
+                  <option value="COMPLETADO">Completado</option>
+                  <option value="PAUSADO">En Pausa</option>
+                  <option value="CANCELADO">Cancelado</option>
                 </select>
               </div>
 
@@ -126,31 +126,31 @@ import { Project } from '../../core/models/project.model';
             <h3>Fechas y Presupuesto</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="fecha_inicio">Fecha de Inicio</label>
+                <label for="fechaInicio">Fecha de Inicio</label>
                 <input
-                  id="fecha_inicio"
+                  id="fechaInicio"
                   type="date"
-                  formControlName="fecha_inicio"
+                  formControlName="fechaInicio"
                   class="form-control"
                 />
               </div>
 
               <div class="form-group">
-                <label for="fecha_fin_estimada">Fecha de Fin Estimada</label>
+                <label for="fechaFin">Fecha de Fin Estimada</label>
                 <input
-                  id="fecha_fin_estimada"
+                  id="fechaFin"
                   type="date"
-                  formControlName="fecha_fin_estimada"
+                  formControlName="fechaFin"
                   class="form-control"
                 />
               </div>
 
               <div class="form-group">
-                <label for="presupuesto_total">Presupuesto Total (S/)</label>
+                <label for="presupuesto">Presupuesto Total (S/)</label>
                 <input
-                  id="presupuesto_total"
+                  id="presupuesto"
                   type="number"
-                  formControlName="presupuesto_total"
+                  formControlName="presupuesto"
                   class="form-control"
                   placeholder="0.00"
                 />
@@ -338,16 +338,16 @@ export class ProjectFormComponent implements OnInit {
 
   constructor() {
     this.projectForm = this.fb.group({
-      codigo_proyecto: ['', Validators.required],
+      codigo: ['', Validators.required],
       nombre: ['', Validators.required],
       descripcion: [''],
       ubicacion: [''],
-      fecha_inicio: [''],
-      fecha_fin_estimada: [''],
-      estado: ['active', Validators.required],
-      presupuesto_total: [null],
+      fechaInicio: [''],
+      fechaFin: [''],
+      estado: ['ACTIVO', Validators.required],
+      presupuesto: [null],
       cliente: [''],
-      is_active: [true],
+      isActive: [true],
     });
   }
 
@@ -372,8 +372,8 @@ export class ProjectFormComponent implements OnInit {
 
         this.projectForm.patchValue({
           ...project,
-          fecha_inicio: project.fecha_inicio ? formatDate(project.fecha_inicio) : '',
-          fecha_fin_estimada: project.fecha_fin_estimada ? formatDate(project.fecha_fin_estimada) : '',
+          fechaInicio: project.fechaInicio ? formatDate(project.fechaInicio.toString()) : '',
+          fechaFin: project.fechaFin ? formatDate(project.fechaFin.toString()) : '',
         });
         this.loading = false;
       },

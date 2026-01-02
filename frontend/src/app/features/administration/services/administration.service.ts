@@ -5,10 +5,14 @@ import { Observable } from 'rxjs';
 
 export interface CostCenter {
   id: string;
-  code: string;
-  name: string;
-  budget: number;
-  createdAt: Date;
+  codigo: string;
+  nombre: string;
+  presupuesto: number;
+  descripcion?: string;
+  project_id?: string;
+  is_active?: boolean;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export interface AccountsPayable {

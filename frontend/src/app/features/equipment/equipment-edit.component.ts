@@ -222,15 +222,16 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
 
                   <div class="form-group">
-                    <label for="hourmeter_reading">Hourmeter Reading (hrs)</label>
-                    <input
-                      type="number"
-                      id="hourmeter_reading"
-                      name="hourmeter_reading"
-                      [(ngModel)]="equipment.hourmeter_reading"
-                      step="0.1"
-                      min="0"
-                    />
+                    <label for="medidor_uso">Tipo de Medidor</label>
+                    <select
+                      id="medidor_uso"
+                      name="medidor_uso"
+                      [(ngModel)]="equipment.medidor_uso"
+                    >
+                      <option value="">Seleccionar...</option>
+                      <option value="horometro">Horómetro</option>
+                      <option value="odometro">Odómetro</option>
+                    </select>
                   </div>
 
                   <div class="form-group">

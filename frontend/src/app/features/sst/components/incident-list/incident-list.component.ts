@@ -78,8 +78,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
   `]
 })
 export class IncidentListComponent implements OnInit {
-  private sstService = inject(SstService);
-  private router = inject(Router);
+  private readonly sstService = inject(SstService);
+  private readonly router = inject(Router);
   
   incidents: SafetyIncident[] = [];
   filteredIncidents: SafetyIncident[] = [];
@@ -108,21 +108,21 @@ export class IncidentListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
-    { key: 'description', label: 'Descripción', type: 'text' },
-    { key: 'location', label: 'Ubicación', type: 'text' },
+    { key: 'fechaIncidente', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
+    { key: 'descripcion', label: 'Descripción', type: 'text' },
+    { key: 'ubicacion', label: 'Ubicación', type: 'text' },
     { 
-      key: 'severity', 
+      key: 'severidad', 
       label: 'Severidad', 
       type: 'badge',
       badgeConfig: {
-        'Low': { label: 'Baja', class: 'badge low' },
-        'Medium': { label: 'Media', class: 'badge medium' },
-        'High': { label: 'Alta', class: 'badge high' },
-        'Critical': { label: 'Crítica', class: 'badge critical' }
+        'LEVE': { label: 'Baja', class: 'badge low' },
+        'MODERADO': { label: 'Media', class: 'badge medium' },
+        'ALTA': { label: 'Alta', class: 'badge high' },
+        'CRITICA': { label: 'Crítica', class: 'badge critical' }
       }
     },
-    { key: 'reportedBy', label: 'Reportado Por', type: 'template' }
+    { key: 'reportadoPor', label: 'Reportado Por', type: 'text' }
   ];
 
   ngOnInit() {

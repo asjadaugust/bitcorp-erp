@@ -14,7 +14,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
     <app-page-layout
       [title]="
         operator
-          ? operator.full_name || operator.first_name + ' ' + operator.last_name
+          ? operator.nombres + ' ' + operator.apellidoPaterno
           : 'Detalles del Operador'
       "
       icon="fa-user"
@@ -23,7 +23,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
         { label: 'Operadores', url: '/operators' },
         {
           label: operator
-            ? operator.full_name || operator.first_name + ' ' + operator.last_name
+            ? operator.nombres + ' ' + operator.apellidoPaterno
             : 'Detalles',
         },
       ]"
@@ -44,17 +44,17 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
           <div class="card profile-card">
             <div class="profile-header">
               <div class="avatar-large">
-                {{ operator.first_name.charAt(0) }}{{ operator.last_name.charAt(0) }}
+                {{ operator.nombres.charAt(0) }}{{ operator.apellidoPaterno.charAt(0) }}
               </div>
               <div class="profile-info">
-                <h2>{{ operator.full_name || operator.first_name + ' ' + operator.last_name }}</h2>
+                <h2>{{ operator.nombres }} {{ operator.apellidoPaterno }}</h2>
                 <p class="email"><i class="fa-regular fa-envelope"></i> {{ operator.email }}</p>
                 <div class="badges">
-                  <span [class]="'badge status-' + operator.status">
+                  <span [class]="'badge status-' + operator.estado">
                     {{
-                      operator.status === 'active'
+                      operator.estado === 'activo'
                         ? 'Activo'
-                        : operator.status === 'inactive'
+                        : operator.estado === 'inactivo'
                           ? 'Inactivo'
                           : 'Vacaciones'
                     }}
@@ -71,7 +71,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
             <div class="info-grid">
               <div class="info-item">
                 <label>Teléfono</label>
-                <p>{{ operator.phone }}</p>
+                <p>{{ operator.telefono }}</p>
               </div>
               <div class="info-item">
                 <label>Email</label>
@@ -84,71 +84,24 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
             <h3><i class="fa-solid fa-briefcase"></i> Información Laboral</h3>
             <div class="info-grid">
               <div class="info-item">
-                <label>Fecha de Inicio</label>
-                <p>{{ operator.employment_start_date | date: 'mediumDate' }}</p>
+                <label>Fecha de Ingreso</label>
+                <p>{{ operator.fechaIngreso | date: 'mediumDate' }}</p>
               </div>
-              <div class="info-item">
-                <label>Tarifa por Hora</label>
-                <p class="highlight">{{ operator.hourly_rate | currency: 'USD' }}</p>
-              </div>
-              <div class="info-item" *ngIf="operator.license_number">
+              
+              <!-- Hourly rate removed -->
+
+              <div class="info-item" *ngIf="operator.licenciaConducir">
                 <label>Número de Licencia</label>
-                <p>{{ operator.license_number }}</p>
+                <p>{{ operator.licenciaConducir }}</p>
               </div>
-              <div class="info-item" *ngIf="operator.license_expiry">
+              <div class="info-item" *ngIf="operator.vencimientoLicencia">
                 <label>Vencimiento Licencia</label>
-                <p>{{ operator.license_expiry | date: 'mediumDate' }}</p>
+                <p>{{ operator.vencimientoLicencia | date: 'mediumDate' }}</p>
               </div>
             </div>
           </div>
-
-          <div class="card" *ngIf="operator.skills && operator.skills.length > 0">
-            <h3><i class="fa-solid fa-tools"></i> Habilidades y Equipos</h3>
-            <div class="skills-grid">
-              <div *ngFor="let skill of operator.skills" class="skill-card">
-                <h4>{{ skill.equipment_type }}</h4>
-                <p class="skill-level">{{ skill.skill_level }}</p>
-                <p class="experience">{{ skill.years_experience }} años exp.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" *ngIf="operator.notes">
-            <h3><i class="fa-solid fa-sticky-note"></i> Notas</h3>
-            <p class="notes">{{ operator.notes }}</p>
-          </div>
-        </div>
-
-        <div class="detail-sidebar">
-          <div class="card actions-card">
-            <h3>Acciones Rápidas</h3>
-            <div class="quick-actions">
-              <button class="btn btn-outline" (click)="viewSchedule()">
-                <i class="fa-regular fa-calendar"></i> Ver Horario
-              </button>
-              <button class="btn btn-outline" (click)="viewReports()">
-                <i class="fa-solid fa-clipboard-list"></i> Ver Reportes
-              </button>
-            </div>
-          </div>
-
-          <div class="card performance-card">
-            <h3>Rendimiento</h3>
-            <div class="performance" *ngIf="operator.performance_rating">
-              <div class="rating-circle">
-                <span class="rating-value">{{ operator.performance_rating }}</span>
-                <span class="rating-max">/5</span>
-              </div>
-              <div class="stars">
-                <i
-                  class="fa-solid fa-star"
-                  *ngFor="let i of [1, 2, 3, 4, 5]"
-                  [class.active]="i <= operator.performance_rating"
-                ></i>
-              </div>
-            </div>
-            <p *ngIf="!operator.performance_rating" class="no-data">Sin datos de rendimiento</p>
-          </div>
+          
+          <!-- Skills, Notes, Performance removed -->
         </div>
       </div>
 

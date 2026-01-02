@@ -75,15 +75,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <!-- Custom Templates -->
       <ng-template #providerTemplate let-row>
         <div class="provider-info">
-          <span class="provider-name">{{ row.business_name }}</span>
-          <span class="provider-contact" *ngIf="row.contact_name">
-            <i class="fa-regular fa-user"></i> {{ row.contact_name }}
-          </span>
+          <span class="provider-name">{{ row.razon_social }}</span>
+          <!-- contact_name removed as not in backend entity -->
         </div>
       </ng-template>
 
       <ng-template #rucTemplate let-row>
-        <span class="ruc-text">{{ row.tax_id }}</span>
+        <span class="ruc-text">{{ row.ruc }}</span>
       </ng-template>
 
       <ng-template #contactTemplate let-row>
@@ -91,16 +89,16 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           <div *ngIf="row.email" class="contact-item">
             <i class="fa-regular fa-envelope"></i> {{ row.email }}
           </div>
-          <div *ngIf="row.phone" class="contact-item">
-            <i class="fa-solid fa-phone"></i> {{ row.phone }}
+          <div *ngIf="row.telefono" class="contact-item">
+            <i class="fa-solid fa-phone"></i> {{ row.telefono }}
           </div>
         </div>
       </ng-template>
 
       <ng-template #locationTemplate let-row>
-        <div class="address-info" title="{{ row.address }}">
+        <div class="address-info" title="{{ row.direccion }}">
           <i class="fa-solid fa-location-dot"></i>
-          <span class="address-text">{{ row.address || '-' }}</span>
+          <span class="address-text">{{ row.direccion || '-' }}</span>
         </div>
       </ng-template>
 
@@ -265,6 +263,25 @@ export class ProviderListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
+    { key: 'razon_social', label: 'Razón Social', type: 'template' }, // KEY CHANGED but type is template, so key usage depends on template or sort. AeroTable uses key for template lookup if template name matches key? No, [templates]="{ provider: ... }"
+    // Actually AeroTable uses `col.key` to access data for default render, BUT `type: 'template'` uses `getTemplate(col.key)`.
+    // In HTML: [templates]="{ provider: providerTemplate }"
+    // So the column key MUST be 'provider' to match the template key 'provider' in the input templates map.
+    // Wait, let's keep keys as logical identifiers for templates if they are mapped in [templates].
+    // BUT for `actionsTemplate` logic or data access, it might matter.
+    // The previous code had: `{ key: 'provider', ... }` and `[templates]="{ provider: providerTemplate }"`.
+    // So 'provider' is just a key for the template.
+    // I will keep 'provider' key for the column but update the template content (which I did above).
+    // Wait, no. I should probably align keys to data just in case.
+    // But if I change key to 'razon_social', I must update `[templates]` map in HTML too.
+    // It's cleaner to update keys to match data properties where possible, but for composite templates it's fine to use logical names.
+    // I will keep 'provider' key but update the template content to use `row.razon_social`.
+    // Oh wait, I replaced the template content above to use `row.razon_social`.
+    // So I can keep `key: 'provider'` in columns if I map `provider` to the template.
+    
+    // HOWEVER, for `ruc` -> `tax_id` was `tax_id`. Now `ruc`.
+    // I will change column key to `ruc` and update `[templates]` map in HTML to use `ruc`.
+    
     { key: 'provider', label: 'Razón Social', type: 'template' },
     { key: 'ruc', label: 'RUC', type: 'template' },
     { key: 'contact', label: 'Contacto', type: 'template' },
@@ -274,11 +291,10 @@ export class ProviderListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        lista_proveedor: { label: 'Lista Proveedor', class: 'badge status-active' },
-        lista_otros_proveedores: { label: 'Otros Proveedores', class: 'badge status-other' },
-        lista_negra: { label: 'Lista Negra', class: 'badge status-blacklisted' },
-        inactivo: { label: 'Inactivo', class: 'badge status-inactive' },
+        true: { label: 'Activo', class: 'badge status-active' },
+        false: { label: 'Inactivo', class: 'badge status-inactive' },
       },
+      // Check if AeroTable handles boolean keys in badgeConfig. usually converts to string 'true'/'false'.
     },
   ];
 
@@ -332,15 +348,15 @@ export class ProviderListComponent implements OnInit {
     }
 
     const exportData = this.providers.map((provider) => ({
-      Código: provider.code || '',
-      'Razón Social': provider.business_name || '',
-      RUC: provider.tax_id || '',
-      'Tipo Proveedor': provider.provider_type || '',
-      'Nombre Contacto': provider.contact_name || '',
+      Código: provider.legacy_id || '',
+      'Razón Social': provider.razon_social || '',
+      RUC: provider.ruc || '',
+      'Tipo Proveedor': provider.tipo_proveedor || '',
+      // 'Nombre Contacto': provider.contact_name || '',
       Email: provider.email || '',
-      Teléfono: provider.phone || '',
-      Dirección: provider.address || '',
-      Estado: provider.status || '',
+      Teléfono: provider.telefono || '',
+      Dirección: provider.direccion || '',
+      Estado: provider.is_active ? 'Activo' : 'Inactivo',
       'Fecha Registro': provider.created_at
         ? new Date(provider.created_at).toLocaleDateString('es-PE')
         : '',
@@ -360,14 +376,14 @@ export class ProviderListComponent implements OnInit {
     }
 
     const exportData = this.providers.map((provider) => ({
-      'Razón Social': provider.business_name || '',
-      RUC: provider.tax_id || '',
-      'Tipo Proveedor': provider.provider_type || '',
-      'Nombre Contacto': provider.contact_name || '',
+      'Razón Social': provider.razon_social || '',
+      RUC: provider.ruc || '',
+      'Tipo Proveedor': provider.tipo_proveedor || '',
+      // 'Nombre Contacto': provider.contact_name || '', // Removed
       Email: provider.email || '',
-      Teléfono: provider.phone || '',
-      Dirección: provider.address || '',
-      Estado: provider.status || '',
+      Teléfono: provider.telefono || '',
+      Dirección: provider.direccion || '',
+      Estado: provider.is_active ? 'Activo' : 'Inactivo',
       'Fecha Registro': provider.created_at
         ? new Date(provider.created_at).toLocaleDateString('es-PE')
         : '',

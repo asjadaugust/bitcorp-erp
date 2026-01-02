@@ -533,7 +533,7 @@ export class ProjectDetailComponent implements OnInit {
 
   confirmDelete(): void {
     if (this.project) {
-      this.projectService.delete(this.project.id).subscribe({
+      this.projectService.delete(String(this.project.id)).subscribe({
         next: () => {
           this.router.navigate(['/projects']);
         },

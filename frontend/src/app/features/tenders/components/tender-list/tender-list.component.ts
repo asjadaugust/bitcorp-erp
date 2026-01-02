@@ -71,8 +71,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
   `]
 })
 export class TenderListComponent implements OnInit {
-  private tenderService = inject(TenderService);
-  private router = inject(Router);
+  private readonly tenderService = inject(TenderService);
+  private readonly router = inject(Router);
   
   tenders: Tender[] = [];
   filteredTenders: Tender[] = [];

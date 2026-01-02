@@ -80,7 +80,7 @@ import { Equipment } from '../../core/models/equipment.model';
               >
                 <option value="">Seleccionar Equipo</option>
                 <option *ngFor="let eq of equipment()" [value]="eq.id">
-                  {{ eq.code }} - {{ eq.name }}
+                  {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
                 </option>
               </select>
             </div>
@@ -153,7 +153,7 @@ import { Equipment } from '../../core/models/equipment.model';
                   placeholder="0.0"
                 />
                 <span class="hint" *ngIf="selectedEquipment()">
-                  Actual: {{ selectedEquipment()?.hourmeter_reading }} hrs
+                  Actual: {{ selectedEquipment()?.medidor_uso }} hrs
                 </span>
               </div>
 
@@ -177,7 +177,7 @@ import { Equipment } from '../../core/models/equipment.model';
               <span class="value">{{ hourmeterDiff().toFixed(1) }} hrs</span>
             </div>
 
-            <div class="form-row" *ngIf="selectedEquipment()?.odometer_reading">
+            <div class="form-row" *ngIf="$any(selectedEquipment())?.odometer_reading">
               <div class="form-group">
                 <label for="odometer_start">Odómetro Inicio</label>
                 <input
@@ -858,7 +858,7 @@ export class DailyReportFormPWAComponent implements OnInit {
     const selected = this.equipment().find(eq => eq.id === this.report.equipment_id);
     if (selected) {
       this.selectedEquipment.set(selected);
-      this.report.hourmeter_start = selected.hourmeter_reading || 0;
+      this.report.hourmeter_start = Number(selected.medidor_uso) || 0;
     }
   }
 

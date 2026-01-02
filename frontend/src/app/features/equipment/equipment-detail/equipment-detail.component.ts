@@ -18,12 +18,12 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
   ],
   template: `
     <app-page-layout
-      [title]="equipment ? (equipment.code + ' - ' + equipment.name) : 'Detalle de Equipo'"
+      [title]="equipment ? (equipment.codigo_equipo + ' - ' + equipment.marca + ' ' + equipment.modelo) : 'Detalle de Equipo'"
       icon="fa-tractor"
       [breadcrumbs]="[
         { label: 'Dashboard', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
-        { label: equipment?.code || 'Detalle' }
+        { label: equipment?.codigo_equipo || 'Detalle' }
       ]"
       [loading]="loading"
     >
@@ -42,8 +42,8 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
             </div>
             <div class="stat-info">
               <span class="label">Estado Actual</span>
-              <span class="value badge" [class]="'status-' + equipment.status?.toLowerCase()">
-                {{ equipment.status }}
+              <span class="value badge" [class]="'status-' + equipment.estado?.toLowerCase()">
+                {{ equipment.estado }}
               </span>
             </div>
           </div>
@@ -54,7 +54,7 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
             </div>
             <div class="stat-info">
               <span class="label">Horómetro</span>
-              <span class="value">{{ equipment.hourmeter_reading | number:'1.1-1' }} hrs</span>
+              <span class="value">{{ equipment.medidor_uso | number:'1.1-1' }} hrs</span>
             </div>
           </div>
 
@@ -64,7 +64,7 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
             </div>
             <div class="stat-info">
               <span class="label">Proyecto</span>
-              <span class="value">{{ equipment.project_name || 'No asignado' }}</span>
+              <span class="value">{{ (equipment | any).project_name || 'No asignado' }}</span>
             </div>
           </div>
 
@@ -74,7 +74,7 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
             </div>
             <div class="stat-info">
               <span class="label">Proveedor</span>
-              <span class="value">{{ equipment.provider_name || 'N/A' }}</span>
+              <span class="value">{{ (equipment | any).provider_name || 'N/A' }}</span>
             </div>
           </div>
         </div>
@@ -121,27 +121,27 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
                   <div class="specs-grid">
                     <div class="spec-item">
                       <span class="spec-label">Marca</span>
-                      <span class="spec-value">{{ equipment.brand }}</span>
+                      <span class="spec-value">{{ equipment.marca }}</span>
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Modelo</span>
-                      <span class="spec-value">{{ equipment.model }}</span>
+                      <span class="spec-value">{{ equipment.modelo }}</span>
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Año</span>
-                      <span class="spec-value">{{ equipment.year || '-' }}</span>
+                      <span class="spec-value">{{ equipment.anio_fabricacion || '-' }}</span>
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Serie</span>
-                      <span class="spec-value">{{ equipment.series || '-' }}</span>
+                      <span class="spec-value">{{ equipment.numeroSerieEquipo || '-' }}</span>
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Placa</span>
-                      <span class="spec-value">{{ equipment.plate || '-' }}</span>
+                      <span class="spec-value">{{ equipment.placa || '-' }}</span>
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Categoría</span>
-                      <span class="spec-value">{{ equipment.category || '-' }}</span>
+                      <span class="spec-value">{{ equipment.categoria || '-' }}</span>
                     </div>
                   </div>
                 </div>

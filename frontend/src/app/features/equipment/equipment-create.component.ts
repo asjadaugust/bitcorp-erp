@@ -32,123 +32,97 @@ import { Equipment } from '../../core/models/equipment.model';
                 <h2>Basic Information</h2>
                 <div class="form-grid">
                   <div class="form-group">
-                    <label for="code">Equipment Code *</label>
+                    <label for="codigo_equipo">Código Equipo *</label>
                     <input
                       type="text"
-                      id="code"
-                      name="code"
-                      [(ngModel)]="equipment.code"
+                      id="codigo_equipo"
+                      name="codigo_equipo"
+                      [(ngModel)]="equipment.codigo_equipo"
                       required
-                      placeholder="e.g., EQ-2025-001"
+                      placeholder="ej. EQ-2025-001"
                     />
                   </div>
 
-                  <div class="form-group">
-                    <label for="name">Name/Description *</label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      [(ngModel)]="equipment.name"
-                      required
-                      placeholder="e.g., Caterpillar Excavator 320"
-                    />
-                  </div>
+                  <!-- Name removed as not in model -->
 
                   <div class="form-group">
-                    <label for="brand">Brand *</label>
+                    <label for="marca">Marca *</label>
                     <input
                       type="text"
-                      id="brand"
-                      name="brand"
-                      [(ngModel)]="equipment.brand"
+                      id="marca"
+                      name="marca"
+                      [(ngModel)]="equipment.marca"
                       required
                     />
                   </div>
 
                   <div class="form-group">
-                    <label for="model">Model *</label>
+                    <label for="modelo">Modelo *</label>
                     <input
                       type="text"
-                      id="model"
-                      name="model"
-                      [(ngModel)]="equipment.model"
+                      id="modelo"
+                      name="modelo"
+                      [(ngModel)]="equipment.modelo"
                       required
                     />
                   </div>
 
                   <div class="form-group">
-                    <label for="year_manufactured">Year</label>
+                    <label for="anio_fabricacion">Año</label>
                     <input
                       type="number"
-                      id="year_manufactured"
-                      name="year_manufactured"
-                      [(ngModel)]="equipment['año_fabricacion']"
+                      id="anio_fabricacion"
+                      name="anio_fabricacion"
+                      [(ngModel)]="equipment.anio_fabricacion"
                       min="1950"
                       [max]="currentYear"
                     />
                   </div>
 
                   <div class="form-group">
-                    <label for="status">Status *</label>
+                    <label for="estado">Estado *</label>
                     <select
-                      id="status"
-                      name="status"
-                      [(ngModel)]="equipment.status"
+                      id="estado"
+                      name="estado"
+                      [(ngModel)]="equipment.estado"
                       required
                     >
-                      <option value="available">Available</option>
-                      <option value="in_use">In Use</option>
-                      <option value="maintenance">Maintenance</option>
-                      <option value="retired">Retired</option>
+                      <option value="DISPONIBLE">Disponible</option>
+                      <option value="EN_USO">En Uso</option>
+                      <option value="MANTENIMIENTO">Mantenimiento</option>
+                      <option value="BAJA">De Baja</option>
                     </select>
                   </div>
                 </div>
               </section>
 
-              <section class="form-section">
-                <h2>Financial Information</h2>
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label for="hourly_rate">Hourly Rate ($) *</label>
-                    <input
-                      type="number"
-                      id="hourly_rate"
-                      name="hourly_rate"
-                      [(ngModel)]="equipment.hourly_rate"
-                      step="0.01"
-                      min="0"
-                      required
-                    />
-                  </div>
-                </div>
-              </section>
+              <!-- Financial Information (Hourly Rate) removed -->
 
               <section class="form-section">
                 <h2>Operational Data</h2>
                 <div class="form-grid">
                   <div class="form-group">
-                    <label for="fuel_type">Fuel Type</label>
+                    <label for="tipo_motor">Tipo de Motor</label>
                     <select
-                      id="fuel_type"
-                      name="fuel_type"
-                      [(ngModel)]="equipment.fuel_type"
+                      id="tipo_motor"
+                      name="tipo_motor"
+                      [(ngModel)]="equipment.tipo_motor"
                     >
-                      <option value="">Select Fuel Type</option>
-                      <option value="diesel">Diesel</option>
-                      <option value="gasoline">Gasoline</option>
-                      <option value="electric">Electric</option>
-                      <option value="hybrid">Hybrid</option>
+                      <option value="">Seleccionar...</option>
+                      <option value="DIESEL">Diesel</option>
+                      <option value="GASOLINA">Gasolina</option>
+                      <option value="ELECTRICO">Eléctrico</option>
+                      <option value="HIBRIDO">Híbrido</option>
                     </select>
                   </div>
 
                   <div class="form-group">
-                    <label for="hourmeter_reading">Hourmeter Reading (hrs)</label>
+                    <label for="medidor_uso">Horómetro (hrs)</label>
                     <input
                       type="number"
-                      id="hourmeter_reading"
-                      name="hourmeter_reading"
-                      [(ngModel)]="equipment.hourmeter_reading"
+                      id="medidor_uso"
+                      name="medidor_uso"
+                      [(ngModel)]="equipment.medidor_uso"
                       step="0.1"
                       min="0"
                     />
@@ -302,8 +276,8 @@ export class EquipmentCreateComponent {
   private router = inject(Router);
 
   equipment: Partial<Equipment> = {
-    status: 'available',
-    fuel_type: 'diesel'
+    estado: 'DISPONIBLE',
+    tipo_motor: 'DIESEL'
   };
   
   saving = false;

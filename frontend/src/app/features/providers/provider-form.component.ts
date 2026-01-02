@@ -47,58 +47,56 @@ import { Provider } from '../../core/models/provider.model';
             <h3>Información Básica</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="tax_id">RUC *</label>
+                <label for="ruc">RUC *</label>
                 <input
-                  id="tax_id"
+                  id="ruc"
                   type="text"
-                  formControlName="tax_id"
+                  formControlName="ruc"
                   class="form-control"
                   placeholder="ej. 20123456789"
                   maxlength="11"
                 />
-                <div class="error-msg" *ngIf="hasError('tax_id')">RUC es requerido (11 dígitos)</div>
+                <div class="error-msg" *ngIf="hasError('ruc')">RUC es requerido (11 dígitos)</div>
               </div>
 
               <div class="form-group">
-                <label for="business_name">Razón Social *</label>
+                <label for="razon_social">Razón Social *</label>
                 <input
-                  id="business_name"
+                  id="razon_social"
                   type="text"
-                  formControlName="business_name"
+                  formControlName="razon_social"
                   class="form-control"
                   placeholder="ej. Servicios Generales S.A.C."
                 />
-                <div class="error-msg" *ngIf="hasError('business_name')">Razón Social es requerida</div>
+                <div class="error-msg" *ngIf="hasError('razon_social')">Razón Social es requerida</div>
               </div>
 
               <div class="form-group">
-                <label for="provider_type">Tipo de Proveedor</label>
-                <select id="provider_type" formControlName="provider_type" class="form-select">
+                <label for="tipo_proveedor">Tipo de Proveedor</label>
+                <select id="tipo_proveedor" formControlName="tipo_proveedor" class="form-select">
                   <option value="">Seleccionar...</option>
-                  <option value="rental">Alquiler</option>
-                  <option value="owned">Propio</option>
-                  <option value="service">Servicio</option>
-                  <option value="material">Materiales</option>
+                  <option value="equipment">Equipos</option>
+                  <option value="services">Servicios</option>
+                  <option value="supplies">Suministros</option>
+                  <option value="fuel">Combustible</option>
+                  <option value="other">Otro</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="status">Estado</label>
-                <select id="status" formControlName="status" class="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option value="lista_proveedor">Lista Proveedor</option>
-                  <option value="lista_otros_proveedores">Lista de Otros proveedores</option>
-                  <option value="lista_negra">Lista Negra</option>
-                  <option value="inactivo">Inactivo</option>
+                <label for="isActive">Estado</label>
+                <select id="isActive" formControlName="isActive" class="form-select">
+                  <option [ngValue]="true">Activo</option>
+                  <option [ngValue]="false">Inactivo</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="address">Dirección</label>
+                <label for="direccion">Dirección</label>
                 <input
-                  id="address"
+                  id="direccion"
                   type="text"
-                  formControlName="address"
+                  formControlName="direccion"
                   class="form-control"
                   placeholder="ej. Av. Principal 123, Lima"
                 />
@@ -106,99 +104,7 @@ import { Provider } from '../../core/models/provider.model';
             </div>
           </div>
 
-          <!-- Section 2: Financial Information (Table) -->
-          <div class="form-section full-width">
-            <div class="section-header">
-              <h3>Información Financiera</h3>
-              <button type="button" class="btn btn-sm btn-secondary" (click)="addBankAccount()">
-                <i class="fa-solid fa-plus"></i> Agregar Cuenta
-              </button>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Entidad Financiera</th>
-                    <th>N° Cuenta</th>
-                    <th>CCI</th>
-                    <th>Nombre de la Cuenta</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody formArrayName="bank_accounts">
-                  <tr *ngFor="let account of bankAccountsArray.controls; let i = index" [formGroupName]="i">
-                    <td>
-                      <input type="text" formControlName="bank_name" class="form-control" placeholder="Ej. BCP" />
-                    </td>
-                    <td>
-                      <input type="text" formControlName="account_number" class="form-control" placeholder="N° Cuenta" />
-                    </td>
-                    <td>
-                      <input type="text" formControlName="cci" class="form-control" placeholder="CCI" />
-                    </td>
-                    <td>
-                      <input type="text" formControlName="account_name" class="form-control" placeholder="Titular" />
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-icon btn-danger" (click)="removeBankAccount(i)">
-                        <i class="fa-solid fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="bankAccountsArray.length === 0">
-                    <td colspan="5" class="empty-row">No hay cuentas bancarias registradas</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Section 3: Contact Information (Table) -->
-          <div class="form-section full-width">
-            <div class="section-header">
-              <h3>Información de Contacto</h3>
-              <button type="button" class="btn btn-sm btn-secondary" (click)="addContact()">
-                <i class="fa-solid fa-plus"></i> Agregar Contacto
-              </button>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Cargo</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody formArrayName="contacts">
-                  <tr *ngFor="let contact of contactsArray.controls; let i = index" [formGroupName]="i">
-                    <td>
-                      <input type="text" formControlName="name" class="form-control" placeholder="Nombre completo" />
-                    </td>
-                    <td>
-                      <input type="text" formControlName="position" class="form-control" placeholder="Cargo" />
-                    </td>
-                    <td>
-                      <input type="text" formControlName="phone" class="form-control" placeholder="Teléfono" />
-                    </td>
-                    <td>
-                      <input type="email" formControlName="email" class="form-control" placeholder="Email" />
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-icon btn-danger" (click)="removeContact(i)">
-                        <i class="fa-solid fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="contactsArray.length === 0">
-                    <td colspan="5" class="empty-row">No hay contactos registrados</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <!-- Sections 2 & 3 removed as not supported by backend entity -->
         </form>
       </div>
     </div>
@@ -441,13 +347,13 @@ export class ProviderFormComponent implements OnInit {
 
   constructor() {
     this.providerForm = this.fb.group({
-      tax_id: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11)]],
-      business_name: ['', Validators.required],
-      provider_type: [''],
-      status: ['lista_proveedor', Validators.required],
-      address: [''],
-      bank_accounts: this.fb.array([]),
-      contacts: this.fb.array([]),
+      ruc: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11)]],
+      razon_social: ['', Validators.required],
+      tipo_proveedor: [''],
+      isActive: [true, Validators.required],
+      direccion: [''],
+      // bank_accounts: this.fb.array([]),
+      // contacts: this.fb.array([]),
     });
   }
 
@@ -505,38 +411,14 @@ export class ProviderFormComponent implements OnInit {
     this.providerService.getById(id).subscribe({
       next: (provider: any) => {
         this.providerForm.patchValue({
-          tax_id: provider.tax_id,
-          business_name: provider.business_name,
-          provider_type: provider.provider_type || '',
-          status: provider.status || 'lista_proveedor',
-          address: provider.address || '',
+          ruc: provider.ruc,
+          razon_social: provider.razon_social,
+          tipo_proveedor: provider.tipo_proveedor || '',
+          isActive: provider.is_active,
+          direccion: provider.direccion || '',
         });
 
-        // Load bank accounts if available
-        if (provider.bank_accounts && Array.isArray(provider.bank_accounts)) {
-          provider.bank_accounts.forEach((account: any) => {
-            const accountGroup = this.fb.group({
-              bank_name: [account.bank_name || ''],
-              account_number: [account.account_number || ''],
-              cci: [account.cci || ''],
-              account_name: [account.account_name || ''],
-            });
-            this.bankAccountsArray.push(accountGroup);
-          });
-        }
-
-        // Load contacts if available
-        if (provider.contacts && Array.isArray(provider.contacts)) {
-          provider.contacts.forEach((contact: any) => {
-            const contactGroup = this.fb.group({
-              name: [contact.name || ''],
-              position: [contact.position || ''],
-              phone: [contact.phone || ''],
-              email: [contact.email || ''],
-            });
-            this.contactsArray.push(contactGroup);
-          });
-        }
+        // Bank accounts and contacts removed from form load as mapped to entity props not supported
 
         this.loading = false;
       },

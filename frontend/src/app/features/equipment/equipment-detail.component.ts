@@ -92,12 +92,12 @@ import { Equipment } from '../../core/models/equipment.model';
                 <h2>Datos Operativos</h2>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>Lectura de Horómetro</label>
-                    <p class="highlight">{{ equipment.hourmeter_reading || 0 }} horas</p>
+                    <label>Tipo de Medidor</label>
+                    <p class="highlight">{{ equipment.medidor_uso || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Lectura de Odómetro</label>
-                    <p>{{ equipment.odometer_reading || 'N/A' }} km</p>
+                    <label>Tipo de Motor</label>
+                    <p>{{ equipment.tipo_motor || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Tipo de Combustible</label>

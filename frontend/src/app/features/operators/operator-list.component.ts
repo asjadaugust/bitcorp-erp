@@ -106,9 +106,9 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
             <div class="avatar-circle">{{ getInitials(row) }}</div>
             <div class="user-info">
               <span class="user-name">{{
-                row.full_name || row.first_name + ' ' + row.last_name
+                row.nombres + ' ' + row.apellidoPaterno
               }}</span>
-              <span class="user-role">Operador</span>
+              <span class="user-role">{{ row.cargo || 'Operador' }}</span>
             </div>
           </div>
         </ng-template>
@@ -118,21 +118,27 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
             <div *ngIf="row.email" class="contact-item">
               <i class="fa-regular fa-envelope"></i> {{ row.email }}
             </div>
-            <div *ngIf="row.phone" class="contact-item">
-              <i class="fa-solid fa-phone"></i> {{ row.phone }}
+            <div *ngIf="row.telefono" class="contact-item">
+              <i class="fa-solid fa-phone"></i> {{ row.telefono }}
             </div>
           </div>
         </ng-template>
 
         <ng-template #licenseTemplate let-row>
-          <span class="license-badge" *ngIf="row.license_number">
-            {{ row.license_number }}
+          <span class="license-badge" *ngIf="row.licenciaConducir">
+            {{ row.licenciaConducir }}
           </span>
-          <span class="text-muted" *ngIf="!row.license_number">-</span>
+          <span class="text-muted" *ngIf="!row.licenciaConducir">-</span>
         </ng-template>
 
         <ng-template #skillsTemplate let-row>
           <div class="skills-list">
+             <!-- Using especialidad as single skill or fallback -->
+             <span class="skill-tag" *ngIf="row.especialidad">
+               {{ row.especialidad }}
+             </span>
+             
+             <!-- Keeping old logic just in case skills array exists -->
             <span class="skill-tag" *ngFor="let skill of row.skills?.slice(0, 2)">
               {{ skill.equipment_type }}
             </span>
@@ -412,9 +418,9 @@ export class OperatorListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Activo', value: 'active' },
-        { label: 'Inactivo', value: 'inactive' },
-        { label: 'De Vacaciones', value: 'on_leave' },
+        { label: 'Activo', value: 'activo' }, // Updated value
+        { label: 'Inactivo', value: 'inactivo' }, // Updated value
+        { label: 'De Vacaciones', value: 'vacaciones' }, // Updated value
       ],
     },
   ];
@@ -425,18 +431,23 @@ export class OperatorListComponent implements OnInit {
     { key: 'operator', label: 'Operador', type: 'template' },
     { key: 'contact', label: 'Contacto', type: 'template' },
     { key: 'license', label: 'Licencia', type: 'template' },
-    { key: 'hourly_rate', label: 'Tarifa/Hr', type: 'currency', format: 'USD' },
-    { key: 'employment_start_date', label: 'Inicio Contrato', type: 'date', format: 'mediumDate' },
-    { key: 'skills', label: 'Habilidades', type: 'template' },
+    // Removed hourly_rate as it is not in backend
+    // { key: 'hourly_rate', label: 'Tarifa/Hr', type: 'currency', format: 'USD' },
+    { key: 'fechaIngreso', label: 'Inicio Contrato', type: 'date', format: 'mediumDate' },
+    { key: 'skills', label: 'Especialidad', type: 'template' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        active: { label: 'Activo', class: 'badge status-active' },
+        activo: { label: 'Activo', class: 'badge status-active' },
+        active: { label: 'Activo', class: 'badge status-active' }, // Fallback
+        inactivo: { label: 'Inactivo', class: 'badge status-inactive' },
         inactive: { label: 'Inactivo', class: 'badge status-inactive' },
+        vacaciones: { label: 'Vacaciones', class: 'badge status-on_leave' },
         on_leave: { label: 'Vacaciones', class: 'badge status-on_leave' },
       },
+      // Ensure key matches the property 'estado'
     },
   ];
 
@@ -463,17 +474,17 @@ export class OperatorListComponent implements OnInit {
   }
 
   getInitials(operator: Operator): string {
-    const first = operator.first_name?.charAt(0) || '';
-    const last = operator.last_name?.charAt(0) || '';
+    const first = operator.nombres?.charAt(0) || '';
+    const last = operator.apellidoPaterno?.charAt(0) || '';
     return (first + last).toUpperCase();
   }
 
   getActiveCount(): number {
-    return this.operators.filter((o) => o.status === 'active').length;
+    return this.operators.filter((o) => o.estado === 'activo' || o.estado === 'active').length;
   }
 
   getOnLeaveCount(): number {
-    return this.operators.filter((o) => o.status === 'on_leave').length;
+    return this.operators.filter((o) => o.estado === 'vacaciones' || o.estado === 'on_leave').length;
   }
 
   viewOperator(operator: Operator): void {
@@ -504,30 +515,26 @@ export class OperatorListComponent implements OnInit {
 
     const exportData = this.operators.map((operator: any) => {
       // Format skills array - handle both formats
-      const skills =
-        operator.skills?.map((s: any) => s.equipment_type || s.skill_name || s).join(', ') || '';
+      const skills = operator.especialidad || 
+        (operator.skills?.map((s: any) => s.equipment_type || s.skill_name || s).join(', ') || '');
 
       return {
-        'Nombre Completo': operator.full_name || `${operator.first_name} ${operator.last_name}`,
+        'Nombre Completo': `${operator.nombres} ${operator.apellidoPaterno} ${operator.apellidoMaterno || ''}`,
         Email: operator.email || '',
-        Teléfono: operator.phone || '',
-        Licencia: operator.license_number || '',
-        'Vencimiento Licencia': operator.license_expiry
-          ? new Date(operator.license_expiry).toLocaleDateString('es-PE')
+        Teléfono: operator.telefono || '',
+        Licencia: operator.licenciaConducir || '',
+        'Vencimiento Licencia': operator.vencimientoLicencia
+          ? new Date(operator.vencimientoLicencia).toLocaleDateString('es-PE')
           : '',
-        'Tarifa por Hora': operator.hourly_rate ? `$${operator.hourly_rate}` : '',
-        'Inicio Contrato': operator.employment_start_date
-          ? new Date(operator.employment_start_date).toLocaleDateString('es-PE')
+        // 'Tarifa por Hora': operator.hourly_rate ? `$${operator.hourly_rate}` : '',
+        'Inicio Contrato': operator.fechaIngreso
+          ? new Date(operator.fechaIngreso).toLocaleDateString('es-PE')
           : '',
-        'Fin Contrato': operator.employment_end_date
-          ? new Date(operator.employment_end_date).toLocaleDateString('es-PE')
-          : '',
+        'Cargo': operator.cargo || '',
         Habilidades: skills,
-        Estado: operator.status || '',
-        Calificación: operator.performance_rating || '',
-        Notas: operator.notes || '',
-        Creado: operator.created_at
-          ? new Date(operator.created_at).toLocaleDateString('es-PE')
+        Estado: operator.estado || '',
+        Creado: operator.createdAt
+          ? new Date(operator.createdAt).toLocaleDateString('es-PE')
           : '',
       };
     });
@@ -546,30 +553,25 @@ export class OperatorListComponent implements OnInit {
     }
 
     const exportData = this.operators.map((operator: any) => {
-      const skills =
-        operator.skills?.map((s: any) => s.equipment_type || s.skill_name || s).join(', ') || '';
+      const skills = operator.especialidad || 
+        (operator.skills?.map((s: any) => s.equipment_type || s.skill_name || s).join(', ') || '');
 
       return {
-        'Nombre Completo': operator.full_name || `${operator.first_name} ${operator.last_name}`,
+        'Nombre Completo': `${operator.nombres} ${operator.apellidoPaterno} ${operator.apellidoMaterno || ''}`,
         Email: operator.email || '',
-        Teléfono: operator.phone || '',
-        Licencia: operator.license_number || '',
-        'Vencimiento Licencia': operator.license_expiry
-          ? new Date(operator.license_expiry).toLocaleDateString('es-PE')
+        Teléfono: operator.telefono || '',
+        Licencia: operator.licenciaConducir || '',
+        'Vencimiento Licencia': operator.vencimientoLicencia
+          ? new Date(operator.vencimientoLicencia).toLocaleDateString('es-PE')
           : '',
-        'Tarifa por Hora': operator.hourly_rate ? `$${operator.hourly_rate}` : '',
-        'Inicio Contrato': operator.employment_start_date
-          ? new Date(operator.employment_start_date).toLocaleDateString('es-PE')
+        'Inicio Contrato': operator.fechaIngreso
+          ? new Date(operator.fechaIngreso).toLocaleDateString('es-PE')
           : '',
-        'Fin Contrato': operator.employment_end_date
-          ? new Date(operator.employment_end_date).toLocaleDateString('es-PE')
-          : '',
+        'Cargo': operator.cargo || '',
         Habilidades: skills,
-        Estado: operator.status || '',
-        Calificación: operator.performance_rating || '',
-        Notas: operator.notes || '',
-        Creado: operator.created_at
-          ? new Date(operator.created_at).toLocaleDateString('es-PE')
+        Estado: operator.estado || '',
+        Creado: operator.createdAt
+          ? new Date(operator.createdAt).toLocaleDateString('es-PE')
           : '',
       };
     });

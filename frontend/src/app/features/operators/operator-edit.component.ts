@@ -46,39 +46,26 @@ import { Operator } from '../../core/models/operator.model';
             <h3>Información Personal</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="document_type">Tipo de Documento *</label>
-                <select
-                  id="document_type"
-                  name="document_type"
-                  [(ngModel)]="operator.document_type"
-                  required
-                  class="form-select"
-                >
-                  <option value="DNI">DNI</option>
-                  <option value="CE">CE (Carné de Extranjería)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="document_number">Número de Documento *</label>
+                <label for="dni">DNI *</label>
                 <input
                   type="text"
-                  id="document_number"
-                  name="document_number"
-                  [(ngModel)]="operator.document_number"
+                  id="dni"
+                  name="dni"
+                  [(ngModel)]="operator.dni"
                   required
                   class="form-control"
                   placeholder="Ej. 12345678"
+                  maxlength="8"
                 />
               </div>
 
               <div class="form-group">
-                <label for="first_name">Nombre *</label>
+                <label for="nombres">Nombres *</label>
                 <input
                   type="text"
-                  id="first_name"
-                  name="first_name"
-                  [(ngModel)]="operator.first_name"
+                  id="nombres"
+                  name="nombres"
+                  [(ngModel)]="operator.nombres"
                   required
                   class="form-control"
                   placeholder="Ej. Juan"
@@ -86,12 +73,12 @@ import { Operator } from '../../core/models/operator.model';
               </div>
 
               <div class="form-group">
-                <label for="last_name">Apellido *</label>
+                <label for="apellidoPaterno">Apellido Paterno *</label>
                 <input
                   type="text"
-                  id="last_name"
-                  name="last_name"
-                  [(ngModel)]="operator.last_name"
+                  id="apellidoPaterno"
+                  name="apellidoPaterno"
+                  [(ngModel)]="operator.apellidoPaterno"
                   required
                   class="form-control"
                   placeholder="Ej. Pérez"
@@ -99,26 +86,36 @@ import { Operator } from '../../core/models/operator.model';
               </div>
 
               <div class="form-group">
-                <label for="email">Email *</label>
+                <label for="apellidoMaterno">Apellido Materno</label>
+                <input
+                  type="text"
+                  id="apellidoMaterno"
+                  name="apellidoMaterno"
+                  [(ngModel)]="operator.apellidoMaterno"
+                  class="form-control"
+                  placeholder="Ej. Gomez"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email</label>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   [(ngModel)]="operator.email"
-                  required
                   class="form-control"
                   placeholder="juan.perez@bitcorp.com"
                 />
               </div>
 
               <div class="form-group">
-                <label for="phone">Teléfono *</label>
+                <label for="telefono">Teléfono</label>
                 <input
                   type="tel"
-                  id="phone"
-                  name="phone"
-                  [(ngModel)]="operator.phone"
-                  required
+                  id="telefono"
+                  name="telefono"
+                  [(ngModel)]="operator.telefono"
                   class="form-control"
                   placeholder="+51 999 999 999"
                 />
@@ -128,164 +125,61 @@ import { Operator } from '../../core/models/operator.model';
 
           <!-- Section 2: Employment Details -->
           <div class="form-section full-width">
-            <h3>Detalles Laborales</h3>
+            <h3>Información Laboral</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="status">Estado *</label>
+                <label for="estado">Estado *</label>
                 <select 
-                  id="status" 
-                  name="status" 
-                  [(ngModel)]="operator.status" 
+                  id="estado" 
+                  name="estado" 
+                  [(ngModel)]="operator.estado" 
                   required 
                   class="form-select">
-                  <option value="active">Activo</option>
-                  <option value="inactive">Inactivo</option>
-                  <option value="on_leave">De Vacaciones</option>
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                  <option value="vacaciones">De Vacaciones</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="employment_start_date">Fecha de Inicio *</label>
+                <label for="fechaIngreso">Fecha de Ingreso</label>
                 <input
                   type="date"
-                  id="employment_start_date"
-                  name="employment_start_date"
-                  [(ngModel)]="operator.employment_start_date"
-                  required
+                  id="fechaIngreso"
+                  name="fechaIngreso"
+                  [(ngModel)]="operator.fechaIngreso"
                   class="form-control"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="hourly_rate">Tarifa por Hora (USD) *</label>
-                <input
-                  type="number"
-                  id="hourly_rate"
-                  name="hourly_rate"
-                  [(ngModel)]="operator.hourly_rate"
-                  step="0.01"
-                  min="0"
-                  required
-                  class="form-control"
-                  placeholder="0.00"
                 />
               </div>
             </div>
           </div>
 
-          <!-- Section 3: License Info -->
+          <!-- Section 3: Driving License -->
           <div class="form-section full-width">
-            <h3>Información de Licencia</h3>
+            <h3>Licencia de Conducir</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="license_number">Número de Licencia</label>
+                <label for="licenciaConducir">Nro. de Licencia</label>
                 <input
                   type="text"
-                  id="license_number"
-                  name="license_number"
-                  [(ngModel)]="operator.license_number"
+                  id="licenciaConducir"
+                  name="licenciaConducir"
+                  [(ngModel)]="operator.licenciaConducir"
                   class="form-control"
                   placeholder="A-12345678"
                 />
               </div>
 
               <div class="form-group">
-                <label for="license_expiry">Vencimiento</label>
+                <label for="vencimientoLicencia">Vencimiento</label>
                 <input
                   type="date"
-                  id="license_expiry"
-                  name="license_expiry"
-                  [(ngModel)]="operator.license_expiry"
+                  id="vencimientoLicencia"
+                  name="vencimientoLicencia"
+                  [(ngModel)]="operator.vencimientoLicencia"
                   class="form-control"
                 />
               </div>
-            </div>
-          </div>
-
-          <!-- Section 4: Legajo Personal (Personal File) -->
-          <div class="form-section full-width">
-            <div class="section-header">
-              <h3>Legajo Personal</h3>
-              <button type="button" class="btn btn-sm btn-secondary" (click)="addPersonalDocument()">
-                <i class="fa-solid fa-plus"></i> Agregar Documento
-              </button>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Fecha Registro</th>
-                    <th>Tipo Documento</th>
-                    <th>Descripción</th>
-                    <th>Adjunto</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let doc of personalDocuments; let i = index">
-                    <td>
-                      <input 
-                        type="date" 
-                        [(ngModel)]="doc.registration_date" 
-                        [name]="'doc_date_' + i"
-                        class="form-control" 
-                      />
-                    </td>
-                    <td>
-                      <select [(ngModel)]="doc.document_type" [name]="'doc_type_' + i" class="form-select">
-                        <option value="">Seleccionar...</option>
-                        <option value="119_Certificados">119_Certificados</option>
-                        <option value="120_Otros">120_Otros</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input 
-                        type="text" 
-                        [(ngModel)]="doc.description" 
-                        [name]="'doc_desc_' + i"
-                        class="form-control" 
-                        placeholder="Descripción del documento"
-                      />
-                    </td>
-                    <td>
-                      <div class="file-input-wrapper">
-                        <input 
-                          type="file" 
-                          [id]="'file_' + i" 
-                          (change)="onFileSelected($event, i)"
-                          class="file-input"
-                        />
-                        <label [for]="'file_' + i" class="btn btn-sm btn-secondary">
-                          <i class="fa-solid fa-upload"></i> {{ doc.file_name || 'Seleccionar' }}
-                        </label>
-                      </div>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-icon btn-danger" (click)="removePersonalDocument(i)">
-                        <i class="fa-solid fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="personalDocuments.length === 0">
-                    <td colspan="5" class="empty-row">No hay documentos registrados</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Section 5: Notes -->
-          <div class="form-section full-width">
-            <h3>Notas Adicionales</h3>
-            <div class="form-group">
-              <textarea
-                id="notes"
-                name="notes"
-                [(ngModel)]="operator.notes"
-                rows="4"
-                class="form-control"
-                placeholder="Información adicional sobre el operador..."
-              ></textarea>
             </div>
           </div>
         </form>
@@ -571,16 +465,13 @@ export class OperatorEditComponent implements OnInit {
   private router = inject(Router);
 
   operator: any = {
-    first_name: '',
-    last_name: '',
+    nombres: '',
+    apellidoPaterno: '',
     email: '',
-    phone: '',
-    status: 'active',
-    employment_start_date: new Date().toISOString().split('T')[0],
-    hourly_rate: 0,
-    user_id: 1,
-    document_type: 'DNI',
-    document_number: '',
+    telefono: '',
+    estado: 'activo',
+    fechaIngreso: new Date().toISOString().split('T')[0],
+    dni: '',
   };
 
   personalDocuments: any[] = [];
@@ -629,17 +520,14 @@ export class OperatorEditComponent implements OnInit {
       next: (data) => {
         this.operator = {
           ...data,
-          employment_start_date: new Date(data.employment_start_date).toISOString().split('T')[0],
-          license_expiry: data.license_expiry
-            ? new Date(data.license_expiry).toISOString().split('T')[0]
+          fechaIngreso: data.fechaIngreso ? new Date(data.fechaIngreso).toISOString().split('T')[0] : '',
+          vencimientoLicencia: data.vencimientoLicencia
+            ? new Date(data.vencimientoLicencia).toISOString().split('T')[0]
             : '',
-          document_type: data.document_type || 'DNI',
-          document_number: data.document_number || '',
+          dni: data.dni || '',
         };
-        // Load personal documents if available
-        if (data.personal_documents && Array.isArray(data.personal_documents)) {
-          this.personalDocuments = data.personal_documents;
-        }
+        // Personal documents removed
+        this.personalDocuments = [];
         this.loading = false;
       },
       error: (error) => {

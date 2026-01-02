@@ -142,10 +142,10 @@ import { ExportDropdownComponent, ExportFormat } from '../../shared/components/e
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             'select': selectTemplate,
-            'code': codeTemplate,
-            'status': statusTemplate,
+            'codigo_equipo': codeTemplate,
+            'estado': statusTemplate,
             'provider': providerTemplate,
-            'reading': readingTemplate
+            'medidor_uso': readingTemplate
           }"
           (rowClick)="viewDetails($event)"
         >
@@ -162,12 +162,12 @@ import { ExportDropdownComponent, ExportFormat } from '../../shared/components/e
         </ng-template>
 
         <ng-template #codeTemplate let-row>
-          <strong class="equipment-code">{{ row.code }}</strong>
+          <strong class="equipment-code">{{ row.codigo_equipo }}</strong>
         </ng-template>
 
         <ng-template #statusTemplate let-row>
-          <span [class]="'badge badge-status-' + row.status">
-            {{ row.status }}
+          <span [class]="'badge badge-status-' + row.estado">
+            {{ row.estado }}
           </span>
         </ng-template>
 
@@ -176,7 +176,7 @@ import { ExportDropdownComponent, ExportFormat } from '../../shared/components/e
         </ng-template>
 
         <ng-template #readingTemplate let-row>
-          {{ row.hourmeter_reading || row.odometer_reading || 0 }}
+          {{ row.medidor_uso || '-' }}
         </ng-template>
 
         <!-- Actions Template -->
@@ -639,15 +639,15 @@ export class EquipmentListEnhancedComponent implements OnInit {
 
   columns: TableColumn[] = [
     { key: 'select', label: '', type: 'template', sticky: true, width: '50px' },
-    { key: 'code', label: 'Code', type: 'template', sticky: true, width: '120px' },
-    { key: 'brand', label: 'Brand', type: 'text' },
-    { key: 'model', label: 'Model', type: 'text' },
-    { key: 'categoria_equipo', label: 'Category', type: 'text' },
-    { key: 'status', label: 'Status', type: 'template' },
-    { key: 'provider', label: 'Provider', type: 'template' },
-    { key: 'placa', label: 'Plate', type: 'text' },
-    { key: 'año_fabricacion', label: 'Year', type: 'text', align: 'center' },
-    { key: 'reading', label: 'Hourmeter', type: 'template', align: 'right' }
+    { key: 'codigo_equipo', label: 'Código', type: 'template', sticky: true, width: '120px' },
+    { key: 'marca', label: 'Marca', type: 'text' },
+    { key: 'modelo', label: 'Modelo', type: 'text' },
+    { key: 'categoria', label: 'Categoría', type: 'text' },
+    { key: 'estado', label: 'Estado', type: 'template' },
+    { key: 'provider', label: 'Proveedor', type: 'template' },
+    { key: 'placa', label: 'Placa', type: 'text' },
+    { key: 'anio_fabricacion', label: 'Año', type: 'text', align: 'center' },
+    { key: 'medidor_uso', label: 'Tipo Medidor', type: 'template', align: 'right' }
   ];
 
   ngOnInit(): void {
@@ -737,18 +737,16 @@ export class EquipmentListEnhancedComponent implements OnInit {
       'Código': eq.code || eq.C08001_Codigo || '',
       'Nombre': eq.name || '',
       'Marca': eq.brand || '',
-      'Modelo': eq.model || '',
-      'Categoría': eq.categoria_equipo || eq.category || '',
-      'Estado': eq.status || '',
+      'Modelo': eq.modelo || '',
+      'Categoría': eq.categoria || '',
+      'Estado': eq.estado || '',
       'Proveedor': eq.provider?.razon_social || '',
       'RUC Proveedor': eq.provider?.ruc || '',
       'Placa': eq.placa || '',
-      'Año Fabricación': eq.año_fabricacion || eq.year || '',
-      'Horómetro': eq.hourmeter_reading || 0,
-      'Odómetro': eq.odometer_reading || 0,
-      'Tipo Motor': eq.tipo_motor || eq.fuel_type || '',
-      'Medidor': eq.C08001_MedidorUso || eq.meter_type || '',
-      'Número Serie': eq.C08001_NumeroSerie || eq.serial_number || '',
+      'Año Fabricación': eq.anio_fabricacion || '',
+      'Tipo Medidor': eq.medidor_uso || '',
+      'Tipo Motor': eq.tipo_motor || '',
+      'Número Serie': eq.numero_serie_equipo || '',
       'Fecha Registro': eq.created_at ? new Date(eq.created_at).toLocaleDateString('es-PE') : ''
     }));
 

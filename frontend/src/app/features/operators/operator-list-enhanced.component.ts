@@ -70,9 +70,9 @@ import { Operator } from '../../core/models/operator.model';
         <div class="filter-group">
           <select [(ngModel)]="filters.status" (change)="applyFilters()" class="form-select">
             <option value="">Todos los Estados</option>
-            <option value="active">Activo</option>
-            <option value="inactive">Inactivo</option>
-            <option value="on_leave">De Vacaciones</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+            <option value="vacaciones">De Vacaciones</option>
           </select>
         </div>
       </div>
@@ -103,7 +103,7 @@ import { Operator } from '../../core/models/operator.model';
                   <div class="avatar-circle">{{ getInitials(operator) }}</div>
                   <div class="user-info">
                     <span class="user-name">{{
-                      operator.full_name || operator.first_name + ' ' + operator.last_name
+                      operator.nombres + ' ' + operator.apellidoPaterno
                     }}</span>
                     <span class="user-role">Operador</span>
                   </div>
@@ -114,43 +114,34 @@ import { Operator } from '../../core/models/operator.model';
                   <div *ngIf="operator.email" class="contact-item">
                     <i class="fa-regular fa-envelope"></i> {{ operator.email }}
                   </div>
-                  <div *ngIf="operator.phone" class="contact-item">
-                    <i class="fa-solid fa-phone"></i> {{ operator.phone }}
+                  <div *ngIf="operator.telefono" class="contact-item">
+                    <i class="fa-solid fa-phone"></i> {{ operator.telefono }}
                   </div>
                 </div>
               </td>
               <td>
-                <span class="license-badge" *ngIf="operator.license_number">
-                  {{ operator.license_number }}
+                <span class="license-badge" *ngIf="operator.licenciaConducir">
+                  {{ operator.licenciaConducir }}
                 </span>
-                <span class="text-muted" *ngIf="!operator.license_number">-</span>
+                <span class="text-muted" *ngIf="!operator.licenciaConducir">-</span>
               </td>
+              <!-- Hourly rate removed -->
+               <td>-</td>
               <td>
-                <span class="currency">\${{ operator.hourly_rate }}</span>
+                {{ operator.fechaIngreso | date: 'mediumDate' }}
               </td>
+              <!-- Skills removed/placeholder -->
+              <td>-</td>
               <td>
-                {{ operator.employment_start_date | date: 'mediumDate' }}
-              </td>
-              <td>
-                <div class="skills-list">
-                  <span class="skill-tag" *ngFor="let skill of operator.skills?.slice(0, 2)">
-                    {{ skill.equipment_type }}
-                  </span>
-                  <span class="skill-more" *ngIf="operator.skills && operator.skills.length > 2">
-                    +{{ operator.skills.length - 2 }}
-                  </span>
-                </div>
-              </td>
-              <td>
-                <span [class]="'status-badge status-' + operator.status">
+                <span [class]="'status-badge status-' + operator.estado">
                   {{
-                    operator.status === 'active'
+                    operator.estado === 'activo'
                       ? 'Activo'
-                      : operator.status === 'inactive'
+                      : operator.estado === 'inactivo'
                         ? 'Inactivo'
-                        : operator.status === 'on_leave'
+                        : operator.estado === 'vacaciones'
                           ? 'Vacaciones'
-                          : operator.status
+                          : operator.estado
                   }}
                 </span>
               </td>
@@ -596,17 +587,17 @@ export class OperatorListEnhancedComponent implements OnInit {
   }
 
   getInitials(operator: Operator): string {
-    const first = operator.first_name?.charAt(0) || '';
-    const last = operator.last_name?.charAt(0) || '';
+    const first = operator.nombres?.charAt(0) || '';
+    const last = operator.apellidoPaterno?.charAt(0) || '';
     return (first + last).toUpperCase();
   }
 
   getActiveCount(): number {
-    return this.operators.filter((o) => o.status === 'active').length;
+    return this.operators.filter((o) => o.estado === 'activo').length;
   }
 
   getOnLeaveCount(): number {
-    return this.operators.filter((o) => o.status === 'on_leave').length;
+    return this.operators.filter((o) => o.estado === 'vacaciones').length;
   }
 
   viewOperator(operator: Operator): void {

@@ -25,15 +25,13 @@ export class ProviderService {
 
   create(provider: Omit<Provider, 'id'>): Observable<Provider> {
     const payload = {
-      ruc: provider.tax_id,
-      razon_social: provider.business_name,
-      nombre_comercial: provider.commercial_name,
-      tipo_proveedor: provider.provider_type,
-      direccion: provider.address,
-      telefono: provider.phone,
+      ruc: provider.ruc,
+      razon_social: provider.razon_social,
+      nombre_comercial: provider.nombre_comercial,
+      tipo_proveedor: provider.tipo_proveedor,
+      direccion: provider.direccion,
+      telefono: provider.telefono,
       email: provider.email,
-      contacto_principal: provider.contact_name,
-      condiciones_pago: provider.payment_terms,
       // Map other fields if necessary
     };
     return this.http.post<Provider>(this.apiUrl, payload);
@@ -41,15 +39,14 @@ export class ProviderService {
 
   update(id: number | string, provider: Partial<Provider>): Observable<Provider> {
     const payload: any = {};
-    if (provider.tax_id) payload.ruc = provider.tax_id;
-    if (provider.business_name) payload.razon_social = provider.business_name;
-    if (provider.commercial_name) payload.nombre_comercial = provider.commercial_name;
-    if (provider.provider_type) payload.tipo_proveedor = provider.provider_type;
-    if (provider.address) payload.direccion = provider.address;
-    if (provider.phone) payload.telefono = provider.phone;
+    if (provider.ruc) payload.ruc = provider.ruc;
+    if (provider.razon_social) payload.razon_social = provider.razon_social;
+    if (provider.nombre_comercial) payload.nombre_comercial = provider.nombre_comercial;
+    if (provider.tipo_proveedor) payload.tipo_proveedor = provider.tipo_proveedor;
+    if (provider.direccion) payload.direccion = provider.direccion;
+    if (provider.telefono) payload.telefono = provider.telefono;
     if (provider.email) payload.email = provider.email;
-    if (provider.contact_name) payload.contacto_principal = provider.contact_name;
-    if (provider.payment_terms) payload.condiciones_pago = provider.payment_terms;
+    if (provider.is_active !== undefined) payload.is_active = provider.is_active;
     
     return this.http.put<Provider>(`${this.apiUrl}/${id}`, payload);
   }

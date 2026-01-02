@@ -90,9 +90,9 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          'code': codeTemplate,
-          'brand_model': brandModelTemplate,
-          'status': statusTemplate
+          'codigo_equipo': codeTemplate,
+          'marca_modelo': brandModelTemplate,
+          'estado': statusTemplate
         }"
         (rowClick)="viewDetails($event)"
       >
@@ -100,20 +100,20 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
-        <span class="code-badge">{{ row.code }}</span>
+        <span class="code-badge">{{ row.codigo_equipo }}</span>
       </ng-template>
 
       <ng-template #brandModelTemplate let-row>
         <div class="brand-model">
-          <span>{{ row.brand }}</span>
-          <small>{{ row.model }}</small>
+          <span>{{ row.marca }}</span>
+          <small>{{ row.modelo }}</small>
         </div>
       </ng-template>
 
       <ng-template #statusTemplate let-row>
-        <span [class]="'status-badge status-' + row.status">
-          <i class="fa-solid" [ngClass]="getStatusIcon(row.status)"></i>
-          {{ getStatusLabel(row.status) }}
+        <span [class]="'status-badge status-' + (row.estado || '').toLowerCase()">
+          <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
+          {{ getStatusLabel(row.estado) }}
         </span>
       </ng-template>
 
@@ -300,10 +300,10 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       font-weight: 500;
     }
 
-    .status-available { background: var(--semantic-green-50); color: var(--semantic-green-700); }
-    .status-in_use { background: var(--semantic-blue-50); color: var(--semantic-blue-700); }
-    .status-maintenance { background: var(--semantic-yellow-50); color: var(--semantic-yellow-700); }
-    .status-retired { background: var(--semantic-red-50); color: var(--semantic-red-700); }
+    .status-available, .status-disponible { background: var(--semantic-green-50); color: var(--semantic-green-700); }
+    .status-in_use, .status-en_uso, .status-ocupado { background: var(--semantic-blue-50); color: var(--semantic-blue-700); }
+    .status-maintenance, .status-mantenimiento { background: var(--semantic-yellow-50); color: var(--semantic-yellow-700); }
+    .status-retired, .status-retirado { background: var(--semantic-red-50); color: var(--semantic-red-700); }
 
     /* Alerts */
     .alert {
@@ -375,13 +375,12 @@ export class EquipmentListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'code', label: 'Código', type: 'template' },
-    { key: 'name', label: 'Equipo', type: 'text' },
-    { key: 'brand_model', label: 'Marca / Modelo', type: 'template' },
-    { key: 'equipment_type', label: 'Tipo', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'template' },
-    { key: 'hourly_rate', label: 'Tarifa/Hr', type: 'currency', format: 'PEN' },
-    { key: 'hourmeter_reading', label: 'Horómetro', type: 'text' }
+    { key: 'codigo_equipo', label: 'Código', type: 'template' },
+    { key: 'categoria', label: 'Equipo', type: 'text' },
+    { key: 'marca_modelo', label: 'Marca / Modelo', type: 'template' },
+    { key: 'equipment_type_id', label: 'Tipo ID', type: 'text' },
+    { key: 'estado', label: 'Estado', type: 'template' },
+    { key: 'medidor_uso', label: 'Medidor', type: 'text' }
   ];
 
   ngOnInit(): void {
@@ -430,9 +429,13 @@ export class EquipmentListComponent implements OnInit {
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
       'available': 'Disponible',
+      'disponible': 'Disponible',
       'in_use': 'En Uso',
+      'en_uso': 'En Uso',
       'maintenance': 'Mantenimiento',
-      'retired': 'Retirado'
+      'mantenimiento': 'Mantenimiento',
+      'retired': 'Retirado',
+      'retirado': 'Retirado'
     };
     return labels[status] || status;
   }
@@ -440,9 +443,13 @@ export class EquipmentListComponent implements OnInit {
   getStatusIcon(status: string): string {
     const icons: Record<string, string> = {
       'available': 'fa-check',
+      'disponible': 'fa-check',
       'in_use': 'fa-person-digging',
+      'en_uso': 'fa-person-digging',
       'maintenance': 'fa-wrench',
-      'retired': 'fa-ban'
+      'mantenimiento': 'fa-wrench',
+      'retired': 'fa-ban',
+      'retirado': 'fa-ban'
     };
     return icons[status] || 'fa-circle';
   }

@@ -1,15 +1,16 @@
 export interface Project {
-  id: string;
-  codigo_proyecto: string;
+  id: number;
+  legacyId?: string;
+  codigo: string;
   nombre: string;
   descripcion?: string;
   ubicacion?: string;
-  fecha_inicio?: string;
-  fecha_fin_estimada?: string;
-  estado: 'active' | 'completed' | 'on-hold' | 'cancelled';
-  presupuesto_total?: number;
+  fechaInicio?: Date | string;
+  fechaFin?: Date | string; // Entity has fechaFin
+  presupuesto?: number;
+  estado: 'PLANIFICACION' | 'ACTIVO' | 'PAUSADO' | 'COMPLETADO' | 'CANCELADO';
   cliente?: string;
-  is_active: boolean;
-  created_at?: string;
-  updated_at?: string;
+  isActive: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

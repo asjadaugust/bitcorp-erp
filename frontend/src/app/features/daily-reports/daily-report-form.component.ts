@@ -146,12 +146,12 @@ import { Equipment } from '../../core/models/equipment.model';
                     required
                     step="0.1"
                     min="0"
-                    [max]="selectedEquipment?.hourmeter_reading"
+                    [max]="selectedEquipment?.medidor_uso"
                     placeholder="0.0"
                     [disabled]="isReadOnly"
                   />
                   <span class="hint" *ngIf="selectedEquipment && !isReadOnly">
-                    Actual: {{ selectedEquipment.hourmeter_reading }} hrs
+                    Actual: {{ selectedEquipment.medidor_uso }} hrs
                   </span>
                 </div>
 
@@ -178,7 +178,7 @@ import { Equipment } from '../../core/models/equipment.model';
                 >
               </div>
 
-              <div class="form-row" *ngIf="selectedEquipment?.odometer_reading || report.odometer_start">
+              <div class="form-row" *ngIf="$any(selectedEquipment)?.odometer_reading || report.odometer_start">
                 <div class="form-group">
                   <label for="odometer_start">Odómetro Inicio</label>
                   <input
@@ -770,7 +770,7 @@ export class DailyReportFormComponent implements OnInit {
         // Trigger equipment selection logic to set initial values if needed
         // But we should be careful not to overwrite report values with current equipment values
         this.selectedEquipment =
-          this.equipment.find((eq) => eq.id === this.report.equipment_id) || null;
+          this.equipment.find((eq) => String(eq.id) === String(this.report.equipment_id)) || null;
       },
       error: (error) => {
         this.errorMessage = 'Error al cargar el parte';
@@ -798,11 +798,11 @@ export class DailyReportFormComponent implements OnInit {
   }
 
   onEquipmentChange(): void {
-    const selected = this.equipment.find((eq) => eq.id === this.report.equipment_id);
+    const selected = this.equipment.find((eq) => String(eq.id) === String(this.report.equipment_id));
     if (selected) {
       this.selectedEquipment = selected;
       if (!this.reportId) { // Only set hourmeter if creating new
-          this.report.hourmeter_start = selected.hourmeter_reading || 0;
+          this.report.hourmeter_start = Number(selected.medidor_uso) || 0;
       }
     }
   }
