@@ -23,36 +23,36 @@ export class InventoryService {
       // Process Details
       for (const detailData of details) {
         const product = await queryRunner.manager.findOne(Product, {
-          where: { id: detailData.product_id as any },
+          where: { id: detailData.productId as any },
         });
         if (!product) {
-          throw new Error(`Product not found: ${detailData.product_id}`);
+          throw new Error(`Product not found: ${detailData.productId}`);
         }
 
         // Create Detail
         const detail = this.movementDetailRepository.create({
           ...detailData,
-          movement_id: savedMovement.id as any,
+          movementId: savedMovement.id as any,
         });
         await queryRunner.manager.save(detail);
 
         // Update Stock
-        if (movement.tipo_movimiento === 'entrada') {
+        if (movement.tipoMovimiento === 'entrada') {
           // Update Weighted Average Cost (Costo Promedio Ponderado)
           const totalValue =
-            Number(product.stock_actual) * Number(product.precio_unitario || 0) +
-            Number(detail.cantidad) * Number(detail.costo_unitario);
-          const totalStock = Number(product.stock_actual) + Number(detail.cantidad);
+            Number(product.stockActual) * Number(product.precioUnitario || 0) +
+            Number(detail.cantidad) * Number(detail.precioUnitario);
+          const totalStock = Number(product.stockActual) + Number(detail.cantidad);
 
           if (totalStock > 0) {
-            product.precio_unitario = totalValue / totalStock;
+            product.precioUnitario = totalValue / totalStock;
           }
-          product.stock_actual = totalStock;
-        } else if (movement.tipo_movimiento === 'salida') {
-          if (Number(product.stock_actual) < Number(detail.cantidad)) {
+          product.stockActual = totalStock;
+        } else if (movement.tipoMovimiento === 'salida') {
+          if (Number(product.stockActual) < Number(detail.cantidad)) {
             throw new Error(`Insufficient stock for product: ${product.nombre}`);
           }
-          product.stock_actual = Number(product.stock_actual) - Number(detail.cantidad);
+          product.stockActual = Number(product.stockActual) - Number(detail.cantidad);
         }
 
         await queryRunner.manager.save(product);
@@ -70,6 +70,6 @@ export class InventoryService {
 
   async getStock(productId: number): Promise<number> {
     const product = await this.productRepository.findOne({ where: { id: productId as any } });
-    return product ? Number(product.stock_actual) : 0;
+    return product ? Number(product.stockActual) : 0;
   }
 }
