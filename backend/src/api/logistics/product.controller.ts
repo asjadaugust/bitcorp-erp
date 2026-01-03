@@ -7,7 +7,7 @@ export class ProductController {
     try {
       const productRepo = AppDataSource.getRepository(Product);
       const products = await productRepo.find({
-        where: { is_active: true },
+        where: { isActive: true },
         order: { nombre: 'ASC' },
       });
       res.json({
@@ -29,7 +29,7 @@ export class ProductController {
       const { id } = req.params;
       const productRepo = AppDataSource.getRepository(Product);
       const product = await productRepo.findOne({
-        where: { id: parseInt(id), is_active: true },
+        where: { id: parseInt(id), isActive: true },
       });
 
       if (!product) {
@@ -73,13 +73,13 @@ export class ProductController {
         nombre,
         descripcion,
         categoria,
-        unidad_medida,
-        stock_actual: stock_actual || 0,
-        stock_minimo: stock_minimo || 0,
+        unidadMedida: unidad_medida,
+        stockActual: stock_actual || 0,
+        stockMinimo: stock_minimo || 0,
         // stock_maximo: stock_maximo || 0,
-        precio_unitario: costo_unitario || 0,
+        precioUnitario: costo_unitario || 0,
         // ubicacion,
-        is_active: true,
+        isActive: true,
         // created_by: (req as any).user?.id,
       });
 
@@ -114,7 +114,7 @@ export class ProductController {
 
       const productRepo = AppDataSource.getRepository(Product);
       const product = await productRepo.findOne({
-        where: { id: parseInt(id), is_active: true },
+        where: { id: parseInt(id), isActive: true },
       });
 
       if (!product) {
@@ -128,11 +128,11 @@ export class ProductController {
       if (nombre !== undefined) product.nombre = nombre;
       if (descripcion !== undefined) product.descripcion = descripcion;
       if (categoria !== undefined) product.categoria = categoria;
-      if (unidad_medida !== undefined) product.unidad_medida = unidad_medida;
+      if (unidad_medida !== undefined) product.unidadMedida = unidad_medida;
       // if (ubicacion !== undefined) product.ubicacion = ubicacion;
-      if (stock_minimo !== undefined) product.stock_minimo = stock_minimo;
+      if (stock_minimo !== undefined) product.stockMinimo = stock_minimo;
       // if (stock_maximo !== undefined) product.stock_maximo = stock_maximo;
-      if (costo_unitario !== undefined) product.precio_unitario = costo_unitario;
+      if (costo_unitario !== undefined) product.precioUnitario = costo_unitario;
       // product.updated_by = (req as any).user?.id;
 
       const updated = await productRepo.save(product);
@@ -167,7 +167,7 @@ export class ProductController {
       }
 
       // Soft delete
-      product.is_active = false;
+      product.isActive = false;
       // product.updated_by = (req as any).user?.id;
       await productRepo.save(product);
 
