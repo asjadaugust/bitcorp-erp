@@ -17,11 +17,11 @@ export class ScheduledTask {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: 'programa_id', nullable: true })
+  @Column({ name: 'programa_mantenimiento_id', nullable: true })
   scheduleId?: number;
 
   @ManyToOne(() => MaintenanceSchedule, { nullable: true })
-  @JoinColumn({ name: 'programa_id' })
+  @JoinColumn({ name: 'programa_mantenimiento_id' })
   schedule?: MaintenanceSchedule;
 
   @Column({ name: 'equipo_id' })
@@ -34,49 +34,49 @@ export class ScheduledTask {
   @Column({ name: 'trabajador_id', nullable: true })
   operatorId?: number;
 
-  @Column({ name: 'tipo_tarea', length: 50, default: 'maintenance' })
+  @Column({ name: 'task_type', length: 50, default: 'maintenance' })
   taskType!: string; // 'maintenance' | 'assignment' | 'inspection'
 
-  @Column({ name: 'titulo', length: 255 })
+  @Column({ name: 'title', length: 255 })
   title!: string;
 
-  @Column({ name: 'descripcion', type: 'text', nullable: true })
+  @Column({ name: 'description', type: 'text', nullable: true })
   description?: string;
 
-  @Column({ name: 'fecha_inicio', type: 'date' })
+  @Column({ name: 'start_date', type: 'date' })
   startDate!: Date;
 
-  @Column({ name: 'fecha_fin', type: 'date', nullable: true })
+  @Column({ name: 'end_date', type: 'date', nullable: true })
   endDate?: Date;
 
-  @Column({ name: 'hora_inicio', type: 'time', nullable: true })
+  @Column({ name: 'start_time', type: 'time', nullable: true })
   startTime?: string;
 
-  @Column({ name: 'hora_fin', type: 'time', nullable: true })
+  @Column({ name: 'end_time', type: 'time', nullable: true })
   endTime?: string;
 
-  @Column({ name: 'todo_el_dia', type: 'boolean', default: false })
+  @Column({ name: 'all_day', type: 'boolean', default: false })
   allDay?: boolean;
 
-  @Column({ name: 'recurrencia', length: 50, nullable: true })
+  @Column({ name: 'recurrence', length: 50, nullable: true })
   recurrence?: string;
 
-  @Column({ name: 'duracion_minutos', type: 'integer', default: 120 })
+  @Column({ name: 'duration_minutes', type: 'integer', default: 120 })
   durationMinutes!: number;
 
-  @Column({ name: 'prioridad', length: 20, default: 'medium' })
+  @Column({ name: 'priority', length: 20, default: 'medium' })
   priority!: string; // 'low' | 'medium' | 'high' | 'urgent'
 
-  @Column({ name: 'estado', length: 20, default: 'pending' })
+  @Column({ name: 'status', length: 20, default: 'pending' })
   status!: string; // 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled' | 'overdue'
 
-  @Column({ name: 'fecha_completacion', type: 'timestamp', nullable: true })
+  @Column({ name: 'completion_date', type: 'timestamp', nullable: true })
   completionDate?: Date;
 
-  @Column({ name: 'notas_completacion', type: 'text', nullable: true })
+  @Column({ name: 'completion_notes', type: 'text', nullable: true })
   completionNotes?: string;
 
-  @Column({ name: 'registro_mantenimiento_id', nullable: true })
+  @Column({ name: 'maintenance_record_id', nullable: true })
   maintenanceRecordId?: number;
 
   @Column({ name: 'creado_por', nullable: true })
