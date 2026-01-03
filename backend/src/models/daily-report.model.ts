@@ -34,56 +34,64 @@ export interface DailyReport extends BaseModel {
 }
 
 export class DailyReportModel {
-  static async findAll(filters?: { status?: string; date?: string; start_date?: string; end_date?: string; operator_id?: string; equipment_id?: string; project_id?: string }): Promise<DailyReport[]> {
+  static async findAll(filters?: {
+    status?: string;
+    date?: string;
+    start_date?: string;
+    end_date?: string;
+    operator_id?: string;
+    equipment_id?: string;
+    project_id?: string;
+  }): Promise<DailyReport[]> {
     let query = `
       SELECT dr.*,
              o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as operator_name,
              e.codigo_equipo as equipment_code,
              e.marca || ' ' || e.modelo as equipment_name
-      FROM daily_reports dr
-      LEFT JOIN operators o ON dr.operator_id = o.id
-      LEFT JOIN equipment e ON dr.equipment_id = e.id
-      WHERE 1=1
+       FROM equipo.parte_diario dr
+       LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
+       LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
+       WHERE 1=1
     `;
     const params: any[] = [];
     let paramIndex = 1;
 
     if (filters?.status) {
-      query += ` AND dr.status = $${paramIndex++}`;
+      query += ` AND dr.estado = $${paramIndex++}`;
       params.push(filters.status);
     }
 
     if (filters?.date) {
-      query += ` AND dr.report_date = $${paramIndex++}`;
+      query += ` AND dr.fecha = $${paramIndex++}`;
       params.push(filters.date);
     }
 
     if (filters?.start_date) {
-      query += ` AND dr.report_date >= $${paramIndex++}`;
+      query += ` AND dr.fecha >= $${paramIndex++}`;
       params.push(filters.start_date);
     }
 
     if (filters?.end_date) {
-      query += ` AND dr.report_date <= $${paramIndex++}`;
+      query += ` AND dr.fecha <= $${paramIndex++}`;
       params.push(filters.end_date);
     }
 
     if (filters?.operator_id) {
-      query += ` AND dr.operator_id = $${paramIndex++}`;
+      query += ` AND dr.trabajador_id = $${paramIndex++}`;
       params.push(filters.operator_id);
     }
 
     if (filters?.equipment_id) {
-      query += ` AND dr.equipment_id = $${paramIndex++}`;
+      query += ` AND dr.equipo_id = $${paramIndex++}`;
       params.push(filters.equipment_id);
     }
 
     if (filters?.project_id) {
-      query += ` AND dr.project_id = $${paramIndex++}`;
+      query += ` AND dr.proyecto_id = $${paramIndex++}`;
       params.push(filters.project_id);
     }
 
-    query += ' ORDER BY dr.report_date DESC, dr.created_at DESC';
+    query += ' ORDER BY dr.fecha DESC, dr.created_at DESC';
 
     const result = await pool.query(query, params);
     return result.rows;
@@ -95,9 +103,9 @@ export class DailyReportModel {
               o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as operator_name,
               e.codigo_equipo as equipment_code,
               e.marca || ' ' || e.modelo as equipment_name
-       FROM daily_reports dr
-       LEFT JOIN operators o ON dr.operator_id = o.id
-       LEFT JOIN equipment e ON dr.equipment_id = e.id
+       FROM equipo.parte_diario dr
+       LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
+       LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
        WHERE dr.id = $1`,
       [id]
     );
@@ -110,11 +118,11 @@ export class DailyReportModel {
               o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as operator_name,
               e.codigo_equipo as equipment_code,
               e.marca || ' ' || e.modelo as equipment_name
-       FROM daily_reports dr
-       LEFT JOIN operators o ON dr.operator_id = o.id
-       LEFT JOIN equipment e ON dr.equipment_id = e.id
-       WHERE dr.operator_id = $1
-       ORDER BY dr.report_date DESC`,
+       FROM equipo.parte_diario dr
+       LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
+       LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
+       WHERE dr.trabajador_id = $1
+       ORDER BY dr.fecha DESC`,
       [operatorId]
     );
     return result.rows;
@@ -122,9 +130,7 @@ export class DailyReportModel {
 
   static async create(data: Partial<DailyReport>): Promise<DailyReport> {
     // Calculate fuel consumed
-    const fuelConsumed = data.fuel_start && data.fuel_end
-      ? data.fuel_start - data.fuel_end
-      : null;
+    const fuelConsumed = data.fuel_start && data.fuel_end ? data.fuel_start - data.fuel_end : null;
 
     const result = await pool.query(
       `INSERT INTO daily_reports (
@@ -137,12 +143,27 @@ export class DailyReportModel {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
       RETURNING *`,
       [
-        data.report_date, data.operator_id, data.equipment_id, data.project_id,
-        data.start_time, data.end_time, data.hourmeter_start, data.hourmeter_end,
-        data.odometer_start, data.odometer_end, data.fuel_start, data.fuel_end, fuelConsumed,
-        data.location, data.work_description, data.notes, data.weather_conditions,
-        data.gps_latitude, data.gps_longitude, data.gps_accuracy,
-        data.status || 'draft'
+        data.report_date,
+        data.operator_id,
+        data.equipment_id,
+        data.project_id,
+        data.start_time,
+        data.end_time,
+        data.hourmeter_start,
+        data.hourmeter_end,
+        data.odometer_start,
+        data.odometer_end,
+        data.fuel_start,
+        data.fuel_end,
+        fuelConsumed,
+        data.location,
+        data.work_description,
+        data.notes,
+        data.weather_conditions,
+        data.gps_latitude,
+        data.gps_longitude,
+        data.gps_accuracy,
+        data.status || 'draft',
       ]
     );
     return result.rows[0];
@@ -154,14 +175,26 @@ export class DailyReportModel {
     let paramIndex = 1;
 
     const updateFields: (keyof DailyReport)[] = [
-      'report_date', 'start_time', 'end_time', 'hourmeter_start', 'hourmeter_end',
-      'odometer_start', 'odometer_end', 'fuel_start', 'fuel_end',
-      'location', 'work_description', 'notes', 'weather_conditions',
-      'gps_latitude', 'gps_longitude', 'gps_accuracy',
-      'status'
+      'report_date',
+      'start_time',
+      'end_time',
+      'hourmeter_start',
+      'hourmeter_end',
+      'odometer_start',
+      'odometer_end',
+      'fuel_start',
+      'fuel_end',
+      'location',
+      'work_description',
+      'notes',
+      'weather_conditions',
+      'gps_latitude',
+      'gps_longitude',
+      'gps_accuracy',
+      'status',
     ];
 
-    updateFields.forEach(field => {
+    updateFields.forEach((field) => {
       if (data[field] !== undefined) {
         fields.push(`${field} = $${paramIndex++}`);
         values.push(data[field]);
@@ -216,7 +249,7 @@ export class DailyReportModel {
 
   static async delete(id: string): Promise<boolean> {
     // Hard delete (no soft delete column)
-    const result = await pool.query('DELETE FROM daily_reports WHERE id = $1', [id]);
+    const result = await pool.query('DELETE FROM equipo.parte_diario WHERE id = $1', [id]);
     return (result.rowCount || 0) > 0;
   }
 }

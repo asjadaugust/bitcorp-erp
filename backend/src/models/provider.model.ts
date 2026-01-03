@@ -34,7 +34,7 @@ export class Provider {
   @Column({ name: 'telefono', type: 'varchar', length: 20, nullable: true })
   telefono?: string;
 
-  @Column({ name: 'email', type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'correo_electronico', type: 'varchar', length: 255, nullable: true })
   email?: string;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })

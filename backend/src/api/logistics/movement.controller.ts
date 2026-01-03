@@ -12,7 +12,7 @@ export class MovementController {
         .leftJoinAndSelect('m.project', 'p')
         .leftJoinAndSelect('m.creator', 'u')
         .loadRelationCountAndMap('m.items_count', 'm.details')
-        .orderBy('m.created_at', 'DESC')
+        .orderBy('m.createdAt', 'DESC')
         .getMany();
 
       // Calculate total_amount for each movement
@@ -21,16 +21,16 @@ export class MovementController {
           const detailRepo = AppDataSource.getRepository(MovementDetail);
           const details = await detailRepo
             .createQueryBuilder('md')
-            .where('md.movement_id = :id', { id: movement.id })
+            .where('md.movementId = :id', { id: movement.id })
             .getMany();
 
           const total_amount = details.reduce((sum, detail) => {
-            return sum + (detail.cantidad * detail.costo_unitario);
+            return sum + detail.cantidad * detail.precioUnitario;
           }, 0);
 
           return {
             ...movement,
-            project_name: movement.project?.name || null,
+            project_name: movement.project?.nombre || null,
             created_by_name: movement.creator?.username || null,
             total_amount,
           };
@@ -55,7 +55,7 @@ export class MovementController {
     try {
       const { id } = req.params;
       const movementRepo = AppDataSource.getRepository(Movement);
-      
+
       const movement = await movementRepo
         .createQueryBuilder('m')
         .leftJoinAndSelect('m.project', 'p')
@@ -76,20 +76,20 @@ export class MovementController {
       const response = {
         ...movement,
         movement_date: movement.fecha,
-        movement_type: movement.tipo_movimiento,
+        movement_type: movement.tipoMovimiento,
         notes: movement.observaciones,
-        project_name: movement.project?.name || null,
+        project_name: movement.project?.nombre || null,
         created_by_name: movement.creator?.username || null,
         details: movement.details?.map((detail) => ({
           id: detail.id,
-          movement_id: detail.movement_id,
-          product_id: detail.product_id,
+          movement_id: detail.movementId,
+          product_id: detail.productId,
           quantity: detail.cantidad,
-          unit_cost: detail.costo_unitario,
-          total_cost: detail.cantidad * detail.costo_unitario,
+          unit_cost: detail.precioUnitario,
+          total_cost: detail.cantidad * detail.precioUnitario,
           product_name: (detail.product as any)?.nombre || null,
           product_code: (detail.product as any)?.codigo || null,
-          unit: (detail.product as any)?.unidad_medida || null,
+          unit: (detail.product as any)?.unidadMedida || null,
         })),
       };
 
@@ -113,19 +113,17 @@ export class MovementController {
     await queryRunner.startTransaction();
 
     try {
-      const { project_id, movement_date, movement_type, notes, items, origen, destino } = req.body;
+      const { project_id, movement_date, movement_type, notes, items } = req.body;
 
       // Create movement
       const movementRepo = queryRunner.manager.getRepository(Movement);
       const movement = movementRepo.create({
-        project_id: project_id ? parseInt(project_id) : undefined,
+        projectId: project_id ? parseInt(project_id) : undefined,
         fecha: new Date(movement_date),
-        tipo_movimiento: movement_type,
-        origen,
-        destino,
+        tipoMovimiento: movement_type,
         observaciones: notes,
-        status: 'pendiente',
-        created_by: (req as any).user?.id,
+        estado: 'pendiente',
+        createdBy: (req as any).user?.id,
       });
 
       const savedMovement = await movementRepo.save(movement);
@@ -134,12 +132,11 @@ export class MovementController {
       const detailRepo = queryRunner.manager.getRepository(MovementDetail);
       const details = items.map((item: any) =>
         detailRepo.create({
-          movement_id: savedMovement.id,
-          product_id: parseInt(item.product_id),
+          movementId: savedMovement.id,
+          productId: parseInt(item.product_id),
           cantidad: parseFloat(item.quantity),
-          costo_unitario: parseFloat(item.unit_cost),
-          lote: item.lote,
-          fecha_vencimiento: item.fecha_vencimiento ? new Date(item.fecha_vencimiento) : undefined,
+          precioUnitario: parseFloat(item.unit_cost),
+          montoTotal: parseFloat(item.quantity) * parseFloat(item.unit_cost),
           observaciones: item.observaciones,
         })
       );
@@ -157,9 +154,9 @@ export class MovementController {
           if (product) {
             const quantity = parseFloat(item.quantity);
             if (movement_type === 'entrada') {
-              product.stock_actual += quantity;
+              product.stockActual += quantity;
             } else if (movement_type === 'salida') {
-              product.stock_actual -= quantity;
+              product.stockActual -= quantity;
             }
             await productRepo.save(product);
           }
@@ -204,9 +201,9 @@ export class MovementController {
         });
       }
 
-      movement.status = 'aprobado';
-      movement.approved_by = (req as any).user?.id;
-      movement.approved_at = new Date();
+      movement.estado = 'aprobado';
+      movement.approvedBy = (req as any).user?.id;
+      movement.approvedAt = new Date();
 
       await movementRepo.save(movement);
 

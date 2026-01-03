@@ -31,25 +31,29 @@ export class ContractService {
         .createQueryBuilder('contract')
         .leftJoinAndSelect('contract.equipment', 'equipment')
         .leftJoinAndSelect('equipment.provider', 'provider')
-        .where('contract.is_active = :is_active', { is_active: true });
+        .where('contract.estado != :inactivo', { inactivo: 'INACTIVO' });
 
       if (filters?.estado) {
         query.andWhere('contract.estado = :estado', { estado: filters.estado });
       }
 
       if (filters?.equipment_id) {
-        query.andWhere('contract.equipment_id = :equipment_id', { equipment_id: filters.equipment_id });
+        query.andWhere('contract.equipment_id = :equipment_id', {
+          equipment_id: filters.equipment_id,
+        });
       }
 
       if (filters?.provider_id) {
-        query.andWhere('equipment.provider_id = :provider_id', { provider_id: filters.provider_id });
+        query.andWhere('equipment.provider_id = :provider_id', {
+          provider_id: filters.provider_id,
+        });
       }
 
-
-
       if (filters?.search) {
-        query.andWhere('(contract.numero_contrato ILIKE :search OR provider.razon_social ILIKE :search OR equipment.modelo ILIKE :search)', 
-          { search: `%${filters.search}%` });
+        query.andWhere(
+          '(contract.numero_contrato ILIKE :search OR provider.razon_social ILIKE :search OR equipment.modelo ILIKE :search)',
+          { search: `%${filters.search}%` }
+        );
       }
 
       query.orderBy('contract.fecha_inicio', 'DESC');
@@ -57,12 +61,12 @@ export class ContractService {
       const contracts = await query.getMany();
 
       // Transform data to match frontend expectations
-      return contracts.map(contract => ({
+      return contracts.map((contract) => ({
         ...contract,
         code: contract.numero_contrato,
         provider_name: contract.equipment?.provider?.razon_social || 'N/A',
-        equipment_info: contract.equipment 
-          ? `${contract.equipment.modelo || ''} / ${contract.equipment.placa || ''}`.trim() 
+        equipment_info: contract.equipment
+          ? `${contract.equipment.modelo || ''} / ${contract.equipment.placa || ''}`.trim()
           : 'N/A',
         modalidad: contract.tipo_tarifa || 'N/A',
         start_date: contract.fecha_inicio,
@@ -146,8 +150,7 @@ export class ContractService {
 
       const contract = this.contractRepository.create({
         ...data,
-        is_active: true,
-        estado: 'activo',
+        estado: 'ACTIVO',
       });
 
       return await this.contractRepository.save(contract);
@@ -195,8 +198,7 @@ export class ContractService {
   async delete(id: number): Promise<void> {
     try {
       await this.contractRepository.update(id, {
-        is_active: false,
-        deleted_at: new Date(),
+        estado: 'INACTIVO',
       });
     } catch (error) {
       console.error('Error deleting contract:', error);
@@ -215,8 +217,7 @@ export class ContractService {
 
       return await this.contractRepository.find({
         where: {
-          is_active: true,
-          estado: 'activo',
+          estado: 'ACTIVO',
           fecha_fin: Between(today, futureDate),
         },
         order: { fecha_fin: 'ASC' },
@@ -240,12 +241,11 @@ export class ContractService {
       const query = this.contractRepository
         .createQueryBuilder('contract')
         .where('contract.equipment_id = :equipment_id', { equipment_id })
-        .andWhere('contract.is_active = true')
-        .andWhere('contract.estado = :estado', { estado: 'activo' })
-        .andWhere(
-          '(contract.fecha_inicio <= :fecha_fin AND contract.fecha_fin >= :fecha_inicio)',
-          { fecha_inicio, fecha_fin }
-        );
+        .andWhere('contract.estado = :estado', { estado: 'ACTIVO' })
+        .andWhere('(contract.fecha_inicio <= :fecha_fin AND contract.fecha_fin >= :fecha_inicio)', {
+          fecha_inicio,
+          fecha_fin,
+        });
 
       if (excludeContractId) {
         query.andWhere('contract.id != :excludeContractId', { excludeContractId });
@@ -265,7 +265,7 @@ export class ContractService {
   async getAddendums(contractId: number): Promise<Addendum[]> {
     try {
       return await this.addendumRepository.find({
-        where: { contract_id: contractId, is_active: true },
+        where: { contract_id: contractId },
         order: { created_at: 'ASC' },
       });
     } catch (error) {
@@ -279,8 +279,15 @@ export class ContractService {
    */
   async createAddendum(data: Partial<Addendum>): Promise<Addendum> {
     try {
-      if (!data.contract_id || !data.numero_adenda || !data.nueva_fecha_fin || !data.justificacion) {
-        throw new Error('contract_id, numero_adenda, nueva_fecha_fin, and justificacion are required');
+      if (
+        !data.contract_id ||
+        !data.numero_adenda ||
+        !data.nueva_fecha_fin ||
+        !data.justificacion
+      ) {
+        throw new Error(
+          'contract_id, numero_adenda, nueva_fecha_fin, and justificacion are required'
+        );
       }
 
       const contract = await this.findById(data.contract_id);
@@ -292,7 +299,6 @@ export class ContractService {
 
       const addendum = this.addendumRepository.create({
         ...data,
-        is_active: true,
       });
 
       const savedAddendum = await this.addendumRepository.save(addendum);
@@ -316,7 +322,7 @@ export class ContractService {
   async getActiveCount(): Promise<number> {
     try {
       return await this.contractRepository.count({
-        where: { is_active: true, estado: 'activo' },
+        where: { estado: 'ACTIVO' },
       });
     } catch (error) {
       console.error('Error counting contracts:', error);

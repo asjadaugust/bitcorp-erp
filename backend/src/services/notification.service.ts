@@ -2,7 +2,7 @@ import { pool } from '../config/database.config';
 
 interface NotificationData {
   id: string;
-  user_id: string;
+  usuario_id: string;
   tipo: string;
   titulo: string;
   mensaje: string | null;
@@ -12,35 +12,35 @@ interface NotificationData {
   created_at: Date;
 }
 
-export type NotificationType = 'info' | 'warning' | 'error' | 'success' | 'approval_required' | 'approval_completed';
+export type NotificationType =
+  | 'info'
+  | 'warning'
+  | 'error'
+  | 'success'
+  | 'approval_required'
+  | 'approval_completed';
 
 export class NotificationService {
   async create(
-    userId: string, 
-    type: NotificationType, 
-    title: string, 
-    message: string, 
+    userId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
     options?: { link?: string }
   ): Promise<NotificationData> {
     const query = `
-      INSERT INTO notificaciones (user_id, tipo, titulo, mensaje, url)
+      INSERT INTO notificaciones (usuario_id, tipo, titulo, mensaje, url)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    const result = await pool.query(query, [
-      userId, 
-      type, 
-      title, 
-      message, 
-      options?.link || null
-    ]);
+    const result = await pool.query(query, [userId, type, title, message, options?.link || null]);
     return result.rows[0];
   }
 
   async getUserNotifications(userId: string, limit: number = 20): Promise<NotificationData[]> {
     const query = `
       SELECT * FROM notificaciones 
-      WHERE user_id = $1 
+      WHERE usuario_id = $1 
       ORDER BY created_at DESC 
       LIMIT $2
     `;
@@ -51,7 +51,7 @@ export class NotificationService {
   async getUnreadCount(userId: string): Promise<number> {
     const query = `
       SELECT COUNT(*) as count FROM notificaciones 
-      WHERE user_id = $1 AND leido = false
+      WHERE usuario_id = $1 AND leido = false
     `;
     const result = await pool.query(query, [userId]);
     return parseInt(result.rows[0].count, 10);
@@ -61,7 +61,7 @@ export class NotificationService {
     const query = `
       UPDATE notificaciones 
       SET leido = true, leido_at = CURRENT_TIMESTAMP 
-      WHERE id = $1 AND user_id = $2 
+      WHERE id = $1 AND usuario_id = $2 
       RETURNING *
     `;
     const result = await pool.query(query, [id, userId]);
@@ -72,7 +72,7 @@ export class NotificationService {
     const query = `
       UPDATE notificaciones 
       SET leido = true, leido_at = CURRENT_TIMESTAMP 
-      WHERE user_id = $1 AND leido = false
+      WHERE usuario_id = $1 AND leido = false
     `;
     await pool.query(query, [userId]);
   }
@@ -80,7 +80,7 @@ export class NotificationService {
   async deleteNotification(id: string, userId: string): Promise<boolean> {
     const query = `
       DELETE FROM notificaciones 
-      WHERE id = $1 AND user_id = $2
+      WHERE id = $1 AND usuario_id = $2
     `;
     const result = await pool.query(query, [id, userId]);
     return (result.rowCount || 0) > 0;
@@ -89,8 +89,8 @@ export class NotificationService {
   // --- Notification Creation Helpers ---
 
   async notifyApprovalRequired(
-    userId: string, 
-    title: string, 
+    userId: string,
+    title: string,
     message: string,
     link?: string
   ): Promise<NotificationData> {

@@ -43,7 +43,7 @@ RESTART IDENTITY CASCADE;
 -- ============================================================================
 
 -- Companies
-INSERT INTO sistema.empresa (legacy_id, ruc, razon_social, nombre_comercial, direccion, telefono, email) VALUES
+INSERT INTO sistema.empresa (legacy_id, ruc, razon_social, nombre_comercial, direccion, telefono, correo_electronico) VALUES
 ('COMP001', '20123456789', 'BITCORP S.A.C.', 'Bitcorp', 'Av. Los Conquistadores 123, San Isidro, Lima', '(01) 234-5678', 'contacto@bitcorp.pe'),
 ('COMP002', '20987654321', 'CONSTRUCTORA ARAMAX S.A.', 'Aramax', 'Jr. Las Begonias 456, San Borja, Lima', '(01) 876-5432', 'info@aramax.pe');
 
@@ -54,7 +54,7 @@ INSERT INTO sistema.unidad_operativa (legacy_id, codigo, nombre, descripcion, ub
 ('UO003', 'UO-003', 'Unidad Arequipa', 'Oficina Regional Arequipa', 'Arequipa');
 
 -- Modules
-INSERT INTO sistema.modulo (legacy_id, code, name, description, icon, route, parent_id, display_order) VALUES
+INSERT INTO sistema.modulo (legacy_id, codigo, nombre, descripcion, icono, ruta, modulo_padre_id, orden_visualizacion) VALUES
 -- Level 1: SIG
 ('MOD_SIG', 'SIG', 'Sistema Integrado de Gestión', 'Módulo principal de gestión integrada', 'business', '/sig', NULL, 1),
 ('MOD_ISO9001', 'ISO9001', 'ISO 9001 - Calidad', 'Gestión de Calidad', 'verified', '/sig/iso9001', 1, 1),
@@ -72,7 +72,7 @@ INSERT INTO sistema.modulo (legacy_id, code, name, description, icon, route, par
 ('MOD_EQUIP', 'C08', 'Equipo Mecánico', 'Gestión de Equipos', 'construction', '/equipment', NULL, 9);
 
 -- Roles
-INSERT INTO sistema.rol (legacy_id, name, code, description, level) VALUES
+INSERT INTO sistema.rol (legacy_id, nombre, codigo, descripcion, nivel) VALUES
 ('ROL001', 'Director General', 'director_general', 'Acceso completo al sistema', 1),
 ('ROL002', 'Director de Proyecto', 'director_proyecto', 'Acceso a proyectos asignados', 2),
 ('ROL003', 'Jefe de Equipo', 'jefe_equipo', 'Acceso a módulos departamentales', 3),
@@ -80,7 +80,7 @@ INSERT INTO sistema.rol (legacy_id, name, code, description, level) VALUES
 ('ROL005', 'Administrador', 'administrador', 'Gestión administrativa', 3);
 
 -- Permissions
-INSERT INTO sistema.permiso (legacy_id, module_id, name, code, description) VALUES
+INSERT INTO sistema.permiso (legacy_id, modulo_id, nombre, codigo, descripcion) VALUES
 -- Equipment Module (module_id=12)
 ('PERM_EQ_READ', 12, 'Ver Equipos', 'equipment:read', 'Visualizar lista de equipos'),
 ('PERM_EQ_CREATE', 12, 'Crear Equipo', 'equipment:create', 'Registrar nuevos equipos'),
@@ -100,7 +100,7 @@ INSERT INTO sistema.permiso (legacy_id, module_id, name, code, description) VALU
 ('PERM_COST_READ', 8, 'Ver Costos', 'costs:read', 'Visualizar centros de costo');
 
 -- Role Permissions
-INSERT INTO sistema.rol_permiso (role_id, permission_id) VALUES
+INSERT INTO sistema.rol_permiso (rol_id, permiso_id) VALUES
 -- Director General: All permissions
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12),
 -- Director de Proyecto
@@ -111,7 +111,7 @@ INSERT INTO sistema.rol_permiso (role_id, permission_id) VALUES
 (5, 11), (5, 12);
 
 -- Users (passwords all hash to 'admin123')
-INSERT INTO sistema.usuario (legacy_id, username, password, nombres, apellidos, email, telefono, role_id, operating_unit_id) VALUES
+INSERT INTO sistema.usuario (legacy_id, nombre_usuario, contrasena, nombres, apellidos, correo_electronico, telefono, rol_id, unidad_operativa_id) VALUES
 ('USR001', 'admin', '$2b$10$4caVqdjHJdnPj8rLMTX/vO7K.v2IkS9Usw1tGSP6cvCCfeZMvRoV6', 'Admin', 'Sistema', 'admin@bitcorp.pe', '999000111', 1, 1),
 ('USR002', 'director', '$2b$10$4caVqdjHJdnPj8rLMTX/vO7K.v2IkS9Usw1tGSP6cvCCfeZMvRoV6', 'Carlos', 'Ramírez', 'cramirez@bitcorp.pe', '999000222', 2, 1),
 ('USR003', 'jefe_equipo', '$2b$10$4caVqdjHJdnPj8rLMTX/vO7K.v2IkS9Usw1tGSP6cvCCfeZMvRoV6', 'Ana', 'Torres', 'atorres@bitcorp.pe', '999000333', 3, 1),
@@ -119,7 +119,7 @@ INSERT INTO sistema.usuario (legacy_id, username, password, nombres, apellidos, 
 ('USR005', 'admin_fin', '$2b$10$4caVqdjHJdnPj8rLMTX/vO7K.v2IkS9Usw1tGSP6cvCCfeZMvRoV6', 'María', 'Gonzales', 'mgonzales@bitcorp.pe', '999000444', 5, 1);
 
 -- User Roles
-INSERT INTO sistema.usuario_rol (user_id, role_id) VALUES
+INSERT INTO sistema.usuario_rol (usuario_id, rol_id) VALUES
 (1, 1), (2, 2), (3, 3), (4, 4), (5, 5);
 
 -- ============================================================================
@@ -127,7 +127,7 @@ INSERT INTO sistema.usuario_rol (user_id, role_id) VALUES
 -- ============================================================================
 
 -- Projects (CORRECTED: codigo NOT code, nombre NOT name, etc.)
-INSERT INTO proyectos.edt (legacy_id, codigo, nombre, descripcion, ubicacion, fecha_inicio, fecha_fin, presupuesto, estado, company_id, operating_unit_id) VALUES
+INSERT INTO proyectos.edt (legacy_id, codigo, nombre, descripcion, ubicacion, fecha_inicio, fecha_fin, presupuesto, estado, empresa_id, unidad_operativa_id) VALUES
 ('PRJ001', 'CARRETERA-001', 'Carretera Panamericana Norte - Tramo 1', 'Rehabilitación y mejoramiento de carretera', 'Ancash', '2024-01-01', '2024-12-31', 5000000.00, 'ACTIVO', 1, 1),
 ('PRJ002', 'CARRETERA-002', 'Carretera Longitudinal de la Sierra - Tramo 2', 'Construcción de carretera', 'Ayacucho', '2024-03-01', '2025-02-28', 8000000.00, 'ACTIVO', 1, 1),
 ('PRJ003', 'MANTENIMIENTO-001', 'Mantenimiento Rutinario Lima-Callao', 'Mantenimiento periódico de vías', 'Lima', '2024-02-01', '2024-08-31', 1500000.00, 'ACTIVO', 1, 1);
@@ -137,7 +137,7 @@ INSERT INTO proyectos.edt (legacy_id, codigo, nombre, descripcion, ubicacion, fe
 -- ============================================================================
 
 -- Cost Centers (CORRECTED: codigo NOT code, nombre NOT name)
-INSERT INTO administracion.centro_costo (legacy_id, codigo, nombre, descripcion, project_id, presupuesto) VALUES
+INSERT INTO administracion.centro_costo (legacy_id, codigo, nombre, descripcion, proyecto_id, presupuesto) VALUES
 ('CC001', 'CC-PRJ001-01', 'Movimiento de Tierras', 'Centro de costo para movimiento de tierras', 1, 1500000.00),
 ('CC002', 'CC-PRJ001-02', 'Pavimentación', 'Centro de costo para pavimentación', 1, 2000000.00),
 ('CC003', 'CC-PRJ002-01', 'Obras de Arte', 'Centro de costo para puentes y obras especiales', 2, 3000000.00),
@@ -148,7 +148,7 @@ INSERT INTO administracion.centro_costo (legacy_id, codigo, nombre, descripcion,
 -- ============================================================================
 
 -- Providers
-INSERT INTO proveedores.proveedor (legacy_id, ruc, razon_social, nombre_comercial, tipo_proveedor, direccion, telefono, email) VALUES
+INSERT INTO proveedores.proveedor (legacy_id, ruc, razon_social, nombre_comercial, tipo_proveedor, direccion, telefono, correo_electronico) VALUES
 ('PROV001', '20111222333', 'CONSTRUCTORA MAQUINARIAS S.A.C.', 'Maquinarias SAC', 'EQUIPO_PESADO', 'Av. Industrial 123, Lima', '(01) 555-1111', 'ventas@maquinarias.pe'),
 ('PROV002', '20444555666', 'EQUIPOS Y SERVICIOS DEL PERÚ S.A.', 'Equipos Perú', 'EQUIPO_PESADO', 'Jr. Los Pinos 456, Lima', '(01) 555-2222', 'contacto@equiposperu.pe'),
 ('PROV003', '20777888999', 'ALQUILER DE MAQUINARIA HEAVY S.A.C.', 'Heavy Equipment', 'EQUIPO_PESADO', 'Av. Argentina 789, Callao', '(01) 555-3333', 'info@heavyequipment.pe'),
@@ -159,7 +159,7 @@ INSERT INTO proveedores.proveedor (legacy_id, ruc, razon_social, nombre_comercia
 -- ============================================================================
 
 -- Workers/Operators (CORRECTED: removed codigo_trabajador, using actual columns)
-INSERT INTO rrhh.trabajador (legacy_id, dni, nombres, apellido_paterno, apellido_materno, fecha_nacimiento, telefono, email, cargo, especialidad, licencia_conducir, tipo_contrato, fecha_ingreso, operating_unit_id) VALUES
+INSERT INTO rrhh.trabajador (legacy_id, dni, nombres, apellido_paterno, apellido_materno, fecha_nacimiento, telefono, correo_electronico, cargo, especialidad, licencia_conducir, tipo_contrato, fecha_ingreso, unidad_operativa_id) VALUES
 ('OPR001', '12345678', 'Juan Carlos', 'Pérez', 'Gonzales', '1985-03-15', '987654321', 'jperez@operator.pe', 'Operador de Excavadora', 'Excavadora Hidráulica', 'A-III', 'CONTRATO', '2023-01-10', 1),
 ('OPR002', '23456789', 'María Elena', 'Torres', 'Ramírez', '1990-07-22', '987654322', 'mtorres@operator.pe', 'Operador de Cargador Frontal', 'Cargador Frontal', 'A-IIIb', 'CONTRATO', '2023-02-15', 1),
 ('OPR003', '34567890', 'Luis Alberto', 'Sánchez', 'Vargas', '1988-11-30', '987654323', 'lsanchez@operator.pe', 'Operador de Rodillo', 'Rodillo Compactador', 'A-IIc', 'CONTRATO', '2023-03-20', 1),
@@ -180,7 +180,7 @@ INSERT INTO equipo.tipo_equipo (legacy_id, codigo, nombre, descripcion, categori
 
 -- Equipment (CORRECTED: numero_serie_equipo NOT numero_serie, codigo_equipo, etc.)
 INSERT INTO equipo.equipo (
-  legacy_id, codigo_equipo, provider_id, equipment_type_id, tipo_proveedor, categoria,
+  legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id, tipo_proveedor, categoria,
   placa, marca, modelo, numero_serie_equipo, anio_fabricacion, tipo_motor, medidor_uso, estado
 ) VALUES
 ('EQ001', 'EXC-001', 1, 1, 'ALQUILADO', 'MOVIMIENTO_TIERRAS', 'ABC-123', 'Caterpillar', '320D', 'CAT320D12345', 2020, 'DIESEL', 'HOROMETRO', 'DISPONIBLE'),
@@ -195,7 +195,7 @@ INSERT INTO equipo.equipo (
 ('EQ010', 'CARG-003', 1, 2, 'ALQUILADO', 'MOVIMIENTO_TIERRAS', 'STU-901', 'Case', '621G', 'CASE621G88888', 2020, 'DIESEL', 'HOROMETRO', 'DISPONIBLE');
 
 -- Equipment Assignments (CORRECTED: removed legacy_id, using actual columns)
-INSERT INTO equipo.equipo_edt (equipment_id, project_id, fecha_asignacion, observaciones) VALUES
+INSERT INTO equipo.equipo_edt (equipo_id, proyecto_id, fecha_asignacion, observaciones) VALUES
 (1, 1, '2024-01-15', 'Asignado para movimiento de tierras'),
 (2, 1, '2024-01-15', 'Asignado para excavación'),
 (3, 1, '2024-01-20', 'Asignado para carga de material'),
@@ -209,7 +209,7 @@ INSERT INTO equipo.equipo_edt (equipment_id, project_id, fecha_asignacion, obser
 
 -- Contracts (CORRECTED: removed proveedor_id, removed incluye_combustible)
 INSERT INTO equipo.contrato_adenda (
-  legacy_id, equipment_id, numero_contrato, tipo, fecha_contrato, fecha_inicio, fecha_fin,
+  legacy_id, equipo_id, numero_contrato, tipo, fecha_contrato, fecha_inicio, fecha_fin,
   moneda, tipo_tarifa, tarifa, incluye_motor, incluye_operador, horas_incluidas, estado
 ) VALUES
 ('CON001', 1, 'CON-2024-001', 'CONTRATO', '2023-12-15', '2024-01-01', '2024-12-31', 'PEN', 'HORARIA', 150.00, FALSE, FALSE, 200, 'ACTIVO'),
@@ -221,7 +221,7 @@ INSERT INTO equipo.contrato_adenda (
 
 -- Daily Reports (CORRECTED: fecha NOT fecha_reporte)
 INSERT INTO equipo.parte_diario (
-  legacy_id, equipment_id, operator_id, project_id, fecha,
+  legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
   hora_inicio, hora_fin, horometro_inicial, horometro_final,
   horas_trabajadas, combustible_consumido, observaciones, estado
 ) VALUES
@@ -248,28 +248,28 @@ INSERT INTO logistica.producto (legacy_id, codigo, nombre, descripcion, categori
 ('PROD004', 'LLANTA-001', 'Llanta 29.5R25', 'Llanta para cargador frontal', 'REPUESTO', 'UND', 8.00, 2.00, 4500.00),
 ('PROD005', 'GRAS-001', 'Grasa Multiuso', 'Grasa para lubricación general', 'LUBRICANTE', 'KG', 100.00, 20.00, 25.00);
 
--- Movements (Logistics)
-INSERT INTO logistica.movimiento (project_id, fecha, tipo_movimiento, origen, destino, observaciones, status, created_by) VALUES
-(1, '2024-01-15', 'entrada', 'Proveedor PECSA', 'Almacén Central', 'Recepción de combustible mensual', 'completado', 1),
-(1, '2024-01-20', 'salida', 'Almacén Central', 'Proyecto Carretera Ancash', 'Distribución de combustible a proyecto', 'completado', 1),
-(2, '2024-02-05', 'entrada', 'Proveedor Repuestos Lima', 'Almacén Central', 'Recepción de repuestos', 'completado', 2),
-(1, '2024-02-10', 'salida', 'Almacén Central', 'Proyecto Carretera Ancash', 'Distribución de lubricantes', 'completado', 1),
-(3, '2024-03-01', 'transferencia', 'Proyecto Carretera Ancash', 'Proyecto Lima Norte', 'Transferencia de filtros', 'completado', 3);
+-- Movements (Logistics) - CORRECTED: removed origen, destino; renamed columns
+INSERT INTO logistica.movimiento (proyecto_id, fecha, tipo_movimiento, observaciones, estado, creado_por) VALUES
+(1, '2024-01-15', 'entrada', 'Recepción de combustible mensual - Proveedor PECSA a Almacén Central', 'completado', 1),
+(1, '2024-01-20', 'salida', 'Distribución de combustible a proyecto - Almacén Central a Proyecto Carretera Ancash', 'completado', 1),
+(2, '2024-02-05', 'entrada', 'Recepción de repuestos - Proveedor Repuestos Lima a Almacén Central', 'completado', 2),
+(1, '2024-02-10', 'salida', 'Distribución de lubricantes - Almacén Central a Proyecto Carretera Ancash', 'completado', 1),
+(3, '2024-03-01', 'transferencia', 'Transferencia de filtros - Proyecto Carretera Ancash a Proyecto Lima Norte', 'completado', 3);
 
--- Movement Details
-INSERT INTO logistica.detalle_movimiento (movement_id, product_id, cantidad, costo_unitario, lote, observaciones) VALUES
-(1, 1, 2000.00, 15.50, 'LOT-2024-001', 'Diesel B5 recepción enero'),
-(2, 1, 500.00, 15.50, 'LOT-2024-001', 'Distribución a proyecto'),
-(3, 3, 10.00, 85.00, 'LOT-FILT-001', 'Filtros recibidos'),
-(4, 2, 20.00, 120.00, 'LOT-ACE-001', 'Aceite para mantenimiento'),
-(5, 3, 3.00, 85.00, 'LOT-FILT-001', 'Filtros transferidos');
+-- Movement Details - CORRECTED: renamed columns, removed lote (not in schema)
+INSERT INTO logistica.detalle_movimiento (movimiento_id, producto_id, cantidad, precio_unitario, observaciones) VALUES
+(1, 1, 2000.00, 15.50, 'Diesel B5 recepción enero - LOT-2024-001'),
+(2, 1, 500.00, 15.50, 'Distribución a proyecto - LOT-2024-001'),
+(3, 3, 10.00, 85.00, 'Filtros recibidos - LOT-FILT-001'),
+(4, 2, 20.00, 120.00, 'Aceite para mantenimiento - LOT-ACE-001'),
+(5, 3, 3.00, 85.00, 'Filtros transferidos - LOT-FILT-001');
 
 -- ============================================================================
 -- SCHEMA: SST (Safety)
 -- ============================================================================
 
 -- Safety Incidents
-INSERT INTO sst.incidente (legacy_id, fecha_incidente, tipo_incidente, severidad, ubicacion, descripcion, acciones_tomadas, project_id, reportado_por, estado) VALUES
+INSERT INTO sst.incidente (legacy_id, fecha_incidente, tipo_incidente, severidad, ubicacion, descripcion, acciones_tomadas, proyecto_id, reportado_por, estado) VALUES
 ('INC001', '2024-01-25 10:30:00', 'CASI_ACCIDENTE', 'LEVE', 'Frente de trabajo - Km 45', 'Operador casi pierde estabilidad al bajar de excavadora', 'Capacitación sobre uso de puntos de apoyo al subir/bajar de equipo', 1, 1, 'CERRADO'),
 ('INC002', '2024-02-10 14:15:00', 'INCIDENTE_AMBIENTAL', 'MODERADO', 'Zona de abastecimiento', 'Derrame menor de combustible durante abastecimiento (5 galones)', 'Contención inmediata con kit antiderrames. Limpieza de área. Capacitación al personal.', 1, 2, 'CERRADO'),
 ('INC003', '2024-02-18 09:00:00', 'ACCIDENTE_LEVE', 'LEVE', 'Taller de mantenimiento', 'Técnico sufrió corte menor en mano durante cambio de filtro', 'Primeros auxilios. Uso obligatorio de guantes de protección.', 1, 3, 'CERRADO'),
@@ -293,7 +293,7 @@ INSERT INTO licitaciones (legacy_id, codigo, nombre, entidad_convocante, monto_r
 -- ============================================================================
 
 -- Equipment Valuations
-INSERT INTO equipo.valorizacion_equipo (legacy_id, equipment_id, contract_id, project_id, periodo, fecha_inicio, fecha_fin, dias_trabajados, horas_trabajadas, combustible_consumido, costo_base, costo_combustible, total_valorizado, estado, observaciones, created_by) VALUES
+INSERT INTO equipo.valorizacion_equipo (legacy_id, equipo_id, contrato_id, proyecto_id, periodo, fecha_inicio, fecha_fin, dias_trabajados, horas_trabajadas, combustible_consumido, costo_base, costo_combustible, total_valorizado, estado, observaciones, creado_por) VALUES
 ('VAL001', 1, 1, 1, '2024-01', '2024-01-01', '2024-01-31', 22, 176.0, 890.0, 26400.00, 13795.00, 40195.00, 'APROBADO', 'Valorización enero aprobada', 1),
 ('VAL002', 2, 2, 1, '2024-01', '2024-01-01', '2024-01-31', 22, 170.0, 850.0, 24650.00, 13175.00, 37825.00, 'APROBADO', 'Valorización enero aprobada', 1),
 ('VAL003', 3, 3, 1, '2024-01', '2024-01-01', '2024-01-31', 20, 160.0, 760.0, 20800.00, 11780.00, 32580.00, 'APROBADO', 'Valorización enero aprobada', 1),
@@ -304,25 +304,25 @@ INSERT INTO equipo.valorizacion_equipo (legacy_id, equipment_id, contract_id, pr
 -- SCHEMA: EQUIPO - Scheduled Tasks
 -- ============================================================================
 
--- Scheduled Tasks
-INSERT INTO equipo.tarea_programada (equipment_id, task_type, title, description, start_date, end_date, priority, status, created_by, project_id) VALUES
-(1, 'maintenance', 'Cambio de aceite y filtros - EXC-001', 'Mantenimiento preventivo cada 250 horas', '2024-02-15', '2024-02-15', 'high', 'completed', 1, 1),
-(2, 'maintenance', 'Revisión de sistema hidráulico - EXC-002', 'Inspección de mangueras y conexiones', '2024-02-20', '2024-02-20', 'medium', 'completed', 1, 1),
-(3, 'inspection', 'Inspección pre-uso - CARG-001', 'Revisión de check-list diario', '2024-03-01', '2024-03-01', 'low', 'completed', 2, 1),
-(4, 'maintenance', 'Cambio de llanta trasera - VOLQ-001', 'Reemplazo por desgaste', '2024-03-10', '2024-03-10', 'high', 'completed', 2, 2),
-(5, 'maintenance', 'Mantenimiento rodillo compactador - COMP-001', 'Revisión de vibrador y motor', '2024-03-20', '2024-03-21', 'high', 'in_progress', 2, 2),
-(6, 'inspection', 'Inspección anual CITV - MOTONIV-001', 'Certificación técnica vehicular', '2024-04-01', '2024-04-01', 'high', 'pending', 3, 2),
-(7, 'assignment', 'Asignación volquete a Proyecto Lima', 'Traslado de equipo', '2024-04-05', '2024-04-05', 'medium', 'pending', 1, 3),
-(8, 'maintenance', 'Servicio mayor excavadora - EXC-003', 'Mantenimiento a las 1000 horas', '2024-04-10', '2024-04-12', 'high', 'pending', 1, 2),
-(9, 'inspection', 'Calibración de horómetros', 'Verificación de medidores de uso', '2024-04-15', '2024-04-15', 'low', 'pending', 1, 1),
-(10, 'maintenance', 'Cambio de neumáticos cargador - CARG-002', 'Reemplazo completo de llantas', '2024-04-20', '2024-04-21', 'high', 'pending', 2, 3);
+-- Scheduled Tasks - CORRECTED: Translate English enum values to Spanish
+INSERT INTO equipo.tarea_programada (equipo_id, tipo_tarea, titulo, descripcion, fecha_inicio, fecha_fin, prioridad, estado, creado_por, proyecto_id) VALUES
+(1, 'mantenimiento', 'Cambio de aceite y filtros - EXC-001', 'Mantenimiento preventivo cada 250 horas', '2024-02-15', '2024-02-15', 'alta', 'completado', 1, 1),
+(2, 'mantenimiento', 'Revisión de sistema hidráulico - EXC-002', 'Inspección de mangueras y conexiones', '2024-02-20', '2024-02-20', 'media', 'completado', 1, 1),
+(3, 'inspeccion', 'Inspección pre-uso - CARG-001', 'Revisión de check-list diario', '2024-03-01', '2024-03-01', 'baja', 'completado', 2, 1),
+(4, 'mantenimiento', 'Cambio de llanta trasera - VOLQ-001', 'Reemplazo por desgaste', '2024-03-10', '2024-03-10', 'alta', 'completado', 2, 2),
+(5, 'mantenimiento', 'Mantenimiento rodillo compactador - COMP-001', 'Revisión de vibrador y motor', '2024-03-20', '2024-03-21', 'alta', 'en_progreso', 2, 2),
+(6, 'inspeccion', 'Inspección anual CITV - MOTONIV-001', 'Certificación técnica vehicular', '2024-04-01', '2024-04-01', 'alta', 'pendiente', 3, 2),
+(7, 'asignacion', 'Asignación volquete a Proyecto Lima', 'Traslado de equipo', '2024-04-05', '2024-04-05', 'media', 'pendiente', 1, 3),
+(8, 'mantenimiento', 'Servicio mayor excavadora - EXC-003', 'Mantenimiento a las 1000 horas', '2024-04-10', '2024-04-12', 'alta', 'pendiente', 1, 2),
+(9, 'inspeccion', 'Calibración de horómetros', 'Verificación de medidores de uso', '2024-04-15', '2024-04-15', 'baja', 'pendiente', 1, 1),
+(10, 'mantenimiento', 'Cambio de neumáticos cargador - CARG-002', 'Reemplazo completo de llantas', '2024-04-20', '2024-04-21', 'alta', 'pendiente', 2, 3);
 
 -- ============================================================================
 -- SCHEMA: ADMINISTRACION - Cost Centers
 -- ============================================================================
 
 -- Cost Centers
-INSERT INTO administracion.centro_costo (legacy_id, codigo, nombre, descripcion, project_id, presupuesto) VALUES
+INSERT INTO administracion.centro_costo (legacy_id, codigo, nombre, descripcion, proyecto_id, presupuesto) VALUES
 ('CC001', 'CC-001-EQ', 'Alquiler de Equipos', 'Centro de costo para alquiler de maquinaria', 1, 500000.00),
 ('CC002', 'CC-002-COMB', 'Combustible', 'Centro de costo para combustibles y lubricantes', 1, 150000.00),
 ('CC003', 'CC-003-MANT', 'Mantenimiento', 'Centro de costo para mantenimiento de equipos', 1, 80000.00),

@@ -66,7 +66,7 @@ export class OperatorModel {
     }
 
     if (filters?.search) {
-      query += ` AND (o.first_name ILIKE $${paramIndex} OR o.last_name ILIKE $${paramIndex} OR o.email ILIKE $${paramIndex})`;
+      query += ` AND (o.first_name ILIKE $${paramIndex} OR o.last_name ILIKE $${paramIndex} OR o.correo_electronico ILIKE $${paramIndex})`;
       params.push(`%${filters.search}%`);
       paramIndex++;
     }
@@ -85,11 +85,11 @@ export class OperatorModel {
        WHERE o.id = $1 AND o.is_active = true`,
       [id]
     );
-    
+
     if (result.rows.length === 0) return null;
 
     const operator = result.rows[0];
-    
+
     // Load skills
     const skillsResult = await pool.query(
       'SELECT * FROM rrhh.habilidad_trabajador WHERE operator_id = $1 ORDER BY equipment_type',
@@ -114,15 +114,23 @@ export class OperatorModel {
   static async create(data: Partial<Operator>): Promise<Operator> {
     const result = await pool.query(
       `INSERT INTO rrhh.trabajador (
-        user_id, first_name, last_name, email, phone,
+        user_id, first_name, last_name, correo_electronico, phone,
         license_number, license_expiry, employment_start_date,
         hourly_rate, status, notes
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *`,
       [
-        data.user_id, data.first_name, data.last_name, data.email, data.phone,
-        data.license_number, data.license_expiry, data.employment_start_date,
-        data.hourly_rate, data.status || 'active', data.notes
+        data.user_id,
+        data.first_name,
+        data.last_name,
+        data.email,
+        data.phone,
+        data.license_number,
+        data.license_expiry,
+        data.employment_start_date,
+        data.hourly_rate,
+        data.status || 'active',
+        data.notes,
       ]
     );
     return result.rows[0];
@@ -134,12 +142,21 @@ export class OperatorModel {
     let paramIndex = 1;
 
     const updateFields: (keyof Operator)[] = [
-      'first_name', 'last_name', 'email', 'phone', 'license_number',
-      'license_expiry', 'employment_start_date', 'employment_end_date',
-      'hourly_rate', 'status', 'performance_rating', 'notes'
+      'first_name',
+      'last_name',
+      'email',
+      'phone',
+      'license_number',
+      'license_expiry',
+      'employment_start_date',
+      'employment_end_date',
+      'hourly_rate',
+      'status',
+      'performance_rating',
+      'notes',
     ];
 
-    updateFields.forEach(field => {
+    updateFields.forEach((field) => {
       if (data[field] !== undefined) {
         fields.push(`${field} = $${paramIndex++}`);
         values.push(data[field]);
@@ -160,10 +177,9 @@ export class OperatorModel {
   }
 
   static async delete(id: string): Promise<boolean> {
-    const result = await pool.query(
-      'UPDATE rrhh.trabajador SET is_active = false WHERE id = $1',
-      [id]
-    );
+    const result = await pool.query('UPDATE rrhh.trabajador SET is_active = false WHERE id = $1', [
+      id,
+    ]);
     return (result.rowCount || 0) > 0;
   }
 
@@ -171,19 +187,35 @@ export class OperatorModel {
     const result = await pool.query(
       `INSERT INTO rrhh.habilidad_trabajador (operator_id, equipment_type, skill_level, years_experience, last_verified)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [operatorId, skill.equipment_type, skill.skill_level, skill.years_experience, skill.last_verified]
+      [
+        operatorId,
+        skill.equipment_type,
+        skill.skill_level,
+        skill.years_experience,
+        skill.last_verified,
+      ]
     );
     return result.rows[0];
   }
 
-  static async addCertification(operatorId: string, cert: Partial<OperatorCertification>): Promise<OperatorCertification> {
+  static async addCertification(
+    operatorId: string,
+    cert: Partial<OperatorCertification>
+  ): Promise<OperatorCertification> {
     const result = await pool.query(
       `INSERT INTO rrhh.certificacion_trabajador (
         operator_id, certification_name, certification_number,
         issue_date, expiry_date, issuing_authority, status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [operatorId, cert.certification_name, cert.certification_number,
-       cert.issue_date, cert.expiry_date, cert.issuing_authority, cert.status || 'valid']
+      [
+        operatorId,
+        cert.certification_name,
+        cert.certification_number,
+        cert.issue_date,
+        cert.expiry_date,
+        cert.issuing_authority,
+        cert.status || 'valid',
+      ]
     );
     return result.rows[0];
   }

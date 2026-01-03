@@ -54,27 +54,36 @@ describe('ValuationService', () => {
 
       // 3. Mock createValuation dependencies
       // Contract query (inside createValuation)
-      mockPoolQuery.mockResolvedValueOnce({ 
-        rows: [{ 
-          C08001_Id: 'equip-123', 
-          G00007_Id: 'proj-123', 
-          C07001_Id: 'prov-123' 
-        }] 
+      mockPoolQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            C08001_Id: 'equip-123',
+            G00007_Id: 'proj-123',
+            C07001_Id: 'prov-123',
+          },
+        ],
       });
       // Insert query
-      mockPoolQuery.mockResolvedValueOnce({ 
-        rows: [{ 
-          C08004_Id: 1, 
-          total_valuation: 1600, 
-          C08004_Estado: 'draft' 
-        }] 
+      mockPoolQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            C08004_Id: 1,
+            total_valuation: 1600,
+            C08004_Estado: 'draft',
+          },
+        ],
       });
 
-      const result = await service.generateValuationForContract(mockContractId, mockMonth, mockYear, mockUserId);
+      const result = await service.generateValuationForContract(
+        mockContractId,
+        mockMonth,
+        mockYear,
+        mockUserId
+      );
 
       expect(result).toBeDefined();
-      expect(result!.amount).toBe(1600); // 16 hours * 100 rate
-      
+      expect(result!.totalValorizado).toBe(1600); // 16 hours * 100 rate
+
       // Verify calls
       expect(mockPoolQuery).toHaveBeenCalledTimes(5);
       // Check insert call
@@ -93,19 +102,26 @@ describe('ValuationService', () => {
 
       // 3. Mock updateValuation dependencies
       // Update query
-      mockPoolQuery.mockResolvedValueOnce({ 
-        rows: [{ 
-          C08004_Id: 99, 
-          total_valuation: 1600, 
-          C08004_Estado: 'draft' 
-        }] 
+      mockPoolQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            C08004_Id: 99,
+            total_valuation: 1600,
+            C08004_Estado: 'draft',
+          },
+        ],
       });
 
-      const result = await service.generateValuationForContract(mockContractId, mockMonth, mockYear, mockUserId);
+      const result = await service.generateValuationForContract(
+        mockContractId,
+        mockMonth,
+        mockYear,
+        mockUserId
+      );
 
       expect(result).toBeDefined();
       expect(result!.id).toBe(99);
-      
+
       // Verify calls
       expect(mockPoolQuery).toHaveBeenCalledTimes(4);
       // Check update call

@@ -20,18 +20,18 @@ export class Timesheet {
   @Column({ name: 'timesheet_code', length: 50, unique: true })
   timesheetCode!: string;
 
-  @Column({ name: 'operator_id' })
+  @Column({ name: 'trabajador_id' })
   operatorId!: number;
 
   @ManyToOne(() => OperatorModel)
-  @JoinColumn({ name: 'operator_id' })
+  @JoinColumn({ name: 'trabajador_id' })
   operator!: OperatorModel;
 
-  @Column({ name: 'project_id', nullable: true })
+  @Column({ name: 'proyecto_id', nullable: true })
   projectId?: string;
 
   @ManyToOne(() => Project, { nullable: true })
-  @JoinColumn({ name: 'project_id' })
+  @JoinColumn({ name: 'proyecto_id' })
   project?: Project;
 
   @Column({ name: 'period_start', type: 'date' })
@@ -46,10 +46,24 @@ export class Timesheet {
   @Column({ name: 'total_days', type: 'integer', default: 0 })
   totalDays!: number;
 
-  @Column({ name: 'regular_hours', type: 'decimal', precision: 10, scale: 2, default: 0, nullable: true })
+  @Column({
+    name: 'regular_hours',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    nullable: true,
+  })
   regularHours?: number;
 
-  @Column({ name: 'overtime_hours', type: 'decimal', precision: 10, scale: 2, default: 0, nullable: true })
+  @Column({
+    name: 'overtime_hours',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    nullable: true,
+  })
   overtimeHours?: number;
 
   @Column({ length: 20, default: 'draft' })

@@ -7,7 +7,7 @@ export class ProductController {
     try {
       const productRepo = AppDataSource.getRepository(Product);
       const products = await productRepo.find({
-        where: { isActive: true },
+        where: { is_active: true },
         order: { nombre: 'ASC' },
       });
       res.json({
@@ -29,7 +29,7 @@ export class ProductController {
       const { id } = req.params;
       const productRepo = AppDataSource.getRepository(Product);
       const product = await productRepo.findOne({
-        where: { id: parseInt(id), isActive: true },
+        where: { id: parseInt(id), is_active: true },
       });
 
       if (!product) {
@@ -76,11 +76,11 @@ export class ProductController {
         unidad_medida,
         stock_actual: stock_actual || 0,
         stock_minimo: stock_minimo || 0,
-        stock_maximo: stock_maximo || 0,
-        costo_unitario: costo_unitario || 0,
-        ubicacion,
-        isActive: true,
-        created_by: (req as any).user?.id,
+        // stock_maximo: stock_maximo || 0,
+        precio_unitario: costo_unitario || 0,
+        // ubicacion,
+        is_active: true,
+        // created_by: (req as any).user?.id,
       });
 
       const saved = await productRepo.save(product);
@@ -101,11 +101,20 @@ export class ProductController {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { nombre, descripcion, categoria, unidad_medida, ubicacion, stock_minimo, stock_maximo, costo_unitario } = req.body;
+      const {
+        nombre,
+        descripcion,
+        categoria,
+        unidad_medida,
+        ubicacion,
+        stock_minimo,
+        stock_maximo,
+        costo_unitario,
+      } = req.body;
 
       const productRepo = AppDataSource.getRepository(Product);
       const product = await productRepo.findOne({
-        where: { id: parseInt(id), isActive: true },
+        where: { id: parseInt(id), is_active: true },
       });
 
       if (!product) {
@@ -120,11 +129,11 @@ export class ProductController {
       if (descripcion !== undefined) product.descripcion = descripcion;
       if (categoria !== undefined) product.categoria = categoria;
       if (unidad_medida !== undefined) product.unidad_medida = unidad_medida;
-      if (ubicacion !== undefined) product.ubicacion = ubicacion;
+      // if (ubicacion !== undefined) product.ubicacion = ubicacion;
       if (stock_minimo !== undefined) product.stock_minimo = stock_minimo;
-      if (stock_maximo !== undefined) product.stock_maximo = stock_maximo;
-      if (costo_unitario !== undefined) product.costo_unitario = costo_unitario;
-      product.updated_by = (req as any).user?.id;
+      // if (stock_maximo !== undefined) product.stock_maximo = stock_maximo;
+      if (costo_unitario !== undefined) product.precio_unitario = costo_unitario;
+      // product.updated_by = (req as any).user?.id;
 
       const updated = await productRepo.save(product);
       res.json({
@@ -145,7 +154,7 @@ export class ProductController {
     try {
       const { id } = req.params;
       const productRepo = AppDataSource.getRepository(Product);
-      
+
       const product = await productRepo.findOne({
         where: { id: parseInt(id) },
       });
@@ -158,8 +167,8 @@ export class ProductController {
       }
 
       // Soft delete
-      product.isActive = false;
-      product.updated_by = (req as any).user?.id;
+      product.is_active = false;
+      // product.updated_by = (req as any).user?.id;
       await productRepo.save(product);
 
       res.status(204).send();

@@ -73,7 +73,7 @@ export class AuthService {
 
     // Get default role (operator)
     const operatorRole = await this.roleRepository.findOne({
-      where: { name: 'operador' },
+      where: { code: 'operador' },
     });
 
     if (!operatorRole) {
@@ -160,10 +160,11 @@ export class AuthService {
   private generateAuthResponse(user: User): AuthResponse {
     console.log('Generating auth response for user:', user.username);
     console.log('User roles:', JSON.stringify(user.roles, null, 2));
-    const roleCodes = user.roles?.map((r) => {
-      console.log(`Role: ${r.name}, Code: ${r.code}`);
-      return r.code || r.name;
-    }) || [];
+    const roleCodes =
+      user.roles?.map((r) => {
+        console.log(`Role: ${r.name}, Code: ${r.code}`);
+        return r.code || r.name;
+      }) || [];
     console.log('Final role codes:', roleCodes);
     const payload: JwtPayload = {
       userId: String(user.id),

@@ -8,14 +8,12 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Provider } from './provider.model';
-import { Project } from './project.model';
-import { CostCenter } from './cost-center.model';
 
 export enum AccountsPayableStatus {
-  PENDING = 'pending',
-  PAID = 'paid',
-  CANCELLED = 'cancelled',
-  PARTIAL = 'partial',
+  PENDING = 'PENDIENTE',
+  PAID = 'PAGADO',
+  CANCELLED = 'ANULADO',
+  PARTIAL = 'PARCIAL',
 }
 
 export enum DocumentType {
@@ -30,67 +28,48 @@ export class AccountsPayable {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', name: 'provider_id' })
   provider_id!: number;
 
   @ManyToOne(() => Provider, { nullable: false, eager: true })
   @JoinColumn({ name: 'provider_id' })
   provider!: Provider;
 
-  @Column({ type: 'uuid', nullable: true })
-  project_id?: string;
-
-  @ManyToOne(() => Project, { nullable: true, eager: true })
-  @JoinColumn({ name: 'project_id' })
-  project?: Project;
-
-  @Column({ type: 'uuid', nullable: true })
-  cost_center_id?: string;
-
-  @ManyToOne(() => CostCenter, { nullable: true })
-  @JoinColumn({ name: 'cost_center_id' })
-  cost_center?: CostCenter;
-
-  @Column({ type: 'varchar', length: 50 })
-  document_type!: DocumentType;
-
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 50, name: 'numero_factura' })
   document_number!: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', name: 'fecha_emision' })
   issue_date!: Date;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', name: 'fecha_vencimiento' })
   due_date!: Date;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ type: 'decimal', precision: 15, scale: 2, name: 'monto_total' })
   amount!: number;
 
-  @Column({ type: 'varchar', length: 3, default: 'PEN' })
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'monto_pagado' })
+  amount_paid!: number;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true, name: 'saldo' })
+  balance?: number;
+
+  @Column({ type: 'varchar', length: 3, default: 'PEN', name: 'moneda' })
   currency!: string;
 
   @Column({
     type: 'varchar',
-    length: 20,
+    length: 50,
     default: AccountsPayableStatus.PENDING,
+    name: 'estado',
   })
   status!: AccountsPayableStatus;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'observaciones' })
   description?: string;
 
-  @Column({ type: 'integer' })
-  tenant_id!: number;
-
-  @Column({ type: 'integer', nullable: true })
-  created_by?: number;
-
-  @Column({ type: 'integer', nullable: true })
-  updated_by?: number;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   created_at!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'updated_at' })
   updated_at!: Date;
 }

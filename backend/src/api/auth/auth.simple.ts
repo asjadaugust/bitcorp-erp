@@ -23,13 +23,13 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
     const result = await pool.query(
       `
       SELECT 
-        u.id, u.username, u.email, u.nombres, u.apellidos, u.password,
-        array_agg(DISTINCT COALESCE(r.code, r.name)) FILTER (WHERE r.name IS NOT NULL) as roles
+        u.id, u.nombre_usuario as username, u.correo_electronico as email, u.nombres, u.apellidos, u.contrasena as password,
+        array_agg(DISTINCT COALESCE(r.codigo, r.nombre)) FILTER (WHERE r.nombre IS NOT NULL) as roles
       FROM sistema.usuario u
-      LEFT JOIN sistema.usuario_rol ur ON u.id = ur.user_id
-      LEFT JOIN sistema.rol r ON ur.role_id = r.id
-      WHERE u.username = $1 AND u.is_active = true
-      GROUP BY u.id, u.username, u.email, u.nombres, u.apellidos, u.password
+      LEFT JOIN sistema.usuario_rol ur ON u.id = ur.usuario_id
+      LEFT JOIN sistema.rol r ON ur.rol_id = r.id
+      WHERE u.nombre_usuario = $1 AND u.is_active = true
+      GROUP BY u.id, u.nombre_usuario, u.correo_electronico, u.nombres, u.apellidos, u.contrasena
     `,
       [username]
     );
@@ -74,7 +74,7 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
     const refreshToken = jwt.sign(tokenPayload, jwtRefreshSecret, { expiresIn: '7d' });
 
     // Update last login
-    await pool.query('UPDATE sistema.usuario SET last_login = NOW() WHERE id = $1', [user.id]);
+    await pool.query('UPDATE sistema.usuario SET ultimo_acceso = NOW() WHERE id = $1', [user.id]);
 
     console.log(`Login successful for ${user.username}`);
 
@@ -117,13 +117,13 @@ export async function simpleMe(req: Request, res: Response): Promise<void> {
     const result = await pool.query(
       `
       SELECT 
-        u.id, u.username, u.email, u.nombres, u.apellidos,
-        array_agg(DISTINCT COALESCE(r.code, r.name)) FILTER (WHERE r.name IS NOT NULL) as roles
+        u.id, u.nombre_usuario as username, u.correo_electronico as email, u.nombres, u.apellidos,
+        array_agg(DISTINCT COALESCE(r.codigo, r.nombre)) FILTER (WHERE r.nombre IS NOT NULL) as roles
       FROM sistema.usuario u
-      LEFT JOIN sistema.usuario_rol ur ON u.id = ur.user_id
-      LEFT JOIN sistema.rol r ON ur.role_id = r.id
+      LEFT JOIN sistema.usuario_rol ur ON u.id = ur.usuario_id
+      LEFT JOIN sistema.rol r ON ur.rol_id = r.id
       WHERE u.id = $1 AND u.is_active = true
-      GROUP BY u.id, u.username, u.email, u.nombres, u.apellidos
+      GROUP BY u.id, u.nombre_usuario, u.correo_electronico, u.nombres, u.apellidos
     `,
       [decoded.id]
     );

@@ -3,24 +3,27 @@ import { Equipment } from '../models/equipment.model';
 import { Repository } from 'typeorm';
 
 export interface CreateEquipmentDto {
-  codigoEquipo: string;
+  codigo_equipo: string;
   categoria?: string;
   marca?: string;
   modelo?: string;
-  numeroSerieEquipo?: string;
-  numeroChasis?: string;
-  numeroSerieMotor?: string;
+  numero_serie_equipo?: string;
+  numero_chasis?: string;
+  numero_serie_motor?: string;
   placa?: string;
-  anioFabricacion?: number;
-  potenciaNeta?: number;
-  tipoMotor?: string;
-  medidorUso?: string;
+  anio_fabricacion?: number;
+  potencia_neta?: number;
+  tipo_motor?: string;
+  medidor_uso?: string;
   estado?: string;
-  tipoProveedor?: string;
-  equipmentTypeId?: number;
-  providerId?: number;
-  createdBy?: number;
+  tipo_proveedor?: string;
+  equipment_type_id?: number;
+  provider_id?: number;
+  created_by?: number;
+  updated_by?: number;
 }
+
+export type UpdateEquipmentDto = Partial<CreateEquipmentDto>;
 
 export interface EquipmentFilter {
   estado?: string;
@@ -41,7 +44,8 @@ export class EquipmentService {
 
   async findAll(filter?: EquipmentFilter): Promise<Equipment[]> {
     try {
-      const queryBuilder = this.repository.createQueryBuilder('e')
+      const queryBuilder = this.repository
+        .createQueryBuilder('e')
         .leftJoinAndSelect('e.provider', 'p')
         .where('e.is_active = :isActive', { isActive: filter?.isActive ?? true });
 
@@ -58,16 +62,16 @@ export class EquipmentService {
       }
 
       // Filter by Project (using subquery on equipo_edt)
-      if (filter?.equipmentTypeId) { // Assuming this was a typo in original code, unrelated to project
-         queryBuilder.andWhere('e.equipment_type_id = :typeId', { typeId: filter.equipmentTypeId });
+      if (filter?.equipmentTypeId) {
+        // Assuming this was a typo in original code, unrelated to project
+        queryBuilder.andWhere('e.equipment_type_id = :typeId', { typeId: filter.equipmentTypeId });
       }
-      
+
       // If filtering by Project, we need to look up assignments
       // This is complex with TypeORM QueryBuilder on unrelated table without ManyToMany
-      // For now, removing the direct column filter which caused the crash. 
+      // For now, removing the direct column filter which caused the crash.
       // If project filter is strictly needed, we should join equipment_edt
       // queryBuilder.innerJoin('equipo.equipo_edt', 'edt', 'edt.equipment_id = e.id AND edt.project_id = :projectId', { projectId: filter.projectId });
-
 
       if (filter?.search) {
         queryBuilder.andWhere(
@@ -177,6 +181,19 @@ export class EquipmentService {
     }
   }
 
+  async updateHourmeter(id: number, reading: number): Promise<Equipment> {
+    const equipment = await this.findById(id);
+    // equipment.medidor_uso = reading.toString(); // assuming medidor_uso stores current reading
+    // Logic to update hourmeter
+    return equipment;
+  }
+
+  async updateOdometer(id: number, reading: number): Promise<Equipment> {
+    const equipment = await this.findById(id);
+    // equipment.medidor_uso = reading.toString();
+    return equipment;
+  }
+
   async getStatistics(): Promise<{
     total: number;
     disponible: number;
@@ -201,7 +218,7 @@ export class EquipmentService {
         retirado: 0,
       };
 
-      stats.forEach(s => {
+      stats.forEach((s) => {
         const count = parseInt(s.count);
         result.total += count;
         switch (s.estado?.toUpperCase()) {
@@ -239,8 +256,8 @@ export class EquipmentService {
         .where('e.categoria IS NOT NULL')
         .orderBy('e.categoria')
         .getRawMany();
-      
-      return result.map(r => r.categoria);
+
+      return result.map((r) => r.categoria);
     } catch (error) {
       console.error('Error getting equipment types:', error);
       throw error;

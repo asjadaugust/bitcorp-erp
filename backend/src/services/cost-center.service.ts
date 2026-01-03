@@ -16,18 +16,18 @@ export class CostCenterService {
     isActive?: boolean;
   }): Promise<CentroCosto[]> {
     try {
-      const queryBuilder = this.repository.createQueryBuilder('cc')
+      const queryBuilder = this.repository
+        .createQueryBuilder('cc')
         .where('cc.is_active = :isActive', { isActive: filters?.isActive ?? true });
 
       if (filters?.projectId) {
-        queryBuilder.andWhere('cc.project_id = :projectId', { projectId: filters.projectId });
+        queryBuilder.andWhere('cc.proyecto_id = :projectId', { projectId: filters.projectId });
       }
 
       if (filters?.search) {
-        queryBuilder.andWhere(
-          '(cc.codigo ILIKE :search OR cc.nombre ILIKE :search)',
-          { search: `%${filters.search}%` }
-        );
+        queryBuilder.andWhere('(cc.codigo ILIKE :search OR cc.nombre ILIKE :search)', {
+          search: `%${filters.search}%`,
+        });
       }
 
       queryBuilder.orderBy('cc.codigo', 'ASC');
@@ -70,7 +70,7 @@ export class CostCenterService {
   async findByProject(projectId: number): Promise<CentroCosto[]> {
     try {
       return await this.repository.find({
-        where: { projectId, isActive: true },
+        where: { project_id: projectId, is_active: true },
         order: { codigo: 'ASC' },
       });
     } catch (error) {
@@ -94,7 +94,7 @@ export class CostCenterService {
 
       const costCenter = this.repository.create({
         ...data,
-        isActive: data.isActive ?? true,
+        is_active: data.is_active ?? true,
       });
 
       return await this.repository.save(costCenter);
@@ -126,7 +126,7 @@ export class CostCenterService {
 
   async delete(id: number): Promise<void> {
     try {
-      await this.repository.update(id, { isActive: false });
+      await this.repository.update(id, { is_active: false });
     } catch (error) {
       console.error('Error deleting cost center:', error);
       throw new Error('Failed to delete cost center');
@@ -138,7 +138,7 @@ export class CostCenterService {
       const result = await this.repository
         .createQueryBuilder('cc')
         .select('SUM(cc.presupuesto)', 'total')
-        .where('cc.project_id = :projectId', { projectId })
+        .where('cc.proyecto_id = :projectId', { projectId })
         .andWhere('cc.is_active = true')
         .getRawOne();
 
@@ -152,7 +152,7 @@ export class CostCenterService {
   async getActiveCount(): Promise<number> {
     try {
       return await this.repository.count({
-        where: { isActive: true },
+        where: { is_active: true },
       });
     } catch (error) {
       console.error('Error counting cost centers:', error);

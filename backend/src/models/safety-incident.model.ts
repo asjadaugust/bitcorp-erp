@@ -41,7 +41,7 @@ export class Incidente {
   @Column({ name: 'acciones_tomadas', type: 'text', nullable: true })
   accionesTomadas?: string;
 
-  @Column({ name: 'project_id', type: 'integer', nullable: true })
+  @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
   @Index('idx_incidente_proyecto')
   projectId?: number;
 

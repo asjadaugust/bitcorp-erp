@@ -1,7 +1,7 @@
-import { 
-  Entity, 
-  Column, 
-  ManyToOne, 
+import {
+  Entity,
+  Column,
+  ManyToOne,
   JoinColumn,
   PrimaryGeneratedColumn,
   CreateDateColumn,
@@ -27,21 +27,21 @@ export class CentroCosto {
   @Column({ name: 'descripcion', type: 'text', nullable: true })
   descripcion?: string;
 
-  @Column({ name: 'project_id', type: 'integer', nullable: true })
+  @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
   @Index('idx_centro_costo_project')
-  projectId?: number;
+  project_id?: number;
 
   @Column({ name: 'presupuesto', type: 'decimal', precision: 15, scale: 2, nullable: true })
   presupuesto?: number;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive!: boolean;
+  is_active!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt!: Date;
+  created_at!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt!: Date;
+  updated_at!: Date;
 }
 
 // Backward compatibility alias

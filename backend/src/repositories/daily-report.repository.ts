@@ -70,19 +70,19 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
 
     // Operator filter
     if (filters.operator_id) {
-      conditions.push(`dr.operator_id = $${paramCount++}`);
+      conditions.push(`dr.trabajador_id = $${paramCount++}`);
       params.push(filters.operator_id);
     }
 
     // Equipment filter
     if (filters.equipment_id) {
-      conditions.push(`dr.equipment_id = $${paramCount++}`);
+      conditions.push(`dr.equipo_id = $${paramCount++}`);
       params.push(filters.equipment_id);
     }
 
     // Project filter
     if (filters.project_id) {
-      conditions.push(`dr.project_id = $${paramCount++}`);
+      conditions.push(`dr.proyecto_id = $${paramCount++}`);
       params.push(filters.project_id);
     }
 
@@ -113,10 +113,10 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
         e.code as equipo_codigo,
         e.name as equipo_nombre,
         p.nombre as proyecto_nombre
-      FROM daily_reports dr
-      LEFT JOIN operators o ON dr.operator_id = o.id
-      LEFT JOIN equipment e ON dr.equipment_id = e.id
-      LEFT JOIN projects p ON dr.project_id = p.id
+      FROM equipo.parte_diario dr
+      LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
+      LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
+      LEFT JOIN proyectos.edt p ON dr.proyecto_id = p.id
       ${whereClause}
       ORDER BY dr.fecha DESC, dr.created_at DESC
       LIMIT $${paramCount++} OFFSET $${paramCount++}
@@ -126,7 +126,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
 
     const countQuery = `
       SELECT COUNT(*) as total
-      FROM daily_reports dr
+      FROM equipo.parte_diario dr
       ${whereClause}
     `;
 
@@ -167,10 +167,10 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
         e.brand as equipo_marca,
         e.model as equipo_modelo,
         p.nombre as proyecto_nombre
-      FROM daily_reports dr
-      LEFT JOIN operators o ON dr.operator_id = o.id
-      LEFT JOIN equipment e ON dr.equipment_id = e.id
-      LEFT JOIN projects p ON dr.project_id = p.id
+      FROM equipo.parte_diario dr
+      LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
+      LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
+      LEFT JOIN proyectos.edt p ON dr.proyecto_id = p.id
       ${whereClause}
     `;
 
@@ -191,7 +191,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
 
     const query = `
       INSERT INTO equipo.parte_diario (
-        tenant_id, codigo_reporte, fecha, operator_id, equipment_id, project_id,
+        tenant_id, codigo_reporte, fecha, trabajador_id, equipo_id, proyecto_id,
         hora_inicio, hora_fin, horas_trabajadas, horometro_inicio, horometro_fin,
         odometro_inicio, odometro_fin, combustible_consumido, ubicacion,
         actividades, observaciones, estado, created_by, is_active
@@ -296,12 +296,12 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     }
 
     if (operatorId) {
-      conditions.push(`operator_id = $${paramCount++}`);
+      conditions.push(`trabajador_id = $${paramCount++}`);
       params.push(operatorId);
     }
 
     if (equipmentId) {
-      conditions.push(`equipment_id = $${paramCount++}`);
+      conditions.push(`equipo_id = $${paramCount++}`);
       params.push(equipmentId);
     }
 
@@ -313,9 +313,9 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
         o.nombres || ' ' || o.apellidos as operador_nombre,
         e.code as equipo_codigo,
         e.name as equipo_nombre
-      FROM daily_reports dr
-      LEFT JOIN operators o ON dr.operator_id = o.id
-      LEFT JOIN equipment e ON dr.equipment_id = e.id
+      FROM equipo.parte_diario dr
+      LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
+      LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
       ${whereClause}
       ORDER BY dr.fecha ASC
     `;
@@ -343,12 +343,12 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     const query = `
       SELECT 
         COUNT(*) as total_reportes,
-        COUNT(DISTINCT operator_id) as total_operadores,
-        COUNT(DISTINCT equipment_id) as total_equipos,
+        COUNT(DISTINCT trabajador_id) as total_operadores,
+        COUNT(DISTINCT equipo_id) as total_equipos,
         SUM(horas_trabajadas) as total_horas,
         AVG(horas_trabajadas) as promedio_horas,
         SUM(combustible_consumido) as total_combustible
-      FROM daily_reports
+      FROM equipo.parte_diario
       ${whereClause}
     `;
 

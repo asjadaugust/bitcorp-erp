@@ -47,12 +47,12 @@ export class Proyecto {
   @Index('idx_edt_estado')
   estado!: EstadoProyecto;
 
-  @Column({ name: 'company_id', type: 'integer', nullable: true })
+  @Column({ name: 'empresa_id', type: 'integer', nullable: true })
   @Index('idx_edt_company')
   companyId?: number;
 
-  @Column({ name: 'operating_unit_id', type: 'integer', nullable: true })
-  @Index('idx_edt_operating_unit')
+  @Column({ name: 'unidad_operativa_id', type: 'integer', nullable: true })
+  @Index('idx_edt_unidad_operativa')
   operatingUnitId?: number;
 
   @Column({ name: 'cliente', type: 'varchar', length: 255, nullable: true })
@@ -61,10 +61,10 @@ export class Proyecto {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @Column({ name: 'created_by', type: 'integer', nullable: true })
+  @Column({ name: 'creado_por', type: 'integer', nullable: true })
   createdBy?: number;
 
-  @Column({ name: 'updated_by', type: 'integer', nullable: true })
+  @Column({ name: 'actualizado_por', type: 'integer', nullable: true })
   updatedBy?: number;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -75,11 +75,11 @@ export class Proyecto {
 
   // Relations
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'created_by' })
+  @JoinColumn({ name: 'creado_por' })
   creator?: User;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'updated_by' })
+  @JoinColumn({ name: 'actualizado_por' })
   updater?: User;
 
   @ManyToMany(() => User, (user) => user.projects)

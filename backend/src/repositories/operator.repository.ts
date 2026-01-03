@@ -89,7 +89,7 @@ export class OperatorRepository extends BaseRepository<Operator> {
     const query = `
       SELECT 
         o.*,
-        (SELECT COUNT(*) FROM equipo.parte_diario dr WHERE dr.operator_id = o.id AND dr.is_active = true) as total_reportes
+        (SELECT COUNT(*) FROM equipo.parte_diario dr WHERE dr.trabajador_id = o.id AND dr.is_active = true) as total_reportes
       FROM rrhh.trabajador o
       ${whereClause}
       ORDER BY o.created_at DESC
@@ -133,8 +133,8 @@ export class OperatorRepository extends BaseRepository<Operator> {
     const query = `
       SELECT 
         o.*,
-        (SELECT COUNT(*) FROM equipo.parte_diario dr WHERE dr.operator_id = o.id AND dr.is_active = true) as total_reportes,
-        (SELECT SUM(horas_trabajadas) FROM equipo.parte_diario dr WHERE dr.operator_id = o.id AND dr.is_active = true) as total_horas
+        (SELECT COUNT(*) FROM equipo.parte_diario dr WHERE dr.trabajador_id = o.id AND dr.is_active = true) as total_reportes,
+        (SELECT SUM(horas_trabajadas) FROM equipo.parte_diario dr WHERE dr.trabajador_id = o.id AND dr.is_active = true) as total_horas
       FROM rrhh.trabajador o
       ${whereClause}
     `;
@@ -286,7 +286,7 @@ export class OperatorRepository extends BaseRepository<Operator> {
         SUM(horas_trabajadas) as total_horas,
         AVG(horas_trabajadas) as promedio_horas_dia,
         SUM(combustible_consumido) as total_combustible
-      FROM daily_reports
+      FROM equipo.parte_diario
       ${whereClause}
     `;
 

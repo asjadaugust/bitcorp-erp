@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
-import { EquipmentService, CreateEquipmentDto, UpdateEquipmentDto } from '../../services/equipment.service';
+import {
+  EquipmentService,
+  CreateEquipmentDto,
+  UpdateEquipmentDto,
+} from '../../services/equipment.service';
 import { EquipmentStatus } from '../../models/equipment.model';
 import { ExportUtil } from '../../utils/export.util';
 
@@ -8,7 +12,38 @@ export class EquipmentController {
 
   create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const data: CreateEquipmentDto = req.body;
+      const {
+        codigoEquipo,
+        numeroSerieEquipo,
+        numeroChasis,
+        numeroSerieMotor,
+        anioFabricacion,
+        potenciaNeta,
+        tipoMotor,
+        medidorUso,
+        tipoProveedor,
+        equipmentTypeId,
+        providerId,
+        createdBy,
+        ...rest
+      } = req.body;
+
+      const data: CreateEquipmentDto = {
+        ...rest,
+        codigo_equipo: codigoEquipo,
+        numero_serie_equipo: numeroSerieEquipo,
+        numero_chasis: numeroChasis,
+        numero_serie_motor: numeroSerieMotor,
+        anio_fabricacion: anioFabricacion,
+        potencia_neta: potenciaNeta,
+        tipo_motor: tipoMotor,
+        medidor_uso: medidorUso,
+        tipo_proveedor: tipoProveedor,
+        equipment_type_id: equipmentTypeId,
+        provider_id: providerId,
+        created_by: createdBy,
+      };
+
       const equipment = await this.equipmentService.create(data);
       res.status(201).json(equipment);
     } catch (error) {
@@ -19,15 +54,15 @@ export class EquipmentController {
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const { status, equipment_type, search, is_active } = req.query;
-      
+
       const filters = {
         status: is_active === 'false' ? 'inactive' : (status as string), // If is_active is 'false', set status to 'inactive', otherwise use the provided status
         equipment_type: equipment_type as string,
         search: search as string,
       };
-      
+
       const equipment = await this.equipmentService.findAll(filters);
-      
+
       res.json(equipment);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -36,7 +71,7 @@ export class EquipmentController {
 
   findById = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       const equipment = await this.equipmentService.findById(id);
       res.json(equipment);
     } catch (error) {
@@ -47,8 +82,7 @@ export class EquipmentController {
   findByCode = async (req: Request, res: Response): Promise<void> => {
     try {
       const { code } = req.params;
-      const companyId = (req as any).user?.companyId || '1'; 
-      const equipment = await this.equipmentService.findByCode(code as string, companyId);
+      const equipment = await this.equipmentService.findByCode(code as string);
       res.json(equipment);
     } catch (error) {
       res.status(404).json({ error: (error as Error).message });
@@ -57,8 +91,39 @@ export class EquipmentController {
 
   update = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
-      const data: UpdateEquipmentDto = req.body;
+      const id = parseInt(req.params.id);
+      const {
+        codigoEquipo,
+        numeroSerieEquipo,
+        numeroChasis,
+        numeroSerieMotor,
+        anioFabricacion,
+        potenciaNeta,
+        tipoMotor,
+        medidorUso,
+        tipoProveedor,
+        equipmentTypeId,
+        providerId,
+        updatedBy,
+        ...rest
+      } = req.body;
+
+      const data: UpdateEquipmentDto = {
+        ...rest,
+        codigo_equipo: codigoEquipo,
+        numero_serie_equipo: numeroSerieEquipo,
+        numero_chasis: numeroChasis,
+        numero_serie_motor: numeroSerieMotor,
+        anio_fabricacion: anioFabricacion,
+        potencia_neta: potenciaNeta,
+        tipo_motor: tipoMotor,
+        medidor_uso: medidorUso,
+        tipo_proveedor: tipoProveedor,
+        equipment_type_id: equipmentTypeId,
+        provider_id: providerId,
+        updated_by: updatedBy,
+      };
+
       const equipment = await this.equipmentService.update(id, data);
       res.json(equipment);
     } catch (error) {
@@ -68,7 +133,7 @@ export class EquipmentController {
 
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       await this.equipmentService.delete(id);
       res.status(204).send();
     } catch (error) {
@@ -78,7 +143,7 @@ export class EquipmentController {
 
   updateStatus = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       const { status } = req.body;
       const equipment = await this.equipmentService.updateStatus(id, status);
       res.json(equipment);
@@ -89,7 +154,7 @@ export class EquipmentController {
 
   updateHourmeter = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateHourmeter(id, reading);
       res.json(equipment);
@@ -100,7 +165,7 @@ export class EquipmentController {
 
   updateOdometer = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateOdometer(id, reading);
       res.json(equipment);
@@ -140,21 +205,22 @@ export class EquipmentController {
     try {
       const { status, equipment_type, search } = req.query;
       const equipment = await this.equipmentService.findAll({
-        status: status ? (status as string) : 'active',
-        equipment_type: equipment_type as string,
+        estado: status ? (status as string) : 'DISPONIBLE',
+        equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
         search: search as string,
+        isActive: true,
       });
 
       const data = equipment.map((eq) => ({
-        codigo: eq.equipment_code,
-        descripcion: eq.description,
-        tipo: eq.equipment_type,
-        marca: eq.make,
-        modelo: eq.model,
-        placa: eq.license_plate || '',
-        estado: eq.status,
-        ubicacion: eq.current_location || '',
-        horometro: eq.current_hourmeter || 0,
+        codigo: eq.codigo_equipo,
+        descripcion: eq.modelo,
+        tipo: eq.equipment_type_id,
+        marca: eq.marca,
+        modelo: eq.modelo,
+        placa: eq.placa || '',
+        estado: eq.estado,
+        ubicacion: '', // eq.current_location || '',
+        horometro: eq.medidor_uso || 0,
         fecha_registro: ExportUtil.formatDate(eq.created_at),
       }));
 
@@ -181,21 +247,22 @@ export class EquipmentController {
     try {
       const { status, equipment_type, search } = req.query;
       const equipment = await this.equipmentService.findAll({
-        status: status ? (status as string) : 'active',
-        equipment_type: equipment_type as string,
+        estado: status ? (status as string) : 'DISPONIBLE',
+        equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
         search: search as string,
+        isActive: true,
       });
 
       const data = equipment.map((eq) => ({
-        codigo: eq.equipment_code,
-        descripcion: eq.description,
-        tipo: eq.equipment_type,
-        marca: eq.make,
-        modelo: eq.model,
-        placa: eq.license_plate || '',
-        estado: eq.status,
-        ubicacion: eq.current_location || '',
-        horometro: eq.current_hourmeter || 0,
+        codigo: eq.codigo_equipo,
+        descripcion: eq.modelo,
+        tipo: eq.equipment_type_id,
+        marca: eq.marca,
+        modelo: eq.modelo,
+        placa: eq.placa || '',
+        estado: eq.estado,
+        ubicacion: '', // eq.current_location || '',
+        horometro: eq.medidor_uso || 0,
         fecha_registro: ExportUtil.formatDate(eq.created_at),
       }));
 
@@ -223,7 +290,7 @@ export class EquipmentController {
    */
   assignEquipment = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       const { project_id, site_id, assignment_date, notes } = req.body;
       const user_id = (req as any).user?.id || 1;
 
@@ -251,7 +318,7 @@ export class EquipmentController {
    */
   transferEquipment = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       const { from_project_id, to_project_id, to_site_id, transfer_date, reason, notes } = req.body;
       const user_id = (req as any).user?.id || 1;
 
@@ -306,7 +373,7 @@ export class EquipmentController {
    */
   getAssignmentHistory = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id);
       const history = await this.equipmentService.getAssignmentHistory(id);
       res.json(history);
     } catch (error) {

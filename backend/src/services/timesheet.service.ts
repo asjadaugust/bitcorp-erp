@@ -105,11 +105,11 @@ export class TimesheetService {
       `SELECT ts.*, 
               o.first_name || ' ' || o.last_name as operator_name
        FROM timesheets ts
-       LEFT JOIN operators o ON ts.operator_id = o.id
+       LEFT JOIN rrhh.trabajador o ON ts.operator_id = o.id
        WHERE ts.id = $1`,
       [id]
     );
-    
+
     if (result.rows.length === 0) {
       throw new Error('Timesheet not found');
     }
@@ -209,7 +209,7 @@ export class TimesheetService {
       SELECT ts.*, 
              o.first_name || ' ' || o.last_name as operator_name
       FROM timesheets ts
-      LEFT JOIN operators o ON ts.operator_id = o.id
+      LEFT JOIN rrhh.trabajador o ON ts.operator_id = o.id
       WHERE 1=1
     `;
     const params: any[] = [];

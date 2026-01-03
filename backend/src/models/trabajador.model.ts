@@ -35,7 +35,7 @@ export class Trabajador {
   @Column({ name: 'telefono', type: 'varchar', length: 20, nullable: true })
   telefono?: string;
 
-  @Column({ name: 'email', type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'correo_electronico', type: 'varchar', length: 255, nullable: true })
   email?: string;
 
   @Column({ name: 'direccion', type: 'text', nullable: true })
@@ -60,8 +60,8 @@ export class Trabajador {
   @Column({ name: 'licencia_conducir', type: 'varchar', length: 50, nullable: true })
   licenciaConducir?: string;
 
-  @Column({ name: 'operating_unit_id', type: 'integer', nullable: true })
-  @Index('idx_trabajador_operating_unit')
+  @Column({ name: 'unidad_operativa_id', type: 'integer', nullable: true })
+  @Index('idx_trabajador_unidad_operativa')
   operatingUnitId?: number;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })

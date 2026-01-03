@@ -9,7 +9,7 @@ export class AccountsPayableService {
 
   async findAll(): Promise<AccountsPayable[]> {
     return await AccountsPayableRepository.find({
-      relations: ['provider', 'project', 'cost_center'],
+      relations: ['provider'],
       order: { created_at: 'DESC' },
     });
   }
@@ -17,7 +17,7 @@ export class AccountsPayableService {
   async findOne(id: number): Promise<AccountsPayable | null> {
     return await AccountsPayableRepository.findOne({
       where: { id },
-      relations: ['provider', 'project', 'cost_center'],
+      relations: ['provider'],
     });
   }
 

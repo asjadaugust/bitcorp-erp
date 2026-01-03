@@ -1,17 +1,17 @@
-import { 
-  Entity, 
-  Column, 
-  ManyToOne, 
+import {
+  Entity,
+  Column,
+  ManyToOne,
   JoinColumn,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  UpdateDateColumn 
+  UpdateDateColumn,
 } from 'typeorm';
 import { Equipment } from './equipment.model';
 // import { Operator } from './operator.model';  // TODO: Convert to TypeORM entity
 import { Project } from './project.model';
 
-@Entity('daily_reports')
+@Entity('parte_diario', { schema: 'equipo' })
 export class DailyReport {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -19,26 +19,26 @@ export class DailyReport {
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
   legacy_id?: string;
 
-  @Column({ name: 'equipment_id', type: 'integer', nullable: true })
+  @Column({ name: 'equipo_id', type: 'integer', nullable: true })
   equipment_id?: number;
 
   @ManyToOne(() => Equipment)
-  @JoinColumn({ name: 'equipment_id' })
+  @JoinColumn({ name: 'equipo_id' })
   equipment?: Equipment;
 
-  @Column({ name: 'operator_id', type: 'integer', nullable: true })
+  @Column({ name: 'trabajador_id', type: 'integer', nullable: true })
   operator_id?: number;
 
   // TODO: Uncomment when Operator is converted to TypeORM entity
   // @ManyToOne(() => Operator)
-  // @JoinColumn({ name: 'operator_id' })
+  // @JoinColumn({ name: 'trabajador_id' })
   // operator?: Operator;
 
-  @Column({ name: 'project_id', type: 'integer', nullable: true })
+  @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
   project_id?: number;
 
   @ManyToOne(() => Project)
-  @JoinColumn({ name: 'project_id' })
+  @JoinColumn({ name: 'proyecto_id' })
   project?: Project;
 
   @Column({ name: 'fecha_reporte', type: 'date' })
@@ -68,7 +68,13 @@ export class DailyReport {
   @Column({ name: 'combustible_inicial', type: 'decimal', precision: 10, scale: 2, nullable: true })
   combustible_inicial?: number;
 
-  @Column({ name: 'combustible_agregado', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'combustible_agregado',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
   combustible_agregado?: number;
 
   @Column({ name: 'combustible_final', type: 'decimal', precision: 10, scale: 2, nullable: true })

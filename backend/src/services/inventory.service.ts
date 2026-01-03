@@ -40,12 +40,12 @@ export class InventoryService {
         if (movement.tipo_movimiento === 'entrada') {
           // Update Weighted Average Cost (Costo Promedio Ponderado)
           const totalValue =
-            Number(product.stock_actual) * Number(product.costo_unitario) +
+            Number(product.stock_actual) * Number(product.precio_unitario || 0) +
             Number(detail.cantidad) * Number(detail.costo_unitario);
           const totalStock = Number(product.stock_actual) + Number(detail.cantidad);
 
           if (totalStock > 0) {
-            product.costo_unitario = totalValue / totalStock;
+            product.precio_unitario = totalValue / totalStock;
           }
           product.stock_actual = totalStock;
         } else if (movement.tipo_movimiento === 'salida') {

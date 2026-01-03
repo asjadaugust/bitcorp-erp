@@ -51,14 +51,14 @@ export class Equipment {
   @Column({ name: 'codigo_equipo', type: 'varchar', length: 50, unique: true })
   codigo_equipo!: string;
 
-  @Column({ name: 'equipment_type_id', type: 'integer', nullable: true })
+  @Column({ name: 'tipo_equipo_id', type: 'integer', nullable: true })
   equipment_type_id?: number;
 
-  @Column({ name: 'provider_id', type: 'integer', nullable: true })
+  @Column({ name: 'proveedor_id', type: 'integer', nullable: true })
   provider_id?: number;
 
   @ManyToOne(() => Provider, { nullable: true })
-  @JoinColumn({ name: 'provider_id' })
+  @JoinColumn({ name: 'proveedor_id' })
   provider?: Provider;
 
   @Column({ name: 'tipo_proveedor', type: 'varchar', length: 50, nullable: true })
@@ -77,7 +77,7 @@ export class Equipment {
   modelo?: string;
 
   @Column({ name: 'numero_serie_equipo', type: 'varchar', length: 100, nullable: true })
-  numeroSerieEquipo?: string;
+  numero_serie_equipo?: string;
 
   @Column({ name: 'numero_chasis', type: 'varchar', length: 100, nullable: true })
   numero_chasis?: string;
@@ -105,6 +105,12 @@ export class Equipment {
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   is_active!: boolean;
+
+  @Column({ name: 'creado_por', type: 'integer', nullable: true })
+  created_by?: number;
+
+  @Column({ name: 'actualizado_por', type: 'integer', nullable: true })
+  updated_by?: number;
 
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;

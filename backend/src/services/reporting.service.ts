@@ -18,7 +18,7 @@ export class ReportingService {
       GROUP BY e."C08001_Id", e."C08001_Codigo", e.name, e.equipment_type
       ORDER BY total_hours DESC
     `;
-    
+
     const result = await pool.query(query, [startDate, endDate]);
     return result.rows;
   }
@@ -42,7 +42,7 @@ export class ReportingService {
       WHERE mr.start_date >= $1 AND mr.start_date <= $2
       ORDER BY mr.start_date DESC
     `;
-    
+
     const result = await pool.query(query, [startDate, endDate]);
     return result.rows;
   }
@@ -67,7 +67,7 @@ export class ReportingService {
       GROUP BY m.id, m.fecha, m.tipo_movimiento, m.tipo_documento, m.numero_documento, p."G00007_Nombre", pr."C07001_RazonSocial"
       ORDER BY m.fecha DESC
     `;
-    
+
     const result = await pool.query(query, [startDate, endDate]);
     return result.rows;
   }
@@ -75,22 +75,22 @@ export class ReportingService {
   async getOperatorTimesheet(startDate: string, endDate: string) {
     const query = `
       SELECT 
-        o."C05000_Nombre" || ' ' || o."C05000_Apellido" as operator_name,
-        p."G00007_Nombre" as project_name,
-        COUNT(DISTINCT dr."C08005_Fecha") as days_worked,
-        SUM(EXTRACT(EPOCH FROM (dr.end_time - dr.start_time))/3600) as total_hours,
-        SUM(CASE WHEN EXTRACT(EPOCH FROM (dr.end_time - dr.start_time))/3600 > 8 
-            THEN (EXTRACT(EPOCH FROM (dr.end_time - dr.start_time))/3600) - 8 
+        o.nombres || ' ' || o.apellido_paterno as operator_name,
+        p.nombre as project_name,
+        COUNT(DISTINCT dr.fecha) as days_worked,
+        SUM(dr.horas_trabajadas) as total_hours,
+        SUM(CASE WHEN dr.horas_trabajadas > 8 
+            THEN dr.horas_trabajadas - 8 
             ELSE 0 END) as overtime_hours
-      FROM tbl_c05000_trabajador o
-      JOIN tbl_c08005_partediario dr ON o."C05000_Id" = dr.operator_id
-      LEFT JOIN tbl_g00007_proyecto p ON dr.project_id = p."G00007_Id"
-      WHERE dr."C08005_Fecha" >= $1 AND dr."C08005_Fecha" <= $2
-        AND dr.status = 'approved'
-      GROUP BY o."C05000_Id", o."C05000_Nombre", o."C05000_Apellido", p."G00007_Nombre"
+      FROM rrhh.trabajador o
+      JOIN equipo.parte_diario dr ON o.id = dr.trabajador_id
+      LEFT JOIN proyectos.edt p ON dr.proyecto_id = p.id
+      WHERE dr.fecha >= $1 AND dr.fecha <= $2
+        AND dr.estado = 'aprobado'
+      GROUP BY o.id, o.nombres, o.apellido_paterno, p.nombre
       ORDER BY operator_name, project_name
     `;
-    
+
     const result = await pool.query(query, [startDate, endDate]);
     return result.rows;
   }

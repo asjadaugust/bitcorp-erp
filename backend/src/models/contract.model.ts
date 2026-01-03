@@ -1,12 +1,12 @@
-import { 
-  Entity, 
-  Column, 
-  ManyToOne, 
-  JoinColumn, 
-  OneToMany, 
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  UpdateDateColumn 
+  UpdateDateColumn,
 } from 'typeorm';
 import { Equipment } from './equipment.model';
 import { Provider } from './provider.model';
@@ -23,11 +23,11 @@ export class Contract {
   @Column({ name: 'numero_contrato', type: 'varchar', length: 50, unique: true })
   numero_contrato!: string;
 
-  @Column({ name: 'equipment_id', type: 'integer', nullable: true })
+  @Column({ name: 'equipo_id', type: 'integer', nullable: true })
   equipment_id?: number;
 
   @ManyToOne(() => Equipment)
-  @JoinColumn({ name: 'equipment_id' })
+  @JoinColumn({ name: 'equipo_id' })
   equipment?: Equipment;
 
   @Column({ name: 'fecha_inicio', type: 'date' })
@@ -48,8 +48,8 @@ export class Contract {
   @Column({ name: 'incluye_operador', type: 'boolean', default: false })
   incluye_operador!: boolean;
 
-  @Column({ name: 'incluye_combustible', type: 'boolean', default: false })
-  incluye_combustible!: boolean;
+  @Column({ name: 'incluye_motor', type: 'boolean', default: false })
+  incluye_motor!: boolean;
 
   @Column({ name: 'horas_incluidas', type: 'integer', nullable: true })
   horas_incluidas?: number;
@@ -59,9 +59,6 @@ export class Contract {
 
   @Column({ name: 'estado', type: 'varchar', length: 20, default: 'activo' })
   estado!: string;
-
-  @Column({ name: 'is_active', type: 'boolean', default: true })
-  is_active!: boolean;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;

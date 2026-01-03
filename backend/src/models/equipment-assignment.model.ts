@@ -7,18 +7,18 @@ export class EquipmentAssignment {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: 'equipment_id', type: 'integer' })
+  @Column({ name: 'equipo_id', type: 'integer' })
   equipmentId!: number;
 
   @ManyToOne(() => Equipment)
-  @JoinColumn({ name: 'equipment_id' })
+  @JoinColumn({ name: 'equipo_id' })
   equipment!: Equipment;
 
-  @Column({ name: 'project_id', type: 'integer' })
+  @Column({ name: 'proyecto_id', type: 'integer' })
   projectId!: number;
 
   @ManyToOne(() => Project)
-  @JoinColumn({ name: 'project_id' })
+  @JoinColumn({ name: 'proyecto_id' })
   project!: Project;
 
   @Column({ name: 'fecha_asignacion', type: 'date' })

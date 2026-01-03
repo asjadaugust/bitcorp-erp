@@ -115,10 +115,9 @@ export class ContractRepository {
     // Get project_id from equipment if not provided
     let projectId = (data as any).project_id;
     if (!projectId && contract.equipment_id) {
-      const eqResult = await this.pool.query(
-        'SELECT project_id FROM equipo.equipo WHERE id = $1',
-        [contract.equipment_id]
-      );
+      const eqResult = await this.pool.query('SELECT project_id FROM equipo.equipo WHERE id = $1', [
+        contract.equipment_id,
+      ]);
       if (eqResult.rows.length > 0 && eqResult.rows[0].project_id) {
         projectId = eqResult.rows[0].project_id;
       }
@@ -126,7 +125,9 @@ export class ContractRepository {
 
     // If still no project_id, get first available project
     if (!projectId) {
-      const projResult = await this.pool.query('SELECT id FROM proyectos.edt ORDER BY created_at LIMIT 1');
+      const projResult = await this.pool.query(
+        'SELECT id FROM proyectos.edt ORDER BY created_at LIMIT 1'
+      );
       if (projResult.rows.length > 0) {
         projectId = projResult.rows[0].id;
       }
@@ -134,7 +135,9 @@ export class ContractRepository {
 
     // Get company_id - convert tenantId to UUID if needed
     let companyId: string;
-    const companyResult = await this.pool.query('SELECT id FROM administracion.empresa ORDER BY created_at LIMIT 1');
+    const companyResult = await this.pool.query(
+      'SELECT id FROM administracion.empresa ORDER BY created_at LIMIT 1'
+    );
     if (companyResult.rows.length > 0) {
       companyId = companyResult.rows[0].id;
     } else {
@@ -143,30 +146,29 @@ export class ContractRepository {
 
     const query = `
       INSERT INTO equipo.contrato_adenda (
-        project_id, numero_contrato, equipment_id, provider_id, 
+        numero_contrato, equipo_id, 
         fecha_inicio, fecha_fin, moneda, tipo_tarifa, tarifa,
-        incluye_operador, incluye_combustible, horas_incluidas, 
-        condiciones_especiales, estado
+        incluye_operador, incluye_motor, horas_incluidas, 
+        condiciones_especiales, estado, creado_por
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `;
 
     const values = [
-      projectId,
       contract.numero_contrato,
       contract.equipment_id,
-      contract.provider_id,
       contract.fecha_inicio,
       contract.fecha_fin,
       contract.moneda || 'PEN',
       contract.tipo_tarifa || 'hourly',
       contract.tarifa || 0,
       contract.incluye_operador || false,
-      contract.incluye_combustible || false,
+      contract.incluye_motor || false,
       contract.horas_incluidas || null,
       contract.condiciones_especiales || null,
-      contract.estado || 'activo',
+      contract.estado || 'ACTIVO',
+      userId,
     ];
 
     const result = await this.pool.query(query, values);
@@ -313,13 +315,13 @@ export class ContractRepository {
       numero_adenda: addendumNumber,
       creado_por: userId,
       created_at: new Date(),
-      is_active: true,
+      estado: 'ACTIVO',
     });
 
     const query = `
       INSERT INTO equipo.contrato_adenda (
         numero_adenda, contract_id, nueva_fecha_fin, cambio_tarifa, nueva_tarifa,
-        nueva_moneda, justificacion, documento_url, creado_por, is_active
+        nueva_moneda, justificacion, documento_url, creado_por, estado
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
@@ -335,7 +337,7 @@ export class ContractRepository {
       addendum.justificacion,
       addendum.documento_url,
       addendum.creado_por,
-      addendum.is_active,
+      addendum.estado,
     ];
 
     const result = await this.pool.query(query, values);

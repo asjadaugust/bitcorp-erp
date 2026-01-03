@@ -1,6 +1,11 @@
 import db from '../config/database.config';
-import { ModuleWithPermissions, Module, UserModulePermission, ModulePage } from '../models/module.model';
-import { Project, UserProject } from '../models/project.model';
+import {
+  ModuleWithPermissions,
+  Module,
+  UserModulePermission,
+  ModulePage,
+} from '../models/module.model';
+import { Project } from '../models/project.model';
 
 export class DashboardService {
   /**
@@ -16,16 +21,16 @@ export class DashboardService {
           ump.puede_editar,
           ump.puede_eliminar,
           ump.puede_aprobar
-        FROM modules m
-        LEFT JOIN user_module_permissions ump 
-          ON m.id = ump.module_id AND ump.user_id = $1
+        FROM sistema.modulo m
+        LEFT JOIN sistema.usuario_modulo_permiso ump 
+          ON m.id = ump.modulo_id AND ump.usuario_id = $1
         WHERE m.is_active = true
-        ORDER BY m.nivel, m.orden
+        ORDER BY m.orden_visualizacion
       `;
-      
+
       const result = await db.query(query, [userId]);
-      
-      const modules: ModuleWithPermissions[] = result.rows.map(row => ({
+
+      const modules: ModuleWithPermissions[] = result.rows.map((row) => ({
         id: row.id,
         codigo: row.codigo,
         nombre_es: row.nombre_es,
@@ -45,7 +50,7 @@ export class DashboardService {
           puede_editar: row.puede_editar || false,
           puede_eliminar: row.puede_eliminar || false,
           puede_aprobar: row.puede_aprobar || false,
-        }
+        },
       }));
 
       // Get pages for each module
@@ -84,17 +89,17 @@ export class DashboardService {
         FROM sistema.usuario u
         WHERE u.id = $1
       `;
-      
+
       console.log('getUserInfo - userId:', userId, 'type:', typeof userId);
       const userResult = await db.query(userQuery, [userId]);
       console.log('getUserInfo - userResult rows:', userResult.rows.length);
-      
+
       if (userResult.rows.length === 0) {
         throw new Error('User not found');
       }
-      
+
       const user = userResult.rows[0];
-      
+
       // Get user roles
       const rolesQuery = `
         SELECT r.name 
@@ -103,8 +108,8 @@ export class DashboardService {
         WHERE ur.user_id = $1
       `;
       const rolesResult = await db.query(rolesQuery, [userId]);
-      const roles = rolesResult.rows.map(r => r.name);
-      
+      const roles = rolesResult.rows.map((r) => r.name);
+
       // Get active project if set
       let active_project = null;
       if (user.active_project_id) {
@@ -118,7 +123,7 @@ export class DashboardService {
           active_project = projectResult.rows[0];
         }
       }
-      
+
       // Get all assigned projects
       const assignedProjectsQuery = `
         SELECT 
@@ -133,9 +138,9 @@ export class DashboardService {
         WHERE up.user_id = $1
         ORDER BY p.name
       `;
-      
+
       const assignedProjectsResult = await db.query(assignedProjectsQuery, [userId]);
-      
+
       return {
         user: {
           id: user.id,
@@ -143,10 +148,10 @@ export class DashboardService {
           first_name: user.first_name,
           last_name: user.last_name,
           email: user.email,
-          roles: roles
+          roles: roles,
         },
         active_project,
-        assigned_projects: assignedProjectsResult.rows
+        assigned_projects: assignedProjectsResult.rows,
       };
     } catch (error) {
       console.error('Error fetching user info:', error);
@@ -164,13 +169,13 @@ export class DashboardService {
         SELECT 1 FROM sistema.user_projects 
         WHERE user_id = $1 AND project_id = $2 AND is_active = true
       `;
-      
+
       const accessResult = await db.query(accessQuery, [userId, projectId]);
-      
+
       if (accessResult.rows.length === 0) {
         throw new Error('User does not have access to this project');
       }
-      
+
       // Update user's active project
       const updateQuery = `
         UPDATE sistema.usuario 
@@ -178,20 +183,20 @@ export class DashboardService {
         WHERE id = $2
         RETURNING active_project_id
       `;
-      
+
       await db.query(updateQuery, [projectId, userId]);
-      
+
       // Get project details
       const projectQuery = `
         SELECT * FROM proyectos.edt WHERE id = $1
       `;
-      
+
       const projectResult = await db.query(projectQuery, [projectId]);
-      
+
       if (projectResult.rows.length === 0) {
         throw new Error('Project not found');
       }
-      
+
       return projectResult.rows[0];
     } catch (error) {
       console.error('Error switching project:', error);
@@ -224,7 +229,7 @@ export class DashboardService {
       stats.total_equipment = parseInt(equipmentResult.rows[0].total);
 
       // Active equipment (in use or available)
-      let activeEquipmentQuery = 
+      let activeEquipmentQuery =
         "SELECT COUNT(*) as total FROM equipo.equipo WHERE is_active = true AND status IN ('available', 'in_use')";
       const activeEquipmentParams: any[] = [];
 

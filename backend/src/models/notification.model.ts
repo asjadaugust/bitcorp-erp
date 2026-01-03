@@ -4,11 +4,11 @@ import { User } from './user.model';
 
 @Entity('notifications')
 export class Notification extends BaseModel {
-  @Column({ name: 'user_id' })
+  @Column({ name: 'usuario_id' })
   userId!: number;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'usuario_id' })
   user!: User;
 
   @Column({ type: 'varchar', length: 50 })
