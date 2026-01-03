@@ -18,10 +18,10 @@ export class CostCenterService {
     try {
       const queryBuilder = this.repository
         .createQueryBuilder('cc')
-        .where('cc.is_active = :isActive', { isActive: filters?.isActive ?? true });
+        .where('cc.isActive = :isActive', { isActive: filters?.isActive ?? true });
 
       if (filters?.projectId) {
-        queryBuilder.andWhere('cc.proyecto_id = :projectId', { projectId: filters.projectId });
+        queryBuilder.andWhere('cc.projectId = :projectId', { projectId: filters.projectId });
       }
 
       if (filters?.search) {
@@ -70,7 +70,7 @@ export class CostCenterService {
   async findByProject(projectId: number): Promise<CentroCosto[]> {
     try {
       return await this.repository.find({
-        where: { project_id: projectId, is_active: true },
+        where: { projectId: projectId, isActive: true },
         order: { codigo: 'ASC' },
       });
     } catch (error) {
@@ -94,7 +94,7 @@ export class CostCenterService {
 
       const costCenter = this.repository.create({
         ...data,
-        is_active: data.is_active ?? true,
+        isActive: data.isActive ?? true,
       });
 
       return await this.repository.save(costCenter);
@@ -126,7 +126,7 @@ export class CostCenterService {
 
   async delete(id: number): Promise<void> {
     try {
-      await this.repository.update(id, { is_active: false });
+      await this.repository.update(id, { isActive: false });
     } catch (error) {
       console.error('Error deleting cost center:', error);
       throw new Error('Failed to delete cost center');
@@ -138,8 +138,8 @@ export class CostCenterService {
       const result = await this.repository
         .createQueryBuilder('cc')
         .select('SUM(cc.presupuesto)', 'total')
-        .where('cc.proyecto_id = :projectId', { projectId })
-        .andWhere('cc.is_active = true')
+        .where('cc.projectId = :projectId', { projectId })
+        .andWhere('cc.isActive = true')
         .getRawOne();
 
       return parseFloat(result?.total || '0');
@@ -152,7 +152,7 @@ export class CostCenterService {
   async getActiveCount(): Promise<number> {
     try {
       return await this.repository.count({
-        where: { is_active: true },
+        where: { isActive: true },
       });
     } catch (error) {
       console.error('Error counting cost centers:', error);
