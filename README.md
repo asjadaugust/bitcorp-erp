@@ -4,11 +4,14 @@ Modern ERP system for civil engineering equipment management built with Angular 
 
 ## 📚 Documentation
 
-- **[deploy/DEPLOYMENT.md](./deploy/DEPLOYMENT.md)** - Production deployment guide
-- **[deploy/DATABASE_SCRIPTS.md](./deploy/DATABASE_SCRIPTS.md)** - Database management
-- **[docs/CLEANUP_SUMMARY.md](./docs/CLEANUP_SUMMARY.md)** - Recent cleanup changes
-- **[docs/copilot-instructions.md](./docs/copilot-instructions.md)** - AI development guide
-- **[docs/testing/](./docs/testing/)** - Testing documentation
+| Document                                                           | Description                             |
+| ------------------------------------------------------------------ | --------------------------------------- |
+| **[docs/SCHEMA_CONVENTIONS.md](./docs/SCHEMA_CONVENTIONS.md)**     | 📘 Database schema & naming conventions |
+| **[deploy/DEPLOYMENT.md](./deploy/DEPLOYMENT.md)**                 | 🚀 Production deployment guide          |
+| **[deploy/DATABASE_SCRIPTS.md](./deploy/DATABASE_SCRIPTS.md)**     | 🗄️ Database management                  |
+| **[docs/CLEANUP_SUMMARY.md](./docs/CLEANUP_SUMMARY.md)**           | 🧹 Recent cleanup changes               |
+| **[docs/copilot-instructions.md](./docs/copilot-instructions.md)** | 🤖 AI development guide                 |
+| **[docs/testing/](./docs/testing/)**                               | 🧪 Testing documentation                |
 
 ---
 
@@ -65,22 +68,22 @@ bitcorp-erp/
 
 ## 🔑 Default Credentials
 
-| Role | Username | Password |
-|------|----------|----------|
-| **Administrator** | `admin` | `admin123` |
-| **Operator** | `operator1` | `operator123` |
+| Role              | Username    | Password      |
+| ----------------- | ----------- | ------------- |
+| **Administrator** | `admin`     | `admin123`    |
+| **Operator**      | `operator1` | `operator123` |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| **Frontend** | Angular | 19 |
-| **Backend** | Node.js + TypeScript | 20 LTS |
-| **Database** | PostgreSQL | 16 |
-| **Cache** | Redis | 7 |
-| **Containerization** | Docker + Docker Compose | Latest |
+| Component            | Technology              | Version |
+| -------------------- | ----------------------- | ------- |
+| **Frontend**         | Angular                 | 19      |
+| **Backend**          | Node.js + TypeScript    | 20 LTS  |
+| **Database**         | PostgreSQL              | 16      |
+| **Cache**            | Redis                   | 7       |
+| **Containerization** | Docker + Docker Compose | Latest  |
 
 ---
 
@@ -133,13 +136,14 @@ bitcorp-erp/
 
 ## 📚 Documentation
 
-| Document | Description |
-|----------|-------------|
-| [`SYNOLOGY_DEPLOYMENT_GUIDE.md`](./SYNOLOGY_DEPLOYMENT_GUIDE.md) | 📘 Complete NAS deployment guide |
-| [`nas-commands.sh`](./nas-commands.sh) | 🔧 Interactive NAS management menu |
-| [`copilot-instructions.md`](./copilot-instructions.md) | 🤖 AI development guidelines |
-| [`docs/api/`](./docs/api/) | 📡 API endpoint documentation |
-| [`docs/architecture/`](./docs/architecture/) | 🏗️ System architecture |
+| Document                                                         | Description                                 |
+| ---------------------------------------------------------------- | ------------------------------------------- |
+| [`docs/SCHEMA_CONVENTIONS.md`](./docs/SCHEMA_CONVENTIONS.md)     | 📘 **Database schema & naming conventions** |
+| [`SYNOLOGY_DEPLOYMENT_GUIDE.md`](./SYNOLOGY_DEPLOYMENT_GUIDE.md) | 🚀 Complete NAS deployment guide            |
+| [`nas-commands.sh`](./nas-commands.sh)                           | 🔧 Interactive NAS management menu          |
+| [`copilot-instructions.md`](./copilot-instructions.md)           | 🤖 AI development guidelines                |
+| [`docs/api/`](./docs/api/)                                       | 📡 API endpoint documentation               |
+| [`docs/architecture/`](./docs/architecture/)                     | 🏗️ System architecture                      |
 
 ---
 
@@ -194,29 +198,33 @@ bash nas-commands.sh
 
 ## 🗄️ Database
 
-### Schema
+### Schema Organization
 
-Core tables:
-- **Auth**: `users`, `roles`, `user_roles`, `refresh_tokens`
-- **Projects**: `projects`, `project_sites`
-- **Equipment**: `equipment`, `equipment_assignments`, `equipment_types`
-- **Operators**: `operators`, `operator_skills`
-- **Reports**: `daily_reports`, `equipment_readings`
-- **Scheduling**: `scheduled_tasks`, `maintenance_schedules`
-- **Finance**: `cost_centers`, `contracts`, `valuations`
-- **Safety**: `safety_incidents`
-- **Documents**: `sig_documents`, `tenders`
+The database uses PostgreSQL schemas to organize tables by business domain:
+
+- **`sistema`** - Core system (users, roles, audit)
+- **`proyectos`** - Project management
+- **`equipo`** - Equipment management
+- **`rrhh`** - Human resources
+- **`logistica`** - Logistics & inventory
+- **`proveedores`** - Suppliers
+- **`administracion`** - Finance & admin
+- **`sst`** - Safety & health
+
+📘 **See [docs/SCHEMA_CONVENTIONS.md](./docs/SCHEMA_CONVENTIONS.md) for complete naming conventions and best practices.**
 
 ### Migrations
 
 Migrations run automatically on container startup:
-- `init/001_init.sql` - Schema creation
-- `migrations/002_seed.sql` - Test data seeding
+
+- `database/001_init_schema.sql` - Schema creation
+- `database/002_seed.sql` - Test data seeding
 
 Manual migration (if needed):
+
 ```bash
-sudo docker exec -i bitcorp-postgres psql -U bitcorp -d bitcorp_prod < /volume1/docker/bitcorp-erp/init/001_init.sql
-sudo docker exec -i bitcorp-postgres psql -U bitcorp -d bitcorp_prod < /volume1/docker/bitcorp-erp/migrations/002_seed.sql
+sudo docker exec -i bitcorp-postgres psql -U bitcorp -d bitcorp_prod < /volume1/docker/bitcorp-erp/database/001_init_schema.sql
+sudo docker exec -i bitcorp-postgres psql -U bitcorp -d bitcorp_prod < /volume1/docker/bitcorp-erp/database/002_seed.sql
 ```
 
 ---
@@ -244,16 +252,17 @@ sudo docker exec -i bitcorp-postgres psql -U bitcorp -d bitcorp_prod < /volume1/
 
 ### Quick Fixes
 
-| Issue | Solution |
-|-------|----------|
-| **Can't login** | Check backend logs: `sudo docker-compose logs backend` |
-| **502 Gateway** | Backend not running: `sudo docker-compose ps` |
-| **Empty tables** | Re-run seed: See deployment guide |
-| **Permission denied** | Use `sudo` with docker-compose on NAS |
+| Issue                 | Solution                                               |
+| --------------------- | ------------------------------------------------------ |
+| **Can't login**       | Check backend logs: `sudo docker-compose logs backend` |
+| **502 Gateway**       | Backend not running: `sudo docker-compose ps`          |
+| **Empty tables**      | Re-run seed: See deployment guide                      |
+| **Permission denied** | Use `sudo` with docker-compose on NAS                  |
 
 ### Common Issues
 
 **Backend crashes**:
+
 ```bash
 # Check logs
 sudo docker-compose logs backend | tail -50
@@ -263,6 +272,7 @@ sudo docker-compose up -d --build backend
 ```
 
 **Database connection failed**:
+
 ```bash
 # Fresh start (removes all data!)
 sudo docker-compose down -v
@@ -271,6 +281,7 @@ sudo docker-compose up -d
 ```
 
 **Frontend 502 error**:
+
 ```bash
 # Check network
 sudo docker network inspect bitcorp-erp_bitcorp-network
@@ -300,14 +311,15 @@ sudo docker-compose restart frontend
 
 **Production (Synology NAS)**:
 
-| Service | Status | URL |
-|---------|--------|-----|
+| Service  | Status     | URL                      |
+| -------- | ---------- | ------------------------ |
 | Frontend | ✅ Running | http://192.168.0.13:3420 |
-| Backend | ✅ Running | http://192.168.0.13:3400 |
-| Database | ✅ Running | Internal (3440) |
-| Redis | ✅ Running | Internal (3460) |
+| Backend  | ✅ Running | http://192.168.0.13:3400 |
+| Database | ✅ Running | Internal (3440)          |
+| Redis    | ✅ Running | Internal (3460)          |
 
 Check status:
+
 ```bash
 sudo docker-compose ps
 ```
