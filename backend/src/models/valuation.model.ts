@@ -21,16 +21,16 @@ export class Valorizacion {
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
   legacyId?: string;
 
-  @Column({ name: 'equipment_id', type: 'integer' })
-  @Index('idx_valorizacion_equipo_equipment')
+  @Column({ name: 'equipo_id', type: 'integer' })
+  @Index('idx_valorizacion_equipo_equipo')
   equipmentId!: number;
 
-  @Column({ name: 'contract_id', type: 'integer', nullable: true })
-  @Index('idx_valorizacion_equipo_contract')
+  @Column({ name: 'contrato_id', type: 'integer', nullable: true })
+  @Index('idx_valorizacion_equipo_contrato')
   contractId?: number;
 
-  @Column({ name: 'project_id', type: 'integer', nullable: true })
-  @Index('idx_valorizacion_equipo_project')
+  @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
+  @Index('idx_valorizacion_equipo_proyecto')
   projectId?: number;
 
   @Column({ name: 'periodo', type: 'varchar', length: 7 })
@@ -49,7 +49,13 @@ export class Valorizacion {
   @Column({ name: 'horas_trabajadas', type: 'decimal', precision: 10, scale: 2, nullable: true })
   horasTrabajadas?: number;
 
-  @Column({ name: 'combustible_consumido', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'combustible_consumido',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
   combustibleConsumido?: number;
 
   @Column({ name: 'costo_base', type: 'decimal', precision: 15, scale: 2, nullable: true })
@@ -71,13 +77,13 @@ export class Valorizacion {
   @Column({ name: 'observaciones', type: 'text', nullable: true })
   observaciones?: string;
 
-  @Column({ name: 'created_by', type: 'integer', nullable: true })
+  @Column({ name: 'creado_por', type: 'integer', nullable: true })
   createdBy?: number;
 
-  @Column({ name: 'approved_by', type: 'integer', nullable: true })
+  @Column({ name: 'aprobado_por', type: 'integer', nullable: true })
   approvedBy?: number;
 
-  @Column({ name: 'approved_at', type: 'timestamp', nullable: true })
+  @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
   approvedAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -88,11 +94,11 @@ export class Valorizacion {
 
   // Relations
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'created_by' })
+  @JoinColumn({ name: 'creado_por' })
   creator?: User;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'approved_by' })
+  @JoinColumn({ name: 'aprobado_por' })
   approver?: User;
 }
 

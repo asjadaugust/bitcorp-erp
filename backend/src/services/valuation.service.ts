@@ -31,7 +31,8 @@ export class ValuationService {
       const limit = filters?.limit || 10;
       const skip = (page - 1) * limit;
 
-      const queryBuilder = this.repository.createQueryBuilder('v')
+      const queryBuilder = this.repository
+        .createQueryBuilder('v')
         .leftJoinAndSelect('v.creator', 'creator')
         .leftJoinAndSelect('v.approver', 'approver');
 
@@ -40,21 +41,20 @@ export class ValuationService {
       }
 
       if (filters?.projectId) {
-        queryBuilder.andWhere('v.project_id = :projectId', { projectId: filters.projectId });
+        queryBuilder.andWhere('v.proyecto_id = :projectId', { projectId: filters.projectId });
       }
 
       if (filters?.equipmentId) {
-        queryBuilder.andWhere('v.equipment_id = :equipmentId', { equipmentId: filters.equipmentId });
+        queryBuilder.andWhere('v.equipo_id = :equipmentId', { equipmentId: filters.equipmentId });
       }
 
       if (filters?.search) {
-        queryBuilder.andWhere(
-          '(v.periodo ILIKE :search OR v.observaciones ILIKE :search)',
-          { search: `%${filters.search}%` }
-        );
+        queryBuilder.andWhere('(v.periodo ILIKE :search OR v.observaciones ILIKE :search)', {
+          search: `%${filters.search}%`,
+        });
       }
 
-      queryBuilder.orderBy('v.created_at', 'DESC');
+      queryBuilder.orderBy('v.createdAt', 'DESC');
 
       const total = await queryBuilder.getCount();
       queryBuilder.skip(skip).take(limit);
@@ -158,16 +158,16 @@ export class ValuationService {
         .getRawMany();
 
       return {
-        status_breakdown: statusStats.map(r => ({
+        status_breakdown: statusStats.map((r) => ({
           status: r.estado || 'PENDIENTE',
           count: parseInt(r.count),
-          total: parseFloat(r.total || 0)
+          total: parseFloat(r.total || 0),
         })),
-        monthly_trend: monthlyTrend.reverse().map(r => ({
+        monthly_trend: monthlyTrend.reverse().map((r) => ({
           period: r.periodo,
-          total: parseFloat(r.total || 0)
+          total: parseFloat(r.total || 0),
         })),
-        top_equipment: [] // TODO: Implement with equipment join
+        top_equipment: [], // TODO: Implement with equipment join
       };
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -208,29 +208,37 @@ export class ValuationService {
       base_cost: 0,
       excess_cost: 0,
       total_estimated: 0,
-      currency: 'PEN'
+      currency: 'PEN',
     };
   }
 
-  async generateValuationForContract(contractId: string, month: number, year: number, userId: string) {
+  async generateValuationForContract(
+    contractId: string,
+    month: number,
+    year: number,
+    userId: string
+  ) {
     const calculation = await this.calculateValuation(contractId, month, year);
     const periodo = `${year}-${String(month).padStart(2, '0')}`;
     const fechaInicio = new Date(year, month - 1, 1);
     const fechaFin = new Date(year, month, 0);
 
-    return this.create({
-      contractId: parseInt(contractId),
-      periodo,
-      fechaInicio,
-      fechaFin,
-      diasTrabajados: calculation.total_days,
-      horasTrabajadas: calculation.total_hours,
-      combustibleConsumido: calculation.total_fuel,
-      costoBase: calculation.base_cost,
-      totalValorizado: calculation.total_estimated,
-      estado: 'PENDIENTE',
-      observaciones: `Auto-generado el ${new Date().toISOString()}`,
-    }, parseInt(userId));
+    return this.create(
+      {
+        contractId: parseInt(contractId),
+        periodo,
+        fechaInicio,
+        fechaFin,
+        diasTrabajados: calculation.total_days,
+        horasTrabajadas: calculation.total_hours,
+        combustibleConsumido: calculation.total_fuel,
+        costoBase: calculation.base_cost,
+        totalValorizado: calculation.total_estimated,
+        estado: 'PENDIENTE',
+        observaciones: `Auto-generado el ${new Date().toISOString()}`,
+      },
+      parseInt(userId)
+    );
   }
 
   async generateValuationsForPeriod(month: number, year: number, userId: string) {

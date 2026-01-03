@@ -29,19 +29,19 @@ export class CentroCosto {
 
   @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
   @Index('idx_centro_costo_project')
-  project_id?: number;
+  projectId?: number;
 
   @Column({ name: 'presupuesto', type: 'decimal', precision: 15, scale: 2, nullable: true })
   presupuesto?: number;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  is_active!: boolean;
+  isActive!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
-  created_at!: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updated_at!: Date;
+  updatedAt!: Date;
 }
 
 // Backward compatibility alias

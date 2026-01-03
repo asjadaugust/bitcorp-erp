@@ -20,43 +20,34 @@ export class MovementDetail {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ name: 'movimiento_id' })
   @Index('idx_movement_details_movement')
-  movement_id: number;
+  movementId: number;
 
   @ManyToOne(() => Movement, (movement) => movement.details, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'movement_id' })
+  @JoinColumn({ name: 'movimiento_id' })
   movement: Movement;
 
-  @Column()
+  @Column({ name: 'producto_id' })
   @Index('idx_movement_details_product')
-  product_id: number;
+  productId: number;
 
   @ManyToOne(() => Product)
-  @JoinColumn({ name: 'product_id' })
+  @JoinColumn({ name: 'producto_id' })
   product: Product;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 12, scale: 3 })
   cantidad: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  costo_unitario: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2, name: 'precio_unitario' })
+  precioUnitario: number;
 
-  // Note: total is a GENERATED column in the database
-  // TypeORM will return it in queries, but we don't INSERT/UPDATE it
-  // @Column({ type: 'decimal', precision: 10, scale: 2, generated: true })
-  // total?: number;
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  @Index('idx_movement_details_lote')
-  lote?: string;
-
-  @Column({ type: 'date', nullable: true })
-  fecha_vencimiento?: Date;
+  @Column({ type: 'decimal', precision: 15, scale: 2, name: 'monto_total', nullable: true })
+  montoTotal?: number;
 
   @Column({ type: 'text', nullable: true })
   observaciones?: string;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 }

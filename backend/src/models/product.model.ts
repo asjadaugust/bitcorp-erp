@@ -13,7 +13,7 @@ export class Producto {
   id!: number;
 
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
+  legacyId?: string;
 
   @Column({ type: 'varchar', length: 50, unique: true })
   @Index('idx_producto_codigo')
@@ -30,25 +30,25 @@ export class Producto {
   categoria?: string;
 
   @Column({ name: 'unidad_medida', type: 'varchar', length: 20, nullable: true })
-  unidad_medida?: string;
+  unidadMedida?: string;
 
   @Column({ name: 'stock_actual', type: 'decimal', precision: 12, scale: 3, default: 0 })
-  stock_actual!: number;
+  stockActual!: number;
 
   @Column({ name: 'stock_minimo', type: 'decimal', precision: 12, scale: 3, nullable: true })
-  stock_minimo?: number;
+  stockMinimo?: number;
 
   @Column({ name: 'precio_unitario', type: 'decimal', precision: 12, scale: 2, nullable: true })
-  precio_unitario?: number;
+  precioUnitario?: number;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  is_active!: boolean;
+  isActive!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
-  created_at!: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updated_at!: Date;
+  updatedAt!: Date;
 }
 
 // Backward compatibility alias

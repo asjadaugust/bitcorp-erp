@@ -22,45 +22,45 @@ export class Movement {
   id!: number;
 
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
+  legacyId?: string;
 
   @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
   @Index('idx_movements_project')
-  project_id?: number;
+  projectId?: number;
 
   @Column({ type: 'date' })
   @Index('idx_movements_fecha')
   fecha!: Date;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ name: 'tipo_movimiento', type: 'varchar', length: 50 })
   @Index('idx_movements_tipo')
-  tipo_movimiento!: TipoMovimiento;
+  tipoMovimiento!: TipoMovimiento;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  numero_documento?: string;
+  @Column({ name: 'numero_documento', type: 'varchar', length: 50, nullable: true })
+  numeroDocumento?: string;
 
   @Column({ type: 'text', nullable: true })
   observaciones?: string;
 
   @Column({ type: 'varchar', length: 20, default: 'pendiente', name: 'estado' })
   @Index('idx_movements_status')
-  status!: StatusMovimiento;
+  estado!: StatusMovimiento;
 
   @Column({ name: 'creado_por', type: 'integer', nullable: true })
   @Index('idx_movements_created_by')
-  created_by?: number;
+  createdBy?: number;
 
   @Column({ name: 'aprobado_por', type: 'integer', nullable: true })
-  approved_by?: number;
+  approvedBy?: number;
 
   @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
-  approved_at?: Date;
+  approvedAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
-  created_at!: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updated_at!: Date;
+  updatedAt!: Date;
 
   @ManyToOne(() => Project, { nullable: true })
   @JoinColumn({ name: 'proyecto_id' })
@@ -85,26 +85,26 @@ export class MovementDetail {
 
   @Column({ name: 'movimiento_id', type: 'integer' })
   @Index('idx_movement_details_movement')
-  movement_id!: number;
+  movementId!: number;
 
   @Column({ name: 'producto_id', type: 'integer' })
   @Index('idx_movement_details_product')
-  product_id!: number;
+  productId!: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 12, scale: 3 })
   cantidad!: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'precio_unitario' })
-  costo_unitario!: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2, name: 'precio_unitario' })
+  precioUnitario!: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  monto_total?: number;
+  @Column({ type: 'decimal', precision: 15, scale: 2, name: 'monto_total', nullable: true })
+  montoTotal?: number;
 
   @Column({ type: 'text', nullable: true })
   observaciones?: string;
 
   @CreateDateColumn({ name: 'created_at' })
-  created_at!: Date;
+  createdAt!: Date;
 
   @ManyToOne(() => Movement, (movement) => movement.details, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'movimiento_id' })

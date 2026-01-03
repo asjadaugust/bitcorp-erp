@@ -45,7 +45,7 @@ CREATE TABLE sistema.empresa (
   nombre_comercial VARCHAR(255),
   direccion TEXT,
   telefono VARCHAR(20),
-  email VARCHAR(255),
+  correo_electronico VARCHAR(255),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -73,104 +73,104 @@ CREATE INDEX idx_unidad_operativa_codigo ON sistema.unidad_operativa(codigo);
 CREATE TABLE sistema.modulo (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  code VARCHAR(10) UNIQUE NOT NULL,
-  name VARCHAR(100) NOT NULL,
-  description TEXT,
-  icon VARCHAR(50),
-  route VARCHAR(255),
-  parent_id INTEGER REFERENCES sistema.modulo(id) ON DELETE SET NULL,
-  display_order INTEGER DEFAULT 0,
+  codigo VARCHAR(10) UNIQUE NOT NULL,
+  nombre VARCHAR(100) NOT NULL,
+  descripcion TEXT,
+  icono VARCHAR(50),
+  ruta VARCHAR(255),
+  modulo_padre_id INTEGER REFERENCES sistema.modulo(id) ON DELETE SET NULL,
+  orden_visualizacion INTEGER DEFAULT 0,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_modulo_code ON sistema.modulo(code);
-CREATE INDEX idx_modulo_parent ON sistema.modulo(parent_id);
+CREATE INDEX idx_modulo_codigo ON sistema.modulo(codigo);
+CREATE INDEX idx_modulo_parent ON sistema.modulo(modulo_padre_id);
 
 -- Roles
 CREATE TABLE sistema.rol (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  name VARCHAR(50) UNIQUE NOT NULL,
-  code VARCHAR(50) UNIQUE,
-  description TEXT,
-  level INTEGER DEFAULT 3 CHECK (level BETWEEN 1 AND 4),
+  nombre VARCHAR(50) UNIQUE NOT NULL,
+  codigo VARCHAR(50) UNIQUE,
+  descripcion TEXT,
+  nivel INTEGER DEFAULT 3 CHECK (nivel BETWEEN 1 AND 4),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_rol_code ON sistema.rol(code);
-CREATE INDEX idx_rol_name ON sistema.rol(name);
+CREATE INDEX idx_rol_codigo ON sistema.rol(codigo);
+CREATE INDEX idx_rol_nombre ON sistema.rol(nombre);
 
 -- Permissions
 CREATE TABLE sistema.permiso (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  module_id INTEGER REFERENCES sistema.modulo(id) ON DELETE CASCADE,
-  code VARCHAR(100) UNIQUE NOT NULL,
-  name VARCHAR(100) NOT NULL,
-  description TEXT,
-  resource VARCHAR(100),
-  action VARCHAR(50),
+  modulo_id INTEGER REFERENCES sistema.modulo(id) ON DELETE CASCADE,
+  codigo VARCHAR(100) UNIQUE NOT NULL,
+  nombre VARCHAR(100) NOT NULL,
+  descripcion TEXT,
+  recurso VARCHAR(100),
+  accion VARCHAR(50),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_permiso_code ON sistema.permiso(code);
-CREATE INDEX idx_permiso_module ON sistema.permiso(module_id);
+CREATE INDEX idx_permiso_codigo ON sistema.permiso(codigo);
+CREATE INDEX idx_permiso_modulo ON sistema.permiso(modulo_id);
 
 -- Users
 CREATE TABLE sistema.usuario (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
+  nombre_usuario VARCHAR(50) UNIQUE NOT NULL,
+  contrasena VARCHAR(255) NOT NULL,
+  correo_electronico VARCHAR(255) UNIQUE NOT NULL,
   nombres VARCHAR(100),
   apellidos VARCHAR(100),
   dni VARCHAR(20),
   telefono VARCHAR(20),
-  role_id INTEGER REFERENCES sistema.rol(id),
-  operating_unit_id INTEGER REFERENCES sistema.unidad_operativa(id),
+  rol_id INTEGER REFERENCES sistema.rol(id),
+  unidad_operativa_id INTEGER REFERENCES sistema.unidad_operativa(id),
   is_active BOOLEAN DEFAULT TRUE,
-  last_login TIMESTAMP,
+  ultimo_acceso TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_usuario_username ON sistema.usuario(username);
-CREATE INDEX idx_usuario_email ON sistema.usuario(email);
+CREATE INDEX idx_usuario_nombre_usuario ON sistema.usuario(nombre_usuario);
+CREATE INDEX idx_usuario_correo_electronico ON sistema.usuario(correo_electronico);
 CREATE INDEX idx_usuario_dni ON sistema.usuario(dni);
-CREATE INDEX idx_usuario_role ON sistema.usuario(role_id);
-CREATE INDEX idx_usuario_operating_unit ON sistema.usuario(operating_unit_id);
+CREATE INDEX idx_usuario_rol ON sistema.usuario(rol_id);
+CREATE INDEX idx_usuario_unidad_operativa ON sistema.usuario(unidad_operativa_id);
 
 -- User Roles (Many-to-Many)
 CREATE TABLE sistema.usuario_rol (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES sistema.usuario(id) ON DELETE CASCADE,
-  role_id INTEGER NOT NULL REFERENCES sistema.rol(id) ON DELETE CASCADE,
-  assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  assigned_by INTEGER REFERENCES sistema.usuario(id),
-  UNIQUE(user_id, role_id)
+  usuario_id INTEGER NOT NULL REFERENCES sistema.usuario(id) ON DELETE CASCADE,
+  rol_id INTEGER NOT NULL REFERENCES sistema.rol(id) ON DELETE CASCADE,
+  asignado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  asignado_por INTEGER REFERENCES sistema.usuario(id),
+  UNIQUE(usuario_id, rol_id)
 );
 
-CREATE INDEX idx_usuario_rol_user ON sistema.usuario_rol(user_id);
-CREATE INDEX idx_usuario_rol_role ON sistema.usuario_rol(role_id);
+CREATE INDEX idx_usuario_rol_usuario ON sistema.usuario_rol(usuario_id);
+CREATE INDEX idx_usuario_rol_rol ON sistema.usuario_rol(rol_id);
 
 -- Role Permissions (Many-to-Many)
 CREATE TABLE sistema.rol_permiso (
   id SERIAL PRIMARY KEY,
-  role_id INTEGER NOT NULL REFERENCES sistema.rol(id) ON DELETE CASCADE,
-  permission_id INTEGER NOT NULL REFERENCES sistema.permiso(id) ON DELETE CASCADE,
+  rol_id INTEGER NOT NULL REFERENCES sistema.rol(id) ON DELETE CASCADE,
+  permiso_id INTEGER NOT NULL REFERENCES sistema.permiso(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(role_id, permission_id)
+  UNIQUE(rol_id, permiso_id)
 );
 
-CREATE INDEX idx_rol_permiso_role ON sistema.rol_permiso(role_id);
-CREATE INDEX idx_rol_permiso_permission ON sistema.rol_permiso(permission_id);
+CREATE INDEX idx_rol_permiso_rol ON sistema.rol_permiso(rol_id);
+CREATE INDEX idx_rol_permiso_permiso ON sistema.rol_permiso(permiso_id);
 
 -- ============================================================================
 -- SCHEMA: PROYECTOS (Projects/EDT)
@@ -187,20 +187,20 @@ CREATE TABLE proyectos.edt (
   fecha_fin DATE,
   presupuesto DECIMAL(15,2),
   estado VARCHAR(50) DEFAULT 'PLANIFICACION',
-  company_id INTEGER REFERENCES sistema.empresa(id),
-  operating_unit_id INTEGER REFERENCES sistema.unidad_operativa(id),
+  empresa_id INTEGER REFERENCES sistema.empresa(id),
+  unidad_operativa_id INTEGER REFERENCES sistema.unidad_operativa(id),
   cliente VARCHAR(255),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id),
-  updated_by INTEGER REFERENCES sistema.usuario(id)
+  creado_por INTEGER REFERENCES sistema.usuario(id),
+  actualizado_por INTEGER REFERENCES sistema.usuario(id)
 );
 
 CREATE INDEX idx_edt_codigo ON proyectos.edt(codigo);
 CREATE INDEX idx_edt_estado ON proyectos.edt(estado);
-CREATE INDEX idx_edt_company ON proyectos.edt(company_id);
-CREATE INDEX idx_edt_operating_unit ON proyectos.edt(operating_unit_id);
+CREATE INDEX idx_edt_empresa ON proyectos.edt(empresa_id);
+CREATE INDEX idx_edt_unidad_operativa ON proyectos.edt(unidad_operativa_id);
 CREATE INDEX idx_edt_fecha_inicio ON proyectos.edt(fecha_inicio);
 CREATE INDEX idx_edt_fecha_fin ON proyectos.edt(fecha_fin);
 
@@ -217,10 +217,10 @@ CREATE TABLE proveedores.proveedor (
   tipo_proveedor VARCHAR(50),
   direccion TEXT,
   telefono VARCHAR(20),
-  email VARCHAR(255),
+  correo_electronico VARCHAR(255),
   contacto_nombre VARCHAR(100),
   contacto_telefono VARCHAR(20),
-  contacto_email VARCHAR(255),
+  contacto_correo_electronico VARCHAR(255),
   cuenta_bancaria VARCHAR(50),
   banco VARCHAR(100),
   is_active BOOLEAN DEFAULT TRUE,
@@ -243,7 +243,7 @@ CREATE TABLE administracion.centro_costo (
   codigo VARCHAR(50) UNIQUE NOT NULL,
   nombre VARCHAR(255) NOT NULL,
   descripcion TEXT,
-  project_id INTEGER REFERENCES proyectos.edt(id),
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
   presupuesto DECIMAL(15,2),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -251,13 +251,13 @@ CREATE TABLE administracion.centro_costo (
 );
 
 CREATE INDEX idx_centro_costo_codigo ON administracion.centro_costo(codigo);
-CREATE INDEX idx_centro_costo_project ON administracion.centro_costo(project_id);
+CREATE INDEX idx_centro_costo_proyecto ON administracion.centro_costo(proyecto_id);
 
 -- Accounts Payable
 CREATE TABLE administracion.cuenta_por_pagar (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  provider_id INTEGER NOT NULL REFERENCES proveedores.proveedor(id),
+  proveedor_id INTEGER NOT NULL REFERENCES proveedores.proveedor(id),
   numero_factura VARCHAR(50),
   fecha_emision DATE,
   fecha_vencimiento DATE,
@@ -271,7 +271,7 @@ CREATE TABLE administracion.cuenta_por_pagar (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_cuenta_por_pagar_provider ON administracion.cuenta_por_pagar(provider_id);
+CREATE INDEX idx_cuenta_por_pagar_proveedor ON administracion.cuenta_por_pagar(proveedor_id);
 CREATE INDEX idx_cuenta_por_pagar_estado ON administracion.cuenta_por_pagar(estado);
 CREATE INDEX idx_cuenta_por_pagar_fecha_vencimiento ON administracion.cuenta_por_pagar(fecha_vencimiento);
 
@@ -279,8 +279,8 @@ CREATE INDEX idx_cuenta_por_pagar_fecha_vencimiento ON administracion.cuenta_por
 CREATE TABLE administracion.programacion_pago (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  provider_id INTEGER NOT NULL REFERENCES proveedores.proveedor(id),
-  project_id INTEGER REFERENCES proyectos.edt(id),
+  proveedor_id INTEGER NOT NULL REFERENCES proveedores.proveedor(id),
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
   periodo VARCHAR(7) NOT NULL,
   fecha_programada DATE,
   monto_total DECIMAL(15,2),
@@ -290,22 +290,22 @@ CREATE TABLE administracion.programacion_pago (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_programacion_pago_provider ON administracion.programacion_pago(provider_id);
-CREATE INDEX idx_programacion_pago_project ON administracion.programacion_pago(project_id);
+CREATE INDEX idx_programacion_pago_proveedor ON administracion.programacion_pago(proveedor_id);
+CREATE INDEX idx_programacion_pago_proyecto ON administracion.programacion_pago(proyecto_id);
 CREATE INDEX idx_programacion_pago_periodo ON administracion.programacion_pago(periodo);
 
 -- Payment Schedule Details
 CREATE TABLE administracion.detalle_programacion_pago (
   id SERIAL PRIMARY KEY,
-  payment_schedule_id INTEGER NOT NULL REFERENCES administracion.programacion_pago(id) ON DELETE CASCADE,
-  valuation_id INTEGER,
+  programacion_pago_id INTEGER NOT NULL REFERENCES administracion.programacion_pago(id) ON DELETE CASCADE,
+  valorizacion_id INTEGER,
   concepto VARCHAR(255),
   monto DECIMAL(15,2),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_detalle_programacion_pago_schedule ON administracion.detalle_programacion_pago(payment_schedule_id);
-CREATE INDEX idx_detalle_programacion_pago_valuation ON administracion.detalle_programacion_pago(valuation_id);
+CREATE INDEX idx_detalle_programacion_pago_programacion ON administracion.detalle_programacion_pago(programacion_pago_id);
+CREATE INDEX idx_detalle_programacion_pago_valorizacion ON administracion.detalle_programacion_pago(valorizacion_id);
 
 -- ============================================================================
 -- SCHEMA: RRHH (Human Resources/Operators)
@@ -320,7 +320,7 @@ CREATE TABLE rrhh.trabajador (
   apellido_materno VARCHAR(100),
   fecha_nacimiento DATE,
   telefono VARCHAR(20),
-  email VARCHAR(255),
+  correo_electronico VARCHAR(255),
   direccion TEXT,
   tipo_contrato VARCHAR(50),
   fecha_ingreso DATE,
@@ -328,7 +328,7 @@ CREATE TABLE rrhh.trabajador (
   cargo VARCHAR(100),
   especialidad VARCHAR(100),
   licencia_conducir VARCHAR(50),
-  operating_unit_id INTEGER REFERENCES sistema.unidad_operativa(id),
+  unidad_operativa_id INTEGER REFERENCES sistema.unidad_operativa(id),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -337,12 +337,12 @@ CREATE TABLE rrhh.trabajador (
 CREATE INDEX idx_trabajador_dni ON rrhh.trabajador(dni);
 CREATE INDEX idx_trabajador_apellido ON rrhh.trabajador(apellido_paterno);
 CREATE INDEX idx_trabajador_cargo ON rrhh.trabajador(cargo);
-CREATE INDEX idx_trabajador_operating_unit ON rrhh.trabajador(operating_unit_id);
+CREATE INDEX idx_trabajador_unidad_operativa ON rrhh.trabajador(unidad_operativa_id);
 
 -- Operator Documents
 CREATE TABLE rrhh.documento_trabajador (
   id SERIAL PRIMARY KEY,
-  operator_id INTEGER NOT NULL REFERENCES rrhh.trabajador(id) ON DELETE CASCADE,
+  trabajador_id INTEGER NOT NULL REFERENCES rrhh.trabajador(id) ON DELETE CASCADE,
   tipo_documento VARCHAR(50) NOT NULL,
   numero_documento VARCHAR(100),
   fecha_emision DATE,
@@ -353,14 +353,14 @@ CREATE TABLE rrhh.documento_trabajador (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_documento_trabajador_operator ON rrhh.documento_trabajador(operator_id);
+CREATE INDEX idx_documento_trabajador_trabajador ON rrhh.documento_trabajador(trabajador_id);
 CREATE INDEX idx_documento_trabajador_tipo ON rrhh.documento_trabajador(tipo_documento);
 CREATE INDEX idx_documento_trabajador_vencimiento ON rrhh.documento_trabajador(fecha_vencimiento);
 
 -- Operator Availability
 CREATE TABLE rrhh.disponibilidad_trabajador (
   id SERIAL PRIMARY KEY,
-  operator_id INTEGER NOT NULL REFERENCES rrhh.trabajador(id) ON DELETE CASCADE,
+  trabajador_id INTEGER NOT NULL REFERENCES rrhh.trabajador(id) ON DELETE CASCADE,
   fecha_inicio DATE NOT NULL,
   fecha_fin DATE NOT NULL,
   disponible BOOLEAN DEFAULT TRUE,
@@ -369,14 +369,14 @@ CREATE TABLE rrhh.disponibilidad_trabajador (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_disponibilidad_trabajador_operator ON rrhh.disponibilidad_trabajador(operator_id);
+CREATE INDEX idx_disponibilidad_trabajador_trabajador ON rrhh.disponibilidad_trabajador(trabajador_id);
 CREATE INDEX idx_disponibilidad_trabajador_fecha ON rrhh.disponibilidad_trabajador(fecha_inicio, fecha_fin);
 
 -- Timesheets (Tareo)
 CREATE TABLE rrhh.tareo (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  operator_id INTEGER NOT NULL REFERENCES rrhh.trabajador(id),
+  trabajador_id INTEGER NOT NULL REFERENCES rrhh.trabajador(id),
   periodo VARCHAR(7) NOT NULL,
   total_dias_trabajados INTEGER DEFAULT 0,
   total_horas DECIMAL(8,2) DEFAULT 0,
@@ -385,20 +385,20 @@ CREATE TABLE rrhh.tareo (
   observaciones TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id),
-  approved_by INTEGER REFERENCES sistema.usuario(id),
-  approved_at TIMESTAMP
+  creado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_en TIMESTAMP
 );
 
-CREATE INDEX idx_tareo_operator ON rrhh.tareo(operator_id);
+CREATE INDEX idx_tareo_trabajador ON rrhh.tareo(trabajador_id);
 CREATE INDEX idx_tareo_periodo ON rrhh.tareo(periodo);
 CREATE INDEX idx_tareo_estado ON rrhh.tareo(estado);
 
 -- Timesheet Details
 CREATE TABLE rrhh.detalle_tareo (
   id SERIAL PRIMARY KEY,
-  timesheet_id INTEGER NOT NULL REFERENCES rrhh.tareo(id) ON DELETE CASCADE,
-  project_id INTEGER REFERENCES proyectos.edt(id),
+  tareo_id INTEGER NOT NULL REFERENCES rrhh.tareo(id) ON DELETE CASCADE,
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
   fecha DATE NOT NULL,
   horas_trabajadas DECIMAL(5,2),
   tarifa_hora DECIMAL(10,2),
@@ -407,8 +407,8 @@ CREATE TABLE rrhh.detalle_tareo (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_detalle_tareo_timesheet ON rrhh.detalle_tareo(timesheet_id);
-CREATE INDEX idx_detalle_tareo_project ON rrhh.detalle_tareo(project_id);
+CREATE INDEX idx_detalle_tareo_tareo ON rrhh.detalle_tareo(tareo_id);
+CREATE INDEX idx_detalle_tareo_proyecto ON rrhh.detalle_tareo(proyecto_id);
 CREATE INDEX idx_detalle_tareo_fecha ON rrhh.detalle_tareo(fecha);
 
 -- ============================================================================
@@ -442,26 +442,26 @@ CREATE TABLE logistica.movimiento (
   tipo_movimiento VARCHAR(50) NOT NULL,
   numero_documento VARCHAR(50),
   fecha DATE NOT NULL,
-  project_id INTEGER REFERENCES proyectos.edt(id),
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
   observaciones TEXT,
   estado VARCHAR(50) DEFAULT 'BORRADOR',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id),
-  approved_by INTEGER REFERENCES sistema.usuario(id),
-  approved_at TIMESTAMP
+  creado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_en TIMESTAMP
 );
 
 CREATE INDEX idx_movimiento_tipo ON logistica.movimiento(tipo_movimiento);
 CREATE INDEX idx_movimiento_fecha ON logistica.movimiento(fecha);
-CREATE INDEX idx_movimiento_project ON logistica.movimiento(project_id);
+CREATE INDEX idx_movimiento_proyecto ON logistica.movimiento(proyecto_id);
 CREATE INDEX idx_movimiento_estado ON logistica.movimiento(estado);
 
 -- Movement Details
 CREATE TABLE logistica.detalle_movimiento (
   id SERIAL PRIMARY KEY,
-  movement_id INTEGER NOT NULL REFERENCES logistica.movimiento(id) ON DELETE CASCADE,
-  product_id INTEGER NOT NULL REFERENCES logistica.producto(id),
+  movimiento_id INTEGER NOT NULL REFERENCES logistica.movimiento(id) ON DELETE CASCADE,
+  producto_id INTEGER NOT NULL REFERENCES logistica.producto(id),
   cantidad DECIMAL(12,3) NOT NULL,
   precio_unitario DECIMAL(12,2),
   monto_total DECIMAL(15,2),
@@ -469,8 +469,8 @@ CREATE TABLE logistica.detalle_movimiento (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_detalle_movimiento_movement ON logistica.detalle_movimiento(movement_id);
-CREATE INDEX idx_detalle_movimiento_product ON logistica.detalle_movimiento(product_id);
+CREATE INDEX idx_detalle_movimiento_movimiento ON logistica.detalle_movimiento(movimiento_id);
+CREATE INDEX idx_detalle_movimiento_producto ON logistica.detalle_movimiento(producto_id);
 
 -- ============================================================================
 -- SCHEMA: EQUIPO (Equipment Management)
@@ -497,8 +497,8 @@ CREATE TABLE equipo.equipo (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
   codigo_equipo VARCHAR(50) UNIQUE NOT NULL,
-  provider_id INTEGER REFERENCES proveedores.proveedor(id),
-  equipment_type_id INTEGER REFERENCES equipo.tipo_equipo(id),
+  proveedor_id INTEGER REFERENCES proveedores.proveedor(id),
+  tipo_equipo_id INTEGER REFERENCES equipo.tipo_equipo(id),
   tipo_proveedor VARCHAR(50),
   categoria VARCHAR(100),
   placa VARCHAR(20),
@@ -521,21 +521,21 @@ CREATE TABLE equipo.equipo (
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id),
-  updated_by INTEGER REFERENCES sistema.usuario(id)
+  creado_por INTEGER REFERENCES sistema.usuario(id),
+  actualizado_por INTEGER REFERENCES sistema.usuario(id)
 );
 
 CREATE INDEX idx_equipo_codigo ON equipo.equipo(codigo_equipo);
 CREATE INDEX idx_equipo_placa ON equipo.equipo(placa);
-CREATE INDEX idx_equipo_provider ON equipo.equipo(provider_id);
-CREATE INDEX idx_equipo_type ON equipo.equipo(equipment_type_id);
+CREATE INDEX idx_equipo_proveedor ON equipo.equipo(proveedor_id);
+CREATE INDEX idx_equipo_tipo ON equipo.equipo(tipo_equipo_id);
 CREATE INDEX idx_equipo_estado ON equipo.equipo(estado);
 
 -- Equipment Assignments (Equipment-Project relationship)
 CREATE TABLE equipo.equipo_edt (
   id SERIAL PRIMARY KEY,
-  equipment_id INTEGER NOT NULL REFERENCES equipo.equipo(id) ON DELETE CASCADE,
-  project_id INTEGER NOT NULL REFERENCES proyectos.edt(id) ON DELETE CASCADE,
+  equipo_id INTEGER NOT NULL REFERENCES equipo.equipo(id) ON DELETE CASCADE,
+  proyecto_id INTEGER NOT NULL REFERENCES proyectos.edt(id) ON DELETE CASCADE,
   fecha_asignacion DATE NOT NULL,
   fecha_liberacion DATE,
   is_active BOOLEAN DEFAULT TRUE,
@@ -544,18 +544,18 @@ CREATE TABLE equipo.equipo_edt (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_equipo_edt_equipment ON equipo.equipo_edt(equipment_id);
-CREATE INDEX idx_equipo_edt_project ON equipo.equipo_edt(project_id);
+CREATE INDEX idx_equipo_edt_equipo ON equipo.equipo_edt(equipo_id);
+CREATE INDEX idx_equipo_edt_proyecto ON equipo.equipo_edt(proyecto_id);
 CREATE INDEX idx_equipo_edt_active ON equipo.equipo_edt(is_active);
 
 -- Contracts and Addendums
 CREATE TABLE equipo.contrato_adenda (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  equipment_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
+  equipo_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
   numero_contrato VARCHAR(50) UNIQUE NOT NULL,
   tipo VARCHAR(50) DEFAULT 'CONTRATO',
-  parent_contract_id INTEGER REFERENCES equipo.contrato_adenda(id),
+  contrato_padre_id INTEGER REFERENCES equipo.contrato_adenda(id),
   fecha_contrato DATE NOT NULL,
   fecha_inicio DATE NOT NULL,
   fecha_fin DATE NOT NULL,
@@ -572,12 +572,12 @@ CREATE TABLE equipo.contrato_adenda (
   estado VARCHAR(50) DEFAULT 'ACTIVO',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id)
+  creado_por INTEGER REFERENCES sistema.usuario(id)
 );
 
-CREATE INDEX idx_contrato_adenda_equipment ON equipo.contrato_adenda(equipment_id);
+CREATE INDEX idx_contrato_adenda_equipo ON equipo.contrato_adenda(equipo_id);
 CREATE INDEX idx_contrato_adenda_numero ON equipo.contrato_adenda(numero_contrato);
-CREATE INDEX idx_contrato_adenda_parent ON equipo.contrato_adenda(parent_contract_id);
+CREATE INDEX idx_contrato_adenda_padre ON equipo.contrato_adenda(contrato_padre_id);
 CREATE INDEX idx_contrato_adenda_estado ON equipo.contrato_adenda(estado);
 CREATE INDEX idx_contrato_adenda_fecha_fin ON equipo.contrato_adenda(fecha_fin);
 
@@ -585,9 +585,9 @@ CREATE INDEX idx_contrato_adenda_fecha_fin ON equipo.contrato_adenda(fecha_fin);
 CREATE TABLE equipo.valorizacion_equipo (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  equipment_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
-  contract_id INTEGER REFERENCES equipo.contrato_adenda(id),
-  project_id INTEGER REFERENCES proyectos.edt(id),
+  equipo_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
+  contrato_id INTEGER REFERENCES equipo.contrato_adenda(id),
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
   periodo VARCHAR(7) NOT NULL,
   fecha_inicio DATE NOT NULL,
   fecha_fin DATE NOT NULL,
@@ -602,14 +602,14 @@ CREATE TABLE equipo.valorizacion_equipo (
   observaciones TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id),
-  approved_by INTEGER REFERENCES sistema.usuario(id),
-  approved_at TIMESTAMP
+  creado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_en TIMESTAMP
 );
 
-CREATE INDEX idx_valorizacion_equipo_equipment ON equipo.valorizacion_equipo(equipment_id);
-CREATE INDEX idx_valorizacion_equipo_contract ON equipo.valorizacion_equipo(contract_id);
-CREATE INDEX idx_valorizacion_equipo_project ON equipo.valorizacion_equipo(project_id);
+CREATE INDEX idx_valorizacion_equipo_equipo ON equipo.valorizacion_equipo(equipo_id);
+CREATE INDEX idx_valorizacion_equipo_contrato ON equipo.valorizacion_equipo(contrato_id);
+CREATE INDEX idx_valorizacion_equipo_proyecto ON equipo.valorizacion_equipo(proyecto_id);
 CREATE INDEX idx_valorizacion_equipo_periodo ON equipo.valorizacion_equipo(periodo);
 CREATE INDEX idx_valorizacion_equipo_estado ON equipo.valorizacion_equipo(estado);
 
@@ -617,10 +617,10 @@ CREATE INDEX idx_valorizacion_equipo_estado ON equipo.valorizacion_equipo(estado
 CREATE TABLE equipo.parte_diario (
   id SERIAL PRIMARY KEY,
   legacy_id VARCHAR(50) UNIQUE,
-  equipment_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
-  operator_id INTEGER REFERENCES rrhh.trabajador(id),
-  project_id INTEGER REFERENCES proyectos.edt(id),
-  valuation_id INTEGER REFERENCES equipo.valorizacion_equipo(id),
+  equipo_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
+  trabajador_id INTEGER REFERENCES rrhh.trabajador(id),
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
+  valorizacion_id INTEGER REFERENCES equipo.valorizacion_equipo(id),
   fecha DATE NOT NULL,
   hora_inicio TIME,
   hora_fin TIME,
@@ -636,22 +636,22 @@ CREATE TABLE equipo.parte_diario (
   estado VARCHAR(50) DEFAULT 'BORRADOR',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id),
-  approved_by INTEGER REFERENCES sistema.usuario(id),
-  approved_at TIMESTAMP
+  creado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_por INTEGER REFERENCES sistema.usuario(id),
+  aprobado_en TIMESTAMP
 );
 
-CREATE INDEX idx_parte_diario_equipment ON equipo.parte_diario(equipment_id);
-CREATE INDEX idx_parte_diario_operator ON equipo.parte_diario(operator_id);
-CREATE INDEX idx_parte_diario_project ON equipo.parte_diario(project_id);
-CREATE INDEX idx_parte_diario_valuation ON equipo.parte_diario(valuation_id);
+CREATE INDEX idx_parte_diario_equipo ON equipo.parte_diario(equipo_id);
+CREATE INDEX idx_parte_diario_trabajador ON equipo.parte_diario(trabajador_id);
+CREATE INDEX idx_parte_diario_proyecto ON equipo.parte_diario(proyecto_id);
+CREATE INDEX idx_parte_diario_valorizacion ON equipo.parte_diario(valorizacion_id);
 CREATE INDEX idx_parte_diario_fecha ON equipo.parte_diario(fecha);
 CREATE INDEX idx_parte_diario_estado ON equipo.parte_diario(estado);
 
 -- Fuel Records
 CREATE TABLE equipo.equipo_combustible (
   id SERIAL PRIMARY KEY,
-  valuation_id INTEGER NOT NULL REFERENCES equipo.valorizacion_equipo(id),
+  valorizacion_id INTEGER NOT NULL REFERENCES equipo.valorizacion_equipo(id),
   fecha DATE NOT NULL,
   cantidad DECIMAL(10,2),
   precio_unitario DECIMAL(10,2),
@@ -663,13 +663,13 @@ CREATE TABLE equipo.equipo_combustible (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_equipo_combustible_valuation ON equipo.equipo_combustible(valuation_id);
+CREATE INDEX idx_equipo_combustible_valorizacion ON equipo.equipo_combustible(valorizacion_id);
 CREATE INDEX idx_equipo_combustible_fecha ON equipo.equipo_combustible(fecha);
 
 -- Maintenance Schedules
 CREATE TABLE equipo.programa_mantenimiento (
   id SERIAL PRIMARY KEY,
-  equipment_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
+  equipo_id INTEGER NOT NULL REFERENCES equipo.equipo(id),
   tipo_mantenimiento VARCHAR(50) NOT NULL,
   descripcion TEXT,
   fecha_programada DATE,
@@ -683,16 +683,16 @@ CREATE TABLE equipo.programa_mantenimiento (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_programa_mantenimiento_equipment ON equipo.programa_mantenimiento(equipment_id);
+CREATE INDEX idx_programa_mantenimiento_equipo ON equipo.programa_mantenimiento(equipo_id);
 CREATE INDEX idx_programa_mantenimiento_fecha_programada ON equipo.programa_mantenimiento(fecha_programada);
 CREATE INDEX idx_programa_mantenimiento_estado ON equipo.programa_mantenimiento(estado);
 
 -- Scheduled Tasks
 CREATE TABLE equipo.tarea_programada (
   id SERIAL PRIMARY KEY,
-  schedule_id INTEGER,
-  equipment_id INTEGER REFERENCES equipo.equipo(id),
-  operator_id INTEGER REFERENCES rrhh.trabajador(id),
+  programa_mantenimiento_id INTEGER,
+  equipo_id INTEGER REFERENCES equipo.equipo(id),
+  trabajador_id INTEGER REFERENCES rrhh.trabajador(id),
   task_type VARCHAR(50) DEFAULT 'maintenance',
   title VARCHAR(255) NOT NULL,
   description TEXT,
@@ -708,16 +708,16 @@ CREATE TABLE equipo.tarea_programada (
   completion_date TIMESTAMP,
   completion_notes TEXT,
   maintenance_record_id INTEGER,
-  created_by INTEGER REFERENCES sistema.usuario(id),
-  assigned_by INTEGER REFERENCES sistema.usuario(id),
-  project_id INTEGER REFERENCES proyectos.edt(id),
+  creado_por INTEGER REFERENCES sistema.usuario(id),
+  asignado_por INTEGER REFERENCES sistema.usuario(id),
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_tarea_programada_equipment ON equipo.tarea_programada(equipment_id);
-CREATE INDEX idx_tarea_programada_operator ON equipo.tarea_programada(operator_id);
-CREATE INDEX idx_tarea_programada_project ON equipo.tarea_programada(project_id);
+CREATE INDEX idx_tarea_programada_equipo ON equipo.tarea_programada(equipo_id);
+CREATE INDEX idx_tarea_programada_trabajador ON equipo.tarea_programada(trabajador_id);
+CREATE INDEX idx_tarea_programada_proyecto ON equipo.tarea_programada(proyecto_id);
 CREATE INDEX idx_tarea_programada_start_date ON equipo.tarea_programada(start_date);
 CREATE INDEX idx_tarea_programada_status ON equipo.tarea_programada(status);
 
@@ -734,7 +734,7 @@ CREATE TABLE sst.incidente (
   ubicacion TEXT,
   descripcion TEXT,
   acciones_tomadas TEXT,
-  project_id INTEGER REFERENCES proyectos.edt(id),
+  proyecto_id INTEGER REFERENCES proyectos.edt(id),
   reportado_por INTEGER REFERENCES sistema.usuario(id),
   estado VARCHAR(50) DEFAULT 'ABIERTO',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -743,7 +743,7 @@ CREATE TABLE sst.incidente (
 
 CREATE INDEX idx_incidente_fecha ON sst.incidente(fecha_incidente);
 CREATE INDEX idx_incidente_tipo ON sst.incidente(tipo_incidente);
-CREATE INDEX idx_incidente_proyecto ON sst.incidente(project_id);
+CREATE INDEX idx_incidente_proyecto ON sst.incidente(proyecto_id);
 CREATE INDEX idx_incidente_estado ON sst.incidente(estado);
 
 -- ============================================================================
@@ -764,7 +764,7 @@ CREATE TABLE sig.documento (
   estado VARCHAR(50) DEFAULT 'VIGENTE',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_by INTEGER REFERENCES sistema.usuario(id)
+  creado_por INTEGER REFERENCES sistema.usuario(id)
 );
 
 CREATE INDEX idx_documento_codigo ON sig.documento(codigo);
@@ -796,7 +796,7 @@ CREATE INDEX idx_licitaciones_estado ON licitaciones(estado);
 
 CREATE TABLE notificaciones (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES sistema.usuario(id) ON DELETE CASCADE,
+  usuario_id INTEGER REFERENCES sistema.usuario(id) ON DELETE CASCADE,
   titulo VARCHAR(255) NOT NULL,
   mensaje TEXT NOT NULL,
   tipo VARCHAR(50),
@@ -805,7 +805,7 @@ CREATE TABLE notificaciones (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_notificaciones_user ON notificaciones(user_id);
+CREATE INDEX idx_notificaciones_usuario ON notificaciones(usuario_id);
 CREATE INDEX idx_notificaciones_leido ON notificaciones(leido);
 CREATE INDEX idx_notificaciones_created_at ON notificaciones(created_at);
 
@@ -852,7 +852,7 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO bitcorp;
 -- Notifications (System-wide notifications)
 CREATE TABLE public.notificaciones (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES sistema.usuario(id) ON DELETE CASCADE,
+  usuario_id INTEGER NOT NULL REFERENCES sistema.usuario(id) ON DELETE CASCADE,
   tipo VARCHAR(50) NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   mensaje TEXT NOT NULL,
@@ -863,14 +863,14 @@ CREATE TABLE public.notificaciones (
   expires_at TIMESTAMP
 );
 
-CREATE INDEX idx_notificaciones_user ON public.notificaciones(user_id);
+CREATE INDEX idx_notificaciones_usuario ON public.notificaciones(usuario_id);
 CREATE INDEX idx_notificaciones_leido ON public.notificaciones(leido);
 CREATE INDEX idx_notificaciones_created ON public.notificaciones(created_at DESC);
 
 -- Audit Log (System-wide audit trail)
 CREATE TABLE public.audit_log (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES sistema.usuario(id) ON DELETE SET NULL,
+  usuario_id INTEGER REFERENCES sistema.usuario(id) ON DELETE SET NULL,
   action VARCHAR(50) NOT NULL,
   entity_type VARCHAR(100) NOT NULL,
   entity_id INTEGER,
@@ -880,7 +880,7 @@ CREATE TABLE public.audit_log (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_audit_user ON public.audit_log(user_id);
+CREATE INDEX idx_audit_usuario ON public.audit_log(usuario_id);
 CREATE INDEX idx_audit_entity ON public.audit_log(entity_type, entity_id);
 CREATE INDEX idx_audit_action ON public.audit_log(action);
 CREATE INDEX idx_audit_created ON public.audit_log(created_at DESC);
@@ -895,7 +895,7 @@ CREATE TABLE public.configuracion (
   categoria VARCHAR(50),
   es_publico BOOLEAN DEFAULT FALSE,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_by INTEGER REFERENCES sistema.usuario(id)
+  actualizado_por INTEGER REFERENCES sistema.usuario(id)
 );
 
 CREATE INDEX idx_configuracion_clave ON public.configuracion(clave);
@@ -911,12 +911,12 @@ CREATE TABLE public.adjuntos (
   tipo_mime VARCHAR(100),
   tamano_bytes BIGINT,
   descripcion TEXT,
-  uploaded_by INTEGER REFERENCES sistema.usuario(id),
-  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  subido_por INTEGER REFERENCES sistema.usuario(id),
+  subido_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_adjuntos_entity ON public.adjuntos(entity_type, entity_id);
-CREATE INDEX idx_adjuntos_uploaded_by ON public.adjuntos(uploaded_by);
+CREATE INDEX idx_adjuntos_subido_por ON public.adjuntos(subido_por);
 
 -- ============================================================================
 -- Migration Complete

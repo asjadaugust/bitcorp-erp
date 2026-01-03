@@ -14,25 +14,24 @@ export class PaymentScheduleDetail {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ name: 'programacion_pago_id', type: 'integer' })
   payment_schedule_id!: number;
 
   @ManyToOne(() => PaymentSchedule, (schedule) => schedule.details, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'payment_schedule_id' })
+  @JoinColumn({ name: 'programacion_pago_id' })
   payment_schedule!: PaymentSchedule;
 
-  @Column({ type: 'integer' })
-  accounts_payable_id!: number;
+  @Column({ name: 'valorizacion_id', type: 'integer', nullable: true })
+  valuation_id?: number;
 
-  @ManyToOne(() => AccountsPayable, { eager: true })
-  @JoinColumn({ name: 'accounts_payable_id' })
-  accounts_payable!: AccountsPayable;
+  @Column({ name: 'concepto', type: 'varchar', length: 255, nullable: true })
+  concepto?: string;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  amount_to_pay!: number;
+  @Column({ name: 'monto', type: 'decimal', precision: 15, scale: 2, nullable: true })
+  amount_to_pay?: number;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;
 }

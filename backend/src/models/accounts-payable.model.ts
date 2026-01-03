@@ -28,11 +28,14 @@ export class AccountsPayable {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer', name: 'provider_id' })
+  @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
+  legacy_id?: string;
+
+  @Column({ type: 'integer', name: 'proveedor_id' })
   provider_id!: number;
 
   @ManyToOne(() => Provider, { nullable: false, eager: true })
-  @JoinColumn({ name: 'provider_id' })
+  @JoinColumn({ name: 'proveedor_id' })
   provider!: Provider;
 
   @Column({ type: 'varchar', length: 50, name: 'numero_factura' })

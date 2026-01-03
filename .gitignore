@@ -58,3 +58,9 @@ backend/uploads/
 
 # OS
 Thumbs.db
+
+docs/
+
+**.bak**
+
+logs.txt

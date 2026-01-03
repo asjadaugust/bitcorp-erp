@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseModel } from './base.model';
 import { User } from './user.model';
 
-@Entity('notifications')
+@Entity('notificaciones', { schema: 'public' })
 export class Notification extends BaseModel {
   @Column({ name: 'usuario_id' })
   userId!: number;
@@ -11,16 +11,16 @@ export class Notification extends BaseModel {
   @JoinColumn({ name: 'usuario_id' })
   user!: User;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ name: 'tipo', type: 'varchar', length: 50 })
   type!: 'CONTRACT_EXPIRY' | 'MAINTENANCE_DUE' | 'SCHEDULE_ASSIGNMENT' | 'SYSTEM';
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ name: 'titulo', type: 'varchar', length: 255 })
   title!: string;
 
-  @Column({ type: 'text' })
+  @Column({ name: 'mensaje', type: 'text' })
   message!: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'leido', type: 'boolean', default: false })
   read!: boolean;
 
   @Column({ type: 'jsonb', nullable: true })
