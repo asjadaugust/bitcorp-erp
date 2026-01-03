@@ -22,14 +22,15 @@ export class SchedulingService {
 
   async findAll(filter?: TaskFilter): Promise<ScheduledTask[]> {
     try {
-      const queryBuilder = this.repository.createQueryBuilder('task')
+      const queryBuilder = this.repository
+        .createQueryBuilder('task')
         .leftJoinAndSelect('task.equipment', 'equipment')
         .leftJoinAndSelect('task.project', 'project');
 
       if (filter?.startDate && filter?.endDate) {
-        queryBuilder.andWhere('task.start_date BETWEEN :start AND :end', { 
-          start: filter.startDate, 
-          end: filter.endDate 
+        queryBuilder.andWhere('task.startDate BETWEEN :start AND :end', {
+          start: filter.startDate,
+          end: filter.endDate,
         });
       }
 
@@ -41,20 +42,21 @@ export class SchedulingService {
 
       if (filter?.type) {
         if (filter.type !== 'all') {
-          queryBuilder.andWhere('task.task_type = :type', { type: filter.type });
+          queryBuilder.andWhere('task.taskType = :type', { type: filter.type });
         }
       }
 
       if (filter?.equipmentId) {
-        queryBuilder.andWhere('task.equipment_id = :equipmentId', { equipmentId: filter.equipmentId });
+        queryBuilder.andWhere('task.equipmentId = :equipmentId', {
+          equipmentId: filter.equipmentId,
+        });
       }
 
       if (filter?.priority) {
         queryBuilder.andWhere('task.priority = :priority', { priority: filter.priority });
       }
 
-      queryBuilder.orderBy('task.start_date', 'ASC')
-        .addOrderBy('task.priority', 'DESC');
+      queryBuilder.orderBy('task.startDate', 'ASC').addOrderBy('task.priority', 'DESC');
 
       return await queryBuilder.getMany();
     } catch (error) {
