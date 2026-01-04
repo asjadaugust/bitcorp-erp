@@ -20,6 +20,7 @@ import hrRoutes from './api/hr';
 import schedulingRoutes from './api/scheduling';
 import administrationRoutes from './api/administration/administration.routes';
 import sstRoutes from './api/sst/sst.routes';
+import sigRoutes from './api/sig/sig.routes';
 import { createTenantRouter } from './api/tenant';
 import tenderRoutes from './api/tenders/tender.routes';
 import fuelRoutes from './api/fuel/fuel.routes';
@@ -34,10 +35,12 @@ const app = express();
 const port = process.env.PORT || 3400;
 
 // Middleware
-app.use(cors({ 
-  origin: process.env.CORS_ORIGIN?.split(',') || '*',
-  credentials: true 
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN?.split(',') || '*',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -64,6 +67,7 @@ app.use('/api/hr', hrRoutes);
 app.use('/api/scheduling', schedulingRoutes);
 app.use('/api/administration', administrationRoutes);
 app.use('/api/sst', sstRoutes);
+app.use('/api/sig', sigRoutes);
 app.use('/api/tenant', createTenantRouter(pool));
 app.use('/api/tenders', tenderRoutes);
 app.use('/api/fuel', fuelRoutes);
@@ -111,7 +115,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-
-
-
