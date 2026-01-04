@@ -52,10 +52,10 @@ export class Equipment {
   codigo_equipo!: string;
 
   @Column({ name: 'tipo_equipo_id', type: 'integer', nullable: true })
-  equipment_type_id?: number;
+  tipoEquipoId?: number;
 
   @Column({ name: 'proveedor_id', type: 'integer', nullable: true })
-  provider_id?: number;
+  proveedorId?: number;
 
   @ManyToOne(() => Provider, { nullable: true })
   @JoinColumn({ name: 'proveedor_id' })
@@ -107,10 +107,10 @@ export class Equipment {
   is_active!: boolean;
 
   @Column({ name: 'creado_por', type: 'integer', nullable: true })
-  created_by?: number;
+  creadoPor?: number;
 
   @Column({ name: 'actualizado_por', type: 'integer', nullable: true })
-  updated_by?: number;
+  actualizadoPor?: number;
 
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;

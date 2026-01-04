@@ -17,10 +17,10 @@ export interface CreateEquipmentDto {
   medidor_uso?: string;
   estado?: string;
   tipo_proveedor?: string;
-  equipment_type_id?: number;
-  provider_id?: number;
-  created_by?: number;
-  updated_by?: number;
+  tipo_equipo_id?: number;
+  proveedor_id?: number;
+  creado_por?: number;
+  actualizado_por?: number;
 }
 
 export type UpdateEquipmentDto = Partial<CreateEquipmentDto>;
@@ -72,8 +72,8 @@ export class EquipmentService {
     return {
       id: equipment.id,
       code: equipment.codigo_equipo,
-      equipment_type_id: equipment.equipment_type_id || null,
-      provider_id: equipment.provider_id || null,
+      equipment_type_id: equipment.tipoEquipoId || null,
+      provider_id: equipment.proveedorId || null,
       provider_name: equipment.provider?.razon_social || null,
       provider_type: equipment.tipo_proveedor || null,
       category: equipment.categoria || null,
@@ -89,8 +89,8 @@ export class EquipmentService {
       meter_type: equipment.medidor_uso || null,
       status: equipment.estado,
       is_active: equipment.is_active,
-      created_by: equipment.created_by || null,
-      updated_by: equipment.updated_by || null,
+      created_by: equipment.creadoPor || null,
+      updated_by: equipment.actualizadoPor || null,
       created_at: equipment.created_at,
       updated_at: equipment.updated_at,
     };
