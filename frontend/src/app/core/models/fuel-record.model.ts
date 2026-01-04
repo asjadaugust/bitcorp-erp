@@ -1,25 +1,41 @@
+export type TipoCombustible =
+  | 'DIESEL'
+  | 'GASOLINA_84'
+  | 'GASOLINA_90'
+  | 'GASOLINA_95'
+  | 'GASOLINA_97'
+  | 'GLP'
+  | 'GNV';
+
 export interface FuelRecord {
   id: number;
-  equipment_id: number;
-  date: string;
-  gallons: number;
-  cost_per_gallon: number;
-  total_cost: number;
-  provider_id?: number;
-  odometer?: number;
-  hourmeter?: number;
-  created_at?: string;
-  updated_at?: string;
+  valorizacion_id: number;
+  fecha: Date | string;
+  cantidad: number | null;
+  precio_unitario: number | null;
+  monto_total: number | null;
+  tipo_combustible: TipoCombustible | null;
+  proveedor: string | null;
+  numero_documento: string | null;
+  observaciones: string | null;
+  created_at: Date | string;
+  // Relation fields
+  valorizacion_periodo: string | null;
+  valorizacion_equipment_id: number | null;
+}
 
-  // Relations
-  equipment?: {
-    id: number;
-    code: string;
-    brand: string;
-    model: string;
+export interface FuelListResponse {
+  success: true;
+  data: FuelRecord[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
-  provider?: {
-    id: number;
-    business_name: string;
-  };
+}
+
+export interface FuelResponse {
+  success: true;
+  data: FuelRecord;
 }

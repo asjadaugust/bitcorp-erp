@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { FuelRecord } from '../models/fuel-record.model';
+import { FuelRecord, FuelListResponse, FuelResponse } from '../models/fuel-record.model';
 
 @Injectable({
   providedIn: 'root',
@@ -11,34 +12,33 @@ export class FuelService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/fuel`;
 
-  getAll(filters: any = {}): Observable<FuelRecord[]> {
+  getAll(filters: any = {}): Observable<FuelListResponse> {
     let params = new HttpParams();
     if (filters.search) params = params.set('search', filters.search);
-    if (filters.equipment_id) params = params.set('equipment_id', filters.equipment_id);
-    if (filters.start_date) params = params.set('start_date', filters.start_date);
-    if (filters.end_date) params = params.set('end_date', filters.end_date);
+    if (filters.valorizacionId) params = params.set('valorizacionId', filters.valorizacionId);
+    if (filters.startDate) params = params.set('startDate', filters.startDate);
+    if (filters.endDate) params = params.set('endDate', filters.endDate);
+    if (filters.tipoCombustible) params = params.set('tipoCombustible', filters.tipoCombustible);
+    if (filters.page) params = params.set('page', filters.page.toString());
+    if (filters.limit) params = params.set('limit', filters.limit.toString());
 
-    return this.http.get<FuelRecord[]>(this.apiUrl, { params });
+    return this.http.get<FuelListResponse>(this.apiUrl, { params });
   }
 
   getById(id: number): Observable<FuelRecord> {
-    return this.http.get<FuelRecord>(`${this.apiUrl}/${id}`);
+    return this.http
+      .get<FuelResponse>(`${this.apiUrl}/${id}`)
+      .pipe(map((response) => response.data));
   }
 
   create(record: Omit<FuelRecord, 'id'>): Observable<FuelRecord> {
-    const payload = {
-      ...record,
-      fueling_date: record.date,
-    };
-    return this.http.post<FuelRecord>(this.apiUrl, payload);
+    return this.http.post<FuelResponse>(this.apiUrl, record).pipe(map((response) => response.data));
   }
 
   update(id: number, record: Partial<FuelRecord>): Observable<FuelRecord> {
-    const payload: any = { ...record };
-    if (record.date) {
-      payload.fueling_date = record.date;
-    }
-    return this.http.put<FuelRecord>(`${this.apiUrl}/${id}`, payload);
+    return this.http
+      .put<FuelResponse>(`${this.apiUrl}/${id}`, record)
+      .pipe(map((response) => response.data));
   }
 
   delete(id: number): Observable<void> {

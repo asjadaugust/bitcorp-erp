@@ -34,7 +34,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
-    ActionsContainerComponent
+    ActionsContainerComponent,
   ],
   template: `
     <app-page-layout
@@ -73,17 +73,17 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <!-- Custom Templates -->
       <ng-template #equipmentTemplate let-row>
         <div class="equipment-info">
-          <span class="equip-code">{{ row.equipment?.code || 'N/A' }}</span>
-          <span class="equip-model">{{ row.equipment?.brand }} {{ row.equipment?.model }}</span>
+          <span class="equip-code">{{ row.valorizacion_equipment_id || 'N/A' }}</span>
+          <span class="equip-model">Valorización: {{ row.valorizacion_periodo || 'N/A' }}</span>
         </div>
       </ng-template>
 
       <ng-template #gallonsTemplate let-row>
-        <span class="gallons">{{ row.gallons | number: '1.2-2' }} gl</span>
+        <span class="gallons">{{ row.cantidad | number: '1.2-2' }} gl</span>
       </ng-template>
 
       <ng-template #providerTemplate let-row>
-        {{ row.provider?.business_name || '-' }}
+        {{ row.proveedor || '-' }}
       </ng-template>
 
       <!-- Actions Template -->
@@ -189,7 +189,7 @@ export class FuelListComponent implements OnInit {
 
   records: FuelRecord[] = [];
   loading = false;
-  filters = { equipment_id: '', start_date: '', end_date: '', search: '' };
+  filters = { valorizacionId: '', startDate: '', endDate: '', search: '' };
 
   breadcrumbs = [
     { label: 'Dashboard', url: '/app' },
@@ -204,17 +204,24 @@ export class FuelListComponent implements OnInit {
   ];
 
   filterConfig: FilterConfig[] = [
-    { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar por equipo...' },
-    { key: 'start_date', label: 'Fecha Inicio', type: 'date' },
+    {
+      key: 'search',
+      label: 'Buscar',
+      type: 'text',
+      placeholder: 'Buscar por proveedor, documento...',
+    },
+    { key: 'startDate', label: 'Fecha Inicio', type: 'date' },
+    { key: 'endDate', label: 'Fecha Fin', type: 'date' },
   ];
 
   columns: TableColumn[] = [
-    { key: 'date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'equipment', label: 'Equipo', type: 'template' },
-    { key: 'gallons', label: 'Galones', type: 'template' },
-    { key: 'cost_per_gallon', label: 'Costo/Gal', type: 'currency', format: 'PEN' },
-    { key: 'total_cost', label: 'Total', type: 'currency', format: 'PEN' },
-    { key: 'hourmeter', label: 'Horómetro', type: 'text' },
+    { key: 'fecha', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
+    { key: 'equipment', label: 'Valorización', type: 'template' },
+    { key: 'gallons', label: 'Cantidad (gl)', type: 'template' },
+    { key: 'precio_unitario', label: 'Precio/gl', type: 'currency', format: 'PEN' },
+    { key: 'monto_total', label: 'Total', type: 'currency', format: 'PEN' },
+    { key: 'tipo_combustible', label: 'Tipo', type: 'text' },
+    { key: 'numero_documento', label: 'N° Doc', type: 'text' },
     { key: 'provider', label: 'Proveedor', type: 'template' },
   ];
 
@@ -225,8 +232,8 @@ export class FuelListComponent implements OnInit {
   loadRecords(): void {
     this.loading = true;
     this.fuelService.getAll(this.filters).subscribe({
-      next: (data) => {
-        this.records = data;
+      next: (response) => {
+        this.records = response.data;
         this.loading = false;
       },
       error: () => {
@@ -237,7 +244,8 @@ export class FuelListComponent implements OnInit {
 
   onFilterChange(filters: Record<string, any>): void {
     this.filters.search = filters['search'] || '';
-    this.filters.start_date = filters['start_date'] || '';
+    this.filters.startDate = filters['startDate'] || '';
+    this.filters.endDate = filters['endDate'] || '';
     this.loadRecords();
   }
 
@@ -268,15 +276,16 @@ export class FuelListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      Equipo: record.equipment?.code || 'N/A',
-      Fecha: record.date ? new Date(record.date).toLocaleDateString('es-PE') : '',
-      Galones: record.gallons || 0,
-      'Precio por Galón': record.cost_per_gallon || 0,
-      Total: record.total_cost || 0,
-      Proveedor: record.provider?.business_name || '-',
-      Odómetro: record.odometer || 0,
-      Horómetro: record.hourmeter || 0,
-      Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
+      Fecha: record.fecha ? new Date(record.fecha).toLocaleDateString('es-PE') : '',
+      Valorización: record.valorizacion_periodo || 'N/A',
+      'Equipo ID': record.valorizacion_equipment_id || 'N/A',
+      Cantidad: record.cantidad || 0,
+      'Precio Unitario': record.precio_unitario || 0,
+      'Monto Total': record.monto_total || 0,
+      'Tipo Combustible': record.tipo_combustible || '-',
+      Proveedor: record.proveedor || '-',
+      'N° Documento': record.numero_documento || '-',
+      Observaciones: record.observaciones || '-',
     }));
 
     this.excelService.exportToExcel(exportData, {
@@ -292,15 +301,16 @@ export class FuelListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      Equipo: record.equipment?.code || 'N/A',
-      Fecha: record.date ? new Date(record.date).toLocaleDateString('es-PE') : '',
-      Galones: record.gallons || 0,
-      'Precio por Galón': record.cost_per_gallon || 0,
-      Total: record.total_cost || 0,
-      Proveedor: record.provider?.business_name || '-',
-      Odómetro: record.odometer || 0,
-      Horómetro: record.hourmeter || 0,
-      Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
+      Fecha: record.fecha ? new Date(record.fecha).toLocaleDateString('es-PE') : '',
+      Valorización: record.valorizacion_periodo || 'N/A',
+      'Equipo ID': record.valorizacion_equipment_id || 'N/A',
+      Cantidad: record.cantidad || 0,
+      'Precio Unitario': record.precio_unitario || 0,
+      'Monto Total': record.monto_total || 0,
+      'Tipo Combustible': record.tipo_combustible || '-',
+      Proveedor: record.proveedor || '-',
+      'N° Documento': record.numero_documento || '-',
+      Observaciones: record.observaciones || '-',
     }));
 
     this.excelService.exportToCSV(exportData, 'combustible');

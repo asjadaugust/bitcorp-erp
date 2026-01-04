@@ -3,11 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FuelService } from '../../core/services/fuel.service';
-import { EquipmentService } from '../../core/services/equipment.service';
-import { ProviderService } from '../../core/services/provider.service';
 import { FuelRecord } from '../../core/models/fuel-record.model';
-import { Equipment } from '../../core/models/equipment.model';
-import { Provider } from '../../core/models/provider.model';
 
 @Component({
   selector: 'app-fuel-form',
@@ -52,29 +48,51 @@ import { Provider } from '../../core/models/provider.model';
             <h3>Detalles del Abastecimiento</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="date">Fecha *</label>
-                <input id="date" type="date" formControlName="date" class="form-control" />
-                <div class="error-msg" *ngIf="hasError('date')">Fecha es requerida</div>
+                <label for="fecha">Fecha *</label>
+                <input id="fecha" type="date" formControlName="fecha" class="form-control" />
+                <div class="error-msg" *ngIf="hasError('fecha')">Fecha es requerida</div>
               </div>
 
               <div class="form-group">
-                <label for="equipment">Equipo *</label>
-                <select id="equipment" formControlName="equipment_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Equipo</option>
-                  <option *ngFor="let equip of equipmentList" [value]="equip.id">
-                    {{ equip.code }} - {{ equip.brand }} {{ equip.model }}
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('equipment_id')">Equipo es requerido</div>
+                <label for="valorizacion_id">Valorización ID *</label>
+                <input
+                  id="valorizacion_id"
+                  type="number"
+                  formControlName="valorizacion_id"
+                  class="form-control"
+                  placeholder="ID de valorización"
+                />
+                <div class="error-msg" *ngIf="hasError('valorizacion_id')">
+                  Valorización es requerida
+                </div>
               </div>
 
               <div class="form-group">
-                <label for="provider">Proveedor</label>
-                <select id="provider" formControlName="provider_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Proveedor</option>
-                  <option *ngFor="let provider of providers" [value]="provider.id">
-                    {{ provider.business_name }}
-                  </option>
+                <label for="proveedor">Proveedor</label>
+                <input
+                  id="proveedor"
+                  type="text"
+                  formControlName="proveedor"
+                  class="form-control"
+                  placeholder="Nombre del proveedor"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="tipo_combustible">Tipo de Combustible</label>
+                <select
+                  id="tipo_combustible"
+                  formControlName="tipo_combustible"
+                  class="form-select"
+                >
+                  <option [ngValue]="null">Seleccionar Tipo</option>
+                  <option value="DIESEL">Diesel</option>
+                  <option value="GASOLINA_84">Gasolina 84</option>
+                  <option value="GASOLINA_90">Gasolina 90</option>
+                  <option value="GASOLINA_95">Gasolina 95</option>
+                  <option value="GASOLINA_97">Gasolina 97</option>
+                  <option value="GLP">GLP</option>
+                  <option value="GNV">GNV</option>
                 </select>
               </div>
             </div>
@@ -85,39 +103,41 @@ import { Provider } from '../../core/models/provider.model';
             <h3>Consumo y Costos</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="gallons">Galones *</label>
+                <label for="cantidad">Cantidad *</label>
                 <input
-                  id="gallons"
+                  id="cantidad"
                   type="number"
-                  formControlName="gallons"
+                  formControlName="cantidad"
                   class="form-control"
                   placeholder="0.00"
+                  step="0.01"
                   (input)="calculateTotal()"
                 />
-                <div class="error-msg" *ngIf="hasError('gallons')">Cantidad es requerida</div>
+                <div class="error-msg" *ngIf="hasError('cantidad')">Cantidad es requerida</div>
               </div>
 
               <div class="form-group">
-                <label for="cost_per_gallon">Costo por Galón (S/) *</label>
+                <label for="precio_unitario">Precio Unitario (S/) *</label>
                 <input
-                  id="cost_per_gallon"
+                  id="precio_unitario"
                   type="number"
-                  formControlName="cost_per_gallon"
+                  formControlName="precio_unitario"
                   class="form-control"
                   placeholder="0.00"
+                  step="0.01"
                   (input)="calculateTotal()"
                 />
-                <div class="error-msg" *ngIf="hasError('cost_per_gallon')">
-                  Costo unitario es requerido
+                <div class="error-msg" *ngIf="hasError('precio_unitario')">
+                  Precio unitario es requerido
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="total_cost">Costo Total (S/) *</label>
+                <label for="monto_total">Monto Total (S/) *</label>
                 <input
-                  id="total_cost"
+                  id="monto_total"
                   type="number"
-                  formControlName="total_cost"
+                  formControlName="monto_total"
                   class="form-control"
                   placeholder="0.00"
                   readonly
@@ -126,30 +146,30 @@ import { Provider } from '../../core/models/provider.model';
             </div>
           </div>
 
-          <!-- Section 3: Readings -->
+          <!-- Section 3: Document Info -->
           <div class="form-section full-width">
-            <h3>Lecturas</h3>
+            <h3>Información del Documento</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="hourmeter">Horómetro</label>
+                <label for="numero_documento">Número de Documento</label>
                 <input
-                  id="hourmeter"
-                  type="number"
-                  formControlName="hourmeter"
+                  id="numero_documento"
+                  type="text"
+                  formControlName="numero_documento"
                   class="form-control"
-                  placeholder="0.00"
+                  placeholder="Ej: F001-00001234"
                 />
               </div>
 
-              <div class="form-group">
-                <label for="odometer">Odómetro (km)</label>
-                <input
-                  id="odometer"
-                  type="number"
-                  formControlName="odometer"
+              <div class="form-group full-width">
+                <label for="observaciones">Observaciones</label>
+                <textarea
+                  id="observaciones"
+                  formControlName="observaciones"
                   class="form-control"
-                  placeholder="0.00"
-                />
+                  rows="3"
+                  placeholder="Notas adicionales..."
+                ></textarea>
               </div>
             </div>
           </div>
@@ -315,8 +335,6 @@ import { Provider } from '../../core/models/provider.model';
 export class FuelFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private fuelService = inject(FuelService);
-  private equipmentService = inject(EquipmentService);
-  private providerService = inject(ProviderService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -324,25 +342,22 @@ export class FuelFormComponent implements OnInit {
   isEditMode = false;
   loading = false;
   recordId: number | null = null;
-  equipmentList: Equipment[] = [];
-  providers: Provider[] = [];
 
   constructor() {
     this.fuelForm = this.fb.group({
-      equipment_id: [null, Validators.required],
-      date: [new Date().toISOString().split('T')[0], Validators.required],
-      gallons: [null, [Validators.required, Validators.min(0.01)]],
-      cost_per_gallon: [null, [Validators.required, Validators.min(0.01)]],
-      total_cost: [0, Validators.required],
-      provider_id: [null],
-      hourmeter: [null],
-      odometer: [null],
+      valorizacion_id: [null, Validators.required],
+      fecha: [new Date().toISOString().split('T')[0], Validators.required],
+      cantidad: [null, [Validators.required, Validators.min(0.01)]],
+      precio_unitario: [null, [Validators.required, Validators.min(0.01)]],
+      monto_total: [0, Validators.required],
+      tipo_combustible: [null],
+      proveedor: [null],
+      numero_documento: [null],
+      observaciones: [null],
     });
   }
 
   ngOnInit(): void {
-    this.loadDependencies();
-
     this.route.params.subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
@@ -350,11 +365,6 @@ export class FuelFormComponent implements OnInit {
         this.loadRecord(this.recordId);
       }
     });
-  }
-
-  loadDependencies(): void {
-    this.equipmentService.getAll().subscribe((response) => (this.equipmentList = response.data));
-    this.providerService.getAll().subscribe((data) => (this.providers = data));
   }
 
   loadRecord(id: number): void {
@@ -366,7 +376,7 @@ export class FuelFormComponent implements OnInit {
 
         this.fuelForm.patchValue({
           ...record,
-          date: record.fecha ? formatDate(record.fecha as string) : '',
+          fecha: record.fecha ? formatDate(record.fecha as string) : '',
         });
         this.loading = false;
       },
@@ -379,10 +389,10 @@ export class FuelFormComponent implements OnInit {
   }
 
   calculateTotal(): void {
-    const gallons = this.fuelForm.get('gallons')?.value || 0;
-    const cost = this.fuelForm.get('cost_per_gallon')?.value || 0;
-    const total = gallons * cost;
-    this.fuelForm.patchValue({ total_cost: parseFloat(total.toFixed(2)) }, { emitEvent: false });
+    const cantidad = this.fuelForm.get('cantidad')?.value || 0;
+    const precioUnitario = this.fuelForm.get('precio_unitario')?.value || 0;
+    const total = cantidad * precioUnitario;
+    this.fuelForm.patchValue({ monto_total: parseFloat(total.toFixed(2)) }, { emitEvent: false });
   }
 
   onSubmit(): void {
