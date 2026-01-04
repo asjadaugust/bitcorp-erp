@@ -6,6 +6,7 @@ import {
 } from '../../services/equipment.service';
 import { EquipmentStatus } from '../../models/equipment.model';
 import { ExportUtil } from '../../utils/export.util';
+import { sendError } from '../../utils/api-response';
 
 export class EquipmentController {
   private equipmentService = new EquipmentService();
@@ -45,15 +46,15 @@ export class EquipmentController {
       };
 
       const equipment = await this.equipmentService.create(data);
-      res.status(201).json(equipment);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.status(201).json({ success: true, data: equipment });
+    } catch (error: any) {
+      sendError(res, 400, 'EQUIPMENT_CREATE_FAILED', error.message);
     }
   };
 
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { status, equipment_type, search, is_active } = req.query;
+      const { status, equipment_type, search, is_active, page, limit } = req.query;
 
       const filters = {
         status: is_active === 'false' ? 'inactive' : (status as string), // If is_active is 'false', set status to 'inactive', otherwise use the provided status
@@ -61,11 +62,23 @@ export class EquipmentController {
         search: search as string,
       };
 
-      const equipment = await this.equipmentService.findAll(filters);
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = parseInt(limit as string) || 10;
 
-      res.json(equipment);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      const { data, total } = await this.equipmentService.findAll(filters, pageNum, limitNum);
+
+      res.json({
+        success: true,
+        data,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
+    } catch (error: any) {
+      sendError(res, 500, 'EQUIPMENT_LIST_FAILED', 'Failed to fetch equipment', error.message);
     }
   };
 
@@ -73,9 +86,19 @@ export class EquipmentController {
     try {
       const id = parseInt(req.params.id);
       const equipment = await this.equipmentService.findById(id);
-      res.json(equipment);
-    } catch (error) {
-      res.status(404).json({ error: (error as Error).message });
+
+      if (!equipment) {
+        sendError(res, 404, 'EQUIPMENT_NOT_FOUND', 'Equipment not found');
+        return;
+      }
+
+      res.json({ success: true, data: equipment });
+    } catch (error: any) {
+      if (error.message === 'Equipment not found') {
+        sendError(res, 404, 'EQUIPMENT_NOT_FOUND', error.message);
+      } else {
+        sendError(res, 500, 'EQUIPMENT_GET_FAILED', 'Failed to fetch equipment', error.message);
+      }
     }
   };
 
@@ -83,9 +106,15 @@ export class EquipmentController {
     try {
       const { code } = req.params;
       const equipment = await this.equipmentService.findByCode(code as string);
-      res.json(equipment);
-    } catch (error) {
-      res.status(404).json({ error: (error as Error).message });
+
+      if (!equipment) {
+        sendError(res, 404, 'EQUIPMENT_NOT_FOUND', 'Equipment not found');
+        return;
+      }
+
+      res.json({ success: true, data: equipment });
+    } catch (error: any) {
+      sendError(res, 500, 'EQUIPMENT_GET_FAILED', 'Failed to fetch equipment', error.message);
     }
   };
 
@@ -125,9 +154,13 @@ export class EquipmentController {
       };
 
       const equipment = await this.equipmentService.update(id, data);
-      res.json(equipment);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.json({ success: true, data: equipment });
+    } catch (error: any) {
+      if (error.message === 'Equipment not found') {
+        sendError(res, 404, 'EQUIPMENT_NOT_FOUND', error.message);
+      } else {
+        sendError(res, 400, 'EQUIPMENT_UPDATE_FAILED', error.message);
+      }
     }
   };
 
@@ -136,8 +169,8 @@ export class EquipmentController {
       const id = parseInt(req.params.id);
       await this.equipmentService.delete(id);
       res.status(204).send();
-    } catch (error) {
-      res.status(404).json({ error: (error as Error).message });
+    } catch (error: any) {
+      sendError(res, 404, 'EQUIPMENT_DELETE_FAILED', error.message);
     }
   };
 
@@ -146,9 +179,13 @@ export class EquipmentController {
       const id = parseInt(req.params.id);
       const { status } = req.body;
       const equipment = await this.equipmentService.updateStatus(id, status);
-      res.json(equipment);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.json({ success: true, data: equipment });
+    } catch (error: any) {
+      if (error.message === 'Equipment not found') {
+        sendError(res, 404, 'EQUIPMENT_NOT_FOUND', error.message);
+      } else {
+        sendError(res, 400, 'EQUIPMENT_STATUS_UPDATE_FAILED', error.message);
+      }
     }
   };
 
@@ -157,9 +194,9 @@ export class EquipmentController {
       const id = parseInt(req.params.id);
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateHourmeter(id, reading);
-      res.json(equipment);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.json({ success: true, data: equipment });
+    } catch (error: any) {
+      sendError(res, 400, 'HOURMETER_UPDATE_FAILED', error.message);
     }
   };
 
@@ -168,59 +205,75 @@ export class EquipmentController {
       const id = parseInt(req.params.id);
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateOdometer(id, reading);
-      res.json(equipment);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.json({ success: true, data: equipment });
+    } catch (error: any) {
+      sendError(res, 400, 'ODOMETER_UPDATE_FAILED', error.message);
     }
   };
 
   getAvailable = async (_req: Request, res: Response): Promise<void> => {
     try {
       const equipment = await this.equipmentService.getAvailableEquipment();
-      res.json(equipment);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.json({ success: true, data: equipment });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'EQUIPMENT_LIST_FAILED',
+        'Failed to fetch available equipment',
+        error.message
+      );
     }
   };
 
   getTypes = async (_req: Request, res: Response): Promise<void> => {
     try {
       const types = await this.equipmentService.getEquipmentTypes();
-      res.json(types);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.json({ success: true, data: types });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'EQUIPMENT_TYPES_FAILED',
+        'Failed to fetch equipment types',
+        error.message
+      );
     }
   };
 
   getStatistics = async (_req: Request, res: Response): Promise<void> => {
     try {
       const stats = await this.equipmentService.getStatistics();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.json({ success: true, data: stats });
+    } catch (error: any) {
+      sendError(res, 500, 'STATISTICS_FAILED', 'Failed to fetch statistics', error.message);
     }
   };
 
   exportExcel = async (req: Request, res: Response): Promise<void> => {
     try {
       const { status, equipment_type, search } = req.query;
-      const equipment = await this.equipmentService.findAll({
-        estado: status ? (status as string) : 'DISPONIBLE',
-        equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
-        search: search as string,
-        isActive: true,
-      });
+      const result = await this.equipmentService.findAll(
+        {
+          estado: status ? (status as string) : 'DISPONIBLE',
+          equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
+          search: search as string,
+          isActive: true,
+        },
+        1,
+        9999
+      ); // Get all records for export
 
-      const data = equipment.map((eq) => ({
-        codigo: eq.codigo_equipo,
-        descripcion: eq.modelo,
-        tipo: eq.equipment_type_id,
-        marca: eq.marca,
-        modelo: eq.modelo,
-        placa: eq.placa || '',
-        estado: eq.estado,
+      const data = result.data.map((eq) => ({
+        codigo: eq.code,
+        descripcion: eq.model || '',
+        tipo: eq.equipment_type_id || '',
+        marca: eq.brand || '',
+        modelo: eq.model || '',
+        placa: eq.plate_number || '',
+        estado: eq.status,
         ubicacion: '', // eq.current_location || '',
-        horometro: eq.medidor_uso || 0,
+        horometro: eq.meter_type || 0,
         fecha_registro: ExportUtil.formatDate(eq.created_at),
       }));
 
@@ -238,31 +291,35 @@ export class EquipmentController {
       ];
 
       await ExportUtil.exportToExcel(res, data, columns, `equipos_${Date.now()}`);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+    } catch (error: any) {
+      sendError(res, 500, 'EXPORT_FAILED', 'Failed to export equipment', error.message);
     }
   };
 
   exportCSV = async (req: Request, res: Response): Promise<void> => {
     try {
       const { status, equipment_type, search } = req.query;
-      const equipment = await this.equipmentService.findAll({
-        estado: status ? (status as string) : 'DISPONIBLE',
-        equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
-        search: search as string,
-        isActive: true,
-      });
+      const result = await this.equipmentService.findAll(
+        {
+          estado: status ? (status as string) : 'DISPONIBLE',
+          equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
+          search: search as string,
+          isActive: true,
+        },
+        1,
+        9999
+      ); // Get all records for export
 
-      const data = equipment.map((eq) => ({
-        codigo: eq.codigo_equipo,
-        descripcion: eq.modelo,
-        tipo: eq.equipment_type_id,
-        marca: eq.marca,
-        modelo: eq.modelo,
-        placa: eq.placa || '',
-        estado: eq.estado,
+      const data = result.data.map((eq) => ({
+        codigo: eq.code,
+        descripcion: eq.model || '',
+        tipo: eq.equipment_type_id || '',
+        marca: eq.brand || '',
+        modelo: eq.model || '',
+        placa: eq.plate_number || '',
+        estado: eq.status,
         ubicacion: '', // eq.current_location || '',
-        horometro: eq.medidor_uso || 0,
+        horometro: eq.meter_type || 0,
         fecha_registro: ExportUtil.formatDate(eq.created_at),
       }));
 
@@ -280,8 +337,8 @@ export class EquipmentController {
       ];
 
       ExportUtil.exportToCSV(res, data, fields, `equipos_${Date.now()}`);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+    } catch (error: any) {
+      sendError(res, 500, 'EXPORT_FAILED', 'Failed to export equipment', error.message);
     }
   };
 
@@ -295,7 +352,7 @@ export class EquipmentController {
       const user_id = (req as any).user?.id || 1;
 
       if (!project_id) {
-        res.status(400).json({ error: 'Project ID is required' });
+        sendError(res, 400, 'MISSING_PROJECT_ID', 'Project ID is required');
         return;
       }
 
@@ -307,9 +364,9 @@ export class EquipmentController {
         notes,
       });
 
-      res.json(assignment);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.json({ success: true, data: assignment });
+    } catch (error: any) {
+      sendError(res, 400, 'ASSIGNMENT_FAILED', error.message);
     }
   };
 
@@ -323,7 +380,7 @@ export class EquipmentController {
       const user_id = (req as any).user?.id || 1;
 
       if (!to_project_id) {
-        res.status(400).json({ error: 'Destination project ID is required' });
+        sendError(res, 400, 'MISSING_PROJECT_ID', 'Destination project ID is required');
         return;
       }
 
@@ -337,9 +394,9 @@ export class EquipmentController {
         notes,
       });
 
-      res.json(transfer);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.json({ success: true, data: transfer });
+    } catch (error: any) {
+      sendError(res, 400, 'TRANSFER_FAILED', error.message);
     }
   };
 
@@ -351,7 +408,7 @@ export class EquipmentController {
       const { start_date, end_date, equipment_type, project_id } = req.query;
 
       if (!start_date || !end_date) {
-        res.status(400).json({ error: 'Start date and end date are required' });
+        sendError(res, 400, 'MISSING_DATES', 'Start date and end date are required');
         return;
       }
 
@@ -362,9 +419,9 @@ export class EquipmentController {
         project_id: project_id ? parseInt(project_id as string) : undefined,
       });
 
-      res.json(availability);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.json({ success: true, data: availability });
+    } catch (error: any) {
+      sendError(res, 500, 'AVAILABILITY_FAILED', 'Failed to fetch availability', error.message);
     }
   };
 
@@ -375,9 +432,9 @@ export class EquipmentController {
     try {
       const id = parseInt(req.params.id);
       const history = await this.equipmentService.getAssignmentHistory(id);
-      res.json(history);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.json({ success: true, data: history });
+    } catch (error: any) {
+      sendError(res, 500, 'HISTORY_FAILED', 'Failed to fetch assignment history', error.message);
     }
   };
 }

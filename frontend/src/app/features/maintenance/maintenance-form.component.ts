@@ -39,7 +39,8 @@ import { Provider } from '../../core/models/provider.model';
             (click)="onSubmit()"
             [disabled]="maintenanceForm.invalid || loading"
           >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Mantenimiento' }}
+            <i class="fa-solid fa-save"></i>
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Mantenimiento' }}
           </button>
         </div>
       </div>
@@ -64,7 +65,11 @@ import { Provider } from '../../core/models/provider.model';
 
               <div class="form-group">
                 <label for="maintenance_type">Tipo de Mantenimiento *</label>
-                <select id="maintenance_type" formControlName="maintenance_type" class="form-select">
+                <select
+                  id="maintenance_type"
+                  formControlName="maintenance_type"
+                  class="form-select"
+                >
                   <option value="preventive">Preventivo</option>
                   <option value="corrective">Correctivo</option>
                   <option value="predictive">Predictivo</option>
@@ -81,7 +86,9 @@ import { Provider } from '../../core/models/provider.model';
                   rows="3"
                   placeholder="Describa el trabajo realizado o a realizar..."
                 ></textarea>
-                <div class="error-msg" *ngIf="hasError('description')">Descripción es requerida</div>
+                <div class="error-msg" *ngIf="hasError('description')">
+                  Descripción es requerida
+                </div>
               </div>
             </div>
           </div>
@@ -98,17 +105,14 @@ import { Provider } from '../../core/models/provider.model';
                   formControlName="start_date"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('start_date')">Fecha de inicio requerida</div>
+                <div class="error-msg" *ngIf="hasError('start_date')">
+                  Fecha de inicio requerida
+                </div>
               </div>
 
               <div class="form-group">
                 <label for="end_date">Fecha de Fin</label>
-                <input
-                  id="end_date"
-                  type="date"
-                  formControlName="end_date"
-                  class="form-control"
-                />
+                <input id="end_date" type="date" formControlName="end_date" class="form-control" />
               </div>
 
               <div class="form-group">
@@ -349,7 +353,7 @@ export class MaintenanceFormComponent implements OnInit {
   }
 
   loadDependencies(): void {
-    this.equipmentService.getAll().subscribe((data) => (this.equipmentList = data));
+    this.equipmentService.getAll().subscribe((response) => (this.equipmentList = response.data));
     this.providerService.getAll().subscribe((data) => (this.providers = data));
   }
 
@@ -362,8 +366,9 @@ export class MaintenanceFormComponent implements OnInit {
 
         this.maintenanceForm.patchValue({
           ...record,
-          start_date: formatDate(record.start_date),
-          end_date: record.end_date ? formatDate(record.end_date) : '',
+          // TODO: Fix property name mismatch - model uses fechaProgramada/fechaRealizada
+          // start_date: formatDate(record.start_date),
+          // end_date: record.end_date ? formatDate(record.end_date) : '',
         });
         this.loading = false;
       },

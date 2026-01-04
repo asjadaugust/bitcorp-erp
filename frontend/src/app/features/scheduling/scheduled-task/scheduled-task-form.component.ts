@@ -77,12 +77,7 @@ import { OperatorService } from '../../../core/services/operator.service';
             <div class="section-grid">
               <div class="form-group">
                 <label for="date">Fecha Programada *</label>
-                <input
-                  type="date"
-                  id="date"
-                  formControlName="start_date"
-                  class="form-control"
-                />
+                <input type="date" id="date" formControlName="start_date" class="form-control" />
                 <div class="error-msg" *ngIf="hasError('start_date')">Fecha es requerida</div>
               </div>
 
@@ -106,7 +101,9 @@ import { OperatorService } from '../../../core/services/operator.service';
                   rows="3"
                   placeholder="Descripción detallada de la tarea..."
                 ></textarea>
-                <div class="error-msg" *ngIf="hasError('description')">Descripción es requerida</div>
+                <div class="error-msg" *ngIf="hasError('description')">
+                  Descripción es requerida
+                </div>
               </div>
             </div>
           </div>
@@ -322,20 +319,20 @@ export class ScheduledTaskFormComponent implements OnInit {
       task_type: ['maintenance', Validators.required],
       description: ['', Validators.required],
       priority: ['medium', Validators.required],
-      status: ['pending', Validators.required]
+      status: ['pending', Validators.required],
     });
   }
 
   ngOnInit() {
     this.loadDependencies();
-    
-    this.route.queryParams.subscribe(params => {
+
+    this.route.queryParams.subscribe((params) => {
       if (params['date']) {
         this.taskForm.patchValue({ start_date: params['date'] });
       }
     });
 
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       const id = params['id'];
       if (id && id !== 'undefined' && id !== 'NaN') {
         this.isEditMode = true;
@@ -353,8 +350,8 @@ export class ScheduledTaskFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.equipmentService.getAll().subscribe((res: any) => this.equipmentList = res);
-    this.operatorService.getAll().subscribe((res: any) => this.operators = res);
+    this.equipmentService.getAll().subscribe((res: any) => (this.equipmentList = res.data));
+    this.operatorService.getAll().subscribe((res: any) => (this.operators = res));
   }
 
   loadTask(id: number) {
@@ -382,7 +379,7 @@ export class ScheduledTaskFormComponent implements OnInit {
         console.error('Failed to get task:', err);
         alert('Failed to get task: ' + (err.error?.error || err.message));
         this.router.navigate(['/operaciones/scheduling/tasks']);
-      }
+      },
     });
   }
 
@@ -394,16 +391,17 @@ export class ScheduledTaskFormComponent implements OnInit {
     this.loading = true;
     const data = this.taskForm.value;
 
-    const req = this.isEditMode && this.taskId
-      ? this.taskService.update(this.taskId, data)
-      : this.taskService.create(data);
+    const req =
+      this.isEditMode && this.taskId
+        ? this.taskService.update(this.taskId, data)
+        : this.taskService.create(data);
 
     req.subscribe({
       next: () => this.router.navigate(['/scheduling/tasks']),
       error: (err: any) => {
         alert('Error: ' + (err.error?.error || err.message));
         this.loading = false;
-      }
+      },
     });
   }
 

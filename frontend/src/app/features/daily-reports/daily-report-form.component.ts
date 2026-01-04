@@ -17,12 +17,25 @@ import { Equipment } from '../../core/models/equipment.model';
     <div class="daily-report-form-container">
       <div class="mobile-header">
         <button class="back-btn" (click)="goBack()">←</button>
-        <h1>{{ isReadOnly ? 'Detalles del Parte' : (reportId ? 'Editar Parte' : 'Nuevo Parte') }}</h1>
+        <h1>{{ isReadOnly ? 'Detalles del Parte' : reportId ? 'Editar Parte' : 'Nuevo Parte' }}</h1>
         <div class="header-actions">
-          <button *ngIf="reportId" class="pdf-btn" (click)="downloadPdf()" [disabled]="downloadingPdf" title="Descargar PDF">
+          <button
+            *ngIf="reportId"
+            class="pdf-btn"
+            (click)="downloadPdf()"
+            [disabled]="downloadingPdf"
+            title="Descargar PDF"
+          >
             <i class="fa-solid fa-file-pdf"></i>
           </button>
-          <button *ngIf="!isReadOnly" class="save-draft-btn" (click)="saveDraft()" [disabled]="saving">💾</button>
+          <button
+            *ngIf="!isReadOnly"
+            class="save-draft-btn"
+            (click)="saveDraft()"
+            [disabled]="saving"
+          >
+            💾
+          </button>
         </div>
       </div>
 
@@ -74,8 +87,8 @@ import { Equipment } from '../../core/models/equipment.model';
                     placeholder="ej. Obra A, Sector 3"
                     [disabled]="isReadOnly"
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     class="gps-btn"
                     (click)="captureGps()"
                     [disabled]="isReadOnly || capturingGps"
@@ -178,7 +191,10 @@ import { Equipment } from '../../core/models/equipment.model';
                 >
               </div>
 
-              <div class="form-row" *ngIf="$any(selectedEquipment)?.odometer_reading || report.odometer_start">
+              <div
+                class="form-row"
+                *ngIf="$any(selectedEquipment)?.odometer_reading || report.odometer_start"
+              >
                 <div class="form-group">
                   <label for="odometer_start">Odómetro Inicio</label>
                   <input
@@ -323,7 +339,10 @@ import { Equipment } from '../../core/models/equipment.model';
                 <p class="help-text">Máximo 10 fotos, 5MB cada una</p>
               </div>
 
-              <div class="photo-preview-grid" *ngIf="selectedPhotos.length > 0 || uploadedPhotos.length > 0">
+              <div
+                class="photo-preview-grid"
+                *ngIf="selectedPhotos.length > 0 || uploadedPhotos.length > 0"
+              >
                 <!-- Uploaded photos -->
                 <div *ngFor="let photo of uploadedPhotos; let i = index" class="photo-preview">
                   <img [src]="getPhotoUrl(photo)" alt="Foto del reporte" />
@@ -719,7 +738,7 @@ export class DailyReportFormComponent implements OnInit {
   downloadingPdf = false;
   errorMessage = '';
   successMessage = '';
-  
+
   // GPS properties
   gpsPosition: GpsPosition | null = null;
   capturingGps = false;
@@ -727,7 +746,7 @@ export class DailyReportFormComponent implements OnInit {
   today = new Date().toISOString().split('T')[0];
   reportId: number | null = null;
   isReadOnly = false;
-  
+
   // Photo upload properties
   selectedPhotos: { file: File; preview: string }[] = [];
   uploadedPhotos: string[] = [];
@@ -738,7 +757,7 @@ export class DailyReportFormComponent implements OnInit {
 
     const id = this.route.snapshot.params['id'];
     // Check if we are in edit mode or view mode
-    const urlSegments = this.route.snapshot.url.map(segment => segment.path);
+    const urlSegments = this.route.snapshot.url.map((segment) => segment.path);
     const isEditMode = urlSegments.includes('edit') || urlSegments.includes('new');
     this.isReadOnly = !!id && !isEditMode;
 
@@ -760,12 +779,12 @@ export class DailyReportFormComponent implements OnInit {
           // Ensure date format is YYYY-MM-DD
           report_date: new Date(data.report_date).toISOString().split('T')[0],
         } as unknown as CreateDailyReportDto;
-        
+
         // Load photos if available
         if (data.photos && Array.isArray(data.photos)) {
           this.uploadedPhotos = data.photos;
         }
-        
+
         this.loading = false;
         // Trigger equipment selection logic to set initial values if needed
         // But we should be careful not to overwrite report values with current equipment values
@@ -781,8 +800,8 @@ export class DailyReportFormComponent implements OnInit {
 
   loadEquipment(): void {
     this.equipmentService.getAll().subscribe({
-      next: (data) => {
-        this.equipment = data;
+      next: (response) => {
+        this.equipment = response.data;
       },
       error: () => {
         this.errorMessage = 'Error al cargar equipos';
@@ -798,11 +817,14 @@ export class DailyReportFormComponent implements OnInit {
   }
 
   onEquipmentChange(): void {
-    const selected = this.equipment.find((eq) => String(eq.id) === String(this.report.equipment_id));
+    const selected = this.equipment.find(
+      (eq) => String(eq.id) === String(this.report.equipment_id)
+    );
     if (selected) {
       this.selectedEquipment = selected;
-      if (!this.reportId) { // Only set hourmeter if creating new
-          this.report.hourmeter_start = Number(selected.medidor_uso) || 0;
+      if (!this.reportId) {
+        // Only set hourmeter if creating new
+        this.report.hourmeter_start = Number(selected.meter_type) || 0;
       }
     }
   }
@@ -829,13 +851,12 @@ export class DailyReportFormComponent implements OnInit {
 
     try {
       this.gpsPosition = await this.gpsService.getCurrentPosition();
-      
+
       // Store GPS data in report
       this.report.gps_latitude = this.gpsPosition.latitude;
       this.report.gps_longitude = this.gpsPosition.longitude;
       this.report.gps_accuracy = this.gpsPosition.accuracy;
       this.report.gps_captured_at = this.gpsPosition.timestamp.toISOString();
-      
     } catch (error: any) {
       this.gpsError = error.message || 'Error al capturar ubicación';
     } finally {
@@ -881,7 +902,8 @@ export class DailyReportFormComponent implements OnInit {
     request$.subscribe({
       next: (response: any) => {
         if (response && response.offline) {
-          this.successMessage = response.message || 'Parte guardado offline. Se sincronizará cuando esté en línea.';
+          this.successMessage =
+            response.message || 'Parte guardado offline. Se sincronizará cuando esté en línea.';
         } else {
           this.successMessage =
             this.report.status === 'draft'
@@ -903,7 +925,7 @@ export class DailyReportFormComponent implements OnInit {
 
   downloadPdf(): void {
     if (!this.reportId) return;
-    
+
     this.downloadingPdf = true;
     this.dailyReportService.downloadPdf(this.reportId).subscribe({
       next: (blob) => {
@@ -918,7 +940,7 @@ export class DailyReportFormComponent implements OnInit {
       error: () => {
         this.errorMessage = 'Error al descargar PDF';
         this.downloadingPdf = false;
-      }
+      },
     });
   }
 

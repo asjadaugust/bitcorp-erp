@@ -53,12 +53,7 @@ import { Provider } from '../../core/models/provider.model';
             <div class="section-grid">
               <div class="form-group">
                 <label for="date">Fecha *</label>
-                <input
-                  id="date"
-                  type="date"
-                  formControlName="date"
-                  class="form-control"
-                />
+                <input id="date" type="date" formControlName="date" class="form-control" />
                 <div class="error-msg" *ngIf="hasError('date')">Fecha es requerida</div>
               </div>
 
@@ -112,7 +107,9 @@ import { Provider } from '../../core/models/provider.model';
                   placeholder="0.00"
                   (input)="calculateTotal()"
                 />
-                <div class="error-msg" *ngIf="hasError('cost_per_gallon')">Costo unitario es requerido</div>
+                <div class="error-msg" *ngIf="hasError('cost_per_gallon')">
+                  Costo unitario es requerido
+                </div>
               </div>
 
               <div class="form-group">
@@ -356,7 +353,7 @@ export class FuelFormComponent implements OnInit {
   }
 
   loadDependencies(): void {
-    this.equipmentService.getAll().subscribe((data) => (this.equipmentList = data));
+    this.equipmentService.getAll().subscribe((response) => (this.equipmentList = response.data));
     this.providerService.getAll().subscribe((data) => (this.providers = data));
   }
 
@@ -369,7 +366,7 @@ export class FuelFormComponent implements OnInit {
 
         this.fuelForm.patchValue({
           ...record,
-          date: formatDate(record.date),
+          date: record.fecha ? formatDate(record.fecha as string) : '',
         });
         this.loading = false;
       },

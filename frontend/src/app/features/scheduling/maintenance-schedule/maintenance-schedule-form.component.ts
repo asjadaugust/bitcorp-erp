@@ -36,7 +36,8 @@ import { ProjectService } from '../../../core/services/project.service';
             (click)="onSubmit()"
             [disabled]="scheduleForm.invalid || loading"
           >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Programación' }}
+            <i class="fa-solid fa-save"></i>
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Programación' }}
           </button>
         </div>
       </div>
@@ -103,7 +104,9 @@ import { ProjectService } from '../../../core/services/project.service';
                   rows="3"
                   placeholder="Descripción del mantenimiento..."
                 ></textarea>
-                <div class="error-msg" *ngIf="hasError('description')">Descripción es requerida</div>
+                <div class="error-msg" *ngIf="hasError('description')">
+                  Descripción es requerida
+                </div>
               </div>
             </div>
           </div>
@@ -119,7 +122,9 @@ import { ProjectService } from '../../../core/services/project.service';
                   <option value="days">Días</option>
                   <option value="date">Fecha Fija</option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('interval_type')">Tipo de intervalo es requerido</div>
+                <div class="error-msg" *ngIf="hasError('interval_type')">
+                  Tipo de intervalo es requerido
+                </div>
               </div>
 
               <div class="form-group">
@@ -313,20 +318,20 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   projects: any[] = [];
 
   constructor() {
-      this.scheduleForm = this.fb.group({
+    this.scheduleForm = this.fb.group({
       equipmentId: [null, Validators.required],
       projectId: [null],
       maintenanceType: ['preventive', Validators.required],
       description: ['', Validators.required],
       intervalType: ['hours', Validators.required],
       intervalValue: [null, [Validators.required, Validators.min(1)]],
-      status: ['active', Validators.required]
+      status: ['active', Validators.required],
     });
   }
 
   ngOnInit() {
     this.loadDependencies();
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
         this.scheduleId = params['id'];
@@ -336,8 +341,8 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.equipmentService.getAll().subscribe((res: any) => this.equipmentList = res);
-    this.projectService.getAll().subscribe((res: any) => this.projects = res);
+    this.equipmentService.getAll().subscribe((res: any) => (this.equipmentList = res.data));
+    this.projectService.getAll().subscribe((res: any) => (this.projects = res));
   }
 
   loadSchedule(id: string) {
@@ -350,7 +355,7 @@ export class MaintenanceScheduleFormComponent implements OnInit {
       error: (err: any) => {
         console.error(err);
         this.router.navigate(['/equipment/maintenance']);
-      }
+      },
     });
   }
 
@@ -362,16 +367,17 @@ export class MaintenanceScheduleFormComponent implements OnInit {
     this.loading = true;
     const data = this.scheduleForm.value;
 
-    const req = this.isEditMode && this.scheduleId
-      ? this.scheduleService.update(this.scheduleId, data)
-      : this.scheduleService.create(data);
+    const req =
+      this.isEditMode && this.scheduleId
+        ? this.scheduleService.update(this.scheduleId, data)
+        : this.scheduleService.create(data);
 
     req.subscribe({
       next: () => this.router.navigate(['/equipment/maintenance']),
       error: (err: any) => {
         alert('Error: ' + (err.error?.error || err.message));
         this.loading = false;
-      }
+      },
     });
   }
 

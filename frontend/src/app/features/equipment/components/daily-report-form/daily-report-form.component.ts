@@ -50,17 +50,17 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   saving = false;
   isOffline = false;
   reportId?: string;
-  
+
   equipment: any[] = [];
   operators: any[] = [];
   filteredEquipment: any[] = [];
-  
+
   uploadedPhotos: File[] = [];
   maxPhotos = 5;
   maxPhotoSize = 5 * 1024 * 1024; // 5MB
-  
+
   private destroy$ = new Subject<void>();
-  
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -77,9 +77,9 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.loadData();
     this.checkOnlineStatus();
     this.setupFormListeners();
-    
+
     // Check if editing existing report
-    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.reportId = id;
@@ -95,7 +95,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   initForm(): void {
     const today = new Date().toISOString().split('T')[0];
-    
+
     this.reportForm = this.fb.group({
       report_date: [today, Validators.required],
       operator_id: ['', Validators.required],
@@ -121,59 +121,65 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   setupFormListeners(): void {
     // Auto-calculate hours worked
-    this.reportForm.get('hourmeter_end')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+    this.reportForm
+      .get('hourmeter_end')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.calculateHoursWorked());
-    
-    this.reportForm.get('hourmeter_start')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+
+    this.reportForm
+      .get('hourmeter_start')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.calculateHoursWorked());
-    
+
     // Auto-calculate fuel consumed
-    this.reportForm.get('fuel_start')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+    this.reportForm
+      .get('fuel_start')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.calculateFuelConsumed());
-    
-    this.reportForm.get('fuel_end')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+
+    this.reportForm
+      .get('fuel_end')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.calculateFuelConsumed());
-    
+
     // Validate time range
-    this.reportForm.get('end_time')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+    this.reportForm
+      .get('end_time')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.validateTimeRange());
-    
-    this.reportForm.get('start_time')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+
+    this.reportForm
+      .get('start_time')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.validateTimeRange());
   }
 
   loadData(): void {
     this.loading = true;
-    
+
     // Load equipment
     this.equipmentService.getAll().subscribe({
-      next: (data: any) => {
-        this.equipment = data;
-        this.filteredEquipment = data;
+      next: (response: any) => {
+        this.equipment = response.data;
+        this.filteredEquipment = response.data;
         this.loading = false;
       },
       error: (error: any) => {
         console.error('Error loading equipment:', error);
         this.showError('Error al cargar equipos');
         this.loading = false;
-      }
+      },
     });
-    
+
     // Load operators
     this.operatorService.getAll().subscribe({
       next: (data: any) => {
         this.operators = data;
-        
+
         // Auto-select current user if they're an operator
         const currentUser = this.authService.currentUser;
         if (currentUser) {
-          const currentOperator = this.operators.find(op => op.user_id === currentUser.id);
+          const currentOperator = this.operators.find((op) => op.user_id === currentUser.id);
           if (currentOperator) {
             this.reportForm.patchValue({ operator_id: currentOperator.id });
           }
@@ -182,7 +188,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         console.error('Error loading operators:', error);
         this.showError('Error al cargar operadores');
-      }
+      },
     });
   }
 
@@ -217,14 +223,14 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         console.error('Error loading report:', error);
         this.showError('Error al cargar el reporte');
         this.loading = false;
-      }
+      },
     });
   }
 
   calculateHoursWorked(): void {
     const start = this.reportForm.get('hourmeter_start')?.value;
     const end = this.reportForm.get('hourmeter_end')?.value;
-    
+
     if (start && end && end >= start) {
       const hours = end - start;
       // Display calculated hours (optional field to show)
@@ -234,7 +240,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   calculateFuelConsumed(): void {
     const start = this.reportForm.get('fuel_start')?.value;
     const end = this.reportForm.get('fuel_end')?.value;
-    
+
     if (start && end && start >= end) {
       const consumed = start - end;
       this.reportForm.get('fuel_consumed')?.setValue(consumed.toFixed(2));
@@ -244,7 +250,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   validateTimeRange(): void {
     const startTime = this.reportForm.get('start_time')?.value;
     const endTime = this.reportForm.get('end_time')?.value;
-    
+
     if (startTime && endTime && endTime <= startTime) {
       this.reportForm.get('end_time')?.setErrors({ invalidTimeRange: true });
     }
@@ -254,26 +260,26 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const files = Array.from(input.files);
-      
+
       // Validate number of photos
       if (this.uploadedPhotos.length + files.length > this.maxPhotos) {
         this.showError(`Máximo ${this.maxPhotos} fotos permitidas`);
         return;
       }
-      
+
       // Validate file sizes
       for (const file of files) {
         if (file.size > this.maxPhotoSize) {
           this.showError(`El archivo ${file.name} excede el tamaño máximo de 5MB`);
           return;
         }
-        
+
         if (!file.type.startsWith('image/')) {
           this.showError(`El archivo ${file.name} no es una imagen válida`);
           return;
         }
       }
-      
+
       this.uploadedPhotos.push(...files);
     }
   }
@@ -285,21 +291,21 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   captureGPS(): void {
     if ('geolocation' in navigator) {
       this.showInfo('Capturando ubicación GPS...');
-      
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           this.reportForm.patchValue({
             gps_latitude: position.coords.latitude,
             gps_longitude: position.coords.longitude,
           });
-          
+
           // Optionally set location text
           if (!this.reportForm.get('location')?.value) {
             this.reportForm.patchValue({
-              location: `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`
+              location: `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`,
             });
           }
-          
+
           this.showSuccess('Ubicación GPS capturada');
         },
         (error) => {
@@ -309,7 +315,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 0
+          maximumAge: 0,
         }
       );
     } else {
@@ -319,13 +325,13 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   checkOnlineStatus(): void {
     this.isOffline = !navigator.onLine;
-    
+
     window.addEventListener('online', () => {
       this.isOffline = false;
       this.showSuccess('Conexión restaurada. Sincronizando...');
       // TODO: Sync pending reports from IndexedDB
     });
-    
+
     window.addEventListener('offline', () => {
       this.isOffline = true;
       this.showWarning('Sin conexión. Los cambios se guardarán localmente.');
@@ -337,7 +343,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       this.showError('Por favor complete los campos requeridos');
       return;
     }
-    
+
     this.saveReport('draft');
   }
 
@@ -347,37 +353,36 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       this.showError('Por favor complete todos los campos requeridos');
       return;
     }
-    
+
     this.saveReport('submitted');
   }
 
   private saveReport(status: 'draft' | 'submitted'): void {
     this.saving = true;
-    
+
     const formValue = this.reportForm.getRawValue();
     const reportData = {
       ...formValue,
       status,
     };
-    
-    const saveOperation = this.reportId 
+
+    const saveOperation = this.reportId
       ? this.dailyReportService.updateReport(this.reportId, reportData)
       : this.dailyReportService.createReport(reportData);
-    
+
     saveOperation.subscribe({
       next: (response) => {
         this.saving = false;
-        
+
         // Upload photos if any
         if (this.uploadedPhotos.length > 0 && response.id) {
           this.uploadPhotos(response.id);
         }
-        
-        const message = status === 'draft' 
-          ? 'Borrador guardado exitosamente'
-          : 'Reporte enviado exitosamente';
+
+        const message =
+          status === 'draft' ? 'Borrador guardado exitosamente' : 'Reporte enviado exitosamente';
         this.showSuccess(message);
-        
+
         // Navigate back to daily reports list
         setTimeout(() => {
           this.router.navigate(['/equipment/daily-reports']);
@@ -386,14 +391,14 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error saving report:', error);
         this.saving = false;
-        
+
         if (this.isOffline) {
           // TODO: Save to IndexedDB for later sync
           this.showWarning('Guardado localmente. Se sincronizará cuando haya conexión.');
         } else {
           this.showError('Error al guardar el reporte');
         }
-      }
+      },
     });
   }
 
@@ -403,7 +408,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       formData.append('photos', photo, photo.name);
     });
     formData.append('reportId', reportId.toString());
-    
+
     this.dailyReportService.uploadPhotos(formData).subscribe({
       next: () => {
         this.showSuccess('Fotos subidas exitosamente');
@@ -411,7 +416,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error uploading photos:', error);
         this.showWarning('Error al subir fotos, pero el reporte fue guardado');
-      }
+      },
     });
   }
 
@@ -426,10 +431,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.keys(formGroup.controls).forEach(key => {
+    Object.keys(formGroup.controls).forEach((key) => {
       const control = formGroup.get(key);
       control?.markAsTouched();
-      
+
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
       }

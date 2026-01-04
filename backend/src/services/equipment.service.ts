@@ -34,6 +34,32 @@ export interface EquipmentFilter {
   isActive?: boolean;
 }
 
+export interface EquipmentDto {
+  id: number;
+  code: string;
+  equipment_type_id: number | null;
+  provider_id: number | null;
+  provider_name: string | null;
+  provider_type: string | null;
+  category: string | null;
+  plate_number: string | null;
+  brand: string | null;
+  model: string | null;
+  serial_number: string | null;
+  chassis_number: string | null;
+  engine_serial_number: string | null;
+  manufacture_year: number | null;
+  net_power: number | null;
+  engine_type: string | null;
+  meter_type: string | null;
+  status: string;
+  is_active: boolean;
+  created_by: number | null;
+  updated_by: number | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export class EquipmentService {
   private get repository(): Repository<Equipment> {
     if (!AppDataSource.isInitialized) {
@@ -42,7 +68,39 @@ export class EquipmentService {
     return AppDataSource.getRepository(Equipment);
   }
 
-  async findAll(filter?: EquipmentFilter): Promise<Equipment[]> {
+  private transformToDto(equipment: Equipment): EquipmentDto {
+    return {
+      id: equipment.id,
+      code: equipment.codigo_equipo,
+      equipment_type_id: equipment.equipment_type_id || null,
+      provider_id: equipment.provider_id || null,
+      provider_name: equipment.provider?.razon_social || null,
+      provider_type: equipment.tipo_proveedor || null,
+      category: equipment.categoria || null,
+      plate_number: equipment.placa || null,
+      brand: equipment.marca || null,
+      model: equipment.modelo || null,
+      serial_number: equipment.numero_serie_equipo || null,
+      chassis_number: equipment.numero_chasis || null,
+      engine_serial_number: equipment.numero_serie_motor || null,
+      manufacture_year: equipment.anio_fabricacion || null,
+      net_power: equipment.potencia_neta ? Number(equipment.potencia_neta) : null,
+      engine_type: equipment.tipo_motor || null,
+      meter_type: equipment.medidor_uso || null,
+      status: equipment.estado,
+      is_active: equipment.is_active,
+      created_by: equipment.created_by || null,
+      updated_by: equipment.updated_by || null,
+      created_at: equipment.created_at,
+      updated_at: equipment.updated_at,
+    };
+  }
+
+  async findAll(
+    filter?: EquipmentFilter,
+    page = 1,
+    limit = 10
+  ): Promise<{ data: EquipmentDto[]; total: number }> {
     try {
       const queryBuilder = this.repository
         .createQueryBuilder('e')
@@ -82,14 +140,22 @@ export class EquipmentService {
 
       queryBuilder.orderBy('e.codigo_equipo', 'ASC');
 
-      return await queryBuilder.getMany();
+      // Add pagination
+      queryBuilder.skip((page - 1) * limit).take(limit);
+
+      const [equipment, total] = await queryBuilder.getManyAndCount();
+
+      return {
+        data: equipment.map((e) => this.transformToDto(e)),
+        total,
+      };
     } catch (error) {
       console.error('Error finding equipment:', error);
       throw new Error('Failed to fetch equipment');
     }
   }
 
-  async findById(id: number): Promise<Equipment> {
+  async findById(id: number): Promise<EquipmentDto> {
     try {
       const equipment = await this.repository.findOne({
         where: { id },
@@ -100,7 +166,7 @@ export class EquipmentService {
         throw new Error('Equipment not found');
       }
 
-      return equipment;
+      return this.transformToDto(equipment);
     } catch (error) {
       console.error('Error finding equipment:', error);
       throw error;
@@ -118,7 +184,7 @@ export class EquipmentService {
     }
   }
 
-  async create(data: Partial<Equipment>): Promise<Equipment> {
+  async create(data: Partial<Equipment>): Promise<EquipmentDto> {
     try {
       // Check if codigo already exists
       if (data.codigo_equipo) {
@@ -134,16 +200,31 @@ export class EquipmentService {
         estado: data.estado || 'DISPONIBLE',
       });
 
-      return await this.repository.save(equipment);
+      const saved = await this.repository.save(equipment);
+
+      // Load relations before transforming
+      const withRelations = await this.repository.findOne({
+        where: { id: saved.id },
+        relations: ['provider'],
+      });
+
+      return this.transformToDto(withRelations!);
     } catch (error) {
       console.error('Error creating equipment:', error);
       throw error;
     }
   }
 
-  async update(id: number, data: Partial<Equipment>): Promise<Equipment> {
+  async update(id: number, data: Partial<Equipment>): Promise<EquipmentDto> {
     try {
-      const equipment = await this.findById(id);
+      const equipment = await this.repository.findOne({
+        where: { id },
+        relations: ['provider'],
+      });
+
+      if (!equipment) {
+        throw new Error('Equipment not found');
+      }
 
       // If updating codigo, check it doesn't exist
       if (data.codigo_equipo && data.codigo_equipo !== equipment.codigo_equipo) {
@@ -154,7 +235,15 @@ export class EquipmentService {
       }
 
       Object.assign(equipment, data);
-      return await this.repository.save(equipment);
+      const saved = await this.repository.save(equipment);
+
+      // Reload to get updated relations
+      const withRelations = await this.repository.findOne({
+        where: { id: saved.id },
+        relations: ['provider'],
+      });
+
+      return this.transformToDto(withRelations!);
     } catch (error) {
       console.error('Error updating equipment:', error);
       throw error;
@@ -170,28 +259,54 @@ export class EquipmentService {
     }
   }
 
-  async updateStatus(id: number, estado: string): Promise<Equipment> {
+  async updateStatus(id: number, estado: string): Promise<EquipmentDto> {
     try {
-      const equipment = await this.findById(id);
+      const equipment = await this.repository.findOne({
+        where: { id },
+        relations: ['provider'],
+      });
+
+      if (!equipment) {
+        throw new Error('Equipment not found');
+      }
+
       equipment.estado = estado;
-      return await this.repository.save(equipment);
+      const saved = await this.repository.save(equipment);
+
+      return this.transformToDto(saved);
     } catch (error) {
       console.error('Error updating equipment status:', error);
       throw error;
     }
   }
 
-  async updateHourmeter(id: number, reading: number): Promise<Equipment> {
-    const equipment = await this.findById(id);
+  async updateHourmeter(id: number, reading: number): Promise<EquipmentDto> {
+    const equipment = await this.repository.findOne({
+      where: { id },
+      relations: ['provider'],
+    });
+
+    if (!equipment) {
+      throw new Error('Equipment not found');
+    }
+
     // equipment.medidor_uso = reading.toString(); // assuming medidor_uso stores current reading
     // Logic to update hourmeter
-    return equipment;
+    return this.transformToDto(equipment);
   }
 
-  async updateOdometer(id: number, reading: number): Promise<Equipment> {
-    const equipment = await this.findById(id);
+  async updateOdometer(id: number, reading: number): Promise<EquipmentDto> {
+    const equipment = await this.repository.findOne({
+      where: { id },
+      relations: ['provider'],
+    });
+
+    if (!equipment) {
+      throw new Error('Equipment not found');
+    }
+
     // equipment.medidor_uso = reading.toString();
-    return equipment;
+    return this.transformToDto(equipment);
   }
 
   async getStatistics(): Promise<{
@@ -279,8 +394,9 @@ export class EquipmentService {
     return true;
   }
 
-  async getAvailableEquipment(): Promise<Equipment[]> {
-    return this.findAll({ estado: 'DISPONIBLE' });
+  async getAvailableEquipment(): Promise<EquipmentDto[]> {
+    const result = await this.findAll({ estado: 'DISPONIBLE' }, 1, 9999);
+    return result.data;
   }
 
   async getAssignmentHistory(equipmentId: number): Promise<any[]> {

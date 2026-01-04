@@ -133,7 +133,9 @@ import { Provider } from '../../core/models/provider.model';
                   formControlName="fecha_inicio"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('fecha_inicio')">Fecha de inicio requerida</div>
+                <div class="error-msg" *ngIf="hasError('fecha_inicio')">
+                  Fecha de inicio requerida
+                </div>
               </div>
 
               <div class="form-group">
@@ -145,7 +147,13 @@ import { Provider } from '../../core/models/provider.model';
                   class="form-control"
                 />
                 <div class="error-msg" *ngIf="hasError('fecha_fin')">Fecha de fin requerida</div>
-                <div class="error-msg" *ngIf="contractForm.hasError('dateRangeInvalid') && contractForm.get('fecha_fin')?.touched">
+                <div
+                  class="error-msg"
+                  *ngIf="
+                    contractForm.hasError('dateRangeInvalid') &&
+                    contractForm.get('fecha_fin')?.touched
+                  "
+                >
                   La fecha de fin debe ser posterior a la fecha de inicio
                 </div>
               </div>
@@ -211,16 +219,18 @@ import { Provider } from '../../core/models/provider.model';
               <div class="form-group full-width">
                 <label>Adjuntar Contrato Firmado</label>
                 <div class="file-upload-area">
-                  <input 
-                    type="file" 
-                    id="contract_document" 
+                  <input
+                    type="file"
+                    id="contract_document"
                     (change)="onContractFileSelected($event)"
                     accept=".pdf,.doc,.docx"
                     class="file-input"
                   />
                   <label for="contract_document" class="file-upload-label">
                     <i class="fa-solid fa-cloud-upload"></i>
-                    <span *ngIf="!contractFileName">Haga clic para seleccionar archivo o arrastre aquí</span>
+                    <span *ngIf="!contractFileName"
+                      >Haga clic para seleccionar archivo o arrastre aquí</span
+                    >
                     <span *ngIf="contractFileName" class="file-name">
                       <i class="fa-solid fa-file-pdf"></i> {{ contractFileName }}
                     </span>
@@ -486,22 +496,25 @@ export class ContractFormComponent implements OnInit {
   contractFile: File | null = null;
 
   constructor() {
-    this.contractForm = this.fb.group({
-      numero_contrato: ['', Validators.required],
-      fecha_contrato: [new Date().toISOString().split('T')[0], Validators.required],
-      equipment_id: ['', Validators.required],
-      provider_id: ['', Validators.required],
-      modalidad: ['', Validators.required],
-      fecha_inicio: ['', Validators.required],
-      fecha_fin: ['', Validators.required],
-      moneda: ['PEN', Validators.required],
-      tipo_tarifa: ['hourly', Validators.required],
-      tarifa: [0, [Validators.required, Validators.min(0)]],
-      horas_minimas: [0],
-      penalidad_exceso: [0],
-      condiciones_especiales: [''],
-      estado: ['active', Validators.required],
-    }, { validators: this.dateRangeValidator });
+    this.contractForm = this.fb.group(
+      {
+        numero_contrato: ['', Validators.required],
+        fecha_contrato: [new Date().toISOString().split('T')[0], Validators.required],
+        equipment_id: ['', Validators.required],
+        provider_id: ['', Validators.required],
+        modalidad: ['', Validators.required],
+        fecha_inicio: ['', Validators.required],
+        fecha_fin: ['', Validators.required],
+        moneda: ['PEN', Validators.required],
+        tipo_tarifa: ['hourly', Validators.required],
+        tarifa: [0, [Validators.required, Validators.min(0)]],
+        horas_minimas: [0],
+        penalidad_exceso: [0],
+        condiciones_especiales: [''],
+        estado: ['active', Validators.required],
+      },
+      { validators: this.dateRangeValidator }
+    );
   }
 
   onContractFileSelected(event: any): void {
@@ -527,7 +540,7 @@ export class ContractFormComponent implements OnInit {
 
   loadEquipment(): void {
     this.equipmentService.getAll().subscribe({
-      next: (data) => (this.equipmentList = data),
+      next: (response) => (this.equipmentList = response.data),
       error: (err) => console.error('Error loading equipment', err),
     });
   }

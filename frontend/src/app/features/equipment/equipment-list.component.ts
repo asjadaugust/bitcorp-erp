@@ -6,18 +6,27 @@ import { EquipmentService } from '../../core/services/equipment.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Equipment } from '../../core/models/equipment.model';
 
-import { AeroTableComponent, TableColumn } from '../../core/design-system/table/aero-table.component';
-import { PageLayoutComponent, TabItem } from '../../shared/components/page-layout/page-layout.component';
-import { FilterBarComponent, FilterConfig } from '../../shared/components/filter-bar/filter-bar.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../core/design-system/table/aero-table.component';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 
 @Component({
   selector: 'app-equipment-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    
+    CommonModule,
+    FormsModule,
+
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
@@ -28,10 +37,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     <app-page-layout
       title="Equipos"
       icon="fa-tractor"
-      [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
-        { label: 'Equipos' }
-      ]"
+      [breadcrumbs]="[{ label: 'Dashboard', url: '/app' }, { label: 'Equipos' }]"
       [loading]="loading"
       [tabs]="tabs"
     >
@@ -77,8 +83,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         </div>
       </div>
 
-
-
       <app-filter-bar
         [config]="filterConfig"
         (filterChange)="onFilterChange($event)"
@@ -90,9 +94,9 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          'codigo_equipo': codeTemplate,
-          'marca_modelo': brandModelTemplate,
-          'estado': statusTemplate
+          code: codeTemplate,
+          brand_model: brandModelTemplate,
+          status: statusTemplate,
         }"
         (rowClick)="viewDetails($event)"
       >
@@ -100,244 +104,285 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
-        <span class="code-badge">{{ row.codigo_equipo }}</span>
+        <span class="code-badge">{{ row.code }}</span>
       </ng-template>
 
       <ng-template #brandModelTemplate let-row>
         <div class="brand-model">
-          <span>{{ row.marca }}</span>
-          <small>{{ row.modelo }}</small>
+          <span>{{ row.brand }}</span>
+          <small>{{ row.model }}</small>
         </div>
       </ng-template>
 
       <ng-template #statusTemplate let-row>
-        <span [class]="'status-badge status-' + (row.estado || '').toLowerCase()">
-          <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
-          {{ getStatusLabel(row.estado) }}
+        <span [class]="'status-badge status-' + (row.status || '').toLowerCase()">
+          <i class="fa-solid" [ngClass]="getStatusIcon(row.status)"></i>
+          {{ getStatusLabel(row.status) }}
         </span>
       </ng-template>
 
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
-        <button type="button" class="btn btn-icon" (click)="editEquipment(row); $event.stopPropagation()" title="Editar">
+        <button
+          type="button"
+          class="btn btn-icon"
+          (click)="editEquipment(row); $event.stopPropagation()"
+          title="Editar"
+        >
           <i class="fa-solid fa-pen"></i>
         </button>
-        <button type="button" class="btn btn-icon" (click)="viewDetails(row); $event.stopPropagation()" title="Ver">
+        <button
+          type="button"
+          class="btn btn-icon"
+          (click)="viewDetails(row); $event.stopPropagation()"
+          title="Ver"
+        >
           <i class="fa-solid fa-eye"></i>
         </button>
       </ng-template>
     </app-page-layout>
   `,
-  styles: [`
-    /* Cards */
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-    }
+  styles: [
+    `
+      /* Cards */
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+      }
 
-    .card-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--grey-100);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--grey-100);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-    .card-header h2 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--grey-900);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
+      .card-header h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--grey-900);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
 
-    .card-body {
-      padding: 1.5rem;
-    }
+      .card-body {
+        padding: 1.5rem;
+      }
 
-    /* Form */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
+      /* Form */
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
 
-    .form-group {
-      margin-bottom: 1rem;
-    }
+      .form-group {
+        margin-bottom: 1rem;
+      }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--grey-700);
-    }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--grey-700);
+      }
 
-    .form-control {
-      width: 100%;
-      padding: 0.625rem 1rem;
-      border: 1px solid var(--grey-300);
-      border-radius: 6px;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
+      .form-control {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border: 1px solid var(--grey-300);
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
 
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary-500);
-      box-shadow: 0 0 0 3px var(--primary-100);
-    }
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px var(--primary-100);
+      }
 
-    .input-group {
-      position: relative;
-    }
+      .input-group {
+        position: relative;
+      }
 
-    .input-group .prefix {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--grey-500);
-      font-size: 14px;
-    }
+      .input-group .prefix {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--grey-500);
+        font-size: 14px;
+      }
 
-    .input-group input {
-      padding-left: 2.5rem;
-    }
+      .input-group input {
+        padding-left: 2.5rem;
+      }
 
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--grey-100);
-    }
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--grey-100);
+      }
 
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-    }
+      /* Stats Grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+      }
 
-    .stat-card {
-      background: white;
-      padding: 1.25rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
+      .stat-card {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
 
-    .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
+      .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
 
-    .stat-icon.total { background: var(--primary-100); color: var(--primary-500); }
-    .stat-icon.available { background: var(--semantic-green-50); color: var(--semantic-green-600); }
-    .stat-icon.in-use { background: var(--semantic-blue-50); color: var(--semantic-blue-600); }
-    .stat-icon.maintenance { background: var(--semantic-yellow-50); color: var(--semantic-yellow-600); }
+      .stat-icon.total {
+        background: var(--primary-100);
+        color: var(--primary-500);
+      }
+      .stat-icon.available {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-600);
+      }
+      .stat-icon.in-use {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-600);
+      }
+      .stat-icon.maintenance {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-600);
+      }
 
-    .stat-info {
-      display: flex;
-      flex-direction: column;
-    }
+      .stat-info {
+        display: flex;
+        flex-direction: column;
+      }
 
-    .stat-info .label {
-      font-size: 12px;
-      color: var(--grey-500);
-      margin-bottom: 2px;
-    }
+      .stat-info .label {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-bottom: 2px;
+      }
 
-    .stat-info .value {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--grey-900);
-    }
+      .stat-info .value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--grey-900);
+      }
 
-    .code-badge {
-      background: var(--grey-100);
-      color: var(--grey-700);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-family: monospace;
-      font-size: 12px;
-      font-weight: 600;
-    }
+      .code-badge {
+        background: var(--grey-100);
+        color: var(--grey-700);
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 600;
+      }
 
-    .brand-model {
-      display: flex;
-      flex-direction: column;
-    }
+      .brand-model {
+        display: flex;
+        flex-direction: column;
+      }
 
-    .brand-model small {
-      color: var(--grey-500);
-      font-size: 12px;
-    }
+      .brand-model small {
+        color: var(--grey-500);
+        font-size: 12px;
+      }
 
-    /* Status Badges */
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-    }
+      /* Status Badges */
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
 
-    .status-available, .status-disponible { background: var(--semantic-green-50); color: var(--semantic-green-700); }
-    .status-in_use, .status-en_uso, .status-ocupado { background: var(--semantic-blue-50); color: var(--semantic-blue-700); }
-    .status-maintenance, .status-mantenimiento { background: var(--semantic-yellow-50); color: var(--semantic-yellow-700); }
-    .status-retired, .status-retirado { background: var(--semantic-red-50); color: var(--semantic-red-700); }
+      .status-available,
+      .status-disponible {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .status-in_use,
+      .status-en_uso,
+      .status-ocupado {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
+      }
+      .status-maintenance,
+      .status-mantenimiento {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .status-retired,
+      .status-retirado {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
 
-    /* Alerts */
-    .alert {
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 14px;
-    }
+      /* Alerts */
+      .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 14px;
+      }
 
-    .alert-success {
-      background: var(--semantic-green-50);
-      color: var(--semantic-green-700);
-      border: 1px solid var(--semantic-green-200);
-    }
+      .alert-success {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+        border: 1px solid var(--semantic-green-200);
+      }
 
-    .alert-error {
-      background: var(--semantic-red-50);
-      color: var(--semantic-red-700);
-      border: 1px solid var(--semantic-red-200);
-    }
+      .alert-error {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        border: 1px solid var(--semantic-red-200);
+      }
 
-    .fade-in {
-      animation: fadeIn 0.3s ease-in-out;
-    }
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
 
-    .actions-container {
-      display: flex;
-      gap: var(--s-8);
-      align-items: center;
-    }
-  `]
+      .actions-container {
+        display: flex;
+        gap: var(--s-8);
+        align-items: center;
+      }
+    `,
+  ],
 })
 export class EquipmentListComponent implements OnInit {
   equipmentService = inject(EquipmentService);
@@ -356,31 +401,37 @@ export class EquipmentListComponent implements OnInit {
     { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
-    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' }
+    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
   ];
 
   filterConfig: FilterConfig[] = [
-    { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar por nombre, código, marca...' },
-    { 
-      key: 'status', 
-      label: 'Estado', 
+    {
+      key: 'search',
+      label: 'Buscar',
+      type: 'text',
+      placeholder: 'Buscar por nombre, código, marca...',
+    },
+    {
+      key: 'status',
+      label: 'Estado',
       type: 'select',
       options: [
         { label: 'Disponible', value: 'available' },
         { label: 'En Uso', value: 'in_use' },
         { label: 'Mantenimiento', value: 'maintenance' },
-        { label: 'Retirado', value: 'retired' }
-      ]
-    }
+        { label: 'Retirado', value: 'retired' },
+      ],
+    },
   ];
 
   columns: TableColumn[] = [
-    { key: 'codigo_equipo', label: 'Código', type: 'template' },
-    { key: 'categoria', label: 'Equipo', type: 'text' },
-    { key: 'marca_modelo', label: 'Marca / Modelo', type: 'template' },
+    { key: 'code', label: 'Código', type: 'template' },
+    { key: 'brand_model', label: 'Marca / Modelo', type: 'template' },
+    { key: 'category', label: 'Categoría', type: 'text' },
+    { key: 'plate_number', label: 'Placa', type: 'text' },
     { key: 'equipment_type_id', label: 'Tipo ID', type: 'text' },
-    { key: 'estado', label: 'Estado', type: 'template' },
-    { key: 'medidor_uso', label: 'Medidor', type: 'text' }
+    { key: 'status', label: 'Estado', type: 'template' },
+    { key: 'meter_type', label: 'Medidor', type: 'text' },
   ];
 
   ngOnInit(): void {
@@ -390,14 +441,14 @@ export class EquipmentListComponent implements OnInit {
   loadEquipment(): void {
     this.loading = true;
     this.equipmentService.getAll(this.filters).subscribe({
-      next: (data) => {
-        this.equipment = data;
+      next: (response) => {
+        this.equipment = response.data;
         this.loading = false;
       },
       error: (error) => {
         this.errorMessage = 'Error al cargar equipos';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -413,8 +464,8 @@ export class EquipmentListComponent implements OnInit {
 
   loadStatistics(): void {
     this.equipmentService.getStatistics().subscribe({
-      next: (data) => this.statistics = data,
-      error: () => this.errorMessage = 'Error al cargar estadísticas'
+      next: (data) => (this.statistics = data),
+      error: () => (this.errorMessage = 'Error al cargar estadísticas'),
     });
   }
 
@@ -428,28 +479,28 @@ export class EquipmentListComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      'available': 'Disponible',
-      'disponible': 'Disponible',
-      'in_use': 'En Uso',
-      'en_uso': 'En Uso',
-      'maintenance': 'Mantenimiento',
-      'mantenimiento': 'Mantenimiento',
-      'retired': 'Retirado',
-      'retirado': 'Retirado'
+      available: 'Disponible',
+      disponible: 'Disponible',
+      in_use: 'En Uso',
+      en_uso: 'En Uso',
+      maintenance: 'Mantenimiento',
+      mantenimiento: 'Mantenimiento',
+      retired: 'Retirado',
+      retirado: 'Retirado',
     };
     return labels[status] || status;
   }
 
   getStatusIcon(status: string): string {
     const icons: Record<string, string> = {
-      'available': 'fa-check',
-      'disponible': 'fa-check',
-      'in_use': 'fa-person-digging',
-      'en_uso': 'fa-person-digging',
-      'maintenance': 'fa-wrench',
-      'mantenimiento': 'fa-wrench',
-      'retired': 'fa-ban',
-      'retirado': 'fa-ban'
+      available: 'fa-check',
+      disponible: 'fa-check',
+      in_use: 'fa-person-digging',
+      en_uso: 'fa-person-digging',
+      maintenance: 'fa-wrench',
+      mantenimiento: 'fa-wrench',
+      retired: 'fa-ban',
+      retirado: 'fa-ban',
     };
     return icons[status] || 'fa-circle';
   }
