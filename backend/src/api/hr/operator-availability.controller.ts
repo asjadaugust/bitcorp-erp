@@ -1,123 +1,193 @@
 import { Request, Response } from 'express';
 import { OperatorAvailabilityService } from '../../services/operator-availability.service';
+import { sendError } from '../../utils/api-response';
 
 const availabilityService = new OperatorAvailabilityService();
 
 export class OperatorAvailabilityController {
-  async getAvailabilities(req: Request, res: Response) {
+  async getAvailabilities(req: Request, res: Response): Promise<void> {
     try {
-      const { operator_id, project_id, status, date, start_date, end_date } = req.query;
-      const availabilities = await availabilityService.findAll({
-        operator_id: operator_id ? Number(operator_id) : undefined,
-        project_id: project_id ? Number(project_id) : undefined,
-        status: status as string,
-        date: date ? new Date(date as string) : undefined,
-        start_date: start_date ? new Date(start_date as string) : undefined,
-        end_date: end_date ? new Date(end_date as string) : undefined
+      const { trabajador_id, disponible, fecha_inicio, fecha_fin, page, limit } = req.query;
+      const result = await availabilityService.findAll({
+        trabajadorId: trabajador_id ? Number(trabajador_id) : undefined,
+        disponible: disponible === 'true' ? true : disponible === 'false' ? false : undefined,
+        fechaInicio: fecha_inicio ? new Date(fecha_inicio as string) : undefined,
+        fechaFin: fecha_fin ? new Date(fecha_fin as string) : undefined,
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
       });
-      res.json(availabilities);
-    } catch (error) {
-      console.error('Error fetching availabilities:', error);
-      res.status(500).json({ error: 'Failed to fetch availabilities' });
+      res.json({
+        success: true,
+        data: result.data,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: result.totalPages,
+        },
+      });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'OPERATOR_AVAILABILITY_LIST_FAILED',
+        'Failed to fetch operator availabilities',
+        error.message
+      );
     }
   }
 
-  async getAvailabilityById(req: Request, res: Response) {
+  async getAvailabilityById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const availability = await availabilityService.findById(Number(id));
       if (!availability) {
-        return res.status(404).json({ error: 'Availability not found' });
+        return sendError(
+          res,
+          404,
+          'OPERATOR_AVAILABILITY_NOT_FOUND',
+          'Operator availability not found'
+        );
       }
-      res.json(availability);
-    } catch (error) {
-      console.error('Error fetching availability:', error);
-      res.status(500).json({ error: 'Failed to fetch availability' });
+      res.json({ success: true, data: availability });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'OPERATOR_AVAILABILITY_GET_FAILED',
+        'Failed to fetch operator availability',
+        error.message
+      );
     }
   }
 
-  async getAvailabilityByOperator(req: Request, res: Response) {
+  async getAvailabilityByOperator(req: Request, res: Response): Promise<void> {
     try {
       const { operatorId } = req.params;
-      const { start_date, end_date } = req.query;
+      const { fecha_inicio, fecha_fin } = req.query;
       const availabilities = await availabilityService.findByOperator(
         Number(operatorId),
-        start_date ? new Date(start_date as string) : undefined,
-        end_date ? new Date(end_date as string) : undefined
+        fecha_inicio ? new Date(fecha_inicio as string) : undefined,
+        fecha_fin ? new Date(fecha_fin as string) : undefined
       );
-      res.json(availabilities);
-    } catch (error) {
-      console.error('Error fetching operator availability:', error);
-      res.status(500).json({ error: 'Failed to fetch operator availability' });
+      res.json({ success: true, data: availabilities });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'OPERATOR_AVAILABILITY_BY_OPERATOR_FAILED',
+        'Failed to fetch operator availability',
+        error.message
+      );
     }
   }
 
-  async getAvailableOperators(req: Request, res: Response) {
+  async getAvailableOperators(req: Request, res: Response): Promise<void> {
     try {
-      const { date, project_id } = req.query;
-      if (!date) {
-        return res.status(400).json({ error: 'Date parameter is required' });
+      const { fecha_inicio, fecha_fin } = req.query;
+      if (!fecha_inicio || !fecha_fin) {
+        return sendError(
+          res,
+          400,
+          'MISSING_PARAMETERS',
+          'fecha_inicio and fecha_fin parameters are required'
+        );
       }
       const availabilities = await availabilityService.findAvailableOperators(
-        new Date(date as string),
-        project_id ? Number(project_id) : undefined
+        new Date(fecha_inicio as string),
+        new Date(fecha_fin as string)
       );
-      res.json(availabilities);
-    } catch (error) {
-      console.error('Error fetching available operators:', error);
-      res.status(500).json({ error: 'Failed to fetch available operators' });
+      res.json({ success: true, data: availabilities });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'AVAILABLE_OPERATORS_FAILED',
+        'Failed to fetch available operators',
+        error.message
+      );
     }
   }
 
-  async createAvailability(req: Request, res: Response) {
+  async createAvailability(req: Request, res: Response): Promise<void> {
     try {
       const availability = await availabilityService.create(req.body);
-      res.status(201).json(availability);
-    } catch (error) {
-      console.error('Error creating availability:', error);
-      res.status(500).json({ error: 'Failed to create availability' });
+      res.status(201).json({ success: true, data: availability });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'OPERATOR_AVAILABILITY_CREATE_FAILED',
+        'Failed to create operator availability',
+        error.message
+      );
     }
   }
 
-  async bulkCreateAvailability(req: Request, res: Response) {
+  async bulkCreateAvailability(req: Request, res: Response): Promise<void> {
     try {
       const { availabilities } = req.body;
       if (!Array.isArray(availabilities)) {
-        return res.status(400).json({ error: 'Availabilities must be an array' });
+        return sendError(res, 400, 'INVALID_INPUT', 'Availabilities must be an array');
       }
       const created = await availabilityService.bulkCreate(availabilities);
-      res.status(201).json(created);
-    } catch (error) {
-      console.error('Error bulk creating availability:', error);
-      res.status(500).json({ error: 'Failed to bulk create availability' });
+      res.status(201).json({ success: true, data: created });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'OPERATOR_AVAILABILITY_BULK_CREATE_FAILED',
+        'Failed to bulk create operator availabilities',
+        error.message
+      );
     }
   }
 
-  async updateAvailability(req: Request, res: Response) {
+  async updateAvailability(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const availability = await availabilityService.update(Number(id), req.body);
       if (!availability) {
-        return res.status(404).json({ error: 'Availability not found' });
+        return sendError(
+          res,
+          404,
+          'OPERATOR_AVAILABILITY_NOT_FOUND',
+          'Operator availability not found'
+        );
       }
-      res.json(availability);
-    } catch (error) {
-      console.error('Error updating availability:', error);
-      res.status(500).json({ error: 'Failed to update availability' });
+      res.json({ success: true, data: availability });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'OPERATOR_AVAILABILITY_UPDATE_FAILED',
+        'Failed to update operator availability',
+        error.message
+      );
     }
   }
 
-  async deleteAvailability(req: Request, res: Response) {
+  async deleteAvailability(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const success = await availabilityService.delete(Number(id));
       if (!success) {
-        return res.status(404).json({ error: 'Availability not found' });
+        return sendError(
+          res,
+          404,
+          'OPERATOR_AVAILABILITY_NOT_FOUND',
+          'Operator availability not found'
+        );
       }
       res.status(204).send();
-    } catch (error) {
-      console.error('Error deleting availability:', error);
-      res.status(500).json({ error: 'Failed to delete availability' });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'OPERATOR_AVAILABILITY_DELETE_FAILED',
+        'Failed to delete operator availability',
+        error.message
+      );
     }
   }
 }

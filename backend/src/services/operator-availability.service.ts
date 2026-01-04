@@ -1,6 +1,21 @@
 import { AppDataSource } from '../config/database.config';
-import { OperatorAvailability } from '../models/operator-availability.entity';
+import { OperatorAvailability } from '../models/operator-availability.model';
 import { Repository, Between } from 'typeorm';
+
+// DTO with snake_case fields for API responses
+export interface OperatorAvailabilityDto {
+  id: number;
+  trabajador_id: number;
+  fecha_inicio: Date;
+  fecha_fin: Date;
+  disponible: boolean;
+  motivo: string | null;
+  created_at: Date;
+  updated_at: Date;
+  // Optional relation fields
+  trabajador_nombre?: string;
+  trabajador_apellido?: string;
+}
 
 export class OperatorAvailabilityService {
   private repository: Repository<OperatorAvailability>;
@@ -9,101 +24,157 @@ export class OperatorAvailabilityService {
     this.repository = AppDataSource.getRepository(OperatorAvailability);
   }
 
-  async findAll(filters?: { 
-    operator_id?: number; 
-    project_id?: number;
-    status?: string;
-    date?: Date;
-    start_date?: Date;
-    end_date?: Date;
-  }): Promise<OperatorAvailability[]> {
-    const query = this.repository.createQueryBuilder('avail')
-      .leftJoinAndSelect('avail.operator', 'operator')
-      .leftJoinAndSelect('avail.project', 'project')
-      .where('avail.is_active = :is_active', { is_active: true });
+  // Transform entity to DTO with snake_case fields
+  private transformToDto(entity: OperatorAvailability): OperatorAvailabilityDto {
+    return {
+      id: entity.id,
+      trabajador_id: entity.trabajadorId,
+      fecha_inicio: entity.fechaInicio,
+      fecha_fin: entity.fechaFin,
+      disponible: entity.disponible,
+      motivo: entity.motivo || null,
+      created_at: entity.createdAt,
+      updated_at: entity.updatedAt,
+      // Include trabajador info if loaded
+      trabajador_nombre: entity.trabajador?.nombres,
+      trabajador_apellido: entity.trabajador
+        ? `${entity.trabajador.apellidoPaterno} ${entity.trabajador.apellidoMaterno || ''}`.trim()
+        : undefined,
+    };
+  }
 
-    if (filters?.operator_id) {
-      query.andWhere('avail.operator_id = :operator_id', { operator_id: filters.operator_id });
-    }
+  async findAll(filters?: {
+    trabajadorId?: number;
+    disponible?: boolean;
+    fechaInicio?: Date;
+    fechaFin?: Date;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    data: OperatorAvailabilityDto[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  }> {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 10;
+    const skip = (page - 1) * limit;
 
-    if (filters?.project_id) {
-      query.andWhere('avail.project_id = :project_id', { project_id: filters.project_id });
-    }
+    const query = this.repository
+      .createQueryBuilder('avail')
+      .leftJoinAndSelect('avail.trabajador', 'trabajador');
 
-    if (filters?.status) {
-      query.andWhere('avail.status = :status', { status: filters.status });
-    }
-
-    if (filters?.date) {
-      query.andWhere('avail.date = :date', { date: filters.date });
-    }
-
-    if (filters?.start_date && filters?.end_date) {
-      query.andWhere('avail.date BETWEEN :start_date AND :end_date', {
-        start_date: filters.start_date,
-        end_date: filters.end_date
+    if (filters?.trabajadorId) {
+      query.andWhere('avail.trabajadorId = :trabajadorId', {
+        trabajadorId: filters.trabajadorId,
       });
     }
 
-    return await query.orderBy('avail.date', 'DESC').getMany();
+    if (filters?.disponible !== undefined) {
+      query.andWhere('avail.disponible = :disponible', { disponible: filters.disponible });
+    }
+
+    if (filters?.fechaInicio && filters?.fechaFin) {
+      query.andWhere('(avail.fechaInicio <= :fechaFin AND avail.fechaFin >= :fechaInicio)', {
+        fechaInicio: filters.fechaInicio,
+        fechaFin: filters.fechaFin,
+      });
+    }
+
+    const [entities, total] = await query
+      .orderBy('avail.fechaInicio', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      data: entities.map((e) => this.transformToDto(e)),
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
-  async findById(id: number): Promise<OperatorAvailability | null> {
-    return await this.repository.findOne({
-      where: { id, is_active: true },
-      relations: ['operator', 'project']
+  async findById(id: number): Promise<OperatorAvailabilityDto | null> {
+    const entity = await this.repository.findOne({
+      where: { id },
+      relations: ['trabajador'],
     });
+    return entity ? this.transformToDto(entity) : null;
   }
 
-  async findByOperator(operatorId: number, startDate?: Date, endDate?: Date): Promise<OperatorAvailability[]> {
-    const query = this.repository.createQueryBuilder('avail')
-      .where('avail.operator_id = :operator_id', { operator_id: operatorId })
-      .andWhere('avail.is_active = :is_active', { is_active: true });
+  async findByOperator(
+    operatorId: number,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<OperatorAvailabilityDto[]> {
+    const query = this.repository
+      .createQueryBuilder('avail')
+      .leftJoinAndSelect('avail.trabajador', 'trabajador')
+      .where('avail.trabajadorId = :trabajadorId', { trabajadorId: operatorId });
 
     if (startDate && endDate) {
-      query.andWhere('avail.date BETWEEN :start_date AND :end_date', {
-        start_date: startDate,
-        end_date: endDate
+      query.andWhere('(avail.fechaInicio <= :endDate AND avail.fechaFin >= :startDate)', {
+        startDate,
+        endDate,
       });
     }
 
-    return await query.orderBy('avail.date', 'ASC').getMany();
+    const entities = await query.orderBy('avail.fechaInicio', 'ASC').getMany();
+    return entities.map((e) => this.transformToDto(e));
   }
 
-  async findAvailableOperators(date: Date, projectId?: number): Promise<OperatorAvailability[]> {
-    const query = this.repository.createQueryBuilder('avail')
-      .leftJoinAndSelect('avail.operator', 'operator')
-      .where('avail.date = :date', { date })
-      .andWhere('avail.status = :status', { status: 'available' })
-      .andWhere('avail.is_active = :is_active', { is_active: true });
+  async findAvailableOperators(startDate: Date, endDate: Date): Promise<OperatorAvailabilityDto[]> {
+    const entities = await this.repository
+      .createQueryBuilder('avail')
+      .leftJoinAndSelect('avail.trabajador', 'trabajador')
+      .where('avail.disponible = :disponible', { disponible: true })
+      .andWhere('(avail.fechaInicio <= :endDate AND avail.fechaFin >= :startDate)', {
+        startDate,
+        endDate,
+      })
+      .getMany();
 
-    if (projectId) {
-      query.andWhere('(avail.project_id = :project_id OR avail.project_id IS NULL)', { project_id: projectId });
-    }
-
-    return await query.getMany();
+    return entities.map((e) => this.transformToDto(e));
   }
 
-  async create(data: Partial<OperatorAvailability>): Promise<OperatorAvailability> {
+  async create(data: Partial<OperatorAvailability>): Promise<OperatorAvailabilityDto> {
     const availability = this.repository.create(data);
-    return await this.repository.save(availability);
+    const saved = await this.repository.save(availability);
+    // Reload with relations
+    const entity = await this.repository.findOne({
+      where: { id: saved.id },
+      relations: ['trabajador'],
+    });
+    return this.transformToDto(entity!);
   }
 
-  async update(id: number, data: Partial<OperatorAvailability>): Promise<OperatorAvailability | null> {
+  async update(
+    id: number,
+    data: Partial<OperatorAvailability>
+  ): Promise<OperatorAvailabilityDto | null> {
     await this.repository.update(id, data);
     return await this.findById(id);
   }
 
   async delete(id: number): Promise<boolean> {
-    const result = await this.repository.update(id, {
-      is_active: false,
-      deleted_at: new Date()
-    });
+    const result = await this.repository.delete(id);
     return (result.affected || 0) > 0;
   }
 
-  async bulkCreate(availabilities: Partial<OperatorAvailability>[]): Promise<OperatorAvailability[]> {
-    const entities = availabilities.map(data => this.repository.create(data));
-    return await this.repository.save(entities);
+  async bulkCreate(
+    availabilities: Partial<OperatorAvailability>[]
+  ): Promise<OperatorAvailabilityDto[]> {
+    const entities = availabilities.map((data) => this.repository.create(data));
+    const saved = await this.repository.save(entities);
+    // Reload with relations
+    const ids = saved.map((e) => e.id);
+    const reloaded = await this.repository.find({
+      where: ids.map((id) => ({ id })),
+      relations: ['trabajador'],
+    });
+    return reloaded.map((e) => this.transformToDto(e));
   }
 }
