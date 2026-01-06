@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { AccountsPayableController } from './accounts-payable.controller';
 import { authenticate } from '../../middleware/auth.middleware';

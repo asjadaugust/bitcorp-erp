@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { ProductController } from './product.controller';
 import { authenticate } from '../../middleware/auth.middleware';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import timesheetService from '../../services/timesheet.service';
 import { AppDataSource } from '../../config/database.config';

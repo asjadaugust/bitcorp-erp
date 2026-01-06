@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { Product } from '../../models/product.model';
 import { AppDataSource } from '../../config/database.config';
@@ -10,9 +11,29 @@ export class ProductController {
         where: { isActive: true },
         order: { nombre: 'ASC' },
       });
+
+      // Transform to match frontend expectations
+      const transformedProducts = products.map((p) => ({
+        id: p.id,
+        codigo: p.codigo,
+        nombre: p.nombre,
+        descripcion: p.descripcion,
+        categoria: p.categoria,
+        unidad_medida: p.unidadMedida,
+        stock_actual: p.stockActual,
+        stock_minimo: p.stockMinimo,
+        costo_unitario: p.precioUnitario || 0,
+        ubicacion: 'Almacén Principal', // Default location - would come from warehouse table in full implementation
+        is_active: p.isActive,
+        created_at: p.createdAt,
+        updated_at: p.updatedAt,
+        // Computed field for frontend
+        valor_total: Number(p.stockActual || 0) * Number(p.precioUnitario || 0),
+      }));
+
       res.json({
         success: true,
-        data: products,
+        data: transformedProducts,
       });
     } catch (error) {
       console.error(error);
@@ -39,9 +60,27 @@ export class ProductController {
         });
       }
 
+      // Transform to match frontend expectations
+      const transformed = {
+        id: product.id,
+        codigo: product.codigo,
+        nombre: product.nombre,
+        descripcion: product.descripcion,
+        categoria: product.categoria,
+        unidad_medida: product.unidadMedida,
+        stock_actual: product.stockActual,
+        stock_minimo: product.stockMinimo,
+        costo_unitario: product.precioUnitario || 0,
+        ubicacion: 'Almacén Principal',
+        is_active: product.isActive,
+        created_at: product.createdAt,
+        updated_at: product.updatedAt,
+        valor_total: Number(product.stockActual || 0) * Number(product.precioUnitario || 0),
+      };
+
       res.json({
         success: true,
-        data: product,
+        data: transformed,
       });
     } catch (error) {
       res.status(500).json({

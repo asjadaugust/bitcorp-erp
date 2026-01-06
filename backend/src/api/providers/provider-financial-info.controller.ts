@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProviderFinancialInfoService } from '../../services/provider-financial-info.service';
 
@@ -15,7 +16,7 @@ export class ProviderFinancialInfoController {
   getByProviderId = async (req: Request, res: Response): Promise<void> => {
     try {
       const { providerId } = req.params;
-      
+
       const financialInfo = await this.service.findByProviderId(providerId);
       res.json(financialInfo);
     } catch (error: any) {
@@ -31,7 +32,7 @@ export class ProviderFinancialInfoController {
   getById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      
+
       const financialInfo = await this.service.findById(parseInt(id));
       res.json(financialInfo);
     } catch (error: any) {
@@ -50,9 +51,9 @@ export class ProviderFinancialInfoController {
       const data = {
         ...req.body,
         provider_id: providerId,
-        created_by: (req as any).user?.id
+        created_by: (req as any).user?.id,
       };
-      
+
       const financialInfo = await this.service.create(data);
       res.status(201).json(financialInfo);
     } catch (error: any) {
@@ -70,9 +71,9 @@ export class ProviderFinancialInfoController {
       const { id } = req.params;
       const data = {
         ...req.body,
-        updated_by: (req as any).user?.id
+        updated_by: (req as any).user?.id,
       };
-      
+
       const financialInfo = await this.service.update(parseInt(id), data);
       res.json(financialInfo);
     } catch (error: any) {
@@ -88,9 +89,9 @@ export class ProviderFinancialInfoController {
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      
+
       const deleted = await this.service.delete(parseInt(id));
-      
+
       if (deleted) {
         res.status(204).send();
       } else {

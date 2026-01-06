@@ -1,278 +1,272 @@
-import { Request, Response } from 'express';
-import checklistService from '../../services/checklist.service';
-import { ChecklistType } from '../../models/checklist-template.model';
-import { ChecklistStatus } from '../../models/equipment-checklist.model';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+import { Request, Response, NextFunction } from 'express';
+import { ChecklistService } from '../../services/checklist.service';
 
-// ============================================================================
-// CHECKLIST TEMPLATES
-// ============================================================================
+export class ChecklistController {
+  private checklistService: ChecklistService;
 
-export const getAllTemplates = async (req: Request, res: Response) => {
-  try {
-    const filters: any = {};
-    
-    if (req.query.checklist_type) {
-      filters.checklist_type = req.query.checklist_type as ChecklistType;
-    }
-    if (req.query.equipment_category_id) {
-      filters.equipment_category_id = req.query.equipment_category_id as string;
-    }
-    if (req.query.is_active !== undefined) {
-      filters.is_active = req.query.is_active === 'true';
-    }
-    if (req.query.company_id || (req as any).user?.company_id) {
-      filters.company_id = (req.query.company_id as string) || (req as any).user?.company_id;
-    }
-
-    const templates = await checklistService.getAllTemplates(filters);
-    res.json(templates);
-  } catch (error) {
-    console.error('Error fetching templates:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch templates',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
+  constructor() {
+    this.checklistService = new ChecklistService();
   }
-};
 
-export const getTemplateById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const template = await checklistService.getTemplateById(id);
+  // ===== TEMPLATES =====
+  getAllTemplates = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const filters = {
+        activo: req.query.activo,
+        tipoEquipo: req.query.tipoEquipo,
+        search: req.query.search,
+      };
 
-    if (!template) {
-      return res.status(404).json({ error: 'Template not found' });
+      const templates = await this.checklistService.getAllTemplates(filters);
+      res.json({ success: true, data: templates });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.json(template);
-  } catch (error) {
-    console.error('Error fetching template:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch template',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+  getTemplateById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const template = await this.checklistService.getTemplateById(parseInt(id));
 
-export const createTemplate = async (req: Request, res: Response) => {
-  try {
-    const dto = {
-      ...req.body,
-      company_id: req.body.company_id || (req as any).user?.company_id,
-      created_by: (req as any).user?.id,
-    };
+      if (!template) {
+        return res.status(404).json({ success: false, message: 'Template not found' });
+      }
 
-    // Validate required fields
-    if (!dto.checklist_type) {
-      return res.status(400).json({ error: 'checklist_type is required' });
+      res.json({ success: true, data: template });
+    } catch (error) {
+      next(error);
     }
-    if (!dto.template_name) {
-      return res.status(400).json({ error: 'template_name is required' });
+  };
+
+  createTemplate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any).user.id;
+      const template = await this.checklistService.createTemplate(req.body, userId);
+      res.status(201).json({ success: true, data: template });
+    } catch (error) {
+      next(error);
     }
-    if (!dto.items || !Array.isArray(dto.items)) {
-      return res.status(400).json({ error: 'items array is required' });
+  };
+
+  updateTemplate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const template = await this.checklistService.updateTemplate(parseInt(id), req.body);
+
+      if (!template) {
+        return res.status(404).json({ success: false, message: 'Template not found' });
+      }
+
+      res.json({ success: true, data: template });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const template = await checklistService.createTemplate(dto);
-    res.status(201).json(template);
-  } catch (error) {
-    console.error('Error creating template:', error);
-    res.status(500).json({ 
-      error: 'Failed to create template',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+  deleteTemplate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const success = await this.checklistService.deleteTemplate(parseInt(id));
 
-export const updateTemplate = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const template = await checklistService.updateTemplate(id, req.body);
+      if (!success) {
+        return res.status(404).json({ success: false, message: 'Template not found' });
+      }
 
-    if (!template) {
-      return res.status(404).json({ error: 'Template not found' });
+      res.json({ success: true, message: 'Template deleted successfully' });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.json(template);
-  } catch (error) {
-    console.error('Error updating template:', error);
-    res.status(500).json({ 
-      error: 'Failed to update template',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
-
-export const deleteTemplate = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const deleted = await checklistService.deleteTemplate(id);
-
-    if (!deleted) {
-      return res.status(404).json({ error: 'Template not found' });
+  // ===== ITEMS =====
+  createItem = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const item = await this.checklistService.createItem(req.body);
+      res.status(201).json({ success: true, data: item });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.status(204).send();
-  } catch (error) {
-    console.error('Error deleting template:', error);
-    res.status(500).json({ 
-      error: 'Failed to delete template',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+  updateItem = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const item = await this.checklistService.updateItem(parseInt(id), req.body);
 
-// ============================================================================
-// EQUIPMENT CHECKLISTS
-// ============================================================================
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Item not found' });
+      }
 
-export const getAllChecklists = async (req: Request, res: Response) => {
-  try {
-    const filters = {
-      equipment_id: req.query.equipment_id as string,
-      operator_id: req.query.operator_id as string,
-      daily_report_id: req.query.daily_report_id as string,
-      checklist_type: req.query.checklist_type as ChecklistType,
-      overall_status: req.query.overall_status as ChecklistStatus,
-      start_date: req.query.start_date as string,
-      end_date: req.query.end_date as string,
-      company_id: req.query.company_id as string || (req as any).user?.company_id,
-      page: req.query.page ? parseInt(req.query.page as string) : undefined,
-      limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
-    };
-
-    const checklists = await checklistService.getAllChecklists(filters);
-    res.json(checklists);
-  } catch (error) {
-    console.error('Error fetching checklists:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch checklists',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
-
-export const getChecklistById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const checklist = await checklistService.getChecklistById(id);
-
-    if (!checklist) {
-      return res.status(404).json({ error: 'Checklist not found' });
+      res.json({ success: true, data: item });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.json(checklist);
-  } catch (error) {
-    console.error('Error fetching checklist:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch checklist',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+  deleteItem = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const success = await this.checklistService.deleteItem(parseInt(id));
 
-export const createChecklist = async (req: Request, res: Response) => {
-  try {
-    const dto = {
-      ...req.body,
-      company_id: req.body.company_id || (req as any).user?.company_id,
-    };
+      if (!success) {
+        return res.status(404).json({ success: false, message: 'Item not found' });
+      }
 
-    // Validate required fields
-    if (!dto.equipment_id) {
-      return res.status(400).json({ error: 'equipment_id is required' });
+      res.json({ success: true, message: 'Item deleted successfully' });
+    } catch (error) {
+      next(error);
     }
-    if (!dto.checklist_type) {
-      return res.status(400).json({ error: 'checklist_type is required' });
+  };
+
+  // ===== INSPECTIONS =====
+  getAllInspections = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const filters = {
+        page: req.query.page,
+        limit: req.query.limit,
+        equipoId: req.query.equipoId,
+        trabajadorId: req.query.trabajadorId,
+        estado: req.query.estado,
+        resultadoGeneral: req.query.resultadoGeneral,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+      };
+
+      const result = await this.checklistService.getAllInspections(filters);
+
+      res.json({
+        success: true,
+        data: result.data,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: result.totalPages,
+        },
+      });
+    } catch (error) {
+      next(error);
     }
-    if (!dto.items || !Array.isArray(dto.items)) {
-      return res.status(400).json({ error: 'items array is required' });
+  };
+
+  getInspectionById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const inspection = await this.checklistService.getInspectionById(parseInt(id));
+
+      if (!inspection) {
+        return res.status(404).json({ success: false, message: 'Inspection not found' });
+      }
+
+      res.json({ success: true, data: inspection });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const checklist = await checklistService.createChecklist(dto);
-    res.status(201).json(checklist);
-  } catch (error) {
-    console.error('Error creating checklist:', error);
-    res.status(500).json({ 
-      error: 'Failed to create checklist',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+  getInspectionWithResults = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const inspection = await this.checklistService.getInspectionWithResults(parseInt(id));
 
-export const updateChecklist = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const checklist = await checklistService.updateChecklist(id, req.body);
+      if (!inspection) {
+        return res.status(404).json({ success: false, message: 'Inspection not found' });
+      }
 
-    if (!checklist) {
-      return res.status(404).json({ error: 'Checklist not found' });
+      res.json({ success: true, data: inspection });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.json(checklist);
-  } catch (error) {
-    console.error('Error updating checklist:', error);
-    res.status(500).json({ 
-      error: 'Failed to update checklist',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
-
-export const deleteChecklist = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const deleted = await checklistService.deleteChecklist(id);
-
-    if (!deleted) {
-      return res.status(404).json({ error: 'Checklist not found' });
+  createInspection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const inspection = await this.checklistService.createInspection(req.body);
+      res.status(201).json({ success: true, data: inspection });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.status(204).send();
-  } catch (error) {
-    console.error('Error deleting checklist:', error);
-    res.status(500).json({ 
-      error: 'Failed to delete checklist',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+  updateInspection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const inspection = await this.checklistService.updateInspection(parseInt(id), req.body);
 
-// ============================================================================
-// ANALYTICS & REPORTS
-// ============================================================================
+      if (!inspection) {
+        return res.status(404).json({ success: false, message: 'Inspection not found' });
+      }
 
-export const getChecklistSummary = async (req: Request, res: Response) => {
-  try {
-    const filters = {
-      company_id: req.query.company_id as string || (req as any).user?.company_id,
-      start_date: req.query.start_date as string,
-      end_date: req.query.end_date as string,
-    };
+      res.json({ success: true, data: inspection });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-    const summary = await checklistService.getChecklistSummary(filters);
-    res.json(summary);
-  } catch (error) {
-    console.error('Error fetching summary:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch summary',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+  completeInspection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const inspection = await this.checklistService.completeInspection(parseInt(id));
 
-export const getEquipmentChecklistHistory = async (req: Request, res: Response) => {
-  try {
-    const { equipmentId } = req.params;
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      if (!inspection) {
+        return res.status(404).json({ success: false, message: 'Inspection not found' });
+      }
 
-    const history = await checklistService.getEquipmentChecklistHistory(equipmentId, limit);
-    res.json(history);
-  } catch (error) {
-    console.error('Error fetching history:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch history',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+      res.json({ success: true, data: inspection, message: 'Inspection completed' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  cancelInspection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const inspection = await this.checklistService.cancelInspection(parseInt(id));
+
+      if (!inspection) {
+        return res.status(404).json({ success: false, message: 'Inspection not found' });
+      }
+
+      res.json({ success: true, data: inspection, message: 'Inspection cancelled' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // ===== RESULTS =====
+  saveResult = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.checklistService.saveResult(req.body);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getResultsByInspection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { inspectionId } = req.params;
+      const results = await this.checklistService.getResultsByInspection(parseInt(inspectionId));
+      res.json({ success: true, data: results });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // ===== STATS =====
+  getInspectionStats = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const filters = {
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+      };
+
+      const stats = await this.checklistService.getInspectionStats(filters);
+      res.json({ success: true, data: stats });
+    } catch (error) {
+      next(error);
+    }
+  };
+}

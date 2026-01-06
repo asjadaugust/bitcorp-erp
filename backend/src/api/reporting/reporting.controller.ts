@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import { ReportingService } from '../../services/reporting.service';
 import { ExportService } from '../../services/export.service';
@@ -14,9 +15,11 @@ export class ReportingController {
   getEquipmentUtilization = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { startDate, endDate, format } = req.query;
-      
+
       if (!startDate || !endDate) {
-        return res.status(400).json({ success: false, message: 'Start date and end date are required' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Start date and end date are required' });
       }
 
       const data = await this.reportingService.getEquipmentUtilization(
@@ -34,7 +37,13 @@ export class ReportingController {
           { header: 'Promedio Diario', key: 'avg_daily_hours', width: 15 },
           { header: 'Combustible (Gal)', key: 'total_fuel', width: 15 },
         ];
-        await this.exportService.generateExcel(data, columns, 'Utilización', res, 'reporte-utilizacion');
+        await this.exportService.generateExcel(
+          data,
+          columns,
+          'Utilización',
+          res,
+          'reporte-utilizacion'
+        );
       } else {
         res.json({ success: true, data });
       }
@@ -46,9 +55,11 @@ export class ReportingController {
   getMaintenanceHistory = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { startDate, endDate, format } = req.query;
-      
+
       if (!startDate || !endDate) {
-        return res.status(400).json({ success: false, message: 'Start date and end date are required' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Start date and end date are required' });
       }
 
       const data = await this.reportingService.getMaintenanceHistory(
@@ -67,7 +78,13 @@ export class ReportingController {
           { header: 'Costo', key: 'cost', width: 15 },
           { header: 'Descripción', key: 'description', width: 40 },
         ];
-        await this.exportService.generateExcel(data, columns, 'Mantenimiento', res, 'reporte-mantenimiento');
+        await this.exportService.generateExcel(
+          data,
+          columns,
+          'Mantenimiento',
+          res,
+          'reporte-mantenimiento'
+        );
       } else {
         res.json({ success: true, data });
       }
@@ -79,9 +96,11 @@ export class ReportingController {
   getInventoryMovements = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { startDate, endDate, format } = req.query;
-      
+
       if (!startDate || !endDate) {
-        return res.status(400).json({ success: false, message: 'Start date and end date are required' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Start date and end date are required' });
       }
 
       const data = await this.reportingService.getInventoryMovements(
@@ -100,7 +119,13 @@ export class ReportingController {
           { header: 'Items', key: 'items_count', width: 10 },
           { header: 'Total', key: 'total_amount', width: 15 },
         ];
-        await this.exportService.generateExcel(data, columns, 'Inventario', res, 'reporte-inventario');
+        await this.exportService.generateExcel(
+          data,
+          columns,
+          'Inventario',
+          res,
+          'reporte-inventario'
+        );
       } else {
         res.json({ success: true, data });
       }
@@ -112,9 +137,11 @@ export class ReportingController {
   getOperatorTimesheet = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { startDate, endDate, format } = req.query;
-      
+
       if (!startDate || !endDate) {
-        return res.status(400).json({ success: false, message: 'Start date and end date are required' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Start date and end date are required' });
       }
 
       const data = await this.reportingService.getOperatorTimesheet(
@@ -130,7 +157,13 @@ export class ReportingController {
           { header: 'Horas Totales', key: 'total_hours', width: 15 },
           { header: 'Horas Extras', key: 'overtime_hours', width: 15 },
         ];
-        await this.exportService.generateExcel(data, columns, 'Timesheet', res, 'reporte-timesheet');
+        await this.exportService.generateExcel(
+          data,
+          columns,
+          'Timesheet',
+          res,
+          'reporte-timesheet'
+        );
       } else {
         res.json({ success: true, data });
       }

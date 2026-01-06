@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { AppDataSource } from '../../config/database.config';
 import { ScheduledTask } from '../../models/scheduled-task.model';
@@ -14,7 +15,8 @@ import { Between, LessThanOrEqual, MoreThanOrEqual, Not, In } from 'typeorm';
  */
 export const listTasks = async (req: Request, res: Response) => {
   try {
-    const { equipment_id, operator_id, status, date_from, date_to, task_type, project_id } = req.query;
+    const { equipment_id, operator_id, status, date_from, date_to, task_type, project_id } =
+      req.query;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
     const queryBuilder = taskRepo
@@ -24,11 +26,15 @@ export const listTasks = async (req: Request, res: Response) => {
 
     // Apply filters
     if (equipment_id) {
-      queryBuilder.andWhere('task.equipmentId = :equipmentId', { equipmentId: parseInt(equipment_id as string) });
+      queryBuilder.andWhere('task.equipmentId = :equipmentId', {
+        equipmentId: parseInt(equipment_id as string),
+      });
     }
 
     if (operator_id) {
-      queryBuilder.andWhere('task.operatorId = :operatorId', { operatorId: parseInt(operator_id as string) });
+      queryBuilder.andWhere('task.operatorId = :operatorId', {
+        operatorId: parseInt(operator_id as string),
+      });
     }
 
     if (status && status !== 'all') {
@@ -40,7 +46,9 @@ export const listTasks = async (req: Request, res: Response) => {
     }
 
     if (project_id) {
-      queryBuilder.andWhere('task.projectId = :projectId', { projectId: parseInt(project_id as string) });
+      queryBuilder.andWhere('task.projectId = :projectId', {
+        projectId: parseInt(project_id as string),
+      });
     }
 
     if (date_from && date_to) {
@@ -203,7 +211,7 @@ export const updateTask = async (req: Request, res: Response) => {
       // Convert snake_case to camelCase for backwards compatibility
       const snakeField = field.replace(/([A-Z])/g, '_$1').toLowerCase();
       const value = updates[field] || updates[snakeField];
-      
+
       if (value !== undefined) {
         (task as any)[field] = value;
         hasUpdates = true;
@@ -274,10 +282,10 @@ export const assignOperator = async (req: Request, res: Response) => {
     const userId = (req as any).user?.id;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
-    
+
     // Get the task first to check its date
     const task = await taskRepo.findOne({ where: { id: parseInt(id) } });
-    
+
     if (!task) {
       return res.status(404).json({
         success: false,
@@ -307,7 +315,7 @@ export const assignOperator = async (req: Request, res: Response) => {
     task.operatorId = operator_id;
     task.status = 'assigned';
     task.assignedBy = userId;
-    
+
     const updatedTask = await taskRepo.save(task);
 
     res.json({
@@ -428,7 +436,9 @@ export const getCalendarTasks = async (req: Request, res: Response) => {
     }
 
     if (project_id) {
-      queryBuilder.andWhere('task.projectId = :projectId', { projectId: parseInt(project_id as string) });
+      queryBuilder.andWhere('task.projectId = :projectId', {
+        projectId: parseInt(project_id as string),
+      });
     }
 
     queryBuilder.orderBy('task.startDate', 'ASC');

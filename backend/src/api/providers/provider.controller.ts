@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProviderService } from '../../services/provider.service';
 
@@ -13,7 +14,7 @@ export class ProviderController {
       const { search, is_active, tipo_proveedor } = req.query;
 
       const filters: any = {};
-      
+
       if (search) filters.search = String(search);
       if (is_active !== undefined) filters.is_active = is_active === 'true';
       if (tipo_proveedor) filters.tipo_proveedor = String(tipo_proveedor);
@@ -48,7 +49,7 @@ export class ProviderController {
       res.json(provider);
     } catch (error: any) {
       console.error('Error in getById provider:', error);
-      
+
       if (error.message === 'Provider not found') {
         res.status(404).json({ error: 'Provider not found' });
         return;

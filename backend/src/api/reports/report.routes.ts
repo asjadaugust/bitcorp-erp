@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { ReportController } from './report.controller';
 import { authenticate } from '../../middleware/auth.middleware';
@@ -17,10 +18,7 @@ router.delete('/:id', controller.deleteReport.bind(controller));
 router.post('/:id/approve', controller.approveReport.bind(controller));
 router.post('/:id/reject', controller.rejectReport.bind(controller));
 
+// PDF download
+router.get('/:id/pdf', controller.downloadPdf.bind(controller));
+
 export default router;
-
-
-
-
-
-

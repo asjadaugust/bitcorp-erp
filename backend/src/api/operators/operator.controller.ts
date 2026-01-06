@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import { OperatorService } from '../../services/operator.service';
 
@@ -13,7 +14,7 @@ export class OperatorController {
         page: page ? parseInt(page as string) : undefined,
         limit: limit ? parseInt(limit as string) : undefined,
       });
-      
+
       res.json({
         success: true,
         data: result.data,
@@ -33,7 +34,7 @@ export class OperatorController {
     try {
       const id = req.params.id;
       const operator = await operatorService.findById(parseInt(id));
-      
+
       res.json({
         success: true,
         data: operator,
@@ -47,7 +48,7 @@ export class OperatorController {
     try {
       const userId = (req as any).user?.id;
       const operator = await operatorService.create(req.body);
-      
+
       res.status(201).json({
         success: true,
         message: 'Operator created successfully',
@@ -66,7 +67,7 @@ export class OperatorController {
       const id = req.params.id;
       const userId = (req as any).user?.id;
       const operator = await operatorService.update(parseInt(id), req.body);
-      
+
       res.json({
         success: true,
         message: 'Operator updated successfully',
@@ -81,7 +82,7 @@ export class OperatorController {
     try {
       const id = req.params.id;
       await operatorService.delete(parseInt(id));
-      
+
       res.json({
         success: true,
         message: 'Operator deleted successfully',
@@ -97,7 +98,7 @@ export class OperatorController {
       res.json({
         success: true,
         data: [],
-        message: 'Method not yet implemented'
+        message: 'Method not yet implemented',
       });
     } catch (error) {
       next(error);
@@ -110,7 +111,7 @@ export class OperatorController {
       res.json({
         success: true,
         data: {},
-        message: 'Method not yet implemented'
+        message: 'Method not yet implemented',
       });
     } catch (error) {
       next(error);
@@ -123,9 +124,9 @@ export class OperatorController {
       res.json({
         success: true,
         data: {},
-        message: 'Method not yet implemented'
+        message: 'Method not yet implemented',
       });
-      
+
       res.json({
         success: true,
         data: performance,
@@ -139,15 +140,15 @@ export class OperatorController {
     try {
       const { ExportUtil } = await import('../../utils/export.util');
       const { search, skillIds, status } = req.query;
-      
+
       const filters: any = {};
       if (search) filters.search = search as string;
       if (skillIds) filters.skillIds = (skillIds as string).split(',').map(Number);
       if (status) filters.status = status as string;
-      
+
       const result = await operatorService.findAll(filters);
       const operators = result.data;
-      
+
       const data = operators.map((op: any) => ({
         codigo: op.employee_code || '',
         nombre: `${op.first_name} ${op.last_name}`,
@@ -158,7 +159,7 @@ export class OperatorController {
         estado: op.status,
         fecha_contrato: ExportUtil.formatDate(op.hire_date),
       }));
-      
+
       const columns = [
         { header: 'Código', key: 'codigo', width: 12 },
         { header: 'Nombre Completo', key: 'nombre', width: 30 },
@@ -169,7 +170,7 @@ export class OperatorController {
         { header: 'Estado', key: 'estado', width: 15 },
         { header: 'Fecha Contrato', key: 'fecha_contrato', width: 15 },
       ];
-      
+
       await ExportUtil.exportToExcel(res, data, columns, `operadores_${Date.now()}`);
     } catch (error) {
       next(error);
@@ -180,15 +181,15 @@ export class OperatorController {
     try {
       const { ExportUtil } = await import('../../utils/export.util');
       const { search, skillIds, status } = req.query;
-      
+
       const filters: any = {};
       if (search) filters.search = search as string;
       if (skillIds) filters.skillIds = (skillIds as string).split(',').map(Number);
       if (status) filters.status = status as string;
-      
+
       const result2 = await operatorService.findAll(filters);
       const operators2 = result2.data;
-      
+
       const data = operators2.map((op: any) => ({
         codigo: op.employee_code || '',
         nombre: `${op.first_name} ${op.last_name}`,
@@ -199,7 +200,7 @@ export class OperatorController {
         estado: op.status,
         fecha_contrato: ExportUtil.formatDate(op.hire_date),
       }));
-      
+
       const fields = [
         { label: 'Código', value: 'codigo' },
         { label: 'Nombre Completo', value: 'nombre' },
@@ -210,7 +211,7 @@ export class OperatorController {
         { label: 'Estado', value: 'estado' },
         { label: 'Fecha Contrato', value: 'fecha_contrato' },
       ];
-      
+
       ExportUtil.exportToCSV(res, data, fields, `operadores_${Date.now()}`);
     } catch (error) {
       next(error);

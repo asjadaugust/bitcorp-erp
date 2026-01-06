@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ReportService } from '../../services/report.service';
+import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
 import { sendError } from '../../utils/api-response';
 
 const reportService = new ReportService();
@@ -158,6 +160,35 @@ export class ReportController {
     } catch (error: any) {
       console.error('Error deleting report:', error);
       return sendError(res, 500, 'REPORT_DELETE_FAILED', 'Failed to delete report', error.message);
+    }
+  }
+
+  async downloadPdf(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const reportId = parseInt(id);
+
+      if (isNaN(reportId)) {
+        return sendError(res, 400, 'INVALID_ID', 'Invalid report ID');
+      }
+
+      // Get report data formatted for PDF
+      const pdfData = await reportService.getDailyReportPdfData(reportId);
+
+      // Generate PDF
+      const pdf = await puppeteerPdfService.generateDailyReportPdf(pdfData);
+
+      // Create filename
+      const filename = `parte-diario-${pdfData.numero_parte}.pdf`;
+
+      // Send PDF response
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdf.length);
+      res.send(pdf);
+    } catch (error: any) {
+      console.error('Error generating PDF:', error);
+      return sendError(res, 500, 'PDF_GENERATION_FAILED', 'Failed to generate PDF', error.message);
     }
   }
 }

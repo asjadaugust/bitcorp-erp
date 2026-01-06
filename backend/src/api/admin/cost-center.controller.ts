@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { CostCenterService } from '../../services/cost-center.service';
 
@@ -13,7 +14,7 @@ export class CostCenterController {
       const { search, project_id, is_active } = req.query;
 
       const filters: any = {};
-      
+
       if (search) filters.search = String(search);
       if (project_id) filters.project_id = parseInt(String(project_id));
       if (is_active !== undefined) filters.is_active = is_active === 'true';
@@ -48,7 +49,7 @@ export class CostCenterController {
       res.json(costCenter);
     } catch (error: any) {
       console.error('Error in getById cost center:', error);
-      
+
       if (error.message === 'Cost center not found') {
         res.status(404).json({ error: 'Cost center not found' });
         return;

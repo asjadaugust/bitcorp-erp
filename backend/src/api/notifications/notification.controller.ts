@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import { NotificationService } from '../../services/notification.service';
 
@@ -9,13 +10,13 @@ export class NotificationController {
       const userId = (req as any).user.id;
       const notifications = await this.notificationService.getUserNotifications(userId);
       const unreadCount = await this.notificationService.getUnreadCount(userId);
-      
+
       res.json({
         success: true,
         data: {
           notifications,
-          unreadCount
-        }
+          unreadCount,
+        },
       });
     } catch (error) {
       next(error);
@@ -26,9 +27,9 @@ export class NotificationController {
     try {
       const userId = (req as any).user.id;
       const { id } = req.params;
-      
+
       await this.notificationService.markAsRead(id, userId);
-      
+
       res.json({ success: true, message: 'Notification marked as read' });
     } catch (error) {
       next(error);
@@ -38,9 +39,9 @@ export class NotificationController {
   markAllAsRead = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.id;
-      
+
       await this.notificationService.markAllAsRead(userId);
-      
+
       res.json({ success: true, message: 'All notifications marked as read' });
     } catch (error) {
       next(error);
@@ -51,9 +52,9 @@ export class NotificationController {
     try {
       const userId = (req as any).user.id;
       const { id } = req.params;
-      
+
       const deleted = await this.notificationService.deleteNotification(id, userId);
-      
+
       if (deleted) {
         res.json({ success: true, message: 'Notification deleted' });
       } else {

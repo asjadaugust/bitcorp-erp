@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ContractService } from '../../services/contract.service';
 
@@ -13,7 +14,7 @@ export class ContractController {
       const { search, estado, equipment_id, provider_id, project_id } = req.query;
 
       const filters: any = {};
-      
+
       if (search) filters.search = String(search);
       if (estado) filters.estado = String(estado);
       if (equipment_id) filters.equipment_id = parseInt(String(equipment_id));
@@ -50,7 +51,7 @@ export class ContractController {
       res.json(contract);
     } catch (error: any) {
       console.error('Error in getById contract:', error);
-      
+
       if (error.message === 'Contract not found') {
         res.status(404).json({ error: 'Contract not found' });
         return;

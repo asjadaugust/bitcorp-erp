@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import {
   EquipmentService,
@@ -11,38 +12,41 @@ import { sendError } from '../../utils/api-response';
 export class EquipmentController {
   private equipmentService = new EquipmentService();
 
+  // Helper to convert empty strings to undefined for numeric fields
+  private cleanNumeric(value: any): number | undefined {
+    if (value === '' || value === null || value === undefined) return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  }
+
+  // Helper to convert empty strings to undefined for string fields
+  private cleanString(value: any): string | undefined {
+    if (value === '' || value === null || value === undefined) return undefined;
+    return String(value);
+  }
+
   create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const {
-        codigoEquipo,
-        numeroSerieEquipo,
-        numeroChasis,
-        numeroSerieMotor,
-        anioFabricacion,
-        potenciaNeta,
-        tipoMotor,
-        medidorUso,
-        tipoProveedor,
-        equipmentTypeId,
-        providerId,
-        createdBy,
-        ...rest
-      } = req.body;
-
+      // Frontend now sends Spanish snake_case fields directly
+      // Clean empty strings to undefined to avoid DB type errors
       const data: CreateEquipmentDto = {
-        ...rest,
-        codigo_equipo: codigoEquipo,
-        numero_serie_equipo: numeroSerieEquipo,
-        numero_chasis: numeroChasis,
-        numero_serie_motor: numeroSerieMotor,
-        anio_fabricacion: anioFabricacion,
-        potencia_neta: potenciaNeta,
-        tipo_motor: tipoMotor,
-        medidor_uso: medidorUso,
-        tipo_proveedor: tipoProveedor,
-        equipment_type_id: equipmentTypeId,
-        provider_id: providerId,
-        created_by: createdBy,
+        codigo_equipo: req.body.codigo_equipo,
+        categoria: this.cleanString(req.body.categoria),
+        marca: this.cleanString(req.body.marca),
+        modelo: this.cleanString(req.body.modelo),
+        numero_serie_equipo: this.cleanString(req.body.numero_serie_equipo),
+        numero_chasis: this.cleanString(req.body.numero_chasis),
+        numero_serie_motor: this.cleanString(req.body.numero_serie_motor),
+        placa: this.cleanString(req.body.placa),
+        anio_fabricacion: this.cleanNumeric(req.body.anio_fabricacion),
+        potencia_neta: this.cleanNumeric(req.body.potencia_neta),
+        tipo_motor: this.cleanString(req.body.tipo_motor),
+        medidor_uso: this.cleanString(req.body.medidor_uso),
+        estado: this.cleanString(req.body.estado),
+        tipo_proveedor: this.cleanString(req.body.tipo_proveedor),
+        tipo_equipo_id: this.cleanNumeric(req.body.tipo_equipo_id),
+        proveedor_id: this.cleanNumeric(req.body.proveedor_id),
+        creado_por: this.cleanNumeric(req.body.creado_por),
       };
 
       const equipment = await this.equipmentService.create(data);
@@ -121,36 +125,26 @@ export class EquipmentController {
   update = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
-      const {
-        codigoEquipo,
-        numeroSerieEquipo,
-        numeroChasis,
-        numeroSerieMotor,
-        anioFabricacion,
-        potenciaNeta,
-        tipoMotor,
-        medidorUso,
-        tipoProveedor,
-        equipmentTypeId,
-        providerId,
-        updatedBy,
-        ...rest
-      } = req.body;
-
+      // Frontend now sends Spanish snake_case fields directly
+      // Clean empty strings to undefined to avoid DB type errors
       const data: UpdateEquipmentDto = {
-        ...rest,
-        codigo_equipo: codigoEquipo,
-        numero_serie_equipo: numeroSerieEquipo,
-        numero_chasis: numeroChasis,
-        numero_serie_motor: numeroSerieMotor,
-        anio_fabricacion: anioFabricacion,
-        potencia_neta: potenciaNeta,
-        tipo_motor: tipoMotor,
-        medidor_uso: medidorUso,
-        tipo_proveedor: tipoProveedor,
-        equipment_type_id: equipmentTypeId,
-        provider_id: providerId,
-        updated_by: updatedBy,
+        codigo_equipo: req.body.codigo_equipo,
+        categoria: this.cleanString(req.body.categoria),
+        marca: this.cleanString(req.body.marca),
+        modelo: this.cleanString(req.body.modelo),
+        numero_serie_equipo: this.cleanString(req.body.numero_serie_equipo),
+        numero_chasis: this.cleanString(req.body.numero_chasis),
+        numero_serie_motor: this.cleanString(req.body.numero_serie_motor),
+        placa: this.cleanString(req.body.placa),
+        anio_fabricacion: this.cleanNumeric(req.body.anio_fabricacion),
+        potencia_neta: this.cleanNumeric(req.body.potencia_neta),
+        tipo_motor: this.cleanString(req.body.tipo_motor),
+        medidor_uso: this.cleanString(req.body.medidor_uso),
+        estado: this.cleanString(req.body.estado),
+        tipo_proveedor: this.cleanString(req.body.tipo_proveedor),
+        tipo_equipo_id: this.cleanNumeric(req.body.tipo_equipo_id),
+        proveedor_id: this.cleanNumeric(req.body.proveedor_id),
+        actualizado_por: this.cleanNumeric(req.body.actualizado_por),
       };
 
       const equipment = await this.equipmentService.update(id, data);

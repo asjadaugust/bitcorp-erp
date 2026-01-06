@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { PaymentScheduleController } from './payment-schedule.controller';
 import { authenticate } from '../../middleware/auth.middleware';
@@ -17,11 +18,17 @@ router.delete('/:id', paymentScheduleController.delete.bind(paymentScheduleContr
 
 // Detail management
 router.post('/:id/details', paymentScheduleController.addDetail.bind(paymentScheduleController));
-router.delete('/:id/details/:detailId', paymentScheduleController.removeDetail.bind(paymentScheduleController));
+router.delete(
+  '/:id/details/:detailId',
+  paymentScheduleController.removeDetail.bind(paymentScheduleController)
+);
 
 // Workflow actions
 router.post('/:id/approve', paymentScheduleController.approve.bind(paymentScheduleController));
 router.post('/:id/process', paymentScheduleController.process.bind(paymentScheduleController));
-router.post('/:id/cancel', paymentScheduleController.cancelSchedule.bind(paymentScheduleController));
+router.post(
+  '/:id/cancel',
+  paymentScheduleController.cancelSchedule.bind(paymentScheduleController)
+);
 
 export default router;

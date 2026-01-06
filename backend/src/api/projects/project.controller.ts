@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProjectService, CreateProjectDto, UpdateProjectDto } from '../../services/project.service';
 
@@ -20,13 +21,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        data: projects
+        data: projects,
       });
     } catch (error) {
       console.error('Error in findAll projects:', error);
       res.status(500).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -42,13 +43,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        data: project
+        data: project,
       });
     } catch (error) {
       console.error('Error in findById project:', error);
       res.status(404).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -64,13 +65,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        data: project
+        data: project,
       });
     } catch (error) {
       console.error('Error in findByCode project:', error);
       res.status(404).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -86,13 +87,13 @@ export class ProjectController {
 
       res.status(201).json({
         success: true,
-        data: project
+        data: project,
       });
     } catch (error) {
       console.error('Error in create project:', error);
       res.status(400).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -109,13 +110,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        data: project
+        data: project,
       });
     } catch (error) {
       console.error('Error in update project:', error);
       res.status(400).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -131,13 +132,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        message: 'Project deleted successfully'
+        message: 'Project deleted successfully',
       });
     } catch (error) {
       console.error('Error in delete project:', error);
       res.status(400).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -154,7 +155,7 @@ export class ProjectController {
       if (!user_id) {
         res.status(400).json({
           success: false,
-          error: 'user_id is required'
+          error: 'user_id is required',
         });
         return;
       }
@@ -163,13 +164,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        message: 'User assigned to project successfully'
+        message: 'User assigned to project successfully',
       });
     } catch (error) {
       console.error('Error in assignUser:', error);
       res.status(400).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -185,13 +186,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        message: 'User unassigned from project successfully'
+        message: 'User unassigned from project successfully',
       });
     } catch (error) {
       console.error('Error in unassignUser:', error);
       res.status(400).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -207,13 +208,13 @@ export class ProjectController {
 
       res.json({
         success: true,
-        data: users
+        data: users,
       });
     } catch (error) {
       console.error('Error in getProjectUsers:', error);
       res.status(500).json({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     }
   };
@@ -222,7 +223,7 @@ export class ProjectController {
     try {
       const { ExportUtil } = await import('../../utils/export.util');
       const { status, search } = req.query;
-      
+
       const projects = await this.projectService.findAll({
         status: status as string,
         search: search as string,
@@ -261,7 +262,7 @@ export class ProjectController {
     try {
       const { ExportUtil } = await import('../../utils/export.util');
       const { status, search } = req.query;
-      
+
       const projects = await this.projectService.findAll({
         status: status as string,
         search: search as string,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import { MaintenanceService } from '../../services/maintenance.service';
 
@@ -10,30 +11,16 @@ export class MaintenanceController {
 
   getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const filters = {
+      const filters: any = {
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 10,
-        status: req.query.status as string,
-        type: req.query.type as string,
-        search: req.query.search as string,
       };
 
-      const result = await this.maintenanceService.getAllMaintenance(filters);
+      if (req.query.status) filters.status = req.query.status;
+      if (req.query.type) filters.type = req.query.type;
+      if (req.query.search) filters.search = req.query.search;
 
-      if ((result as any).tableMissing) {
-        return res.json({
-          success: true,
-          data: [],
-          message:
-            'Tabla de mantenimiento legacy no encontrada; ejecutar migraciones de mantenimiento',
-          pagination: {
-            page: filters.page,
-            limit: filters.limit,
-            total: 0,
-            totalPages: 0,
-          },
-        });
-      }
+      const result = await this.maintenanceService.getAllMaintenance(filters);
 
       res.json({
         success: true,
@@ -61,14 +48,6 @@ export class MaintenanceController {
 
       res.json({ success: true, data: record });
     } catch (error) {
-      if ((error as Error).message === 'LEGACY_MAINTENANCE_TABLE_MISSING') {
-        return res.status(503).json({
-          success: false,
-          message:
-            'Tabla de mantenimiento legacy no encontrada; ejecute migraciones de mantenimiento',
-        });
-      }
-
       next(error);
     }
   };
@@ -79,14 +58,6 @@ export class MaintenanceController {
       const record = await this.maintenanceService.createMaintenance(req.body, userId);
       res.status(201).json({ success: true, data: record });
     } catch (error) {
-      if ((error as Error).message === 'LEGACY_MAINTENANCE_TABLE_MISSING') {
-        return res.status(503).json({
-          success: false,
-          message:
-            'Tabla de mantenimiento legacy no encontrada; ejecute migraciones de mantenimiento',
-        });
-      }
-
       next(error);
     }
   };
@@ -107,14 +78,6 @@ export class MaintenanceController {
 
       res.json({ success: true, data: record });
     } catch (error) {
-      if ((error as Error).message === 'LEGACY_MAINTENANCE_TABLE_MISSING') {
-        return res.status(503).json({
-          success: false,
-          message:
-            'Tabla de mantenimiento legacy no encontrada; ejecute migraciones de mantenimiento',
-        });
-      }
-
       next(error);
     }
   };
@@ -130,14 +93,6 @@ export class MaintenanceController {
 
       res.json({ success: true, message: 'Maintenance record deleted successfully' });
     } catch (error) {
-      if ((error as Error).message === 'LEGACY_MAINTENANCE_TABLE_MISSING') {
-        return res.status(503).json({
-          success: false,
-          message:
-            'Tabla de mantenimiento legacy no encontrada; ejecute migraciones de mantenimiento',
-        });
-      }
-
       next(error);
     }
   };

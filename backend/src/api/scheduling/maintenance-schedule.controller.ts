@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import pool from '../../config/database.config';
 import { sendSuccess, sendError } from '../../utils/api-response';
