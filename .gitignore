@@ -59,6 +59,19 @@ backend/uploads/
 # OS
 Thumbs.db
 
+# Test artifacts
+*.pdf
+test*.pdf
+valuation*.pdf
+*.backup
+
+# Session logs
+.archive/session-logs/
+session-*.md
+
+# IDE configs
+opencode.json
+
 docs/
 
 **.bak**
