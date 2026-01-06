@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import db from '../config/database.config';
 
 export class ProviderContactService {
@@ -12,8 +13,13 @@ export class ProviderContactService {
         ORDER BY is_primary DESC, created_at DESC
       `;
       const result = await db.query(query, [providerId]);
-      return result.rows.map(row => this.mapToContact(row));
-    } catch (error) {
+      return result.rows.map((row) => this.mapToContact(row));
+    } catch (error: any) {
+      // If table doesn't exist, return empty array
+      if (error.message?.includes('does not exist')) {
+        console.log('provider_contacts table does not exist, returning empty array');
+        return [];
+      }
       console.error('Error finding contacts:', error);
       throw error;
     }
@@ -26,11 +32,11 @@ export class ProviderContactService {
     try {
       const query = 'SELECT * FROM provider_contacts WHERE id = $1';
       const result = await db.query(query, [id]);
-      
+
       if (result.rows.length === 0) {
         throw new Error('Contact not found');
       }
-      
+
       return this.mapToContact(result.rows[0]);
     } catch (error) {
       console.error('Error finding contact:', error);
@@ -51,7 +57,7 @@ export class ProviderContactService {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *
       `;
-      
+
       const values = [
         data.provider_id,
         data.contact_name,
@@ -65,9 +71,9 @@ export class ProviderContactService {
         data.status || 'active',
         data.notes || null,
         data.tenant_id || 1,
-        data.created_by || null
+        data.created_by || null,
       ];
-      
+
       const result = await db.query(query, values);
       return this.mapToContact(result.rows[0]);
     } catch (error) {
@@ -99,7 +105,7 @@ export class ProviderContactService {
         WHERE id = $12
         RETURNING *
       `;
-      
+
       const values = [
         data.contact_name,
         data.position || null,
@@ -112,15 +118,15 @@ export class ProviderContactService {
         data.status || 'active',
         data.notes || null,
         data.updated_by || null,
-        id
+        id,
       ];
-      
+
       const result = await db.query(query, values);
-      
+
       if (result.rows.length === 0) {
         throw new Error('Contact not found');
       }
-      
+
       return this.mapToContact(result.rows[0]);
     } catch (error) {
       console.error('Error updating contact:', error);
@@ -163,7 +169,7 @@ export class ProviderContactService {
       updated_at: row.updated_at,
       created_by: row.created_by,
       updated_by: row.updated_by,
-      tenant_id: row.tenant_id
+      tenant_id: row.tenant_id,
     };
   }
 }

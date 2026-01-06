@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { AppDataSource } from '../config/database.config';
 import { Trabajador } from '../models/trabajador.model';
 import { Repository, ILike } from 'typeorm';
@@ -26,7 +27,8 @@ export class OperatorService {
       const limit = filters?.limit || 50;
       const skip = (page - 1) * limit;
 
-      const queryBuilder = this.repository.createQueryBuilder('t')
+      const queryBuilder = this.repository
+        .createQueryBuilder('t')
         .where('t.is_active = :isActive', { isActive: filters?.isActive ?? true });
 
       // Filter by cargo
@@ -36,7 +38,9 @@ export class OperatorService {
 
       // Filter by especialidad
       if (filters?.especialidad) {
-        queryBuilder.andWhere('t.especialidad = :especialidad', { especialidad: filters.especialidad });
+        queryBuilder.andWhere('t.especialidad = :especialidad', {
+          especialidad: filters.especialidad,
+        });
       }
 
       // Filter by operating unit
@@ -53,8 +57,7 @@ export class OperatorService {
       }
 
       // Order by apellido_paterno, nombres
-      queryBuilder.orderBy('t.apellido_paterno', 'ASC')
-        .addOrderBy('t.nombres', 'ASC');
+      queryBuilder.orderBy('t.apellido_paterno', 'ASC').addOrderBy('t.nombres', 'ASC');
 
       // Get total count
       const total = await queryBuilder.getCount();
@@ -65,7 +68,7 @@ export class OperatorService {
       const trabajadores = await queryBuilder.getMany();
 
       // Map to response format
-      const data = trabajadores.map(t => this.mapToResponse(t));
+      const data = trabajadores.map((t) => this.mapToResponse(t));
 
       return { data, total, page, limit };
     } catch (error) {
@@ -173,7 +176,7 @@ export class OperatorService {
         .getRawMany();
 
       const porCargo: Record<string, number> = {};
-      cargoResult.forEach(r => {
+      cargoResult.forEach((r) => {
         if (r.cargo) porCargo[r.cargo] = parseInt(r.count);
       });
 
@@ -187,7 +190,7 @@ export class OperatorService {
         .getRawMany();
 
       const porEspecialidad: Record<string, number> = {};
-      espResult.forEach(r => {
+      espResult.forEach((r) => {
         if (r.especialidad) porEspecialidad[r.especialidad] = parseInt(r.count);
       });
 

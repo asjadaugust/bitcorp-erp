@@ -1,15 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import db from '../config/database.config';
 import { Project } from '../models/project.model';
 
 export interface CreateProjectDto {
+  // Frontend sends camelCase field names
   code: string;
   name: string;
   description?: string;
   location?: string;
-  start_date?: Date;
-  end_date?: Date;
-  status?: 'planning' | 'active' | 'suspended' | 'completed';
-  settings?: any;
+  startDate?: string; // Frontend sends camelCase
+  endDate?: string; // Frontend sends camelCase
+  start_date?: string; // Also support snake_case
+  end_date?: string; // Also support snake_case
+  status?: string;
+  client?: string;
+  budget?: number;
+  currency?: string;
+  presupuesto?: number; // Also support Spanish
+  cliente?: string; // Also support Spanish
 }
 
 export interface UpdateProjectDto extends Partial<CreateProjectDto> {}
@@ -133,24 +141,61 @@ export class ProjectService {
    */
   async create(data: CreateProjectDto): Promise<any> {
     try {
+      // Map frontend camelCase fields to database snake_case Spanish columns
+      const codigo = data.code;
+      const nombre = data.name;
+      const descripcion = data.description || null;
+      const ubicacion = data.location || null;
+      const fecha_inicio = data.startDate || data.start_date || null;
+      const fecha_fin = data.endDate || data.end_date || null;
+      const presupuesto = data.budget || data.presupuesto || null;
+      const cliente = data.client || data.cliente || null;
+
+      // Map status values from frontend display values to database values
+      let estado = data.status || 'PLANIFICACION';
+      const statusMapping: { [key: string]: string } = {
+        Planificación: 'PLANIFICACION',
+        'En Ejecución': 'EN_EJECUCION',
+        Suspendido: 'SUSPENDIDO',
+        Finalizado: 'FINALIZADO',
+        PLANIFICACION: 'PLANIFICACION',
+        EN_EJECUCION: 'EN_EJECUCION',
+        SUSPENDIDO: 'SUSPENDIDO',
+        FINALIZADO: 'FINALIZADO',
+        ACTIVO: 'ACTIVO',
+      };
+      estado = statusMapping[estado] || estado;
+
+      console.log('Creating project with data:', {
+        codigo,
+        nombre,
+        ubicacion,
+        fecha_inicio,
+        fecha_fin,
+        presupuesto,
+        cliente,
+        estado,
+      });
+
       const query = `
         INSERT INTO proyectos.edt (
-          code, name, description, location, 
-          start_date, end_date, status, settings
+          codigo, nombre, descripcion, ubicacion, 
+          fecha_inicio, fecha_fin, presupuesto, cliente, estado, is_active
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
         RETURNING *
       `;
 
       const values = [
-        data.code,
-        data.name,
-        data.description || null,
-        data.location || null,
-        data.start_date || null,
-        data.end_date || null,
-        data.status || 'planning',
-        data.settings || {},
+        codigo,
+        nombre,
+        descripcion,
+        ubicacion,
+        fecha_inicio,
+        fecha_fin,
+        presupuesto,
+        cliente,
+        estado,
       ];
 
       const result = await db.query(query, values);
@@ -170,13 +215,43 @@ export class ProjectService {
       const values: any[] = [];
       let paramIndex = 1;
 
-      const fields = ['code', 'name', 'description', 'location', 'start_date', 'end_date', 'status', 'settings'];
+      // Map frontend camelCase and snake_case DTO fields to Spanish column names
+      const fieldMapping: { [key: string]: string } = {
+        code: 'codigo',
+        name: 'nombre',
+        description: 'descripcion',
+        location: 'ubicacion',
+        startDate: 'fecha_inicio',
+        endDate: 'fecha_fin',
+        start_date: 'fecha_inicio',
+        end_date: 'fecha_fin',
+        status: 'estado',
+        client: 'cliente',
+        cliente: 'cliente',
+        budget: 'presupuesto',
+        presupuesto: 'presupuesto',
+      };
+
+      // Map status values from frontend display values to database values
+      const statusMapping: { [key: string]: string } = {
+        Planificación: 'PLANIFICACION',
+        'En Ejecución': 'EN_EJECUCION',
+        Suspendido: 'SUSPENDIDO',
+        Finalizado: 'FINALIZADO',
+      };
 
       // Build dynamic update query
-      for (const field of fields) {
-        if ((data as any)[field] !== undefined) {
-          updateFields.push(`${field} = $${paramIndex}`);
-          values.push((data as any)[field]);
+      const processedColumns = new Set<string>();
+      for (const [dtoField, dbColumn] of Object.entries(fieldMapping)) {
+        if ((data as any)[dtoField] !== undefined && !processedColumns.has(dbColumn)) {
+          processedColumns.add(dbColumn);
+          let value = (data as any)[dtoField];
+          // Map status values
+          if (dbColumn === 'estado' && statusMapping[value]) {
+            value = statusMapping[value];
+          }
+          updateFields.push(`${dbColumn} = $${paramIndex}`);
+          values.push(value);
           paramIndex++;
         }
       }

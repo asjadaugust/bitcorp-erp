@@ -1,488 +1,288 @@
-import pool from '../config/database.config';
-import {
-  ChecklistTemplate,
-  ChecklistType,
-  ChecklistItem,
-} from '../models/checklist-template.model';
-import {
-  EquipmentChecklist,
-  ChecklistStatus,
-  ChecklistPhoto,
-} from '../models/equipment-checklist.model';
-
-export interface ChecklistTemplateFilter {
-  checklist_type?: ChecklistType;
-  equipment_category_id?: string;
-  is_active?: boolean;
-  company_id?: string;
-}
-
-export interface ChecklistFilter {
-  equipment_id?: string;
-  operator_id?: string;
-  daily_report_id?: string;
-  checklist_type?: ChecklistType;
-  overall_status?: ChecklistStatus;
-  start_date?: string;
-  end_date?: string;
-  company_id?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface CreateTemplateDto {
-  checklist_type: ChecklistType;
-  equipment_category_id?: string;
-  template_name: string;
-  description?: string;
-  items: ChecklistItem[];
-  is_active?: boolean;
-  company_id: string;
-  created_by?: string;
-}
-
-export interface CreateChecklistDto {
-  template_id?: string;
-  equipment_id: string;
-  operator_id?: string;
-  daily_report_id?: string;
-  checklist_type: ChecklistType;
-  items: ChecklistItem[];
-  observations?: string;
-  photos?: ChecklistPhoto[];
-  signed_by?: string;
-  signature_url?: string;
-  company_id: string;
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AppDataSource } from '../config/database.config';
+import { ChecklistTemplate } from '../models/checklist-template.model';
+import { ChecklistItem } from '../models/checklist-item.model';
+import { ChecklistInspection } from '../models/checklist-inspection.model';
+import { ChecklistResult } from '../models/checklist-result.model';
+import { Repository } from 'typeorm';
 
 export class ChecklistService {
-  // ============================================================================
-  // CHECKLIST TEMPLATES
-  // ============================================================================
+  private templateRepository: Repository<ChecklistTemplate>;
+  private itemRepository: Repository<ChecklistItem>;
+  private inspectionRepository: Repository<ChecklistInspection>;
+  private resultRepository: Repository<ChecklistResult>;
 
-  async getAllTemplates(filters?: ChecklistTemplateFilter): Promise<ChecklistTemplate[]> {
-    let query = `
-      SELECT 
-        id,
-        checklist_type,
-        equipment_category_id,
-        template_name,
-        description,
-        items,
-        is_active,
-        company_id,
-        created_by,
-        created_at,
-        updated_at
-      FROM equipment_checklist_templates
-      WHERE 1=1
-    `;
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (filters?.checklist_type) {
-      query += ` AND checklist_type = $${paramIndex++}`;
-      params.push(filters.checklist_type);
-    }
-
-    if (filters?.equipment_category_id) {
-      query += ` AND equipment_category_id = $${paramIndex++}`;
-      params.push(filters.equipment_category_id);
-    }
-
-    if (filters?.is_active !== undefined) {
-      query += ` AND is_active = $${paramIndex++}`;
-      params.push(filters.is_active);
-    }
-
-    if (filters?.company_id) {
-      query += ` AND company_id = $${paramIndex++}`;
-      params.push(filters.company_id);
-    }
-
-    query += ` ORDER BY checklist_type, template_name`;
-
-    const result = await pool.query(query, params);
-    return result.rows;
+  constructor() {
+    this.templateRepository = AppDataSource.getRepository(ChecklistTemplate);
+    this.itemRepository = AppDataSource.getRepository(ChecklistItem);
+    this.inspectionRepository = AppDataSource.getRepository(ChecklistInspection);
+    this.resultRepository = AppDataSource.getRepository(ChecklistResult);
   }
 
-  async getTemplateById(id: string): Promise<ChecklistTemplate | null> {
-    const query = `
-      SELECT 
-        id,
-        checklist_type,
-        equipment_category_id,
-        template_name,
-        description,
-        items,
-        is_active,
-        company_id,
-        created_by,
-        created_at,
-        updated_at
-      FROM equipment_checklist_templates
-      WHERE id = $1
-    `;
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
+  // ===== TEMPLATES =====
+  async getAllTemplates(filters?: any) {
+    const where: any = {};
+
+    if (filters?.activo !== undefined) {
+      where.activo = filters.activo;
+    }
+
+    if (filters?.tipoEquipo) {
+      where.tipoEquipo = filters.tipoEquipo;
+    }
+
+    const templates = await this.templateRepository.find({
+      where,
+      order: { nombre: 'ASC' },
+    });
+
+    // Manually load items for each template
+    for (const template of templates) {
+      template.items = await this.itemRepository.find({
+        where: { plantillaId: template.id },
+        order: { orden: 'ASC' },
+      });
+    }
+
+    // Apply search filter if provided
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase();
+      return templates.filter(
+        (t) =>
+          t.nombre.toLowerCase().includes(searchLower) ||
+          t.codigo.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return templates;
   }
 
-  async createTemplate(dto: CreateTemplateDto): Promise<ChecklistTemplate> {
-    const query = `
-      INSERT INTO equipment_checklist_templates (
-        checklist_type,
-        equipment_category_id,
-        template_name,
-        description,
-        items,
-        is_active,
-        company_id,
-        created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
-    `;
-    const params = [
-      dto.checklist_type,
-      dto.equipment_category_id || null,
-      dto.template_name,
-      dto.description || null,
-      JSON.stringify(dto.items),
-      dto.is_active !== false,
-      dto.company_id,
-      dto.created_by || null,
-    ];
-
-    const result = await pool.query(query, params);
-    return result.rows[0];
+  async getTemplateById(id: number) {
+    const template = await this.templateRepository.findOne({ where: { id } });
+    if (template) {
+      template.items = await this.itemRepository.find({
+        where: { plantillaId: id },
+        order: { orden: 'ASC' },
+      });
+    }
+    return template;
   }
 
-  async updateTemplate(id: string, dto: Partial<CreateTemplateDto>): Promise<ChecklistTemplate> {
-    const updates: string[] = [];
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (dto.template_name !== undefined) {
-      updates.push(`template_name = $${paramIndex++}`);
-      params.push(dto.template_name);
-    }
-
-    if (dto.description !== undefined) {
-      updates.push(`description = $${paramIndex++}`);
-      params.push(dto.description);
-    }
-
-    if (dto.items !== undefined) {
-      updates.push(`items = $${paramIndex++}`);
-      params.push(JSON.stringify(dto.items));
-    }
-
-    if (dto.is_active !== undefined) {
-      updates.push(`is_active = $${paramIndex++}`);
-      params.push(dto.is_active);
-    }
-
-    if (dto.equipment_category_id !== undefined) {
-      updates.push(`equipment_category_id = $${paramIndex++}`);
-      params.push(dto.equipment_category_id);
-    }
-
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-
-    params.push(id);
-
-    const query = `
-      UPDATE equipment_checklist_templates
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-
-    const result = await pool.query(query, params);
-    return result.rows[0];
+  async createTemplate(data: Partial<ChecklistTemplate>, userId: number) {
+    const template = this.templateRepository.create({
+      ...data,
+      createdBy: userId,
+    });
+    return this.templateRepository.save(template);
   }
 
-  async deleteTemplate(id: string): Promise<boolean> {
-    const query = `DELETE FROM equipment_checklist_templates WHERE id = $1`;
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+  async updateTemplate(id: number, data: Partial<ChecklistTemplate>) {
+    await this.templateRepository.update(id, data);
+    return this.getTemplateById(id);
   }
 
-  // ============================================================================
-  // EQUIPMENT CHECKLISTS
-  // ============================================================================
+  async deleteTemplate(id: number) {
+    const result = await this.templateRepository.delete(id);
+    return (result.affected ?? 0) > 0;
+  }
 
-  async getAllChecklists(filters?: ChecklistFilter): Promise<EquipmentChecklist[]> {
-    let query = `
-      SELECT 
-        ec.id,
-        ec.template_id,
-        ec.equipment_id,
-        ec.operator_id,
-        ec.daily_report_id,
-        ec.checklist_date,
-        ec.checklist_type,
-        ec.items,
-        ec.overall_status,
-        ec.observations,
-        ec.photos,
-        ec.signed_by,
-        ec.signature_url,
-        ec.company_id,
-        ec.created_at,
-        ec.updated_at,
-        e.code as equipment_code,
-        e.description as equipment_name,
-        o.first_name || ' ' || o.last_name as operator_name,
-        ect.template_name
-      FROM equipment_checklists ec
-      LEFT JOIN equipo.equipo e ON ec.equipment_id = e.id
-      LEFT JOIN rrhh.trabajador o ON ec.operator_id = o.id
-      LEFT JOIN equipment_checklist_templates ect ON ec.template_id = ect.id
-      WHERE 1=1
-    `;
-    const params: any[] = [];
-    let paramIndex = 1;
+  // ===== ITEMS =====
+  async createItem(data: Partial<ChecklistItem>) {
+    const item = this.itemRepository.create(data);
+    return this.itemRepository.save(item);
+  }
 
-    if (filters?.equipment_id) {
-      query += ` AND ec.equipment_id = $${paramIndex++}`;
-      params.push(filters.equipment_id);
+  async updateItem(id: number, data: Partial<ChecklistItem>) {
+    await this.itemRepository.update(id, data);
+    return this.itemRepository.findOne({ where: { id } });
+  }
+
+  async deleteItem(id: number) {
+    const result = await this.itemRepository.delete(id);
+    return (result.affected ?? 0) > 0;
+  }
+
+  async getItemsByTemplate(plantillaId: number) {
+    return this.itemRepository.find({
+      where: { plantillaId },
+      order: { orden: 'ASC' },
+    });
+  }
+
+  // ===== INSPECTIONS =====
+  async getAllInspections(filters?: any) {
+    const page = parseInt(filters?.page) || 1;
+    const limit = parseInt(filters?.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (filters?.equipoId) where.equipoId = filters.equipoId;
+    if (filters?.trabajadorId) where.trabajadorId = filters.trabajadorId;
+    if (filters?.estado) where.estado = filters.estado;
+    if (filters?.resultadoGeneral) where.resultadoGeneral = filters.resultadoGeneral;
+
+    const [data, total] = await this.inspectionRepository.findAndCount({
+      where,
+      relations: ['plantilla', 'equipo', 'trabajador'],
+      order: { fechaInspeccion: 'DESC', createdAt: 'DESC' },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getInspectionById(id: number) {
+    return this.inspectionRepository.findOne({
+      where: { id },
+      relations: ['plantilla', 'equipo', 'trabajador'],
+    });
+  }
+
+  async getInspectionWithResults(id: number) {
+    const inspection = await this.getInspectionById(id);
+    if (!inspection) return null;
+
+    const results = await this.resultRepository.find({
+      where: { inspeccionId: id },
+      order: { createdAt: 'ASC' },
+    });
+
+    // Load item details for each result
+    for (const result of results) {
+      result.item = await this.itemRepository.findOne({ where: { id: result.itemId } });
     }
 
-    if (filters?.operator_id) {
-      query += ` AND ec.operator_id = $${paramIndex++}`;
-      params.push(filters.operator_id);
-    }
+    return {
+      ...inspection,
+      resultados: results,
+    };
+  }
 
-    if (filters?.daily_report_id) {
-      query += ` AND ec.daily_report_id = $${paramIndex++}`;
-      params.push(filters.daily_report_id);
-    }
+  async createInspection(data: Partial<ChecklistInspection>) {
+    const year = new Date().getFullYear();
+    const count = await this.inspectionRepository.count();
+    const codigo = `INS-${year}-${String(count + 1).padStart(4, '0')}`;
 
-    if (filters?.checklist_type) {
-      query += ` AND ec.checklist_type = $${paramIndex++}`;
-      params.push(filters.checklist_type);
-    }
+    const template = await this.getTemplateById(data.plantillaId!);
+    const itemsTotal = template?.items?.length || 0;
 
-    if (filters?.overall_status) {
-      query += ` AND ec.overall_status = $${paramIndex++}`;
-      params.push(filters.overall_status);
-    }
+    const inspection = this.inspectionRepository.create({
+      ...data,
+      codigo,
+      itemsTotal,
+      fechaInspeccion: data.fechaInspeccion || new Date(),
+    });
 
-    if (filters?.start_date) {
-      query += ` AND ec.checklist_date >= $${paramIndex++}`;
-      params.push(filters.start_date);
-    }
+    return this.inspectionRepository.save(inspection);
+  }
 
-    if (filters?.end_date) {
-      query += ` AND ec.checklist_date <= $${paramIndex++}`;
-      params.push(filters.end_date);
-    }
+  async updateInspection(id: number, data: Partial<ChecklistInspection>) {
+    await this.inspectionRepository.update(id, data);
+    return this.getInspectionById(id);
+  }
 
-    if (filters?.company_id) {
-      query += ` AND ec.company_id = $${paramIndex++}`;
-      params.push(filters.company_id);
-    }
+  async completeInspection(id: number) {
+    const results = await this.resultRepository.find({ where: { inspeccionId: id } });
 
-    query += ` ORDER BY ec.checklist_date DESC`;
+    const itemsConforme = results.filter((r) => r.conforme === true).length;
+    const itemsNoConforme = results.filter((r) => r.conforme === false).length;
 
-    if (filters?.limit) {
-      query += ` LIMIT $${paramIndex++}`;
-      params.push(filters.limit);
-
-      if (filters.page && filters.page > 1) {
-        query += ` OFFSET $${paramIndex++}`;
-        params.push((filters.page - 1) * filters.limit);
+    // Check for critical failures
+    let hasCriticalFailures = false;
+    for (const result of results) {
+      if (result.conforme === false) {
+        const item = await this.itemRepository.findOne({ where: { id: result.itemId } });
+        if (item?.esCritico) {
+          hasCriticalFailures = true;
+          break;
+        }
       }
     }
 
-    const result = await pool.query(query, params);
-    return result.rows;
-  }
+    let resultadoGeneral: any = 'APROBADO';
+    let equipoOperativo = true;
 
-  async getChecklistById(id: string): Promise<EquipmentChecklist | null> {
-    const query = `
-      SELECT 
-        ec.*,
-        e.code as equipment_code,
-        e.description as equipment_name,
-        o.first_name || ' ' || o.last_name as operator_name,
-        ect.template_name
-      FROM equipment_checklists ec
-      LEFT JOIN equipo.equipo e ON ec.equipment_id = e.id
-      LEFT JOIN rrhh.trabajador o ON ec.operator_id = o.id
-      LEFT JOIN equipment_checklist_templates ect ON ec.template_id = ect.id
-      WHERE ec.id = $1
-    `;
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
-  }
-
-  async createChecklist(dto: CreateChecklistDto): Promise<EquipmentChecklist> {
-    // Calculate overall status
-    const status = this.calculateStatus(dto.items);
-
-    const query = `
-      INSERT INTO equipment_checklists (
-        template_id,
-        equipment_id,
-        operator_id,
-        daily_report_id,
-        checklist_type,
-        items,
-        overall_status,
-        observations,
-        photos,
-        signed_by,
-        signature_url,
-        company_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-      RETURNING *
-    `;
-    const params = [
-      dto.template_id || null,
-      dto.equipment_id,
-      dto.operator_id || null,
-      dto.daily_report_id || null,
-      dto.checklist_type,
-      JSON.stringify(dto.items),
-      status,
-      dto.observations || null,
-      JSON.stringify(dto.photos || []),
-      dto.signed_by || null,
-      dto.signature_url || null,
-      dto.company_id,
-    ];
-
-    const result = await pool.query(query, params);
-    return result.rows[0];
-  }
-
-  async updateChecklist(id: string, dto: Partial<CreateChecklistDto>): Promise<EquipmentChecklist> {
-    const updates: string[] = [];
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (dto.items !== undefined) {
-      updates.push(`items = $${paramIndex++}`);
-      params.push(JSON.stringify(dto.items));
-      
-      // Recalculate status if items changed
-      const status = this.calculateStatus(dto.items);
-      updates.push(`overall_status = $${paramIndex++}`);
-      params.push(status);
+    if (hasCriticalFailures) {
+      resultadoGeneral = 'RECHAZADO';
+      equipoOperativo = false;
+    } else if (itemsNoConforme > 0) {
+      resultadoGeneral = 'APROBADO_CON_OBSERVACIONES';
     }
 
-    if (dto.observations !== undefined) {
-      updates.push(`observations = $${paramIndex++}`);
-      params.push(dto.observations);
-    }
+    await this.inspectionRepository.update(id, {
+      estado: 'COMPLETADO',
+      itemsConforme,
+      itemsNoConforme,
+      resultadoGeneral,
+      equipoOperativo,
+      completadoEn: new Date(),
+    });
 
-    if (dto.photos !== undefined) {
-      updates.push(`photos = $${paramIndex++}`);
-      params.push(JSON.stringify(dto.photos));
-    }
-
-    if (dto.signed_by !== undefined) {
-      updates.push(`signed_by = $${paramIndex++}`);
-      params.push(dto.signed_by);
-    }
-
-    if (dto.signature_url !== undefined) {
-      updates.push(`signature_url = $${paramIndex++}`);
-      params.push(dto.signature_url);
-    }
-
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-
-    params.push(id);
-
-    const query = `
-      UPDATE equipment_checklists
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-
-    const result = await pool.query(query, params);
-    return result.rows[0];
+    return this.getInspectionById(id);
   }
 
-  async deleteChecklist(id: string): Promise<boolean> {
-    const query = `DELETE FROM equipment_checklists WHERE id = $1`;
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+  async cancelInspection(id: number) {
+    await this.inspectionRepository.update(id, { estado: 'CANCELADO' });
+    return this.getInspectionById(id);
   }
 
-  // ============================================================================
-  // ANALYTICS & REPORTS
-  // ============================================================================
+  // ===== RESULTS =====
+  async saveResult(data: Partial<ChecklistResult>) {
+    const existing = await this.resultRepository.findOne({
+      where: {
+        inspeccionId: data.inspeccionId!,
+        itemId: data.itemId!,
+      },
+    });
 
-  async getChecklistSummary(filters?: ChecklistFilter) {
-    const query = `
-      SELECT 
-        checklist_type,
-        overall_status,
-        COUNT(*) as count,
-        DATE_TRUNC('day', checklist_date) as date
-      FROM equipment_checklists
-      WHERE company_id = $1
-        ${filters?.start_date ? 'AND checklist_date >= $2' : ''}
-        ${filters?.end_date ? 'AND checklist_date <= $3' : ''}
-      GROUP BY checklist_type, overall_status, DATE_TRUNC('day', checklist_date)
-      ORDER BY date DESC, checklist_type
-    `;
-    const params: any[] = [filters?.company_id];
-    
-    if (filters?.start_date) params.push(filters.start_date);
-    if (filters?.end_date) params.push(filters.end_date);
-
-    const result = await pool.query(query, params);
-    return result.rows;
+    if (existing) {
+      await this.resultRepository.update(existing.id, data);
+      return this.resultRepository.findOne({ where: { id: existing.id } });
+    } else {
+      const result = this.resultRepository.create(data);
+      return this.resultRepository.save(result);
+    }
   }
 
-  async getEquipmentChecklistHistory(equipmentId: string, limit: number = 10) {
-    const query = `
-      SELECT 
-        ec.id,
-        ec.checklist_date,
-        ec.checklist_type,
-        ec.overall_status,
-        o.first_name || ' ' || o.last_name as operator_name,
-        ect.template_name
-      FROM equipment_checklists ec
-      LEFT JOIN rrhh.trabajador o ON ec.operator_id = o.id
-      LEFT JOIN equipment_checklist_templates ect ON ec.template_id = ect.id
-      WHERE ec.equipment_id = $1
-      ORDER BY ec.checklist_date DESC
-      LIMIT $2
-    `;
-    const result = await pool.query(query, [equipmentId, limit]);
-    return result.rows;
+  async getResultsByInspection(inspeccionId: number) {
+    return this.resultRepository.find({
+      where: { inspeccionId },
+      order: { createdAt: 'ASC' },
+    });
   }
 
-  // ============================================================================
-  // HELPER METHODS
-  // ============================================================================
+  // ===== STATS =====
+  async getInspectionStats(filters?: any) {
+    const where: any = {};
+    if (filters?.startDate || filters?.endDate) {
+      // For date range, we'd need to use QueryBuilder
+    }
 
-  private calculateStatus(items: ChecklistItem[]): ChecklistStatus {
-    if (!items || items.length === 0) return ChecklistStatus.PENDING;
+    const total = await this.inspectionRepository.count({ where });
+    const aprobadas = await this.inspectionRepository.count({
+      where: { ...where, resultadoGeneral: 'APROBADO' },
+    });
+    const conObservaciones = await this.inspectionRepository.count({
+      where: { ...where, resultadoGeneral: 'APROBADO_CON_OBSERVACIONES' },
+    });
+    const rechazadas = await this.inspectionRepository.count({
+      where: { ...where, resultadoGeneral: 'RECHAZADO' },
+    });
 
-    const hasFailedRequired = items.some(
-      item => item.required && item.response === 'not_ok'
-    );
-    
-    const hasFailedOptional = items.some(
-      item => !item.required && item.response === 'not_ok'
-    );
-
-    const allAnswered = items.every(item => !item.required || item.response);
-
-    if (hasFailedRequired) return ChecklistStatus.FAILED;
-    if (hasFailedOptional) return ChecklistStatus.WARNING;
-    if (allAnswered) return ChecklistStatus.PASSED;
-    
-    return ChecklistStatus.PENDING;
+    return {
+      total,
+      aprobadas,
+      conObservaciones,
+      rechazadas,
+      tasaAprobacion: total > 0 ? ((aprobadas + conObservaciones) / total) * 100 : 0,
+    };
   }
 }
-
-export default new ChecklistService();

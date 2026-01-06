@@ -6,7 +6,7 @@ export class SigService {
 
   async getAllDocuments() {
     return this.sigRepository.find({
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -16,6 +16,15 @@ export class SigService {
   }
 
   async getDocumentById(id: string) {
-    return this.sigRepository.findOneBy({ id });
+    return this.sigRepository.findOneBy({ id: parseInt(id) });
+  }
+
+  async updateDocument(id: string, data: Partial<SigDocument>) {
+    await this.sigRepository.update(parseInt(id), data);
+    return this.getDocumentById(id);
+  }
+
+  async deleteDocument(id: string) {
+    await this.sigRepository.delete(parseInt(id));
   }
 }

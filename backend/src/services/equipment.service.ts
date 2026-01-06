@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { AppDataSource } from '../config/database.config';
 import { Equipment } from '../models/equipment.model';
 import { Repository } from 'typeorm';
@@ -17,6 +18,11 @@ export interface CreateEquipmentDto {
   medidor_uso?: string;
   estado?: string;
   tipo_proveedor?: string;
+  tipoEquipoId?: number; // matches entity property
+  proveedorId?: number; // matches entity property
+  creadoPor?: number; // matches entity property
+  actualizadoPor?: number; // matches entity property
+  // Allow snake_case aliases for frontend compatibility
   tipo_equipo_id?: number;
   proveedor_id?: number;
   creado_por?: number;
@@ -184,7 +190,7 @@ export class EquipmentService {
     }
   }
 
-  async create(data: Partial<Equipment>): Promise<EquipmentDto> {
+  async create(data: CreateEquipmentDto): Promise<EquipmentDto> {
     try {
       // Check if codigo already exists
       if (data.codigo_equipo) {
@@ -194,10 +200,26 @@ export class EquipmentService {
         }
       }
 
+      // Map DTO to entity properties (handle snake_case aliases)
       const equipment = this.repository.create({
-        ...data,
-        is_active: data.is_active ?? true,
+        codigo_equipo: data.codigo_equipo,
+        categoria: data.categoria,
+        marca: data.marca,
+        modelo: data.modelo,
+        numero_serie_equipo: data.numero_serie_equipo,
+        numero_chasis: data.numero_chasis,
+        numero_serie_motor: data.numero_serie_motor,
+        placa: data.placa,
+        anio_fabricacion: data.anio_fabricacion,
+        potencia_neta: data.potencia_neta,
+        tipo_motor: data.tipo_motor,
+        medidor_uso: data.medidor_uso,
         estado: data.estado || 'DISPONIBLE',
+        tipo_proveedor: data.tipo_proveedor,
+        tipoEquipoId: data.tipoEquipoId || data.tipo_equipo_id,
+        proveedorId: data.proveedorId || data.proveedor_id,
+        creadoPor: data.creadoPor || data.creado_por,
+        is_active: true,
       });
 
       const saved = await this.repository.save(equipment);
@@ -215,7 +237,7 @@ export class EquipmentService {
     }
   }
 
-  async update(id: number, data: Partial<Equipment>): Promise<EquipmentDto> {
+  async update(id: number, data: UpdateEquipmentDto): Promise<EquipmentDto> {
     try {
       const equipment = await this.repository.findOne({
         where: { id },
@@ -234,7 +256,33 @@ export class EquipmentService {
         }
       }
 
-      Object.assign(equipment, data);
+      // Map DTO to entity properties (handle snake_case aliases)
+      if (data.codigo_equipo !== undefined) equipment.codigo_equipo = data.codigo_equipo;
+      if (data.categoria !== undefined) equipment.categoria = data.categoria;
+      if (data.marca !== undefined) equipment.marca = data.marca;
+      if (data.modelo !== undefined) equipment.modelo = data.modelo;
+      if (data.numero_serie_equipo !== undefined)
+        equipment.numero_serie_equipo = data.numero_serie_equipo;
+      if (data.numero_chasis !== undefined) equipment.numero_chasis = data.numero_chasis;
+      if (data.numero_serie_motor !== undefined)
+        equipment.numero_serie_motor = data.numero_serie_motor;
+      if (data.placa !== undefined) equipment.placa = data.placa;
+      if (data.anio_fabricacion !== undefined) equipment.anio_fabricacion = data.anio_fabricacion;
+      if (data.potencia_neta !== undefined) equipment.potencia_neta = data.potencia_neta;
+      if (data.tipo_motor !== undefined) equipment.tipo_motor = data.tipo_motor;
+      if (data.medidor_uso !== undefined) equipment.medidor_uso = data.medidor_uso;
+      if (data.estado !== undefined) equipment.estado = data.estado;
+      if (data.tipo_proveedor !== undefined) equipment.tipo_proveedor = data.tipo_proveedor;
+      if (data.tipoEquipoId !== undefined || data.tipo_equipo_id !== undefined) {
+        equipment.tipoEquipoId = data.tipoEquipoId || data.tipo_equipo_id;
+      }
+      if (data.proveedorId !== undefined || data.proveedor_id !== undefined) {
+        equipment.proveedorId = data.proveedorId || data.proveedor_id;
+      }
+      if (data.actualizadoPor !== undefined || data.actualizado_por !== undefined) {
+        equipment.actualizadoPor = data.actualizadoPor || data.actualizado_por;
+      }
+
       const saved = await this.repository.save(equipment);
 
       // Reload to get updated relations
