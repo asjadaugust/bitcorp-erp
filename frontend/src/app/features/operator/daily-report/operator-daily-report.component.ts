@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DailyReportService } from '../../../core/services/daily-report.service';
 import {
@@ -17,11 +17,12 @@ import { EquipmentService } from '../../../core/services/equipment.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { Project } from '../../../core/models/project.model';
+import { SignaturePadComponent } from '../../../shared/components/signature-pad.component';
 
 @Component({
   selector: 'app-operator-daily-report',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SignaturePadComponent],
   template: `
     <div class="daily-report-container">
       <header class="report-header">
@@ -299,6 +300,157 @@ import { Project } from '../../../core/models/project.model';
           </div>
         </div>
 
+        <!-- Production Control Table -->
+        <div class="form-section" *ngIf="!isViewMode">
+          <h2>Control de Producción</h2>
+          <div class="production-table">
+            <div class="table-controls">
+              <button
+                type="button"
+                class="btn btn-sm"
+                (click)="addProductionRow()"
+                [disabled]="productionRows.length >= 16"
+              >
+                ➕ Agregar Fila
+              </button>
+              <span class="help-text">{{ productionRows.length }}/16 filas</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="production-table-grid">
+                <thead>
+                  <tr>
+                    <th>Ubicación Prog. Ini.</th>
+                    <th>Ubicación Prog. Fin.</th>
+                    <th>Hora Ini.</th>
+                    <th>Hora Fin.</th>
+                    <th>Material</th>
+                    <th>Metrado</th>
+                    <th>EDT</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="productionRows">
+                  <tr
+                    *ngFor="let row of productionRows.controls; let i = index"
+                    [formGroupName]="i"
+                  >
+                    <td>
+                      <input type="text" formControlName="ubicacionProgIni" class="form-input-sm" />
+                    </td>
+                    <td>
+                      <input type="text" formControlName="ubicacionProgFin" class="form-input-sm" />
+                    </td>
+                    <td><input type="time" formControlName="horaIni" class="form-input-sm" /></td>
+                    <td><input type="time" formControlName="horaFin" class="form-input-sm" /></td>
+                    <td>
+                      <input
+                        type="text"
+                        formControlName="materialDescripcion"
+                        class="form-input-sm"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        formControlName="metrado"
+                        class="form-input-sm"
+                        step="0.01"
+                      />
+                    </td>
+                    <td><input type="text" formControlName="edtCodigo" class="form-input-sm" /></td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn-remove"
+                        (click)="removeProductionRow(i)"
+                        [disabled]="productionRows.length <= 1"
+                      >
+                        ×
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activities & Delays -->
+        <div class="form-section" *ngIf="!isViewMode">
+          <h2>Actividades y Demoras</h2>
+
+          <div class="checkbox-section">
+            <h3>Actividades de Producción</h3>
+            <div class="checkbox-grid" formGroupName="activities">
+              <label *ngFor="let activity of activityCodes" class="checkbox-item">
+                <input type="checkbox" [formControlName]="activity.code" />
+                <span>{{ activity.code }}: {{ activity.label }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="checkbox-section">
+            <h3>Demoras Operativas</h3>
+            <div class="checkbox-grid" formGroupName="operationalDelays">
+              <label *ngFor="let delay of operationalDelayCodes" class="checkbox-item">
+                <input type="checkbox" [formControlName]="delay.code" />
+                <span>{{ delay.code }}: {{ delay.label }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="checkbox-section">
+            <h3>Otros Eventos</h3>
+            <div class="checkbox-grid" formGroupName="otherEvents">
+              <label *ngFor="let event of otherEventCodes" class="checkbox-item">
+                <input type="checkbox" [formControlName]="event.code" />
+                <span>{{ event.code }}: {{ event.label }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="checkbox-section">
+            <h3>Demoras Mecánicas</h3>
+            <div class="checkbox-grid" formGroupName="mechanicalDelays">
+              <label *ngFor="let delay of mechanicalDelayCodes" class="checkbox-item">
+                <input type="checkbox" [formControlName]="delay.code" />
+                <span>{{ delay.code }}: {{ delay.label }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="form-section" *ngIf="!isViewMode">
+          <h2>Firmas</h2>
+          <div class="signatures-grid">
+            <div class="signature-field">
+              <label>Firma Operador</label>
+              <app-signature-pad
+                (signatureChange)="reportForm.patchValue({ firmaOperador: $event })"
+                [disabled]="isViewMode"
+              ></app-signature-pad>
+            </div>
+
+            <div class="signature-field">
+              <label>Firma Supervisor</label>
+              <app-signature-pad
+                (signatureChange)="reportForm.patchValue({ firmaSupervisor: $event })"
+                [disabled]="isViewMode"
+              ></app-signature-pad>
+            </div>
+
+            <div class="signature-field">
+              <label>Firma Jefe de Equipos</label>
+              <app-signature-pad
+                (signatureChange)="reportForm.patchValue({ firmaJefeEquipos: $event })"
+                [disabled]="isViewMode"
+              ></app-signature-pad>
+            </div>
+          </div>
+        </div>
+
         <!-- Photos -->
         <div class="form-section">
           <h2>Fotografías</h2>
@@ -374,6 +526,16 @@ import { Project } from '../../../core/models/project.model';
         <div class="form-actions">
           <button type="button" (click)="goBack()" class="btn btn-secondary">
             {{ isViewMode ? '⬅️ Volver' : 'Cancelar' }}
+          </button>
+          <button
+            type="button"
+            (click)="downloadPdf()"
+            class="btn btn-primary"
+            [disabled]="downloadingPdf"
+            *ngIf="isViewMode && reportId"
+          >
+            <span *ngIf="!downloadingPdf">📄 Descargar PDF</span>
+            <span *ngIf="downloadingPdf">🔄 Descargando...</span>
           </button>
           <button
             type="button"
@@ -774,6 +936,137 @@ import { Project } from '../../../core/models/project.model';
         background: #e5e7eb;
       }
 
+      /* Production Table */
+      .production-table {
+        margin-top: 12px;
+      }
+
+      .table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .btn-sm {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+      }
+
+      .production-table-grid {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+      }
+
+      .production-table-grid th {
+        background: #f9fafb;
+        padding: 8px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 2px solid #e5e7eb;
+      }
+
+      .production-table-grid td {
+        padding: 4px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .form-input-sm {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+
+      .btn-remove {
+        width: 28px;
+        height: 28px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .btn-remove:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Checkbox Sections */
+      .checkbox-section {
+        margin-bottom: 24px;
+      }
+
+      .checkbox-section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 12px;
+      }
+
+      .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+
+      .checkbox-item:hover {
+        background: #f9fafb;
+      }
+
+      .checkbox-item input[type='checkbox'] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .checkbox-item span {
+        font-size: 14px;
+        color: #374151;
+      }
+
+      /* Signatures */
+      .signatures-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 12px;
+      }
+
+      .signature-field {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .signature-field label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 8px;
+      }
+
       @media (max-width: 768px) {
         .daily-report-container {
           padding: 16px;
@@ -794,6 +1087,14 @@ import { Project } from '../../../core/models/project.model';
         .btn {
           width: 100%;
           justify-content: center;
+        }
+
+        .checkbox-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .signatures-grid {
+          grid-template-columns: 1fr;
         }
       }
     `,
@@ -825,6 +1126,51 @@ export class OperatorDailyReportComponent implements OnInit {
   locationResult: LocationResult | null = null;
   locationError: string | null = null;
   uploadingPhotos = false;
+  downloadingPdf = false;
+
+  // Activity and delay codes
+  activityCodes = [
+    { code: '01', label: 'Corte en Banco' },
+    { code: '02', label: 'Excavación' },
+    { code: '03', label: 'Cargado de Material' },
+    { code: '04', label: 'Relleno' },
+    { code: '05', label: 'Conformado' },
+    { code: '06', label: 'Perfilado' },
+    { code: '07', label: 'Nivelado' },
+    { code: '08', label: 'Compactado' },
+    { code: '09', label: 'Otras' },
+    { code: '10', label: 'Otras' },
+    { code: '11', label: 'Otras' },
+  ];
+
+  operationalDelayCodes = [
+    { code: 'D01', label: 'Falta de Frente' },
+    { code: 'D02', label: 'Falta de Combustible' },
+    { code: 'D03', label: 'Falta de Lubricantes' },
+    { code: 'D04', label: 'Traslado' },
+    { code: 'D05', label: 'Corte de Trafico' },
+    { code: 'D06', label: 'Derrumbe' },
+    { code: 'D07', label: 'Falta de Agua' },
+  ];
+
+  otherEventCodes = [
+    { code: 'D08', label: 'Condiciones Climáticas' },
+    { code: 'D09', label: 'Daños a terceros (Corte de Servicios)' },
+    { code: 'D10', label: 'Coordinación con Entidades' },
+    { code: 'D11', label: 'Falta de Personal' },
+    { code: 'D12', label: 'Esperando Instrucciones' },
+    { code: 'D13', label: 'Otros' },
+  ];
+
+  mechanicalDelayCodes = [
+    { code: 'D14', label: 'Falla Mecánica' },
+    { code: 'D15', label: 'Falla Eléctrica' },
+    { code: 'D16', label: 'Falla Hidráulica' },
+    { code: 'D17', label: 'Falla de Neumáticos' },
+    { code: 'D18', label: 'Mantenimiento Programado' },
+    { code: 'D19', label: 'Mantenimiento Preventivo' },
+    { code: 'D20', label: 'Otros' },
+  ];
 
   private photoUploadService = inject(PhotoUploadService);
   private geoService = inject(GeolocationService);
@@ -846,7 +1192,91 @@ export class OperatorDailyReportComponent implements OnInit {
       gpsLocation: [''],
       manualLocation: [''],
       workDescription: ['', Validators.required],
+
+      // New extended fields
+      turno: ['day'],
+      responsableFrente: [''],
+      lugarSalida: [''],
+      lugarLlegada: [''],
+      petroleo: [''],
+      gasolina: [''],
+      horaAbastecimiento: [''],
+      valeCombus: [''],
+      observaciones: [''],
+
+      // Production rows (FormArray)
+      productionRows: this.fb.array([]),
+
+      // Activity checkboxes
+      activities: this.fb.group({}),
+      operationalDelays: this.fb.group({}),
+      otherEvents: this.fb.group({}),
+      mechanicalDelays: this.fb.group({}),
+
+      // Signatures
+      firmaOperador: [''],
+      firmaSupervisor: [''],
+      firmaJefeEquipos: [''],
+      firmaResidente: [''],
+      firmaPlaneamiento: [''],
     });
+
+    // Initialize activity checkboxes
+    this.activityCodes.forEach((code) => {
+      (this.reportForm.get('activities') as FormGroup).addControl(
+        code.code,
+        this.fb.control(false)
+      );
+    });
+    this.operationalDelayCodes.forEach((code) => {
+      (this.reportForm.get('operationalDelays') as FormGroup).addControl(
+        code.code,
+        this.fb.control(false)
+      );
+    });
+    this.otherEventCodes.forEach((code) => {
+      (this.reportForm.get('otherEvents') as FormGroup).addControl(
+        code.code,
+        this.fb.control(false)
+      );
+    });
+    this.mechanicalDelayCodes.forEach((code) => {
+      (this.reportForm.get('mechanicalDelays') as FormGroup).addControl(
+        code.code,
+        this.fb.control(false)
+      );
+    });
+
+    // Initialize with 3 empty production rows
+    this.addProductionRow();
+    this.addProductionRow();
+    this.addProductionRow();
+  }
+
+  get productionRows(): FormArray {
+    return this.reportForm.get('productionRows') as FormArray;
+  }
+
+  addProductionRow() {
+    if (this.productionRows.length >= 16) return;
+
+    this.productionRows.push(
+      this.fb.group({
+        ubicacionProgIni: [''],
+        ubicacionProgFin: [''],
+        horaIni: [''],
+        horaFin: [''],
+        materialDescripcion: [''],
+        metrado: [''],
+        edtCodigo: [''],
+      })
+    );
+  }
+
+  removeProductionRow(index: number) {
+    if (this.productionRows.length > 1) {
+      this.productionRows.removeAt(index);
+    }
   }
 
   ngOnInit() {
@@ -1129,20 +1559,45 @@ export class OperatorDailyReportComponent implements OnInit {
     if (this.reportForm.valid) {
       this.saving = true;
 
+      const formValue = this.reportForm.value;
+
       const reportData = {
-        report_date: this.reportForm.value.date,
-        equipment_id: this.reportForm.value.equipmentId,
+        report_date: formValue.date,
+        equipment_id: formValue.equipmentId,
         operator_id: '1', // Get from auth service
-        project_id: this.reportForm.value.projectId.toString() || null,
-        hourmeter_start: this.reportForm.value.horometerStart,
-        hourmeter_end: this.reportForm.value.horometerEnd,
-        start_time: this.reportForm.value.startTime,
-        end_time: this.reportForm.value.endTime,
-        location: this.reportForm.value.manualLocation || this.reportForm.value.gpsLocation,
-        observations: this.reportForm.value.workDescription,
-        diesel_gallons: this.reportForm.value.fuelAdded || 0,
+        project_id: formValue.projectId.toString() || null,
+        hourmeter_start: formValue.horometerStart,
+        hourmeter_end: formValue.horometerEnd,
+        start_time: formValue.startTime,
+        end_time: formValue.endTime,
+        location: formValue.manualLocation || formValue.gpsLocation,
+        observations: formValue.workDescription,
+        diesel_gallons: formValue.fuelAdded || 0,
         worked_hours: parseFloat(this.calculateHours()),
         status: 'submitted' as const,
+
+        // New fields
+        turno: formValue.turno,
+        responsable_frente: formValue.responsableFrente,
+        lugar_salida: formValue.lugarSalida,
+        lugar_llegada: formValue.lugarLlegada,
+        petroleo_gln: formValue.petroleo,
+        gasolina_gln: formValue.gasolina,
+        hora_abastecimiento: formValue.horaAbastecimiento,
+        num_vale_combustible: formValue.valeCombus,
+        observaciones_correcciones: formValue.observaciones,
+        firma_operador: formValue.firmaOperador,
+        firma_supervisor: formValue.firmaSupervisor,
+        firma_jefe_equipos: formValue.firmaJefeEquipos,
+
+        // Production rows
+        produccionRows: formValue.productionRows,
+
+        // Activities and delays
+        actividadesProduccion: this.getSelectedCheckboxes(formValue.activities),
+        demorasOperativas: this.getSelectedCheckboxes(formValue.operationalDelays),
+        otrosEventos: this.getSelectedCheckboxes(formValue.otherEvents),
+        demorasMecanicas: this.getSelectedCheckboxes(formValue.mechanicalDelays),
       };
 
       this.dailyReportService.create(reportData).subscribe({
@@ -1160,11 +1615,47 @@ export class OperatorDailyReportComponent implements OnInit {
     }
   }
 
+  getSelectedCheckboxes(checkboxGroup: any): any[] {
+    if (!checkboxGroup) return [];
+    return Object.keys(checkboxGroup)
+      .filter((key) => checkboxGroup[key])
+      .map((key) => ({ codigo: key, checked: true }));
+  }
+
   goBack() {
     if (this.isViewMode) {
       this.router.navigate(['/operator/history']);
     } else {
       this.router.navigate(['/operator/dashboard']);
     }
+  }
+
+  downloadPdf() {
+    if (!this.reportId) {
+      alert('No se puede descargar el PDF sin un ID de reporte válido');
+      return;
+    }
+
+    this.downloadingPdf = true;
+
+    this.dailyReportService.downloadPdf(this.reportId).subscribe({
+      next: (blob) => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `parte-diario-${this.reportId}.pdf`;
+        link.click();
+
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        this.downloadingPdf = false;
+      },
+      error: (error) => {
+        console.error('Error downloading PDF:', error);
+        this.downloadingPdf = false;
+        alert('Error al descargar el PDF: ' + (error.error?.message || 'Error desconocido'));
+      },
+    });
   }
 }

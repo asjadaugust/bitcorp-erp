@@ -14,15 +14,22 @@ interface ApiResponse {
  * { success: true, data: [...] } -> [...]
  * { success: true, data: {...} } -> {...}
  *
+ * For paginated responses with { success, data, pagination }, keeps the full structure
+ *
  * Only unwraps when:
  * 1. Response has 'success' property set to true
  * 2. Response has 'data' property
+ * 3. Response does NOT have 'pagination' property (to preserve paginated responses)
  *
  * Leaves other response structures untouched (e.g., direct arrays/objects)
  */
 export const apiResponseInterceptor: HttpInterceptorFn = (req, next) => {
   // Skip unwrapping for auth endpoints to avoid messing with login response structure
-  if (req.url.includes('/auth/login') || req.url.includes('/auth/register') || req.url.includes('/auth/me')) {
+  if (
+    req.url.includes('/auth/login') ||
+    req.url.includes('/auth/register') ||
+    req.url.includes('/auth/me')
+  ) {
     return next(req);
   }
 
@@ -33,12 +40,19 @@ export const apiResponseInterceptor: HttpInterceptorFn = (req, next) => {
         const body = event.body as any;
 
         // Check if response has the wrapper structure {success: true, data: ...}
-        if (body && typeof body === 'object' && body.success === true && 'data' in body) {
+        // BUT preserve pagination responses by NOT unwrapping them
+        if (
+          body &&
+          typeof body === 'object' &&
+          body.success === true &&
+          'data' in body &&
+          !('pagination' in body)
+        ) {
           // Return a new response with just the data
           return event.clone({ body: body.data });
         }
       }
-      // Return event unchanged for all other cases (direct arrays, objects, etc.)
+      // Return event unchanged for all other cases (paginated responses, direct arrays, objects, etc.)
       return event;
     })
   );

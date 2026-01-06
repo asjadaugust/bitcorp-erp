@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { MaintenanceSchedule } from '../models/maintenance-schedule.model';
 
@@ -11,7 +12,6 @@ export class MaintenanceScheduleService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/scheduling/maintenance-schedules`;
 
-  // Interceptor unwraps { success: true, data: [...] } to just [...]
   getAll(filters?: any): Observable<MaintenanceSchedule[]> {
     let params = new HttpParams();
     if (filters) {
@@ -21,7 +21,16 @@ export class MaintenanceScheduleService {
         }
       });
     }
-    return this.http.get<MaintenanceSchedule[]>(this.apiUrl, { params });
+    // API might return paginated response: {success, data, pagination}
+    // Extract data array if it exists, otherwise return as-is
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map((response) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return Array.isArray(response) ? response : [];
+      })
+    );
   }
 
   getById(id: string): Observable<MaintenanceSchedule> {

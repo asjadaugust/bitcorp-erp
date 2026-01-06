@@ -44,8 +44,8 @@ export const routes: Routes = [
       {
         path: 'operators',
         loadComponent: () =>
-          import('./features/operators/operator-list.component').then(
-            (m) => m.OperatorListComponent
+          import('./features/operators/operator-list-enhanced.component').then(
+            (m) => m.OperatorListEnhancedComponent
           ),
       },
       {
@@ -300,6 +300,12 @@ export const routes: Routes = [
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
+      },
+      // Checklists
+      {
+        path: 'checklists',
+        loadChildren: () =>
+          import('./features/checklists/checklists.routes').then((m) => m.checklistRoutes),
       },
     ],
   },

@@ -126,7 +126,7 @@ import { Operator } from '../../core/models/operator.model';
                 <span class="text-muted" *ngIf="!operator.licenciaConducir">-</span>
               </td>
               <!-- Hourly rate removed -->
-               <td>-</td>
+              <td>-</td>
               <td>
                 {{ operator.fechaIngreso | date: 'mediumDate' }}
               </td>
@@ -152,6 +152,13 @@ import { Operator } from '../../core/models/operator.model';
                   </button>
                   <button class="btn-icon" (click)="editOperator(operator)" title="Editar">
                     <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button
+                    class="btn-icon btn-danger"
+                    (click)="deleteOperator(operator)"
+                    title="Desactivar"
+                  >
+                    <i class="fa-solid fa-user-slash"></i>
                   </button>
                 </div>
               </td>
@@ -506,6 +513,11 @@ import { Operator } from '../../core/models/operator.model';
         color: var(--primary-600);
       }
 
+      .btn-icon.btn-danger:hover {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-600);
+      }
+
       .text-right {
         text-align: right;
       }
@@ -610,5 +622,24 @@ export class OperatorListEnhancedComponent implements OnInit {
 
   addOperator(): void {
     this.router.navigate(['/operators/new']);
+  }
+
+  deleteOperator(operator: Operator): void {
+    const fullName = `${operator.nombres} ${operator.apellidoPaterno}`;
+    if (
+      confirm(
+        `¿Desea desactivar al operador "${fullName}"? El operador no será eliminado permanentemente.`
+      )
+    ) {
+      this.operatorService.delete(operator.id).subscribe({
+        next: () => {
+          this.loadOperators();
+        },
+        error: (err) => {
+          console.error('Error deleting operator:', err);
+          alert('Error al desactivar el operador');
+        },
+      });
+    }
   }
 }

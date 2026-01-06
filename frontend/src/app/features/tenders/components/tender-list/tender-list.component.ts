@@ -2,20 +2,29 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TenderService, Tender } from '../../services/tender.service';
-import { AeroTableComponent, TableColumn } from '../../../../core/design-system/table/aero-table.component';
-import { PageLayoutComponent, Breadcrumb } from '../../../../shared/components/page-layout/page-layout.component';
-import { FilterBarComponent, FilterConfig } from '../../../../shared/components/filter-bar/filter-bar.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../../../core/design-system/table/aero-table.component';
+import {
+  PageLayoutComponent,
+  Breadcrumb,
+} from '../../../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 
 @Component({
   selector: 'app-tender-list',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ActionsContainerComponent
+    ActionsContainerComponent,
   ],
   template: `
     <app-page-layout
@@ -35,86 +44,83 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="filteredTenders"
-        [loading]="loading"
-      >
-      </aero-table>
+      <aero-table [columns]="columns" [data]="filteredTenders" [loading]="loading"> </aero-table>
     </app-page-layout>
   `,
-  styles: [`
-    .btn {
-      padding: var(--s-8) var(--s-16);
-      border: none;
-      border-radius: var(--s-8);
-      font-size: var(--type-bodySmall-size);
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: var(--s-8);
-      transition: all 0.2s ease;
-    }
-    .btn-primary {
-      background: var(--primary-500);
-      color: var(--neutral-0);
-    }
-    .btn-primary:hover {
-      background: var(--primary-800);
-    }
-    .actions-container {
-      display: flex;
-      gap: var(--s-8);
-      align-items: center;
-    }
-  `]
+  styles: [
+    `
+      .btn {
+        padding: var(--s-8) var(--s-16);
+        border: none;
+        border-radius: var(--s-8);
+        font-size: var(--type-bodySmall-size);
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-8);
+        transition: all 0.2s ease;
+      }
+      .btn-primary {
+        background: var(--primary-500);
+        color: var(--neutral-0);
+      }
+      .btn-primary:hover {
+        background: var(--primary-800);
+      }
+      .actions-container {
+        display: flex;
+        gap: var(--s-8);
+        align-items: center;
+      }
+    `,
+  ],
 })
 export class TenderListComponent implements OnInit {
   private readonly tenderService = inject(TenderService);
   private readonly router = inject(Router);
-  
+
   tenders: Tender[] = [];
   filteredTenders: Tender[] = [];
   loading = false;
   filters = { search: '', status: '' };
 
-  breadcrumbs: Breadcrumb[] = [
-    { label: 'Dashboard', url: '/app' },
-    { label: 'Licitaciones' }
-  ];
+  breadcrumbs: Breadcrumb[] = [{ label: 'Dashboard', url: '/app' }, { label: 'Licitaciones' }];
 
   filterConfig: FilterConfig[] = [
     { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar licitaciones...' },
-    { 
-      key: 'status', 
-      label: 'Estado', 
-      type: 'select', 
+    {
+      key: 'status',
+      label: 'Estado',
+      type: 'select',
       options: [
-        { label: 'Abierto', value: 'open' },
-        { label: 'Enviado', value: 'submitted' },
-        { label: 'Ganado', value: 'won' },
-        { label: 'Perdido', value: 'lost' }
-      ]
-    }
+        { label: 'Publicado', value: 'PUBLICADO' },
+        { label: 'En Evaluación', value: 'EVALUACION' },
+        { label: 'Adjudicado', value: 'ADJUDICADO' },
+        { label: 'Desierto', value: 'DESIERTO' },
+        { label: 'Cancelado', value: 'CANCELADO' },
+      ],
+    },
   ];
 
   columns: TableColumn[] = [
-    { key: 'title', label: 'Título', type: 'text' },
-    { key: 'client', label: 'Cliente', type: 'text' },
-    { key: 'submissionDeadline', label: 'Fecha Límite', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'budget', label: 'Presupuesto', type: 'currency', format: 'PEN' },
-    { 
-      key: 'status', 
-      label: 'Estado', 
+    { key: 'codigo', label: 'Código', type: 'text' },
+    { key: 'nombre', label: 'Título', type: 'text' },
+    { key: 'entidadConvocante', label: 'Cliente', type: 'text' },
+    { key: 'fechaPresentacion', label: 'Fecha Límite', type: 'date', format: 'dd/MM/yyyy' },
+    { key: 'montoReferencial', label: 'Presupuesto', type: 'currency', format: 'PEN' },
+    {
+      key: 'estado',
+      label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        'open': { label: 'Abierto', class: 'badge open' },
-        'submitted': { label: 'Enviado', class: 'badge submitted' },
-        'won': { label: 'Ganado', class: 'badge won' },
-        'lost': { label: 'Perdido', class: 'badge lost' }
-      }
-    }
+        PUBLICADO: { label: 'Publicado', class: 'badge open' },
+        EVALUACION: { label: 'En Evaluación', class: 'badge submitted' },
+        ADJUDICADO: { label: 'Adjudicado', class: 'badge won' },
+        DESIERTO: { label: 'Desierto', class: 'badge lost' },
+        CANCELADO: { label: 'Cancelado', class: 'badge cancelled' },
+      },
+    },
   ];
 
   ngOnInit() {
@@ -131,7 +137,7 @@ export class TenderListComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -142,13 +148,15 @@ export class TenderListComponent implements OnInit {
   }
 
   applyFilters(): void {
-    this.filteredTenders = this.tenders.filter(tender => {
-      const matchesSearch = !this.filters.search || 
-        tender.title?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        tender.client?.toLowerCase().includes(this.filters.search.toLowerCase());
-      
-      const matchesStatus = !this.filters.status || tender.status === this.filters.status;
-      
+    this.filteredTenders = this.tenders.filter((tender) => {
+      const matchesSearch =
+        !this.filters.search ||
+        tender.nombre?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        tender.entidadConvocante?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        tender.codigo?.toLowerCase().includes(this.filters.search.toLowerCase());
+
+      const matchesStatus = !this.filters.status || tender.estado === this.filters.status;
+
       return matchesSearch && matchesStatus;
     });
   }

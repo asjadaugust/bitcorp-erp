@@ -2,18 +2,23 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SigService, SigDocument } from '../../services/sig.service';
-import { AeroTableComponent, TableColumn } from '../../../../core/design-system/table/aero-table.component';
-import { PageLayoutComponent, Breadcrumb } from '../../../../shared/components/page-layout/page-layout.component';
-import { FilterBarComponent, FilterConfig } from '../../../../shared/components/filter-bar/filter-bar.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../../../core/design-system/table/aero-table.component';
+import {
+  PageLayoutComponent,
+  Breadcrumb,
+} from '../../../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../../../shared/components/filter-bar/filter-bar.component';
 
 @Component({
   selector: 'app-document-list',
   standalone: true,
-  imports: [
-    CommonModule, 
-    AeroTableComponent,
-    FilterBarComponent
-  ],
+  imports: [CommonModule, AeroTableComponent, FilterBarComponent],
   template: `
     <div class="document-list-container">
       <div class="actions-bar">
@@ -37,71 +42,73 @@ import { FilterBarComponent, FilterConfig } from '../../../../shared/components/
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <a [href]="row.fileUrl" target="_blank" class="btn-icon" title="Descargar">
+          <a [href]="row.archivoUrl" target="_blank" class="btn-icon" title="Descargar">
             <i class="fa-solid fa-download"></i>
           </a>
         </div>
       </ng-template>
     </div>
   `,
-  styles: [`
-    .document-list-container {
-      background: white;
-      border-radius: 8px;
-      padding: var(--s-24);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .actions-bar {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: var(--s-16);
-    }
-    .btn {
-      padding: var(--s-8) var(--s-16);
-      border: none;
-      border-radius: var(--s-8);
-      font-size: var(--type-bodySmall-size);
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: var(--s-8);
-      transition: all 0.2s ease;
-    }
-    .btn-primary {
-      background: var(--primary-500);
-      color: var(--neutral-0);
-    }
-    .btn-primary:hover {
-      background: var(--primary-800);
-    }
+  styles: [
+    `
+      .document-list-container {
+        background: white;
+        border-radius: 8px;
+        padding: var(--s-24);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .actions-bar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: var(--s-16);
+      }
+      .btn {
+        padding: var(--s-8) var(--s-16);
+        border: none;
+        border-radius: var(--s-8);
+        font-size: var(--type-bodySmall-size);
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-8);
+        transition: all 0.2s ease;
+      }
+      .btn-primary {
+        background: var(--primary-500);
+        color: var(--neutral-0);
+      }
+      .btn-primary:hover {
+        background: var(--primary-800);
+      }
 
-    .btn-icon {
-      color: var(--primary-500);
-      text-decoration: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px 8px;
-      transition: all 0.2s;
-    }
+      .btn-icon {
+        color: var(--primary-500);
+        text-decoration: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        transition: all 0.2s;
+      }
 
-    .btn-icon:hover {
-      background: var(--primary-100);
-      border-radius: var(--s-4);
-    }
+      .btn-icon:hover {
+        background: var(--primary-100);
+        border-radius: var(--s-4);
+      }
 
-    .action-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-  `]
+      .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+    `,
+  ],
 })
 export class DocumentListComponent implements OnInit {
   private sigService = inject(SigService);
   private router = inject(Router);
-  
+
   documents: SigDocument[] = [];
   filteredDocuments: SigDocument[] = [];
   loading = false;
@@ -110,37 +117,41 @@ export class DocumentListComponent implements OnInit {
   breadcrumbs: Breadcrumb[] = [
     { label: 'Dashboard', url: '/app' },
     { label: 'SIG', url: '/sig' },
-    { label: 'Documentos' }
+    { label: 'Documentos' },
   ];
 
   filterConfig: FilterConfig[] = [
     { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar documentos...' },
-    { 
-      key: 'category', 
-      label: 'Categoría', 
-      type: 'select', 
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'select',
       options: [
-        { label: 'Calidad', value: 'Quality' },
-        { label: 'Medio Ambiente', value: 'Environment' },
-        { label: 'Seguridad', value: 'Safety' }
-      ]
-    }
+        { label: 'Vigente', value: 'VIGENTE' },
+        { label: 'Obsoleto', value: 'OBSOLETO' },
+        { label: 'En Revisión', value: 'EN_REVISION' },
+        { label: 'Anulado', value: 'ANULADO' },
+      ],
+    },
   ];
 
   columns: TableColumn[] = [
-    { key: 'code', label: 'Código', type: 'text' },
-    { key: 'title', label: 'Título', type: 'text' },
-    { 
-      key: 'category', 
-      label: 'Categoría', 
+    { key: 'codigo', label: 'Código', type: 'text' },
+    { key: 'titulo', label: 'Título', type: 'text' },
+    { key: 'tipoDocumento', label: 'Tipo', type: 'text' },
+    { key: 'version', label: 'Versión', type: 'text' },
+    { key: 'fechaEmision', label: 'Fecha Emisión', type: 'date', format: 'dd/MM/yyyy' },
+    {
+      key: 'estado',
+      label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        'Quality': { label: 'Calidad', class: 'badge quality' },
-        'Environment': { label: 'Medio Ambiente', class: 'badge environment' },
-        'Safety': { label: 'Seguridad', class: 'badge safety' }
-      }
+        VIGENTE: { label: 'Vigente', class: 'badge quality' },
+        OBSOLETO: { label: 'Obsoleto', class: 'badge environment' },
+        EN_REVISION: { label: 'En Revisión', class: 'badge safety' },
+        ANULADO: { label: 'Anulado', class: 'badge cancelled' },
+      },
     },
-    { key: 'version', label: 'Versión', type: 'text' }
   ];
 
   ngOnInit() {
@@ -157,7 +168,7 @@ export class DocumentListComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -168,13 +179,14 @@ export class DocumentListComponent implements OnInit {
   }
 
   applyFilters(): void {
-    this.filteredDocuments = this.documents.filter(doc => {
-      const matchesSearch = !this.filters.search || 
-        doc.title?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        doc.code?.toLowerCase().includes(this.filters.search.toLowerCase());
-      
-      const matchesCategory = !this.filters.category || doc.category === this.filters.category;
-      
+    this.filteredDocuments = this.documents.filter((doc) => {
+      const matchesSearch =
+        !this.filters.search ||
+        doc.titulo?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        doc.codigo?.toLowerCase().includes(this.filters.search.toLowerCase());
+
+      const matchesCategory = !this.filters.category || doc.estado === this.filters.category;
+
       return matchesSearch && matchesCategory;
     });
   }

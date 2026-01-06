@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { DailyReport, CreateDailyReportDto } from '../models/daily-report.model';
 
 import { environment } from '../../../environments/environment';
@@ -17,8 +18,16 @@ export class DailyReportService {
         if (filters[key]) params = params.set(key, filters[key]);
       });
     }
-    // Interceptor unwraps {success, data} automatically
-    return this.http.get<DailyReport[]>(this.apiUrl, { params });
+    // API might return paginated response: {success, data, pagination}
+    // Extract data array if it exists, otherwise return as-is
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map((response) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return Array.isArray(response) ? response : [];
+      })
+    );
   }
 
   getById(id: string | number): Observable<DailyReport> {

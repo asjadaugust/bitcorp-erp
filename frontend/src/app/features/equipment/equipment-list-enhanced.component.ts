@@ -5,15 +5,28 @@ import { Router, RouterModule } from '@angular/router';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { Equipment } from '../../core/models/equipment.model';
 import { MainNavComponent } from '../../shared/components/main-nav.component';
-import { AeroTableComponent, TableColumn } from '../../core/design-system/table/aero-table.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../core/design-system/table/aero-table.component';
 import { ExcelExportService } from '../../core/services/excel-export.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
-import { ExportDropdownComponent, ExportFormat } from '../../shared/components/export-dropdown/export-dropdown.component';
+import {
+  ExportDropdownComponent,
+  ExportFormat,
+} from '../../shared/components/export-dropdown/export-dropdown.component';
 
 @Component({
   selector: 'app-equipment-list-enhanced',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MainNavComponent, AeroTableComponent, ExportDropdownComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MainNavComponent,
+    AeroTableComponent,
+    ExportDropdownComponent,
+  ],
   template: `
     <app-main-nav></app-main-nav>
     <div class="equipment-page">
@@ -43,9 +56,7 @@ import { ExportDropdownComponent, ExportFormat } from '../../shared/components/e
           <button class="btn btn-danger" [disabled]="selectedIds.length === 0">
             <i class="fa-solid fa-trash"></i> Eliminar Seleccionados ({{ selectedIds.length }})
           </button>
-          <app-export-dropdown 
-            (export)="handleExport($event)"
-            [disabled]="equipment.length === 0">
+          <app-export-dropdown (export)="handleExport($event)" [disabled]="equipment.length === 0">
           </app-export-dropdown>
         </div>
         <div class="filter-toggle">
@@ -141,11 +152,11 @@ import { ExportDropdownComponent, ExportFormat } from '../../shared/components/e
           [data]="equipment"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
-            'select': selectTemplate,
-            'codigo_equipo': codeTemplate,
-            'estado': statusTemplate,
-            'provider': providerTemplate,
-            'medidor_uso': readingTemplate
+            select: selectTemplate,
+            codigo_equipo: codeTemplate,
+            estado: statusTemplate,
+            provider: providerTemplate,
+            meter_type: readingTemplate,
           }"
           (rowClick)="viewDetails($event)"
         >
@@ -176,15 +187,13 @@ import { ExportDropdownComponent, ExportFormat } from '../../shared/components/e
         </ng-template>
 
         <ng-template #readingTemplate let-row>
-          {{ row.medidor_uso || '-' }}
+          {{ row.meter_type || '-' }}
         </ng-template>
 
         <!-- Actions Template -->
         <ng-template #actionsTemplate let-row>
           <div class="action-buttons" (click)="$event.stopPropagation()">
-            <button class="btn-icon" (click)="viewDetails(row)" title="View Details">
-              📝
-            </button>
+            <button class="btn-icon" (click)="viewDetails(row)" title="View Details">📝</button>
             <button class="btn-icon" title="More Actions">⋮</button>
           </div>
         </ng-template>
@@ -639,15 +648,15 @@ export class EquipmentListEnhancedComponent implements OnInit {
 
   columns: TableColumn[] = [
     { key: 'select', label: '', type: 'template', sticky: true, width: '50px' },
-    { key: 'codigo_equipo', label: 'Código', type: 'template', sticky: true, width: '120px' },
-    { key: 'marca', label: 'Marca', type: 'text' },
-    { key: 'modelo', label: 'Modelo', type: 'text' },
-    { key: 'categoria', label: 'Categoría', type: 'text' },
-    { key: 'estado', label: 'Estado', type: 'template' },
-    { key: 'provider', label: 'Proveedor', type: 'template' },
-    { key: 'placa', label: 'Placa', type: 'text' },
-    { key: 'anio_fabricacion', label: 'Año', type: 'text', align: 'center' },
-    { key: 'medidor_uso', label: 'Tipo Medidor', type: 'template', align: 'right' }
+    { key: 'code', label: 'Código', type: 'text', sticky: true, width: '120px' },
+    { key: 'brand', label: 'Marca', type: 'text' },
+    { key: 'model', label: 'Modelo', type: 'text' },
+    { key: 'category', label: 'Categoría', type: 'text' },
+    { key: 'status', label: 'Estado', type: 'template' },
+    { key: 'provider_name', label: 'Proveedor', type: 'text' },
+    { key: 'plate_number', label: 'Placa', type: 'text' },
+    { key: 'manufacture_year', label: 'Año', type: 'text', align: 'center' },
+    { key: 'meter_type', label: 'Tipo Medidor', type: 'template', align: 'right' },
   ];
 
   ngOnInit(): void {
@@ -733,33 +742,33 @@ export class EquipmentListEnhancedComponent implements OnInit {
     }
 
     // Prepare data for export with Spanish headers
-    const exportData = this.equipment.map(eq => ({
-      'Código': eq.code || eq.C08001_Codigo || '',
-      'Nombre': eq.name || '',
-      'Marca': eq.brand || '',
-      'Modelo': eq.modelo || '',
-      'Categoría': eq.categoria || '',
-      'Estado': eq.estado || '',
-      'Proveedor': eq.provider?.razon_social || '',
-      'RUC Proveedor': eq.provider?.ruc || '',
-      'Placa': eq.placa || '',
-      'Año Fabricación': eq.anio_fabricacion || '',
-      'Tipo Medidor': eq.medidor_uso || '',
-      'Tipo Motor': eq.tipo_motor || '',
-      'Número Serie': eq.numero_serie_equipo || '',
-      'Fecha Registro': eq.created_at ? new Date(eq.created_at).toLocaleDateString('es-PE') : ''
+    const exportData = this.equipment.map((eq) => ({
+      Código: eq.code || '',
+      Marca: eq.brand || '',
+      Modelo: eq.model || '',
+      Categoría: eq.category || '',
+      Estado: eq.status || '',
+      Proveedor: eq.provider_name || '',
+      Placa: eq.plate_number || '',
+      'Año Fabricación': eq.manufacture_year || '',
+      'Tipo Medidor': eq.meter_type || '',
+      'Tipo Motor': eq.engine_type || '',
+      'Número Serie': eq.serial_number || '',
+      'Fecha Registro': eq.created_at
+        ? new Date(eq.created_at as string).toLocaleDateString('es-PE')
+        : '',
     }));
 
     if (format === 'excel') {
       this.excelService.exportToExcel(exportData, {
         filename: 'equipos_reporte',
         sheetName: 'Equipos',
-        includeTimestamp: true
+        includeTimestamp: true,
       });
     } else {
       this.csvService.exportToCsv(exportData, {
         filename: 'equipos_reporte',
-        includeTimestamp: true
+        includeTimestamp: true,
       });
     }
   }

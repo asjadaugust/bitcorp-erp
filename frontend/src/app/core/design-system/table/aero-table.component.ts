@@ -1,4 +1,14 @@
-import { Component, Input, Output, EventEmitter, ContentChild, TemplateRef, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ContentChild,
+  TemplateRef,
+  OnChanges,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -18,7 +28,7 @@ export interface TableColumn {
 
 @Component({
   selector: 'aero-table',
-  encapsulation: ViewEncapsulation.None,  // Add this to fix table rendering
+  encapsulation: ViewEncapsulation.None, // Add this to fix table rendering
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
@@ -26,7 +36,7 @@ export interface TableColumn {
       <div *ngIf="loading" class="loading-overlay">
         <div class="spinner"></div>
       </div>
-      
+
       <table class="aero-table">
         <thead>
           <tr>
@@ -65,13 +75,13 @@ export interface TableColumn {
               <!-- Currency Column -->
               <ng-container *ngIf="col.type === 'currency'">
                 <span class="font-mono font-bold">
-                  {{ row[col.key] | currency: (col.format || 'PEN') : 'symbol' }}
+                  {{ row[col.key] | currency: col.format || 'PEN' : 'symbol' }}
                 </span>
               </ng-container>
 
               <!-- Date Column -->
               <ng-container *ngIf="col.type === 'date'">
-                {{ row[col.key] | date: (col.format || 'dd/MM/yyyy') }}
+                {{ row[col.key] | date: col.format || 'dd/MM/yyyy' }}
               </ng-container>
 
               <!-- Default Text Column -->
@@ -85,7 +95,7 @@ export interface TableColumn {
               ></ng-container>
             </td>
           </tr>
-          <tr *ngIf="!loading && data.length === 0">
+          <tr *ngIf="!loading && (!data || data.length === 0)">
             <td [attr.colspan]="columns.length + (actionsTemplate ? 1 : 0)" class="empty-state">
               <div class="empty-content">
                 <i class="fa-solid fa-inbox"></i>
@@ -95,11 +105,13 @@ export interface TableColumn {
           </tr>
         </tbody>
       </table>
-      
+
       <!-- Pagination Controls -->
-      <div *ngIf="data.length > 0" class="pagination-container">
+      <div *ngIf="data && data.length > 0" class="pagination-container">
         <div class="pagination-info">
-          <span>Mostrando {{ startIndex + 1 }} - {{ endIndex }} de {{ data.length }} resultados</span>
+          <span
+            >Mostrando {{ startIndex + 1 }} - {{ endIndex }} de {{ data.length }} resultados</span
+          >
           <div class="page-size-selector">
             <label>Filas por página:</label>
             <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-select">
@@ -111,16 +123,16 @@ export interface TableColumn {
           </div>
         </div>
         <div class="pagination-controls">
-          <button 
-            class="btn-pagination" 
+          <button
+            class="btn-pagination"
             [disabled]="currentPage === 1"
             (click)="goToPage(1)"
             title="Primera página"
           >
             <i class="fa-solid fa-angles-left"></i>
           </button>
-          <button 
-            class="btn-pagination" 
+          <button
+            class="btn-pagination"
             [disabled]="currentPage === 1"
             (click)="goToPage(currentPage - 1)"
             title="Página anterior"
@@ -128,16 +140,16 @@ export interface TableColumn {
             <i class="fa-solid fa-angle-left"></i>
           </button>
           <span class="page-indicator">Página {{ currentPage }} de {{ totalPages }}</span>
-          <button 
-            class="btn-pagination" 
+          <button
+            class="btn-pagination"
             [disabled]="currentPage === totalPages"
             (click)="goToPage(currentPage + 1)"
             title="Página siguiente"
           >
             <i class="fa-solid fa-angle-right"></i>
           </button>
-          <button 
-            class="btn-pagination" 
+          <button
+            class="btn-pagination"
             [disabled]="currentPage === totalPages"
             (click)="goToPage(totalPages)"
             title="Última página"
@@ -184,12 +196,18 @@ export interface TableColumn {
       }
 
       @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       @keyframes fadeOverlay {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
 
       .aero-table {
@@ -199,7 +217,7 @@ export interface TableColumn {
 
         thead {
           background-color: var(--grey-50);
-          
+
           th {
             padding: 12px 16px;
             text-align: left;
@@ -236,26 +254,34 @@ export interface TableColumn {
           }
         }
 
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .font-mono { font-family: monospace; }
-        .font-bold { font-weight: 600; }
+        .text-center {
+          text-align: center;
+        }
+        .text-right {
+          text-align: right;
+        }
+        .font-mono {
+          font-family: monospace;
+        }
+        .font-bold {
+          font-weight: 600;
+        }
 
         .empty-state {
           text-align: center;
           padding: 48px 0;
-          
+
           .empty-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 12px;
-            
+
             i {
               font-size: 32px;
               color: var(--grey-300);
             }
-            
+
             p {
               margin: 0;
               color: var(--grey-500);
@@ -387,12 +413,18 @@ export class AeroTableComponent {
   currentPage = 1;
 
   get paginatedData(): any[] {
+    if (!this.data || !Array.isArray(this.data)) {
+      return [];
+    }
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
     return this.data.slice(start, end);
   }
 
   get totalPages(): number {
+    if (!this.data || !Array.isArray(this.data)) {
+      return 0;
+    }
     return Math.ceil(this.data.length / this.pageSize);
   }
 

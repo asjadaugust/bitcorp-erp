@@ -6,7 +6,6 @@ import { Provider } from '../../core/models/provider.model';
 import { ProviderFinancialInfoComponent } from './components/provider-financial-info.component';
 import { ProviderContactsComponent } from './components/provider-contacts.component';
 
-
 @Component({
   selector: 'app-provider-detail',
   standalone: true,
@@ -27,30 +26,22 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
           <div class="detail-main card">
             <div class="detail-header">
               <div>
-                <h1>{{ provider.business_name }}</h1>
-                <p class="code-badge">{{ provider.code }}</p>
+                <h1>{{ provider.razon_social }}</h1>
+                <p class="code-badge">{{ provider.ruc }}</p>
               </div>
               <div class="detail-actions">
                 <button type="button" class="btn btn-primary" (click)="editProvider()">
-          <i class="fa-solid fa-pen"></i> Editar
-        </button>
+                  <i class="fa-solid fa-pen"></i> Editar
+                </button>
                 <button type="button" class="btn btn-danger" (click)="deleteProvider()">
-          <i class="fa-solid fa-trash"></i> Eliminar
-        </button>
+                  <i class="fa-solid fa-trash"></i> Eliminar
+                </button>
               </div>
             </div>
 
             <div class="detail-status">
-              <span [class]="'status-badge status-' + provider.status">
-                {{
-                  provider.status === 'active'
-                    ? 'Activo'
-                    : provider.status === 'inactive'
-                      ? 'Inactivo'
-                      : provider.status === 'blacklisted'
-                        ? 'Lista Negra'
-                        : provider.status
-                }}
+              <span [class]="'status-badge status-' + (provider.is_active ? 'active' : 'inactive')">
+                {{ provider.is_active ? 'Activo' : 'Inactivo' }}
               </span>
             </div>
 
@@ -60,11 +51,11 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
                 <div class="info-grid">
                   <div class="info-item">
                     <label>RUC / Tax ID</label>
-                    <p class="highlight">{{ provider.tax_id }}</p>
+                    <p class="highlight">{{ provider.ruc }}</p>
                   </div>
                   <div class="info-item">
                     <label>Dirección</label>
-                    <p>{{ provider.address || '-' }}</p>
+                    <p>{{ provider.direccion || '-' }}</p>
                   </div>
                 </div>
               </section>
@@ -73,8 +64,8 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
                 <h2>Información de Contacto</h2>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>Nombre de Contacto</label>
-                    <p>{{ provider.contact_name || '-' }}</p>
+                    <label>Nombre Comercial</label>
+                    <p>{{ provider.nombre_comercial || '-' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Email</label>
@@ -82,7 +73,7 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
                   </div>
                   <div class="info-item">
                     <label>Teléfono</label>
-                    <p>{{ provider.phone || '-' }}</p>
+                    <p>{{ provider.telefono || '-' }}</p>
                   </div>
                 </div>
               </section>
@@ -100,11 +91,11 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
               <h3>Acciones Rápidas</h3>
               <div class="quick-actions">
                 <button type="button" class="btn btn-secondary" (click)="viewContracts()">
-          <i class="fa-solid fa-file-contract"></i> Ver Contratos
-        </button>
+                  <i class="fa-solid fa-file-contract"></i> Ver Contratos
+                </button>
                 <button type="button" class="btn btn-secondary" (click)="viewEquipment()">
-          <i class="fa-solid fa-truck-front"></i> Ver Equipos
-        </button>
+                  <i class="fa-solid fa-truck-front"></i> Ver Equipos
+                </button>
               </div>
             </div>
 
@@ -112,11 +103,11 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
               <h3>Información del Sistema</h3>
               <div class="timeline">
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ provider.updated_at | date:'short' }}</div>
+                  <div class="timeline-date">{{ provider.updated_at | date: 'short' }}</div>
                   <div class="timeline-content">Última actualización</div>
                 </div>
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ provider.created_at | date:'short' }}</div>
+                  <div class="timeline-date">{{ provider.created_at | date: 'short' }}</div>
                   <div class="timeline-content">Proveedor registrado</div>
                 </div>
               </div>
@@ -127,8 +118,9 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
         <div *ngIf="!loading && !provider" class="empty-state card">
           <h3>Proveedor no encontrado</h3>
           <p>El proveedor que buscas no existe o ha sido eliminado.</p>
-          <button type="button" class="btn btn-primary" (click)="navigateTo('/providers')"> Volver a la lista
-        </button>
+          <button type="button" class="btn btn-primary" (click)="navigateTo('/providers')">
+            Volver a la lista
+          </button>
         </div>
       </div>
     </div>
@@ -138,338 +130,346 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
         <div class="modal-header">
           <h2>Confirmar Eliminación</h2>
           <button type="button" class="btn btn-icon" (click)="showDeleteModal = false">
-          <i class="fa-solid fa-times"></i>
-        </button>
+            <i class="fa-solid fa-times"></i>
+          </button>
         </div>
         <div class="modal-body">
-          <p>¿Estás seguro de que deseas eliminar el proveedor <strong>{{ provider?.business_name }}</strong>?</p>
+          <p>
+            ¿Estás seguro de que deseas eliminar el proveedor
+            <strong>{{ provider?.razon_social }}</strong
+            >?
+          </p>
           <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false"> Cancelar
-        </button>
-          <button type="button" class="btn btn-danger" (click)="confirmDelete()"> Eliminar Proveedor
-        </button>
+          <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+            Eliminar Proveedor
+          </button>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    .detail-container {
-      min-height: 100vh;
-      background: #f5f5f5;
-      padding: var(--s-24) 0;
-    }
+  styles: [
+    `
+      .detail-container {
+        min-height: 100vh;
+        background: #f5f5f5;
+        padding: var(--s-24) 0;
+      }
 
-    .breadcrumb {
-      margin-bottom: var(--s-24);
-    }
-      
-    .breadcrumb-link {
-      color: var(--primary-500);
-      text-decoration: none;
-      font-weight: 500;
-      
-      &:hover {
+      .breadcrumb {
+        margin-bottom: var(--s-24);
+      }
+
+      .breadcrumb-link {
+        color: var(--primary-500);
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
           text-decoration: underline;
         }
       }
 
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: var(--s-24);
-      
-      @media (max-width: 968px) {
-        grid-template-columns: 1fr;
-      }
-    }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: var(--s-24);
 
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: var(--s-24);
-      padding-bottom: var(--s-24);
-      border-bottom: 2px solid #e0e0e0;
-      
-      h1 {
-        font-size: 28px;
-        color: var(--primary-900);
-        margin-bottom: var(--s-4);
+        @media (max-width: 968px) {
+          grid-template-columns: 1fr;
+        }
       }
-      
-      .code-badge {
-        font-family: monospace;
-        background: var(--grey-100);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 14px;
-        color: var(--grey-700);
-        font-weight: 600;
-        display: inline-block;
+
+      .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--s-24);
+        padding-bottom: var(--s-24);
+        border-bottom: 2px solid #e0e0e0;
+
+        h1 {
+          font-size: 28px;
+          color: var(--primary-900);
+          margin-bottom: var(--s-4);
+        }
+
+        .code-badge {
+          font-family: monospace;
+          background: var(--grey-100);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 14px;
+          color: var(--grey-700);
+          font-weight: 600;
+          display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          gap: var(--s-16);
+        }
       }
-      
-      @media (max-width: 768px) {
+
+      .detail-actions {
+        display: flex;
+        gap: var(--s-8);
+
+        @media (max-width: 768px) {
+          width: 100%;
+
+          .btn {
+            flex: 1;
+          }
+        }
+      }
+
+      .detail-status {
+        margin-bottom: var(--s-24);
+      }
+
+      .detail-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-32);
+      }
+
+      .detail-section {
+        h2 {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--s-16);
+        }
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--s-24);
+      }
+
+      .info-item {
+        label {
+          display: block;
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--grey-500);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: var(--s-4);
+        }
+
+        p {
+          font-size: 16px;
+          color: #333;
+          margin: 0;
+
+          &.highlight {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-500);
+          }
+        }
+      }
+
+      .detail-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-24);
+
+        h3 {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--s-16);
+        }
+      }
+
+      .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-8);
+      }
+
+      .btn-block {
+        width: 100%;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .timeline {
+        display: flex;
         flex-direction: column;
         gap: var(--s-16);
       }
-    }
 
-    .detail-actions {
-      display: flex;
-      gap: var(--s-8);
-      
-      @media (max-width: 768px) {
-        width: 100%;
-        
-        .btn {
-          flex: 1;
+      .timeline-item {
+        position: relative;
+        padding-left: var(--s-24);
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--primary-500);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 3px;
+          top: 14px;
+          width: 2px;
+          height: calc(100% + var(--s-16));
+          background: #e0e0e0;
+        }
+
+        &:last-child::after {
+          display: none;
         }
       }
-    }
 
-    .detail-status {
-      margin-bottom: var(--s-24);
-    }
-
-    .detail-sections {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-32);
-    }
-
-    .detail-section {
-      h2 {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin-bottom: var(--s-16);
-      }
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: var(--s-24);
-    }
-
-    .info-item {
-      label {
-        display: block;
+      .timeline-date {
         font-size: 12px;
-        font-weight: 500;
         color: var(--grey-500);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
         margin-bottom: var(--s-4);
       }
-      
-      p {
-        font-size: 16px;
+
+      .timeline-content {
+        font-size: 14px;
         color: #333;
-        margin: 0;
-        
-        &.highlight {
-          font-size: 20px;
-          font-weight: 600;
-          color: var(--primary-500);
-        }
       }
-    }
 
-    .detail-sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-24);
-      
-      h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin-bottom: var(--s-16);
+      /* Status Badges */
+      .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
-    }
 
-    .quick-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-8);
-    }
-
-    .btn-block {
-      width: 100%;
-      justify-content: center;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .timeline {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-16);
-    }
-
-    .timeline-item {
-      position: relative;
-      padding-left: var(--s-24);
-      
-      &::before {
+      .status-badge::before {
         content: '';
-        position: absolute;
-        left: 0;
-        top: 6px;
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        background: var(--primary-500);
       }
-      
-      &::after {
-        content: '';
-        position: absolute;
-        left: 3px;
-        top: 14px;
-        width: 2px;
-        height: calc(100% + var(--s-16));
-        background: #e0e0e0;
+
+      .status-active {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
-      
-      &:last-child::after {
-        display: none;
+      .status-active::before {
+        background: var(--semantic-green-500);
       }
-    }
 
-    .timeline-date {
-      font-size: 12px;
-      color: var(--grey-500);
-      margin-bottom: var(--s-4);
-    }
-
-    .timeline-content {
-      font-size: 14px;
-      color: #333;
-    }
-
-    /* Status Badges */
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .status-badge::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-    }
-
-    .status-active {
-      background: var(--semantic-green-50);
-      color: var(--semantic-green-700);
-    }
-    .status-active::before {
-      background: var(--semantic-green-500);
-    }
-
-    .status-inactive {
-      background: var(--grey-100);
-      color: var(--grey-700);
-    }
-    .status-inactive::before {
-      background: var(--grey-400);
-    }
-
-    .status-blacklisted {
-      background: var(--semantic-red-50);
-      color: var(--semantic-red-700);
-    }
-    .status-blacklisted::before {
-      background: var(--semantic-red-500);
-    }
-
-    /* Modal */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 0;
-      border-radius: var(--radius-md);
-      width: 90%;
-      max-width: 500px;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .modal-header {
-      padding: var(--s-16) var(--s-24);
-      border-bottom: 1px solid var(--grey-200);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      
-      h2 {
-        margin: 0;
-        font-size: 18px;
+      .status-inactive {
+        background: var(--grey-100);
+        color: var(--grey-700);
       }
-      
-      .close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: var(--grey-500);
+      .status-inactive::before {
+        background: var(--grey-400);
       }
-    }
 
-    .modal-body {
-      padding: var(--s-24);
-      
-      p {
-        margin-bottom: var(--s-16);
-        
-        &:last-child {
-          margin-bottom: 0;
+      .status-blacklisted {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+      .status-blacklisted::before {
+        background: var(--semantic-red-500);
+      }
+
+      /* Modal */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 0;
+        border-radius: var(--radius-md);
+        width: 90%;
+        max-width: 500px;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .modal-header {
+        padding: var(--s-16) var(--s-24);
+        border-bottom: 1px solid var(--grey-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h2 {
+          margin: 0;
+          font-size: 18px;
+        }
+
+        .close {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: var(--grey-500);
         }
       }
-    }
 
-    .modal-footer {
-      padding: var(--s-16) var(--s-24);
-      border-top: 1px solid var(--grey-200);
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--s-8);
-    }
+      .modal-body {
+        padding: var(--s-24);
 
-    .alert {
-      padding: var(--s-12);
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-    }
+        p {
+          margin-bottom: var(--s-16);
 
-    .alert-warning {
-      background: var(--semantic-yellow-50);
-      color: var(--semantic-yellow-700);
-      border: 1px solid var(--semantic-yellow-200);
-    }
-  `]
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      .modal-footer {
+        padding: var(--s-16) var(--s-24);
+        border-top: 1px solid var(--grey-200);
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--s-8);
+      }
+
+      .alert {
+        padding: var(--s-12);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+      }
+
+      .alert-warning {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+        border: 1px solid var(--semantic-yellow-200);
+      }
+    `,
+  ],
 })
 export class ProviderDetailComponent implements OnInit {
   private providerService = inject(ProviderService);
@@ -500,7 +500,7 @@ export class ProviderDetailComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.router.navigate(['/providers']);
-      }
+      },
     });
   }
 
@@ -523,7 +523,7 @@ export class ProviderDetailComponent implements OnInit {
         error: (error) => {
           console.error('Failed to delete provider:', error);
           this.showDeleteModal = false;
-        }
+        },
       });
     }
   }

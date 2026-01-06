@@ -24,16 +24,12 @@ import { Equipment } from '../../core/models/equipment.model';
           <div class="detail-main card">
             <div class="detail-header">
               <div>
-                <h1>{{ equipment.name }}</h1>
+                <h1>{{ equipment.brand }} {{ equipment.model }}</h1>
                 <p class="equipment-code">{{ equipment.code }}</p>
               </div>
               <div class="detail-actions">
-                <button class="btn btn-primary" (click)="editEquipment()">
-                  ✏️ Editar
-                </button>
-                <button class="btn btn-danger" (click)="deleteEquipment()">
-                  🗑️ Eliminar
-                </button>
+                <button class="btn btn-primary" (click)="editEquipment()">✏️ Editar</button>
+                <button class="btn btn-danger" (click)="deleteEquipment()">🗑️ Eliminar</button>
               </div>
             </div>
 
@@ -56,8 +52,8 @@ import { Equipment } from '../../core/models/equipment.model';
                     <p>{{ equipment.model }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Tipo de Equipo</label>
-                    <p>{{ equipment.equipment_type }}</p>
+                    <label>Categoría</label>
+                    <p>{{ equipment.category || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Número de Serie</label>
@@ -67,23 +63,23 @@ import { Equipment } from '../../core/models/equipment.model';
               </section>
 
               <section class="detail-section">
-                <h2>Información Financiera</h2>
+                <h2>Información Técnica</h2>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>Tarifa por Hora</label>
-                    <p class="highlight">\${{ equipment.hourly_rate || 0 }}</p>
+                    <label>Placa</label>
+                    <p>{{ equipment.plate_number || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Costo de Compra</label>
-                    <p>\${{ equipment.purchase_cost || 'N/A' }}</p>
+                    <label>Número de Chasis</label>
+                    <p>{{ equipment.chassis_number || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Valor Actual</label>
-                    <p>\${{ equipment.current_value || 'N/A' }}</p>
+                    <label>Serie Motor</label>
+                    <p>{{ equipment.engine_serial_number || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Año de Fabricación</label>
-                    <p>{{ equipment.year_manufactured || 'N/A' }}</p>
+                    <p>{{ equipment.manufacture_year || 'N/A' }}</p>
                   </div>
                 </div>
               </section>
@@ -93,40 +89,21 @@ import { Equipment } from '../../core/models/equipment.model';
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Tipo de Medidor</label>
-                    <p class="highlight">{{ equipment.medidor_uso || 'N/A' }}</p>
+                    <p class="highlight">{{ equipment.meter_type || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Tipo de Motor</label>
-                    <p>{{ equipment.tipo_motor || 'N/A' }}</p>
+                    <p>{{ equipment.engine_type || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Tipo de Combustible</label>
-                    <p>{{ equipment.fuel_type || 'N/A' }}</p>
+                    <label>Potencia Neta</label>
+                    <p>{{ equipment.net_power || 'N/A' }} HP</p>
                   </div>
                   <div class="info-item">
-                    <label>Capacidad de Combustible</label>
-                    <p>{{ equipment.fuel_capacity || 'N/A' }} L</p>
+                    <label>Proveedor</label>
+                    <p>{{ equipment.provider_name || 'N/A' }}</p>
                   </div>
                 </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Ubicación y Asignación</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Ubicación Actual</label>
-                    <p>{{ equipment.current_location || 'No asignado' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Estado</label>
-                    <p>{{ equipment.status }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section" *ngIf="equipment.notes">
-                <h2>Notas</h2>
-                <p class="notes">{{ equipment.notes }}</p>
               </section>
             </div>
           </div>
@@ -151,11 +128,11 @@ import { Equipment } from '../../core/models/equipment.model';
               <h3>Línea de Tiempo de Actividad</h3>
               <div class="timeline">
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ equipment.updated_at | date:'short' }}</div>
+                  <div class="timeline-date">{{ equipment.updated_at | date: 'short' }}</div>
                   <div class="timeline-content">Última Actualización</div>
                 </div>
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ equipment.created_at | date:'short' }}</div>
+                  <div class="timeline-date">{{ equipment.created_at | date: 'short' }}</div>
                   <div class="timeline-content">Equipo Agregado</div>
                 </div>
               </div>
@@ -178,7 +155,10 @@ import { Equipment } from '../../core/models/equipment.model';
           <button class="close" (click)="showDeleteModal = false">&times;</button>
         </div>
         <div class="modal-body">
-          <p>¿Estás seguro de que quieres eliminar <strong>{{ equipment?.name }}</strong>?</p>
+          <p>
+            ¿Estás seguro de que quieres eliminar <strong>{{ equipment?.name }}</strong
+            >?
+          </p>
           <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
         </div>
         <div class="modal-footer">
@@ -188,213 +168,215 @@ import { Equipment } from '../../core/models/equipment.model';
       </div>
     </div>
   `,
-  styles: [`
-    .equipment-detail-container {
-      min-height: 100vh;
-      background: #f5f5f5;
-      padding: var(--spacing-lg) 0;
-    }
+  styles: [
+    `
+      .equipment-detail-container {
+        min-height: 100vh;
+        background: #f5f5f5;
+        padding: var(--spacing-lg) 0;
+      }
 
-    .breadcrumb {
-      margin-bottom: var(--spacing-lg);
-    }
-      
-    .breadcrumb-link {
-      color: var(--primary-500);
-      text-decoration: none;
-      font-weight: 500;
-      
-      &:hover {
+      .breadcrumb {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .breadcrumb-link {
+        color: var(--primary-500);
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
           text-decoration: underline;
         }
       }
 
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: var(--spacing-lg);
-      
-      @media (max-width: 968px) {
-        grid-template-columns: 1fr;
-      }
-    }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: var(--spacing-lg);
 
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: var(--spacing-lg);
-      padding-bottom: var(--spacing-lg);
-      border-bottom: 2px solid #e0e0e0;
-      
-      h1 {
-        font-family: var(--font-family-display);
-        font-size: 28px;
-        color: var(--primary-900);
-        margin-bottom: var(--spacing-xs);
+        @media (max-width: 968px) {
+          grid-template-columns: 1fr;
+        }
       }
-      
-      .equipment-code {
-        color: var(--grey-500);
-        font-size: 14px;
+
+      .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-lg);
+        border-bottom: 2px solid #e0e0e0;
+
+        h1 {
+          font-family: var(--font-family-display);
+          font-size: 28px;
+          color: var(--primary-900);
+          margin-bottom: var(--spacing-xs);
+        }
+
+        .equipment-code {
+          color: var(--grey-500);
+          font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          gap: var(--spacing-md);
+        }
       }
-      
-      @media (max-width: 768px) {
+
+      .detail-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+
+        @media (max-width: 768px) {
+          width: 100%;
+
+          .btn {
+            flex: 1;
+          }
+        }
+      }
+
+      .detail-status {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .detail-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xl);
+      }
+
+      .detail-section {
+        h2 {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--spacing-md);
+        }
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .info-item {
+        label {
+          display: block;
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--grey-500);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: var(--spacing-xs);
+        }
+
+        p {
+          font-size: 16px;
+          color: #333;
+
+          &.highlight {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-500);
+          }
+        }
+      }
+
+      .notes {
+        background: #f8f9fa;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        border-left: 4px solid var(--primary-500);
+        line-height: 1.6;
+      }
+
+      .detail-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+
+        h3 {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--spacing-md);
+        }
+      }
+
+      .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+      }
+
+      .btn-block {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .timeline {
+        display: flex;
         flex-direction: column;
         gap: var(--spacing-md);
       }
-    }
 
-    .detail-actions {
-      display: flex;
-      gap: var(--spacing-sm);
-      
-      @media (max-width: 768px) {
-        width: 100%;
-        
-        .btn {
-          flex: 1;
+      .timeline-item {
+        position: relative;
+        padding-left: var(--spacing-lg);
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--primary-500);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 3px;
+          top: 14px;
+          width: 2px;
+          height: calc(100% + var(--spacing-md));
+          background: #e0e0e0;
+        }
+
+        &:last-child::after {
+          display: none;
         }
       }
-    }
 
-    .detail-status {
-      margin-bottom: var(--spacing-lg);
-    }
-
-    .detail-sections {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-xl);
-    }
-
-    .detail-section {
-      h2 {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin-bottom: var(--spacing-md);
-      }
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: var(--spacing-lg);
-    }
-
-    .info-item {
-      label {
-        display: block;
+      .timeline-date {
         font-size: 12px;
-        font-weight: 500;
         color: var(--grey-500);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
         margin-bottom: var(--spacing-xs);
       }
-      
-      p {
-        font-size: 16px;
+
+      .timeline-content {
+        font-size: 14px;
         color: #333;
-        
-        &.highlight {
-          font-size: 20px;
-          font-weight: 600;
-          color: var(--primary-500);
+      }
+
+      .modal-body {
+        p {
+          margin-bottom: var(--spacing-md);
+
+          &:last-child {
+            margin-bottom: 0;
+          }
         }
       }
-    }
-
-    .notes {
-      background: #f8f9fa;
-      padding: var(--spacing-md);
-      border-radius: var(--radius-sm);
-      border-left: 4px solid var(--primary-500);
-      line-height: 1.6;
-    }
-
-    .detail-sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-lg);
-      
-      h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin-bottom: var(--spacing-md);
-      }
-    }
-
-    .quick-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-    }
-
-    .btn-block {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .timeline {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-md);
-    }
-
-    .timeline-item {
-      position: relative;
-      padding-left: var(--spacing-lg);
-      
-      &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 6px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--primary-500);
-      }
-      
-      &::after {
-        content: '';
-        position: absolute;
-        left: 3px;
-        top: 14px;
-        width: 2px;
-        height: calc(100% + var(--spacing-md));
-        background: #e0e0e0;
-      }
-      
-      &:last-child::after {
-        display: none;
-      }
-    }
-
-    .timeline-date {
-      font-size: 12px;
-      color: var(--grey-500);
-      margin-bottom: var(--spacing-xs);
-    }
-
-    .timeline-content {
-      font-size: 14px;
-      color: #333;
-    }
-
-    .modal-body {
-      p {
-        margin-bottom: var(--spacing-md);
-        
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-    }
-  `]
+    `,
+  ],
 })
 export class EquipmentDetailComponent implements OnInit {
   private equipmentService = inject(EquipmentService);
@@ -424,7 +406,7 @@ export class EquipmentDetailComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.router.navigate(['/equipment']);
-      }
+      },
     });
   }
 
@@ -447,7 +429,7 @@ export class EquipmentDetailComponent implements OnInit {
         error: (error) => {
           console.error('Failed to delete equipment:', error);
           this.showDeleteModal = false;
-        }
+        },
       });
     }
   }

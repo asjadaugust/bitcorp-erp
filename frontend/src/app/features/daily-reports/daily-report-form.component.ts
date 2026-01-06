@@ -159,12 +159,11 @@ import { Equipment } from '../../core/models/equipment.model';
                     required
                     step="0.1"
                     min="0"
-                    [max]="selectedEquipment?.medidor_uso"
                     placeholder="0.0"
                     [disabled]="isReadOnly"
                   />
                   <span class="hint" *ngIf="selectedEquipment && !isReadOnly">
-                    Actual: {{ selectedEquipment.medidor_uso }} hrs
+                    Tipo: {{ selectedEquipment.meter_type || 'N/A' }}
                   </span>
                 </div>
 

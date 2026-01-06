@@ -3,18 +3,25 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 
+export type EstadoLicitacion = 'PUBLICADO' | 'EVALUACION' | 'ADJUDICADO' | 'DESIERTO' | 'CANCELADO';
+
 export interface Tender {
-  id: string;
-  title: string;
-  client: string;
-  submissionDeadline: Date;
-  status: 'Open' | 'Submitted' | 'Won' | 'Lost';
-  budget: number;
-  createdAt: Date;
+  id: number;
+  legacyId?: string;
+  codigo: string;
+  nombre: string;
+  entidadConvocante: string;
+  montoReferencial: number;
+  fechaConvocatoria?: Date | string;
+  fechaPresentacion?: Date | string;
+  estado: EstadoLicitacion;
+  observaciones?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TenderService {
   private http = inject(HttpClient);
@@ -24,7 +31,7 @@ export class TenderService {
     return this.http.get<Tender[]>(this.apiUrl);
   }
 
-  getTender(id: string): Observable<Tender> {
+  getTender(id: string | number): Observable<Tender> {
     return this.http.get<Tender>(`${this.apiUrl}/${id}`);
   }
 
@@ -32,11 +39,11 @@ export class TenderService {
     return this.http.post<Tender>(this.apiUrl, tender);
   }
 
-  updateTender(id: string, tender: Partial<Tender>): Observable<Tender> {
+  updateTender(id: string | number, tender: Partial<Tender>): Observable<Tender> {
     return this.http.put<Tender>(`${this.apiUrl}/${id}`, tender);
   }
 
-  deleteTender(id: string): Observable<void> {
+  deleteTender(id: string | number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

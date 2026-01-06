@@ -29,12 +29,9 @@ import { SigService } from '../../services/sig.service';
         </div>
         <div class="header-actions">
           <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="form.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Documento' }}
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
+            <i class="fa-solid fa-save"></i>
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Documento' }}
           </button>
         </div>
       </div>
@@ -47,32 +44,32 @@ import { SigService } from '../../services/sig.service';
             <h3>Información del Documento</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="code">Código *</label>
+                <label for="codigo">Código *</label>
                 <input
-                  id="code"
+                  id="codigo"
                   type="text"
-                  formControlName="code"
+                  formControlName="codigo"
                   class="form-control"
                   placeholder="ej. SIG-PROC-001"
                 />
-                <div class="error-msg" *ngIf="hasError('code')">Código es requerido</div>
+                <div class="error-msg" *ngIf="hasError('codigo')">Código es requerido</div>
               </div>
 
               <div class="form-group">
-                <label for="name">Nombre *</label>
+                <label for="titulo">Título *</label>
                 <input
-                  id="name"
+                  id="titulo"
                   type="text"
-                  formControlName="name"
+                  formControlName="titulo"
                   class="form-control"
-                  placeholder="Nombre del documento"
+                  placeholder="Título del documento"
                 />
-                <div class="error-msg" *ngIf="hasError('name')">Nombre es requerido</div>
+                <div class="error-msg" *ngIf="hasError('titulo')">Título es requerido</div>
               </div>
 
               <div class="form-group">
-                <label for="type">Tipo *</label>
-                <select id="type" formControlName="type" class="form-select">
+                <label for="tipoDocumento">Tipo *</label>
+                <select id="tipoDocumento" formControlName="tipoDocumento" class="form-select">
                   <option value="">Seleccione...</option>
                   <option value="Procedimiento">Procedimiento</option>
                   <option value="Instructivo">Instructivo</option>
@@ -80,7 +77,7 @@ import { SigService } from '../../services/sig.service';
                   <option value="Política">Política</option>
                   <option value="Manual">Manual</option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('type')">Tipo es requerido</div>
+                <div class="error-msg" *ngIf="hasError('tipoDocumento')">Tipo es requerido</div>
               </div>
 
               <div class="form-group">
@@ -107,25 +104,25 @@ import { SigService } from '../../services/sig.service';
               </div>
 
               <div class="form-group">
-                <label for="effectiveDate">Fecha Vigencia *</label>
+                <label for="fechaEmision">Fecha Emisión *</label>
                 <input
-                  id="effectiveDate"
+                  id="fechaEmision"
                   type="date"
-                  formControlName="effectiveDate"
+                  formControlName="fechaEmision"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('effectiveDate')">Fecha es requerida</div>
+                <div class="error-msg" *ngIf="hasError('fechaEmision')">Fecha es requerida</div>
               </div>
 
               <div class="form-group full-width">
-                <label for="description">Descripción</label>
-                <textarea
-                  id="description"
-                  formControlName="description"
+                <label for="archivoUrl">URL del Archivo</label>
+                <input
+                  id="archivoUrl"
+                  type="text"
+                  formControlName="archivoUrl"
                   class="form-control"
-                  rows="3"
-                  placeholder="Descripción breve del documento..."
-                ></textarea>
+                  placeholder="URL del documento..."
+                />
               </div>
             </div>
           </div>
@@ -308,13 +305,13 @@ export class DocumentFormComponent implements OnInit {
 
   initForm() {
     this.form = this.fb.group({
-      code: ['', Validators.required],
-      name: ['', Validators.required],
-      type: ['', Validators.required],
+      codigo: ['', Validators.required],
+      titulo: ['', Validators.required],
+      tipoDocumento: ['', Validators.required],
       isoStandard: ['', Validators.required],
       version: ['1.0', Validators.required],
-      effectiveDate: ['', Validators.required],
-      description: ['']
+      fechaEmision: ['', Validators.required],
+      archivoUrl: [''],
     });
   }
 
@@ -330,7 +327,7 @@ export class DocumentFormComponent implements OnInit {
         this.loading = false;
         // In a real app, show a toast
         console.error('Error loading document');
-      }
+      },
     });
   }
 
@@ -340,10 +337,11 @@ export class DocumentFormComponent implements OnInit {
       return;
     }
     this.loading = true;
-    const req = this.isEditMode && this.documentId
-      ? this.sigService.updateDocument(this.documentId, this.form.value)
-      : this.sigService.createDocument(this.form.value);
-    
+    const req =
+      this.isEditMode && this.documentId
+        ? this.sigService.updateDocument(this.documentId, this.form.value)
+        : this.sigService.createDocument(this.form.value);
+
     req.subscribe({
       next: () => {
         this.router.navigate(['/sig']);
@@ -351,7 +349,7 @@ export class DocumentFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error saving document');
-      }
+      },
     });
   }
 

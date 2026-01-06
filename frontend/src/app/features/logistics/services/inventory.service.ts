@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface Product {
@@ -47,11 +48,28 @@ export class InventoryService {
   constructor(private http: HttpClient) {}
 
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/products`);
+    return this.http.get<any>(`${this.apiUrl}/products`).pipe(
+      map((response) => {
+        // Handle response that has success/data structure
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        // Fallback to direct array
+        return Array.isArray(response) ? response : [];
+      })
+    );
   }
 
   getProduct(id: string): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/products/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/products/${id}`).pipe(
+      map((response) => {
+        // Handle response that has success/data structure
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response;
+      })
+    );
   }
 
   getProductById(id: string): Observable<Product> {
@@ -67,11 +85,28 @@ export class InventoryService {
   }
 
   getMovements(): Observable<Movement[]> {
-    return this.http.get<Movement[]>(`${this.apiUrl}/movements`);
+    return this.http.get<any>(`${this.apiUrl}/movements`).pipe(
+      map((response) => {
+        // Handle response that has success/data structure
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        // Fallback to direct array
+        return Array.isArray(response) ? response : [];
+      })
+    );
   }
 
   getMovementById(id: string): Observable<Movement> {
-    return this.http.get<Movement>(`${this.apiUrl}/movements/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/movements/${id}`).pipe(
+      map((response) => {
+        // Handle response that has success/data structure
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response;
+      })
+    );
   }
 
   createMovement(movement: any): Observable<Movement> {

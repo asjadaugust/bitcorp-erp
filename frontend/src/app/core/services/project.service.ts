@@ -31,7 +31,7 @@ export class ProjectService {
       cliente: apiProject.client || apiProject.client_name || '',
       isActive: apiProject.status === 'ACTIVO',
       createdAt: apiProject.created_at,
-      updatedAt: apiProject.updated_at
+      updatedAt: apiProject.updated_at,
     };
   }
 
@@ -45,54 +45,92 @@ export class ProjectService {
       });
     }
     return this.http.get<ApiResponse<any[]> | any[]>(this.apiUrl, { params }).pipe(
-      map(response => {
-        const data = Array.isArray(response) ? response : (response.data || []);
-        return data.map(p => this.mapApiToProject(p));
+      map((response) => {
+        const data = Array.isArray(response) ? response : response.data || [];
+        return data.map((p) => this.mapApiToProject(p));
       })
     );
   }
 
   getById(id: string): Observable<Project> {
     return this.http.get<ApiResponse<any> | any>(`${this.apiUrl}/${id}`).pipe(
-      map(response => {
+      map((response) => {
         const data = response.data || response;
         return this.mapApiToProject(data);
       })
     );
   }
 
-  create(project: Partial<Project>): Observable<Project> {
+  create(
+    project: Partial<Project> & {
+      code?: string;
+      name?: string;
+      client?: string;
+      startDate?: string;
+      endDate?: string;
+      location?: string;
+      status?: string;
+      budget?: number;
+      description?: string;
+    }
+  ): Observable<Project> {
+    // Support both Spanish (from Project model) and English (from form) field names
     const apiData = {
-      project_code: project.codigo,
-      project_name: project.nombre,
-      description: project.descripcion,
-      location: project.ubicacion,
-      start_date: project.fechaInicio,
-      end_date: project.fechaFin,
-      status: project.estado,
-      budget: project.presupuesto,
-      client: project.cliente
+      code: (project as any).code || project.codigo,
+      name: (project as any).name || project.nombre,
+      description: (project as any).description || project.descripcion,
+      location: (project as any).location || project.ubicacion,
+      start_date: (project as any).startDate || project.fechaInicio,
+      end_date: (project as any).endDate || project.fechaFin,
+      status: (project as any).status || project.estado,
+      budget: (project as any).budget || project.presupuesto,
+      client: (project as any).client || project.cliente,
     };
-    return this.http.post<ApiResponse<any> | any>(this.apiUrl, apiData).pipe(
-      map(response => this.mapApiToProject(response.data || response))
-    );
+    return this.http
+      .post<ApiResponse<any> | any>(this.apiUrl, apiData)
+      .pipe(map((response) => this.mapApiToProject(response.data || response)));
   }
 
-  update(id: string, project: Partial<Project>): Observable<Project> {
+  update(
+    id: string,
+    project: Partial<Project> & {
+      code?: string;
+      name?: string;
+      client?: string;
+      startDate?: string;
+      endDate?: string;
+      location?: string;
+      status?: string;
+      budget?: number;
+      description?: string;
+    }
+  ): Observable<Project> {
+    // Support both Spanish (from Project model) and English (from form) field names
     const apiData: any = {};
-    if (project.codigo) apiData.project_code = project.codigo;
-    if (project.nombre) apiData.project_name = project.nombre;
-    if (project.descripcion) apiData.description = project.descripcion;
-    if (project.ubicacion) apiData.location = project.ubicacion;
-    if (project.fechaInicio) apiData.start_date = project.fechaInicio;
-    if (project.fechaFin) apiData.end_date = project.fechaFin;
-    if (project.estado) apiData.status = project.estado;
-    if (project.presupuesto) apiData.budget = project.presupuesto;
-    if (project.cliente) apiData.client = project.cliente;
 
-    return this.http.put<ApiResponse<any> | any>(`${this.apiUrl}/${id}`, apiData).pipe(
-      map(response => this.mapApiToProject(response.data || response))
-    );
+    const code = (project as any).code || project.codigo;
+    const name = (project as any).name || project.nombre;
+    const description = (project as any).description || project.descripcion;
+    const location = (project as any).location || project.ubicacion;
+    const startDate = (project as any).startDate || project.fechaInicio;
+    const endDate = (project as any).endDate || project.fechaFin;
+    const status = (project as any).status || project.estado;
+    const budget = (project as any).budget || project.presupuesto;
+    const client = (project as any).client || project.cliente;
+
+    if (code) apiData.code = code;
+    if (name) apiData.name = name;
+    if (description) apiData.description = description;
+    if (location) apiData.location = location;
+    if (startDate) apiData.start_date = startDate;
+    if (endDate) apiData.end_date = endDate;
+    if (status) apiData.status = status;
+    if (budget) apiData.budget = budget;
+    if (client) apiData.client = client;
+
+    return this.http
+      .put<ApiResponse<any> | any>(`${this.apiUrl}/${id}`, apiData)
+      .pipe(map((response) => this.mapApiToProject(response.data || response)));
   }
 
   delete(id: string): Observable<void> {

@@ -211,12 +211,12 @@ interface NavItem {
         .sidebar.mobile-open {
           left: 0;
         }
-        
+
         .sidebar.collapsed {
-           /* When collapsed on mobile, it is hidden (left: -260px) */
-           /* The .collapsed class sets width to 64px, but we override it with !important above or just rely on left */
-           /* Actually, if collapsed is true, we want it hidden. */
-           /* If collapsed is false, we want it shown (mobile-open). */
+          /* When collapsed on mobile, it is hidden (left: -260px) */
+          /* The .collapsed class sets width to 64px, but we override it with !important above or just rely on left */
+          /* Actually, if collapsed is true, we want it hidden. */
+          /* If collapsed is false, we want it shown (mobile-open). */
         }
 
         .sidebar-overlay {
@@ -229,9 +229,9 @@ interface NavItem {
           background: rgba(0, 0, 0, 0.5);
           z-index: 80;
         }
-        
+
         .collapse-btn {
-            display: none; /* Hide collapse button on mobile, use overlay or menu button */
+          display: none; /* Hide collapse button on mobile, use overlay or menu button */
         }
       }
     `,
@@ -240,7 +240,7 @@ interface NavItem {
 export class SidebarComponent {
   public authService = inject(AuthService);
   currentUser$ = this.authService.currentUser$;
-  
+
   @Input() collapsed = true;
   @Output() collapsedChange = new EventEmitter<boolean>();
 
@@ -248,11 +248,11 @@ export class SidebarComponent {
   mainNavItems: NavItem[] = [
     // Nivel 1
     { label: 'SIG', route: '/sig', icon: 'fa-solid fa-chart-pie' },
-    
+
     // Nivel 2
     { label: 'Licitaciones', route: '/licitaciones', icon: 'fa-solid fa-file-signature' },
     { label: 'Operaciones', route: '/operaciones', icon: 'fa-solid fa-helmet-safety' },
-    
+
     // Nivel 3
     { label: 'SST', route: '/sst', icon: 'fa-solid fa-user-shield' },
     { label: 'Administración', route: '/administracion', icon: 'fa-solid fa-briefcase' },
@@ -261,6 +261,7 @@ export class SidebarComponent {
     { label: 'Proveedores', route: '/providers', icon: 'fa-solid fa-handshake' },
     { label: 'Equipo Mecánico', route: '/equipment', icon: 'fa-solid fa-tractor' },
     { label: 'Operadores', route: '/operators', icon: 'fa-solid fa-id-card' },
+    { label: 'Checklists', route: '/checklists', icon: 'fa-solid fa-clipboard-check' },
     // Note: Daily Reports, Contracts, and Valuations are accessed via tabs in Equipment module
   ];
 
@@ -284,7 +285,7 @@ export class SidebarComponent {
   toggleCollapse() {
     this.collapsed = !this.collapsed;
     this.collapsedChange.emit(this.collapsed);
-    
+
     // Dispatch event to notify layout (legacy support if needed, but we are moving to Input/Output)
     window.dispatchEvent(
       new CustomEvent('sidebar-toggle', { detail: { collapsed: this.collapsed } })

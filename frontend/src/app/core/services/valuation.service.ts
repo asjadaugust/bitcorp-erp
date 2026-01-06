@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Valuation } from '../models/valuation.model';
 
@@ -17,7 +18,16 @@ export class ValuationService {
     if (filters.status) params = params.set('status', filters.status);
     if (filters.contract_id) params = params.set('contract_id', filters.contract_id);
 
-    return this.http.get<Valuation[]>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map((response) => {
+        // Handle paginated response from backend
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        // Fallback to direct array if not paginated
+        return Array.isArray(response) ? response : [];
+      })
+    );
   }
 
   getAnalytics(): Observable<any> {

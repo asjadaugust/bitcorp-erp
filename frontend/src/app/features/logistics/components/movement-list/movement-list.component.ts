@@ -3,10 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InventoryService, Movement } from '../../services/inventory.service';
-import { AeroTableComponent, TableColumn } from '../../../../core/design-system/table/aero-table.component';
-import { PageLayoutComponent, TabItem } from '../../../../shared/components/page-layout/page-layout.component';
-import { FilterBarComponent, FilterConfig } from '../../../../shared/components/filter-bar/filter-bar.component';
-import { ExportDropdownComponent, ExportFormat } from '../../../../shared/components/export-dropdown/export-dropdown.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../../../core/design-system/table/aero-table.component';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../../../shared/components/filter-bar/filter-bar.component';
+import {
+  ExportDropdownComponent,
+  ExportFormat,
+} from '../../../../shared/components/export-dropdown/export-dropdown.component';
 import { ExcelExportService } from '../../../../core/services/excel-export.service';
 import { CsvExportService } from '../../../../core/services/csv-export.service';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
@@ -15,14 +27,14 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
   selector: 'app-movement-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
+    CommonModule,
+    FormsModule,
+    RouterModule,
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
-    ActionsContainerComponent
+    ActionsContainerComponent,
   ],
   template: `
     <app-page-layout
@@ -39,9 +51,10 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         <button class="btn btn-danger" (click)="registerMovement('OUT')">
           <i class="fa-solid fa-arrow-right-from-bracket"></i> Registrar Salida
         </button>
-        <app-export-dropdown 
+        <app-export-dropdown
           (export)="handleExport($event)"
-          [disabled]="loading || movements.length === 0">
+          [disabled]="loading || movements.length === 0"
+        >
         </app-export-dropdown>
       </app-actions-container>
 
@@ -72,11 +85,11 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          'date': dateTemplate,
-          'type': typeTemplate,
-          'document': documentTemplate,
-          'entity': entityTemplate,
-          'items': itemsTemplate
+          date: dateTemplate,
+          type: typeTemplate,
+          document: documentTemplate,
+          entity: entityTemplate,
+          items: itemsTemplate,
         }"
       >
       </aero-table>
@@ -89,9 +102,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       <ng-template #typeTemplate let-row>
         <span
           [class]="
-            row.tipo_movimiento === 'IN'
-              ? 'badge badge-status-in'
-              : 'badge badge-status-out'
+            row.tipo_movimiento === 'IN' ? 'badge badge-status-in' : 'badge badge-status-out'
           "
         >
           {{ row.tipo_movimiento === 'IN' ? 'INGRESO' : 'SALIDA' }}
@@ -99,14 +110,13 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       </ng-template>
 
       <ng-template #documentTemplate let-row>
-        <span class="font-semibold">{{ row.tipo_documento }}</span>
-        {{ row.numero_documento }}
+        {{ row.numero_documento || 'N/A' }}
       </ng-template>
 
       <ng-template #entityTemplate let-row>
         {{
-          row.project_id
-            ? 'Proyecto: ' + row.project_id
+          row.project_name && row.project_name !== 'N/A'
+            ? row.project_name
             : row.provider_id
               ? 'Proveedor: ' + row.provider_id
               : '-'
@@ -114,7 +124,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       </ng-template>
 
       <ng-template #itemsTemplate let-row>
-        <span class="badge badge-items">{{ row.details?.length || 0 }} items</span>
+        <span class="badge badge-items">{{ row.items || 0 }} items</span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -244,12 +254,12 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       }
     `,
     `
-    .actions-container {
-      display: flex;
-      gap: var(--s-8);
-      align-items: center;
-    }
-  `,
+      .actions-container {
+        display: flex;
+        gap: var(--s-8);
+        align-items: center;
+      }
+    `,
   ],
 })
 export class MovementListComponent implements OnInit {
@@ -275,13 +285,13 @@ export class MovementListComponent implements OnInit {
   breadcrumbs = [
     { label: 'Dashboard', url: '/app' },
     { label: 'Logística', url: '/logistics' },
-    { label: 'Movimientos' }
+    { label: 'Movimientos' },
   ];
 
   tabs: TabItem[] = [
     { label: 'Productos', route: '/logistics/products', icon: 'fa-boxes-stacked' },
     { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-dolly' },
-    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' }
+    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' },
   ];
 
   filterConfig: FilterConfig[] = [
@@ -292,10 +302,10 @@ export class MovementListComponent implements OnInit {
       type: 'select',
       options: [
         { label: 'Ingreso', value: 'IN' },
-        { label: 'Salida', value: 'OUT' }
-      ]
+        { label: 'Salida', value: 'OUT' },
+      ],
     },
-    { key: 'startDate', label: 'Fecha', type: 'date' }
+    { key: 'startDate', label: 'Fecha', type: 'date' },
   ];
 
   columns: TableColumn[] = [
@@ -304,7 +314,7 @@ export class MovementListComponent implements OnInit {
     { key: 'document', label: 'Documento', type: 'template' },
     { key: 'entity', label: 'Proyecto/Proveedor', type: 'template' },
     { key: 'items', label: 'Items', type: 'template' },
-    { key: 'observaciones', label: 'Observaciones', type: 'text' }
+    { key: 'observaciones', label: 'Observaciones', type: 'text' },
   ];
 
   ngOnInit(): void {
@@ -373,27 +383,27 @@ export class MovementListComponent implements OnInit {
       return;
     }
 
-    const exportData = this.movements.map(movement => ({
-      'ID': movement.id || '',
-      'Fecha': movement.fecha ? new Date(movement.fecha).toLocaleDateString('es-PE') : '',
-      'Tipo': movement.tipo_movimiento === 'IN' ? 'Ingreso' : 'Salida',
+    const exportData = this.movements.map((movement) => ({
+      ID: movement.id || '',
+      Fecha: movement.fecha ? new Date(movement.fecha).toLocaleDateString('es-PE') : '',
+      Tipo: movement.tipo_movimiento === 'IN' ? 'Ingreso' : 'Salida',
       'Tipo Documento': movement.tipo_documento || '',
       'Número Documento': movement.numero_documento || '',
-      'Observaciones': movement.observaciones || '',
+      Observaciones: movement.observaciones || '',
       'Proveedor ID': movement.provider_id || '',
-      'Proyecto ID': movement.project_id || ''
+      'Proyecto ID': movement.project_id || '',
     }));
 
     if (format === 'excel') {
       this.excelService.exportToExcel(exportData, {
         filename: 'movimientos_inventario',
         sheetName: 'Movimientos',
-        includeTimestamp: true
+        includeTimestamp: true,
       });
     } else {
       this.csvService.exportToCsv(exportData, {
         filename: 'movimientos_inventario',
-        includeTimestamp: true
+        includeTimestamp: true,
       });
     }
   }

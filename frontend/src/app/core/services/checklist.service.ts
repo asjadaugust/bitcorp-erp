@@ -1,201 +1,218 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import {
+  ChecklistTemplate,
+  ChecklistItem,
+  ChecklistInspection,
+  ChecklistResult,
+  InspectionWithResults,
+  ChecklistStats,
+} from '../models/checklist.model';
 
-export type ChecklistType = 'pre_shift' | 'during_shift' | 'end_shift' | 'maintenance';
-export type ChecklistStatus = 'pending' | 'passed' | 'warning' | 'failed';
-
-export interface ChecklistItem {
-  item_id: string;
-  description: string;
-  category?: string;
-  required: boolean;
-  response?: 'ok' | 'not_ok' | 'na';
-  notes?: string;
-  photo_url?: string;
+// Response wrapper interfaces
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
 }
 
-export interface ChecklistTemplate {
-  id: string;
-  checklist_type: ChecklistType;
-  equipment_category_id?: string;
-  template_name: string;
-  description?: string;
-  items: ChecklistItem[];
-  is_active: boolean;
-  company_id: string;
-  created_by?: string;
-  created_at: Date;
-  updated_at: Date;
+interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  message?: string;
 }
 
-export interface EquipmentChecklist {
-  id: string;
-  template_id?: string;
-  equipment_id: string;
-  operator_id?: string;
-  daily_report_id?: string;
-  checklist_date: Date;
-  checklist_type: ChecklistType;
-  items: ChecklistItem[];
-  overall_status: ChecklistStatus;
-  observations?: string;
-  photos?: ChecklistPhoto[];
-  signed_by?: string;
-  signature_url?: string;
-  company_id: string;
-  created_at: Date;
-  updated_at: Date;
-  equipment_code?: string;
-  equipment_name?: string;
-  operator_name?: string;
-  template_name?: string;
+// Filter interfaces
+interface TemplateFilters {
+  activo?: boolean;
+  tipoEquipo?: string;
+  search?: string;
 }
 
-export interface ChecklistPhoto {
-  photo_url: string;
-  description?: string;
-  timestamp: Date;
-}
-
-export interface ChecklistTemplateFilter {
-  checklist_type?: ChecklistType;
-  equipment_category_id?: string;
-  is_active?: boolean;
-  company_id?: string;
-}
-
-export interface ChecklistFilter {
-  equipment_id?: string;
-  operator_id?: string;
-  daily_report_id?: string;
-  checklist_type?: ChecklistType;
-  overall_status?: ChecklistStatus;
-  start_date?: string;
-  end_date?: string;
-  company_id?: string;
+interface InspectionFilters {
   page?: number;
   limit?: number;
+  equipoId?: number;
+  trabajadorId?: number;
+  estado?: string;
+  resultadoGeneral?: string;
+  fechaDesde?: string;
+  fechaHasta?: string;
 }
 
-export interface CreateTemplateDto {
-  checklist_type: ChecklistType;
-  equipment_category_id?: string;
-  template_name: string;
-  description?: string;
-  items: ChecklistItem[];
-  is_active?: boolean;
-  company_id: string;
-  created_by?: string;
-}
-
-export interface CreateChecklistDto {
-  template_id?: string;
-  equipment_id: string;
-  operator_id?: string;
-  daily_report_id?: string;
-  checklist_type: ChecklistType;
-  items: ChecklistItem[];
-  observations?: string;
-  photos?: ChecklistPhoto[];
-  signed_by?: string;
-  signature_url?: string;
-  company_id: string;
+interface StatsFilters {
+  equipoId?: number;
+  trabajadorId?: number;
+  fechaDesde?: string;
+  fechaHasta?: string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChecklistService {
+  private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/checklists`;
 
-  constructor(private http: HttpClient) {}
+  // ============================================
+  // TEMPLATE METHODS
+  // ============================================
 
-  // ============================================================================
-  // CHECKLIST TEMPLATES
-  // ============================================================================
-
-  getAllTemplates(filters?: ChecklistTemplateFilter): Observable<ChecklistTemplate[]> {
+  getAllTemplates(filters?: TemplateFilters): Observable<ChecklistTemplate[]> {
     let params = new HttpParams();
-    
-    if (filters?.checklist_type) params = params.set('checklist_type', filters.checklist_type);
-    if (filters?.equipment_category_id) params = params.set('equipment_category_id', filters.equipment_category_id);
-    if (filters?.is_active !== undefined) params = params.set('is_active', String(filters.is_active));
-    if (filters?.company_id) params = params.set('company_id', filters.company_id);
+    if (filters?.activo !== undefined) {
+      params = params.set('activo', filters.activo.toString());
+    }
+    if (filters?.tipoEquipo) {
+      params = params.set('tipoEquipo', filters.tipoEquipo);
+    }
+    if (filters?.search) {
+      params = params.set('search', filters.search);
+    }
 
+    // Note: apiResponseInterceptor already unwraps {success, data} responses
     return this.http.get<ChecklistTemplate[]>(`${this.apiUrl}/templates`, { params });
   }
 
-  getTemplateById(id: string): Observable<ChecklistTemplate> {
+  getTemplateById(id: number): Observable<ChecklistTemplate> {
     return this.http.get<ChecklistTemplate>(`${this.apiUrl}/templates/${id}`);
   }
 
-  createTemplate(template: CreateTemplateDto): Observable<ChecklistTemplate> {
-    return this.http.post<ChecklistTemplate>(`${this.apiUrl}/templates`, template);
+  createTemplate(data: Partial<ChecklistTemplate>): Observable<ChecklistTemplate> {
+    return this.http.post<ChecklistTemplate>(`${this.apiUrl}/templates`, data);
   }
 
-  updateTemplate(id: string, updates: Partial<CreateTemplateDto>): Observable<ChecklistTemplate> {
-    return this.http.put<ChecklistTemplate>(`${this.apiUrl}/templates/${id}`, updates);
+  updateTemplate(id: number, data: Partial<ChecklistTemplate>): Observable<ChecklistTemplate> {
+    return this.http.put<ChecklistTemplate>(`${this.apiUrl}/templates/${id}`, data);
   }
 
-  deleteTemplate(id: string): Observable<void> {
+  deleteTemplate(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/templates/${id}`);
   }
 
-  // ============================================================================
-  // EQUIPMENT CHECKLISTS
-  // ============================================================================
+  // ============================================
+  // ITEM METHODS
+  // ============================================
 
-  getAllChecklists(filters?: ChecklistFilter): Observable<EquipmentChecklist[]> {
+  createItem(data: Partial<ChecklistItem>): Observable<ChecklistItem> {
+    return this.http.post<ChecklistItem>(`${this.apiUrl}/items`, data);
+  }
+
+  updateItem(id: number, data: Partial<ChecklistItem>): Observable<ChecklistItem> {
+    return this.http.put<ChecklistItem>(`${this.apiUrl}/items/${id}`, data);
+  }
+
+  deleteItem(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/items/${id}`);
+  }
+
+  // ============================================
+  // INSPECTION METHODS
+  // ============================================
+
+  getAllInspections(
+    filters?: InspectionFilters
+  ): Observable<PaginatedResponse<ChecklistInspection>> {
     let params = new HttpParams();
-    
-    if (filters?.equipment_id) params = params.set('equipment_id', filters.equipment_id);
-    if (filters?.operator_id) params = params.set('operator_id', filters.operator_id);
-    if (filters?.daily_report_id) params = params.set('daily_report_id', filters.daily_report_id);
-    if (filters?.checklist_type) params = params.set('checklist_type', filters.checklist_type);
-    if (filters?.overall_status) params = params.set('overall_status', filters.overall_status);
-    if (filters?.start_date) params = params.set('start_date', filters.start_date);
-    if (filters?.end_date) params = params.set('end_date', filters.end_date);
-    if (filters?.company_id) params = params.set('company_id', filters.company_id);
-    if (filters?.page) params = params.set('page', String(filters.page));
-    if (filters?.limit) params = params.set('limit', String(filters.limit));
 
-    return this.http.get<EquipmentChecklist[]>(this.apiUrl, { params });
+    if (filters?.page) {
+      params = params.set('page', filters.page.toString());
+    }
+    if (filters?.limit) {
+      params = params.set('limit', filters.limit.toString());
+    }
+    if (filters?.equipoId) {
+      params = params.set('equipoId', filters.equipoId.toString());
+    }
+    if (filters?.trabajadorId) {
+      params = params.set('trabajadorId', filters.trabajadorId.toString());
+    }
+    if (filters?.estado) {
+      params = params.set('estado', filters.estado);
+    }
+    if (filters?.resultadoGeneral) {
+      params = params.set('resultadoGeneral', filters.resultadoGeneral);
+    }
+    if (filters?.fechaDesde) {
+      params = params.set('fechaDesde', filters.fechaDesde);
+    }
+    if (filters?.fechaHasta) {
+      params = params.set('fechaHasta', filters.fechaHasta);
+    }
+
+    return this.http.get<PaginatedResponse<ChecklistInspection>>(`${this.apiUrl}/inspections`, {
+      params,
+    });
   }
 
-  getChecklistById(id: string): Observable<EquipmentChecklist> {
-    return this.http.get<EquipmentChecklist>(`${this.apiUrl}/${id}`);
+  getInspectionById(id: number): Observable<ChecklistInspection> {
+    return this.http.get<ChecklistInspection>(`${this.apiUrl}/inspections/${id}`);
   }
 
-  createChecklist(checklist: CreateChecklistDto): Observable<EquipmentChecklist> {
-    return this.http.post<EquipmentChecklist>(this.apiUrl, checklist);
+  getInspectionWithResults(id: number): Observable<InspectionWithResults> {
+    return this.http.get<InspectionWithResults>(`${this.apiUrl}/inspections/${id}/with-results`);
   }
 
-  updateChecklist(id: string, updates: Partial<CreateChecklistDto>): Observable<EquipmentChecklist> {
-    return this.http.put<EquipmentChecklist>(`${this.apiUrl}/${id}`, updates);
+  createInspection(data: Partial<ChecklistInspection>): Observable<ChecklistInspection> {
+    return this.http.post<ChecklistInspection>(`${this.apiUrl}/inspections`, data);
   }
 
-  deleteChecklist(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  updateInspection(
+    id: number,
+    data: Partial<ChecklistInspection>
+  ): Observable<ChecklistInspection> {
+    return this.http.put<ChecklistInspection>(`${this.apiUrl}/inspections/${id}`, data);
   }
 
-  // ============================================================================
-  // ANALYTICS & REPORTS
-  // ============================================================================
+  completeInspection(id: number): Observable<ChecklistInspection> {
+    return this.http.post<ChecklistInspection>(`${this.apiUrl}/inspections/${id}/complete`, {});
+  }
 
-  getChecklistSummary(filters?: { company_id?: string; start_date?: string; end_date?: string }): Observable<any> {
+  cancelInspection(id: number): Observable<ChecklistInspection> {
+    return this.http.post<ChecklistInspection>(`${this.apiUrl}/inspections/${id}/cancel`, {});
+  }
+
+  // ============================================
+  // RESULT METHODS
+  // ============================================
+
+  getResultsByInspection(inspectionId: number): Observable<ChecklistResult[]> {
+    return this.http.get<ChecklistResult[]>(`${this.apiUrl}/inspections/${inspectionId}/results`);
+  }
+
+  saveResult(data: Partial<ChecklistResult>): Observable<ChecklistResult> {
+    return this.http.post<ChecklistResult>(`${this.apiUrl}/results`, data);
+  }
+
+  // ============================================
+  // STATS METHODS
+  // ============================================
+
+  getInspectionStats(filters?: StatsFilters): Observable<ChecklistStats> {
     let params = new HttpParams();
-    
-    if (filters?.company_id) params = params.set('company_id', filters.company_id);
-    if (filters?.start_date) params = params.set('start_date', filters.start_date);
-    if (filters?.end_date) params = params.set('end_date', filters.end_date);
 
-    return this.http.get(`${this.apiUrl}/analytics/summary`, { params });
-  }
+    if (filters?.equipoId) {
+      params = params.set('equipoId', filters.equipoId.toString());
+    }
+    if (filters?.trabajadorId) {
+      params = params.set('trabajadorId', filters.trabajadorId.toString());
+    }
+    if (filters?.fechaDesde) {
+      params = params.set('fechaDesde', filters.fechaDesde);
+    }
+    if (filters?.fechaHasta) {
+      params = params.set('fechaHasta', filters.fechaHasta);
+    }
 
-  getEquipmentChecklistHistory(equipmentId: string, limit: number = 10): Observable<any> {
-    let params = new HttpParams().set('limit', String(limit));
-    return this.http.get(`${this.apiUrl}/analytics/equipment/${equipmentId}/history`, { params });
+    return this.http.get<ChecklistStats>(`${this.apiUrl}/inspections/stats`, { params });
   }
 }

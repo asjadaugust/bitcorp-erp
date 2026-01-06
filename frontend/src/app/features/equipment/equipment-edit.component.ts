@@ -133,12 +133,7 @@ import { Equipment } from '../../core/models/equipment.model';
 
                   <div class="form-group">
                     <label for="status">Status *</label>
-                    <select
-                      id="status"
-                      name="status"
-                      [(ngModel)]="equipment.status"
-                      required
-                    >
+                    <select id="status" name="status" [(ngModel)]="equipment.status" required>
                       <option value="available">Available</option>
                       <option value="in_use">In Use</option>
                       <option value="maintenance">Maintenance</option>
@@ -196,11 +191,7 @@ import { Equipment } from '../../core/models/equipment.model';
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="fuel_type">Fuel Type</label>
-                    <select
-                      id="fuel_type"
-                      name="fuel_type"
-                      [(ngModel)]="equipment.fuel_type"
-                    >
+                    <select id="fuel_type" name="fuel_type" [(ngModel)]="equipment.fuel_type">
                       <option value="">Select Fuel Type</option>
                       <option value="diesel">Diesel</option>
                       <option value="gasoline">Gasoline</option>
@@ -222,15 +213,12 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
 
                   <div class="form-group">
-                    <label for="medidor_uso">Tipo de Medidor</label>
-                    <select
-                      id="medidor_uso"
-                      name="medidor_uso"
-                      [(ngModel)]="equipment.medidor_uso"
-                    >
+                    <label for="meter_type">Tipo de Medidor</label>
+                    <select id="meter_type" name="meter_type" [(ngModel)]="equipment.meter_type">
                       <option value="">Seleccionar...</option>
-                      <option value="horometro">Horómetro</option>
-                      <option value="odometro">Odómetro</option>
+                      <option value="HOROMETRO">Horómetro</option>
+                      <option value="ODOMETRO">Odómetro</option>
+                      <option value="AMBOS">Ambos</option>
                     </select>
                   </div>
 
@@ -283,9 +271,7 @@ import { Equipment } from '../../core/models/equipment.model';
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="cancel()">
-                Cancel
-              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
               <button
                 type="submit"
                 class="btn btn-primary"
@@ -299,101 +285,103 @@ import { Equipment } from '../../core/models/equipment.model';
       </div>
     </div>
   `,
-  styles: [`
-    .equipment-edit-container {
-      min-height: 100vh;
-      background: #f5f5f5;
-      padding: var(--spacing-lg) 0;
-    }
-
-    .breadcrumb {
-      margin-bottom: var(--spacing-lg);
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-sm);
-      color: var(--grey-500);
-      
-      &-link {
-        color: var(--primary-500);
-        text-decoration: none;
-        
-        &:hover {
-          text-decoration: underline;
-        }
+  styles: [
+    `
+      .equipment-edit-container {
+        min-height: 100vh;
+        background: #f5f5f5;
+        padding: var(--spacing-lg) 0;
       }
-      
-      .separator {
-        color: var(--grey-500);
-      }
-    }
 
-    .form-header {
-      margin-bottom: var(--spacing-xl);
-      padding-bottom: var(--spacing-lg);
-      border-bottom: 2px solid #e0e0e0;
-      
-      h1 {
-        font-family: var(--font-family-display);
-        font-size: 28px;
-        color: var(--primary-900);
-        margin-bottom: var(--spacing-xs);
-      }
-      
-      p {
-        color: var(--grey-500);
-      }
-    }
-
-    .form-sections {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-xl);
-    }
-
-    .form-section {
-      h2 {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--primary-900);
+      .breadcrumb {
         margin-bottom: var(--spacing-lg);
-        padding-bottom: var(--spacing-sm);
-        border-bottom: 1px solid #e0e0e0;
-      }
-    }
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        color: var(--grey-500);
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: var(--spacing-lg);
-      
-      .full-width {
-        grid-column: 1 / -1;
-      }
-    }
+        &-link {
+          color: var(--primary-500);
+          text-decoration: none;
 
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--spacing-sm);
-      margin-top: var(--spacing-xl);
-      padding-top: var(--spacing-lg);
-      border-top: 2px solid #e0e0e0;
-    }
+          &:hover {
+            text-decoration: underline;
+          }
+        }
 
-    @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .form-actions {
-        flex-direction: column-reverse;
-        
-        .btn {
-          width: 100%;
+        .separator {
+          color: var(--grey-500);
         }
       }
-    }
-  `]
+
+      .form-header {
+        margin-bottom: var(--spacing-xl);
+        padding-bottom: var(--spacing-lg);
+        border-bottom: 2px solid #e0e0e0;
+
+        h1 {
+          font-family: var(--font-family-display);
+          font-size: 28px;
+          color: var(--primary-900);
+          margin-bottom: var(--spacing-xs);
+        }
+
+        p {
+          color: var(--grey-500);
+        }
+      }
+
+      .form-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xl);
+      }
+
+      .form-section {
+        h2 {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--spacing-lg);
+          padding-bottom: var(--spacing-sm);
+          border-bottom: 1px solid #e0e0e0;
+        }
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+
+        .full-width {
+          grid-column: 1 / -1;
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-xl);
+        padding-top: var(--spacing-lg);
+        border-top: 2px solid #e0e0e0;
+      }
+
+      @media (max-width: 768px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+          flex-direction: column-reverse;
+
+          .btn {
+            width: 100%;
+          }
+        }
+      }
+    `,
+  ],
 })
 export class EquipmentEditComponent implements OnInit {
   private equipmentService = inject(EquipmentService);
@@ -427,7 +415,7 @@ export class EquipmentEditComponent implements OnInit {
         this.errorMessage = 'Failed to load equipment';
         this.loading = false;
         setTimeout(() => this.router.navigate(['/equipment']), 2000);
-      }
+      },
     });
   }
 
@@ -449,7 +437,7 @@ export class EquipmentEditComponent implements OnInit {
       error: (error) => {
         this.errorMessage = error.error?.error || 'Failed to update equipment';
         this.saving = false;
-      }
+      },
     });
   }
 

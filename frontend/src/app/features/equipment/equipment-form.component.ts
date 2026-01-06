@@ -1,6 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { ProviderService } from '../../core/services/provider.service';
@@ -52,9 +58,9 @@ import { Operator } from '../../core/models/operator.model';
             <h3>Información Básica</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="code">Código Interno *</label>
+                <label for="codigo_equipo">Código Interno *</label>
                 <input
-                  id="code"
+                  id="codigo_equipo"
                   type="text"
                   formControlName="codigo_equipo"
                   class="form-control"
@@ -66,8 +72,8 @@ import { Operator } from '../../core/models/operator.model';
               <!-- Name removed -->
 
               <div class="form-group">
-                <label for="category">Categoría *</label>
-                <select id="category" formControlName="categoria" class="form-select">
+                <label for="categoria">Categoría *</label>
+                <select id="categoria" formControlName="categoria" class="form-select">
                   <option value="">Seleccionar Categoría</option>
                   <option value="Excavadora">Excavadora</option>
                   <option value="Tractor de Oruga">Tractor de Oruga</option>
@@ -77,15 +83,13 @@ import { Operator } from '../../core/models/operator.model';
                   <option value="Rodillo Compactador">Rodillo Compactador</option>
                   <option value="Camioneta">Camioneta</option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('categoria')">
-                  Categoría es requerida
-                </div>
+                <div class="error-msg" *ngIf="hasError('categoria')">Categoría es requerida</div>
               </div>
 
               <div class="form-group">
-                <label for="brand">Marca *</label>
+                <label for="marca">Marca *</label>
                 <input
-                  id="brand"
+                  id="marca"
                   type="text"
                   formControlName="marca"
                   class="form-control"
@@ -95,9 +99,9 @@ import { Operator } from '../../core/models/operator.model';
               </div>
 
               <div class="form-group">
-                <label for="model">Modelo *</label>
+                <label for="modelo">Modelo *</label>
                 <input
-                  id="model"
+                  id="modelo"
                   type="text"
                   formControlName="modelo"
                   class="form-control"
@@ -109,9 +113,9 @@ import { Operator } from '../../core/models/operator.model';
               <!-- equipment_type removed -->
 
               <div class="form-group">
-                <label for="year">Año de Fabricación</label>
+                <label for="anio_fabricacion">Año de Fabricación</label>
                 <input
-                  id="year"
+                  id="anio_fabricacion"
                   type="number"
                   formControlName="anio_fabricacion"
                   class="form-control"
@@ -120,9 +124,9 @@ import { Operator } from '../../core/models/operator.model';
               </div>
 
               <div class="form-group">
-                <label for="plate">Placa / Serie</label>
+                <label for="placa">Placa / Serie</label>
                 <input
-                  id="plate"
+                  id="placa"
                   type="text"
                   formControlName="placa"
                   class="form-control"
@@ -137,31 +141,30 @@ import { Operator } from '../../core/models/operator.model';
             <h3>Detalles Operativos</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="status">Estado *</label>
-                <select id="status" formControlName="estado" class="form-select">
-                  <option value="available">Disponible</option>
-                  <option value="in_use">En Uso</option>
-                  <option value="maintenance">Mantenimiento</option>
-                  <option value="retired">Retirado</option>
+                <label for="estado">Estado *</label>
+                <select id="estado" formControlName="estado" class="form-select">
+                  <option value="DISPONIBLE">Disponible</option>
+                  <option value="EN_USO">En Uso</option>
+                  <option value="MANTENIMIENTO">Mantenimiento</option>
+                  <option value="RETIRADO">Retirado</option>
                 </select>
               </div>
 
               <!-- Location removed -->
 
               <div class="form-group">
-                <label for="medidor">Medidor Uso (Horómetro/Odómetro)</label>
-                <input
-                  id="medidor"
-                  type="text"
-                  formControlName="medidor_uso"
-                  class="form-control"
-                  placeholder="Horómetro / Odómetro"
-                />
+                <label for="medidor_uso">Tipo de Medidor</label>
+                <select id="medidor_uso" formControlName="medidor_uso" class="form-select">
+                  <option [ngValue]="null">Seleccionar Tipo</option>
+                  <option value="HOROMETRO">Horómetro</option>
+                  <option value="ODOMETRO">Odómetro</option>
+                  <option value="AMBOS">Ambos</option>
+                </select>
               </div>
 
               <div class="form-group">
-                <label for="provider">Proveedor</label>
-                <select id="provider" formControlName="provider_id" class="form-select">
+                <label for="proveedor_id">Proveedor</label>
+                <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
                   <option [ngValue]="null">Seleccionar Proveedor</option>
                   <option *ngFor="let provider of providers" [value]="provider.id">
                     {{ provider.razon_social }}
@@ -178,9 +181,9 @@ import { Operator } from '../../core/models/operator.model';
             <h3>Especificaciones Técnicas</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="power">Potencia (HP)</label>
+                <label for="potencia_neta">Potencia (HP)</label>
                 <input
-                  id="power"
+                  id="potencia_neta"
                   type="text"
                   formControlName="potencia_neta"
                   class="form-control"
@@ -189,10 +192,10 @@ import { Operator } from '../../core/models/operator.model';
               </div>
 
               <!-- Removed capacity/weight/fuel as not in entity -->
-              
+
               <div class="form-group">
                 <label for="tipo_motor">Tipo de Motor</label>
-                 <input
+                <input
                   id="tipo_motor"
                   type="text"
                   formControlName="tipo_motor"
@@ -225,7 +228,11 @@ import { Operator } from '../../core/models/operator.model';
                 <tbody>
                   <tr *ngFor="let doc of equipmentDocuments; let i = index">
                     <td>
-                      <select [(ngModel)]="doc.document_type" [ngModelOptions]="{standalone: true}" class="form-select">
+                      <select
+                        [(ngModel)]="doc.document_type"
+                        [ngModelOptions]="{ standalone: true }"
+                        class="form-select"
+                      >
                         <option value="">Seleccionar...</option>
                         <option value="poliza">Póliza de Seguro</option>
                         <option value="soat">SOAT</option>
@@ -236,23 +243,39 @@ import { Operator } from '../../core/models/operator.model';
                       </select>
                     </td>
                     <td>
-                      <input type="date" [(ngModel)]="doc.expiration_date" [ngModelOptions]="{standalone: true}" class="form-control" />
+                      <input
+                        type="date"
+                        [(ngModel)]="doc.expiration_date"
+                        [ngModelOptions]="{ standalone: true }"
+                        class="form-control"
+                      />
                     </td>
                     <td>
-                      <span [class]="'status-badge status-' + getDocumentStatus(doc.expiration_date)">
+                      <span
+                        [class]="'status-badge status-' + getDocumentStatus(doc.expiration_date)"
+                      >
                         {{ getDocumentStatusLabel(doc.expiration_date) }}
                       </span>
                     </td>
                     <td>
                       <div class="file-input-wrapper">
-                        <input type="file" [id]="'doc_file_' + i" (change)="onDocFileSelected($event, i)" class="file-input" />
+                        <input
+                          type="file"
+                          [id]="'doc_file_' + i"
+                          (change)="onDocFileSelected($event, i)"
+                          class="file-input"
+                        />
                         <label [for]="'doc_file_' + i" class="btn btn-sm btn-secondary">
                           <i class="fa-solid fa-upload"></i> {{ doc.file_name || 'Adjuntar' }}
                         </label>
                       </div>
                     </td>
                     <td>
-                      <button type="button" class="btn btn-icon btn-danger" (click)="removeDocument(i)">
+                      <button
+                        type="button"
+                        class="btn btn-icon btn-danger"
+                        (click)="removeDocument(i)"
+                      >
                         <i class="fa-solid fa-trash"></i>
                       </button>
                     </td>
@@ -540,10 +563,22 @@ import { Operator } from '../../core/models/operator.model';
         font-weight: 500;
       }
 
-      .status-vigente { background: var(--semantic-green-50); color: var(--semantic-green-700); }
-      .status-por_vencer { background: var(--semantic-yellow-50); color: var(--semantic-yellow-700); }
-      .status-vencido { background: var(--semantic-red-50); color: var(--semantic-red-700); }
-      .status-sin_fecha { background: var(--grey-100); color: var(--grey-600); }
+      .status-vigente {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .status-por_vencer {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .status-vencido {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+      .status-sin_fecha {
+        background: var(--grey-100);
+        color: var(--grey-600);
+      }
     `,
   ],
 })
@@ -566,30 +601,21 @@ export class EquipmentFormComponent implements OnInit {
   constructor() {
     this.equipmentForm = this.fb.group({
       codigo_equipo: ['', Validators.required],
-      // name: ['', Validators.required], // Removed as not in backend
       marca: ['', Validators.required],
       modelo: ['', Validators.required],
-      // equipment_type: ['', Validators.required], // Removed, using categoria
-      estado: ['available', Validators.required],
+      estado: ['DISPONIBLE', Validators.required],
       categoria: ['', Validators.required],
-      provider_id: [null],
-      // assigned_operator_id: [null], // Not in simple Equipment model, maybe separate relation
+      proveedor_id: [null],
 
       // Optional fields
       anio_fabricacion: [null],
       placa: [''],
-      // location: [''], // Not in Equipment model
-      medidor_uso: [''], // Changed to string/type per entity, or maybe reading if mapped?
-      potencia_neta: [''], // Was potencia_hp
-      // capacidad_cucharon: [''], // Not in entity
-      // peso_operativo: [''], // Not in entity
-      tipo_motor: [''], // Was tipo_combustible? Entity has tipo_motor
-
-      // Dates
-      // purchase_date: [null], // Not in entity
-      // warranty_expiration: [null], // Not in entity
-      // vencimiento_seguro: [null], // Not in entity
-      // vencimiento_revision_tecnica: [null], // Not in entity
+      medidor_uso: [''],
+      potencia_neta: [''],
+      tipo_motor: [''],
+      numero_serie_equipo: [''],
+      numero_chasis: [''],
+      numero_serie_motor: [''],
 
       // notes: [''], // Not in entity
     });
@@ -649,8 +675,10 @@ export class EquipmentFormComponent implements OnInit {
     if (!expirationDate) return 'sin_fecha';
     const expDate = new Date(expirationDate);
     const today = new Date();
-    const daysUntilExpiry = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const daysUntilExpiry = Math.ceil(
+      (expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
     if (daysUntilExpiry < 0) return 'vencido';
     if (daysUntilExpiry <= 30) return 'por_vencer';
     return 'vigente';
@@ -659,10 +687,10 @@ export class EquipmentFormComponent implements OnInit {
   getDocumentStatusLabel(expirationDate: string): string {
     const status = this.getDocumentStatus(expirationDate);
     const labels: Record<string, string> = {
-      'vigente': 'Vigente',
-      'por_vencer': 'Por Vencer',
-      'vencido': 'Vencido',
-      'sin_fecha': 'Sin Fecha',
+      vigente: 'Vigente',
+      por_vencer: 'Por Vencer',
+      vencido: 'Vencido',
+      sin_fecha: 'Sin Fecha',
     };
     return labels[status] || status;
   }
@@ -671,16 +699,22 @@ export class EquipmentFormComponent implements OnInit {
     this.loading = true;
     this.equipmentService.getById(id).subscribe({
       next: (equipment) => {
-        // Format dates for input[type="date"]
-        const formatDate = (dateStr: string | undefined) =>
-          dateStr ? dateStr.split('T')[0] : null;
-
+        // Map English response fields to Spanish form fields
         this.equipmentForm.patchValue({
-          ...equipment,
-          // purchase_date: formatDate(equipment.purchase_date),
-          // warranty_expiration: formatDate(equipment.warranty_expiration),
-          // vencimiento_seguro: formatDate(equipment.vencimiento_seguro),
-          // vencimiento_revision_tecnica: formatDate(equipment.vencimiento_revision_tecnica),
+          codigo_equipo: equipment.code,
+          marca: equipment.brand,
+          modelo: equipment.model,
+          estado: equipment.status,
+          categoria: equipment.category,
+          proveedor_id: equipment.provider_id,
+          anio_fabricacion: equipment.manufacture_year,
+          placa: equipment.plate_number,
+          medidor_uso: equipment.meter_type,
+          potencia_neta: equipment.net_power,
+          tipo_motor: equipment.engine_type,
+          numero_serie_equipo: equipment.serial_number,
+          numero_chasis: equipment.chassis_number,
+          numero_serie_motor: equipment.engine_serial_number,
         });
         this.loading = false;
       },

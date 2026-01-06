@@ -1,28 +1,32 @@
+export type TipoMantenimiento = 'PREVENTIVO' | 'CORRECTIVO' | 'PREDICTIVO';
+export type EstadoMantenimiento =
+  | 'PROGRAMADO'
+  | 'EN_PROCESO'
+  | 'COMPLETADO'
+  | 'CANCELADO'
+  | 'PENDIENTE';
+
 export interface MaintenanceRecord {
   id: number;
-  equipment_id: number;
-  maintenance_type: 'preventive' | 'corrective' | 'predictive';
-  description: string;
-  start_date: string;
-  end_date?: string;
-  cost: number;
-  provider_id?: number;
-  provider_name?: string;
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-  hourmeter_reading?: number;
-  created_at?: string;
-  updated_at?: string;
+  equipoId: number;
+  tipoMantenimiento: TipoMantenimiento;
+  descripcion?: string;
+  fechaProgramada?: Date | string;
+  fechaRealizada?: Date | string;
+  costoEstimado?: number;
+  costoReal?: number;
+  tecnicoResponsable?: string;
+  estado: EstadoMantenimiento;
+  observaciones?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 
   // Relations
-  equipment?: {
+  equipo?: {
     id: number;
-    code: string;
-    equipment_code?: string;
-    brand: string;
-    model: string;
-  };
-  provider?: {
-    id: number;
-    business_name: string;
+    codigo_equipo: string;
+    marca: string;
+    modelo: string;
+    placa?: string;
   };
 }

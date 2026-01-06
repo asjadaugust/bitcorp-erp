@@ -29,12 +29,9 @@ import { TenderService } from '../../services/tender.service';
         </div>
         <div class="header-actions">
           <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="form.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Licitación' }}
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
+            <i class="fa-solid fa-save"></i>
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Licitación' }}
           </button>
         </div>
       </div>
@@ -47,51 +44,54 @@ import { TenderService } from '../../services/tender.service';
             <h3>Información Básica</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="code">Código *</label>
+                <label for="codigo">Código *</label>
                 <input
-                  id="code"
+                  id="codigo"
                   type="text"
-                  formControlName="code"
+                  formControlName="codigo"
                   class="form-control"
                   placeholder="Ej: LIC-2025-001"
                 />
-                <div class="error-msg" *ngIf="hasError('code')">Código es requerido</div>
+                <div class="error-msg" *ngIf="hasError('codigo')">Código es requerido</div>
               </div>
 
               <div class="form-group">
-                <label for="name">Nombre *</label>
+                <label for="nombre">Nombre *</label>
                 <input
-                  id="name"
+                  id="nombre"
                   type="text"
-                  formControlName="name"
+                  formControlName="nombre"
                   class="form-control"
                   placeholder="Nombre de la licitación"
                 />
-                <div class="error-msg" *ngIf="hasError('name')">Nombre es requerido</div>
+                <div class="error-msg" *ngIf="hasError('nombre')">Nombre es requerido</div>
               </div>
 
               <div class="form-group">
-                <label for="entity">Entidad *</label>
+                <label for="entidadConvocante">Entidad Convocante *</label>
                 <input
-                  id="entity"
+                  id="entidadConvocante"
                   type="text"
-                  formControlName="entity"
+                  formControlName="entidadConvocante"
                   class="form-control"
                   placeholder="Entidad contratante"
                 />
-                <div class="error-msg" *ngIf="hasError('entity')">Entidad es requerida</div>
+                <div class="error-msg" *ngIf="hasError('entidadConvocante')">
+                  Entidad es requerida
+                </div>
               </div>
 
               <div class="form-group">
-                <label for="type">Tipo *</label>
-                <select id="type" formControlName="type" class="form-select">
-                  <option value="">Seleccione...</option>
-                  <option value="Pública">Pública</option>
-                  <option value="Privada">Privada</option>
-                  <option value="Concurso">Concurso</option>
-                  <option value="Directa">Directa</option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('type')">Tipo es requerido</div>
+                <label for="montoReferencial">Monto Referencial *</label>
+                <input
+                  id="montoReferencial"
+                  type="number"
+                  formControlName="montoReferencial"
+                  class="form-control"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+                <div class="error-msg" *ngIf="hasError('montoReferencial')">Monto es requerido</div>
               </div>
             </div>
           </div>
@@ -101,59 +101,48 @@ import { TenderService } from '../../services/tender.service';
             <h3>Fechas y Estado</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="publicationDate">Fecha Publicación *</label>
+                <label for="fechaConvocatoria">Fecha Convocatoria</label>
                 <input
-                  id="publicationDate"
+                  id="fechaConvocatoria"
                   type="date"
-                  formControlName="publicationDate"
+                  formControlName="fechaConvocatoria"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('publicationDate')">Fecha es requerida</div>
               </div>
 
               <div class="form-group">
-                <label for="submissionDeadline">Fecha Límite *</label>
+                <label for="fechaPresentacion">Fecha Presentación *</label>
                 <input
-                  id="submissionDeadline"
+                  id="fechaPresentacion"
                   type="date"
-                  formControlName="submissionDeadline"
+                  formControlName="fechaPresentacion"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('submissionDeadline')">Fecha límite es requerida</div>
+                <div class="error-msg" *ngIf="hasError('fechaPresentacion')">
+                  Fecha es requerida
+                </div>
               </div>
 
               <div class="form-group">
-                <label for="estimatedAmount">Valor Estimado *</label>
-                <input
-                  id="estimatedAmount"
-                  type="number"
-                  formControlName="estimatedAmount"
-                  class="form-control"
-                  step="0.01"
-                  placeholder="0.00"
-                />
-                <div class="error-msg" *ngIf="hasError('estimatedAmount')">Valor es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="status">Estado *</label>
-                <select id="status" formControlName="status" class="form-select">
-                  <option value="Abierta">Abierta</option>
-                  <option value="En Evaluación">En Evaluación</option>
-                  <option value="Adjudicada">Adjudicada</option>
-                  <option value="Cancelada">Cancelada</option>
+                <label for="estado">Estado *</label>
+                <select id="estado" formControlName="estado" class="form-select">
+                  <option value="PUBLICADO">Publicado</option>
+                  <option value="EVALUACION">En Evaluación</option>
+                  <option value="ADJUDICADO">Adjudicado</option>
+                  <option value="DESIERTO">Desierto</option>
+                  <option value="CANCELADO">Cancelado</option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
+                <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
               </div>
 
               <div class="form-group full-width">
-                <label for="description">Descripción</label>
+                <label for="observaciones">Observaciones</label>
                 <textarea
-                  id="description"
-                  formControlName="description"
+                  id="observaciones"
+                  formControlName="observaciones"
                   class="form-control"
                   rows="3"
-                  placeholder="Descripción adicional..."
+                  placeholder="Observaciones adicionales..."
                 ></textarea>
               </div>
             </div>
@@ -198,45 +187,46 @@ import { TenderService } from '../../services/tender.service';
         font-size: 24px;
         color: var(--grey-900);
       }
-      .subtitle {
-        margin: 0;
-        color: var(--grey-500);
+      .title-group .subtitle {
+        margin: 0.25rem 0 0 0;
         font-size: 14px;
+        color: var(--grey-600);
       }
       .header-actions {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem;
       }
 
-      /* Form Card */
-      .form-card {
+      /* Card */
+      .card {
         background: white;
-        padding: 2rem;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
-
-      .form-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
+      .form-card {
+        padding: 2rem;
       }
 
+      /* Form Layout */
+      .form-section {
+        margin-bottom: 2rem;
+      }
+      .form-section:last-child {
+        margin-bottom: 0;
+      }
       .form-section h3 {
-        font-size: 16px;
-        color: var(--primary-800);
-        border-bottom: 1px solid var(--grey-200);
-        padding-bottom: 0.5rem;
-        margin-bottom: 1.5rem;
+        margin: 0 0 1.5rem 0;
+        font-size: 18px;
+        color: var(--grey-900);
         font-weight: 600;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--grey-200);
       }
-
       .section-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
       }
-
       .full-width {
         grid-column: 1 / -1;
       }
@@ -245,34 +235,38 @@ import { TenderService } from '../../services/tender.service';
       .form-group {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
       }
-
-      label {
-        font-size: 13px;
+      .form-group label {
+        font-size: 14px;
         font-weight: 500;
         color: var(--grey-700);
+        margin-bottom: 0.5rem;
       }
-
       .form-control,
       .form-select {
-        padding: 0.625rem;
+        padding: 0.625rem 0.75rem;
         border: 1px solid var(--grey-300);
         border-radius: 6px;
         font-size: 14px;
-        transition: all 0.2s;
+        transition: border-color 0.2s;
       }
-
       .form-control:focus,
       .form-select:focus {
-        border-color: var(--primary-500);
         outline: none;
-        box-shadow: 0 0 0 3px var(--primary-100);
+        border-color: var(--primary-500);
       }
-
+      .form-control.ng-invalid.ng-touched,
+      .form-select.ng-invalid.ng-touched {
+        border-color: var(--error-500);
+      }
       .error-msg {
-        color: var(--semantic-red-600);
-        font-size: 12px;
+        color: var(--error-500);
+        font-size: 13px;
+        margin-top: 0.25rem;
+      }
+      textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
       }
 
       /* Buttons */
@@ -337,17 +331,14 @@ export class TenderFormComponent implements OnInit {
 
   initForm() {
     this.form = this.fb.group({
-      code: ['', Validators.required],
-      name: ['', Validators.required],
-      entity: ['', Validators.required],
-      type: ['', Validators.required],
-      publicationDate: ['', Validators.required],
-      submissionDeadline: ['', Validators.required],
-      awardDate: [''],
-      status: ['Abierta', Validators.required],
-      estimatedAmount: ['', Validators.required],
-      currency: ['PEN'],
-      description: ['']
+      codigo: ['', Validators.required],
+      nombre: ['', Validators.required],
+      entidadConvocante: ['', Validators.required],
+      montoReferencial: ['', Validators.required],
+      fechaConvocatoria: [''],
+      fechaPresentacion: ['', Validators.required],
+      estado: ['PUBLICADO', Validators.required],
+      observaciones: [''],
     });
   }
 
@@ -356,13 +347,22 @@ export class TenderFormComponent implements OnInit {
     this.loading = true;
     this.tenderService.getTender(this.tenderId).subscribe({
       next: (tender) => {
-        this.form.patchValue(tender);
+        this.form.patchValue({
+          codigo: tender.codigo,
+          nombre: tender.nombre,
+          entidadConvocante: tender.entidadConvocante,
+          montoReferencial: tender.montoReferencial,
+          fechaConvocatoria: tender.fechaConvocatoria,
+          fechaPresentacion: tender.fechaPresentacion,
+          estado: tender.estado,
+          observaciones: tender.observaciones,
+        });
         this.loading = false;
       },
       error: () => {
         this.loading = false;
         console.error('Error loading tender');
-      }
+      },
     });
   }
 
@@ -372,10 +372,11 @@ export class TenderFormComponent implements OnInit {
       return;
     }
     this.loading = true;
-    const req = this.isEditMode && this.tenderId
-      ? this.tenderService.updateTender(this.tenderId, this.form.value)
-      : this.tenderService.createTender(this.form.value);
-    
+    const req =
+      this.isEditMode && this.tenderId
+        ? this.tenderService.updateTender(this.tenderId, this.form.value)
+        : this.tenderService.createTender(this.form.value);
+
     req.subscribe({
       next: () => {
         this.router.navigate(['/licitaciones']);
@@ -383,7 +384,7 @@ export class TenderFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error saving tender');
-      }
+      },
     });
   }
 
@@ -391,8 +392,8 @@ export class TenderFormComponent implements OnInit {
     this.router.navigate(['/licitaciones']);
   }
 
-  hasError(field: string): boolean {
-    const control = this.form.get(field);
-    return !!(control && control.invalid && (control.dirty || control.touched));
+  hasError(fieldName: string): boolean {
+    const field = this.form.get(fieldName);
+    return !!(field && field.invalid && field.touched);
   }
 }

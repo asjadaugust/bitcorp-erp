@@ -64,8 +64,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          equipment: equipmentTemplate,
-          description: descriptionTemplate,
+          equipo: equipmentTemplate,
+          descripcion: descriptionTemplate,
         }"
         (rowClick)="viewRecord($event)"
       >
@@ -74,14 +74,14 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <!-- Custom Templates -->
       <ng-template #equipmentTemplate let-row>
         <div class="equipment-info">
-          <span class="equip-code">{{ row.equipment?.code || 'N/A' }}</span>
-          <span class="equip-model">{{ row.equipment?.brand }} {{ row.equipment?.model }}</span>
+          <span class="equip-code">{{ row.equipo?.codigo_equipo || 'N/A' }}</span>
+          <span class="equip-model">{{ row.equipo?.marca }} {{ row.equipo?.modelo }}</span>
         </div>
       </ng-template>
 
       <ng-template #descriptionTemplate let-row>
-        <div class="description-text" title="{{ row.description }}">
-          {{ row.description }}
+        <div class="description-text" title="{{ row.descripcion }}">
+          {{ row.descripcion }}
         </div>
       </ng-template>
 
@@ -200,7 +200,12 @@ export class MaintenanceListComponent implements OnInit {
     { label: 'Lista de Equipos', route: '/equipment', icon: 'fa-list' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
     { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar', animate: true },
+    {
+      label: 'Programación',
+      route: '/equipment/maintenance/schedule',
+      icon: 'fa-calendar',
+      animate: true,
+    },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
     { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
   ];
@@ -217,9 +222,9 @@ export class MaintenanceListComponent implements OnInit {
       label: 'Tipo',
       type: 'select',
       options: [
-        { label: 'Preventivo', value: 'preventive' },
-        { label: 'Correctivo', value: 'corrective' },
-        { label: 'Predictivo', value: 'predictive' },
+        { label: 'Preventivo', value: 'PREVENTIVO' },
+        { label: 'Correctivo', value: 'CORRECTIVO' },
+        { label: 'Predictivo', value: 'PREDICTIVO' },
       ],
     },
     {
@@ -227,37 +232,41 @@ export class MaintenanceListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Programado', value: 'scheduled' },
-        { label: 'En Progreso', value: 'in_progress' },
-        { label: 'Completado', value: 'completed' },
+        { label: 'Programado', value: 'PROGRAMADO' },
+        { label: 'En Proceso', value: 'EN_PROCESO' },
+        { label: 'Completado', value: 'COMPLETADO' },
+        { label: 'Cancelado', value: 'CANCELADO' },
+        { label: 'Pendiente', value: 'PENDIENTE' },
       ],
     },
   ];
 
   columns: TableColumn[] = [
-    { key: 'equipment', label: 'Equipo', type: 'template' },
+    { key: 'equipo', label: 'Equipo', type: 'template' },
     {
-      key: 'maintenance_type',
+      key: 'tipoMantenimiento',
       label: 'Tipo',
       type: 'badge',
       badgeConfig: {
-        preventive: { label: 'Preventivo', class: 'badge type-preventive' },
-        corrective: { label: 'Correctivo', class: 'badge type-corrective' },
-        predictive: { label: 'Predictivo', class: 'badge type-predictive' },
+        PREVENTIVO: { label: 'Preventivo', class: 'badge type-preventive' },
+        CORRECTIVO: { label: 'Correctivo', class: 'badge type-corrective' },
+        PREDICTIVO: { label: 'Predictivo', class: 'badge type-predictive' },
       },
     },
-    { key: 'description', label: 'Descripción', type: 'template' },
-    { key: 'start_date', label: 'Fecha Inicio', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'cost', label: 'Costo', type: 'currency', format: 'PEN' },
-    { key: 'provider_name', label: 'Proveedor', type: 'text' },
+    { key: 'descripcion', label: 'Descripción', type: 'template' },
+    { key: 'fechaProgramada', label: 'Fecha Programada', type: 'date', format: 'dd/MM/yyyy' },
+    { key: 'costoEstimado', label: 'Costo Est.', type: 'currency', format: 'PEN' },
+    { key: 'tecnicoResponsable', label: 'Técnico', type: 'text' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        completed: { label: 'Completado', class: 'badge status-completed' },
-        in_progress: { label: 'En Progreso', class: 'badge status-in_progress' },
-        scheduled: { label: 'Programado', class: 'badge status-scheduled' },
+        COMPLETADO: { label: 'Completado', class: 'badge status-completed' },
+        EN_PROCESO: { label: 'En Proceso', class: 'badge status-in_progress' },
+        PROGRAMADO: { label: 'Programado', class: 'badge status-scheduled' },
+        CANCELADO: { label: 'Cancelado', class: 'badge status-cancelled' },
+        PENDIENTE: { label: 'Pendiente', class: 'badge status-pending' },
       },
     },
   ];
@@ -270,10 +279,7 @@ export class MaintenanceListComponent implements OnInit {
     this.loading = true;
     this.maintenanceService.getAll(this.filters).subscribe({
       next: (data) => {
-        this.records = data.map((r) => ({
-          ...r,
-          provider_name: r.provider?.business_name || '-',
-        }));
+        this.records = data;
         this.loading = false;
       },
       error: () => {
@@ -316,18 +322,20 @@ export class MaintenanceListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      Equipo: record.equipment?.equipment_code || 'N/A',
-      Tipo: record.maintenance_type || '',
-      Descripción: record.description || '',
-      'Fecha Inicio': record.start_date
-        ? new Date(record.start_date).toLocaleDateString('es-PE')
+      Equipo: record.equipo?.codigo_equipo || 'N/A',
+      Tipo: record.tipoMantenimiento || '',
+      Descripción: record.descripcion || '',
+      'Fecha Programada': record.fechaProgramada
+        ? new Date(record.fechaProgramada).toLocaleDateString('es-PE')
         : '',
-      'Fecha Fin': record.end_date ? new Date(record.end_date).toLocaleDateString('es-PE') : '',
-      Costo: record.cost || 0,
-      Proveedor: record.provider_name || '-',
-      Estado: record.status || '',
-      Horómetro: record.hourmeter_reading || 0,
-      Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
+      'Fecha Realizada': record.fechaRealizada
+        ? new Date(record.fechaRealizada).toLocaleDateString('es-PE')
+        : '',
+      'Costo Estimado': record.costoEstimado || 0,
+      'Costo Real': record.costoReal || 0,
+      Técnico: record.tecnicoResponsable || '-',
+      Estado: record.estado || '',
+      Creado: record.createdAt ? new Date(record.createdAt).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToExcel(exportData, {
@@ -343,18 +351,20 @@ export class MaintenanceListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      Equipo: record.equipment?.equipment_code || 'N/A',
-      Tipo: record.maintenance_type || '',
-      Descripción: record.description || '',
-      'Fecha Inicio': record.start_date
-        ? new Date(record.start_date).toLocaleDateString('es-PE')
+      Equipo: record.equipo?.codigo_equipo || 'N/A',
+      Tipo: record.tipoMantenimiento || '',
+      Descripción: record.descripcion || '',
+      'Fecha Programada': record.fechaProgramada
+        ? new Date(record.fechaProgramada).toLocaleDateString('es-PE')
         : '',
-      'Fecha Fin': record.end_date ? new Date(record.end_date).toLocaleDateString('es-PE') : '',
-      Costo: record.cost || 0,
-      Proveedor: record.provider_name || '-',
-      Estado: record.status || '',
-      Horómetro: record.hourmeter_reading || 0,
-      Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
+      'Fecha Realizada': record.fechaRealizada
+        ? new Date(record.fechaRealizada).toLocaleDateString('es-PE')
+        : '',
+      'Costo Estimado': record.costoEstimado || 0,
+      'Costo Real': record.costoReal || 0,
+      Técnico: record.tecnicoResponsable || '-',
+      Estado: record.estado || '',
+      Creado: record.createdAt ? new Date(record.createdAt).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'mantenimientos');
