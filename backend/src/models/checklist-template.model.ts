@@ -4,77 +4,55 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
   ManyToOne,
   JoinColumn,
-  OneToMany,
 } from 'typeorm';
-import { EquipmentChecklist } from './equipment-checklist.model';
+import { ChecklistItem } from './checklist-item.model';
+import { User } from './user.model';
 
-export enum ChecklistType {
-  PRE_USO = 'pre_uso',
-  INSPECCION = 'inspeccion',
-  INGRESO = 'ingreso',
+export type FrecuenciaChecklist = 'DIARIO' | 'SEMANAL' | 'MENSUAL' | 'ANTES_USO';
+
+@Entity('checklist_plantilla', { schema: 'equipo' })
+export class ChecklistPlantilla {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({ name: 'codigo', type: 'varchar', length: 50, unique: true })
+  codigo!: string;
+
+  @Column({ name: 'nombre', type: 'varchar', length: 255 })
+  nombre!: string;
+
+  @Column({ name: 'tipo_equipo', type: 'varchar', length: 100, nullable: true })
+  tipoEquipo?: string;
+
+  @Column({ name: 'descripcion', type: 'text', nullable: true })
+  descripcion?: string;
+
+  @Column({ name: 'frecuencia', type: 'varchar', length: 50, nullable: true })
+  frecuencia?: FrecuenciaChecklist;
+
+  @Column({ name: 'activo', type: 'boolean', default: true })
+  activo!: boolean;
+
+  @Column({ name: 'created_by', type: 'integer', nullable: true })
+  createdBy?: number;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt!: Date;
+
+  // Relations
+  @OneToMany(() => ChecklistItem, (item) => item.plantillaId)
+  items?: ChecklistItem[];
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  creator?: User;
 }
 
-export enum ChecklistItemType {
-  OK_NOT_OK = 'ok_not_ok',
-  TEXT = 'text',
-  NUMERIC = 'numeric',
-  PHOTO_REQUIRED = 'photo_required',
-}
-
-export interface ChecklistItem {
-  id: string;
-  category: string;
-  description: string;
-  type: ChecklistItemType;
-  required: boolean;
-  order: number;
-  unit?: string; // For numeric types
-  response?: string; // Filled during inspection
-  notes?: string; // Operator notes
-  photo_url?: string; // If photo required
-}
-
-@Entity('equipment_checklist_templates')
-export class ChecklistTemplate {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
-
-  @Column({
-    type: 'varchar',
-    length: 50,
-    enum: ChecklistType,
-  })
-  checklist_type!: ChecklistType;
-
-  @Column({ type: 'uuid', nullable: true })
-  equipment_category_id?: string;
-
-  @Column({ type: 'varchar', length: 255 })
-  template_name!: string;
-
-  @Column({ type: 'text', nullable: true })
-  description?: string;
-
-  @Column({ type: 'jsonb', default: [] })
-  items!: ChecklistItem[];
-
-  @Column({ type: 'boolean', default: true })
-  is_active!: boolean;
-
-  @Column({ type: 'uuid' })
-  company_id!: string;
-
-  @Column({ type: 'uuid', nullable: true })
-  created_by?: string;
-
-  @CreateDateColumn({ type: 'timestamp' })
-  created_at!: Date;
-
-  @UpdateDateColumn({ type: 'timestamp' })
-  updated_at!: Date;
-
-  @OneToMany(() => EquipmentChecklist, (checklist) => checklist.template)
-  checklists?: EquipmentChecklist[];
-}
+// Export with English alias for compatibility
+export { ChecklistPlantilla as ChecklistTemplate };

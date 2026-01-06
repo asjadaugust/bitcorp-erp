@@ -8,67 +8,53 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Equipment } from './equipment.model';
-import { User } from './user.model';
-import { Project } from './project.model';
+
+export type TipoMantenimiento = 'PREVENTIVO' | 'CORRECTIVO' | 'PREDICTIVO';
+export type EstadoMantenimiento =
+  | 'PROGRAMADO'
+  | 'EN_PROCESO'
+  | 'COMPLETADO'
+  | 'CANCELADO'
+  | 'PENDIENTE';
 
 @Entity('programa_mantenimiento', { schema: 'equipo' })
 export class MaintenanceSchedule {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-  @Column({ name: 'equipment_id', type: 'uuid' })
-  equipmentId!: string;
+  @Column({ name: 'equipo_id', type: 'integer' })
+  equipoId!: number;
 
   @ManyToOne(() => Equipment)
-  @JoinColumn({ name: 'equipment_id' })
-  equipment!: Equipment;
+  @JoinColumn({ name: 'equipo_id' })
+  equipo?: Equipment;
 
-  @Column({ name: 'maintenance_type', length: 50 })
-  maintenanceType!: string; // 'preventive' | 'corrective' | 'predictive'
+  @Column({ name: 'tipo_mantenimiento', type: 'varchar', length: 50 })
+  tipoMantenimiento!: TipoMantenimiento;
 
-  @Column({ name: 'interval_type', length: 20 })
-  intervalType!: string; // 'hours' | 'days' | 'weeks' | 'months'
+  @Column({ name: 'descripcion', type: 'text', nullable: true })
+  descripcion?: string;
 
-  @Column({ name: 'interval_value', type: 'integer' })
-  intervalValue!: number;
+  @Column({ name: 'fecha_programada', type: 'date', nullable: true })
+  fechaProgramada?: Date;
 
-  @Column({ name: 'last_completed_date', type: 'timestamp', nullable: true })
-  lastCompletedDate?: Date;
+  @Column({ name: 'fecha_realizada', type: 'date', nullable: true })
+  fechaRealizada?: Date;
 
-  @Column({ name: 'last_completed_hours', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  lastCompletedHours?: number;
+  @Column({ name: 'costo_estimado', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  costoEstimado?: number;
 
-  @Column({ name: 'next_due_date', type: 'date', nullable: true })
-  nextDueDate?: Date;
+  @Column({ name: 'costo_real', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  costoReal?: number;
 
-  @Column({ name: 'next_due_hours', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  nextDueHours?: number;
+  @Column({ name: 'tecnico_responsable', type: 'varchar', length: 100, nullable: true })
+  tecnicoResponsable?: string;
 
-  @Column({ length: 20, default: 'active' })
-  status!: string; // 'active' | 'paused' | 'completed' | 'cancelled'
+  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'PROGRAMADO' })
+  estado!: EstadoMantenimiento;
 
-  @Column({ type: 'text', nullable: true })
-  description?: string;
-
-  @Column({ type: 'text', nullable: true })
-  notes?: string;
-
-  @Column({ name: 'auto_generate_tasks', default: true })
-  autoGenerateTasks!: boolean;
-
-  @Column({ name: 'created_by', type: 'uuid', nullable: true })
-  createdBy?: string;
-
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'created_by' })
-  creator?: User;
-
-  @Column({ name: 'project_id', type: 'uuid', nullable: true })
-  projectId?: string;
-
-  @ManyToOne(() => Project, { nullable: true })
-  @JoinColumn({ name: 'project_id' })
-  project?: Project;
+  @Column({ name: 'observaciones', type: 'text', nullable: true })
+  observaciones?: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

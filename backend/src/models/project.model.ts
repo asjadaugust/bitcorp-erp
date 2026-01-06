@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToMany,
   ManyToOne,
   JoinColumn,
   Index,
@@ -81,9 +80,6 @@ export class Proyecto {
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'actualizado_por' })
   updater?: User;
-
-  @ManyToMany(() => User, (user) => user.projects)
-  users?: User[];
 }
 
 // Backward compatibility alias

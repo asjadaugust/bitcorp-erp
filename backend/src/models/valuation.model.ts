@@ -8,7 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { Project } from './project.model';
 import { User } from './user.model';
 
 export type EstadoValorizacion = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'PAGADO';
@@ -69,6 +68,28 @@ export class Valorizacion {
 
   @Column({ name: 'total_valorizado', type: 'decimal', precision: 15, scale: 2, nullable: true })
   totalValorizado?: number;
+
+  @Column({ name: 'numero_valorizacion', type: 'varchar', length: 20, nullable: true })
+  @Index('idx_valorizacion_equipo_numero')
+  numeroValorizacion?: string;
+
+  @Column({ name: 'tipo_cambio', type: 'decimal', precision: 10, scale: 4, nullable: true })
+  tipoCambio?: number;
+
+  @Column({ name: 'descuento_porcentaje', type: 'decimal', precision: 5, scale: 2, default: 0.0 })
+  descuentoPorcentaje?: number;
+
+  @Column({ name: 'descuento_monto', type: 'decimal', precision: 15, scale: 2, default: 0.0 })
+  descuentoMonto?: number;
+
+  @Column({ name: 'igv_porcentaje', type: 'decimal', precision: 5, scale: 2, default: 18.0 })
+  igvPorcentaje?: number;
+
+  @Column({ name: 'igv_monto', type: 'decimal', precision: 15, scale: 2, default: 0.0 })
+  igvMonto?: number;
+
+  @Column({ name: 'total_con_igv', type: 'decimal', precision: 15, scale: 2, default: 0.0 })
+  totalConIgv?: number;
 
   @Column({ name: 'estado', type: 'varchar', length: 50, default: 'PENDIENTE' })
   @Index('idx_valorizacion_equipo_estado')

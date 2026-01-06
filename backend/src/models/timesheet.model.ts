@@ -3,114 +3,64 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  OneToMany,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { OperatorModel } from './operator.model';
-import { Project } from './project.model';
+import { Trabajador } from './trabajador.model';
 import { User } from './user.model';
+
+export type EstadoTareo = 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO';
 
 @Entity('tareo', { schema: 'rrhh' })
 export class Timesheet {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: 'timesheet_code', length: 50, unique: true })
-  timesheetCode!: string;
+  @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
+  legacyId?: string;
 
-  @Column({ name: 'trabajador_id' })
-  operatorId!: number;
+  @Column({ name: 'trabajador_id', type: 'integer' })
+  trabajadorId!: number;
 
-  @ManyToOne(() => OperatorModel)
+  @ManyToOne(() => Trabajador)
   @JoinColumn({ name: 'trabajador_id' })
-  operator!: OperatorModel;
+  trabajador?: Trabajador;
 
-  @Column({ name: 'proyecto_id', nullable: true })
-  projectId?: string;
+  @Column({ name: 'periodo', type: 'varchar', length: 7 })
+  periodo!: string; // Format: 'YYYY-MM' (e.g., '2024-01')
 
-  @ManyToOne(() => Project, { nullable: true })
-  @JoinColumn({ name: 'proyecto_id' })
-  project?: Project;
+  @Column({ name: 'total_dias_trabajados', type: 'integer', default: 0 })
+  totalDiasTrabajados!: number;
 
-  @Column({ name: 'period_start', type: 'date' })
-  periodStart!: Date;
+  @Column({ name: 'total_horas', type: 'decimal', precision: 8, scale: 2, default: 0 })
+  totalHoras!: number;
 
-  @Column({ name: 'period_end', type: 'date' })
-  periodEnd!: Date;
+  @Column({ name: 'monto_calculado', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  montoCalculado?: number;
 
-  @Column({ name: 'total_hours', type: 'decimal', precision: 10, scale: 2, default: 0 })
-  totalHours!: number;
+  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'BORRADOR' })
+  estado!: EstadoTareo;
 
-  @Column({ name: 'total_days', type: 'integer', default: 0 })
-  totalDays!: number;
+  @Column({ name: 'observaciones', type: 'text', nullable: true })
+  observaciones?: string;
 
-  @Column({
-    name: 'regular_hours',
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    default: 0,
-    nullable: true,
-  })
-  regularHours?: number;
-
-  @Column({
-    name: 'overtime_hours',
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    default: 0,
-    nullable: true,
-  })
-  overtimeHours?: number;
-
-  @Column({ length: 20, default: 'draft' })
-  status!: string; // 'draft' | 'submitted' | 'approved' | 'rejected' | 'paid'
-
-  @Column({ name: 'generated_from_reports', default: true })
-  generatedFromReports!: boolean;
-
-  @Column({ type: 'text', nullable: true })
-  notes?: string;
-
-  @Column({ name: 'submitted_at', type: 'timestamp', nullable: true })
-  submittedAt?: Date;
-
-  @Column({ name: 'submitted_by', nullable: true })
-  submittedBy?: number;
+  @Column({ name: 'creado_por', type: 'integer', nullable: true })
+  creadoPor?: number;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'submitted_by' })
-  submitter?: User;
+  @JoinColumn({ name: 'creado_por' })
+  creador?: User;
 
-  @Column({ name: 'approved_at', type: 'timestamp', nullable: true })
-  approvedAt?: Date;
-
-  @Column({ name: 'approved_by', nullable: true })
-  approvedBy?: number;
+  @Column({ name: 'aprobado_por', type: 'integer', nullable: true })
+  aprobadoPor?: number;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'approved_by' })
-  approver?: User;
+  @JoinColumn({ name: 'aprobado_por' })
+  aprobador?: User;
 
-  @Column({ name: 'rejected_at', type: 'timestamp', nullable: true })
-  rejectedAt?: Date;
-
-  @Column({ name: 'rejected_by', nullable: true })
-  rejectedBy?: number;
-
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'rejected_by' })
-  rejector?: User;
-
-  @Column({ name: 'rejection_reason', type: 'text', nullable: true })
-  rejectionReason?: string;
-
-  // Details can be loaded separately if needed
-  // @OneToMany(() => TimesheetDetail, (detail) => detail.timesheet)
-  // details?: TimesheetDetail[];
+  @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
+  aprobadoEn?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

@@ -1,49 +1,50 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Operator } from './operator.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Trabajador } from './trabajador.model';
 
-@Entity('operator_personal_documents')
+@Entity('documento_trabajador', { schema: 'rrhh' })
 export class OperatorDocument {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: 'operator_id' })
-  operator_id!: number;
+  @Column({ name: 'trabajador_id', type: 'integer' })
+  trabajadorId!: number;
 
-  @Column({ type: 'varchar', length: 100 })
-  document_type!: string; // 'dni', 'passport', 'license', 'certificate', etc.
+  @ManyToOne(() => Trabajador, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'trabajador_id' })
+  trabajador?: Trabajador;
 
-  @Column({ type: 'varchar', length: 100 })
-  document_number!: string;
+  @Column({ name: 'tipo_documento', type: 'varchar', length: 50 })
+  tipoDocumento!: string; // 'DNI', 'LICENCIA', 'CERTIFICADO', etc.
 
-  @Column({ type: 'date', nullable: true })
-  issue_date?: Date;
+  @Column({ name: 'numero_documento', type: 'varchar', length: 100, nullable: true })
+  numeroDocumento?: string;
 
-  @Column({ type: 'date', nullable: true })
-  expiry_date?: Date;
+  @Column({ name: 'fecha_emision', type: 'date', nullable: true })
+  fechaEmision?: Date;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  issuing_authority?: string;
+  @Column({ name: 'fecha_vencimiento', type: 'date', nullable: true })
+  fechaVencimiento?: Date;
 
-  @Column({ type: 'text', nullable: true })
-  document_url?: string; // Path to scanned document
+  @Column({ name: 'archivo_url', type: 'text', nullable: true })
+  archivoUrl?: string;
 
-  @Column({ type: 'text', nullable: true })
-  notes?: string;
-
-  @Column({ type: 'boolean', default: true })
-  is_active!: boolean;
+  @Column({ name: 'observaciones', type: 'text', nullable: true })
+  observaciones?: string;
 
   @CreateDateColumn({ name: 'created_at' })
-  created_at!: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updated_at!: Date;
-
-  @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
-  deleted_at?: Date;
-
-  // Relations
-  @ManyToOne(() => Operator, operator => operator.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'operator_id' })
-  operator?: Operator;
+  updatedAt!: Date;
 }
+
+// Backward compatibility
+export { OperatorDocument as DocumentoTrabajador };

@@ -1,15 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Entity,
   Column,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Equipment } from './equipment.model';
-// import { Operator } from './operator.model';  // TODO: Convert to TypeORM entity
+import { Trabajador } from './trabajador.model';
 import { Project } from './project.model';
+import { User } from './user.model';
+
+export type EstadoParteDiario = 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO';
 
 @Entity('parte_diario', { schema: 'equipo' })
 export class DailyReport {
@@ -17,90 +22,174 @@ export class DailyReport {
   id!: number;
 
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
+  legacyId?: string;
 
-  @Column({ name: 'equipo_id', type: 'integer', nullable: true })
-  equipment_id?: number;
+  @Column({ name: 'equipo_id', type: 'integer' })
+  equipoId!: number;
 
   @ManyToOne(() => Equipment)
   @JoinColumn({ name: 'equipo_id' })
-  equipment?: Equipment;
+  equipo?: Equipment;
 
   @Column({ name: 'trabajador_id', type: 'integer', nullable: true })
-  operator_id?: number;
+  trabajadorId?: number;
 
-  // TODO: Uncomment when Operator is converted to TypeORM entity
-  // @ManyToOne(() => Operator)
-  // @JoinColumn({ name: 'trabajador_id' })
-  // operator?: Operator;
+  @ManyToOne(() => Trabajador, { nullable: true })
+  @JoinColumn({ name: 'trabajador_id' })
+  trabajador?: Trabajador;
 
   @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
-  project_id?: number;
+  proyectoId?: number;
 
-  @ManyToOne(() => Project)
+  @ManyToOne(() => Project, { nullable: true })
   @JoinColumn({ name: 'proyecto_id' })
-  project?: Project;
+  proyecto?: Project;
 
-  @Column({ name: 'fecha_reporte', type: 'date' })
-  fecha_reporte!: Date;
+  @Column({ name: 'valorizacion_id', type: 'integer', nullable: true })
+  valorizacionId?: number;
+
+  @Column({ name: 'fecha', type: 'date' })
+  fecha!: Date;
 
   @Column({ name: 'hora_inicio', type: 'time', nullable: true })
-  hora_inicio?: string;
+  horaInicio?: string;
 
   @Column({ name: 'hora_fin', type: 'time', nullable: true })
-  hora_fin?: string;
+  horaFin?: string;
 
   @Column({ name: 'horas_trabajadas', type: 'decimal', precision: 5, scale: 2, nullable: true })
-  horas_trabajadas?: number;
+  horasTrabajadas?: number;
 
   @Column({ name: 'horometro_inicial', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  horometro_inicial?: number;
+  horometroInicial?: number;
 
   @Column({ name: 'horometro_final', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  horometro_final?: number;
+  horometroFinal?: number;
 
   @Column({ name: 'odometro_inicial', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  odometro_inicial?: number;
+  odometroInicial?: number;
 
   @Column({ name: 'odometro_final', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  odometro_final?: number;
+  odometroFinal?: number;
+
+  @Column({ name: 'km_recorridos', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  kmRecorridos?: number;
 
   @Column({ name: 'combustible_inicial', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  combustible_inicial?: number;
+  combustibleInicial?: number;
 
   @Column({
-    name: 'combustible_agregado',
+    name: 'combustible_consumido',
     type: 'decimal',
     precision: 10,
     scale: 2,
     nullable: true,
   })
-  combustible_agregado?: number;
-
-  @Column({ name: 'combustible_final', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  combustible_final?: number;
-
-  @Column({ name: 'ubicacion', type: 'varchar', length: 255, nullable: true })
-  ubicacion?: string;
-
-  @Column({ name: 'actividad_realizada', type: 'text', nullable: true })
-  actividad_realizada?: string;
+  combustibleConsumido?: number;
 
   @Column({ name: 'observaciones', type: 'text', nullable: true })
   observaciones?: string;
 
-  @Column({ name: 'estado', type: 'varchar', length: 20, default: 'pendiente' })
-  estado!: string;
+  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'BORRADOR' })
+  estado!: EstadoParteDiario;
 
-  @Column({ name: 'is_active', type: 'boolean', default: true })
-  is_active!: boolean;
+  @Column({ name: 'creado_por', type: 'integer', nullable: true })
+  creadoPor?: number;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at!: Date;
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'creado_por' })
+  creador?: User;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at!: Date;
+  @Column({ name: 'aprobado_por', type: 'integer', nullable: true })
+  aprobadoPor?: number;
 
-  @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
-  deleted_at?: Date;
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'aprobado_por' })
+  aprobador?: User;
+
+  @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
+  aprobadoEn?: Date;
+
+  // New fields from template CLUC-GEM-F-005
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  codigo?: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  empresa?: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  placa?: string;
+
+  @Column({ name: 'responsable_frente', type: 'varchar', length: 100, nullable: true })
+  responsableFrente?: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  turno?: 'DIA' | 'NOCHE';
+
+  @Column({ name: 'numero_parte', type: 'integer', nullable: true })
+  numeroParte?: number;
+
+  @Column({ name: 'petroleo_gln', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  petroleoGln?: number;
+
+  @Column({ name: 'gasolina_gln', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  gasolinaGln?: number;
+
+  @Column({ name: 'hora_abastecimiento', type: 'time', nullable: true })
+  horaAbastecimiento?: string;
+
+  @Column({ name: 'num_vale_combustible', type: 'varchar', length: 50, nullable: true })
+  numValeCombustible?: string;
+
+  @Column({ name: 'horometro_kilometraje', type: 'varchar', length: 100, nullable: true })
+  horometroKilometraje?: string;
+
+  @Column({ name: 'lugar_salida', type: 'varchar', length: 200, nullable: true })
+  lugarSalida?: string;
+
+  @Column({ name: 'lugar_llegada', type: 'varchar', length: 200, nullable: true })
+  lugarLlegada?: string;
+
+  @Column({ name: 'observaciones_correcciones', type: 'text', nullable: true })
+  observacionesCorrecciones?: string;
+
+  @Column({ name: 'firma_operador', type: 'text', nullable: true })
+  firmaOperador?: string;
+
+  @Column({ name: 'firma_supervisor', type: 'text', nullable: true })
+  firmaSupervisor?: string;
+
+  @Column({ name: 'firma_jefe_equipos', type: 'text', nullable: true })
+  firmaJefeEquipos?: string;
+
+  @Column({ name: 'firma_residente', type: 'text', nullable: true })
+  firmaResidente?: string;
+
+  @Column({ name: 'firma_planeamiento_control', type: 'text', nullable: true })
+  firmaPlaneamientoControl?: string;
+
+  // Relations to detail tables
+  @OneToMany('DailyReportProduction', 'parteDiario')
+  produccionRows?: any[];
+
+  @OneToMany('DailyReportProductionActivity', 'parteDiario')
+  actividadesProduccion?: any[];
+
+  @OneToMany('DailyReportOperationalDelay', 'parteDiario')
+  demorasOperativas?: any[];
+
+  @OneToMany('DailyReportOtherEvent', 'parteDiario')
+  otrosEventos?: any[];
+
+  @OneToMany('DailyReportMechanicalDelay', 'parteDiario')
+  demorasMecanicas?: any[];
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt!: Date;
 }
+
+// Backward compatibility alias
+export { DailyReport as ParteDiario };

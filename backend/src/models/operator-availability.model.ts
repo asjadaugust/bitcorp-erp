@@ -7,48 +7,31 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.model';
-import { Project } from './project.model';
+import { Trabajador } from './trabajador.model';
 
 @Entity('disponibilidad_trabajador', { schema: 'rrhh' })
 export class OperatorAvailability {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: 'operator_id' })
-  operatorId!: number;
+  @Column({ name: 'trabajador_id', type: 'integer' })
+  trabajadorId!: number;
 
-  @Column({ type: 'date' })
-  date!: Date;
+  @ManyToOne(() => Trabajador)
+  @JoinColumn({ name: 'trabajador_id' })
+  trabajador?: Trabajador;
 
-  @Column({ name: 'start_time', type: 'time', default: '08:00:00' })
-  startTime!: string;
+  @Column({ name: 'fecha_inicio', type: 'date' })
+  fechaInicio!: Date;
 
-  @Column({ name: 'end_time', type: 'time', default: '17:00:00' })
-  endTime!: string;
+  @Column({ name: 'fecha_fin', type: 'date' })
+  fechaFin!: Date;
 
-  @Column({ name: 'availability_type', length: 20, default: 'available' })
-  availabilityType!: string; // 'available' | 'unavailable' | 'leave' | 'sick' | 'holiday' | 'partial'
+  @Column({ name: 'disponible', type: 'boolean', default: true })
+  disponible!: boolean;
 
-  @Column({ type: 'text', nullable: true })
-  reason?: string;
-
-  @Column({ type: 'text', nullable: true })
-  notes?: string;
-
-  @Column({ name: 'created_by', nullable: true })
-  createdBy?: number;
-
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'created_by' })
-  creator?: User;
-
-  @Column({ name: 'project_id', nullable: true })
-  projectId?: number;
-
-  @ManyToOne(() => Project, { nullable: true })
-  @JoinColumn({ name: 'project_id' })
-  project?: Project;
+  @Column({ name: 'motivo', type: 'varchar', length: 255, nullable: true })
+  motivo?: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

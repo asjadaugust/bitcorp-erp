@@ -2,15 +2,17 @@ import {
   Entity,
   Column,
   ManyToOne,
-  JoinColumn,
   OneToMany,
+  JoinColumn,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Equipment } from './equipment.model';
-import { Provider } from './provider.model';
-import { Project } from './project.model';
+import { User } from './user.model';
+
+export type TipoContrato = 'CONTRATO' | 'ADENDA';
+export type EstadoContrato = 'ACTIVO' | 'VENCIDO' | 'CANCELADO' | 'BORRADOR';
 
 @Entity('contrato_adenda', { schema: 'equipo' })
 export class Contract {
@@ -18,104 +20,100 @@ export class Contract {
   id!: number;
 
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
+  legacyId?: string;
 
-  @Column({ name: 'numero_contrato', type: 'varchar', length: 50, unique: true })
-  numero_contrato!: string;
-
-  @Column({ name: 'equipo_id', type: 'integer', nullable: true })
-  equipment_id?: number;
+  @Column({ name: 'equipo_id', type: 'integer' })
+  equipoId!: number;
 
   @ManyToOne(() => Equipment)
   @JoinColumn({ name: 'equipo_id' })
-  equipment?: Equipment;
+  equipo?: Equipment;
+
+  @Column({ name: 'numero_contrato', type: 'varchar', length: 50, unique: true })
+  numeroContrato!: string;
+
+  @Column({ name: 'tipo', type: 'varchar', length: 50, default: 'CONTRATO' })
+  tipo!: TipoContrato;
+
+  // Self-referencing for addendums
+  @Column({ name: 'contrato_padre_id', type: 'integer', nullable: true })
+  contratoPadreId?: number;
+
+  @ManyToOne(() => Contract, (contract) => contract.adendas, { nullable: true })
+  @JoinColumn({ name: 'contrato_padre_id' })
+  contratoPadre?: Contract;
+
+  @OneToMany(() => Contract, (contract) => contract.contratoPadre)
+  adendas?: Contract[];
+
+  @Column({ name: 'fecha_contrato', type: 'date' })
+  fechaContrato!: Date;
 
   @Column({ name: 'fecha_inicio', type: 'date' })
-  fecha_inicio!: Date;
+  fechaInicio!: Date;
 
   @Column({ name: 'fecha_fin', type: 'date' })
-  fecha_fin!: Date;
+  fechaFin!: Date;
 
   @Column({ name: 'moneda', type: 'varchar', length: 3, default: 'PEN' })
   moneda!: string;
 
   @Column({ name: 'tipo_tarifa', type: 'varchar', length: 50, nullable: true })
-  tipo_tarifa?: string;
+  tipoTarifa?: string;
 
-  @Column({ name: 'tarifa', type: 'decimal', precision: 15, scale: 2, nullable: true })
+  @Column({ name: 'tarifa', type: 'decimal', precision: 12, scale: 2, nullable: true })
   tarifa?: number;
 
-  @Column({ name: 'incluye_operador', type: 'boolean', default: false })
-  incluye_operador!: boolean;
+  @Column({ name: 'modalidad', type: 'varchar', length: 100, nullable: true })
+  modalidad?: string;
+
+  @Column({ name: 'minimo_por', type: 'varchar', length: 20, nullable: true })
+  minimoPor?: string;
 
   @Column({ name: 'incluye_motor', type: 'boolean', default: false })
-  incluye_motor!: boolean;
+  incluyeMotor!: boolean;
+
+  @Column({ name: 'incluye_operador', type: 'boolean', default: false })
+  incluyeOperador!: boolean;
+
+  @Column({
+    name: 'costo_adicional_motor',
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+  })
+  costoAdicionalMotor?: number;
 
   @Column({ name: 'horas_incluidas', type: 'integer', nullable: true })
-  horas_incluidas?: number;
+  horasIncluidas?: number;
+
+  @Column({ name: 'penalidad_exceso', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  penalidadExceso?: number;
 
   @Column({ name: 'condiciones_especiales', type: 'text', nullable: true })
-  condiciones_especiales?: string;
+  condicionesEspeciales?: string;
 
-  @Column({ name: 'estado', type: 'varchar', length: 20, default: 'activo' })
-  estado!: string;
+  @Column({ name: 'documento_url', type: 'text', nullable: true })
+  documentoUrl?: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at!: Date;
+  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'ACTIVO' })
+  estado!: EstadoContrato;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at!: Date;
+  @Column({ name: 'creado_por', type: 'integer', nullable: true })
+  creadoPor?: number;
 
-  // deleted_at removed
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'creado_por' })
+  creador?: User;
 
-  @OneToMany(() => Addendum, (addendum) => addendum.contract)
-  addendums?: Addendum[];
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt!: Date;
 }
 
-@Entity('contract_addendums')
-export class Addendum {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
-
-  @Column({ name: 'numero_adenda', type: 'varchar', length: 50 })
-  numero_adenda!: string;
-
-  @Column({ name: 'contract_id', type: 'integer' })
-  contract_id!: number;
-
-  @ManyToOne(() => Contract, (contract) => contract.addendums)
-  @JoinColumn({ name: 'contract_id' })
-  contract?: Contract;
-
-  @Column({ name: 'nueva_fecha_fin', type: 'date' })
-  nueva_fecha_fin!: Date;
-
-  @Column({ name: 'cambio_tarifa', type: 'boolean', default: false })
-  cambio_tarifa!: boolean;
-
-  @Column({ name: 'nueva_tarifa', type: 'decimal', precision: 15, scale: 2, nullable: true })
-  nueva_tarifa?: number;
-
-  @Column({ name: 'nueva_moneda', type: 'varchar', length: 3, nullable: true })
-  nueva_moneda?: string;
-
-  @Column({ name: 'justificacion', type: 'text' })
-  justificacion!: string;
-
-  @Column({ name: 'documento_url', type: 'varchar', length: 500, nullable: true })
-  documento_url?: string;
-
-  @Column({ name: 'is_active', type: 'boolean', default: true })
-  is_active!: boolean;
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at!: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at!: Date;
-
-  // deleted_at removed
-}
+// Export aliases for backward compatibility
+export { Contract as ContractModel };
+export { Contract as Addendum }; // Addendums use same table with tipo='ADENDA'

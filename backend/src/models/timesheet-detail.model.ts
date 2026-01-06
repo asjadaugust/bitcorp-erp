@@ -7,43 +7,41 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { Timesheet } from './timesheet.model';
-import { DailyReportModel } from './daily-report.model';
-import { Equipment } from './equipment.model';
+import { Project } from './project.model';
 
 @Entity('detalle_tareo', { schema: 'rrhh' })
 export class TimesheetDetail {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ name: 'timesheet_id' })
-  timesheetId!: number;
+  @Column({ name: 'tareo_id', type: 'integer' })
+  tareoId!: number;
 
   @ManyToOne(() => Timesheet)
-  @JoinColumn({ name: 'timesheet_id' })
-  timesheet!: Timesheet;
+  @JoinColumn({ name: 'tareo_id' })
+  tareo?: Timesheet;
 
-  @Column({ name: 'daily_report_id', nullable: true })
-  dailyReportId?: number;
+  @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
+  proyectoId?: number;
 
-  @ManyToOne(() => DailyReportModel, { nullable: true })
-  @JoinColumn({ name: 'daily_report_id' })
-  dailyReport?: DailyReportModel;
+  @ManyToOne(() => Project, { nullable: true })
+  @JoinColumn({ name: 'proyecto_id' })
+  proyecto?: Project;
 
-  @Column({ name: 'work_date', type: 'date' })
-  workDate!: Date;
+  @Column({ name: 'fecha', type: 'date' })
+  fecha!: Date;
 
-  @Column({ name: 'hours_worked', type: 'decimal', precision: 10, scale: 2 })
-  hoursWorked!: number;
+  @Column({ name: 'horas_trabajadas', type: 'decimal', precision: 5, scale: 2, nullable: true })
+  horasTrabajadas?: number;
 
-  @Column({ name: 'equipment_id', nullable: true })
-  equipmentId?: number;
+  @Column({ name: 'tarifa_hora', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  tarifaHora?: number;
 
-  @ManyToOne(() => Equipment, { nullable: true })
-  @JoinColumn({ name: 'equipment_id' })
-  equipment?: Equipment;
+  @Column({ name: 'monto', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  monto?: number;
 
-  @Column({ type: 'text', nullable: true })
-  description?: string;
+  @Column({ name: 'observaciones', type: 'text', nullable: true })
+  observaciones?: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
