@@ -24,8 +24,8 @@ import sigRoutes from './api/sig/sig.routes';
 import { createTenantRouter } from './api/tenant';
 import tenderRoutes from './api/tenders/tender.routes';
 import fuelRoutes from './api/fuel/fuel.routes';
-import costCenterRoutes from './api/admin/cost-center.routes';
 import checklistRoutes from './api/checklists/checklist.routes';
+import costCenterRoutes from './api/admin/cost-center.routes';
 import accountsPayableRoutes from './api/accounts-payable/accounts-payable.routes';
 import { pool } from './config/database.config';
 import { errorHandler } from './middleware/error.middleware';
@@ -71,8 +71,8 @@ app.use('/api/sig', sigRoutes);
 app.use('/api/tenant', createTenantRouter(pool));
 app.use('/api/tenders', tenderRoutes);
 app.use('/api/fuel', fuelRoutes);
-app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/checklists', checklistRoutes);
+app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/accounts-payable', accountsPayableRoutes);
 
 // Error handling

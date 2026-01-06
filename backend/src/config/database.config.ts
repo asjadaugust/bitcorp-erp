@@ -9,6 +9,7 @@ dotenv.config();
 import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
 import { Permission } from '../models/permission.model';
+import { UnidadOperativa } from '../models/unidad-operativa.model';
 import { Project } from '../models/project.model';
 import { Provider } from '../models/provider.model';
 import { Equipment } from '../models/equipment.model';
@@ -20,7 +21,7 @@ import { MaintenanceSchedule } from '../models/maintenance-schedule.model';
 import { ScheduledTask } from '../models/scheduled-task.model'; // Spanish schema: equipo.tarea_programada
 import { OperatorAvailability } from '../models/operator-availability.model';
 import { Notification } from '../models/notification.model';
-import { Employee } from '../models/employee.model';
+// import { Employee } from '../models/employee.model'; // DELETED
 import { SigDocument } from '../models/sig-document.model';
 import { Tender } from '../models/tender.model';
 import { SafetyIncident } from '../models/safety-incident.model';
@@ -28,13 +29,27 @@ import { CostCenter } from '../models/cost-center.model';
 import { AccountsPayable } from '../models/accounts-payable.model';
 import { PaymentSchedule } from '../models/payment-schedule.model';
 import { PaymentScheduleDetail } from '../models/payment-schedule-detail.model';
-import { ReportPhoto } from '../models/report-photo.model';
+// import { ReportPhoto } from '../models/report-photo.model'; // DELETED
 // New entities directory
-import { Operator } from '../models/operator.entity';
+// import { Operator } from '../models/operator.entity'; // DELETED
 import { OperatorDocument } from '../models/operator-document.entity';
-import { OperatorAvailability as OperatorAvailabilityEntity } from '../models/operator-availability.entity';
+// import { OperatorAvailability as OperatorAvailabilityEntity } from '../models/operator-availability.entity'; // DELETED
 import { Trabajador } from '../models/trabajador.model';
 import { EquipmentAssignment } from '../models/equipment-assignment.model';
+import { FuelRecord } from '../models/fuel-record.model';
+import { ChecklistTemplate } from '../models/checklist-template.model';
+import { ChecklistItem } from '../models/checklist-item.model';
+import { ChecklistInspection } from '../models/checklist-inspection.model';
+import { ChecklistResult } from '../models/checklist-result.model';
+import { ExcessFuel } from '../models/excess-fuel.model';
+import { WorkExpense } from '../models/work-expense.model';
+import { AdvanceAmortization } from '../models/advance-amortization.model';
+import { DailyReport } from '../models/daily-report-typeorm.model';
+import { DailyReportProduction } from '../models/daily-report-production.model';
+import { DailyReportProductionActivity } from '../models/daily-report-activity.model';
+import { DailyReportOperationalDelay } from '../models/daily-report-operational-delay.model';
+import { DailyReportOtherEvent } from '../models/daily-report-other-event.model';
+import { DailyReportMechanicalDelay } from '../models/daily-report-mechanical-delay.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -49,6 +64,7 @@ export const AppDataSource = new DataSource({
     User,
     Role,
     Permission,
+    UnidadOperativa,
     Project,
     Provider,
     Equipment,
@@ -62,7 +78,7 @@ export const AppDataSource = new DataSource({
     ScheduledTask,
     OperatorAvailability,
     Notification,
-    Employee,
+    // Employee, // DELETED
     SigDocument,
     Tender,
     SafetyIncident,
@@ -70,13 +86,27 @@ export const AppDataSource = new DataSource({
     AccountsPayable,
     PaymentSchedule,
     PaymentScheduleDetail,
-    ReportPhoto,
+    // ReportPhoto, // DELETED
     // New entities
-    Operator,
+    // Operator, // DELETED
     OperatorDocument,
-    OperatorAvailabilityEntity,
+    // OperatorAvailabilityEntity, // DELETED
     Trabajador,
     EquipmentAssignment,
+    FuelRecord,
+    ChecklistTemplate,
+    ChecklistItem,
+    ChecklistInspection,
+    ChecklistResult,
+    ExcessFuel,
+    WorkExpense,
+    AdvanceAmortization,
+    DailyReport,
+    DailyReportProduction,
+    DailyReportProductionActivity,
+    DailyReportOperationalDelay,
+    DailyReportOtherEvent,
+    DailyReportMechanicalDelay,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],
@@ -106,6 +136,3 @@ export const initializeDatabase = async (): Promise<void> => {
 
 // Export pool as default for raw queries
 export default pool;
-
-
-
