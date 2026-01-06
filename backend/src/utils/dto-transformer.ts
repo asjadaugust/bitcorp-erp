@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Response } from 'express';
 import { PaginationMeta } from '../types/dto/base.dto';
 
