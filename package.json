@@ -37,7 +37,7 @@
     "lint": "npm run lint:backend && npm run lint:frontend",
     "lint:backend": "cd backend && npm run lint",
     "lint:frontend": "cd frontend && npm run lint",
-    "lint:staged": "ESLINT_USE_FLAT_CONFIG=true eslint --fix",
+    "lint:staged": "eslint --fix",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
     "commit": "git-cz",
     "prepare": "husky install",
