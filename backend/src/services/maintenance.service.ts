@@ -6,6 +6,14 @@ import {
   EstadoMantenimiento,
 } from '../models/maintenance-schedule.model';
 import { Repository, ILike } from 'typeorm';
+import {
+  MaintenanceDto,
+  CreateMaintenanceDto,
+  UpdateMaintenanceDto,
+  toMaintenanceDto,
+  fromMaintenanceDto,
+  mapCreateMaintenanceDto,
+} from '../types/dto/maintenance.dto';
 
 interface MaintenanceFilters {
   status?: EstadoMantenimiento;
@@ -22,7 +30,10 @@ export class MaintenanceService {
     this.repository = AppDataSource.getRepository(MaintenanceSchedule);
   }
 
-  async getAllMaintenance(filters?: MaintenanceFilters) {
+  async getAllMaintenance(filters?: MaintenanceFilters): Promise<{
+    data: MaintenanceDto[];
+    total: number;
+  }> {
     const page = filters?.page || 1;
     const limit = filters?.limit || 10;
     const offset = (page - 1) * limit;
@@ -42,7 +53,7 @@ export class MaintenanceService {
     }
 
     if (filters?.search) {
-      queryBuilder.andWhere('(e.codigo ILIKE :search OR m.descripcion ILIKE :search)', {
+      queryBuilder.andWhere('(e.codigo_equipo ILIKE :search OR m.descripcion ILIKE :search)', {
         search: `%${filters.search}%`,
       });
     }
@@ -54,63 +65,62 @@ export class MaintenanceService {
     const data = await queryBuilder.skip(offset).take(limit).getMany();
 
     return {
-      data,
+      data: data.map((m) => toMaintenanceDto(m)),
       total,
     };
   }
 
-  async getMaintenanceById(id: number) {
-    return await this.repository.findOne({
+  async getMaintenanceById(id: number): Promise<MaintenanceDto | null> {
+    const maintenance = await this.repository.findOne({
       where: { id },
       relations: ['equipo'],
     });
+    return maintenance ? toMaintenanceDto(maintenance) : null;
   }
 
-  async createMaintenance(data: any, userId: string) {
-    const maintenance = this.repository.create({
-      equipoId: data.equipment_id || data.equipoId,
-      tipoMantenimiento: data.maintenance_type || data.tipoMantenimiento,
-      descripcion: data.description || data.descripcion,
-      fechaProgramada: data.maintenance_date || data.start_date || data.fechaProgramada,
-      costoEstimado: data.cost || data.costoEstimado,
-      estado: (data.status || data.estado || 'PROGRAMADO') as EstadoMantenimiento,
-      observaciones: data.notes || data.observaciones,
-      tecnicoResponsable: data.tecnicoResponsable,
+  async createMaintenance(data: CreateMaintenanceDto, userId: string): Promise<MaintenanceDto> {
+    // Map dual input format to DTO
+    const dtoData = mapCreateMaintenanceDto(data);
+
+    const maintenance = this.repository.create(fromMaintenanceDto(dtoData));
+    const saved = await this.repository.save(maintenance);
+
+    // Reload with relations
+    const withRelations = await this.repository.findOne({
+      where: { id: saved.id },
+      relations: ['equipo'],
     });
 
-    return await this.repository.save(maintenance);
+    return toMaintenanceDto(withRelations!);
   }
 
-  async updateMaintenance(id: number, data: any, userId: string) {
-    const maintenance = await this.repository.findOne({ where: { id } });
+  async updateMaintenance(
+    id: number,
+    data: UpdateMaintenanceDto,
+    userId: string
+  ): Promise<MaintenanceDto | null> {
+    const maintenance = await this.repository.findOne({
+      where: { id },
+      relations: ['equipo'],
+    });
 
     if (!maintenance) {
       return null;
     }
 
-    // Update fields if provided
-    if (data.equipment_id !== undefined) maintenance.equipoId = data.equipment_id;
-    if (data.equipoId !== undefined) maintenance.equipoId = data.equipoId;
-    if (data.maintenance_type !== undefined) maintenance.tipoMantenimiento = data.maintenance_type;
-    if (data.tipoMantenimiento !== undefined)
-      maintenance.tipoMantenimiento = data.tipoMantenimiento;
-    if (data.description !== undefined) maintenance.descripcion = data.description;
-    if (data.descripcion !== undefined) maintenance.descripcion = data.descripcion;
-    if (data.maintenance_date !== undefined) maintenance.fechaProgramada = data.maintenance_date;
-    if (data.start_date !== undefined) maintenance.fechaProgramada = data.start_date;
-    if (data.fechaProgramada !== undefined) maintenance.fechaProgramada = data.fechaProgramada;
-    if (data.fechaRealizada !== undefined) maintenance.fechaRealizada = data.fechaRealizada;
-    if (data.cost !== undefined) maintenance.costoEstimado = data.cost;
-    if (data.costoEstimado !== undefined) maintenance.costoEstimado = data.costoEstimado;
-    if (data.costoReal !== undefined) maintenance.costoReal = data.costoReal;
-    if (data.status !== undefined) maintenance.estado = data.status;
-    if (data.estado !== undefined) maintenance.estado = data.estado;
-    if (data.notes !== undefined) maintenance.observaciones = data.notes;
-    if (data.observaciones !== undefined) maintenance.observaciones = data.observaciones;
-    if (data.tecnicoResponsable !== undefined)
-      maintenance.tecnicoResponsable = data.tecnicoResponsable;
+    // Map dual input format to DTO
+    const dtoData = mapCreateMaintenanceDto(data);
 
-    return await this.repository.save(maintenance);
+    Object.assign(maintenance, fromMaintenanceDto(dtoData));
+    const saved = await this.repository.save(maintenance);
+
+    // Reload with relations
+    const withRelations = await this.repository.findOne({
+      where: { id: saved.id },
+      relations: ['equipo'],
+    });
+
+    return toMaintenanceDto(withRelations!);
   }
 
   async deleteMaintenance(id: number) {
