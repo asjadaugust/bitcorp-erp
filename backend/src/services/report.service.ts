@@ -1,37 +1,51 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { DailyReport, DailyReportModel } from '../models/daily-report.model';
+import { DailyReportModel } from '../models/daily-report.model';
 import { AppDataSource } from '../config/database.config';
 import { DailyReport as DailyReportEntity } from '../models/daily-report-typeorm.model';
 import { transformToDailyReportPdfDto } from '../utils/daily-report-pdf-transformer';
 import { DailyReportPdfDto } from '../types/dto/daily-report-pdf.dto';
+import {
+  DailyReportDto,
+  toDailyReportDto,
+  fromDailyReportDto,
+} from '../types/dto/daily-report.dto';
 
 export class ReportService {
-  async getAllReports(filters?: any): Promise<DailyReport[]> {
-    return DailyReportModel.findAll(filters);
+  async getAllReports(filters?: any): Promise<DailyReportDto[]> {
+    const entities = await DailyReportModel.findAll(filters);
+    return entities.map(toDailyReportDto);
   }
 
-  async getReportById(id: string): Promise<DailyReport | null> {
-    return DailyReportModel.findById(id);
+  async getReportById(id: string): Promise<DailyReportDto | null> {
+    const entity = await DailyReportModel.findById(id);
+    return entity ? toDailyReportDto(entity) : null;
   }
 
-  async getReportsByOperator(operatorId: string): Promise<DailyReport[]> {
-    return DailyReportModel.findByOperator(operatorId);
+  async getReportsByOperator(operatorId: string): Promise<DailyReportDto[]> {
+    const entities = await DailyReportModel.findByOperator(operatorId);
+    return entities.map(toDailyReportDto);
   }
 
-  async createReport(data: Partial<DailyReport>): Promise<DailyReport> {
-    return DailyReportModel.create(data);
+  async createReport(data: Partial<DailyReportDto>): Promise<DailyReportDto> {
+    const entity = fromDailyReportDto(data);
+    const created = await DailyReportModel.create(entity);
+    return toDailyReportDto(created);
   }
 
-  async updateReport(id: string, data: Partial<DailyReport>): Promise<DailyReport | null> {
-    return DailyReportModel.update(id, data);
+  async updateReport(id: string, data: Partial<DailyReportDto>): Promise<DailyReportDto | null> {
+    const entity = fromDailyReportDto(data);
+    const updated = await DailyReportModel.update(id, entity);
+    return updated ? toDailyReportDto(updated) : null;
   }
 
-  async approveReport(id: string, approvedBy: string): Promise<DailyReport | null> {
-    return DailyReportModel.approve(id, approvedBy);
+  async approveReport(id: string, approvedBy: string): Promise<DailyReportDto | null> {
+    const entity = await DailyReportModel.approve(id, approvedBy);
+    return entity ? toDailyReportDto(entity) : null;
   }
 
-  async rejectReport(id: string, reason: string): Promise<DailyReport | null> {
-    return DailyReportModel.reject(id, reason);
+  async rejectReport(id: string, reason: string): Promise<DailyReportDto | null> {
+    const entity = await DailyReportModel.reject(id, reason);
+    return entity ? toDailyReportDto(entity) : null;
   }
 
   async deleteReport(id: string): Promise<boolean> {
