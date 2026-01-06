@@ -1,24 +1,14 @@
 import { AppDataSource } from '../config/database.config';
 import { FuelRecord } from '../models/fuel-record.model';
 import { Repository } from 'typeorm';
-
-// DTO with snake_case fields for API responses
-export interface FuelDto {
-  id: number;
-  valorizacion_id: number;
-  fecha: Date;
-  cantidad: number | null;
-  precio_unitario: number | null;
-  monto_total: number | null;
-  tipo_combustible: string | null;
-  proveedor: string | null;
-  numero_documento: string | null;
-  observaciones: string | null;
-  created_at: Date;
-  // Relation fields
-  valorizacion_periodo: string | null;
-  valorizacion_equipment_id: number | null;
-}
+import {
+  FuelRecordDto,
+  CreateFuelRecordDto,
+  UpdateFuelRecordDto,
+  toFuelRecordDto,
+  fromFuelRecordDto,
+  mapCreateFuelRecordDto,
+} from '../types/dto/fuel-record.dto';
 
 export class FuelService {
   private fuelRepository: Repository<FuelRecord>;
@@ -27,28 +17,16 @@ export class FuelService {
     this.fuelRepository = AppDataSource.getRepository(FuelRecord);
   }
 
-  private transformToDto(record: FuelRecord): FuelDto {
-    return {
-      id: record.id,
-      valorizacion_id: record.valorizacionId,
-      fecha: record.fecha,
-      cantidad: record.cantidad ? Number(record.cantidad) : null,
-      precio_unitario: record.precioUnitario ? Number(record.precioUnitario) : null,
-      monto_total: record.montoTotal ? Number(record.montoTotal) : null,
-      tipo_combustible: record.tipoCombustible || null,
-      proveedor: record.proveedor || null,
-      numero_documento: record.numeroDocumento || null,
-      observaciones: record.observaciones || null,
-      created_at: record.createdAt,
-      // Relation fields
-      valorizacion_periodo: record.valorizacion?.periodo || null,
-      valorizacion_equipment_id: record.valorizacion?.equipmentId || null,
-    };
-  }
-
   async getAllFuelRecords(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     filters?: any
-  ): Promise<{ data: FuelDto[]; total: number; page: number; limit: number; totalPages: number }> {
+  ): Promise<{
+    data: FuelRecordDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const page = parseInt(filters?.page) || 1;
     const limit = parseInt(filters?.limit) || 20;
     const skip = (page - 1) * limit;
@@ -93,7 +71,7 @@ export class FuelService {
     const records = await queryBuilder.skip(skip).take(limit).getMany();
 
     return {
-      data: records.map((r) => this.transformToDto(r)),
+      data: records.map((r) => toFuelRecordDto(r)),
       total,
       page,
       limit,
@@ -101,21 +79,24 @@ export class FuelService {
     };
   }
 
-  async getFuelRecordById(id: number): Promise<FuelDto | null> {
+  async getFuelRecordById(id: number): Promise<FuelRecordDto | null> {
     const record = await this.fuelRepository.findOne({
       where: { id },
       relations: ['valorizacion'],
     });
-    return record ? this.transformToDto(record) : null;
+    return record ? toFuelRecordDto(record) : null;
   }
 
-  async createFuelRecord(data: Partial<FuelRecord>): Promise<FuelDto> {
-    // Calculate montoTotal if cantidad and precioUnitario are provided
-    if (data.cantidad && data.precioUnitario && !data.montoTotal) {
-      data.montoTotal = data.cantidad * data.precioUnitario;
+  async createFuelRecord(data: CreateFuelRecordDto): Promise<FuelRecordDto> {
+    // Map dual input format to DTO
+    const dtoData = mapCreateFuelRecordDto(data);
+
+    // Calculate monto_total if cantidad and precio_unitario are provided
+    if (dtoData.cantidad && dtoData.precio_unitario && !dtoData.monto_total) {
+      dtoData.monto_total = dtoData.cantidad * dtoData.precio_unitario;
     }
 
-    const fuelRecord = this.fuelRepository.create(data);
+    const fuelRecord = this.fuelRepository.create(fromFuelRecordDto(dtoData));
     const saved = await this.fuelRepository.save(fuelRecord);
 
     // Reload with relations to transform
@@ -124,24 +105,27 @@ export class FuelService {
       relations: ['valorizacion'],
     });
 
-    return this.transformToDto(withRelations!);
+    return toFuelRecordDto(withRelations!);
   }
 
-  async updateFuelRecord(id: number, data: Partial<FuelRecord>): Promise<FuelDto | null> {
+  async updateFuelRecord(id: number, data: UpdateFuelRecordDto): Promise<FuelRecordDto | null> {
     const existing = await this.fuelRepository.findOne({
       where: { id },
       relations: ['valorizacion'],
     });
     if (!existing) return null;
 
-    // Recalculate montoTotal if cantidad or precioUnitario changed
-    const newCantidad = data.cantidad ?? existing.cantidad;
-    const newPrecioUnitario = data.precioUnitario ?? existing.precioUnitario;
+    // Map dual input format to DTO
+    const dtoData = mapCreateFuelRecordDto(data);
+
+    // Recalculate monto_total if cantidad or precio_unitario changed
+    const newCantidad = dtoData.cantidad ?? existing.cantidad;
+    const newPrecioUnitario = dtoData.precio_unitario ?? existing.precioUnitario;
     if (newCantidad && newPrecioUnitario) {
-      data.montoTotal = newCantidad * newPrecioUnitario;
+      dtoData.monto_total = newCantidad * newPrecioUnitario;
     }
 
-    Object.assign(existing, data);
+    Object.assign(existing, fromFuelRecordDto(dtoData));
     const saved = await this.fuelRepository.save(existing);
 
     // Reload with relations
@@ -150,7 +134,7 @@ export class FuelService {
       relations: ['valorizacion'],
     });
 
-    return this.transformToDto(withRelations!);
+    return toFuelRecordDto(withRelations!);
   }
 
   async deleteFuelRecord(id: number): Promise<boolean> {
@@ -159,13 +143,13 @@ export class FuelService {
   }
 
   // Additional helper methods
-  async getFuelRecordsByValorizacion(valorizacionId: number): Promise<FuelDto[]> {
+  async getFuelRecordsByValorizacion(valorizacionId: number): Promise<FuelRecordDto[]> {
     const records = await this.fuelRepository.find({
       where: { valorizacionId },
       relations: ['valorizacion'],
       order: { fecha: 'DESC' },
     });
-    return records.map((r) => this.transformToDto(r));
+    return records.map((r) => toFuelRecordDto(r));
   }
 
   async getTotalFuelCostByValorizacion(valorizacionId: number): Promise<number> {
