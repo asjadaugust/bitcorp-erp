@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorización N°{{valorizacion.numero_valorizacion}} - Resumen Acumulado</title>
+    <style>
+        {{{styles}}}
+    </style>
+</head>
+<body>
+    <!-- HEADER SECTION -->
+    <div class="report-header">
+        <div class="logo-container">
+            <!-- Logo placeholder - replace with actual base64 encoded image -->
+            <img src="data:image/png;base64,{{logo}}" alt="CCECC Logo" />
+        </div>
+        <div class="header-content">
+            <div class="report-title">VALORIZACION N°{{valorizacion.numero_valorizacion}}</div>
+            <div class="valuation-id">{{valorizacion.id_valorizacion}}</div>
+            <div class="date-range">[Del: {{formatDate valorizacion.fecha_inicio}} Al {{formatDate valorizacion.fecha_fin}}]</div>
+            <div class="report-subtitle">RESUMEN ACUMULADO</div>
+        </div>
+    </div>
+
+    <!-- EQUIPMENT & PROVIDER INFO (COMPACT VERSION) -->
+    <table class="info-table-compact avoid-break">
+        <tbody>
+            <tr>
+                <td class="label-cell">Ruc:</td>
+                <td class="value-cell">{{proveedor.ruc}}</td>
+                <td class="spacer-cell"></td>
+                <td class="label-cell">Razón Social:</td>
+                <td class="value-cell">{{proveedor.razon_social}}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Código Equipo:</td>
+                <td class="value-cell">{{equipo.codigo_equipo}}</td>
+                <td class="spacer-cell"></td>
+                <td class="label-cell">Equipo:</td>
+                <td class="value-cell">{{equipo.nombre}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- HISTORICAL VALUATIONS TABLE -->
+    <table class="history-table avoid-break">
+        <thead>
+            <tr>
+                <th>N° Contrato o Adenda</th>
+                <th>N° Valorización</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Cantidad de Valorización</th>
+                <th>U.M.</th>
+                <th>Tarifa de Contrato P.U.</th>
+                <th>Valorización Bruta</th>
+                <th>Descuento Total</th>
+                <th>Valorización Neta</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each history}}
+            <tr>
+                <td class="text-center">{{numero_contrato_adenda}}</td>
+                <td class="text-center">{{numero_valorizacion}}</td>
+                <td class="text-center">{{formatDate fecha_inicio}}</td>
+                <td class="text-center">{{formatDate fecha_fin}}</td>
+                <td class="text-right">{{formatNumber cantidad_valorizacion 2}}</td>
+                <td class="text-center">{{unidad_medida}}</td>
+                <td class="text-right">{{formatCurrency tarifa_contrato_pu}}</td>
+                <td class="text-right">{{formatCurrency valorizacion_bruta}}</td>
+                <td class="text-right">{{formatCurrency descuento_total}}</td>
+                <td class="text-right">{{formatCurrency valorizacion_neta}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="4" class="text-right bold">TOTALES:</td>
+                <td class="text-right bold">{{formatNumber totals.cantidad_total 2}}</td>
+                <td class="text-center"></td>
+                <td class="text-right"></td>
+                <td class="text-right bold">{{formatCurrency totals.valorizacion_bruta_total}}</td>
+                <td class="text-right bold">{{formatCurrency totals.descuento_total}}</td>
+                <td class="text-right bold">{{formatCurrency totals.valorizacion_neta_total}}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- PAGE FOOTER -->
+    <div class="page-footer">
+        <div class="page-number">2 de 7</div>
+        <div class="print-date">Impreso el {{formatDateTime fecha_impresion}}</div>
+    </div>
+</body>
+</html>

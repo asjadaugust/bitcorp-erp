@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Valorización - Detalle de Combustible</title>
+    <style>{{{styles}}}</style>
+</head>
+<body>
+    <div class="report-header-mini">
+        <span class="page-title">DETALLE DE CONSUMO DE COMBUSTIBLE</span>
+        <span class="valuation-id">VALORIZACIÓN N°{{valorizacion.numero_valorizacion}}</span>
+    </div>
+    
+    <table class="info-table-compact">
+        <tr>
+            <td class="label-cell">Equipo:</td>
+            <td class="value-cell">{{equipo.codigo_equipo}} - {{equipo.nombre}}</td>
+            <td class="spacer-cell"></td>
+            <td class="label-cell">Periodo:</td>
+            <td class="value-cell">{{formatDate valorizacion.fecha_inicio}} al {{formatDate valorizacion.fecha_fin}}</td>
+        </tr>
+    </table>
+
+    <table class="detail-table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>N° Vale</th>
+                <th>Tipo</th>
+                <th>Inicial</th>
+                <th>Cantidad (Gal)</th>
+                <th>P.U.</th>
+                <th>Importe</th>
+                <th>Comentario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each combustible_detalle}}
+            <tr>
+                <td class="text-center">{{formatDate fecha}}</td>
+                <td class="text-center">{{num_vale_salida}}</td>
+                <td class="text-center">{{horometro_odometro}}</td>
+                <td class="text-right">{{formatNumber inicial 2}}</td>
+                <td class="text-right">{{formatNumber cantidad 2}}</td>
+                <td class="text-right">{{formatCurrency precio_unitario}}</td>
+                <td class="text-right">{{formatCurrency importe}}</td>
+                <td>{{comentario}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="4" class="text-right bold">TOTALES:</td>
+                <td class="text-right bold">{{formatNumber total_cantidad 2}}</td>
+                <td></td>
+                <td class="text-right bold">{{formatCurrency total_importe}}</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="page-footer">
+        <div class="page-number">3 de 7</div>
+        <div class="print-date">Impreso el {{formatDateTime fecha_impresion}}</div>
+    </div>
+</body>
+</html>

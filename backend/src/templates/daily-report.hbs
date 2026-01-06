@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Parte Diario de Equipos - {{numero_parte}}</title>
+  <link rel="stylesheet" href="{{cssPath}}">
+</head>
+<body>
+  <div class="daily-report-container">
+    
+    <!-- Header Section -->
+    <div class="report-header">
+      <div class="header-left">
+        <div class="logo-box">
+          <div class="company-name">Consorcio La Unión</div>
+          <div class="company-subtitle">ARAMSA SEGUROS CUMPLIENDO</div>
+        </div>
+      </div>
+      <div class="header-center">
+        <h1 class="report-title">PARTE DIARIO DE EQUIPOS</h1>
+      </div>
+      <div class="header-right">
+        <table class="metadata-table">
+          <tr>
+            <td class="meta-label">Razón Social:</td>
+            <td class="meta-value">{{razon_social}}</td>
+          </tr>
+          <tr>
+            <td class="meta-label">Código:</td>
+            <td class="meta-value">{{codigo_forma}}</td>
+          </tr>
+          <tr>
+            <td class="meta-label">Versión:</td>
+            <td class="meta-value">{{version}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Basic Information Section -->
+    <div class="info-section">
+      <table class="info-table">
+        <tr>
+          <td class="info-label">PROYECTO:</td>
+          <td class="info-value" colspan="3">"{{proyecto}}"</td>
+          <td class="info-label">TURNO:</td>
+          <td class="info-value-inline">
+            <span class="checkbox">{{#if (eq turno 'DIA')}}☑{{else}}☐{{/if}}</span> Día
+            <span class="checkbox">{{#if (eq turno 'NOCHE')}}☑{{else}}☐{{/if}}</span> Noche
+          </td>
+          <td class="numero-box">
+            <div class="numero-label">N°</div>
+            <div class="numero-value">{{numero_parte}}</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="info-label">FECHA:</td>
+          <td class="info-value">{{fecha}}</td>
+          <td class="info-label">CÓDIGO:</td>
+          <td class="info-value" colspan="4">{{codigo_equipo}}</td>
+        </tr>
+        <tr>
+          <td class="info-label">EMPRESA:</td>
+          <td class="info-value" colspan="6">{{empresa}}</td>
+        </tr>
+        <tr>
+          <td class="info-label">EQUIPO:</td>
+          <td class="info-value" colspan="3">{{equipo}}</td>
+          <td class="info-label">OPERADOR:</td>
+          <td class="info-value" colspan="2">{{operador}}</td>
+        </tr>
+        <tr>
+          <td class="info-label">PLACA:</td>
+          <td class="info-value" colspan="3">{{placa}}</td>
+          <td class="info-label">RESPONSABLE DE FRENTE:</td>
+          <td class="info-value" colspan="2">{{responsable_frente}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Meters, Fuel, and Location Section -->
+    <div class="meters-section">
+      <table class="meters-table">
+        <tr>
+          <td class="meter-block">
+            <table class="inner-table">
+              <tr><th colspan="2">Horómetro:</th></tr>
+              <tr><td class="inner-label">Inicial:</td><td class="inner-value">{{horometro_inicial}}</td></tr>
+              <tr><td class="inner-label">Final:</td><td class="inner-value">{{horometro_final}}</td></tr>
+              <tr><td class="inner-label">Total:</td><td class="inner-value">{{horometro_total}}</td></tr>
+            </table>
+            <table class="inner-table">
+              <tr><th colspan="2">Kilometraje:</th></tr>
+              <tr><td class="inner-label">Inicial:</td><td class="inner-value">{{kilometraje_inicial}}</td></tr>
+              <tr><td class="inner-label">Final:</td><td class="inner-value">{{kilometraje_final}}</td></tr>
+              <tr><td class="inner-label">Total:</td><td class="inner-value">{{kilometraje_total}}</td></tr>
+            </table>
+          </td>
+          <td class="fuel-block">
+            <table class="inner-table">
+              <tr><td class="inner-label">Petroleo D-2 (Gln)</td><td class="inner-value">{{petroleo_gln}}</td></tr>
+              <tr><td class="inner-label">Gasolina (Gln)</td><td class="inner-value">{{gasolina_gln}}</td></tr>
+              <tr><td class="inner-label">Hora de Abastecimiento</td><td class="inner-value">{{hora_abastecimiento}}</td></tr>
+              <tr><td class="inner-label">N° Vale Combustible</td><td class="inner-value">{{num_vale_combustible}}</td></tr>
+              <tr><td class="inner-label">Horómetro / Kilometraje</td><td class="inner-value">{{horometro_kilometraje}}</td></tr>
+            </table>
+          </td>
+          <td class="location-block">
+            <div class="location-box">
+              <div class="location-label">Lugar de Salida</div>
+              <div class="location-value">{{lugar_salida}}</div>
+            </div>
+            <div class="location-box">
+              <div class="location-label">Lugar de Llegada</div>
+              <div class="location-value">{{lugar_llegada}}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Production Control Table -->
+    <div class="production-section">
+      <h3 class="section-title">CONTROL DE LA PRODUCCIÓN</h3>
+      <table class="production-table">
+        <thead>
+          <tr>
+            <th class="col-numero">N°</th>
+            <th class="col-ubicacion" colspan="2">Ubicación Labores<br>Prog. Ini. | Prog. Fin.</th>
+            <th class="col-hora">Hora Ini.</th>
+            <th class="col-hora">Hora Fin.</th>
+            <th class="col-material">Material Trabajado o Descripción Actividad</th>
+            <th class="col-metrado">METRADO</th>
+            <th class="col-edt">EDT</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each produccion}}
+          <tr>
+            <td class="cell-numero">{{formatNumber numero 2}}</td>
+            <td class="cell-ubicacion">{{ubicacion_prog_ini}}</td>
+            <td class="cell-ubicacion">{{ubicacion_prog_fin}}</td>
+            <td class="cell-hora">{{hora_ini}}</td>
+            <td class="cell-hora">{{hora_fin}}</td>
+            <td class="cell-material">{{material_descripcion}}</td>
+            <td class="cell-metrado">{{metrado}}</td>
+            <td class="cell-edt">{{edt}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Observations Section -->
+    <div class="observations-section">
+      <div class="observations-title">OBSERVACIONES / CORRECCIONES (Operativas y Mecánicas)</div>
+      <div class="observations-content">{{observaciones_correcciones}}</div>
+    </div>
+
+    <!-- Activities and Delays Section -->
+    <div class="activities-section">
+      <div class="activities-row">
+        <!-- Production Activities -->
+        <div class="activities-column">
+          <div class="activities-title">ACTIVIDADES DE PRODUCCIÓN (Marcar con un X)</div>
+          <div class="checkbox-grid">
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '01')}}☑{{else}}☐{{/if}}</span> (01) Excavación</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '05')}}☑{{else}}☐{{/if}}</span> (05) Producción de Agregados</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '09')}}☑{{else}}☐{{/if}}</span> (09) Otras Actividades de Producción</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '02')}}☑{{else}}☐{{/if}}</span> (02) Sub Base</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '06')}}☑{{else}}☐{{/if}}</span> (06) Ejecución de Cunetas</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '10')}}☑{{else}}☐{{/if}}</span> (10) {{getDescription actividades_produccion '10'}}</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '03')}}☑{{else}}☐{{/if}}</span> (03) Base Estabilizada</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '07')}}☑{{else}}☐{{/if}}</span> (07) Producción de Concreto</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '11')}}☑{{else}}☐{{/if}}</span> (11) {{getDescription actividades_produccion '11'}}</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '04')}}☑{{else}}☐{{/if}}</span> (04) Tratamiento Superficial Bicapa</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '08')}}☑{{else}}☐{{/if}}</span> (08) Transporte de Material por Volquetes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="delays-row">
+        <!-- Operational Delays -->
+        <div class="delays-column">
+          <div class="delays-title">DEMORAS OPERATIVAS (Marcar con un X)</div>
+          <div class="checkbox-grid-small">
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D01')}}☑{{else}}☐{{/if}}</span> (D01) Abastecimiento de combustible</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D02')}}☑{{else}}☐{{/if}}</span> (D02) Toma de alimentos y/o descanso</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D03')}}☑{{else}}☐{{/if}}</span> (D03) Espera de ruta</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D04')}}☑{{else}}☐{{/if}}</span> (D04) Falla de operador</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D05')}}☑{{else}}☐{{/if}}</span> (D05) Traslado de frente</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D06')}}☑{{else}}☐{{/if}}</span> (D06) Cambio de guardia</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D07')}}☑{{else}}☐{{/if}}</span> (D07) Inspección de Equipo</div>
+          </div>
+        </div>
+
+        <!-- Other Events -->
+        <div class="delays-column">
+          <div class="delays-title">OTROS EVENTOS</div>
+          <div class="checkbox-grid-small">
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D08')}}☑{{else}}☐{{/if}}</span> (D08) Limpieza de Tolva</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D09')}}☑{{else}}☐{{/if}}</span> (D09) Limpieza de Tolva</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D10')}}☑{{else}}☐{{/if}}</span> (D10) Stand By</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D11')}}☑{{else}}☐{{/if}}</span> (D11) Condición Climática</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D12')}}☑{{else}}☐{{/if}}</span> (D12) Paros Sociales</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D13')}}☑{{else}}☐{{/if}}</span> (D13) Otros: {{getDescription otros_eventos 'D13'}}</div>
+          </div>
+        </div>
+
+        <!-- Mechanical Delays -->
+        <div class="delays-column">
+          <div class="delays-title">DEMORAS MECÁNICAS</div>
+          <div class="checkbox-grid-small">
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D14')}}☑{{else}}☐{{/if}}</span> (D14) Cambio de Aceite</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D15')}}☑{{else}}☐{{/if}}</span> (D15) Cambio de Llanta</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D16')}}☑{{else}}☐{{/if}}</span> (D16) Lubricación</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D17')}}☑{{else}}☐{{/if}}</span> (D17) Mantenimiento Programado</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D18')}}☑{{else}}☐{{/if}}</span> (D18) Falla Mecánica</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D19')}}☑{{else}}☐{{/if}}</span> (D19) Cambio Uñas/Cuchillas</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D20')}}☑{{else}}☐{{/if}}</span> (D20) Otros: {{getDescription demoras_mecanicas 'D20'}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signatures Section -->
+    <div class="signatures-section">
+      <table class="signatures-table">
+        <tr>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {{#if firma_operador}}<img src="{{firma_operador}}" class="signature-img" />{{/if}}
+            </div>
+            <div class="signature-label">OPERADOR</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {{#if firma_supervisor}}<img src="{{firma_supervisor}}" class="signature-img" />{{/if}}
+            </div>
+            <div class="signature-label">SUPERVISOR</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {{#if firma_jefe_equipos}}<img src="{{firma_jefe_equipos}}" class="signature-img" />{{/if}}
+            </div>
+            <div class="signature-label">JEFE EQUIPOS</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {{#if firma_residente}}<img src="{{firma_residente}}" class="signature-img" />{{/if}}
+            </div>
+            <div class="signature-label">RESIDENTE</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {{#if firma_planeamiento_control}}<img src="{{firma_planeamiento_control}}" class="signature-img" />{{/if}}
+            </div>
+            <div class="signature-label">PLANEAMIENTO Y CONTROL</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-section">
+      <div class="footer-text">
+        NOTA: ESTE DOCUMENTO SE DISTRIBUIRA ASI:<br>
+        ORIGINAL-Residente 1ERA COPIA-Responsable Equipo 2DA COPIA-Operador
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

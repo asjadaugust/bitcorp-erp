@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Valorización - Resumen y Firmas</title>
+    <style>{{{styles}}}</style>
+</head>
+<body>
+    <div class="report-header">
+        <div class="logo-container">
+            <img src="data:image/png;base64,{{logo}}" alt="CCECC Logo" />
+        </div>
+        <div class="header-content">
+            <div class="report-title">VALORIZACION N°{{valorizacion.numero_valorizacion}}</div>
+            <div class="valuation-id">{{valorizacion.id_valorizacion}}</div>
+            <div class="date-range">[Del: {{formatDate valorizacion.fecha_inicio}} Al {{formatDate valorizacion.fecha_fin}}]</div>
+            <div class="report-subtitle">RESUMEN FINAL</div>
+        </div>
+    </div>
+
+    <table class="info-table-compact">
+        <tr>
+            <td class="label-cell">Equipo:</td>
+            <td class="value-cell">{{equipo.codigo_equipo}} - {{equipo.nombre}}</td>
+            <td class="spacer-cell"></td>
+            <td class="label-cell">Proveedor:</td>
+            <td class="value-cell">{{proveedor.razon_social}}</td>
+        </tr>
+    </table>
+
+    <table class="financial-table">
+        <thead>
+            <tr>
+                <th class="col-description">Concepto</th>
+                <th class="col-quantity">Cantidad</th>
+                <th class="col-unit">U.M.</th>
+                <th class="col-price">P.U.</th>
+                <th class="col-amount">Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="section-header">VALORIZACIÓN BRUTA</td>
+                <td class="align-right">{{formatNumber financiero.cantidad 2}}</td>
+                <td class="align-center">{{financiero.unidad_medida}}</td>
+                <td class="align-right">{{formatCurrency financiero.precio_unitario}}</td>
+                <td class="align-right">{{formatCurrency financiero.valorizacion_bruta}}</td>
+            </tr>
+            <tr>
+                <td class="section-header">DESCUENTOS:</td>
+                <td colspan="4"></td>
+            </tr>
+            <tr>
+                <td class="indent-1">Combustible</td>
+                <td class="align-right">{{formatNumber financiero.cantidad_combustible 2}}</td>
+                <td class="align-center">GAL</td>
+                <td class="align-right">{{formatCurrency financiero.precio_combustible}}</td>
+                <td class="align-right">-{{formatCurrency financiero.importe_combustible}}</td>
+            </tr>
+            <tr>
+                <td class="indent-1">Manipuleo Combustible</td>
+                <td class="align-right">{{formatNumber financiero.cantidad_combustible 2}}</td>
+                <td class="align-center">GAL</td>
+                <td class="align-right">{{formatCurrency financiero.precio_manipuleo_combustible}}</td>
+                <td class="align-right">-{{formatCurrency financiero.importe_manipuleo_combustible}}</td>
+            </tr>
+            <tr>
+                <td class="indent-1">Gastos de Obra</td>
+                <td colspan="3"></td>
+                <td class="align-right">-{{formatCurrency financiero.importe_gasto_obra}}</td>
+            </tr>
+            <tr>
+                <td class="indent-1">Adelantos/Amortizaciones</td>
+                <td colspan="3"></td>
+                <td class="align-right">-{{formatCurrency financiero.importe_adelanto}}</td>
+            </tr>
+            <tr>
+                <td class="indent-1">Exceso Combustible</td>
+                <td colspan="3"></td>
+                <td class="align-right">-{{formatCurrency financiero.importe_exceso_combustible}}</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="4" class="align-right">VALORIZACIÓN NETA:</td>
+                <td class="align-right">{{formatCurrency financiero.valorizacion_neta}}</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="align-right">IGV (18%):</td>
+                <td class="align-right">{{formatCurrency financiero.igv}}</td>
+            </tr>
+            <tr class="final-total-row">
+                <td colspan="4" class="align-right">NETO A FACTURAR:</td>
+                <td class="align-right">{{formatCurrency financiero.neto_facturar}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {{#if observaciones}}
+    <div class="observations">
+        <strong>Observaciones:</strong>
+        <p>{{observaciones}}</p>
+    </div>
+    {{/if}}
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-label">{{#if preparado_por}}{{preparado_por}}{{else}}Preparado por{{/if}}</div>
+            <div class="signature-role">Administración</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-label">{{#if revisado_por}}{{revisado_por}}{{else}}Revisado por{{/if}}</div>
+            <div class="signature-role">Supervisor</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-label">{{#if aprobado_por}}{{aprobado_por}}{{else}}Aprobado por{{/if}}</div>
+            <div class="signature-role">Gerencia</div>
+            {{#if fecha_aprobacion}}
+            <div class="signature-date">{{formatDate fecha_aprobacion}}</div>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="page-footer">
+        <div class="page-number">7 de 7</div>
+        <div class="print-date">Impreso el {{formatDateTime fecha_impresion}}</div>
+    </div>
+</body>
+</html>

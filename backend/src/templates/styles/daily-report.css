@@ -1,0 +1,469 @@
+/* =====================================================
+   PARTE DIARIO DE EQUIPOS - PDF STYLESHEET
+   Form: CLUC-GEM-F-005 Version 01
+   ===================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  line-height: 1.2;
+  color: #000;
+  background: #fff;
+}
+
+.daily-report-container {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 10mm;
+  margin: 0 auto;
+}
+
+/* ===== HEADER SECTION ===== */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  border: 2px solid #000;
+  padding: 8px;
+}
+
+.header-left {
+  width: 30%;
+}
+
+.logo-box {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: center;
+}
+
+.company-name {
+  font-size: 11px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.company-subtitle {
+  font-size: 7px;
+}
+
+.header-center {
+  width: 40%;
+  text-align: center;
+}
+
+.report-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  padding: 10px 0;
+}
+
+.header-right {
+  width: 28%;
+}
+
+.metadata-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8px;
+}
+
+.metadata-table td {
+  padding: 2px 4px;
+  border: 1px solid #000;
+}
+
+.meta-label {
+  font-weight: bold;
+  width: 40%;
+  background: #e0e0e0;
+}
+
+.meta-value {
+  width: 60%;
+}
+
+/* ===== BASIC INFORMATION SECTION ===== */
+.info-section {
+  margin-bottom: 8px;
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+
+.info-table td {
+  padding: 3px 5px;
+  border: 1px solid #000;
+}
+
+.info-label {
+  font-weight: bold;
+  width: 12%;
+  background: #f0f0f0;
+}
+
+.info-value {
+  width: 20%;
+}
+
+.info-value-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.numero-box {
+  width: 80px;
+  text-align: center;
+  background: #ff6b6b;
+  color: #fff;
+  font-weight: bold;
+  border: 2px solid #cc0000;
+}
+
+.numero-label {
+  font-size: 10px;
+  padding: 2px;
+}
+
+.numero-value {
+  font-size: 14px;
+  padding: 2px;
+}
+
+.checkbox {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #000;
+  text-align: center;
+  line-height: 10px;
+  margin-right: 3px;
+  font-size: 10px;
+}
+
+/* ===== METERS, FUEL, LOCATION SECTION ===== */
+.meters-section {
+  margin-bottom: 8px;
+}
+
+.meters-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.meters-table > tbody > tr > td {
+  border: 1px solid #000;
+  padding: 5px;
+  vertical-align: top;
+}
+
+.meter-block {
+  width: 30%;
+}
+
+.fuel-block {
+  width: 35%;
+}
+
+.location-block {
+  width: 35%;
+}
+
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.inner-table:last-child {
+  margin-bottom: 0;
+}
+
+.inner-table th {
+  background: #d0d0d0;
+  font-weight: bold;
+  padding: 3px;
+  text-align: center;
+  border: 1px solid #000;
+  font-size: 9px;
+}
+
+.inner-table td {
+  padding: 2px 4px;
+  border: 1px solid #000;
+  font-size: 8px;
+}
+
+.inner-label {
+  width: 60%;
+  background: #f5f5f5;
+}
+
+.inner-value {
+  width: 40%;
+  text-align: center;
+  font-weight: bold;
+}
+
+.location-box {
+  background: #e8e8e8;
+  border: 1px solid #000;
+  padding: 5px;
+  margin-bottom: 8px;
+  min-height: 60px;
+}
+
+.location-box:last-child {
+  margin-bottom: 0;
+}
+
+.location-label {
+  font-weight: bold;
+  font-size: 9px;
+  margin-bottom: 3px;
+  text-align: center;
+}
+
+.location-value {
+  font-size: 8px;
+  text-align: center;
+}
+
+/* ===== PRODUCTION CONTROL TABLE ===== */
+.production-section {
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  background: #000;
+  color: #fff;
+  padding: 4px;
+  margin-bottom: 0;
+}
+
+.production-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7px;
+}
+
+.production-table th {
+  background: #d0d0d0;
+  font-weight: bold;
+  padding: 3px 2px;
+  border: 1px solid #000;
+  text-align: center;
+  font-size: 8px;
+}
+
+.production-table td {
+  padding: 2px 3px;
+  border: 1px solid #000;
+  font-size: 7px;
+}
+
+.col-numero {
+  width: 4%;
+}
+
+.col-ubicacion {
+  width: 13%;
+}
+
+.col-hora {
+  width: 6%;
+}
+
+.col-material {
+  width: 35%;
+}
+
+.col-metrado {
+  width: 10%;
+}
+
+.col-edt {
+  width: 8%;
+}
+
+.cell-numero {
+  text-align: center;
+  font-weight: bold;
+}
+
+.cell-hora,
+.cell-metrado,
+.cell-edt {
+  text-align: center;
+}
+
+.cell-ubicacion {
+  font-size: 6.5px;
+}
+
+.cell-material {
+  font-size: 7px;
+}
+
+/* ===== OBSERVATIONS SECTION ===== */
+.observations-section {
+  margin-bottom: 8px;
+  border: 1px solid #000;
+}
+
+.observations-title {
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+  padding: 3px 5px;
+  font-size: 9px;
+}
+
+.observations-content {
+  min-height: 40px;
+  padding: 5px;
+  font-size: 8px;
+  white-space: pre-wrap;
+}
+
+/* ===== ACTIVITIES AND DELAYS SECTION ===== */
+.activities-section {
+  margin-bottom: 8px;
+  font-size: 7px;
+}
+
+.activities-row {
+  margin-bottom: 8px;
+}
+
+.activities-column {
+  border: 1px solid #000;
+  padding: 5px;
+}
+
+.activities-title {
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+  padding: 3px;
+  margin-bottom: 5px;
+  text-align: center;
+  font-size: 8px;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+
+.checkbox-item {
+  font-size: 7px;
+  line-height: 1.4;
+}
+
+.delays-row {
+  display: flex;
+  gap: 5px;
+}
+
+.delays-column {
+  flex: 1;
+  border: 1px solid #000;
+  padding: 5px;
+}
+
+.delays-title {
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+  padding: 3px;
+  margin-bottom: 5px;
+  text-align: center;
+  font-size: 8px;
+}
+
+.checkbox-grid-small {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ===== SIGNATURES SECTION ===== */
+.signatures-section {
+  margin-bottom: 8px;
+}
+
+.signatures-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.signature-cell {
+  border: 1px solid #000;
+  padding: 5px;
+  text-align: center;
+  width: 20%;
+}
+
+.signature-box {
+  height: 50px;
+  border: 1px solid #999;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.signature-img {
+  max-width: 100%;
+  max-height: 45px;
+  object-fit: contain;
+}
+
+.signature-label {
+  font-weight: bold;
+  font-size: 8px;
+  text-align: center;
+}
+
+/* ===== FOOTER SECTION ===== */
+.footer-section {
+  border-top: 1px solid #000;
+  padding-top: 5px;
+  text-align: center;
+  font-size: 7px;
+  font-style: italic;
+}
+
+.footer-text {
+  line-height: 1.4;
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .daily-report-container {
+    padding: 0;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}

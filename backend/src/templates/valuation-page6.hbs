@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Valorización - Adelantos y Amortizaciones</title>
+    <style>{{{styles}}}</style>
+</head>
+<body>
+    <div class="report-header-mini">
+        <span class="page-title">ADELANTOS Y AMORTIZACIONES</span>
+        <span class="valuation-id">VALORIZACIÓN N°{{valorizacion.numero_valorizacion}}</span>
+    </div>
+    
+    <table class="info-table-compact">
+        <tr>
+            <td class="label-cell">Equipo:</td>
+            <td class="value-cell">{{equipo.codigo_equipo}} - {{equipo.nombre}}</td>
+            <td class="spacer-cell"></td>
+            <td class="label-cell">Periodo:</td>
+            <td class="value-cell">{{formatDate valorizacion.fecha_inicio}} al {{formatDate valorizacion.fecha_fin}}</td>
+        </tr>
+    </table>
+
+    <table class="detail-table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>N° Doc.</th>
+                <th>Concepto</th>
+                <th>Cuota</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each adelantos}}
+            <tr>
+                <td class="text-center">{{formatDate fecha_operacion}}</td>
+                <td class="text-center">{{tipo_operacion}}</td>
+                <td class="text-center">{{num_documento}}</td>
+                <td>{{concepto}}</td>
+                <td class="text-center">{{num_cuota}}</td>
+                <td class="text-right">{{formatCurrency monto}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" class="text-right bold">Total Adelantos:</td>
+                <td class="text-right bold">{{formatCurrency total_adelantos}}</td>
+            </tr>
+            <tr>
+                <td colspan="5" class="text-right bold">Total Amortizaciones:</td>
+                <td class="text-right bold">{{formatCurrency total_amortizaciones}}</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="5" class="text-right bold">SALDO NETO:</td>
+                <td class="text-right bold">{{formatCurrency saldo_neto}}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="page-footer">
+        <div class="page-number">6 de 7</div>
+        <div class="print-date">Impreso el {{formatDateTime fecha_impresion}}</div>
+    </div>
+</body>
+</html>
