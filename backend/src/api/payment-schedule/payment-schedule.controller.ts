@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Response } from 'express';
 import { PaymentScheduleService } from '../../services/payment-schedule.service';
 import { AuthRequest } from '../../middleware/auth.middleware';
 import { sendError } from '../../utils/api-response';
@@ -11,7 +12,6 @@ export interface CreatePaymentScheduleDto {
 }
 
 export interface AddScheduleDetailDto {
-  accounts_payable_id: number;
   amount_to_pay: number;
 }
 

@@ -1,22 +1,24 @@
 import { PaymentSchedule, PaymentScheduleStatus } from '../models/payment-schedule.model';
-import { PaymentScheduleRepository, PaymentScheduleDetailRepository } from '../repositories/payment-schedule.repository';
-import { AccountsPayableRepository } from '../repositories/accounts-payable.repository';
-import { CreatePaymentScheduleDto, AddScheduleDetailDto } from '../api/payment-schedule/payment-schedule.controller';
+import {
+  PaymentScheduleRepository,
+  PaymentScheduleDetailRepository,
+} from '../repositories/payment-schedule.repository';
+import {
+  CreatePaymentScheduleDto,
+  AddScheduleDetailDto,
+} from '../api/payment-schedule/payment-schedule.controller';
 
 export class PaymentScheduleService {
-  async create(data: CreatePaymentScheduleDto, userId: number, tenantId: number) {
+  async create(data: CreatePaymentScheduleDto, _userId: number, _tenantId: number) {
     const schedule = PaymentScheduleRepository.create({
       ...data,
-      created_by: userId,
-      tenant_id: tenantId,
       status: PaymentScheduleStatus.DRAFT,
     });
     return PaymentScheduleRepository.save(schedule);
   }
 
-  async findAll(tenantId: number) {
+  async findAll(_tenantId: number) {
     return PaymentScheduleRepository.find({
-      where: { tenant_id: tenantId },
       order: { created_at: 'DESC' },
     });
   }
@@ -52,14 +54,8 @@ export class PaymentScheduleService {
       throw new Error('Cannot add details to non-draft schedule');
     }
 
-    const accountsPayable = await AccountsPayableRepository.findOne({ where: { id: data.accounts_payable_id } });
-    if (!accountsPayable) {
-      throw new Error('Accounts payable item not found');
-    }
-
     const detail = PaymentScheduleDetailRepository.create({
       payment_schedule_id: scheduleId,
-      accounts_payable_id: data.accounts_payable_id,
       amount_to_pay: data.amount_to_pay,
     });
 
@@ -81,7 +77,9 @@ export class PaymentScheduleService {
       throw new Error('Cannot remove details from non-draft schedule');
     }
 
-    const detail = await PaymentScheduleDetailRepository.findOne({ where: { id: detailId, payment_schedule_id: scheduleId } });
+    const detail = await PaymentScheduleDetailRepository.findOne({
+      where: { id: detailId, payment_schedule_id: scheduleId },
+    });
     if (!detail) {
       throw new Error('Schedule detail not found');
     }
@@ -98,8 +96,11 @@ export class PaymentScheduleService {
     if (schedule.status !== PaymentScheduleStatus.DRAFT) {
       throw new Error('Only draft schedules can be approved');
     }
-    
-    await PaymentScheduleRepository.update(id, { status: PaymentScheduleStatus.APPROVED as any });
+
+    await PaymentScheduleRepository.update(id, { status: PaymentScheduleStatus.APPROVED } as Record<
+      string,
+      unknown
+    >);
     return await this.findOne(id);
   }
 
@@ -108,8 +109,10 @@ export class PaymentScheduleService {
     if (schedule.status !== PaymentScheduleStatus.APPROVED) {
       throw new Error('Only approved schedules can be processed');
     }
-    
-    await PaymentScheduleRepository.update(id, { status: PaymentScheduleStatus.PROCESSED as any });
+
+    await PaymentScheduleRepository.update(id, {
+      status: PaymentScheduleStatus.PROCESSED,
+    } as Record<string, unknown>);
     return await this.findOne(id);
   }
 
@@ -118,8 +121,10 @@ export class PaymentScheduleService {
     if (schedule.status === PaymentScheduleStatus.PROCESSED) {
       throw new Error('Processed schedules cannot be cancelled');
     }
-    
-    await PaymentScheduleRepository.update(id, { status: PaymentScheduleStatus.CANCELLED as any });
+
+    await PaymentScheduleRepository.update(id, {
+      status: PaymentScheduleStatus.CANCELLED,
+    } as Record<string, unknown>);
     return await this.findOne(id);
   }
 }
