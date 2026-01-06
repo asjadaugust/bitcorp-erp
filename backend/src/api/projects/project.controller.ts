@@ -3,7 +3,11 @@ import { Request, Response } from 'express';
 import { ProjectService, CreateProjectDto, UpdateProjectDto } from '../../services/project.service';
 
 export class ProjectController {
-  private projectService = new ProjectService();
+  private projectService: ProjectService;
+
+  constructor() {
+    this.projectService = new ProjectService();
+  }
 
   /**
    * GET /api/projects

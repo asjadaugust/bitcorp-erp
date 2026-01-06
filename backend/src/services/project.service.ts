@@ -1,6 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import db from '../config/database.config';
-import { Project } from '../models/project.model';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AppDataSource } from '../config/database.config';
+import { Proyecto } from '../models/project.model';
+import { Repository } from 'typeorm';
+import { toProjectDto, fromProjectDto, ProjectDto } from '../types/dto/project.dto';
+import pool from '../config/database.config';
 
 export interface CreateProjectDto {
   // Frontend sends camelCase field names
@@ -23,10 +26,14 @@ export interface CreateProjectDto {
 export interface UpdateProjectDto extends Partial<CreateProjectDto> {}
 
 export class ProjectService {
+  private get repository(): Repository<Proyecto> {
+    return AppDataSource.getRepository(Proyecto);
+  }
+
   /**
    * Get all projects (optionally filtered by user)
    */
-  async findAll(filters?: string | { status?: string; search?: string }): Promise<any[]> {
+  async findAll(filters?: string | { status?: string; search?: string }): Promise<ProjectDto[]> {
     // Handle both old string userId format and new filter object format
     if (typeof filters === 'string') {
       return this.findAllByUser(filters);
@@ -34,32 +41,22 @@ export class ProjectService {
     return this.findAllWithFilters(filters);
   }
 
-  async findAllByUser(userId?: string): Promise<any[]> {
+  async findAllByUser(userId?: string): Promise<ProjectDto[]> {
     try {
-      let query: string;
-      let params: any[] = [];
+      let query = this.repository
+        .createQueryBuilder('p')
+        .where('p.isActive = :isActive', { isActive: true })
+        .orderBy('p.nombre', 'ASC');
 
       if (userId) {
         // Get only projects assigned to the user
-        query = `
-          SELECT DISTINCT p.* 
-          FROM proyectos.edt p
-          INNER JOIN sistema.user_projects up ON p.id = up.project_id
-          WHERE up.user_id = $1 AND p.is_active = true
-          ORDER BY p.nombre
-        `;
-        params = [userId];
-      } else {
-        // Get all active projects
-        query = `
-          SELECT * FROM proyectos.edt 
-          WHERE is_active = true 
-          ORDER BY nombre
-        `;
+        query = query
+          .innerJoin('sistema.user_projects', 'up', 'p.id = up.project_id')
+          .andWhere('up.user_id = :userId', { userId: parseInt(userId) });
       }
 
-      const result = await db.query(query, params);
-      return result.rows.map((row) => this.mapToProject(row));
+      const projects = await query.getMany();
+      return projects.map((p) => toProjectDto(p));
     } catch (error) {
       console.error('Error finding projects:', error);
       // Return empty array instead of throwing to prevent login failures
@@ -67,30 +64,26 @@ export class ProjectService {
     }
   }
 
-  async findAllWithFilters(filters?: { status?: string; search?: string }): Promise<any[]> {
+  async findAllWithFilters(filters?: { status?: string; search?: string }): Promise<ProjectDto[]> {
     try {
-      let query = `
-        SELECT * FROM proyectos.edt 
-        WHERE is_active = true
-      `;
-      const params: any[] = [];
-      let paramIndex = 1;
+      const query = this.repository
+        .createQueryBuilder('p')
+        .where('p.isActive = :isActive', { isActive: true });
 
       if (filters?.status) {
-        query += ` AND estado = $${paramIndex++}`;
-        params.push(filters.status);
+        query.andWhere('p.estado = :status', { status: filters.status });
       }
 
       if (filters?.search) {
-        query += ` AND (nombre ILIKE $${paramIndex} OR codigo ILIKE $${paramIndex})`;
-        params.push(`%${filters.search}%`);
-        paramIndex++;
+        query.andWhere('(p.nombre ILIKE :search OR p.codigo ILIKE :search)', {
+          search: `%${filters.search}%`,
+        });
       }
 
-      query += ` ORDER BY nombre`;
+      query.orderBy('p.nombre', 'ASC');
 
-      const result = await db.query(query, params);
-      return result.rows.map((row) => this.mapToProject(row));
+      const projects = await query.getMany();
+      return projects.map((p) => toProjectDto(p));
     } catch (error) {
       console.error('Error finding projects with filters:', error);
       // Return empty array instead of throwing to prevent login failures
@@ -101,16 +94,18 @@ export class ProjectService {
   /**
    * Get project by ID
    */
-  async findById(projectId: string): Promise<any> {
+  async findById(projectId: string): Promise<ProjectDto | null> {
     try {
-      const query = 'SELECT * FROM proyectos.edt WHERE id = $1 AND is_active = true';
-      const result = await db.query(query, [projectId]);
+      const project = await this.repository.findOne({
+        where: { id: parseInt(projectId), isActive: true },
+        relations: ['creator', 'updater'],
+      });
 
-      if (result.rows.length === 0) {
+      if (!project) {
         throw new Error('Project not found');
       }
 
-      return this.mapToProject(result.rows[0]);
+      return toProjectDto(project);
     } catch (error) {
       console.error('Error finding project:', error);
       throw error;
@@ -120,16 +115,18 @@ export class ProjectService {
   /**
    * Get project by code
    */
-  async findByCode(code: string): Promise<any> {
+  async findByCode(code: string): Promise<ProjectDto | null> {
     try {
-      const query = 'SELECT * FROM proyectos.edt WHERE codigo = $1 AND is_active = true';
-      const result = await db.query(query, [code]);
+      const project = await this.repository.findOne({
+        where: { codigo: code, isActive: true },
+        relations: ['creator', 'updater'],
+      });
 
-      if (result.rows.length === 0) {
+      if (!project) {
         throw new Error('Project not found');
       }
 
-      return this.mapToProject(result.rows[0]);
+      return toProjectDto(project);
     } catch (error) {
       console.error('Error finding project:', error);
       throw error;
@@ -139,67 +136,41 @@ export class ProjectService {
   /**
    * Create new project
    */
-  async create(data: CreateProjectDto): Promise<any> {
+  async create(data: CreateProjectDto): Promise<ProjectDto> {
     try {
       // Map frontend camelCase fields to database snake_case Spanish columns
-      const codigo = data.code;
-      const nombre = data.name;
-      const descripcion = data.description || null;
-      const ubicacion = data.location || null;
-      const fecha_inicio = data.startDate || data.start_date || null;
-      const fecha_fin = data.endDate || data.end_date || null;
-      const presupuesto = data.budget || data.presupuesto || null;
-      const cliente = data.client || data.cliente || null;
+      // Support both English camelCase and Spanish snake_case input
+      const projectData: Partial<ProjectDto> = {
+        codigo: (data as any).codigo || data.code,
+        nombre: (data as any).nombre || data.name,
+        descripcion: (data as any).descripcion || data.description || null,
+        ubicacion: (data as any).ubicacion || data.location || null,
+        fecha_inicio: (data as any).fecha_inicio || data.startDate || data.start_date || null,
+        fecha_fin: (data as any).fecha_fin || data.endDate || data.end_date || null,
+        presupuesto: (data as any).presupuesto || data.budget || null,
+        cliente: (data as any).cliente || data.client || null,
+        estado: (data as any).estado || data.status || 'PLANIFICACION',
+        is_active: true,
+      };
 
       // Map status values from frontend display values to database values
-      let estado = data.status || 'PLANIFICACION';
       const statusMapping: { [key: string]: string } = {
         Planificación: 'PLANIFICACION',
-        'En Ejecución': 'EN_EJECUCION',
-        Suspendido: 'SUSPENDIDO',
-        Finalizado: 'FINALIZADO',
+        'En Ejecución': 'ACTIVO',
+        Suspendido: 'PAUSADO',
+        Finalizado: 'COMPLETADO',
         PLANIFICACION: 'PLANIFICACION',
-        EN_EJECUCION: 'EN_EJECUCION',
-        SUSPENDIDO: 'SUSPENDIDO',
-        FINALIZADO: 'FINALIZADO',
         ACTIVO: 'ACTIVO',
+        PAUSADO: 'PAUSADO',
+        COMPLETADO: 'COMPLETADO',
+        CANCELADO: 'CANCELADO',
       };
-      estado = statusMapping[estado] || estado;
+      projectData.estado = statusMapping[projectData.estado!] || projectData.estado;
 
-      console.log('Creating project with data:', {
-        codigo,
-        nombre,
-        ubicacion,
-        fecha_inicio,
-        fecha_fin,
-        presupuesto,
-        cliente,
-        estado,
-      });
+      const entity = this.repository.create(fromProjectDto(projectData));
+      const saved = await this.repository.save(entity);
 
-      const query = `
-        INSERT INTO proyectos.edt (
-          codigo, nombre, descripcion, ubicacion, 
-          fecha_inicio, fecha_fin, presupuesto, cliente, estado, is_active
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
-        RETURNING *
-      `;
-
-      const values = [
-        codigo,
-        nombre,
-        descripcion,
-        ubicacion,
-        fecha_inicio,
-        fecha_fin,
-        presupuesto,
-        cliente,
-        estado,
-      ];
-
-      const result = await db.query(query, values);
-      return this.mapToProject(result.rows[0]);
+      return toProjectDto(saved);
     } catch (error) {
       console.error('Error creating project:', error);
       throw new Error('Failed to create project');
@@ -209,74 +180,69 @@ export class ProjectService {
   /**
    * Update project
    */
-  async update(projectId: string, data: UpdateProjectDto): Promise<any> {
+  async update(projectId: string, data: UpdateProjectDto): Promise<ProjectDto> {
     try {
-      const updateFields: string[] = [];
-      const values: any[] = [];
-      let paramIndex = 1;
+      const project = await this.repository.findOne({
+        where: { id: parseInt(projectId) },
+      });
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
 
       // Map frontend camelCase and snake_case DTO fields to Spanish column names
-      const fieldMapping: { [key: string]: string } = {
-        code: 'codigo',
-        name: 'nombre',
-        description: 'descripcion',
-        location: 'ubicacion',
-        startDate: 'fecha_inicio',
-        endDate: 'fecha_fin',
-        start_date: 'fecha_inicio',
-        end_date: 'fecha_fin',
-        status: 'estado',
-        client: 'cliente',
-        cliente: 'cliente',
-        budget: 'presupuesto',
-        presupuesto: 'presupuesto',
-      };
+      // Support both English camelCase and Spanish snake_case input
+      const updateData: Partial<ProjectDto> = {};
+
+      if (data.code !== undefined || (data as any).codigo !== undefined)
+        updateData.codigo = (data as any).codigo || data.code;
+      if (data.name !== undefined || (data as any).nombre !== undefined)
+        updateData.nombre = (data as any).nombre || data.name;
+      if (data.description !== undefined || (data as any).descripcion !== undefined)
+        updateData.descripcion = (data as any).descripcion || data.description;
+      if (data.location !== undefined || (data as any).ubicacion !== undefined)
+        updateData.ubicacion = (data as any).ubicacion || data.location;
+      if (
+        data.startDate !== undefined ||
+        data.start_date !== undefined ||
+        (data as any).fecha_inicio !== undefined
+      )
+        updateData.fecha_inicio = (data as any).fecha_inicio || data.startDate || data.start_date;
+      if (
+        data.endDate !== undefined ||
+        data.end_date !== undefined ||
+        (data as any).fecha_fin !== undefined
+      )
+        updateData.fecha_fin = (data as any).fecha_fin || data.endDate || data.end_date;
+      if (data.status !== undefined || (data as any).estado !== undefined)
+        updateData.estado = (data as any).estado || data.status;
+      if (data.client !== undefined || data.cliente !== undefined)
+        updateData.cliente = data.cliente || data.client;
+      if (data.budget !== undefined || data.presupuesto !== undefined)
+        updateData.presupuesto = data.presupuesto || data.budget;
 
       // Map status values from frontend display values to database values
       const statusMapping: { [key: string]: string } = {
         Planificación: 'PLANIFICACION',
-        'En Ejecución': 'EN_EJECUCION',
-        Suspendido: 'SUSPENDIDO',
-        Finalizado: 'FINALIZADO',
+        'En Ejecución': 'ACTIVO',
+        Suspendido: 'PAUSADO',
+        Finalizado: 'COMPLETADO',
       };
 
-      // Build dynamic update query
-      const processedColumns = new Set<string>();
-      for (const [dtoField, dbColumn] of Object.entries(fieldMapping)) {
-        if ((data as any)[dtoField] !== undefined && !processedColumns.has(dbColumn)) {
-          processedColumns.add(dbColumn);
-          let value = (data as any)[dtoField];
-          // Map status values
-          if (dbColumn === 'estado' && statusMapping[value]) {
-            value = statusMapping[value];
-          }
-          updateFields.push(`${dbColumn} = $${paramIndex}`);
-          values.push(value);
-          paramIndex++;
-        }
+      if (updateData.estado && statusMapping[updateData.estado]) {
+        updateData.estado = statusMapping[updateData.estado];
       }
 
-      if (updateFields.length === 0) {
+      if (Object.keys(updateData).length === 0) {
         throw new Error('No fields to update');
       }
 
-      updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
-      values.push(projectId);
+      // Merge changes
+      const entityChanges = fromProjectDto(updateData);
+      Object.assign(project, entityChanges);
 
-      const query = `
-        UPDATE proyectos.edt 
-        SET ${updateFields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-      `;
-
-      const result = await db.query(query, values);
-
-      if (result.rows.length === 0) {
-        throw new Error('Project not found');
-      }
-
-      return this.mapToProject(result.rows[0]);
+      const saved = await this.repository.save(project);
+      return toProjectDto(saved);
     } catch (error) {
       console.error('Error updating project:', error);
       throw error;
@@ -288,13 +254,16 @@ export class ProjectService {
    */
   async delete(projectId: string): Promise<void> {
     try {
-      const query = `
-        UPDATE proyectos.edt 
-        SET is_active = false, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-      `;
+      const project = await this.repository.findOne({
+        where: { id: parseInt(projectId) },
+      });
 
-      await db.query(query, [projectId]);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      project.isActive = false;
+      await this.repository.save(project);
     } catch (error) {
       console.error('Error deleting project:', error);
       throw new Error('Failed to delete project');
@@ -304,7 +273,7 @@ export class ProjectService {
   /**
    * Assign user to project
    */
-  async assignUser(projectId: string, userId: string, rolEnProyecto?: string): Promise<void> {
+  async assignUser(projectId: string, userId: string, _rolEnProyecto?: string): Promise<void> {
     try {
       // Check if assignment already exists
       const checkQuery = `
@@ -312,7 +281,7 @@ export class ProjectService {
         WHERE user_id = $1 AND project_id = $2
       `;
 
-      const checkResult = await db.query(checkQuery, [userId, projectId]);
+      const checkResult = await pool.query(checkQuery, [userId, projectId]);
 
       if (checkResult.rows.length > 0) {
         throw new Error('User already assigned to this project');
@@ -323,7 +292,7 @@ export class ProjectService {
         VALUES ($1, $2, false)
       `;
 
-      await db.query(insertQuery, [userId, projectId]);
+      await pool.query(insertQuery, [userId, projectId]);
     } catch (error) {
       console.error('Error assigning user to project:', error);
       throw error;
@@ -340,7 +309,7 @@ export class ProjectService {
         WHERE user_id = $1 AND project_id = $2
       `;
 
-      await db.query(query, [userId, projectId]);
+      await pool.query(query, [userId, projectId]);
     } catch (error) {
       console.error('Error unassigning user from project:', error);
       throw new Error('Failed to unassign user from project');
@@ -365,31 +334,11 @@ export class ProjectService {
         ORDER BY u.last_name, u.first_name
       `;
 
-      const result = await db.query(query, [projectId]);
+      const result = await pool.query(query, [projectId]);
       return result.rows;
     } catch (error) {
       console.error('Error getting project users:', error);
       throw new Error('Failed to fetch project users');
     }
-  }
-
-  private mapToProject(row: any): any {
-    return {
-      id: row.id,
-      project_code: row.codigo,
-      project_name: row.nombre,
-      code: row.codigo,
-      name: row.nombre,
-      description: row.descripcion,
-      location: row.ubicacion,
-      start_date: row.fecha_inicio,
-      end_date: row.fecha_fin,
-      status: row.estado,
-      budget: row.presupuesto,
-      client: row.cliente,
-      is_active: row.is_active,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-    };
   }
 }

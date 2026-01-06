@@ -17,19 +17,25 @@ export class ProjectService {
 
   constructor(private http: HttpClient) {}
 
+  /**
+   * Map backend DTO (Spanish snake_case) to frontend model (Spanish camelCase)
+   * Backend returns: codigo, nombre, descripcion, ubicacion, fecha_inicio, fecha_fin, estado, presupuesto, cliente
+   * Frontend expects: codigo, nombre, descripcion, ubicacion, fechaInicio, fechaFin, estado, presupuesto, cliente
+   */
   private mapApiToProject(apiProject: any): Project {
     return {
       id: apiProject.id,
-      codigo: apiProject.project_code || apiProject.code || '',
-      nombre: apiProject.project_name || apiProject.name || '',
-      descripcion: apiProject.description || '',
-      ubicacion: apiProject.location || '',
-      fechaInicio: apiProject.start_date || '',
-      fechaFin: apiProject.end_date || apiProject.estimated_end_date || '',
-      estado: apiProject.status || 'ACTIVO',
-      presupuesto: apiProject.budget || apiProject.total_budget || 0,
-      cliente: apiProject.client || apiProject.client_name || '',
-      isActive: apiProject.status === 'ACTIVO',
+      codigo: apiProject.codigo || apiProject.project_code || apiProject.code || '',
+      nombre: apiProject.nombre || apiProject.project_name || apiProject.name || '',
+      descripcion: apiProject.descripcion || apiProject.description || '',
+      ubicacion: apiProject.ubicacion || apiProject.location || '',
+      fechaInicio: apiProject.fecha_inicio || apiProject.start_date || '',
+      fechaFin: apiProject.fecha_fin || apiProject.end_date || apiProject.estimated_end_date || '',
+      estado: apiProject.estado || apiProject.status || 'ACTIVO',
+      presupuesto: apiProject.presupuesto || apiProject.budget || apiProject.total_budget || 0,
+      cliente: apiProject.cliente || apiProject.client || apiProject.client_name || '',
+      isActive:
+        apiProject.is_active !== undefined ? apiProject.is_active : apiProject.status === 'ACTIVO',
       createdAt: apiProject.created_at,
       updatedAt: apiProject.updated_at,
     };
