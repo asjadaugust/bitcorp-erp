@@ -24,6 +24,7 @@ import {
   ValuationPage6Dto,
   ValuationPage7Dto,
 } from '../types/dto/valuation-pdf.dto';
+import { toValuationDto, fromValuationDto, ValuationDto } from '../types/dto/valuation.dto';
 
 export class ValuationService {
   private get repository(): Repository<Valorizacion> {
@@ -83,31 +84,8 @@ export class ValuationService {
 
       const records = await queryBuilder.getMany();
 
-      // Transform to match frontend expectations (snake_case)
-      const data = records.map((v) => ({
-        id: v.id,
-        contract_id: v.contractId,
-        period_start: v.fechaInicio,
-        period_end: v.fechaFin,
-        amount: v.totalValorizado || 0,
-        base_amount: v.costoBase || 0,
-        overtime_amount: v.cargosAdicionales || 0,
-        fuel_amount: v.costoCombustible || 0,
-        status: v.estado.toLowerCase(),
-        created_at: v.createdAt,
-        updated_at: v.updatedAt,
-        // Additional fields for display
-        period: v.periodo,
-        days_worked: v.diasTrabajados,
-        hours_worked: v.horasTrabajadas,
-        fuel_consumed: v.combustibleConsumido,
-        observations: v.observaciones,
-        created_by: v.createdBy,
-        approved_by: v.approvedBy,
-        approved_at: v.approvedAt,
-        creator: v.creator,
-        approver: v.approver,
-      }));
+      // Transform to DTO (Spanish snake_case)
+      const data = records.map((v) => toValuationDto(v));
 
       return { data, total, page, limit };
     } catch (error) {
@@ -116,7 +94,7 @@ export class ValuationService {
     }
   }
 
-  async findById(id: number): Promise<any | null> {
+  async findById(id: number): Promise<ValuationDto | null> {
     try {
       const v = await this.repository.findOne({
         where: { id },
@@ -125,30 +103,8 @@ export class ValuationService {
 
       if (!v) return null;
 
-      // Transform to match frontend expectations
-      return {
-        id: v.id,
-        contract_id: v.contractId,
-        period_start: v.fechaInicio,
-        period_end: v.fechaFin,
-        amount: v.totalValorizado || 0,
-        base_amount: v.costoBase || 0,
-        overtime_amount: v.cargosAdicionales || 0,
-        fuel_amount: v.costoCombustible || 0,
-        status: v.estado.toLowerCase(),
-        created_at: v.createdAt,
-        updated_at: v.updatedAt,
-        period: v.periodo,
-        days_worked: v.diasTrabajados,
-        hours_worked: v.horasTrabajadas,
-        fuel_consumed: v.combustibleConsumido,
-        observations: v.observaciones,
-        created_by: v.createdBy,
-        approved_by: v.approvedBy,
-        approved_at: v.approvedAt,
-        creator: v.creator,
-        approver: v.approver,
-      };
+      // Transform to DTO (Spanish snake_case)
+      return toValuationDto(v);
     } catch (error) {
       console.error('Error fetching valuation by id:', error);
       throw error;
@@ -170,15 +126,16 @@ export class ValuationService {
     }
   }
 
-  async update(id: number, data: Partial<Valorizacion>): Promise<Valorizacion> {
+  async update(id: number, data: Partial<Valorizacion>): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.findById(id);
+      const valorizacion = await this.repository.findOne({ where: { id } });
       if (!valorizacion) {
         throw new Error('Valuation not found');
       }
 
       Object.assign(valorizacion, data);
-      return await this.repository.save(valorizacion);
+      const updated = await this.repository.save(valorizacion);
+      return toValuationDto(updated);
     } catch (error) {
       console.error('Error updating valuation:', error);
       throw error;
@@ -195,9 +152,9 @@ export class ValuationService {
     }
   }
 
-  async approve(id: number, userId: number): Promise<Valorizacion> {
+  async approve(id: number, userId: number): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.findById(id);
+      const valorizacion = await this.repository.findOne({ where: { id } });
       if (!valorizacion) {
         throw new Error('Valuation not found');
       }
@@ -206,7 +163,8 @@ export class ValuationService {
       valorizacion.approvedBy = userId;
       valorizacion.approvedAt = new Date();
 
-      return await this.repository.save(valorizacion);
+      const approved = await this.repository.save(valorizacion);
+      return toValuationDto(approved);
     } catch (error) {
       console.error('Error approving valuation:', error);
       throw error;
