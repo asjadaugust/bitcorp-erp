@@ -1,8 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Equipment, EquipmentListResponse, EquipmentResponse } from '../models/equipment.model';
+import { Equipment, EquipmentListResponse } from '../models/equipment.model';
 
 import { environment } from '../../../environments/environment';
 
@@ -22,21 +21,18 @@ export class EquipmentService {
   }
 
   getById(id: string | number): Observable<Equipment> {
-    return this.http
-      .get<EquipmentResponse>(`${this.apiUrl}/${id}`)
-      .pipe(map((response) => response.data));
+    // Interceptor already unwraps { success: true, data: equipment } to equipment
+    return this.http.get<Equipment>(`${this.apiUrl}/${id}`);
   }
 
   create(data: Partial<Equipment>): Observable<Equipment> {
-    return this.http
-      .post<EquipmentResponse>(this.apiUrl, data)
-      .pipe(map((response) => response.data));
+    // Interceptor already unwraps { success: true, data: equipment } to equipment
+    return this.http.post<Equipment>(this.apiUrl, data);
   }
 
   update(id: string | number, data: Partial<Equipment>): Observable<Equipment> {
-    return this.http
-      .put<EquipmentResponse>(`${this.apiUrl}/${id}`, data)
-      .pipe(map((response) => response.data));
+    // Interceptor already unwraps { success: true, data: equipment } to equipment
+    return this.http.put<Equipment>(`${this.apiUrl}/${id}`, data);
   }
 
   delete(id: string | number): Observable<void> {
@@ -44,14 +40,12 @@ export class EquipmentService {
   }
 
   getAvailable(): Observable<Equipment[]> {
-    return this.http
-      .get<EquipmentResponse>(`${this.apiUrl}/available`)
-      .pipe(map((response) => response.data as any));
+    // Interceptor already unwraps { success: true, data: [...] } to [...]
+    return this.http.get<Equipment[]>(`${this.apiUrl}/available`);
   }
 
   getStatistics(): Observable<any> {
-    return this.http
-      .get<{ success: true; data: any }>(`${this.apiUrl}/statistics`)
-      .pipe(map((response) => response.data));
+    // Interceptor already unwraps { success: true, data: stats } to stats
+    return this.http.get<any>(`${this.apiUrl}/statistics`);
   }
 }
