@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import pool from '../config/database.config';
+import { DailyReportRawRow } from '../types/daily-report-raw.interface';
 
 /**
  * Daily Report Model
@@ -16,7 +17,7 @@ export class DailyReportModel {
     trabajador_id?: string;
     equipo_id?: string;
     proyecto_id?: string;
-  }): Promise<any[]> {
+  }): Promise<DailyReportRawRow[]> {
     let query = `
       SELECT dr.*,
              o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as trabajador_nombre,
@@ -68,10 +69,10 @@ export class DailyReportModel {
     query += ' ORDER BY dr.fecha DESC, dr.created_at DESC';
 
     const result = await pool.query(query, params);
-    return result.rows;
+    return result.rows as DailyReportRawRow[];
   }
 
-  static async findById(id: string): Promise<any | null> {
+  static async findById(id: string): Promise<DailyReportRawRow | null> {
     const result = await pool.query(
       `SELECT dr.*,
               o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as trabajador_nombre,
@@ -83,10 +84,10 @@ export class DailyReportModel {
        WHERE dr.id = $1`,
       [id]
     );
-    return result.rows.length > 0 ? result.rows[0] : null;
+    return result.rows.length > 0 ? (result.rows[0] as DailyReportRawRow) : null;
   }
 
-  static async findByOperator(operatorId: string): Promise<any[]> {
+  static async findByOperator(operatorId: string): Promise<DailyReportRawRow[]> {
     const result = await pool.query(
       `SELECT dr.*,
               o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as trabajador_nombre,
@@ -99,10 +100,10 @@ export class DailyReportModel {
        ORDER BY dr.fecha DESC`,
       [operatorId]
     );
-    return result.rows;
+    return result.rows as DailyReportRawRow[];
   }
 
-  static async create(data: any): Promise<any> {
+  static async create(data: any): Promise<DailyReportRawRow> {
     // Calculate fuel consumed and hours worked
     const combustibleConsumido =
       data.combustible_inicial && data.combustible_final
@@ -143,10 +144,10 @@ export class DailyReportModel {
         data.lugar_salida,
       ]
     );
-    return result.rows[0];
+    return result.rows[0] as DailyReportRawRow;
   }
 
-  static async update(id: string, data: any): Promise<any | null> {
+  static async update(id: string, data: any): Promise<DailyReportRawRow | null> {
     const fields = [];
     const values = [];
     let paramIndex = 1;
@@ -224,24 +225,24 @@ export class DailyReportModel {
     return result.rows.length > 0 ? this.findById(id) : null;
   }
 
-  static async approve(id: string, approvedBy: string): Promise<any | null> {
+  static async approve(id: string, approvedBy: string): Promise<DailyReportRawRow | null> {
     const result = await pool.query(
       `UPDATE equipo.parte_diario 
        SET estado = 'APROBADO', aprobado_por = $1, aprobado_en = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
        WHERE id = $2 RETURNING *`,
       [approvedBy, id]
     );
-    return result.rows.length > 0 ? this.findById(id) : null;
+    return result.rows.length > 0 ? (result.rows[0] as DailyReportRawRow) : null;
   }
 
-  static async reject(id: string, reason: string): Promise<any | null> {
+  static async reject(id: string, reason: string): Promise<DailyReportRawRow | null> {
     const result = await pool.query(
       `UPDATE equipo.parte_diario 
        SET estado = 'RECHAZADO', observaciones_correcciones = $1, updated_at = CURRENT_TIMESTAMP
        WHERE id = $2 RETURNING *`,
       [reason, id]
     );
-    return result.rows.length > 0 ? this.findById(id) : null;
+    return result.rows.length > 0 ? (result.rows[0] as DailyReportRawRow) : null;
   }
 
   static async delete(id: string): Promise<boolean> {
