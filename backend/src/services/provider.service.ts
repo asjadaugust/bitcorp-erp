@@ -1,6 +1,29 @@
 import { AppDataSource } from '../config/database.config';
-import { Provider } from '../models/provider.model';
-import { Repository, Like, In } from 'typeorm';
+import { Provider, TipoProveedor } from '../models/provider.model';
+import { Repository } from 'typeorm';
+import { toProviderDto, fromProviderDto, ProviderDto } from '../types/dto/provider.dto';
+
+// DTOs for create/update operations
+// Support both English camelCase (from frontend) and Spanish snake_case (from API)
+export interface CreateProviderDto {
+  // Frontend sends camelCase field names
+  ruc?: string;
+  businessName?: string; // razon_social
+  tradeName?: string; // nombre_comercial
+  providerType?: TipoProveedor; // tipo_proveedor
+  address?: string; // direccion
+  phone?: string; // telefono
+  email?: string;
+
+  // Also support Spanish snake_case
+  razon_social?: string;
+  nombre_comercial?: string;
+  tipo_proveedor?: TipoProveedor;
+  direccion?: string;
+  telefono?: string;
+}
+
+export interface UpdateProviderDto extends Partial<CreateProviderDto> {}
 
 export class ProviderService {
   private get providerRepository(): Repository<Provider> {
@@ -13,13 +36,13 @@ export class ProviderService {
   /**
    * Get all providers with optional filters
    */
-  async findAll(filters?: { 
-    search?: string; 
+  async findAll(filters?: {
+    search?: string;
     is_active?: boolean;
-    tipo_proveedor?: string;
-  }): Promise<Provider[]> {
+    tipo_proveedor?: TipoProveedor;
+  }): Promise<ProviderDto[]> {
     try {
-      const where: any = {};
+      const where: Record<string, unknown> = {};
 
       if (filters?.is_active !== undefined) {
         where.is_active = filters.is_active;
@@ -37,7 +60,7 @@ export class ProviderService {
           .createQueryBuilder('provider')
           .where('provider.is_active = :is_active', { is_active: filters.is_active ?? true })
           .andWhere(
-            '(provider.razon_social ILIKE :search OR provider.ruc ILIKE :search OR provider.email ILIKE :search OR provider.nombre_comercial ILIKE :search)',
+            '(provider.razon_social ILIKE :search OR provider.ruc ILIKE :search OR provider.correo_electronico ILIKE :search OR provider.nombre_comercial ILIKE :search)',
             { search: `%${filters.search}%` }
           )
           .orderBy('provider.razon_social', 'ASC')
@@ -49,7 +72,7 @@ export class ProviderService {
         });
       }
 
-      return providers;
+      return providers.map((p) => toProviderDto(p));
     } catch (error) {
       console.error('Error finding providers:', error);
       throw new Error('Failed to fetch providers');
@@ -59,7 +82,7 @@ export class ProviderService {
   /**
    * Get provider by ID
    */
-  async findById(id: number): Promise<Provider> {
+  async findById(id: number): Promise<ProviderDto> {
     try {
       const provider = await this.providerRepository.findOne({
         where: { id },
@@ -69,7 +92,7 @@ export class ProviderService {
         throw new Error('Provider not found');
       }
 
-      return provider;
+      return toProviderDto(provider);
     } catch (error) {
       console.error('Error finding provider:', error);
       throw error;
@@ -93,24 +116,35 @@ export class ProviderService {
   /**
    * Create new provider
    */
-  async create(data: Partial<Provider>): Promise<Provider> {
+  async create(data: CreateProviderDto): Promise<ProviderDto> {
     try {
-      if (!data.ruc || !data.razon_social) {
+      // Map frontend camelCase and Spanish snake_case to DTO format
+      // Support both English camelCase and Spanish snake_case input
+      const providerData: Partial<ProviderDto> = {
+        ruc: data.ruc,
+        razon_social: data.razon_social || data.businessName,
+        nombre_comercial: data.nombre_comercial || data.tradeName || null,
+        tipo_proveedor: data.tipo_proveedor || data.providerType || null,
+        direccion: data.direccion || data.address || null,
+        telefono: data.telefono || data.phone || null,
+        email: data.email,
+        is_active: true,
+      };
+
+      if (!providerData.ruc || !providerData.razon_social) {
         throw new Error('RUC and razón social are required');
       }
 
       // Check if RUC already exists
-      const existing = await this.findByRuc(data.ruc);
+      const existing = await this.findByRuc(providerData.ruc);
       if (existing) {
         throw new Error('Provider with this RUC already exists');
       }
 
-      const provider = this.providerRepository.create({
-        ...data,
-        is_active: true,
-      });
+      const entity = this.providerRepository.create(fromProviderDto(providerData));
+      const saved = await this.providerRepository.save(entity);
 
-      return await this.providerRepository.save(provider);
+      return toProviderDto(saved);
     } catch (error) {
       console.error('Error creating provider:', error);
       throw error;
@@ -120,22 +154,47 @@ export class ProviderService {
   /**
    * Update provider
    */
-  async update(id: number, data: Partial<Provider>): Promise<Provider> {
+  async update(id: number, data: UpdateProviderDto): Promise<ProviderDto> {
     try {
-      const provider = await this.findById(id);
+      const provider = await this.providerRepository.findOne({
+        where: { id },
+      });
+
+      if (!provider) {
+        throw new Error('Provider not found');
+      }
+
+      // Map frontend camelCase and Spanish snake_case to DTO format
+      // Support both English camelCase and Spanish snake_case input
+      const updateData: Partial<ProviderDto> = {};
+
+      if (data.ruc !== undefined) updateData.ruc = data.ruc;
+      if (data.businessName !== undefined || data.razon_social !== undefined)
+        updateData.razon_social = data.razon_social || data.businessName;
+      if (data.tradeName !== undefined || data.nombre_comercial !== undefined)
+        updateData.nombre_comercial = data.nombre_comercial || data.tradeName;
+      if (data.providerType !== undefined || data.tipo_proveedor !== undefined)
+        updateData.tipo_proveedor = data.tipo_proveedor || data.providerType;
+      if (data.address !== undefined || data.direccion !== undefined)
+        updateData.direccion = data.direccion || data.address;
+      if (data.phone !== undefined || data.telefono !== undefined)
+        updateData.telefono = data.telefono || data.phone;
+      if (data.email !== undefined) updateData.email = data.email;
 
       // If updating RUC, check it doesn't exist for another provider
-      if (data.ruc && data.ruc !== provider.ruc) {
-        const existing = await this.findByRuc(data.ruc);
+      if (updateData.ruc && updateData.ruc !== provider.ruc) {
+        const existing = await this.findByRuc(updateData.ruc);
         if (existing && existing.id !== id) {
           throw new Error('Provider with this RUC already exists');
         }
       }
 
-      // Update fields
-      Object.assign(provider, data);
+      // Merge changes
+      const entityChanges = fromProviderDto(updateData);
+      Object.assign(provider, entityChanges);
 
-      return await this.providerRepository.save(provider);
+      const saved = await this.providerRepository.save(provider);
+      return toProviderDto(saved);
     } catch (error) {
       console.error('Error updating provider:', error);
       throw error;
@@ -159,15 +218,16 @@ export class ProviderService {
   /**
    * Get providers by type
    */
-  async findByType(tipo: string): Promise<Provider[]> {
+  async findByType(tipo: TipoProveedor): Promise<ProviderDto[]> {
     try {
-      return await this.providerRepository.find({
+      const providers = await this.providerRepository.find({
         where: {
-          tipo_proveedor: tipo as any,
+          tipo_proveedor: tipo,
           is_active: true,
         },
         order: { razon_social: 'ASC' },
       });
+      return providers.map((p) => toProviderDto(p));
     } catch (error) {
       console.error('Error finding providers by type:', error);
       throw error;
