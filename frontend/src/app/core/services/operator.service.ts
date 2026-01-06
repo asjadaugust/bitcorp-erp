@@ -18,7 +18,7 @@ export class OperatorService {
 
   /**
    * Maps API response to frontend Operator model
-   * API returns camelCase (e.g., apellidoPaterno, fechaIngreso, isActive)
+   * API returns Spanish snake_case (e.g., apellido_paterno, fecha_ingreso, is_active)
    */
   private mapOperator(apiOp: any): Operator {
     return {

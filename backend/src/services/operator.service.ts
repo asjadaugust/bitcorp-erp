@@ -2,6 +2,7 @@
 import { AppDataSource } from '../config/database.config';
 import { Trabajador } from '../models/trabajador.model';
 import { Repository, ILike } from 'typeorm';
+import { toOperatorDto, fromOperatorDto, OperatorDto } from '../types/dto/operator.dto';
 
 export interface OperatorFilter {
   search?: string;
@@ -13,6 +14,45 @@ export interface OperatorFilter {
   limit?: number;
 }
 
+// DTOs for create/update operations
+// Support both English camelCase (from frontend) and Spanish snake_case (from API)
+export interface CreateOperatorDto {
+  // Frontend sends camelCase field names
+  dni?: string;
+  firstName?: string; // nombres
+  lastName?: string; // apellido_paterno (combined with apellido_materno)
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  dateOfBirth?: string; // fecha_nacimiento
+  phone?: string; // telefono
+  email?: string;
+  address?: string; // direccion
+  contractType?: string; // tipo_contrato
+  hireDate?: string; // fecha_ingreso
+  terminationDate?: string; // fecha_cese
+  position?: string; // cargo
+  specialty?: string; // especialidad
+  driverLicense?: string; // licencia_conducir
+  operatingUnitId?: number;
+
+  // Also support Spanish snake_case
+  nombres?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
+  fecha_nacimiento?: string;
+  telefono?: string;
+  direccion?: string;
+  tipo_contrato?: string;
+  fecha_ingreso?: string;
+  fecha_cese?: string;
+  cargo?: string;
+  especialidad?: string;
+  licencia_conducir?: string;
+  operating_unit_id?: number;
+}
+
+export interface UpdateOperatorDto extends Partial<CreateOperatorDto> {}
+
 export class OperatorService {
   private get repository(): Repository<Trabajador> {
     if (!AppDataSource.isInitialized) {
@@ -21,7 +61,12 @@ export class OperatorService {
     return AppDataSource.getRepository(Trabajador);
   }
 
-  async findAll(filters?: OperatorFilter) {
+  async findAll(filters?: OperatorFilter): Promise<{
+    data: OperatorDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     try {
       const page = filters?.page || 1;
       const limit = filters?.limit || 50;
@@ -67,8 +112,8 @@ export class OperatorService {
 
       const trabajadores = await queryBuilder.getMany();
 
-      // Map to response format
-      const data = trabajadores.map((t) => this.mapToResponse(t));
+      // Map to DTO format
+      const data = trabajadores.map((t) => toOperatorDto(t));
 
       return { data, total, page, limit };
     } catch (error) {
@@ -77,7 +122,7 @@ export class OperatorService {
     }
   }
 
-  async findById(id: number): Promise<Trabajador> {
+  async findById(id: number): Promise<OperatorDto> {
     try {
       const trabajador = await this.repository.findOne({
         where: { id },
@@ -87,7 +132,7 @@ export class OperatorService {
         throw new Error('Operator not found');
       }
 
-      return trabajador;
+      return toOperatorDto(trabajador);
     } catch (error) {
       console.error('Error finding operator:', error);
       throw error;
@@ -105,42 +150,100 @@ export class OperatorService {
     }
   }
 
-  async create(data: Partial<Trabajador>): Promise<Trabajador> {
+  async create(data: CreateOperatorDto): Promise<OperatorDto> {
     try {
+      // Map frontend camelCase and Spanish snake_case to DTO format
+      const operatorData: Partial<OperatorDto> = {
+        dni: data.dni,
+        nombres: data.nombres || data.firstName,
+        apellido_paterno: data.apellido_paterno || data.apellidoPaterno,
+        apellido_materno: data.apellido_materno || data.apellidoMaterno || null,
+        fecha_nacimiento: data.fecha_nacimiento || data.dateOfBirth || null,
+        telefono: data.telefono || data.phone || null,
+        email: data.email,
+        direccion: data.direccion || data.address || null,
+        tipo_contrato: data.tipo_contrato || data.contractType || null,
+        fecha_ingreso: data.fecha_ingreso || data.hireDate || null,
+        fecha_cese: data.fecha_cese || data.terminationDate || null,
+        cargo: data.cargo || data.position || null,
+        especialidad: data.especialidad || data.specialty || null,
+        licencia_conducir: data.licencia_conducir || data.driverLicense || null,
+        operating_unit_id: data.operating_unit_id || data.operatingUnitId || null,
+        is_active: true,
+      };
+
       // Check if DNI already exists
-      if (data.dni) {
-        const existing = await this.findByDni(data.dni);
+      if (operatorData.dni) {
+        const existing = await this.findByDni(operatorData.dni);
         if (existing) {
           throw new Error('An operator with this DNI already exists');
         }
       }
 
-      const trabajador = this.repository.create({
-        ...data,
-        isActive: data.isActive ?? true,
-      });
+      const entity = this.repository.create(fromOperatorDto(operatorData));
+      const saved = await this.repository.save(entity);
 
-      return await this.repository.save(trabajador);
+      return toOperatorDto(saved);
     } catch (error) {
       console.error('Error creating operator:', error);
       throw error;
     }
   }
 
-  async update(id: number, data: Partial<Trabajador>): Promise<Trabajador> {
+  async update(id: number, data: UpdateOperatorDto): Promise<OperatorDto> {
     try {
-      const trabajador = await this.findById(id);
+      const trabajador = await this.repository.findOne({ where: { id } });
+
+      if (!trabajador) {
+        throw new Error('Operator not found');
+      }
+
+      // Map frontend camelCase and Spanish snake_case to DTO format
+      const updateData: Partial<OperatorDto> = {};
+
+      if (data.dni !== undefined) updateData.dni = data.dni;
+      if (data.nombres !== undefined || data.firstName !== undefined)
+        updateData.nombres = data.nombres || data.firstName;
+      if (data.apellido_paterno !== undefined || data.apellidoPaterno !== undefined)
+        updateData.apellido_paterno = data.apellido_paterno || data.apellidoPaterno;
+      if (data.apellido_materno !== undefined || data.apellidoMaterno !== undefined)
+        updateData.apellido_materno = data.apellido_materno || data.apellidoMaterno;
+      if (data.fecha_nacimiento !== undefined || data.dateOfBirth !== undefined)
+        updateData.fecha_nacimiento = data.fecha_nacimiento || data.dateOfBirth;
+      if (data.telefono !== undefined || data.phone !== undefined)
+        updateData.telefono = data.telefono || data.phone;
+      if (data.email !== undefined) updateData.email = data.email;
+      if (data.direccion !== undefined || data.address !== undefined)
+        updateData.direccion = data.direccion || data.address;
+      if (data.tipo_contrato !== undefined || data.contractType !== undefined)
+        updateData.tipo_contrato = data.tipo_contrato || data.contractType;
+      if (data.fecha_ingreso !== undefined || data.hireDate !== undefined)
+        updateData.fecha_ingreso = data.fecha_ingreso || data.hireDate;
+      if (data.fecha_cese !== undefined || data.terminationDate !== undefined)
+        updateData.fecha_cese = data.fecha_cese || data.terminationDate;
+      if (data.cargo !== undefined || data.position !== undefined)
+        updateData.cargo = data.cargo || data.position;
+      if (data.especialidad !== undefined || data.specialty !== undefined)
+        updateData.especialidad = data.especialidad || data.specialty;
+      if (data.licencia_conducir !== undefined || data.driverLicense !== undefined)
+        updateData.licencia_conducir = data.licencia_conducir || data.driverLicense;
+      if (data.operating_unit_id !== undefined || data.operatingUnitId !== undefined)
+        updateData.operating_unit_id = data.operating_unit_id || data.operatingUnitId;
 
       // If updating DNI, check it doesn't exist
-      if (data.dni && data.dni !== trabajador.dni) {
-        const existing = await this.findByDni(data.dni);
+      if (updateData.dni && updateData.dni !== trabajador.dni) {
+        const existing = await this.findByDni(updateData.dni);
         if (existing && existing.id !== id) {
           throw new Error('An operator with this DNI already exists');
         }
       }
 
-      Object.assign(trabajador, data);
-      return await this.repository.save(trabajador);
+      // Merge changes
+      const entityChanges = fromOperatorDto(updateData);
+      Object.assign(trabajador, entityChanges);
+
+      const saved = await this.repository.save(trabajador);
+      return toOperatorDto(saved);
     } catch (error) {
       console.error('Error updating operator:', error);
       throw error;
@@ -199,38 +302,6 @@ export class OperatorService {
       console.error('Error getting operator stats:', error);
       throw error;
     }
-  }
-
-  private mapToResponse(t: Trabajador) {
-    return {
-      id: t.id,
-      legacy_id: t.legacyId,
-      dni: t.dni,
-      nombres: t.nombres,
-      apellido_paterno: t.apellidoPaterno,
-      apellido_materno: t.apellidoMaterno,
-      nombre_completo: t.nombreCompleto,
-      // Backward compatible English fields
-      first_name: t.nombres,
-      last_name: `${t.apellidoPaterno} ${t.apellidoMaterno || ''}`.trim(),
-      full_name: t.nombreCompleto,
-      email: t.email,
-      phone: t.telefono,
-      telefono: t.telefono,
-      direccion: t.direccion,
-      fecha_nacimiento: t.fechaNacimiento,
-      fecha_ingreso: t.fechaIngreso,
-      fecha_cese: t.fechaCese,
-      cargo: t.cargo,
-      especialidad: t.especialidad,
-      licencia_conducir: t.licenciaConducir,
-      tipo_contrato: t.tipoContrato,
-      operating_unit_id: t.operatingUnitId,
-      is_active: t.isActive,
-      status: t.isActive ? 'activo' : 'inactivo',
-      created_at: t.createdAt,
-      updated_at: t.updatedAt,
-    };
   }
 }
 
