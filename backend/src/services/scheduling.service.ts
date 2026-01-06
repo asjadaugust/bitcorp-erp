@@ -1,6 +1,14 @@
 import { AppDataSource } from '../config/database.config';
 import { ScheduledTask } from '../models/scheduled-task.model';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
+import {
+  ScheduledTaskDto,
+  CreateScheduledTaskDto,
+  UpdateScheduledTaskDto,
+  toScheduledTaskDto,
+  fromScheduledTaskDto,
+  mapCreateScheduledTaskDto,
+} from '../types/dto/scheduled-task.dto';
 
 export interface TaskFilter {
   startDate?: Date;
@@ -20,7 +28,7 @@ export class SchedulingService {
     return AppDataSource.getRepository(ScheduledTask);
   }
 
-  async findAll(filter?: TaskFilter): Promise<ScheduledTask[]> {
+  async findAll(filter?: TaskFilter): Promise<ScheduledTaskDto[]> {
     try {
       const queryBuilder = this.repository
         .createQueryBuilder('task')
@@ -58,45 +66,71 @@ export class SchedulingService {
 
       queryBuilder.orderBy('task.startDate', 'ASC').addOrderBy('task.priority', 'DESC');
 
-      return await queryBuilder.getMany();
+      const tasks = await queryBuilder.getMany();
+      return tasks.map((task) => toScheduledTaskDto(task));
     } catch (error) {
       console.error('Error listing tasks:', error);
       throw error;
     }
   }
 
-  async findById(id: number): Promise<ScheduledTask | null> {
+  async findById(id: number): Promise<ScheduledTaskDto | null> {
     try {
-      return await this.repository.findOne({
+      const task = await this.repository.findOne({
         where: { id },
         relations: ['equipment', 'project'],
       });
+      return task ? toScheduledTaskDto(task) : null;
     } catch (error) {
       console.error('Error finding task:', error);
       throw error;
     }
   }
 
-  async create(data: Partial<ScheduledTask>): Promise<ScheduledTask> {
+  async create(data: CreateScheduledTaskDto): Promise<ScheduledTaskDto> {
     try {
-      const task = this.repository.create({
-        ...data,
+      // Map dual input format to DTO
+      const dtoData = mapCreateScheduledTaskDto(data);
+
+      const task = this.repository.create(fromScheduledTaskDto(dtoData));
+      const saved = await this.repository.save(task);
+
+      // Reload with relations
+      const withRelations = await this.repository.findOne({
+        where: { id: saved.id },
+        relations: ['equipment', 'project'],
       });
-      return await this.repository.save(task);
+
+      return toScheduledTaskDto(withRelations!);
     } catch (error) {
       console.error('Error creating task:', error);
       throw error;
     }
   }
 
-  async update(id: number, data: Partial<ScheduledTask>): Promise<ScheduledTask> {
+  async update(id: number, data: UpdateScheduledTaskDto): Promise<ScheduledTaskDto> {
     try {
-      const task = await this.findById(id);
+      const task = await this.repository.findOne({
+        where: { id },
+        relations: ['equipment', 'project'],
+      });
       if (!task) {
         throw new Error('Task not found');
       }
-      Object.assign(task, data);
-      return await this.repository.save(task);
+
+      // Map dual input format to DTO
+      const dtoData = mapCreateScheduledTaskDto(data);
+
+      Object.assign(task, fromScheduledTaskDto(dtoData));
+      const saved = await this.repository.save(task);
+
+      // Reload with relations
+      const withRelations = await this.repository.findOne({
+        where: { id: saved.id },
+        relations: ['equipment', 'project'],
+      });
+
+      return toScheduledTaskDto(withRelations!);
     } catch (error) {
       console.error('Error updating task:', error);
       throw error;
@@ -113,7 +147,8 @@ export class SchedulingService {
   }
 
   // Backward compatibility methods
-  async getTasks(filters: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getTasks(filters: any): Promise<ScheduledTaskDto[]> {
     return this.findAll({
       startDate: filters.startDate ? new Date(filters.startDate) : undefined,
       endDate: filters.endDate ? new Date(filters.endDate) : undefined,
@@ -123,22 +158,27 @@ export class SchedulingService {
     });
   }
 
-  async getTaskById(id: string) {
+  async getTaskById(id: string): Promise<ScheduledTaskDto | null> {
     return this.findById(parseInt(id));
   }
 
-  async createTask(data: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async createTask(data: any): Promise<ScheduledTaskDto> {
     // Map fields if necessary
     return this.create({
       ...data,
-      startDate: data.scheduledDate || data.startDate, // Map scheduledDate to startDate
+      start_date: data.scheduledDate || data.start_date || data.startDate,
+      startDate: data.scheduledDate || data.startDate,
+      task_type: data.type || data.task_type || data.taskType,
       taskType: data.type || data.taskType,
     });
   }
 
-  async updateTask(id: string, data: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateTask(id: string, data: any): Promise<ScheduledTaskDto> {
     return this.update(parseInt(id), {
       ...data,
+      start_date: data.scheduledDate || data.start_date || data.startDate,
       startDate: data.scheduledDate || data.startDate,
     });
   }

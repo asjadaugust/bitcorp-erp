@@ -1,0 +1,231 @@
+/**
+ * Scheduled Task DTO
+ *
+ * Following ARCHITECTURE.md guidelines:
+ * - Uses Spanish snake_case field names matching database columns
+ * - DTO transformation happens in service layer
+ * - Returns Spanish column names to API
+ */
+
+import { ScheduledTask } from '../../models/scheduled-task.model';
+
+/**
+ * DTO for scheduled tasks with Spanish snake_case fields
+ */
+export interface ScheduledTaskDto {
+  id: number;
+  programa_mantenimiento_id: number | null;
+  equipo_id: number;
+  trabajador_id: number | null;
+  task_type: string;
+  title: string;
+  description: string | null;
+  start_date: string; // ISO date string (YYYY-MM-DD)
+  end_date: string | null; // ISO date string (YYYY-MM-DD)
+  start_time: string | null;
+  end_time: string | null;
+  all_day: boolean;
+  recurrence: string | null;
+  duration_minutes: number;
+  priority: string;
+  status: string;
+  completion_date: string | null; // ISO datetime string
+  completion_notes: string | null;
+  maintenance_record_id: number | null;
+  creado_por: number | null;
+  asignado_por: number | null;
+  proyecto_id: number | null;
+  created_at: string; // ISO datetime string
+  updated_at: string; // ISO datetime string
+
+  // Computed relation fields
+  equipo_codigo?: string | null;
+  proyecto_nombre?: string | null;
+}
+
+/**
+ * Dual input format DTO for create operations
+ * Supports both English camelCase (frontend) and Spanish snake_case (API/tests)
+ */
+export interface CreateScheduledTaskDto {
+  // Spanish snake_case (preferred)
+  programa_mantenimiento_id?: number;
+  equipo_id?: number;
+  trabajador_id?: number;
+  task_type?: string;
+  title?: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  start_time?: string;
+  end_time?: string;
+  all_day?: boolean;
+  recurrence?: string;
+  duration_minutes?: number;
+  priority?: string;
+  status?: string;
+  completion_date?: string;
+  completion_notes?: string;
+  maintenance_record_id?: number;
+  creado_por?: number;
+  asignado_por?: number;
+  proyecto_id?: number;
+
+  // English camelCase (backward compatibility)
+  scheduleId?: number;
+  equipmentId?: number;
+  operatorId?: number;
+  taskType?: string;
+  startDate?: string | Date;
+  endDate?: string | Date;
+  startTime?: string;
+  endTime?: string;
+  allDay?: boolean;
+  durationMinutes?: number;
+  completionDate?: string;
+  completionNotes?: string;
+  maintenanceRecordId?: number;
+  createdBy?: number;
+  assignedBy?: number;
+  projectId?: number;
+}
+
+/**
+ * Update DTO - partial version of CreateScheduledTaskDto
+ */
+export interface UpdateScheduledTaskDto extends Partial<CreateScheduledTaskDto> {}
+
+/**
+ * Convert entity to DTO
+ * @param entity - ScheduledTask entity from database
+ * @returns ScheduledTaskDto with Spanish snake_case fields
+ */
+export function toScheduledTaskDto(entity: ScheduledTask): ScheduledTaskDto {
+  // Helper to convert Date to ISO date string (YYYY-MM-DD only)
+  const toDateString = (date?: Date | string): string | null => {
+    if (!date) return null;
+    if (typeof date === 'string') return date.split('T')[0];
+    return date.toISOString().split('T')[0];
+  };
+
+  // Helper to convert Date to ISO datetime string
+  const toDateTimeString = (date?: Date | string): string | null => {
+    if (!date) return null;
+    if (typeof date === 'string') return date;
+    return date.toISOString();
+  };
+
+  return {
+    id: entity.id,
+    programa_mantenimiento_id: entity.scheduleId || null,
+    equipo_id: entity.equipmentId,
+    trabajador_id: entity.operatorId || null,
+    task_type: entity.taskType,
+    title: entity.title,
+    description: entity.description || null,
+    start_date: toDateString(entity.startDate) || '',
+    end_date: toDateString(entity.endDate),
+    start_time: entity.startTime || null,
+    end_time: entity.endTime || null,
+    all_day: entity.allDay || false,
+    recurrence: entity.recurrence || null,
+    duration_minutes: entity.durationMinutes,
+    priority: entity.priority,
+    status: entity.status,
+    completion_date: toDateTimeString(entity.completionDate),
+    completion_notes: entity.completionNotes || null,
+    maintenance_record_id: entity.maintenanceRecordId || null,
+    creado_por: entity.createdBy || null,
+    asignado_por: entity.assignedBy || null,
+    proyecto_id: entity.projectId || null,
+    created_at: entity.createdAt.toISOString(),
+    updated_at: entity.updatedAt.toISOString(),
+
+    // Relation fields (if loaded)
+    equipo_codigo: entity.equipment?.codigo_equipo || null,
+    proyecto_nombre: entity.project?.nombre || null,
+  };
+}
+
+/**
+ * Convert DTO to entity (for create/update operations)
+ * @param dto - Partial ScheduledTaskDto with Spanish snake_case fields
+ * @returns Partial entity ready for TypeORM
+ */
+export function fromScheduledTaskDto(dto: Partial<ScheduledTaskDto>): Partial<ScheduledTask> {
+  // Helper to parse date string to Date object
+  const parseDate = (dateStr?: string): Date | undefined => {
+    if (!dateStr) return undefined;
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? undefined : date;
+  };
+
+  const entity: Partial<ScheduledTask> = {};
+
+  if (dto.id !== undefined) entity.id = dto.id;
+  if (dto.programa_mantenimiento_id !== undefined)
+    entity.scheduleId = dto.programa_mantenimiento_id || undefined;
+  if (dto.equipo_id !== undefined) entity.equipmentId = dto.equipo_id;
+  if (dto.trabajador_id !== undefined) entity.operatorId = dto.trabajador_id || undefined;
+  if (dto.task_type !== undefined) entity.taskType = dto.task_type;
+  if (dto.title !== undefined) entity.title = dto.title;
+  if (dto.description !== undefined) entity.description = dto.description || undefined;
+  if (dto.start_date !== undefined) entity.startDate = parseDate(dto.start_date);
+  if (dto.end_date !== undefined) entity.endDate = parseDate(dto.end_date);
+  if (dto.start_time !== undefined) entity.startTime = dto.start_time || undefined;
+  if (dto.end_time !== undefined) entity.endTime = dto.end_time || undefined;
+  if (dto.all_day !== undefined) entity.allDay = dto.all_day;
+  if (dto.recurrence !== undefined) entity.recurrence = dto.recurrence || undefined;
+  if (dto.duration_minutes !== undefined) entity.durationMinutes = dto.duration_minutes;
+  if (dto.priority !== undefined) entity.priority = dto.priority;
+  if (dto.status !== undefined) entity.status = dto.status;
+  if (dto.completion_date !== undefined) entity.completionDate = parseDate(dto.completion_date);
+  if (dto.completion_notes !== undefined)
+    entity.completionNotes = dto.completion_notes || undefined;
+  if (dto.maintenance_record_id !== undefined)
+    entity.maintenanceRecordId = dto.maintenance_record_id || undefined;
+  if (dto.creado_por !== undefined) entity.createdBy = dto.creado_por || undefined;
+  if (dto.asignado_por !== undefined) entity.assignedBy = dto.asignado_por || undefined;
+  if (dto.proyecto_id !== undefined) entity.projectId = dto.proyecto_id || undefined;
+
+  return entity;
+}
+
+/**
+ * Map dual input format to standard DTO format
+ * Handles both English camelCase and Spanish snake_case inputs
+ */
+export function mapCreateScheduledTaskDto(
+  input: CreateScheduledTaskDto
+): Partial<ScheduledTaskDto> {
+  // Handle date conversion if Date object is provided
+  const convertDate = (date?: string | Date): string | undefined => {
+    if (!date) return undefined;
+    if (typeof date === 'string') return date;
+    return date.toISOString().split('T')[0];
+  };
+
+  return {
+    programa_mantenimiento_id: input.programa_mantenimiento_id ?? input.scheduleId,
+    equipo_id: input.equipo_id ?? input.equipmentId,
+    trabajador_id: input.trabajador_id ?? input.operatorId,
+    task_type: input.task_type ?? input.taskType,
+    title: input.title,
+    description: input.description,
+    start_date: input.start_date ?? convertDate(input.startDate),
+    end_date: input.end_date ?? convertDate(input.endDate),
+    start_time: input.start_time ?? input.startTime,
+    end_time: input.end_time ?? input.endTime,
+    all_day: input.all_day ?? input.allDay,
+    recurrence: input.recurrence,
+    duration_minutes: input.duration_minutes ?? input.durationMinutes,
+    priority: input.priority,
+    status: input.status,
+    completion_date: input.completion_date ?? input.completionDate,
+    completion_notes: input.completion_notes ?? input.completionNotes,
+    maintenance_record_id: input.maintenance_record_id ?? input.maintenanceRecordId,
+    creado_por: input.creado_por ?? input.createdBy,
+    asignado_por: input.asignado_por ?? input.assignedBy,
+    proyecto_id: input.proyecto_id ?? input.projectId,
+  };
+}
