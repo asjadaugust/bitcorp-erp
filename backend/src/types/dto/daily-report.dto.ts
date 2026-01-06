@@ -48,35 +48,37 @@ export interface DailyReportDto {
   aprobado_en?: string | null;
 }
 
+import { DailyReportRawRow } from '../daily-report-raw.interface';
+
 /**
  * Transform database entity to DTO
  * Keeps Spanish column names as-is (no aliasing)
  */
-export function toDailyReportDto(entity: any): DailyReportDto {
+export function toDailyReportDto(entity: DailyReportRawRow): DailyReportDto {
   return {
     id: entity.id,
     fecha: entity.fecha,
-    trabajador_id: entity.trabajador_id,
+    trabajador_id: entity.trabajador_id ?? 0,
     trabajador_nombre: entity.trabajador_nombre,
     equipo_id: entity.equipo_id,
     equipo_codigo: entity.equipo_codigo,
     equipo_nombre: entity.equipo_nombre,
     proyecto_id: entity.proyecto_id,
     proyecto_nombre: entity.proyecto_nombre,
-    hora_inicio: entity.hora_inicio,
-    hora_fin: entity.hora_fin,
-    horometro_inicial: entity.horometro_inicial,
-    horometro_final: entity.horometro_final,
-    horas_trabajadas: entity.horas_trabajadas,
-    odometro_inicial: entity.odometro_inicial,
-    odometro_final: entity.odometro_final,
-    km_recorridos: entity.km_recorridos,
-    combustible_inicial: entity.combustible_inicial,
-    combustible_consumido: entity.combustible_consumido,
-    lugar_salida: entity.lugar_salida,
-    observaciones: entity.observaciones,
+    hora_inicio: entity.hora_inicio ?? '',
+    hora_fin: entity.hora_fin ?? '',
+    horometro_inicial: entity.horometro_inicial ?? 0,
+    horometro_final: entity.horometro_final ?? 0,
+    horas_trabajadas: entity.horas_trabajadas ?? undefined,
+    odometro_inicial: entity.odometro_inicial ?? undefined,
+    odometro_final: entity.odometro_final ?? undefined,
+    km_recorridos: entity.km_recorridos ?? undefined,
+    combustible_inicial: entity.combustible_inicial ?? undefined,
+    combustible_consumido: entity.combustible_consumido ?? undefined,
+    lugar_salida: entity.lugar_salida ?? '',
+    observaciones: entity.observaciones ?? '',
     observaciones_correcciones: entity.observaciones_correcciones,
-    estado: entity.estado,
+    estado: (entity.estado as DailyReportDto['estado']) || 'BORRADOR',
     created_at: entity.created_at,
     updated_at: entity.updated_at,
     creado_por: entity.creado_por,

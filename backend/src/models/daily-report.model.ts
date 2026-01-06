@@ -22,10 +22,12 @@ export class DailyReportModel {
       SELECT dr.*,
              o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as trabajador_nombre,
              e.codigo_equipo as equipo_codigo,
-             e.marca || ' ' || e.modelo as equipo_nombre
+             e.marca || ' ' || e.modelo as equipo_nombre,
+             p.nombre as proyecto_nombre
        FROM equipo.parte_diario dr
        LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
        LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
+       LEFT JOIN gestion.proyecto p ON dr.proyecto_id = p.id
        WHERE 1=1
     `;
     const params: (string | number | null)[] = [];
@@ -77,10 +79,12 @@ export class DailyReportModel {
       `SELECT dr.*,
               o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as trabajador_nombre,
               e.codigo_equipo as equipo_codigo,
-              e.marca || ' ' || e.modelo as equipo_nombre
+              e.marca || ' ' || e.modelo as equipo_nombre,
+              p.nombre as proyecto_nombre
        FROM equipo.parte_diario dr
        LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
        LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
+       LEFT JOIN gestion.proyecto p ON dr.proyecto_id = p.id
        WHERE dr.id = $1`,
       [id]
     );
@@ -92,10 +96,12 @@ export class DailyReportModel {
       `SELECT dr.*,
               o.nombres || ' ' || o.apellido_paterno || ' ' || COALESCE(o.apellido_materno, '') as trabajador_nombre,
               e.codigo_equipo as equipo_codigo,
-              e.marca || ' ' || e.modelo as equipo_nombre
+              e.marca || ' ' || e.modelo as equipo_nombre,
+              p.nombre as proyecto_nombre
        FROM equipo.parte_diario dr
        LEFT JOIN rrhh.trabajador o ON dr.trabajador_id = o.id
        LEFT JOIN equipo.equipo e ON dr.equipo_id = e.id
+       LEFT JOIN gestion.proyecto p ON dr.proyecto_id = p.id
        WHERE dr.trabajador_id = $1
        ORDER BY dr.fecha DESC`,
       [operatorId]

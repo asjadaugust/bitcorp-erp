@@ -47,6 +47,7 @@ export interface DailyReportRawRow {
   trabajador_nombre?: string;
   equipo_codigo?: string;
   equipo_nombre?: string;
+  proyecto_nombre?: string; // Calculated field from join
 
   // New PDF fields (nullable)
   codigo?: string | null;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { DailyReportModel } from '../models/daily-report.model';
 import { AppDataSource } from '../config/database.config';
 import { DailyReport as DailyReportEntity } from '../models/daily-report-typeorm.model';
@@ -9,42 +8,44 @@ import {
   toDailyReportDto,
   fromDailyReportDto,
 } from '../types/dto/daily-report.dto';
+import { DailyReportRawRow } from '../types/daily-report-raw.interface';
 
 export class ReportService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getAllReports(filters?: any): Promise<DailyReportDto[]> {
-    const entities = await DailyReportModel.findAll(filters);
+    const entities: DailyReportRawRow[] = await DailyReportModel.findAll(filters);
     return entities.map(toDailyReportDto);
   }
 
   async getReportById(id: string): Promise<DailyReportDto | null> {
-    const entity = await DailyReportModel.findById(id);
+    const entity: DailyReportRawRow | null = await DailyReportModel.findById(id);
     return entity ? toDailyReportDto(entity) : null;
   }
 
   async getReportsByOperator(operatorId: string): Promise<DailyReportDto[]> {
-    const entities = await DailyReportModel.findByOperator(operatorId);
+    const entities: DailyReportRawRow[] = await DailyReportModel.findByOperator(operatorId);
     return entities.map(toDailyReportDto);
   }
 
   async createReport(data: Partial<DailyReportDto>): Promise<DailyReportDto> {
     const entity = fromDailyReportDto(data);
-    const created = await DailyReportModel.create(entity);
+    const created: DailyReportRawRow = await DailyReportModel.create(entity);
     return toDailyReportDto(created);
   }
 
   async updateReport(id: string, data: Partial<DailyReportDto>): Promise<DailyReportDto | null> {
     const entity = fromDailyReportDto(data);
-    const updated = await DailyReportModel.update(id, entity);
+    const updated: DailyReportRawRow | null = await DailyReportModel.update(id, entity);
     return updated ? toDailyReportDto(updated) : null;
   }
 
   async approveReport(id: string, approvedBy: string): Promise<DailyReportDto | null> {
-    const entity = await DailyReportModel.approve(id, approvedBy);
+    const entity: DailyReportRawRow | null = await DailyReportModel.approve(id, approvedBy);
     return entity ? toDailyReportDto(entity) : null;
   }
 
   async rejectReport(id: string, reason: string): Promise<DailyReportDto | null> {
-    const entity = await DailyReportModel.reject(id, reason);
+    const entity: DailyReportRawRow | null = await DailyReportModel.reject(id, reason);
     return entity ? toDailyReportDto(entity) : null;
   }
 
@@ -77,6 +78,7 @@ export class ReportService {
       throw new Error(`Daily report with ID ${id} not found`);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return transformToDailyReportPdfDto(report as any);
   }
 }
