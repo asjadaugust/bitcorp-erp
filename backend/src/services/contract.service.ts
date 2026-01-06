@@ -2,6 +2,7 @@
 import { AppDataSource } from '../config/database.config';
 import { Contract, Addendum } from '../models/contract.model';
 import { Repository, Between } from 'typeorm';
+import { ContractDto, toContractDto, fromContractDto } from '../types/dto/contract.dto';
 
 export class ContractService {
   private get contractRepository(): Repository<Contract> {
@@ -19,7 +20,7 @@ export class ContractService {
     estado?: string;
     equipment_id?: number;
     provider_id?: number;
-  }): Promise<any[]> {
+  }): Promise<ContractDto[]> {
     try {
       const query = this.contractRepository
         .createQueryBuilder('contract')
@@ -39,7 +40,7 @@ export class ContractService {
       }
 
       if (filters?.provider_id) {
-        query.andWhere('equipo.provider_id = :provider_id', {
+        query.andWhere('equipo.proveedorId = :provider_id', {
           provider_id: filters.provider_id,
         });
       }
@@ -55,19 +56,8 @@ export class ContractService {
 
       const contracts = await query.getMany();
 
-      // Transform data to match frontend expectations
-      return contracts.map((contract) => ({
-        ...contract,
-        code: contract.numeroContrato,
-        provider_name: contract.equipo?.provider?.razon_social || 'N/A',
-        equipment_info: contract.equipo
-          ? `${contract.equipo.modelo || ''} / ${contract.equipo.placa || ''}`.trim()
-          : 'N/A',
-        modalidad: contract.tipoTarifa || 'N/A',
-        start_date: contract.fechaInicio,
-        end_date: contract.fechaFin,
-        status: contract.estado,
-      }));
+      // Transform entities to DTOs
+      return contracts.map(toContractDto);
     } catch (error) {
       console.error('Error finding contracts:', error);
       // Return empty array instead of throwing to prevent login failures
@@ -78,7 +68,7 @@ export class ContractService {
   /**
    * Get contract by ID
    */
-  async findById(id: number): Promise<any> {
+  async findById(id: number): Promise<ContractDto> {
     try {
       const contract = await this.contractRepository.findOne({
         where: { id },
@@ -89,41 +79,8 @@ export class ContractService {
         throw new Error('Contract not found');
       }
 
-      // Transform to match frontend expectations
-      return {
-        ...contract,
-        code: contract.numeroContrato,
-        numero_contrato: contract.numeroContrato,
-        provider_name: contract.equipo?.provider?.razon_social || 'N/A',
-        provider_id: contract.equipo?.provider_id || null,
-        equipment_id: contract.equipoId,
-        equipment_info: contract.equipo
-          ? `${contract.equipo.modelo || ''} / ${contract.equipo.placa || ''}`.trim()
-          : 'N/A',
-        equipment_code: contract.equipo?.codigo_equipo || 'N/A',
-        modalidad: contract.tipoTarifa || 'N/A',
-        fecha_contrato: contract.fechaContrato,
-        fecha_inicio: contract.fechaInicio,
-        fecha_fin: contract.fechaFin,
-        start_date: contract.fechaInicio,
-        end_date: contract.fechaFin,
-        tipo_tarifa: contract.tipoTarifa,
-        incluye_motor: contract.incluyeMotor,
-        incluye_operador: contract.incluyeOperador,
-        costo_adicional_motor: contract.costoAdicionalMotor,
-        horas_incluidas: contract.horasIncluidas,
-        penalidad_exceso: contract.penalidadExceso,
-        condiciones_especiales: contract.condicionesEspeciales,
-        documento_url: contract.documentoUrl,
-        status: contract.estado,
-        estado: contract.estado,
-        created_at: contract.createdAt,
-        updated_at: contract.updatedAt,
-        // For now, set client_name and project_name to provider name
-        // In a full implementation, these would come from project assignments
-        client_name: contract.equipo?.provider?.razon_social || 'N/A',
-        project_name: 'N/A', // Would need to query equipment assignments for actual project
-      };
+      // Transform entity to DTO
+      return toContractDto(contract);
     } catch (error) {
       console.error('Error finding contract:', error);
       throw error;
@@ -147,43 +104,49 @@ export class ContractService {
   /**
    * Create new contract
    */
-  async create(data: Partial<Contract>): Promise<Contract> {
+  async create(data: Partial<ContractDto>): Promise<ContractDto> {
     try {
       // Validate required fields
-      if (!data.numeroContrato || !data.fechaInicio || !data.fechaFin) {
-        throw new Error('numeroContrato, fechaInicio, and fechaFin are required');
+      if (!data.numero_contrato || !data.fecha_inicio || !data.fecha_fin) {
+        throw new Error('numero_contrato, fecha_inicio, and fecha_fin are required');
       }
 
       // Validate dates
-      if (new Date(data.fechaFin) <= new Date(data.fechaInicio)) {
+      if (new Date(data.fecha_fin) <= new Date(data.fecha_inicio)) {
         throw new Error('End date must be after start date');
       }
 
       // Check if numeroContrato already exists
-      const existing = await this.findByNumero(data.numeroContrato);
+      const existing = await this.findByNumero(data.numero_contrato);
       if (existing) {
         throw new Error('Contract with this number already exists');
       }
 
       // Check for overlapping contracts
-      if (data.equipoId) {
+      if (data.equipo_id) {
         const overlapping = await this.checkOverlappingContracts(
-          data.equipoId,
-          new Date(data.fechaInicio),
-          new Date(data.fechaFin)
+          data.equipo_id,
+          new Date(data.fecha_inicio),
+          new Date(data.fecha_fin)
         );
         if (overlapping) {
           throw new Error('Equipment already has an active contract for this period');
         }
       }
 
+      // Transform DTO to entity
+      const entityData = fromContractDto(data);
+
       const contract = this.contractRepository.create({
-        ...data,
+        ...entityData,
         tipo: 'CONTRATO',
         estado: 'ACTIVO',
       });
 
-      return await this.contractRepository.save(contract);
+      const saved = await this.contractRepository.save(contract);
+
+      // Return as DTO
+      return toContractDto(saved);
     } catch (error) {
       console.error('Error creating contract:', error);
       throw error;
@@ -193,29 +156,42 @@ export class ContractService {
   /**
    * Update contract
    */
-  async update(id: number, data: Partial<Contract>): Promise<Contract> {
+  async update(id: number, data: Partial<ContractDto>): Promise<ContractDto> {
     try {
-      const contract = await this.findById(id);
+      const contractDto = await this.findById(id);
 
       // Validate dates if being updated
-      if (data.fechaInicio && data.fechaFin) {
-        if (new Date(data.fechaFin) <= new Date(data.fechaInicio)) {
+      if (data.fecha_inicio && data.fecha_fin) {
+        if (new Date(data.fecha_fin) <= new Date(data.fecha_inicio)) {
           throw new Error('End date must be after start date');
         }
       }
 
       // If updating numeroContrato, check it doesn't exist
-      if (data.numeroContrato && data.numeroContrato !== contract.numeroContrato) {
-        const existing = await this.findByNumero(data.numeroContrato);
+      if (data.numero_contrato && data.numero_contrato !== contractDto.numero_contrato) {
+        const existing = await this.findByNumero(data.numero_contrato);
         if (existing && existing.id !== id) {
           throw new Error('Contract with this number already exists');
         }
       }
 
-      // Update fields
-      Object.assign(contract, data);
+      // Transform DTO to entity data
+      const entityData = fromContractDto(data);
 
-      return await this.contractRepository.save(contract);
+      // Update entity
+      await this.contractRepository.update(id, entityData);
+
+      // Fetch updated entity and return as DTO
+      const updated = await this.contractRepository.findOne({
+        where: { id },
+        relations: ['adendas', 'equipo', 'equipo.provider'],
+      });
+
+      if (!updated) {
+        throw new Error('Contract not found after update');
+      }
+
+      return toContractDto(updated);
     } catch (error) {
       console.error('Error updating contract:', error);
       throw error;
@@ -239,19 +215,22 @@ export class ContractService {
   /**
    * Get expiring contracts
    */
-  async findExpiring(days: number = 30): Promise<Contract[]> {
+  async findExpiring(days: number = 30): Promise<ContractDto[]> {
     try {
       const today = new Date();
       const futureDate = new Date();
       futureDate.setDate(today.getDate() + days);
 
-      return await this.contractRepository.find({
+      const contracts = await this.contractRepository.find({
         where: {
           estado: 'ACTIVO',
           fechaFin: Between(today, futureDate),
         },
+        relations: ['equipo', 'equipo.provider'],
         order: { fechaFin: 'ASC' },
       });
+
+      return contracts.map(toContractDto);
     } catch (error) {
       console.error('Error finding expiring contracts:', error);
       throw error;
@@ -293,15 +272,18 @@ export class ContractService {
   /**
    * Get addendums for a contract (addendums are stored in same table with tipo='ADENDA')
    */
-  async getAddendums(contractId: number): Promise<Addendum[]> {
+  async getAddendums(contractId: number): Promise<ContractDto[]> {
     try {
-      return await this.contractRepository.find({
+      const addendums = await this.contractRepository.find({
         where: {
           contratoPadreId: contractId,
           tipo: 'ADENDA',
         },
+        relations: ['equipo', 'equipo.provider'],
         order: { createdAt: 'ASC' },
       });
+
+      return addendums.map(toContractDto);
     } catch (error) {
       console.error('Error fetching addendums:', error);
       throw error;
@@ -311,21 +293,24 @@ export class ContractService {
   /**
    * Create addendum (stored in same table with tipo='ADENDA')
    */
-  async createAddendum(data: Partial<Contract>): Promise<Contract> {
+  async createAddendum(data: Partial<ContractDto>): Promise<ContractDto> {
     try {
-      if (!data.contratoPadreId || !data.numeroContrato || !data.fechaFin) {
-        throw new Error('contratoPadreId, numeroContrato, and fechaFin are required');
+      if (!data.contrato_padre_id || !data.numero_contrato || !data.fecha_fin) {
+        throw new Error('contrato_padre_id, numero_contrato, and fecha_fin are required');
       }
 
-      const contract = await this.findById(data.contratoPadreId);
+      const contractDto = await this.findById(data.contrato_padre_id);
 
       // Validate new end date is after current end date
-      if (new Date(data.fechaFin) <= new Date(contract.fechaFin)) {
+      if (new Date(data.fecha_fin) <= new Date(contractDto.fecha_fin)) {
         throw new Error('New end date must be after current contract end date');
       }
 
+      // Transform DTO to entity
+      const entityData = fromContractDto(data);
+
       const addendum = this.contractRepository.create({
-        ...data,
+        ...entityData,
         tipo: 'ADENDA',
         estado: 'ACTIVO',
       });
@@ -333,11 +318,11 @@ export class ContractService {
       const savedAddendum = await this.contractRepository.save(addendum);
 
       // Update parent contract end date
-      await this.contractRepository.update(contract.id, {
-        fechaFin: new Date(data.fechaFin),
+      await this.contractRepository.update(contractDto.id, {
+        fechaFin: new Date(data.fecha_fin),
       });
 
-      return savedAddendum;
+      return toContractDto(savedAddendum);
     } catch (error) {
       console.error('Error creating addendum:', error);
       throw error;
