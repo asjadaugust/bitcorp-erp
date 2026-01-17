@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import * as scheduledTaskController from './scheduled-task.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import { ScheduledTaskCreateDto, ScheduledTaskUpdateDto } from '../../types/dto/scheduled-task.dto';
 
 const router = Router();
 
@@ -11,10 +13,10 @@ router.get('/', scheduledTaskController.listTasks);
 router.get('/:id', scheduledTaskController.getTaskById);
 
 // Create new task
-router.post('/', scheduledTaskController.createTask);
+router.post('/', validateDto(ScheduledTaskCreateDto), scheduledTaskController.createTask);
 
 // Update task
-router.put('/:id', scheduledTaskController.updateTask);
+router.put('/:id', validateDto(ScheduledTaskUpdateDto), scheduledTaskController.updateTask);
 
 // Delete task
 router.delete('/:id', scheduledTaskController.deleteTask);

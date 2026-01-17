@@ -1,12 +1,23 @@
 /**
  * Scheduled Task DTO
  *
- * Following ARCHITECTURE.md guidelines:
+ * Following ARCHITECTURE.MD guidelines:
  * - Uses Spanish snake_case field names matching database columns
  * - DTO transformation happens in service layer
  * - Returns Spanish column names to API
  */
 
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsInt,
+  IsDateString,
+  IsBoolean,
+  IsIn,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { ScheduledTask } from '../../models/scheduled-task.model';
 
 /**
@@ -94,6 +105,171 @@ export interface CreateScheduledTaskDto {
  * Update DTO - partial version of CreateScheduledTaskDto
  */
 export interface UpdateScheduledTaskDto extends Partial<CreateScheduledTaskDto> {}
+
+/**
+ * Validation DTO for creating a scheduled task
+ */
+export class ScheduledTaskCreateDto {
+  @IsOptional()
+  @IsInt({ message: 'El ID del programa de mantenimiento debe ser un número entero' })
+  schedule_id?: number;
+
+  @IsNotEmpty({ message: 'El ID del equipo es requerido' })
+  @IsInt({ message: 'El ID del equipo debe ser un número entero' })
+  equipment_id!: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del trabajador debe ser un número entero' })
+  operator_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del proyecto debe ser un número entero' })
+  project_id?: number;
+
+  @IsNotEmpty({ message: 'El tipo de tarea es requerido' })
+  @IsIn(['maintenance', 'inspection', 'repair', 'operation', 'other'], {
+    message: 'El tipo de tarea debe ser: maintenance, inspection, repair, operation, other',
+  })
+  task_type!: string;
+
+  @IsNotEmpty({ message: 'El título es requerido' })
+  @IsString({ message: 'El título debe ser texto' })
+  @MaxLength(200, { message: 'El título no puede exceder 200 caracteres' })
+  title!: string;
+
+  @IsOptional()
+  @IsString({ message: 'La descripción debe ser texto' })
+  @MaxLength(1000, { message: 'La descripción no puede exceder 1000 caracteres' })
+  description?: string;
+
+  @IsNotEmpty({ message: 'La fecha de inicio es requerida' })
+  @IsDateString({}, { message: 'La fecha de inicio debe ser una fecha válida (ISO 8601)' })
+  scheduled_date!: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha de fin debe ser una fecha válida (ISO 8601)' })
+  end_date?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La hora de inicio debe ser texto (HH:mm)' })
+  scheduled_time?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La hora de fin debe ser texto (HH:mm)' })
+  end_time?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'all_day debe ser verdadero o falso' })
+  all_day?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'La recurrencia debe ser texto' })
+  recurrence?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'La duración debe ser un número entero' })
+  @Min(1, { message: 'La duración debe ser al menos 1 minuto' })
+  duration_minutes?: number;
+
+  @IsOptional()
+  @IsIn(['low', 'normal', 'high', 'urgent'], {
+    message: 'La prioridad debe ser: low, normal, high, urgent',
+  })
+  priority?: string;
+
+  @IsOptional()
+  @IsIn(['pending', 'assigned', 'in_progress', 'completed', 'cancelled'], {
+    message: 'El estado debe ser: pending, assigned, in_progress, completed, cancelled',
+  })
+  status?: string;
+}
+
+/**
+ * Validation DTO for updating a scheduled task
+ */
+export class ScheduledTaskUpdateDto {
+  @IsOptional()
+  @IsInt({ message: 'El ID del programa de mantenimiento debe ser un número entero' })
+  schedule_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del equipo debe ser un número entero' })
+  equipment_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del trabajador debe ser un número entero' })
+  operator_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del proyecto debe ser un número entero' })
+  project_id?: number;
+
+  @IsOptional()
+  @IsIn(['maintenance', 'inspection', 'repair', 'operation', 'other'], {
+    message: 'El tipo de tarea debe ser: maintenance, inspection, repair, operation, other',
+  })
+  task_type?: string;
+
+  @IsOptional()
+  @IsString({ message: 'El título debe ser texto' })
+  @MaxLength(200, { message: 'El título no puede exceder 200 caracteres' })
+  title?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La descripción debe ser texto' })
+  @MaxLength(1000, { message: 'La descripción no puede exceder 1000 caracteres' })
+  description?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha de inicio debe ser una fecha válida (ISO 8601)' })
+  scheduled_date?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha de fin debe ser una fecha válida (ISO 8601)' })
+  end_date?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La hora de inicio debe ser texto (HH:mm)' })
+  scheduled_time?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La hora de fin debe ser texto (HH:mm)' })
+  end_time?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'all_day debe ser verdadero o falso' })
+  all_day?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'La recurrencia debe ser texto' })
+  recurrence?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'La duración debe ser un número entero' })
+  @Min(1, { message: 'La duración debe ser al menos 1 minuto' })
+  duration_minutes?: number;
+
+  @IsOptional()
+  @IsIn(['low', 'normal', 'high', 'urgent'], {
+    message: 'La prioridad debe ser: low, normal, high, urgent',
+  })
+  priority?: string;
+
+  @IsOptional()
+  @IsIn(['pending', 'assigned', 'in_progress', 'completed', 'cancelled'], {
+    message: 'El estado debe ser: pending, assigned, in_progress, completed, cancelled',
+  })
+  status?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Las notas de completación deben ser texto' })
+  @MaxLength(1000, { message: 'Las notas de completación no pueden exceder 1000 caracteres' })
+  completion_notes?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del registro de mantenimiento debe ser un número entero' })
+  maintenance_record_id?: number;
+}
 
 /**
  * Convert entity to DTO

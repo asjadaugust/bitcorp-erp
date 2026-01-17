@@ -4,6 +4,12 @@ import { AppDataSource } from '../../config/database.config';
 import { ScheduledTask } from '../../models/scheduled-task.model';
 import { Between, LessThanOrEqual, MoreThanOrEqual, Not, In } from 'typeorm';
 import Logger from '../../utils/logger';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 /**
  * Scheduled Task Controller
@@ -12,10 +18,36 @@ import Logger from '../../utils/logger';
 
 /**
  * GET /api/scheduling/tasks
- * List all scheduled tasks with filters
+ * List all scheduled tasks with filters, pagination, and sorting
  */
 export const listTasks = async (req: Request, res: Response) => {
   try {
+    // Extract pagination params
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+    const skip = (page - 1) * limit;
+
+    // Extract sorting params
+    const sort_by = req.query.sort_by as string;
+    const sort_order = req.query.sort_order?.toString().toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+    // Define sortable fields (snake_case API → camelCase DB)
+    const sortableFields: Record<string, string> = {
+      title: 'task.title',
+      task_type: 'task.taskType',
+      scheduled_date: 'task.startDate',
+      status: 'task.status',
+      priority: 'task.priority',
+      equipment_id: 'task.equipmentId',
+      operator_id: 'task.operatorId',
+      project_id: 'task.projectId',
+      created_at: 'task.createdAt',
+      duration_minutes: 'task.durationMinutes',
+    };
+
+    const sortBy = sort_by && sortableFields[sort_by] ? sortableFields[sort_by] : 'task.startDate';
+
+    // Extract filters
     const { equipment_id, operator_id, status, date_from, date_to, task_type, project_id } =
       req.query;
 
@@ -63,25 +95,27 @@ export const listTasks = async (req: Request, res: Response) => {
       queryBuilder.andWhere('task.startDate <= :dateTo', { dateTo: date_to });
     }
 
-    queryBuilder.orderBy('task.startDate', 'ASC').addOrderBy('task.priority', 'DESC');
+    // Apply sorting
+    queryBuilder.orderBy(sortBy, sort_order);
 
+    // Get total count
+    const total = await queryBuilder.getCount();
+
+    // Apply pagination
+    queryBuilder.skip(skip).take(limit);
+
+    // Get results
     const tasks = await queryBuilder.getMany();
 
-    res.json({
-      success: true,
-      data: tasks,
-    });
+    // Use standard response helper
+    sendPaginatedSuccess(res, tasks, { page, limit, total });
   } catch (error: any) {
     Logger.error('Error listing tasks', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       context: 'ScheduledTaskController.listTasks',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to list tasks',
-      details: error.message,
-    });
+    sendError(res, 500, 'TASK_LIST_FAILED', 'Error al listar tareas', error.message);
   }
 };
 
@@ -91,25 +125,24 @@ export const listTasks = async (req: Request, res: Response) => {
  */
 export const getTaskById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return;
+    }
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
     const task = await taskRepo.findOne({
-      where: { id: parseInt(id) },
+      where: { id },
       relations: ['equipment', 'project'],
     });
 
     if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: 'Task not found',
-      });
+      sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
+      return;
     }
 
-    res.json({
-      success: true,
-      data: task,
-    });
+    sendSuccess(res, task);
   } catch (error: any) {
     Logger.error('Error getting task', {
       error: error instanceof Error ? error.message : String(error),
@@ -117,10 +150,7 @@ export const getTaskById = async (req: Request, res: Response) => {
       taskId: req.params.id,
       context: 'ScheduledTaskController.getTaskById',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get task',
-    });
+    sendError(res, 500, 'TASK_GET_FAILED', 'Error al obtener tarea', error.message);
   }
 };
 
@@ -166,21 +196,14 @@ export const createTask = async (req: Request, res: Response) => {
 
     const savedTask = await taskRepo.save(task);
 
-    res.status(201).json({
-      success: true,
-      data: savedTask,
-    });
+    sendCreated(res, savedTask.id, 'Tarea programada creada exitosamente');
   } catch (error: any) {
     Logger.error('Error creating task', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       context: 'ScheduledTaskController.createTask',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create task',
-      details: error.message,
-    });
+    sendError(res, 500, 'TASK_CREATE_FAILED', 'Error al crear tarea', error.message);
   }
 };
 
@@ -190,17 +213,20 @@ export const createTask = async (req: Request, res: Response) => {
  */
 export const updateTask = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return;
+    }
+
     const updates = req.body;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
-    const task = await taskRepo.findOne({ where: { id: parseInt(id) } });
+    const task = await taskRepo.findOne({ where: { id } });
 
     if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: 'Task not found',
-      });
+      sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
+      return;
     }
 
     // Update allowed fields
@@ -233,18 +259,13 @@ export const updateTask = async (req: Request, res: Response) => {
     }
 
     if (!hasUpdates) {
-      return res.status(400).json({
-        success: false,
-        error: 'No valid fields to update',
-      });
+      sendError(res, 400, 'NO_FIELDS', 'No hay campos válidos para actualizar');
+      return;
     }
 
     const updatedTask = await taskRepo.save(task);
 
-    res.json({
-      success: true,
-      data: updatedTask,
-    });
+    sendSuccess(res, updatedTask);
   } catch (error: any) {
     Logger.error('Error updating task', {
       error: error instanceof Error ? error.message : String(error),
@@ -252,10 +273,7 @@ export const updateTask = async (req: Request, res: Response) => {
       taskId: req.params.id,
       context: 'ScheduledTaskController.updateTask',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update task',
-    });
+    sendError(res, 500, 'TASK_UPDATE_FAILED', 'Error al actualizar tarea', error.message);
   }
 };
 
@@ -265,22 +283,21 @@ export const updateTask = async (req: Request, res: Response) => {
  */
 export const deleteTask = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-
-    const taskRepo = AppDataSource.getRepository(ScheduledTask);
-    const result = await taskRepo.delete(parseInt(id));
-
-    if (!result.affected || result.affected === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Task not found',
-      });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return;
     }
 
-    res.json({
-      success: true,
-      message: 'Task deleted successfully',
-    });
+    const taskRepo = AppDataSource.getRepository(ScheduledTask);
+    const result = await taskRepo.delete(id);
+
+    if (!result.affected || result.affected === 0) {
+      sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
+      return;
+    }
+
+    res.status(204).send();
   } catch (error: any) {
     Logger.error('Error deleting task', {
       error: error instanceof Error ? error.message : String(error),
@@ -288,10 +305,7 @@ export const deleteTask = async (req: Request, res: Response) => {
       taskId: req.params.id,
       context: 'ScheduledTaskController.deleteTask',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete task',
-    });
+    sendError(res, 500, 'TASK_DELETE_FAILED', 'Error al eliminar tarea', error.message);
   }
 };
 
@@ -301,20 +315,23 @@ export const deleteTask = async (req: Request, res: Response) => {
  */
 export const assignOperator = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return;
+    }
+
     const { operator_id } = req.body;
     const userId = (req as any).user?.id;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
 
     // Get the task first to check its date
-    const task = await taskRepo.findOne({ where: { id: parseInt(id) } });
+    const task = await taskRepo.findOne({ where: { id } });
 
     if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: 'Task not found',
-      });
+      sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
+      return;
     }
 
     // Check for conflicts
@@ -323,16 +340,19 @@ export const assignOperator = async (req: Request, res: Response) => {
         operatorId: operator_id,
         startDate: task.startDate,
         status: Not(In(['completed', 'cancelled'])),
-        id: Not(parseInt(id)),
+        id: Not(id),
       },
     });
 
     if (conflicts.length > 0) {
-      return res.status(409).json({
-        success: false,
-        error: 'Operator has conflicting assignments on this date',
-        conflicts,
-      });
+      sendError(
+        res,
+        409,
+        'OPERATOR_CONFLICT',
+        'El operador tiene asignaciones conflictivas en esta fecha',
+        conflicts
+      );
+      return;
     }
 
     // Assign operator
@@ -342,10 +362,7 @@ export const assignOperator = async (req: Request, res: Response) => {
 
     const updatedTask = await taskRepo.save(task);
 
-    res.json({
-      success: true,
-      data: updatedTask,
-    });
+    sendSuccess(res, updatedTask);
   } catch (error: any) {
     Logger.error('Error assigning operator', {
       error: error instanceof Error ? error.message : String(error),
@@ -354,10 +371,7 @@ export const assignOperator = async (req: Request, res: Response) => {
       operatorId: req.body.operator_id,
       context: 'ScheduledTaskController.assignOperator',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to assign operator',
-    });
+    sendError(res, 500, 'TASK_ASSIGN_FAILED', 'Error al asignar operador', error.message);
   }
 };
 
@@ -367,17 +381,20 @@ export const assignOperator = async (req: Request, res: Response) => {
  */
 export const completeTask = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return;
+    }
+
     const { completion_notes, maintenance_record_id } = req.body;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
-    const task = await taskRepo.findOne({ where: { id: parseInt(id) } });
+    const task = await taskRepo.findOne({ where: { id } });
 
     if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: 'Task not found',
-      });
+      sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
+      return;
     }
 
     task.status = 'completed';
@@ -387,10 +404,7 @@ export const completeTask = async (req: Request, res: Response) => {
 
     const updatedTask = await taskRepo.save(task);
 
-    res.json({
-      success: true,
-      data: updatedTask,
-    });
+    sendSuccess(res, updatedTask);
   } catch (error: any) {
     Logger.error('Error completing task', {
       error: error instanceof Error ? error.message : String(error),
@@ -398,10 +412,7 @@ export const completeTask = async (req: Request, res: Response) => {
       taskId: req.params.id,
       context: 'ScheduledTaskController.completeTask',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to complete task',
-    });
+    sendError(res, 500, 'TASK_COMPLETE_FAILED', 'Error al completar tarea', error.message);
   }
 };
 
@@ -414,10 +425,8 @@ export const checkConflicts = async (req: Request, res: Response) => {
     const { operator_id, date, exclude_task_id } = req.query;
 
     if (!operator_id || !date) {
-      return res.status(400).json({
-        success: false,
-        error: 'operator_id and date are required',
-      });
+      sendError(res, 400, 'MISSING_PARAMS', 'operator_id y date son requeridos');
+      return;
     }
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
@@ -433,12 +442,9 @@ export const checkConflicts = async (req: Request, res: Response) => {
 
     const conflicts = await taskRepo.find({ where: whereConditions });
 
-    res.json({
-      success: true,
-      data: {
-        hasConflicts: conflicts.length > 0,
-        conflicts,
-      },
+    sendSuccess(res, {
+      hasConflicts: conflicts.length > 0,
+      conflicts,
     });
   } catch (error: any) {
     Logger.error('Error checking conflicts', {
@@ -448,10 +454,7 @@ export const checkConflicts = async (req: Request, res: Response) => {
       date: req.query.date,
       context: 'ScheduledTaskController.checkConflicts',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to check conflicts',
-    });
+    sendError(res, 500, 'CONFLICT_CHECK_FAILED', 'Error al verificar conflictos', error.message);
   }
 };
 
@@ -503,10 +506,7 @@ export const getCalendarTasks = async (req: Request, res: Response) => {
       className: `task-${task.status} priority-${task.priority}`,
     }));
 
-    res.json({
-      success: true,
-      data: events,
-    });
+    sendSuccess(res, events);
   } catch (error: any) {
     Logger.error('Error getting calendar tasks', {
       error: error instanceof Error ? error.message : String(error),
@@ -515,9 +515,6 @@ export const getCalendarTasks = async (req: Request, res: Response) => {
       endDate: req.query.end_date,
       context: 'ScheduledTaskController.getCalendarTasks',
     });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get calendar tasks',
-    });
+    sendError(res, 500, 'CALENDAR_GET_FAILED', 'Error al obtener calendario', error.message);
   }
 };
