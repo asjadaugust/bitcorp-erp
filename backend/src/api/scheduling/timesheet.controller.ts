@@ -3,7 +3,12 @@ import { Request, Response } from 'express';
 import timesheetService from '../../services/timesheet.service';
 import { AppDataSource } from '../../config/database.config';
 import { Timesheet } from '../../models/timesheet.model';
-import { sendSuccess, sendError } from '../../utils/api-response';
+import {
+  sendSuccess,
+  sendCreated,
+  sendPaginatedSuccess,
+  sendError,
+} from '../../utils/api-response';
 import Logger from '../../utils/logger';
 
 /**
@@ -13,10 +18,16 @@ import Logger from '../../utils/logger';
 
 /**
  * GET /api/scheduling/timesheets
- * List all timesheets with filters
+ * List all timesheets with filters and pagination
+ * Query params: ?page=1&limit=10&trabajador_id=X&periodo=YYYY-MM&estado=X&creado_por=X
  */
 export const listTimesheets = async (req: Request, res: Response) => {
   try {
+    // Pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100 items
+
+    // Filters
     const { trabajador_id, periodo, estado, creado_por } = req.query;
 
     const filters: any = {};
@@ -25,8 +36,15 @@ export const listTimesheets = async (req: Request, res: Response) => {
     if (estado) filters.estado = estado as string;
     if (creado_por) filters.creadoPor = parseInt(creado_por as string);
 
-    const timesheets = await timesheetService.listTimesheets(filters);
-    return sendSuccess(res, timesheets);
+    // Get all timesheets from service
+    const allTimesheets = await timesheetService.listTimesheets(filters);
+
+    // Paginate in memory (TODO: move pagination to service for better performance)
+    const total = allTimesheets.length;
+    const offset = (page - 1) * limit;
+    const timesheets = allTimesheets.slice(offset, offset + limit);
+
+    return sendPaginatedSuccess(res, timesheets, { page, limit, total });
   } catch (error: any) {
     Logger.error('Error listing timesheets', {
       error: error instanceof Error ? error.message : String(error),
@@ -87,7 +105,7 @@ export const generateTimesheet = async (req: Request, res: Response) => {
       creadoPor,
     });
 
-    return sendSuccess(res, timesheet, undefined, 201);
+    return sendCreated(res, timesheet);
   } catch (error: any) {
     Logger.error('Error generating timesheet', {
       error: error instanceof Error ? error.message : String(error),
