@@ -29,8 +29,13 @@ import checklistRoutes from './api/checklists/checklist.routes';
 import costCenterRoutes from './api/admin/cost-center.routes';
 import accountsPayableRoutes from './api/accounts-payable/accounts-payable.routes';
 import analyticsRoutes from './api/analytics';
-import { errorHandler } from './middleware/error.middleware';
+import testErrorRoutes from './api/test-errors/test-errors.routes';
+import { errorHandler, notFound } from './middleware/error.middleware';
 import { requestLogger } from './middleware/request-logger.middleware';
+import { setupProcessErrorHandlers } from './middleware/error-handler.middleware';
+
+// Setup process-level error handlers
+setupProcessErrorHandlers();
 
 const app = express();
 const port = process.env.PORT || 3400;
@@ -81,7 +86,15 @@ app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/accounts-payable', accountsPayableRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// Error handling
+// Test error endpoints (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/test-errors', testErrorRoutes);
+}
+
+// 404 handler for undefined routes (must be before error handler)
+app.use(notFound);
+
+// Global error handler (must be last)
 app.use(errorHandler);
 
 // Start server

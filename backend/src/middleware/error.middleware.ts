@@ -1,26 +1,16 @@
-import { Request, Response, NextFunction } from 'express';
-import { sendError } from '../utils/api-response';
+/**
+ * Legacy error middleware
+ *
+ * @deprecated Use error-handler.middleware.ts instead
+ * This file is kept for backwards compatibility and will be removed in the future.
+ *
+ * Migration guide:
+ * - Replace `errorHandler` with the new `errorHandler` from error-handler.middleware.ts
+ * - Replace `notFound` with `notFoundHandler` from error-handler.middleware.ts
+ * - Use `asyncHandler` wrapper for async route handlers
+ * - Use custom error classes from `src/errors`
+ */
 
-export const errorHandler = (
-  error: Error,
-  _req: Request,
-  res: Response,
-  _next: NextFunction
-): void => {
-  console.error('Error:', error);
-
-  const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
-  const code = statusCode === 500 ? 'INTERNAL_ERROR' : 'UNHANDLED_ERROR';
-
-  sendError(
-    res,
-    statusCode,
-    code,
-    error.message || 'Internal server error',
-    process.env.NODE_ENV === 'development' ? { stack: error.stack } : undefined
-  );
-};
-
-export const notFound = (req: Request, res: Response, _next: NextFunction): void => {
-  sendError(res, 404, 'ROUTE_NOT_FOUND', `Route ${req.originalUrl} not found`);
-};
+// Re-export new error handlers for backwards compatibility
+export { errorHandler, notFoundHandler as notFound } from './error-handler.middleware';
+export { asyncHandler, catchAsync } from './async-handler.middleware';
