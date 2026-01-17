@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { ReportingService } from '../../services/reporting.service';
 import { ExportService } from '../../services/export.service';
+import { sendSuccess, sendError } from '../../utils/api-response';
 
 export class ReportingController {
   private reportingService: ReportingService;
@@ -12,14 +13,14 @@ export class ReportingController {
     this.exportService = new ExportService();
   }
 
-  getEquipmentUtilization = async (req: Request, res: Response, next: NextFunction) => {
+  getEquipmentUtilization = async (req: Request, res: Response): Promise<void> => {
     try {
       const { startDate, endDate, format } = req.query;
 
+      // Fallback validation (DTO should handle this)
       if (!startDate || !endDate) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'Start date and end date are required' });
+        sendError(res, 400, 'MISSING_PARAMETERS', 'Las fechas de inicio y fin son requeridas');
+        return;
       }
 
       const data = await this.reportingService.getEquipmentUtilization(
@@ -45,21 +46,27 @@ export class ReportingController {
           'reporte-utilizacion'
         );
       } else {
-        res.json({ success: true, data });
+        sendSuccess(res, data);
       }
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'EQUIPMENT_UTILIZATION_REPORT_FAILED',
+        'Error al generar el reporte de utilización de equipos',
+        error.message
+      );
     }
   };
 
-  getMaintenanceHistory = async (req: Request, res: Response, next: NextFunction) => {
+  getMaintenanceHistory = async (req: Request, res: Response): Promise<void> => {
     try {
       const { startDate, endDate, format } = req.query;
 
+      // Fallback validation (DTO should handle this)
       if (!startDate || !endDate) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'Start date and end date are required' });
+        sendError(res, 400, 'MISSING_PARAMETERS', 'Las fechas de inicio y fin son requeridas');
+        return;
       }
 
       const data = await this.reportingService.getMaintenanceHistory(
@@ -86,21 +93,27 @@ export class ReportingController {
           'reporte-mantenimiento'
         );
       } else {
-        res.json({ success: true, data });
+        sendSuccess(res, data);
       }
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'MAINTENANCE_REPORT_FAILED',
+        'Error al generar el reporte de historial de mantenimiento',
+        error.message
+      );
     }
   };
 
-  getInventoryMovements = async (req: Request, res: Response, next: NextFunction) => {
+  getInventoryMovements = async (req: Request, res: Response): Promise<void> => {
     try {
       const { startDate, endDate, format } = req.query;
 
+      // Fallback validation (DTO should handle this)
       if (!startDate || !endDate) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'Start date and end date are required' });
+        sendError(res, 400, 'MISSING_PARAMETERS', 'Las fechas de inicio y fin son requeridas');
+        return;
       }
 
       const data = await this.reportingService.getInventoryMovements(
@@ -127,21 +140,27 @@ export class ReportingController {
           'reporte-inventario'
         );
       } else {
-        res.json({ success: true, data });
+        sendSuccess(res, data);
       }
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'INVENTORY_REPORT_FAILED',
+        'Error al generar el reporte de movimientos de inventario',
+        error.message
+      );
     }
   };
 
-  getOperatorTimesheet = async (req: Request, res: Response, next: NextFunction) => {
+  getOperatorTimesheet = async (req: Request, res: Response): Promise<void> => {
     try {
       const { startDate, endDate, format } = req.query;
 
+      // Fallback validation (DTO should handle this)
       if (!startDate || !endDate) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'Start date and end date are required' });
+        sendError(res, 400, 'MISSING_PARAMETERS', 'Las fechas de inicio y fin son requeridas');
+        return;
       }
 
       const data = await this.reportingService.getOperatorTimesheet(
@@ -165,10 +184,16 @@ export class ReportingController {
           'reporte-timesheet'
         );
       } else {
-        res.json({ success: true, data });
+        sendSuccess(res, data);
       }
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'TIMESHEET_REPORT_FAILED',
+        'Error al generar el reporte de timesheet de operadores',
+        error.message
+      );
     }
   };
 }
