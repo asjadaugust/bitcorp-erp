@@ -8,6 +8,16 @@
  */
 
 import { RegistroCombustible, TipoCombustible } from '../../models/fuel-record.model';
+import {
+  IsInt,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsNumber,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 /**
  * DTO for fuel records with Spanish snake_case fields
@@ -150,4 +160,102 @@ export function mapCreateFuelRecordDto(input: CreateFuelRecordDto): Partial<Fuel
     numero_documento: input.numero_documento ?? input.documentNumber,
     observaciones: input.observaciones ?? input.notes,
   };
+}
+
+/**
+ * DTO for creating a new fuel record with validation
+ * Used by validation middleware for POST requests
+ */
+export class FuelRecordCreateDto {
+  @IsInt({ message: 'ID de valorización debe ser un número entero' })
+  valorizacion_id!: number;
+
+  @IsDateString({}, { message: 'Fecha debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha!: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Cantidad debe ser un número' })
+  @Min(0, { message: 'Cantidad debe ser mayor o igual a 0' })
+  cantidad?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Precio unitario debe ser un número' })
+  @Min(0, { message: 'Precio unitario debe ser mayor o igual a 0' })
+  precio_unitario?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Monto total debe ser un número' })
+  @Min(0, { message: 'Monto total debe ser mayor o igual a 0' })
+  monto_total?: number;
+
+  @IsOptional()
+  @IsIn(['DIESEL', 'GASOLINA_84', 'GASOLINA_90', 'GASOLINA_95', 'GASOLINA_97', 'GLP', 'GNV'], {
+    message:
+      'Tipo de combustible debe ser DIESEL, GASOLINA_84, GASOLINA_90, GASOLINA_95, GASOLINA_97, GLP o GNV',
+  })
+  tipo_combustible?: TipoCombustible;
+
+  @IsOptional()
+  @IsString({ message: 'Proveedor debe ser texto' })
+  @MaxLength(200, { message: 'Proveedor no puede exceder 200 caracteres' })
+  proveedor?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Número de documento debe ser texto' })
+  @MaxLength(100, { message: 'Número de documento no puede exceder 100 caracteres' })
+  numero_documento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones?: string;
+}
+
+/**
+ * DTO for updating a fuel record (all fields optional)
+ * Used by validation middleware for PUT requests
+ */
+export class FuelRecordUpdateDto {
+  @IsOptional()
+  @IsInt({ message: 'ID de valorización debe ser un número entero' })
+  valorizacion_id?: number;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Cantidad debe ser un número' })
+  @Min(0, { message: 'Cantidad debe ser mayor o igual a 0' })
+  cantidad?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Precio unitario debe ser un número' })
+  @Min(0, { message: 'Precio unitario debe ser mayor o igual a 0' })
+  precio_unitario?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Monto total debe ser un número' })
+  @Min(0, { message: 'Monto total debe ser mayor o igual a 0' })
+  monto_total?: number;
+
+  @IsOptional()
+  @IsIn(['DIESEL', 'GASOLINA_84', 'GASOLINA_90', 'GASOLINA_95', 'GASOLINA_97', 'GLP', 'GNV'], {
+    message:
+      'Tipo de combustible debe ser DIESEL, GASOLINA_84, GASOLINA_90, GASOLINA_95, GASOLINA_97, GLP o GNV',
+  })
+  tipo_combustible?: TipoCombustible;
+
+  @IsOptional()
+  @IsString({ message: 'Proveedor debe ser texto' })
+  @MaxLength(200, { message: 'Proveedor no puede exceder 200 caracteres' })
+  proveedor?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Número de documento debe ser texto' })
+  @MaxLength(100, { message: 'Número de documento no puede exceder 100 caracteres' })
+  numero_documento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones?: string;
 }

@@ -23,9 +23,6 @@ export class FuelService {
   ): Promise<{
     data: FuelRecordDto[];
     total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
   }> {
     const page = parseInt(filters?.page) || 1;
     const limit = parseInt(filters?.limit) || 20;
@@ -33,8 +30,7 @@ export class FuelService {
 
     const queryBuilder = this.fuelRepository
       .createQueryBuilder('fuel')
-      .leftJoinAndSelect('fuel.valorizacion', 'val')
-      .orderBy('fuel.fecha', 'DESC');
+      .leftJoinAndSelect('fuel.valorizacion', 'val');
 
     // Apply filters
     if (filters?.valorizacionId) {
@@ -64,6 +60,26 @@ export class FuelService {
       );
     }
 
+    // Sorting with whitelist
+    const sortableFields: Record<string, string> = {
+      fecha: 'fuel.fecha',
+      cantidad: 'fuel.cantidad',
+      precio_unitario: 'fuel.precioUnitario',
+      monto_total: 'fuel.montoTotal',
+      tipo_combustible: 'fuel.tipoCombustible',
+      proveedor: 'fuel.proveedor',
+      numero_documento: 'fuel.numeroDocumento',
+      created_at: 'fuel.createdAt',
+    };
+
+    const sortBy =
+      filters?.sort_by && sortableFields[filters.sort_by]
+        ? sortableFields[filters.sort_by]
+        : 'fuel.fecha';
+    const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
+
+    queryBuilder.orderBy(sortBy, sortOrder);
+
     // Get total count
     const total = await queryBuilder.getCount();
 
@@ -73,9 +89,6 @@ export class FuelService {
     return {
       data: records.map((r) => toFuelRecordDto(r)),
       total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
     };
   }
 
