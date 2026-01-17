@@ -27,9 +27,8 @@ import fuelRoutes from './api/fuel/fuel.routes';
 import checklistRoutes from './api/checklists/checklist.routes';
 import costCenterRoutes from './api/admin/cost-center.routes';
 import accountsPayableRoutes from './api/accounts-payable/accounts-payable.routes';
-import { pool } from './config/database.config';
+import analyticsRoutes from './api/analytics';
 import { errorHandler } from './middleware/error.middleware';
-import { seed } from './utils/seed-v2';
 
 const app = express();
 const port = process.env.PORT || 3400;
@@ -68,12 +67,13 @@ app.use('/api/scheduling', schedulingRoutes);
 app.use('/api/administration', administrationRoutes);
 app.use('/api/sst', sstRoutes);
 app.use('/api/sig', sigRoutes);
-app.use('/api/tenant', createTenantRouter(pool));
+app.use('/api/tenant', createTenantRouter());
 app.use('/api/tenders', tenderRoutes);
 app.use('/api/fuel', fuelRoutes);
 app.use('/api/checklists', checklistRoutes);
 app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/accounts-payable', accountsPayableRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -86,16 +86,30 @@ const startServer = async () => {
     await initializeDatabase(); // TypeORM for new entities
     console.log('✅ All database connections established');
 
-    // Auto-seed if needed
-    if (process.env.NODE_ENV === 'development' || process.env.AUTO_SEED === 'true') {
+    // Auto-run migrations (TypeORM)
+    if (process.env.NODE_ENV !== 'test') {
       try {
-        console.log('🌱 Checking if seeding is needed...');
-        await seed();
+        console.log('🔄 Checking for pending migrations...');
+        const { AppDataSource } = await import('./config/database.config');
+        const pendingMigrations = await AppDataSource.showMigrations();
+
+        if (pendingMigrations) {
+          console.log('📝 Running pending migrations...');
+          await AppDataSource.runMigrations();
+          console.log('✅ Migrations completed successfully');
+        } else {
+          console.log('✅ Database schema is up to date');
+        }
       } catch (error) {
-        console.error('⚠️ Auto-seeding failed:', error);
-        // Don't crash, just log
+        console.error('⚠️ Migration check/run failed:', error);
+        // Don't crash on migration errors in development
+        if (process.env.NODE_ENV === 'production') {
+          throw error;
+        }
       }
     }
+
+    // Note: To seed the database, run: npm run seed:typeorm
 
     // Load routes
     console.log('Loading API routes...');
