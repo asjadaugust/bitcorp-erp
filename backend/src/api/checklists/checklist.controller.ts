@@ -311,21 +311,13 @@ export class ChecklistController {
       doc.fontSize(10).font('Helvetica-Bold').text('Fecha:', 50, infoY);
       doc
         .font('Helvetica')
-        .text(new Date(inspection.fechaInspeccion).toLocaleDateString('es-PE'), 120, infoY);
+        .text(new Date(inspection.fecha_inspeccion).toLocaleDateString('es-PE'), 120, infoY);
 
       doc.font('Helvetica-Bold').text('Equipo:', 50, infoY + 20);
-      doc.font('Helvetica').text(inspection.equipo?.codigo_equipo || 'N/A', 120, infoY + 20);
+      doc.font('Helvetica').text(inspection.equipo_codigo || 'N/A', 120, infoY + 20);
 
       doc.font('Helvetica-Bold').text('Inspector:', 50, infoY + 40);
-      doc
-        .font('Helvetica')
-        .text(
-          inspection.trabajador?.nombreCompleto ||
-            (inspection.trabajador as any)?.nombre_completo ||
-            'N/A',
-          120,
-          infoY + 40
-        );
+      doc.font('Helvetica').text(inspection.trabajador_nombre || 'N/A', 120, infoY + 40);
 
       doc.font('Helvetica-Bold').text('Ubicación:', 50, infoY + 60);
       doc.font('Helvetica').text(inspection.ubicacion || '-', 120, infoY + 60);
@@ -335,13 +327,13 @@ export class ChecklistController {
       doc.font('Helvetica').text(inspection.estado, 400, infoY);
 
       doc.font('Helvetica-Bold').text('Resultado:', 320, infoY + 20);
-      doc.font('Helvetica').text(inspection.resultadoGeneral || '-', 400, infoY + 20);
+      doc.font('Helvetica').text(inspection.resultado_general || '-', 400, infoY + 20);
 
       doc.font('Helvetica-Bold').text('Hora Inicio:', 320, infoY + 40);
-      doc.font('Helvetica').text(inspection.horaInicio || '-', 400, infoY + 40);
+      doc.font('Helvetica').text(inspection.hora_inicio || '-', 400, infoY + 40);
 
       doc.font('Helvetica-Bold').text('Hora Fin:', 320, infoY + 60);
-      doc.font('Helvetica').text(inspection.horaFin || '-', 400, infoY + 60);
+      doc.font('Helvetica').text(inspection.hora_fin || '-', 400, infoY + 60);
 
       doc.moveDown(5);
 
@@ -351,13 +343,13 @@ export class ChecklistController {
 
       const statsY = doc.y;
       doc.fontSize(10).font('Helvetica-Bold').text('Total Items:', 50, statsY);
-      doc.font('Helvetica').text(inspection.itemsTotal?.toString() || '0', 150, statsY);
+      doc.font('Helvetica').text(inspection.items_total?.toString() || '0', 150, statsY);
 
       doc.font('Helvetica-Bold').text('Conformes:', 220, statsY);
       doc
         .font('Helvetica')
         .fillColor('#10b981')
-        .text(inspection.itemsConforme?.toString() || '0', 320, statsY);
+        .text(inspection.items_conforme?.toString() || '0', 320, statsY);
 
       doc
         .font('Helvetica')
@@ -367,7 +359,7 @@ export class ChecklistController {
       doc
         .font('Helvetica')
         .fillColor('#ef4444')
-        .text(inspection.itemsNoConforme?.toString() || '0', 480, statsY);
+        .text(inspection.items_no_conforme?.toString() || '0', 480, statsY);
 
       doc.fillColor('#000000');
       doc.moveDown(2);
@@ -382,7 +374,7 @@ export class ChecklistController {
         const currentCategory = '';
 
         inspection.resultados.forEach((result: any) => {
-          const category = result.item?.categoria || 'Sin Categoría';
+          const category = result.item_categoria || 'Sin Categoría';
           if (!grouped[category]) {
             grouped[category] = [];
           }
@@ -411,7 +403,7 @@ export class ChecklistController {
             doc
               .fontSize(10)
               .font('Helvetica-Bold')
-              .text(`${result.item?.orden}. ${result.item?.descripcion}`, 60, itemY);
+              .text(`${result.item_orden}. ${result.item_descripcion}`, 60, itemY);
 
             // Result badge
             const resultText =
@@ -433,9 +425,9 @@ export class ChecklistController {
             // Additional details
             let detailY = itemY + 15;
 
-            if (result.valorMedido) {
+            if (result.valor_medido) {
               doc.fontSize(9).font('Helvetica').fillColor('#666666');
-              doc.text(`Valor Medido: ${result.valorMedido}`, 70, detailY);
+              doc.text(`Valor Medido: ${result.valor_medido}`, 70, detailY);
               detailY += 12;
             }
 
@@ -444,10 +436,10 @@ export class ChecklistController {
               detailY += 12;
             }
 
-            if (result.accionRequerida && result.accionRequerida !== 'NINGUNA') {
+            if (result.accion_requerida && result.accion_requerida !== 'NINGUNA') {
               doc
                 .fillColor('#ef4444')
-                .text(`Acción Requerida: ${result.accionRequerida}`, 70, detailY);
+                .text(`Acción Requerida: ${result.accion_requerida}`, 70, detailY);
               detailY += 12;
             }
 
@@ -467,7 +459,7 @@ export class ChecklistController {
       }
 
       // --- Observations Section ---
-      if (inspection.observacionesGenerales) {
+      if (inspection.observaciones_generales) {
         doc.moveDown(2);
 
         // Check if we need a new page
@@ -477,7 +469,7 @@ export class ChecklistController {
 
         doc.fontSize(14).font('Helvetica-Bold').text('Observaciones Generales');
         doc.moveDown(0.5);
-        doc.fontSize(10).font('Helvetica').text(inspection.observacionesGenerales);
+        doc.fontSize(10).font('Helvetica').text(inspection.observaciones_generales);
       }
 
       // --- Footer ---

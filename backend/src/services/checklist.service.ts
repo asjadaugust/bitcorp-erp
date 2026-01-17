@@ -5,6 +5,23 @@ import { ChecklistItem } from '../models/checklist-item.model';
 import { ChecklistInspection } from '../models/checklist-inspection.model';
 import { ChecklistResult } from '../models/checklist-result.model';
 import { Repository } from 'typeorm';
+import {
+  ChecklistTemplateListDto,
+  ChecklistTemplateDetailDto,
+  ChecklistItemDto,
+  ChecklistInspectionListDto,
+  ChecklistInspectionDetailDto,
+  ChecklistInspectionWithResultsDto,
+  ChecklistResultDto,
+  ChecklistInspectionStatsDto,
+  toChecklistTemplateListDtoArray,
+  toChecklistTemplateDetailDto,
+  toChecklistItemDto,
+  toChecklistInspectionListDtoArray,
+  toChecklistInspectionDetailDto,
+  toChecklistInspectionWithResultsDto,
+  toChecklistResultDtoArray,
+} from '../types/dto/checklist.dto';
 
 export class ChecklistService {
   private templateRepository: Repository<ChecklistTemplate>;
@@ -20,7 +37,7 @@ export class ChecklistService {
   }
 
   // ===== TEMPLATES =====
-  async getAllTemplates(filters?: any) {
+  async getAllTemplates(filters?: any): Promise<ChecklistTemplateListDto[]> {
     const where: any = {};
 
     if (filters?.activo !== undefined) {
@@ -45,38 +62,49 @@ export class ChecklistService {
     }
 
     // Apply search filter if provided
+    let filteredTemplates = templates;
     if (filters?.search) {
       const searchLower = filters.search.toLowerCase();
-      return templates.filter(
+      filteredTemplates = templates.filter(
         (t) =>
           t.nombre.toLowerCase().includes(searchLower) ||
           t.codigo.toLowerCase().includes(searchLower)
       );
     }
 
-    return templates;
+    return toChecklistTemplateListDtoArray(filteredTemplates);
   }
 
-  async getTemplateById(id: number) {
+  async getTemplateById(id: number): Promise<ChecklistTemplateDetailDto | null> {
     const template = await this.templateRepository.findOne({ where: { id } });
-    if (template) {
-      template.items = await this.itemRepository.find({
-        where: { plantillaId: id },
-        order: { orden: 'ASC' },
-      });
+    if (!template) {
+      return null;
     }
-    return template;
+
+    template.items = await this.itemRepository.find({
+      where: { plantillaId: id },
+      order: { orden: 'ASC' },
+    });
+
+    return toChecklistTemplateDetailDto(template);
   }
 
-  async createTemplate(data: Partial<ChecklistTemplate>, userId: number) {
+  async createTemplate(
+    data: Partial<ChecklistTemplate>,
+    userId: number
+  ): Promise<ChecklistTemplateDetailDto> {
     const template = this.templateRepository.create({
       ...data,
       createdBy: userId,
     });
-    return this.templateRepository.save(template);
+    const saved = await this.templateRepository.save(template);
+    return this.getTemplateById(saved.id) as Promise<ChecklistTemplateDetailDto>;
   }
 
-  async updateTemplate(id: number, data: Partial<ChecklistTemplate>) {
+  async updateTemplate(
+    id: number,
+    data: Partial<ChecklistTemplate>
+  ): Promise<ChecklistTemplateDetailDto | null> {
     await this.templateRepository.update(id, data);
     return this.getTemplateById(id);
   }
@@ -87,14 +115,16 @@ export class ChecklistService {
   }
 
   // ===== ITEMS =====
-  async createItem(data: Partial<ChecklistItem>) {
+  async createItem(data: Partial<ChecklistItem>): Promise<ChecklistItemDto> {
     const item = this.itemRepository.create(data);
-    return this.itemRepository.save(item);
+    const saved = await this.itemRepository.save(item);
+    return toChecklistItemDto(saved);
   }
 
-  async updateItem(id: number, data: Partial<ChecklistItem>) {
+  async updateItem(id: number, data: Partial<ChecklistItem>): Promise<ChecklistItemDto | null> {
     await this.itemRepository.update(id, data);
-    return this.itemRepository.findOne({ where: { id } });
+    const item = await this.itemRepository.findOne({ where: { id } });
+    return item ? toChecklistItemDto(item) : null;
   }
 
   async deleteItem(id: number) {
@@ -102,15 +132,22 @@ export class ChecklistService {
     return (result.affected ?? 0) > 0;
   }
 
-  async getItemsByTemplate(plantillaId: number) {
-    return this.itemRepository.find({
+  async getItemsByTemplate(plantillaId: number): Promise<ChecklistItemDto[]> {
+    const items = await this.itemRepository.find({
       where: { plantillaId },
       order: { orden: 'ASC' },
     });
+    return items.map(toChecklistItemDto);
   }
 
   // ===== INSPECTIONS =====
-  async getAllInspections(filters?: any) {
+  async getAllInspections(filters?: any): Promise<{
+    data: ChecklistInspectionListDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const page = parseInt(filters?.page) || 1;
     const limit = parseInt(filters?.limit) || 20;
     const skip = (page - 1) * limit;
@@ -131,7 +168,7 @@ export class ChecklistService {
     });
 
     return {
-      data,
+      data: toChecklistInspectionListDtoArray(data),
       total,
       page,
       limit,
@@ -139,15 +176,19 @@ export class ChecklistService {
     };
   }
 
-  async getInspectionById(id: number) {
-    return this.inspectionRepository.findOne({
+  async getInspectionById(id: number): Promise<ChecklistInspectionDetailDto | null> {
+    const inspection = await this.inspectionRepository.findOne({
       where: { id },
       relations: ['plantilla', 'equipo', 'trabajador'],
     });
+    return inspection ? toChecklistInspectionDetailDto(inspection) : null;
   }
 
-  async getInspectionWithResults(id: number) {
-    const inspection = await this.getInspectionById(id);
+  async getInspectionWithResults(id: number): Promise<ChecklistInspectionWithResultsDto | null> {
+    const inspection = await this.inspectionRepository.findOne({
+      where: { id },
+      relations: ['plantilla', 'equipo', 'trabajador'],
+    });
     if (!inspection) return null;
 
     const results = await this.resultRepository.find({
@@ -160,18 +201,23 @@ export class ChecklistService {
       result.item = await this.itemRepository.findOne({ where: { id: result.itemId } });
     }
 
-    return {
-      ...inspection,
-      resultados: results,
-    };
+    return toChecklistInspectionWithResultsDto(inspection, results);
   }
 
-  async createInspection(data: Partial<ChecklistInspection>) {
+  async createInspection(
+    data: Partial<ChecklistInspection>
+  ): Promise<ChecklistInspectionDetailDto> {
     const year = new Date().getFullYear();
     const count = await this.inspectionRepository.count();
     const codigo = `INS-${year}-${String(count + 1).padStart(4, '0')}`;
 
-    const template = await this.getTemplateById(data.plantillaId!);
+    const template = await this.templateRepository.findOne({ where: { id: data.plantillaId } });
+    if (template) {
+      template.items = await this.itemRepository.find({
+        where: { plantillaId: template.id },
+        order: { orden: 'ASC' },
+      });
+    }
     const itemsTotal = template?.items?.length || 0;
 
     const inspection = this.inspectionRepository.create({
@@ -181,15 +227,19 @@ export class ChecklistService {
       fechaInspeccion: data.fechaInspeccion || new Date(),
     });
 
-    return this.inspectionRepository.save(inspection);
+    const saved = await this.inspectionRepository.save(inspection);
+    return this.getInspectionById(saved.id) as Promise<ChecklistInspectionDetailDto>;
   }
 
-  async updateInspection(id: number, data: Partial<ChecklistInspection>) {
+  async updateInspection(
+    id: number,
+    data: Partial<ChecklistInspection>
+  ): Promise<ChecklistInspectionDetailDto | null> {
     await this.inspectionRepository.update(id, data);
     return this.getInspectionById(id);
   }
 
-  async completeInspection(id: number) {
+  async completeInspection(id: number): Promise<ChecklistInspectionDetailDto | null> {
     const results = await this.resultRepository.find({ where: { inspeccionId: id } });
 
     const itemsConforme = results.filter((r) => r.conforme === true).length;
@@ -229,13 +279,13 @@ export class ChecklistService {
     return this.getInspectionById(id);
   }
 
-  async cancelInspection(id: number) {
+  async cancelInspection(id: number): Promise<ChecklistInspectionDetailDto | null> {
     await this.inspectionRepository.update(id, { estado: 'CANCELADO' });
     return this.getInspectionById(id);
   }
 
   // ===== RESULTS =====
-  async saveResult(data: Partial<ChecklistResult>) {
+  async saveResult(data: Partial<ChecklistResult>): Promise<ChecklistResultDto> {
     const existing = await this.resultRepository.findOne({
       where: {
         inspeccionId: data.inspeccionId!,
@@ -243,46 +293,88 @@ export class ChecklistService {
       },
     });
 
+    let result: ChecklistResult;
     if (existing) {
       await this.resultRepository.update(existing.id, data);
-      return this.resultRepository.findOne({ where: { id: existing.id } });
+      result = (await this.resultRepository.findOne({ where: { id: existing.id } }))!;
     } else {
-      const result = this.resultRepository.create(data);
-      return this.resultRepository.save(result);
+      result = this.resultRepository.create(data);
+      result = await this.resultRepository.save(result);
     }
+
+    // Load item details
+    result.item = await this.itemRepository.findOne({ where: { id: result.itemId } });
+    return toChecklistResultDtoArray([result])[0];
   }
 
-  async getResultsByInspection(inspeccionId: number) {
-    return this.resultRepository.find({
+  async getResultsByInspection(inspeccionId: number): Promise<ChecklistResultDto[]> {
+    const results = await this.resultRepository.find({
       where: { inspeccionId },
       order: { createdAt: 'ASC' },
     });
+
+    // Load item details for each result
+    for (const result of results) {
+      result.item = await this.itemRepository.findOne({ where: { id: result.itemId } });
+    }
+
+    return toChecklistResultDtoArray(results);
   }
 
   // ===== STATS =====
-  async getInspectionStats(filters?: any) {
+  async getInspectionStats(filters?: any): Promise<ChecklistInspectionStatsDto> {
     const where: any = {};
     if (filters?.startDate || filters?.endDate) {
       // For date range, we'd need to use QueryBuilder
     }
 
     const total = await this.inspectionRepository.count({ where });
+
+    // Count by estado
+    const completadas = await this.inspectionRepository.count({
+      where: { ...where, estado: 'COMPLETADO' },
+    });
+    const enProgreso = await this.inspectionRepository.count({
+      where: { ...where, estado: 'EN_PROGRESO' },
+    });
+    const rechazadas = await this.inspectionRepository.count({
+      where: { ...where, estado: 'RECHAZADO' },
+    });
+    const canceladas = await this.inspectionRepository.count({
+      where: { ...where, estado: 'CANCELADO' },
+    });
+
+    // Count by resultado_general
     const aprobadas = await this.inspectionRepository.count({
       where: { ...where, resultadoGeneral: 'APROBADO' },
     });
-    const conObservaciones = await this.inspectionRepository.count({
+    const aprobadasConObservaciones = await this.inspectionRepository.count({
       where: { ...where, resultadoGeneral: 'APROBADO_CON_OBSERVACIONES' },
     });
-    const rechazadas = await this.inspectionRepository.count({
+    const rechazadasPorResultado = await this.inspectionRepository.count({
       where: { ...where, resultadoGeneral: 'RECHAZADO' },
     });
 
+    // Count equipment conditions
+    const equiposRequierenMantenimiento = await this.inspectionRepository.count({
+      where: { ...where, requiereMantenimiento: true },
+    });
+    const equiposNoOperativos = await this.inspectionRepository.count({
+      where: { ...where, equipoOperativo: false },
+    });
+
     return {
-      total,
-      aprobadas,
-      conObservaciones,
+      total_inspecciones: total,
+      en_progreso: enProgreso,
+      completadas,
       rechazadas,
-      tasaAprobacion: total > 0 ? ((aprobadas + conObservaciones) / total) * 100 : 0,
+      canceladas,
+      aprobadas,
+      aprobadas_con_observaciones: aprobadasConObservaciones,
+      rechazadas_por_resultado: rechazadasPorResultado,
+      tasa_conformidad: total > 0 ? ((aprobadas + aprobadasConObservaciones) / total) * 100 : 0,
+      equipos_requieren_mantenimiento: equiposRequierenMantenimiento,
+      equipos_no_operativos: equiposNoOperativos,
     };
   }
 }
