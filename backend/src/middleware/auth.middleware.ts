@@ -1,15 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { SecurityUtil, JwtPayload } from '../utils/security.util';
+import { Role } from '../types/roles';
+import { asyncContext } from '../utils/async-context';
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
 }
 
-export const authenticate = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): void => {
+export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -22,26 +20,47 @@ export const authenticate = (
     const payload = SecurityUtil.verifyAccessToken(token);
 
     req.user = payload;
+
+    // Add user context to AsyncLocalStorage for logging
+    asyncContext.updateContext({
+      userId: parseInt(payload.userId),
+      username: payload.username,
+    });
+
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
 
-export const authorize = (...allowedRoles: string[]) => {
+/**
+ * Authorization middleware - checks if user has one of the allowed roles
+ *
+ * @param allowedRoles - Array of Role constants that are allowed to access the endpoint
+ *
+ * @example
+ * import { ROLES } from '../types/roles';
+ * router.get('/admin-only', authorize(ROLES.ADMIN), handler);
+ * router.get('/management', authorize(ROLES.ADMIN, ROLES.DIRECTOR), handler);
+ */
+export const authorize = (...allowedRoles: Role[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
 
-    // Case-insensitive role comparison
-    const userRolesLower = req.user.roles.map(r => r.toLowerCase());
-    const allowedRolesLower = allowedRoles.map(r => r.toLowerCase());
-    const hasRole = userRolesLower.some(role => allowedRolesLower.includes(role));
+    // Case-insensitive role comparison for backward compatibility
+    const userRolesLower = req.user.roles.map((r) => r.toLowerCase());
+    const allowedRolesLower = allowedRoles.map((r) => r.toLowerCase());
+    const hasRole = userRolesLower.some((role) => allowedRolesLower.includes(role));
 
     if (!hasRole) {
-      res.status(403).json({ error: 'Insufficient permissions' });
+      res.status(403).json({
+        error: 'Insufficient permissions',
+        required: allowedRoles,
+        current: req.user.roles,
+      });
       return;
     }
 
