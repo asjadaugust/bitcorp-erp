@@ -1,6 +1,7 @@
 import { AppDataSource } from '../config/database.config';
 import { Licitacion } from '../models/tender.model';
 import { Repository } from 'typeorm';
+import Logger from '../utils/logger';
 
 export class TenderService {
   private get repository(): Repository<Licitacion> {
@@ -29,7 +30,12 @@ export class TenderService {
 
       return await queryBuilder.getMany();
     } catch (error) {
-      console.error('Error finding tenders:', error);
+      Logger.error('Error finding tenders', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters,
+        context: 'TenderService.findAll',
+      });
       throw new Error('Failed to fetch tenders');
     }
   }
@@ -38,7 +44,12 @@ export class TenderService {
     try {
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
-      console.error('Error finding tender by id:', error);
+      Logger.error('Error finding tender by id', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenderId: id,
+        context: 'TenderService.findById',
+      });
       throw error;
     }
   }
@@ -56,7 +67,12 @@ export class TenderService {
       const licitacion = this.repository.create(data);
       return await this.repository.save(licitacion);
     } catch (error) {
-      console.error('Error creating tender:', error);
+      Logger.error('Error creating tender', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        codigo: data.codigo,
+        context: 'TenderService.create',
+      });
       throw error;
     }
   }
@@ -71,7 +87,12 @@ export class TenderService {
       Object.assign(licitacion, data);
       return await this.repository.save(licitacion);
     } catch (error) {
-      console.error('Error updating tender:', error);
+      Logger.error('Error updating tender', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenderId: id,
+        context: 'TenderService.update',
+      });
       throw error;
     }
   }
@@ -80,7 +101,12 @@ export class TenderService {
     try {
       await this.repository.delete(id);
     } catch (error) {
-      console.error('Error deleting tender:', error);
+      Logger.error('Error deleting tender', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenderId: id,
+        context: 'TenderService.delete',
+      });
       throw new Error('Failed to delete tender');
     }
   }
@@ -94,6 +120,7 @@ export class TenderService {
     return this.findById(parseInt(id));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async createTender(data: any): Promise<Licitacion> {
     // Map old field names to new Spanish names
     const mappedData: Partial<Licitacion> = {

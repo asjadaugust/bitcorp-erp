@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../config/database.config';
 import { ProviderContact, ContactType, ContactStatus } from '../models/provider-contact.model';
+import Logger from '../utils/logger';
 
 // DTO type that accepts both snake_case (from API) and camelCase (from entity)
 interface ProviderContactInput {
@@ -55,7 +56,12 @@ export class ProviderContactService {
 
       return contacts;
     } catch (error) {
-      console.error('Error finding contacts:', error);
+      Logger.error('Error finding provider contacts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId,
+        context: 'ProviderContactService.findByProviderId',
+      });
       throw error;
     }
   }
@@ -77,7 +83,12 @@ export class ProviderContactService {
 
       return contact;
     } catch (error) {
-      console.error('Error finding contact:', error);
+      Logger.error('Error finding provider contact by id', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contactId: id,
+        context: 'ProviderContactService.findById',
+      });
       throw error;
     }
   }
@@ -108,7 +119,12 @@ export class ProviderContactService {
       const saved = await this.repository.save(contact);
       return saved;
     } catch (error) {
-      console.error('Error creating contact:', error);
+      Logger.error('Error creating provider contact', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId: data.providerId || data.provider_id,
+        context: 'ProviderContactService.create',
+      });
       throw error;
     }
   }
@@ -149,7 +165,12 @@ export class ProviderContactService {
 
       return updated;
     } catch (error) {
-      console.error('Error updating contact:', error);
+      Logger.error('Error updating provider contact', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contactId: id,
+        context: 'ProviderContactService.update',
+      });
       throw error;
     }
   }
@@ -164,7 +185,12 @@ export class ProviderContactService {
       const result = await this.repository.delete(id);
       return (result.affected ?? 0) > 0;
     } catch (error) {
-      console.error('Error deleting contact:', error);
+      Logger.error('Error deleting provider contact', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contactId: id,
+        context: 'ProviderContactService.delete',
+      });
       throw error;
     }
   }

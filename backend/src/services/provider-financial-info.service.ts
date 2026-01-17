@@ -6,6 +6,7 @@ import {
   FinancialStatus,
   Currency,
 } from '../models/provider-financial-info.model';
+import Logger from '../utils/logger';
 
 // DTO type that accepts both snake_case (from API) and camelCase (from entity)
 interface ProviderFinancialInfoInput {
@@ -57,7 +58,12 @@ export class ProviderFinancialInfoService {
 
       return financialInfo;
     } catch (error) {
-      console.error('Error finding financial info:', error);
+      Logger.error('Error finding provider financial info', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId,
+        context: 'ProviderFinancialInfoService.findByProviderId',
+      });
       throw error;
     }
   }
@@ -79,7 +85,12 @@ export class ProviderFinancialInfoService {
 
       return financialInfo;
     } catch (error) {
-      console.error('Error finding financial info:', error);
+      Logger.error('Error finding provider financial info by id', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        financialInfoId: id,
+        context: 'ProviderFinancialInfoService.findById',
+      });
       throw error;
     }
   }
@@ -108,7 +119,12 @@ export class ProviderFinancialInfoService {
       const saved = await this.repository.save(financialInfo);
       return saved;
     } catch (error) {
-      console.error('Error creating financial info:', error);
+      Logger.error('Error creating provider financial info', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId: data.providerId || data.provider_id,
+        context: 'ProviderFinancialInfoService.create',
+      });
       throw error;
     }
   }
@@ -147,7 +163,12 @@ export class ProviderFinancialInfoService {
 
       return updated;
     } catch (error) {
-      console.error('Error updating financial info:', error);
+      Logger.error('Error updating provider financial info', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        financialInfoId: id,
+        context: 'ProviderFinancialInfoService.update',
+      });
       throw error;
     }
   }
@@ -162,7 +183,12 @@ export class ProviderFinancialInfoService {
       const result = await this.repository.delete(id);
       return (result.affected ?? 0) > 0;
     } catch (error) {
-      console.error('Error deleting financial info:', error);
+      Logger.error('Error deleting provider financial info', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        financialInfoId: id,
+        context: 'ProviderFinancialInfoService.delete',
+      });
       throw error;
     }
   }

@@ -15,6 +15,7 @@ import {
   ValuationPage7Dto,
 } from '../types/dto/valuation-pdf.dto';
 import { DailyReportPdfDto } from '../types/dto/daily-report-pdf.dto';
+import Logger from '../utils/logger';
 
 /**
  * PDF Generation Service using Puppeteer and Handlebars
@@ -170,7 +171,10 @@ export class PuppeteerPdfService {
       const logoBuffer = await fs.readFile(logoPath);
       return logoBuffer.toString('base64');
     } catch (error) {
-      console.warn('Logo file not found, using placeholder');
+      Logger.warn('Logo file not found, using placeholder', {
+        logoPath,
+        context: 'PuppeteerPdfService.loadLogo',
+      });
       return '';
     }
   }
@@ -220,7 +224,11 @@ export class PuppeteerPdfService {
 
       return Buffer.from(pdf);
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      Logger.error('Error generating PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'PuppeteerPdfService.generateValuationPage1',
+      });
       throw new Error('Failed to generate valuation PDF');
     }
   }
@@ -269,7 +277,11 @@ export class PuppeteerPdfService {
 
       return Buffer.from(pdf);
     } catch (error) {
-      console.error('Error generating Page 2 PDF:', error);
+      Logger.error('Error generating Page 2 PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'PuppeteerPdfService.generateValuationPage2',
+      });
       throw new Error('Failed to generate Page 2 PDF');
     }
   }
@@ -359,7 +371,12 @@ export class PuppeteerPdfService {
 
       return Buffer.from(pdf);
     } catch (error) {
-      console.error(`Error generating ${templateName} PDF:`, error);
+      Logger.error('Error generating PDF page', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        templateName,
+        context: 'PuppeteerPdfService.generatePage',
+      });
       throw new Error(`Failed to generate ${templateName} PDF`);
     }
   }
@@ -385,7 +402,9 @@ export class PuppeteerPdfService {
     page7Data: ValuationPage7Dto
   ): Promise<Buffer> {
     try {
-      console.log('Generating all 7 pages for complete PDF...');
+      Logger.debug('Generating all 7 pages for complete PDF', {
+        context: 'PuppeteerPdfService.generateCompleteValuationPdf',
+      });
 
       // Generate all individual pages
       const [page1Pdf, page2Pdf, page3Pdf, page4Pdf, page5Pdf, page6Pdf, page7Pdf] =
@@ -399,7 +418,9 @@ export class PuppeteerPdfService {
           this.generateValuationPage7(page7Data),
         ]);
 
-      console.log('All pages generated, merging into single PDF...');
+      Logger.debug('All pages generated, merging into single PDF', {
+        context: 'PuppeteerPdfService.generateCompleteValuationPdf',
+      });
 
       // Create a new PDF document
       const mergedPdf = await PDFDocument.create();
@@ -415,13 +436,20 @@ export class PuppeteerPdfService {
         });
       }
 
-      console.log('PDF merge complete');
+      Logger.debug('PDF merge complete', {
+        pageCount: 7,
+        context: 'PuppeteerPdfService.generateCompleteValuationPdf',
+      });
 
       // Save the merged PDF
       const mergedPdfBytes = await mergedPdf.save();
       return Buffer.from(mergedPdfBytes);
     } catch (error) {
-      console.error('Error generating complete valuation PDF:', error);
+      Logger.error('Error generating complete valuation PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'PuppeteerPdfService.generateCompleteValuationPdf',
+      });
       throw new Error('Failed to generate complete valuation PDF');
     }
   }
@@ -465,7 +493,11 @@ export class PuppeteerPdfService {
       await page.close();
       return Buffer.from(pdfBytes);
     } catch (error) {
-      console.error('Error generating daily report PDF:', error);
+      Logger.error('Error generating daily report PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'PuppeteerPdfService.generateDailyReportPdf',
+      });
       throw new Error('Failed to generate daily report PDF');
     }
   }
@@ -490,7 +522,12 @@ export class PuppeteerPdfService {
 
       res.send(pdf);
     } catch (error) {
-      console.error('Error sending PDF response:', error);
+      Logger.error('Error sending PDF response', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filename,
+        context: 'PuppeteerPdfService.sendPdfResponse',
+      });
       res.status(500).json({ error: 'Failed to generate PDF' });
     }
   }
