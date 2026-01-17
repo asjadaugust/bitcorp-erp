@@ -5,6 +5,18 @@
  * Following architecture guidelines in ARCHITECTURE.md section 3.2
  */
 
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsIn,
+  MaxLength,
+  Min,
+  Max,
+  IsDateString,
+} from 'class-validator';
+
 /**
  * Equipment List DTO - for listing/grid views
  * Contains minimal fields for performance
@@ -235,4 +247,282 @@ export function toEquipmentStatsDto(stats: {
     retirado: stats.retirado,
     por_categoria: {},
   };
+}
+
+/**
+ * Equipment Create DTO - for creating new equipment
+ * Validation with class-validator decorators
+ */
+export class EquipmentCreateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser un string' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string;
+
+  @IsString({ message: 'codigo_equipo es requerido' })
+  @MaxLength(100, { message: 'codigo_equipo no puede exceder 100 caracteres' })
+  codigo_equipo!: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'tipo_equipo_id debe ser un número' })
+  tipo_equipo_id?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'proveedor_id debe ser un número' })
+  proveedor_id?: number;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_proveedor debe ser un string' })
+  @IsIn(['PROPIO', 'TERCERO'], { message: 'tipo_proveedor debe ser PROPIO o TERCERO' })
+  tipo_proveedor?: string;
+
+  @IsOptional()
+  @IsString({ message: 'categoria debe ser un string' })
+  @MaxLength(100, { message: 'categoria no puede exceder 100 caracteres' })
+  categoria?: string;
+
+  @IsOptional()
+  @IsString({ message: 'placa debe ser un string' })
+  @MaxLength(20, { message: 'placa no puede exceder 20 caracteres' })
+  placa?: string;
+
+  @IsOptional()
+  @IsString({ message: 'marca debe ser un string' })
+  @MaxLength(100, { message: 'marca no puede exceder 100 caracteres' })
+  marca?: string;
+
+  @IsOptional()
+  @IsString({ message: 'modelo debe ser un string' })
+  @MaxLength(100, { message: 'modelo no puede exceder 100 caracteres' })
+  modelo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'numero_serie_equipo debe ser un string' })
+  @MaxLength(100, { message: 'numero_serie_equipo no puede exceder 100 caracteres' })
+  numero_serie_equipo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'numero_chasis debe ser un string' })
+  @MaxLength(100, { message: 'numero_chasis no puede exceder 100 caracteres' })
+  numero_chasis?: string;
+
+  @IsOptional()
+  @IsString({ message: 'numero_serie_motor debe ser un string' })
+  @MaxLength(100, { message: 'numero_serie_motor no puede exceder 100 caracteres' })
+  numero_serie_motor?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'anio_fabricacion debe ser un número' })
+  @Min(1900, { message: 'anio_fabricacion debe ser mayor o igual a 1900' })
+  @Max(2100, { message: 'anio_fabricacion debe ser menor o igual a 2100' })
+  anio_fabricacion?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'potencia_neta debe ser un número' })
+  @Min(0, { message: 'potencia_neta no puede ser negativa' })
+  potencia_neta?: number;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_motor debe ser un string' })
+  @MaxLength(100, { message: 'tipo_motor no puede exceder 100 caracteres' })
+  tipo_motor?: string;
+
+  @IsOptional()
+  @IsString({ message: 'medidor_uso debe ser un string' })
+  @IsIn(['HOROMETRO', 'KILOMETRAJE', 'NINGUNO'], {
+    message: 'medidor_uso debe ser HOROMETRO, KILOMETRAJE o NINGUNO',
+  })
+  medidor_uso?: string;
+
+  @IsOptional()
+  @IsString({ message: 'estado debe ser un string' })
+  @IsIn(['DISPONIBLE', 'EN_USO', 'MANTENIMIENTO', 'RETIRADO'], {
+    message: 'estado debe ser DISPONIBLE, EN_USO, MANTENIMIENTO o RETIRADO',
+  })
+  estado?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'is_active debe ser un booleano' })
+  is_active?: boolean;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'creado_por debe ser un número' })
+  creado_por?: number;
+}
+
+/**
+ * Equipment Update DTO - for updating existing equipment
+ * All fields optional
+ */
+export class EquipmentUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser un string' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string;
+
+  @IsOptional()
+  @IsString({ message: 'codigo_equipo debe ser un string' })
+  @MaxLength(100, { message: 'codigo_equipo no puede exceder 100 caracteres' })
+  codigo_equipo?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'tipo_equipo_id debe ser un número' })
+  tipo_equipo_id?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'proveedor_id debe ser un número' })
+  proveedor_id?: number;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_proveedor debe ser un string' })
+  @IsIn(['PROPIO', 'TERCERO'], { message: 'tipo_proveedor debe ser PROPIO o TERCERO' })
+  tipo_proveedor?: string;
+
+  @IsOptional()
+  @IsString({ message: 'categoria debe ser un string' })
+  @MaxLength(100, { message: 'categoria no puede exceder 100 caracteres' })
+  categoria?: string;
+
+  @IsOptional()
+  @IsString({ message: 'placa debe ser un string' })
+  @MaxLength(20, { message: 'placa no puede exceder 20 caracteres' })
+  placa?: string;
+
+  @IsOptional()
+  @IsString({ message: 'marca debe ser un string' })
+  @MaxLength(100, { message: 'marca no puede exceder 100 caracteres' })
+  marca?: string;
+
+  @IsOptional()
+  @IsString({ message: 'modelo debe ser un string' })
+  @MaxLength(100, { message: 'modelo no puede exceder 100 caracteres' })
+  modelo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'numero_serie_equipo debe ser un string' })
+  @MaxLength(100, { message: 'numero_serie_equipo no puede exceder 100 caracteres' })
+  numero_serie_equipo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'numero_chasis debe ser un string' })
+  @MaxLength(100, { message: 'numero_chasis no puede exceder 100 caracteres' })
+  numero_chasis?: string;
+
+  @IsOptional()
+  @IsString({ message: 'numero_serie_motor debe ser un string' })
+  @MaxLength(100, { message: 'numero_serie_motor no puede exceder 100 caracteres' })
+  numero_serie_motor?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'anio_fabricacion debe ser un número' })
+  @Min(1900, { message: 'anio_fabricacion debe ser mayor o igual a 1900' })
+  @Max(2100, { message: 'anio_fabricacion debe ser menor o igual a 2100' })
+  anio_fabricacion?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'potencia_neta debe ser un número' })
+  @Min(0, { message: 'potencia_neta no puede ser negativa' })
+  potencia_neta?: number;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_motor debe ser un string' })
+  @MaxLength(100, { message: 'tipo_motor no puede exceder 100 caracteres' })
+  tipo_motor?: string;
+
+  @IsOptional()
+  @IsString({ message: 'medidor_uso debe ser un string' })
+  @IsIn(['HOROMETRO', 'KILOMETRAJE', 'NINGUNO'], {
+    message: 'medidor_uso debe ser HOROMETRO, KILOMETRAJE o NINGUNO',
+  })
+  medidor_uso?: string;
+
+  @IsOptional()
+  @IsString({ message: 'estado debe ser un string' })
+  @IsIn(['DISPONIBLE', 'EN_USO', 'MANTENIMIENTO', 'RETIRADO'], {
+    message: 'estado debe ser DISPONIBLE, EN_USO, MANTENIMIENTO o RETIRADO',
+  })
+  estado?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'is_active debe ser un booleano' })
+  is_active?: boolean;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'actualizado_por debe ser un número' })
+  actualizado_por?: number;
+}
+
+/**
+ * Equipment Status Update DTO - for updating equipment status
+ */
+export class EquipmentStatusUpdateDto {
+  @IsString({ message: 'estado es requerido' })
+  @IsIn(['DISPONIBLE', 'EN_USO', 'MANTENIMIENTO', 'RETIRADO'], {
+    message: 'estado debe ser DISPONIBLE, EN_USO, MANTENIMIENTO o RETIRADO',
+  })
+  estado!: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'actualizado_por debe ser un número' })
+  actualizado_por?: number;
+}
+
+/**
+ * Equipment Assignment DTO - for assigning equipment to projects
+ */
+export class EquipmentAssignmentCreateDto {
+  @IsNumber({}, { message: 'equipo_id es requerido' })
+  equipo_id!: number;
+
+  @IsNumber({}, { message: 'proyecto_id es requerido' })
+  proyecto_id!: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'sitio_id debe ser un número' })
+  sitio_id?: number;
+
+  @IsDateString({}, { message: 'fecha_asignacion debe ser una fecha válida (ISO 8601)' })
+  fecha_asignacion!: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'asignado_por debe ser un número' })
+  asignado_por?: number;
+
+  @IsOptional()
+  @IsString({ message: 'notas debe ser un string' })
+  notas?: string;
+}
+
+/**
+ * Equipment Transfer DTO - for transferring equipment between projects
+ */
+export class EquipmentTransferCreateDto {
+  @IsNumber({}, { message: 'equipo_id es requerido' })
+  equipo_id!: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'proyecto_origen_id debe ser un número' })
+  proyecto_origen_id?: number;
+
+  @IsNumber({}, { message: 'proyecto_destino_id es requerido' })
+  proyecto_destino_id!: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'sitio_destino_id debe ser un número' })
+  sitio_destino_id?: number;
+
+  @IsDateString({}, { message: 'fecha_transferencia debe ser una fecha válida (ISO 8601)' })
+  fecha_transferencia!: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'transferido_por debe ser un número' })
+  transferido_por?: number;
+
+  @IsOptional()
+  @IsString({ message: 'razon debe ser un string' })
+  razon?: string;
+
+  @IsOptional()
+  @IsString({ message: 'notas debe ser un string' })
+  notas?: string;
 }

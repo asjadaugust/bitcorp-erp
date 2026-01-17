@@ -2,6 +2,12 @@
 import { Router } from 'express';
 import { ChecklistController } from './checklist.controller';
 import { authenticate } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import {
+  ChecklistTemplateCreateDto,
+  ChecklistItemCreateDto,
+  ChecklistInspectionCreateDto,
+} from '../../types/dto/checklist.dto';
 
 const router = Router();
 const controller = new ChecklistController();
@@ -34,7 +40,7 @@ router.get('/templates/:id', controller.getTemplateById);
  * @body    { codigo, nombre, tipoEquipo?, descripcion?, frecuencia?, activo? }
  * @access  Private (Admin/Manager)
  */
-router.post('/templates', controller.createTemplate);
+router.post('/templates', validateDto(ChecklistTemplateCreateDto), controller.createTemplate);
 
 /**
  * @route   PUT /api/checklists/templates/:id
@@ -60,7 +66,7 @@ router.delete('/templates/:id', controller.deleteTemplate);
  * @body    { plantillaId, orden, categoria, descripcion, tipoVerificacion, etc. }
  * @access  Private (Admin/Manager)
  */
-router.post('/items', controller.createItem);
+router.post('/items', validateDto(ChecklistItemCreateDto), controller.createItem);
 
 /**
  * @route   PUT /api/checklists/items/:id
@@ -123,7 +129,7 @@ router.get('/inspections/:id/export-pdf', controller.exportInspectionPDF);
  * @body    { plantillaId, equipoId, trabajadorId, fechaInspeccion?, etc. }
  * @access  Private
  */
-router.post('/inspections', controller.createInspection);
+router.post('/inspections', validateDto(ChecklistInspectionCreateDto), controller.createInspection);
 
 /**
  * @route   PUT /api/checklists/inspections/:id

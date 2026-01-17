@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import * as timesheetController from './timesheet.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import { TimesheetCreateDto } from '../../types/dto/timesheet.dto';
 
 const router = Router();
 
@@ -11,7 +13,7 @@ router.get('/', timesheetController.listTimesheets);
 router.get('/:id', timesheetController.getTimesheetById);
 
 // Generate timesheet from daily reports
-router.post('/generate', timesheetController.generateTimesheet);
+router.post('/generate', validateDto(TimesheetCreateDto), timesheetController.generateTimesheet);
 
 // Update timesheet (draft only)
 router.put('/:id', timesheetController.updateTimesheet);

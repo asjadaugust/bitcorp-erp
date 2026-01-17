@@ -2,7 +2,15 @@
 import { Router } from 'express';
 import { EquipmentController } from './equipment.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
 import { ROLES } from '../../types/roles';
+import {
+  EquipmentCreateDto,
+  EquipmentUpdateDto,
+  EquipmentStatusUpdateDto,
+  EquipmentAssignmentCreateDto,
+  EquipmentTransferCreateDto,
+} from '../../types/dto/equipment.dto';
 
 const router = Router();
 const equipmentController = new EquipmentController();
@@ -21,17 +29,20 @@ router.get('/:id', equipmentController.findById);
 router.post(
   '/',
   authorize(ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.ADMIN),
+  validateDto(EquipmentCreateDto),
   equipmentController.create
 );
 router.put(
   '/:id',
   authorize(ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.ADMIN),
+  validateDto(EquipmentUpdateDto),
   equipmentController.update
 );
 router.delete('/:id', authorize(ROLES.DIRECTOR, ROLES.ADMIN), equipmentController.delete);
 router.patch(
   '/:id/status',
   authorize(ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.ADMIN),
+  validateDto(EquipmentStatusUpdateDto),
   equipmentController.updateStatus
 );
 router.patch(
@@ -64,11 +75,13 @@ router.get(
 router.post(
   '/:id/assign',
   authorize('DIRECTOR', 'JEFE_EQUIPO', 'ADMIN'),
+  validateDto(EquipmentAssignmentCreateDto),
   equipmentController.assignEquipment
 );
 router.post(
   '/:id/transfer',
   authorize('DIRECTOR', 'JEFE_EQUIPO', 'ADMIN'),
+  validateDto(EquipmentTransferCreateDto),
   equipmentController.transferEquipment
 );
 router.get(

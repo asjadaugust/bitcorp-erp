@@ -9,6 +9,8 @@
  * - Detalle Tareo: Daily entries within a timesheet
  */
 
+import { IsNumber, IsString, IsOptional, Min, Matches, MaxLength } from 'class-validator';
+
 // ===== TIMESHEET DTOs =====
 
 /**
@@ -74,12 +76,31 @@ export interface TimesheetDetailEntryDto {
 /**
  * Timesheet Create DTO - for generating new timesheet
  */
-export interface TimesheetCreateDto {
-  trabajador_id: number;
-  periodo: string; // Format: YYYY-MM
+export class TimesheetCreateDto {
+  @IsNumber({}, { message: 'trabajador_id debe ser un número' })
+  trabajador_id!: number;
+
+  @IsString({ message: 'periodo debe ser un string' })
+  @Matches(/^\d{4}-\d{2}$/, { message: 'periodo debe tener formato YYYY-MM (ej: 2026-01)' })
+  periodo!: string; // Format: YYYY-MM
+
+  @IsOptional()
+  @IsNumber({}, { message: 'total_dias_trabajados debe ser un número' })
+  @Min(0, { message: 'total_dias_trabajados no puede ser negativo' })
   total_dias_trabajados?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'total_horas debe ser un número' })
+  @Min(0, { message: 'total_horas no puede ser negativo' })
   total_horas?: number;
+
+  @IsOptional()
+  @IsString({ message: 'observaciones debe ser un string' })
+  @MaxLength(1000, { message: 'observaciones no puede exceder 1000 caracteres' })
   observaciones?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'creado_por debe ser un número' })
   creado_por?: number;
 }
 

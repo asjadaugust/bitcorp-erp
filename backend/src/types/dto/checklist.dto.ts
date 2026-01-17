@@ -11,6 +11,17 @@
  * 4. ChecklistResultado (Result) - Results for each item in an inspection
  */
 
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsIn,
+  IsDateString,
+  MaxLength,
+  Min,
+} from 'class-validator';
+
 // ===== TEMPLATE DTOs =====
 
 /**
@@ -170,6 +181,129 @@ export interface ChecklistInspectionStatsDto {
   tasa_conformidad: number; // Percentage
   equipos_requieren_mantenimiento: number;
   equipos_no_operativos: number;
+}
+
+// ===== CREATE DTOs (Input Validation) =====
+
+/**
+ * Checklist Template Create DTO
+ */
+export class ChecklistTemplateCreateDto {
+  @IsString({ message: 'codigo debe ser un string' })
+  @MaxLength(50, { message: 'codigo no puede exceder 50 caracteres' })
+  codigo!: string;
+
+  @IsString({ message: 'nombre debe ser un string' })
+  @MaxLength(200, { message: 'nombre no puede exceder 200 caracteres' })
+  nombre!: string;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_equipo debe ser un string' })
+  @MaxLength(100, { message: 'tipo_equipo no puede exceder 100 caracteres' })
+  tipo_equipo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'descripcion debe ser un string' })
+  @MaxLength(1000, { message: 'descripcion no puede exceder 1000 caracteres' })
+  descripcion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'frecuencia debe ser un string' })
+  @MaxLength(50, { message: 'frecuencia no puede exceder 50 caracteres' })
+  frecuencia?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'activo debe ser un booleano' })
+  activo?: boolean;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'created_by debe ser un número' })
+  created_by?: number;
+}
+
+/**
+ * Checklist Item Create DTO
+ */
+export class ChecklistItemCreateDto {
+  @IsNumber({}, { message: 'plantilla_id debe ser un número' })
+  plantilla_id!: number;
+
+  @IsNumber({}, { message: 'orden debe ser un número' })
+  @Min(1, { message: 'orden debe ser mayor o igual a 1' })
+  orden!: number;
+
+  @IsOptional()
+  @IsString({ message: 'categoria debe ser un string' })
+  @MaxLength(100, { message: 'categoria no puede exceder 100 caracteres' })
+  categoria?: string;
+
+  @IsString({ message: 'descripcion es requerida' })
+  @MaxLength(500, { message: 'descripcion no puede exceder 500 caracteres' })
+  descripcion!: string;
+
+  @IsString({ message: 'tipo_verificacion es requerido' })
+  @IsIn(['VISUAL', 'MEDICION', 'FUNCIONAL', 'AUDITIVO'], {
+    message: 'tipo_verificacion debe ser: VISUAL, MEDICION, FUNCIONAL o AUDITIVO',
+  })
+  tipo_verificacion!: string;
+
+  @IsOptional()
+  @IsString({ message: 'valor_esperado debe ser un string' })
+  @MaxLength(200, { message: 'valor_esperado no puede exceder 200 caracteres' })
+  valor_esperado?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'es_critico debe ser un booleano' })
+  es_critico?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'requiere_foto debe ser un booleano' })
+  requiere_foto?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'instrucciones debe ser un string' })
+  @MaxLength(1000, { message: 'instrucciones no puede exceder 1000 caracteres' })
+  instrucciones?: string;
+}
+
+/**
+ * Checklist Inspection Create DTO
+ */
+export class ChecklistInspectionCreateDto {
+  @IsString({ message: 'codigo debe ser un string' })
+  @MaxLength(50, { message: 'codigo no puede exceder 50 caracteres' })
+  codigo!: string;
+
+  @IsNumber({}, { message: 'plantilla_id debe ser un número' })
+  plantilla_id!: number;
+
+  @IsNumber({}, { message: 'equipo_id debe ser un número' })
+  equipo_id!: number;
+
+  @IsNumber({}, { message: 'trabajador_id debe ser un número' })
+  trabajador_id!: number;
+
+  @IsDateString({}, { message: 'fecha_inspeccion debe ser una fecha válida (ISO 8601)' })
+  fecha_inspeccion!: string;
+
+  @IsOptional()
+  @IsString({ message: 'hora_inicio debe ser un string' })
+  hora_inicio?: string;
+
+  @IsOptional()
+  @IsString({ message: 'ubicacion debe ser un string' })
+  @MaxLength(200, { message: 'ubicacion no puede exceder 200 caracteres' })
+  ubicacion?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'horometro_inicial debe ser un número' })
+  @Min(0, { message: 'horometro_inicial no puede ser negativo' })
+  horometro_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'odometro_inicial debe ser un número' })
+  @Min(0, { message: 'odometro_inicial no puede ser negativo' })
+  odometro_inicial?: number;
 }
 
 // ===== TRANSFORMATION FUNCTIONS =====
