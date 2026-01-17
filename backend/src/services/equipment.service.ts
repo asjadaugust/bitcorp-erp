@@ -3,7 +3,18 @@ import { AppDataSource } from '../config/database.config';
 import { Equipment } from '../models/equipment.model';
 import { Repository } from 'typeorm';
 import Logger from '../utils/logger';
+import {
+  EquipmentListDto,
+  EquipmentDetailDto,
+  EquipmentStatsDto,
+  toEquipmentListDto,
+  toEquipmentDetailDto,
+  toEquipmentListDtoArray,
+  toEquipmentStatsDto,
+  fromEquipmentDto,
+} from '../types/dto/equipment.dto';
 
+// Input DTOs for create/update operations
 export interface CreateEquipmentDto {
   codigo_equipo: string;
   categoria?: string;
@@ -19,11 +30,6 @@ export interface CreateEquipmentDto {
   medidor_uso?: string;
   estado?: string;
   tipo_proveedor?: string;
-  tipoEquipoId?: number; // matches entity property
-  proveedorId?: number; // matches entity property
-  creadoPor?: number; // matches entity property
-  actualizadoPor?: number; // matches entity property
-  // Allow snake_case aliases for frontend compatibility
   tipo_equipo_id?: number;
   proveedor_id?: number;
   creado_por?: number;
@@ -41,32 +47,6 @@ export interface EquipmentFilter {
   isActive?: boolean;
 }
 
-export interface EquipmentDto {
-  id: number;
-  code: string;
-  equipment_type_id: number | null;
-  provider_id: number | null;
-  provider_name: string | null;
-  provider_type: string | null;
-  category: string | null;
-  plate_number: string | null;
-  brand: string | null;
-  model: string | null;
-  serial_number: string | null;
-  chassis_number: string | null;
-  engine_serial_number: string | null;
-  manufacture_year: number | null;
-  net_power: number | null;
-  engine_type: string | null;
-  meter_type: string | null;
-  status: string;
-  is_active: boolean;
-  created_by: number | null;
-  updated_by: number | null;
-  created_at: Date;
-  updated_at: Date;
-}
-
 export class EquipmentService {
   private get repository(): Repository<Equipment> {
     if (!AppDataSource.isInitialized) {
@@ -75,39 +55,11 @@ export class EquipmentService {
     return AppDataSource.getRepository(Equipment);
   }
 
-  private transformToDto(equipment: Equipment): EquipmentDto {
-    return {
-      id: equipment.id,
-      code: equipment.codigo_equipo,
-      equipment_type_id: equipment.tipoEquipoId || null,
-      provider_id: equipment.proveedorId || null,
-      provider_name: equipment.provider?.razon_social || null,
-      provider_type: equipment.tipo_proveedor || null,
-      category: equipment.categoria || null,
-      plate_number: equipment.placa || null,
-      brand: equipment.marca || null,
-      model: equipment.modelo || null,
-      serial_number: equipment.numero_serie_equipo || null,
-      chassis_number: equipment.numero_chasis || null,
-      engine_serial_number: equipment.numero_serie_motor || null,
-      manufacture_year: equipment.anio_fabricacion || null,
-      net_power: equipment.potencia_neta ? Number(equipment.potencia_neta) : null,
-      engine_type: equipment.tipo_motor || null,
-      meter_type: equipment.medidor_uso || null,
-      status: equipment.estado,
-      is_active: equipment.is_active,
-      created_by: equipment.creadoPor || null,
-      updated_by: equipment.actualizadoPor || null,
-      created_at: equipment.created_at,
-      updated_at: equipment.updated_at,
-    };
-  }
-
   async findAll(
     filter?: EquipmentFilter,
     page = 1,
     limit = 10
-  ): Promise<{ data: EquipmentDto[]; total: number }> {
+  ): Promise<{ data: EquipmentListDto[]; total: number }> {
     try {
       const queryBuilder = this.repository
         .createQueryBuilder('e')
@@ -123,20 +75,12 @@ export class EquipmentService {
       }
 
       if (filter?.providerId) {
-        queryBuilder.andWhere('e.provider_id = :providerId', { providerId: filter.providerId });
+        queryBuilder.andWhere('e.proveedor_id = :providerId', { providerId: filter.providerId });
       }
 
-      // Filter by Project (using subquery on equipo_edt)
       if (filter?.equipmentTypeId) {
-        // Assuming this was a typo in original code, unrelated to project
-        queryBuilder.andWhere('e.equipment_type_id = :typeId', { typeId: filter.equipmentTypeId });
+        queryBuilder.andWhere('e.tipo_equipo_id = :typeId', { typeId: filter.equipmentTypeId });
       }
-
-      // If filtering by Project, we need to look up assignments
-      // This is complex with TypeORM QueryBuilder on unrelated table without ManyToMany
-      // For now, removing the direct column filter which caused the crash.
-      // If project filter is strictly needed, we should join equipment_edt
-      // queryBuilder.innerJoin('equipo.equipo_edt', 'edt', 'edt.equipment_id = e.id AND edt.project_id = :projectId', { projectId: filter.projectId });
 
       if (filter?.search) {
         queryBuilder.andWhere(
@@ -153,7 +97,7 @@ export class EquipmentService {
       const [equipment, total] = await queryBuilder.getManyAndCount();
 
       return {
-        data: equipment.map((e) => this.transformToDto(e)),
+        data: toEquipmentListDtoArray(equipment),
         total,
       };
     } catch (error) {
@@ -169,7 +113,7 @@ export class EquipmentService {
     }
   }
 
-  async findById(id: number): Promise<EquipmentDto> {
+  async findById(id: number): Promise<EquipmentDetailDto> {
     try {
       const equipment = await this.repository.findOne({
         where: { id },
@@ -180,7 +124,7 @@ export class EquipmentService {
         throw new Error('Equipment not found');
       }
 
-      return this.transformToDto(equipment);
+      return toEquipmentDetailDto(equipment);
     } catch (error) {
       Logger.error('Error finding equipment by ID', {
         error: error instanceof Error ? error.message : String(error),
@@ -208,7 +152,7 @@ export class EquipmentService {
     }
   }
 
-  async create(data: CreateEquipmentDto): Promise<EquipmentDto> {
+  async create(data: CreateEquipmentDto): Promise<EquipmentDetailDto> {
     try {
       // Check if codigo already exists
       if (data.codigo_equipo) {
@@ -218,7 +162,7 @@ export class EquipmentService {
         }
       }
 
-      // Map DTO to entity properties (handle snake_case aliases)
+      // Map DTO to entity properties
       const equipment = this.repository.create({
         codigo_equipo: data.codigo_equipo,
         categoria: data.categoria,
@@ -234,9 +178,9 @@ export class EquipmentService {
         medidor_uso: data.medidor_uso,
         estado: data.estado || 'DISPONIBLE',
         tipo_proveedor: data.tipo_proveedor,
-        tipoEquipoId: data.tipoEquipoId || data.tipo_equipo_id,
-        proveedorId: data.proveedorId || data.proveedor_id,
-        creadoPor: data.creadoPor || data.creado_por,
+        tipoEquipoId: data.tipo_equipo_id,
+        proveedorId: data.proveedor_id,
+        creadoPor: data.creado_por,
         is_active: true,
       });
 
@@ -248,7 +192,7 @@ export class EquipmentService {
         relations: ['provider'],
       });
 
-      return this.transformToDto(withRelations!);
+      return toEquipmentDetailDto(withRelations!);
     } catch (error) {
       Logger.error('Error creating equipment', {
         error: error instanceof Error ? error.message : String(error),
@@ -260,7 +204,7 @@ export class EquipmentService {
     }
   }
 
-  async update(id: number, data: UpdateEquipmentDto): Promise<EquipmentDto> {
+  async update(id: number, data: UpdateEquipmentDto): Promise<EquipmentDetailDto> {
     try {
       const equipment = await this.repository.findOne({
         where: { id },
@@ -279,7 +223,7 @@ export class EquipmentService {
         }
       }
 
-      // Map DTO to entity properties (handle snake_case aliases)
+      // Map DTO to entity properties
       if (data.codigo_equipo !== undefined) equipment.codigo_equipo = data.codigo_equipo;
       if (data.categoria !== undefined) equipment.categoria = data.categoria;
       if (data.marca !== undefined) equipment.marca = data.marca;
@@ -296,14 +240,14 @@ export class EquipmentService {
       if (data.medidor_uso !== undefined) equipment.medidor_uso = data.medidor_uso;
       if (data.estado !== undefined) equipment.estado = data.estado;
       if (data.tipo_proveedor !== undefined) equipment.tipo_proveedor = data.tipo_proveedor;
-      if (data.tipoEquipoId !== undefined || data.tipo_equipo_id !== undefined) {
-        equipment.tipoEquipoId = data.tipoEquipoId || data.tipo_equipo_id;
+      if (data.tipo_equipo_id !== undefined) {
+        equipment.tipoEquipoId = data.tipo_equipo_id;
       }
-      if (data.proveedorId !== undefined || data.proveedor_id !== undefined) {
-        equipment.proveedorId = data.proveedorId || data.proveedor_id;
+      if (data.proveedor_id !== undefined) {
+        equipment.proveedorId = data.proveedor_id;
       }
-      if (data.actualizadoPor !== undefined || data.actualizado_por !== undefined) {
-        equipment.actualizadoPor = data.actualizadoPor || data.actualizado_por;
+      if (data.actualizado_por !== undefined) {
+        equipment.actualizadoPor = data.actualizado_por;
       }
 
       const saved = await this.repository.save(equipment);
@@ -314,7 +258,7 @@ export class EquipmentService {
         relations: ['provider'],
       });
 
-      return this.transformToDto(withRelations!);
+      return toEquipmentDetailDto(withRelations!);
     } catch (error) {
       Logger.error('Error updating equipment', {
         error: error instanceof Error ? error.message : String(error),
@@ -341,7 +285,7 @@ export class EquipmentService {
     }
   }
 
-  async updateStatus(id: number, estado: string): Promise<EquipmentDto> {
+  async updateStatus(id: number, estado: string): Promise<EquipmentDetailDto> {
     try {
       const equipment = await this.repository.findOne({
         where: { id },
@@ -355,7 +299,7 @@ export class EquipmentService {
       equipment.estado = estado;
       const saved = await this.repository.save(equipment);
 
-      return this.transformToDto(saved);
+      return toEquipmentDetailDto(saved);
     } catch (error) {
       Logger.error('Error updating equipment status', {
         error: error instanceof Error ? error.message : String(error),
@@ -368,7 +312,7 @@ export class EquipmentService {
     }
   }
 
-  async updateHourmeter(id: number, reading: number): Promise<EquipmentDto> {
+  async updateHourmeter(id: number, reading: number): Promise<EquipmentDetailDto> {
     const equipment = await this.repository.findOne({
       where: { id },
       relations: ['provider'],
@@ -380,10 +324,10 @@ export class EquipmentService {
 
     // equipment.medidor_uso = reading.toString(); // assuming medidor_uso stores current reading
     // Logic to update hourmeter
-    return this.transformToDto(equipment);
+    return toEquipmentDetailDto(equipment);
   }
 
-  async updateOdometer(id: number, reading: number): Promise<EquipmentDto> {
+  async updateOdometer(id: number, reading: number): Promise<EquipmentDetailDto> {
     const equipment = await this.repository.findOne({
       where: { id },
       relations: ['provider'],
@@ -394,16 +338,10 @@ export class EquipmentService {
     }
 
     // equipment.medidor_uso = reading.toString();
-    return this.transformToDto(equipment);
+    return toEquipmentDetailDto(equipment);
   }
 
-  async getStatistics(): Promise<{
-    total: number;
-    disponible: number;
-    enUso: number;
-    mantenimiento: number;
-    retirado: number;
-  }> {
+  async getStatistics(): Promise<EquipmentStatsDto> {
     try {
       const stats = await this.repository
         .createQueryBuilder('e')
@@ -444,7 +382,7 @@ export class EquipmentService {
         }
       });
 
-      return result;
+      return toEquipmentStatsDto(result);
     } catch (error) {
       Logger.error('Error getting equipment statistics', {
         error: error instanceof Error ? error.message : String(error),
@@ -498,7 +436,7 @@ export class EquipmentService {
     return true;
   }
 
-  async getAvailableEquipment(): Promise<EquipmentDto[]> {
+  async getAvailableEquipment(): Promise<EquipmentListDto[]> {
     const result = await this.findAll({ estado: 'DISPONIBLE' }, 1, 9999);
     return result.data;
   }

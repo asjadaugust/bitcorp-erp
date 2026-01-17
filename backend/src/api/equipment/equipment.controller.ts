@@ -259,16 +259,16 @@ export class EquipmentController {
       ); // Get all records for export
 
       const data = result.data.map((eq) => ({
-        codigo: eq.code,
-        descripcion: eq.model || '',
-        tipo: eq.equipment_type_id || '',
-        marca: eq.brand || '',
-        modelo: eq.model || '',
-        placa: eq.plate_number || '',
-        estado: eq.status,
+        codigo: eq.codigo_equipo,
+        descripcion: eq.modelo || '',
+        tipo: eq.categoria || '',
+        marca: eq.marca || '',
+        modelo: eq.modelo || '',
+        placa: eq.placa || '',
+        estado: eq.estado,
         ubicacion: '', // eq.current_location || '',
-        horometro: eq.meter_type || 0,
-        fecha_registro: ExportUtil.formatDate(eq.created_at),
+        horometro: '', // Not available in list DTO
+        fecha_registro: eq.is_active ? 'ACTIVO' : 'INACTIVO',
       }));
 
       const columns = [
@@ -305,16 +305,16 @@ export class EquipmentController {
       ); // Get all records for export
 
       const data = result.data.map((eq) => ({
-        codigo: eq.code,
-        descripcion: eq.model || '',
-        tipo: eq.equipment_type_id || '',
-        marca: eq.brand || '',
-        modelo: eq.model || '',
-        placa: eq.plate_number || '',
-        estado: eq.status,
+        codigo: eq.codigo_equipo,
+        descripcion: eq.modelo || '',
+        tipo: eq.categoria || '',
+        marca: eq.marca || '',
+        modelo: eq.modelo || '',
+        placa: eq.placa || '',
+        estado: eq.estado,
         ubicacion: '', // eq.current_location || '',
-        horometro: eq.meter_type || 0,
-        fecha_registro: ExportUtil.formatDate(eq.created_at),
+        horometro: '', // Not available in list DTO
+        fecha_registro: eq.is_active ? 'ACTIVO' : 'INACTIVO',
       }));
 
       const fields = [
