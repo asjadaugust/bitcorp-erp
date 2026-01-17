@@ -1,11 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import { AppDataSource } from '../../config/database.config';
 import { Movement, MovementDetail } from '../../models/movement.model';
 import { Product } from '../../models/product.model';
 import Logger from '../../utils/logger';
+import {
+  MovementListDto,
+  toMovementListDto,
+  toMovementDetailDto,
+  fromMovementCreateDto,
+  fromMovementItemCreateDto,
+} from '../../types/dto/movement.dto';
 
+/**
+ * MovementController - Inventory movement management
+ *
+ * All endpoints return Spanish snake_case DTOs
+ */
 export class MovementController {
+  /**
+   * GET /api/movements
+   * List all movements with computed totals
+   */
   async getAll(req: Request, res: Response) {
     try {
       const movementRepo = AppDataSource.getRepository(Movement);
@@ -17,8 +33,8 @@ export class MovementController {
         .orderBy('m.createdAt', 'DESC')
         .getMany();
 
-      // Calculate total_amount for each movement and transform to snake_case
-      const movementsWithTotal = await Promise.all(
+      // Calculate total_amount for each movement and transform to DTO
+      const movementDtos: MovementListDto[] = await Promise.all(
         movements.map(async (movement) => {
           const detailRepo = AppDataSource.getRepository(MovementDetail);
           const details = await detailRepo
@@ -26,48 +42,23 @@ export class MovementController {
             .where('md.movementId = :id', { id: movement.id })
             .getMany();
 
-          const total_amount = details.reduce((sum, detail) => {
+          const montoTotal = details.reduce((sum, detail) => {
             return sum + detail.cantidad * detail.precioUnitario;
           }, 0);
 
-          // Transform to frontend-expected format
-          // Map tipo_movimiento to frontend format: entrada->IN, salida->OUT
-          const tipoMap: Record<string, string> = {
-            entrada: 'IN',
-            salida: 'OUT',
-            transferencia: 'TRANSFER',
-            ajuste: 'ADJUST',
-          };
+          const itemsCount = (movement as any).items_count || 0;
 
-          return {
-            id: movement.id,
-            proyecto_id: movement.projectId,
-            project_id: movement.projectId, // alias
-            provider_id: null, // No provider relation on movement
-            fecha: movement.fecha,
-            tipo_movimiento: tipoMap[movement.tipoMovimiento] || 'IN',
-            tipo_documento: null, // No document type field
-            numero_documento: movement.numeroDocumento || '',
-            observaciones: movement.observaciones,
-            estado: movement.estado,
-            created_at: movement.createdAt,
-            updated_at: movement.updatedAt,
-            // Relations/computed
-            project_name: movement.project?.nombre || 'N/A',
-            proyecto: movement.project?.nombre || 'N/A', // alias for display
-            proveedor: 'N/A', // No provider relation on movement
-            details: [], // Empty array, will be populated by items_count
-            items: (movement as any).items_count || 0,
-            total_amount,
-            created_by: movement.createdBy,
-            created_by_name: movement.creator?.username || null,
-          };
+          return toMovementListDto(
+            movement as unknown as Record<string, unknown>,
+            itemsCount,
+            montoTotal
+          );
         })
       );
 
       res.json({
         success: true,
-        data: movementsWithTotal,
+        data: movementDtos,
       });
     } catch (error) {
       Logger.error('Error fetching movements', {
@@ -83,6 +74,10 @@ export class MovementController {
     }
   }
 
+  /**
+   * GET /api/movements/:id
+   * Get single movement with details
+   */
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -92,6 +87,7 @@ export class MovementController {
         .createQueryBuilder('m')
         .leftJoinAndSelect('m.project', 'p')
         .leftJoinAndSelect('m.creator', 'u')
+        .leftJoinAndSelect('m.approver', 'approver')
         .leftJoinAndSelect('m.details', 'md')
         .leftJoinAndSelect('md.product', 'prod')
         .where('m.id = :id', { id: parseInt(id) })
@@ -104,49 +100,12 @@ export class MovementController {
         });
       }
 
-      // Format response with snake_case transformation
-      const response = {
-        id: movement.id,
-        proyecto_id: movement.projectId,
-        project_id: movement.projectId, // alias
-        fecha: movement.fecha,
-        movement_date: movement.fecha, // alias
-        tipo_movimiento: movement.tipoMovimiento?.toUpperCase() || 'ENTRADA',
-        movement_type: movement.tipoMovimiento, // alias (original case)
-        numero_documento: movement.numeroDocumento || 'N/A',
-        observaciones: movement.observaciones,
-        notes: movement.observaciones, // alias
-        estado: movement.estado,
-        created_at: movement.createdAt,
-        updated_at: movement.updatedAt,
-        created_by: movement.createdBy,
-        approved_by: movement.approvedBy,
-        approved_at: movement.approvedAt,
-        // Relations
-        project_name: movement.project?.nombre || 'N/A',
-        proyecto: movement.project?.nombre || 'N/A', // alias
-        created_by_name: movement.creator?.username || null,
-        // Details
-        details: movement.details?.map((detail) => ({
-          id: detail.id,
-          movement_id: detail.movementId,
-          product_id: detail.productId,
-          quantity: detail.cantidad,
-          cantidad: detail.cantidad, // alias
-          unit_cost: detail.precioUnitario,
-          precio_unitario: detail.precioUnitario, // alias
-          total_cost: detail.cantidad * detail.precioUnitario,
-          monto_total: detail.cantidad * detail.precioUnitario, // alias
-          product_name: (detail.product as any)?.nombre || null,
-          product_code: (detail.product as any)?.codigo || null,
-          unit: (detail.product as any)?.unidadMedida || null,
-          observaciones: detail.observaciones,
-        })),
-      };
+      // Transform to DTO
+      const movementDto = toMovementDetailDto(movement as unknown as Record<string, unknown>);
 
       res.json({
         success: true,
-        data: response,
+        data: movementDto,
       });
     } catch (error) {
       Logger.error('Error fetching movement', {
@@ -163,55 +122,50 @@ export class MovementController {
     }
   }
 
+  /**
+   * POST /api/movements
+   * Create new movement with details and update stock
+   * Body expects Spanish snake_case fields (MovementCreateDto)
+   */
   async create(req: Request, res: Response) {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const { project_id, movement_date, movement_type, notes, items } = req.body;
+      const createdBy = (req as any).user?.id;
+
+      // Transform DTO to entity fields
+      const movementData = fromMovementCreateDto(req.body, createdBy);
 
       // Create movement
       const movementRepo = queryRunner.manager.getRepository(Movement);
-      const movement = movementRepo.create({
-        projectId: project_id ? parseInt(project_id) : undefined,
-        fecha: new Date(movement_date),
-        tipoMovimiento: movement_type,
-        observaciones: notes,
-        estado: 'pendiente',
-        createdBy: (req as any).user?.id,
-      });
-
+      const movement = movementRepo.create(movementData);
       const savedMovement = await movementRepo.save(movement);
 
       // Create movement details
       const detailRepo = queryRunner.manager.getRepository(MovementDetail);
-      const details = items.map((item: any) =>
-        detailRepo.create({
-          movementId: savedMovement.id,
-          productId: parseInt(item.product_id),
-          cantidad: parseFloat(item.quantity),
-          precioUnitario: parseFloat(item.unit_cost),
-          montoTotal: parseFloat(item.quantity) * parseFloat(item.unit_cost),
-          observaciones: item.observaciones,
-        })
-      );
+      const details = req.body.items.map((item: any) => {
+        const detailData = fromMovementItemCreateDto(item, savedMovement.id);
+        return detailRepo.create(detailData);
+      });
 
       await detailRepo.save(details);
 
       // Update stock if needed
-      if (movement_type === 'entrada' || movement_type === 'salida') {
+      const tipoMovimiento = req.body.tipo_movimiento;
+      if (tipoMovimiento === 'entrada' || tipoMovimiento === 'salida') {
         const productRepo = queryRunner.manager.getRepository(Product);
-        for (const item of items) {
+        for (const item of req.body.items) {
           const product = await productRepo.findOne({
-            where: { id: parseInt(item.product_id) },
+            where: { id: parseInt(item.producto_id) },
           });
 
           if (product) {
-            const quantity = parseFloat(item.quantity);
-            if (movement_type === 'entrada') {
+            const quantity = parseFloat(item.cantidad);
+            if (tipoMovimiento === 'entrada') {
               product.stockActual += quantity;
-            } else if (movement_type === 'salida') {
+            } else if (tipoMovimiento === 'salida') {
               product.stockActual -= quantity;
             }
             await productRepo.save(product);
@@ -221,12 +175,23 @@ export class MovementController {
 
       await queryRunner.commitTransaction();
 
+      // Return created movement as DTO
+      const createdMovement = await movementRepo
+        .createQueryBuilder('m')
+        .leftJoinAndSelect('m.project', 'p')
+        .leftJoinAndSelect('m.creator', 'u')
+        .leftJoinAndSelect('m.details', 'md')
+        .leftJoinAndSelect('md.product', 'prod')
+        .where('m.id = :id', { id: savedMovement.id })
+        .getOne();
+
+      const movementDto = createdMovement
+        ? toMovementDetailDto(createdMovement as unknown as Record<string, unknown>)
+        : null;
+
       res.status(201).json({
         success: true,
-        data: {
-          ...savedMovement,
-          details,
-        },
+        data: movementDto,
       });
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -245,6 +210,10 @@ export class MovementController {
     }
   }
 
+  /**
+   * PUT /api/movements/:id/approve
+   * Approve a movement
+   */
   async approve(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -252,6 +221,7 @@ export class MovementController {
 
       const movement = await movementRepo.findOne({
         where: { id: parseInt(id) },
+        relations: ['project', 'creator', 'approver'],
       });
 
       if (!movement) {
@@ -267,9 +237,12 @@ export class MovementController {
 
       await movementRepo.save(movement);
 
+      // Return updated movement as DTO
+      const movementDto = toMovementDetailDto(movement as unknown as Record<string, unknown>);
+
       res.json({
         success: true,
-        data: movement,
+        data: movementDto,
       });
     } catch (error) {
       Logger.error('Error approving movement', {
