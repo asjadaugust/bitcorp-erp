@@ -3,6 +3,7 @@ import { pool } from '../../config/database.config';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import Logger from '../../utils/logger';
+import { sendSuccess, sendError } from '../../utils/api-response';
 
 interface LoginRequest {
   username: string;
@@ -11,12 +12,8 @@ interface LoginRequest {
 
 export async function simpleLogin(req: Request, res: Response): Promise<void> {
   try {
+    // Validation is handled by middleware (validateDto(LoginDto))
     const { username, password }: LoginRequest = req.body;
-
-    if (!username || !password) {
-      res.status(400).json({ error: 'Username and password are required' });
-      return;
-    }
 
     Logger.debug('Login attempt', {
       username,
@@ -46,7 +43,7 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
         username,
         context: 'simpleLogin',
       });
-      res.status(401).json({ error: 'Invalid credentials' });
+      sendError(res, 401, 'INVALID_CREDENTIALS', 'Credenciales inválidas');
       return;
     }
 
@@ -65,7 +62,7 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
         userId: user.id,
         context: 'simpleLogin',
       });
-      res.status(401).json({ error: 'Invalid credentials' });
+      sendError(res, 401, 'INVALID_CREDENTIALS', 'Credenciales inválidas');
       return;
     }
 
@@ -77,7 +74,7 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
     });
 
     if (!isValidPassword) {
-      res.status(401).json({ error: 'Invalid credentials' });
+      sendError(res, 401, 'INVALID_CREDENTIALS', 'Credenciales inválidas');
       return;
     }
 
@@ -113,8 +110,8 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
       context: 'simpleLogin',
     });
 
-    // Return auth response
-    res.json({
+    // Return auth response using standard format
+    sendSuccess(res, {
       user: {
         id: user.id,
         username: user.username,
@@ -133,7 +130,7 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
       stack: error instanceof Error ? error.stack : undefined,
       context: 'simpleLogin',
     });
-    res.status(500).json({ error: 'Internal server error' });
+    sendError(res, 500, 'INTERNAL_ERROR', 'Error interno del servidor');
   }
 }
 
@@ -142,7 +139,7 @@ export async function simpleMe(req: Request, res: Response): Promise<void> {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'No token provided' });
+      sendError(res, 401, 'NO_TOKEN', 'No se proporcionó token de autenticación');
       return;
     }
 
@@ -151,7 +148,17 @@ export async function simpleMe(req: Request, res: Response): Promise<void> {
 
     // Verify token
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, jwtSecret);
+    } catch (jwtError) {
+      Logger.warn('Invalid token', {
+        error: jwtError instanceof Error ? jwtError.message : String(jwtError),
+        context: 'simpleMe',
+      });
+      sendError(res, 401, 'INVALID_TOKEN', 'Token inválido o expirado');
+      return;
+    }
 
     // Get fresh user data
     // Support both direct rol_id and many-to-many usuario_rol
@@ -172,13 +179,13 @@ export async function simpleMe(req: Request, res: Response): Promise<void> {
     );
 
     if (result.rows.length === 0) {
-      res.status(401).json({ error: 'User not found' });
+      sendError(res, 401, 'USER_NOT_FOUND', 'Usuario no encontrado o inactivo');
       return;
     }
 
     const user = result.rows[0];
 
-    res.json({
+    sendSuccess(res, {
       user: {
         id: user.id,
         username: user.username,
@@ -195,6 +202,6 @@ export async function simpleMe(req: Request, res: Response): Promise<void> {
       stack: error instanceof Error ? error.stack : undefined,
       context: 'simpleMe',
     });
-    res.status(401).json({ error: 'Invalid token' });
+    sendError(res, 500, 'INTERNAL_ERROR', 'Error interno del servidor');
   }
 }

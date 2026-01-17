@@ -3,6 +3,8 @@ import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import { authenticate } from '../../middleware/auth.middleware';
 import { simpleLogin, simpleMe } from './auth.simple';
+import { validateDto } from '../../middleware/validation.middleware';
+import { LoginDto } from '../../types/dto/auth.dto';
 
 const router = Router();
 const authController = new AuthController();
@@ -12,7 +14,7 @@ const authController = new AuthController();
  * @desc    Login user and get tokens (Simple version bypassing TypeORM)
  * @access  Public
  */
-router.post('/login', simpleLogin);
+router.post('/login', validateDto(LoginDto), simpleLogin);
 
 /**
  * @route   GET /api/auth/me
