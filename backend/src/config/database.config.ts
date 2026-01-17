@@ -3,6 +3,8 @@ import * as dotenv from 'dotenv';
 import { Pool } from 'pg';
 import * as path from 'path';
 import Logger from '../utils/logger';
+import { typeormLogger } from '../utils/typeorm-logger';
+import { performanceConfig } from './performance.config';
 
 dotenv.config();
 
@@ -66,7 +68,9 @@ export const AppDataSource = new DataSource({
   password: process.env.POSTGRES_PASSWORD || 'dev_password_change_me',
   database: process.env.POSTGRES_DB || 'bitcorp_dev',
   synchronize: false, // Disabled - we manage schema with migrations
-  logging: process.env.NODE_ENV === 'development',
+  logging: performanceConfig.database.logAllQueries,
+  logger: typeormLogger, // Use custom logger for performance monitoring
+  maxQueryExecutionTime: performanceConfig.database.slowQueryWarning, // Log slow queries
   entities: [
     User,
     Role,

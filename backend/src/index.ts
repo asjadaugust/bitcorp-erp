@@ -34,6 +34,8 @@ import { errorHandler, notFound } from './middleware/error.middleware';
 import { requestLogger } from './middleware/request-logger.middleware';
 import { setupProcessErrorHandlers } from './middleware/error-handler.middleware';
 import Logger from './utils/logger';
+import { performanceMetrics } from './utils/performance-metrics.service';
+import { performanceConfig } from './config/performance.config';
 
 // Setup process-level error handlers
 setupProcessErrorHandlers();
@@ -156,6 +158,11 @@ const startServer = async () => {
         environment: process.env.NODE_ENV || 'development',
         healthCheck: `http://localhost:${port}/health`,
         authEndpoint: `http://localhost:${port}/api/auth`,
+        performanceMonitoring: {
+          enabled: performanceConfig.metrics.enabled,
+          slowQueryThreshold: `${performanceConfig.database.slowQueryWarning}ms`,
+          slowEndpointThreshold: `${performanceConfig.http.slowEndpointWarning}ms`,
+        },
         context: 'Server.startup',
       });
     });
@@ -170,5 +177,24 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+
+// Graceful shutdown handlers
+const shutdownHandler = (signal: string) => {
+  Logger.info(`${signal} received, starting graceful shutdown`, {
+    context: 'Server.shutdown',
+  });
+
+  // Log final performance metrics
+  performanceMetrics.shutdown();
+
+  // Give time for in-flight requests to complete
+  setTimeout(() => {
+    Logger.info('Graceful shutdown complete', { context: 'Server.shutdown' });
+    process.exit(0);
+  }, 5000);
+};
+
+process.on('SIGTERM', () => shutdownHandler('SIGTERM'));
+process.on('SIGINT', () => shutdownHandler('SIGINT'));
 
 startServer();
