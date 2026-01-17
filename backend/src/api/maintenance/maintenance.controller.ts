@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import { MaintenanceService } from '../../services/maintenance.service';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 export class MaintenanceController {
   private maintenanceService: MaintenanceService;
@@ -11,44 +17,64 @@ export class MaintenanceController {
 
   getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { status, type, search, page, limit, sort_by, sort_order } = req.query;
+
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
+
       const filters: any = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
+        page: pageNum,
+        limit: limitNum,
+        sort_by: sort_by as string,
+        sort_order: (String(sort_order).toUpperCase() === 'ASC' ? 'ASC' : 'DESC') as 'ASC' | 'DESC',
       };
 
-      if (req.query.status) filters.status = req.query.status;
-      if (req.query.type) filters.type = req.query.type;
-      if (req.query.search) filters.search = req.query.search;
+      if (status) filters.status = status;
+      if (type) filters.type = type;
+      if (search) filters.search = search;
 
       const result = await this.maintenanceService.getAllMaintenance(filters);
 
-      res.json({
-        success: true,
-        data: result.data,
-        pagination: {
-          page: filters.page,
-          limit: filters.limit,
-          total: result.total,
-          totalPages: Math.ceil(result.total / filters.limit),
-        },
+      sendPaginatedSuccess(res, result.data, {
+        page: pageNum,
+        limit: limitNum,
+        total: result.total,
       });
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'FETCH_MAINTENANCE_FAILED',
+        'No se pudieron obtener los registros de mantenimiento',
+        error.message
+      );
     }
   };
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const record = await this.maintenanceService.getMaintenanceById(parseInt(id));
-
-      if (!record) {
-        return res.status(404).json({ success: false, message: 'Maintenance record not found' });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de mantenimiento inválido');
+        return;
       }
 
-      res.json({ success: true, data: record });
-    } catch (error) {
-      next(error);
+      const record = await this.maintenanceService.getMaintenanceById(id);
+
+      if (!record) {
+        sendError(res, 404, 'MAINTENANCE_NOT_FOUND', 'Registro de mantenimiento no encontrado');
+        return;
+      }
+
+      sendSuccess(res, record);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'FETCH_MAINTENANCE_FAILED',
+        'No se pudo obtener el registro de mantenimiento',
+        error.message
+      );
     }
   };
 
@@ -56,44 +82,70 @@ export class MaintenanceController {
     try {
       const userId = (req as any).user.id;
       const record = await this.maintenanceService.createMaintenance(req.body, userId);
-      res.status(201).json({ success: true, data: record });
-    } catch (error) {
-      next(error);
+      sendCreated(res, record);
+    } catch (error: any) {
+      sendError(
+        res,
+        400,
+        'CREATE_MAINTENANCE_FAILED',
+        'No se pudo crear el registro de mantenimiento',
+        error.message
+      );
     }
   };
 
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const userId = (req as any).user.id;
-      const record = await this.maintenanceService.updateMaintenance(
-        parseInt(id),
-        req.body,
-        userId
-      );
-
-      if (!record) {
-        return res.status(404).json({ success: false, message: 'Maintenance record not found' });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de mantenimiento inválido');
+        return;
       }
 
-      res.json({ success: true, data: record });
-    } catch (error) {
-      next(error);
+      const userId = (req as any).user.id;
+      const record = await this.maintenanceService.updateMaintenance(id, req.body, userId);
+
+      if (!record) {
+        sendError(res, 404, 'MAINTENANCE_NOT_FOUND', 'Registro de mantenimiento no encontrado');
+        return;
+      }
+
+      sendSuccess(res, record);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'UPDATE_MAINTENANCE_FAILED',
+        'No se pudo actualizar el registro de mantenimiento',
+        error.message
+      );
     }
   };
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const success = await this.maintenanceService.deleteMaintenance(parseInt(id));
-
-      if (!success) {
-        return res.status(404).json({ success: false, message: 'Maintenance record not found' });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de mantenimiento inválido');
+        return;
       }
 
-      res.json({ success: true, message: 'Maintenance record deleted successfully' });
-    } catch (error) {
-      next(error);
+      const success = await this.maintenanceService.deleteMaintenance(id);
+
+      if (!success) {
+        sendError(res, 404, 'MAINTENANCE_NOT_FOUND', 'Registro de mantenimiento no encontrado');
+        return;
+      }
+
+      res.status(204).send();
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'DELETE_MAINTENANCE_FAILED',
+        'No se pudo eliminar el registro de mantenimiento',
+        error.message
+      );
     }
   };
 }

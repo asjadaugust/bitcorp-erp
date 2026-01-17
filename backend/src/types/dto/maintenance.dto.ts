@@ -12,6 +12,16 @@ import {
   TipoMantenimiento,
   EstadoMantenimiento,
 } from '../../models/maintenance-schedule.model';
+import {
+  IsInt,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsNumber,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 /**
  * DTO for maintenance schedules with Spanish snake_case fields
@@ -167,4 +177,107 @@ export function mapCreateMaintenanceDto(input: CreateMaintenanceDto): Partial<Ma
     estado: input.estado ?? input.status,
     observaciones: input.observaciones ?? input.notes,
   };
+}
+
+/**
+ * DTO for creating a new maintenance record with validation
+ */
+export class MaintenanceCreateDto {
+  @IsInt({ message: 'ID de equipo debe ser un número entero' })
+  equipo_id!: number;
+
+  @IsIn(['PREVENTIVO', 'CORRECTIVO', 'PREDICTIVO'], {
+    message: 'Tipo de mantenimiento debe ser PREVENTIVO, CORRECTIVO o PREDICTIVO',
+  })
+  tipo_mantenimiento!: TipoMantenimiento;
+
+  @IsOptional()
+  @IsString({ message: 'Descripción debe ser texto' })
+  @MaxLength(500, { message: 'Descripción no puede exceder 500 caracteres' })
+  descripcion?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha programada debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_programada?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha realizada debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_realizada?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Costo estimado debe ser un número' })
+  @Min(0, { message: 'Costo estimado debe ser mayor o igual a 0' })
+  costo_estimado?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Costo real debe ser un número' })
+  @Min(0, { message: 'Costo real debe ser mayor o igual a 0' })
+  costo_real?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Técnico responsable debe ser texto' })
+  @MaxLength(200, { message: 'Técnico responsable no puede exceder 200 caracteres' })
+  tecnico_responsable?: string;
+
+  @IsIn(['PROGRAMADO', 'EN_PROCESO', 'COMPLETADO', 'CANCELADO'], {
+    message: 'Estado debe ser PROGRAMADO, EN_PROCESO, COMPLETADO o CANCELADO',
+  })
+  estado!: EstadoMantenimiento;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones?: string;
+}
+
+/**
+ * DTO for updating a maintenance record (all fields optional)
+ */
+export class MaintenanceUpdateDto {
+  @IsOptional()
+  @IsInt({ message: 'ID de equipo debe ser un número entero' })
+  equipo_id?: number;
+
+  @IsOptional()
+  @IsIn(['PREVENTIVO', 'CORRECTIVO', 'PREDICTIVO'], {
+    message: 'Tipo de mantenimiento debe ser PREVENTIVO, CORRECTIVO o PREDICTIVO',
+  })
+  tipo_mantenimiento?: TipoMantenimiento;
+
+  @IsOptional()
+  @IsString({ message: 'Descripción debe ser texto' })
+  @MaxLength(500, { message: 'Descripción no puede exceder 500 caracteres' })
+  descripcion?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha programada debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_programada?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha realizada debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_realizada?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Costo estimado debe ser un número' })
+  @Min(0, { message: 'Costo estimado debe ser mayor o igual a 0' })
+  costo_estimado?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Costo real debe ser un número' })
+  @Min(0, { message: 'Costo real debe ser mayor o igual a 0' })
+  costo_real?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Técnico responsable debe ser texto' })
+  @MaxLength(200, { message: 'Técnico responsable no puede exceder 200 caracteres' })
+  tecnico_responsable?: string;
+
+  @IsOptional()
+  @IsIn(['PROGRAMADO', 'EN_PROCESO', 'COMPLETADO', 'CANCELADO'], {
+    message: 'Estado debe ser PROGRAMADO, EN_PROCESO, COMPLETADO o CANCELADO',
+  })
+  estado?: EstadoMantenimiento;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones?: string;
 }

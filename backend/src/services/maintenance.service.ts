@@ -21,6 +21,8 @@ interface MaintenanceFilters {
   search?: string;
   page?: number;
   limit?: number;
+  sort_by?: string;
+  sort_order?: 'ASC' | 'DESC';
 }
 
 export class MaintenanceService {
@@ -38,10 +40,7 @@ export class MaintenanceService {
     const limit = filters?.limit || 10;
     const offset = (page - 1) * limit;
 
-    const queryBuilder = this.repository
-      .createQueryBuilder('m')
-      .leftJoinAndSelect('m.equipo', 'e')
-      .orderBy('m.fechaProgramada', 'DESC');
+    const queryBuilder = this.repository.createQueryBuilder('m').leftJoinAndSelect('m.equipo', 'e');
 
     // Apply filters
     if (filters?.status) {
@@ -57,6 +56,28 @@ export class MaintenanceService {
         search: `%${filters.search}%`,
       });
     }
+
+    // Sorting with whitelist
+    const sortableFields: Record<string, string> = {
+      fecha_programada: 'm.fechaProgramada',
+      fecha_realizada: 'm.fechaRealizada',
+      tipo_mantenimiento: 'm.tipoMantenimiento',
+      estado: 'm.estado',
+      costo_estimado: 'm.costoEstimado',
+      costo_real: 'm.costoReal',
+      tecnico_responsable: 'm.tecnicoResponsable',
+      equipo_codigo: 'e.codigo_equipo',
+      created_at: 'm.createdAt',
+      updated_at: 'm.updatedAt',
+    };
+
+    const sortBy =
+      filters?.sort_by && sortableFields[filters.sort_by]
+        ? sortableFields[filters.sort_by]
+        : 'm.fechaProgramada';
+    const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
+
+    queryBuilder.orderBy(sortBy, sortOrder);
 
     // Get total count
     const total = await queryBuilder.getCount();
