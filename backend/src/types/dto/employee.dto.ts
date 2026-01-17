@@ -143,6 +143,18 @@ export class EmployeeCreateDto {
 }
 
 /**
+ * EmployeeFiltersDto - Filters for employee list/search
+ * Used by: GET /api/employees (query parameters)
+ */
+export interface EmployeeFiltersDto {
+  search?: string; // Search by name or DNI
+  cargo?: string; // Filter by position
+  especialidad?: string; // Filter by specialty/department
+  fecha_ingreso_desde?: string; // Filter by hire date (from)
+  fecha_ingreso_hasta?: string; // Filter by hire date (to)
+}
+
+/**
  * EmployeeUpdateDto - Input validation for updating employees
  * Used by: PUT /api/employees/:dni
  */
