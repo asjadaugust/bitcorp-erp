@@ -1,8 +1,8 @@
 # Phase 3: SQL to TypeORM Migration - Overall Progress
 
 **Last Updated:** January 17, 2026  
-**Current Status:** 114/131 queries migrated (87.0%)  
-**Phases Completed:** 10/~15
+**Current Status:** 119/131 queries migrated (90.8%)  
+**Phases Completed:** 11/~14
 
 ---
 
@@ -116,6 +116,23 @@ We are systematically migrating the Bitcorp ERP backend from raw SQL queries to 
   - Foreign key constraints with cascade delete
 - **New Functionality:** This feature was planned but not implemented. Now fully functional.
 
+### ✅ Phase 3.12: Provider Financial Info Service (5 queries)
+
+- **Files:** `provider-financial-info.model.ts` (created), `provider-financial-info.service.ts` (migrated), `provider.routes.ts` (updated)
+- **Queries Eliminated:** 5
+- **Status:** Complete, fully tested (12/12 tests passing)
+- **Documentation:** [PHASE_3.12_PROVIDER_FINANCIAL_INFO_MIGRATION.md](./PHASE_3.12_PROVIDER_FINANCIAL_INFO_MIGRATION.md)
+- **Migration Created:** `1768625000000-AddProviderFinancialInfoTable`
+- **Key Features:**
+  - Created missing provider_financial_info table
+  - Full CRUD operations for provider banking information
+  - Multi-currency support (PEN, USD, EUR)
+  - Account type designation (savings, checking, business)
+  - Primary account flag with isPrimary
+  - Peruvian CCI interbank code support
+  - Foreign key constraints with cascade delete
+- **New Functionality:** This feature was planned but not implemented. Now fully functional.
+
 ---
 
 ## Current Stats
@@ -123,30 +140,25 @@ We are systematically migrating the Bitcorp ERP backend from raw SQL queries to 
 | Metric                       | Value      |
 | ---------------------------- | ---------- |
 | **Total Queries Identified** | 131        |
-| **Queries Migrated**         | 114        |
-| **Queries Remaining**        | 17         |
-| **Progress**                 | 87.0%      |
-| **Phases Completed**         | 10         |
-| **Files Fully Migrated**     | 12         |
-| **Remaining Files**          | 3 services |
+| **Queries Migrated**         | 119        |
+| **Queries Remaining**        | 12         |
+| **Progress**                 | 90.8%      |
+| **Phases Completed**         | 11         |
+| **Files Fully Migrated**     | 13         |
+| **Remaining Files**          | 2 services |
 
 ---
 
 ## Remaining Work
 
-### Files Still Using Raw SQL (3 services, ~17 queries)
+### Files Still Using Raw SQL (2 services, ~12 queries)
 
 1. **project.service.ts**
    - Estimated queries: ~10
    - Complexity: High (complex joins)
    - Priority: High (core functionality)
 
-2. **provider-financial-info.service.ts**
-   - Estimated queries: ~5
-   - Complexity: Low (CRUD)
-   - Priority: Low
-
-3. **reporting.service.ts**
+2. **reporting.service.ts**
    - Estimated queries: ~2
    - Complexity: Medium (reporting queries)
    - Priority: Medium

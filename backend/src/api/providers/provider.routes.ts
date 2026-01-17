@@ -28,8 +28,17 @@ router.get('/:id', ProviderController.getById);
 // GET /api/providers/:providerId/financial-info - Get financial info for a provider
 router.get('/:providerId/financial-info', financialInfoController.getByProviderId);
 
+// GET /api/providers/financial-info/:id - Get financial info by ID
+router.get('/financial-info/:id', financialInfoController.getById);
+
 // POST /api/providers/:providerId/financial-info - Create financial info
 router.post('/:providerId/financial-info', financialInfoController.create);
+
+// PUT /api/providers/financial-info/:id - Update financial info
+router.put('/financial-info/:id', financialInfoController.update);
+
+// DELETE /api/providers/financial-info/:id - Delete financial info
+router.delete('/financial-info/:id', financialInfoController.delete);
 
 // GET /api/providers/:providerId/contacts - Get contacts for a provider
 router.get('/:providerId/contacts', contactController.getByProviderId);

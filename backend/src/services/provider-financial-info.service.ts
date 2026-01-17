@@ -1,25 +1,62 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import db from '../config/database.config';
+import { Repository } from 'typeorm';
+import { AppDataSource } from '../config/database.config';
+import {
+  ProviderFinancialInfo,
+  AccountType,
+  FinancialStatus,
+  Currency,
+} from '../models/provider-financial-info.model';
+
+// DTO type that accepts both snake_case (from API) and camelCase (from entity)
+interface ProviderFinancialInfoInput {
+  // Snake case (API input)
+  provider_id?: number;
+  bank_name?: string;
+  account_number?: string;
+  cci?: string;
+  account_holder_name?: string;
+  account_type?: string;
+  is_primary?: boolean;
+  tenant_id?: number;
+  created_by?: number;
+  updated_by?: number;
+
+  // Camel case (Entity properties)
+  providerId?: number;
+  bankName?: string;
+  accountNumber?: string;
+  accountHolderName?: string;
+  accountType?: string;
+  currency?: string;
+  isPrimary?: boolean;
+  status?: string;
+  tenantId?: number;
+  createdBy?: number;
+  updatedBy?: number;
+}
 
 export class ProviderFinancialInfoService {
+  private get repository(): Repository<ProviderFinancialInfo> {
+    return AppDataSource.getRepository(ProviderFinancialInfo);
+  }
+
   /**
    * Get all financial info for a provider
+   *
+   * ✅ MIGRATED: FROM pool.query to TypeORM find
    */
-  async findByProviderId(providerId: string): Promise<any[]> {
+  async findByProviderId(providerId: string | number): Promise<ProviderFinancialInfo[]> {
     try {
-      const query = `
-        SELECT * FROM provider_financial_info 
-        WHERE provider_id = $1 
-        ORDER BY is_primary DESC, created_at DESC
-      `;
-      const result = await db.query(query, [providerId]);
-      return result.rows.map((row) => this.mapToFinancialInfo(row));
-    } catch (error: any) {
-      // If table doesn't exist, return empty array
-      if (error.message?.includes('does not exist')) {
-        console.log('provider_financial_info table does not exist, returning empty array');
-        return [];
-      }
+      const financialInfo = await this.repository.find({
+        where: { providerId: Number(providerId) },
+        order: {
+          isPrimary: 'DESC',
+          createdAt: 'DESC',
+        },
+      });
+
+      return financialInfo;
+    } catch (error) {
       console.error('Error finding financial info:', error);
       throw error;
     }
@@ -27,17 +64,20 @@ export class ProviderFinancialInfoService {
 
   /**
    * Get financial info by ID
+   *
+   * ✅ MIGRATED: FROM pool.query to TypeORM findOne
    */
-  async findById(id: number): Promise<any> {
+  async findById(id: number): Promise<ProviderFinancialInfo> {
     try {
-      const query = 'SELECT * FROM provider_financial_info WHERE id = $1';
-      const result = await db.query(query, [id]);
+      const financialInfo = await this.repository.findOne({
+        where: { id },
+      });
 
-      if (result.rows.length === 0) {
+      if (!financialInfo) {
         throw new Error('Financial info not found');
       }
 
-      return this.mapToFinancialInfo(result.rows[0]);
+      return financialInfo;
     } catch (error) {
       console.error('Error finding financial info:', error);
       throw error;
@@ -46,34 +86,27 @@ export class ProviderFinancialInfoService {
 
   /**
    * Create new financial info
+   *
+   * ✅ MIGRATED: FROM pool.query INSERT to TypeORM save
    */
-  async create(data: any): Promise<any> {
+  async create(data: ProviderFinancialInfoInput): Promise<ProviderFinancialInfo> {
     try {
-      const query = `
-        INSERT INTO provider_financial_info (
-          provider_id, bank_name, account_number, cci, 
-          account_holder_name, account_type, currency, 
-          is_primary, status, tenant_id, created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        RETURNING *
-      `;
+      const financialInfo = this.repository.create({
+        providerId: data.providerId || data.provider_id,
+        bankName: data.bankName || data.bank_name || '',
+        accountNumber: data.accountNumber || data.account_number || '',
+        cci: data.cci,
+        accountHolderName: data.accountHolderName || data.account_holder_name,
+        accountType: (data.accountType || data.account_type) as AccountType,
+        currency: (data.currency || 'PEN') as Currency,
+        isPrimary: data.isPrimary ?? data.is_primary ?? false,
+        status: (data.status || 'active') as FinancialStatus,
+        tenantId: data.tenantId || data.tenant_id || 1,
+        createdBy: data.createdBy || data.created_by,
+      });
 
-      const values = [
-        data.provider_id,
-        data.bank_name,
-        data.account_number,
-        data.cci || null,
-        data.account_holder_name || null,
-        data.account_type || null,
-        data.currency || 'PEN',
-        data.is_primary || false,
-        data.status || 'active',
-        data.tenant_id || 1,
-        data.created_by || null,
-      ];
-
-      const result = await db.query(query, values);
-      return this.mapToFinancialInfo(result.rows[0]);
+      const saved = await this.repository.save(financialInfo);
+      return saved;
     } catch (error) {
       console.error('Error creating financial info:', error);
       throw error;
@@ -82,46 +115,37 @@ export class ProviderFinancialInfoService {
 
   /**
    * Update financial info
+   *
+   * ✅ MIGRATED: FROM pool.query UPDATE to TypeORM update + findOne
    */
-  async update(id: number, data: any): Promise<any> {
+  async update(id: number, data: ProviderFinancialInfoInput): Promise<ProviderFinancialInfo> {
     try {
-      const query = `
-        UPDATE provider_financial_info 
-        SET 
-          bank_name = $1,
-          account_number = $2,
-          cci = $3,
-          account_holder_name = $4,
-          account_type = $5,
-          currency = $6,
-          is_primary = $7,
-          status = $8,
-          updated_at = CURRENT_TIMESTAMP,
-          updated_by = $9
-        WHERE id = $10
-        RETURNING *
-      `;
-
-      const values = [
-        data.bank_name,
-        data.account_number,
-        data.cci || null,
-        data.account_holder_name || null,
-        data.account_type || null,
-        data.currency || 'PEN',
-        data.is_primary || false,
-        data.status || 'active',
-        data.updated_by || null,
-        id,
-      ];
-
-      const result = await db.query(query, values);
-
-      if (result.rows.length === 0) {
+      // Check if financial info exists
+      const existing = await this.repository.findOne({ where: { id } });
+      if (!existing) {
         throw new Error('Financial info not found');
       }
 
-      return this.mapToFinancialInfo(result.rows[0]);
+      // Update fields
+      await this.repository.update(id, {
+        bankName: data.bankName || data.bank_name,
+        accountNumber: data.accountNumber || data.account_number,
+        cci: data.cci,
+        accountHolderName: data.accountHolderName || data.account_holder_name,
+        accountType: (data.accountType || data.account_type) as AccountType,
+        currency: (data.currency || 'PEN') as Currency,
+        isPrimary: data.isPrimary ?? data.is_primary ?? false,
+        status: (data.status || 'active') as FinancialStatus,
+        updatedBy: data.updatedBy || data.updated_by,
+      });
+
+      // Return updated financial info
+      const updated = await this.repository.findOne({ where: { id } });
+      if (!updated) {
+        throw new Error('Financial info not found after update');
+      }
+
+      return updated;
     } catch (error) {
       console.error('Error updating financial info:', error);
       throw error;
@@ -130,38 +154,16 @@ export class ProviderFinancialInfoService {
 
   /**
    * Delete financial info
+   *
+   * ✅ MIGRATED: FROM pool.query DELETE to TypeORM delete
    */
   async delete(id: number): Promise<boolean> {
     try {
-      const query = 'DELETE FROM provider_financial_info WHERE id = $1';
-      const result = await db.query(query, [id]);
-      return result.rowCount > 0;
+      const result = await this.repository.delete(id);
+      return (result.affected ?? 0) > 0;
     } catch (error) {
       console.error('Error deleting financial info:', error);
       throw error;
     }
-  }
-
-  /**
-   * Map database row to FinancialInfo object
-   */
-  private mapToFinancialInfo(row: any): any {
-    return {
-      id: row.id,
-      provider_id: row.provider_id,
-      bank_name: row.bank_name,
-      account_number: row.account_number,
-      cci: row.cci,
-      account_holder_name: row.account_holder_name,
-      account_type: row.account_type,
-      currency: row.currency,
-      is_primary: row.is_primary,
-      status: row.status,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-      created_by: row.created_by,
-      updated_by: row.updated_by,
-      tenant_id: row.tenant_id,
-    };
   }
 }

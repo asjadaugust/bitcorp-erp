@@ -13,6 +13,7 @@ import { UnidadOperativa } from '../models/unidad-operativa.model';
 import { Project } from '../models/project.model';
 import { Provider } from '../models/provider.model';
 import { ProviderContact } from '../models/provider-contact.model';
+import { ProviderFinancialInfo } from '../models/provider-financial-info.model';
 import { Equipment } from '../models/equipment.model';
 import { Contract, Addendum } from '../models/contract.model';
 import { Valuation } from '../models/valuation.model';
@@ -73,6 +74,7 @@ export const AppDataSource = new DataSource({
     Project,
     Provider,
     ProviderContact,
+    ProviderFinancialInfo,
     Equipment,
     Contract,
     Addendum,
