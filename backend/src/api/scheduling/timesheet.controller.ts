@@ -99,8 +99,12 @@ export const listTimesheets = async (req: Request, res: Response) => {
  */
 export const getTimesheetById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const timesheet = await timesheetService.getTimesheetWithDetails(parseInt(id));
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
+    const timesheet = await timesheetService.getTimesheetWithDetails(id);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
     Logger.error('Error getting timesheet', {
@@ -112,7 +116,7 @@ export const getTimesheetById = async (req: Request, res: Response) => {
     if (error.message.includes('no encontrado') || error.message.includes('not found')) {
       return sendError(res, 404, 'TIMESHEET_NOT_FOUND', error.message);
     }
-    return sendError(res, 500, 'TIMESHEET_GET_FAILED', 'Failed to get timesheet', error.message);
+    return sendError(res, 500, 'TIMESHEET_GET_FAILED', 'Error al obtener tareo', error.message);
   }
 };
 
@@ -130,7 +134,7 @@ export const generateTimesheet = async (req: Request, res: Response) => {
         res,
         400,
         'TIMESHEET_MISSING_FIELDS',
-        'trabajadorId and periodo are required'
+        'trabajadorId y periodo son requeridos'
       );
     }
 
@@ -156,7 +160,7 @@ export const generateTimesheet = async (req: Request, res: Response) => {
       res,
       500,
       'TIMESHEET_GENERATE_FAILED',
-      error.message || 'Failed to generate timesheet'
+      error.message || 'Error al generar tareo'
     );
   }
 };
@@ -167,10 +171,14 @@ export const generateTimesheet = async (req: Request, res: Response) => {
  */
 export const submitTimesheet = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
     const submittedBy = (req as any).user?.id || 1; // Default to 1 if no user
 
-    const timesheet = await timesheetService.submitTimesheet(parseInt(id), submittedBy);
+    const timesheet = await timesheetService.submitTimesheet(id, submittedBy);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
     Logger.error('Error submitting timesheet', {
@@ -186,13 +194,7 @@ export const submitTimesheet = async (req: Request, res: Response) => {
     ) {
       return sendError(res, 400, 'TIMESHEET_SUBMIT_INVALID', error.message);
     }
-    return sendError(
-      res,
-      500,
-      'TIMESHEET_SUBMIT_FAILED',
-      'Failed to submit timesheet',
-      error.message
-    );
+    return sendError(res, 500, 'TIMESHEET_SUBMIT_FAILED', 'Error al enviar tareo', error.message);
   }
 };
 
@@ -202,10 +204,14 @@ export const submitTimesheet = async (req: Request, res: Response) => {
  */
 export const approveTimesheet = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
     const approvedBy = (req as any).user?.id || 1; // Default to 1 if no user
 
-    const timesheet = await timesheetService.approveTimesheet(parseInt(id), approvedBy);
+    const timesheet = await timesheetService.approveTimesheet(id, approvedBy);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
     Logger.error('Error approving timesheet', {
@@ -221,13 +227,7 @@ export const approveTimesheet = async (req: Request, res: Response) => {
     ) {
       return sendError(res, 400, 'TIMESHEET_APPROVE_INVALID', error.message);
     }
-    return sendError(
-      res,
-      500,
-      'TIMESHEET_APPROVE_FAILED',
-      'Failed to approve timesheet',
-      error.message
-    );
+    return sendError(res, 500, 'TIMESHEET_APPROVE_FAILED', 'Error al aprobar tareo', error.message);
   }
 };
 
@@ -237,7 +237,11 @@ export const approveTimesheet = async (req: Request, res: Response) => {
  */
 export const rejectTimesheet = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
     const { reason } = req.body;
     const rejectedBy = (req as any).user?.id || 1; // Default to 1 if no user
 
@@ -246,11 +250,11 @@ export const rejectTimesheet = async (req: Request, res: Response) => {
         res,
         400,
         'TIMESHEET_REJECT_REASON_REQUIRED',
-        'Rejection reason is required'
+        'La razón de rechazo es requerida'
       );
     }
 
-    const timesheet = await timesheetService.rejectTimesheet(parseInt(id), rejectedBy, reason);
+    const timesheet = await timesheetService.rejectTimesheet(id, rejectedBy, reason);
 
     return sendSuccess(res, timesheet);
   } catch (error: any) {
@@ -267,13 +271,7 @@ export const rejectTimesheet = async (req: Request, res: Response) => {
     ) {
       return sendError(res, 400, 'TIMESHEET_REJECT_INVALID', error.message);
     }
-    return sendError(
-      res,
-      500,
-      'TIMESHEET_REJECT_FAILED',
-      'Failed to reject timesheet',
-      error.message
-    );
+    return sendError(res, 500, 'TIMESHEET_REJECT_FAILED', 'Error al rechazar tareo', error.message);
   }
 };
 
@@ -283,13 +281,16 @@ export const rejectTimesheet = async (req: Request, res: Response) => {
  */
 export const updateTimesheet = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
 
     const repo = AppDataSource.getRepository(Timesheet);
-    const timesheet = await repo.findOne({ where: { id: parseInt(id) } });
+    const timesheet = await repo.findOne({ where: { id } });
 
     if (!timesheet) {
-      return sendError(res, 404, 'TIMESHEET_NOT_FOUND', 'Timesheet not found');
+      return sendError(res, 404, 'TIMESHEET_NOT_FOUND', 'Tareo no encontrado');
     }
 
     // Only allow updates to draft timesheets
@@ -298,7 +299,7 @@ export const updateTimesheet = async (req: Request, res: Response) => {
         res,
         400,
         'TIMESHEET_UPDATE_NOT_ALLOWED',
-        'Only draft timesheets can be updated'
+        'Solo los tareos en borrador pueden ser actualizados'
       );
     }
 
@@ -317,7 +318,7 @@ export const updateTimesheet = async (req: Request, res: Response) => {
       res,
       500,
       'TIMESHEET_UPDATE_FAILED',
-      'Failed to update timesheet',
+      'Error al actualizar tareo',
       error.message
     );
   }
@@ -329,13 +330,16 @@ export const updateTimesheet = async (req: Request, res: Response) => {
  */
 export const deleteTimesheet = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
 
     const repo = AppDataSource.getRepository(Timesheet);
-    const timesheet = await repo.findOne({ where: { id: parseInt(id) } });
+    const timesheet = await repo.findOne({ where: { id } });
 
     if (!timesheet) {
-      return sendError(res, 404, 'TIMESHEET_NOT_FOUND', 'Timesheet not found');
+      return sendError(res, 404, 'TIMESHEET_NOT_FOUND', 'Tareo no encontrado');
     }
 
     // Only allow deletion of draft timesheets
@@ -344,13 +348,13 @@ export const deleteTimesheet = async (req: Request, res: Response) => {
         res,
         400,
         'TIMESHEET_DELETE_NOT_ALLOWED',
-        'Only draft timesheets can be deleted'
+        'Solo los tareos en borrador pueden ser eliminados'
       );
     }
 
-    await repo.delete(parseInt(id));
+    await repo.delete(id);
 
-    return sendSuccess(res, { message: 'Timesheet deleted successfully' });
+    return res.status(204).send();
   } catch (error: any) {
     Logger.error('Error deleting timesheet', {
       error: error instanceof Error ? error.message : String(error),
@@ -358,12 +362,6 @@ export const deleteTimesheet = async (req: Request, res: Response) => {
       timesheetId: req.params.id,
       context: 'TimesheetController.deleteTimesheet',
     });
-    return sendError(
-      res,
-      500,
-      'TIMESHEET_DELETE_FAILED',
-      'Failed to delete timesheet',
-      error.message
-    );
+    return sendError(res, 500, 'TIMESHEET_DELETE_FAILED', 'Error al eliminar tareo', error.message);
   }
 };
