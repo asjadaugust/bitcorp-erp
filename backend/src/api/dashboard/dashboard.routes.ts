@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { DashboardController } from './dashboard.controller';
 import { authenticate } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import { SwitchProjectDto } from '../../types/dto/dashboard.dto';
 
 const router = Router();
 const dashboardController = new DashboardController();
@@ -16,7 +18,7 @@ router.get('/modules', dashboardController.getModules);
 router.get('/user-info', dashboardController.getUserInfo);
 
 // PUT /api/dashboard/switch-project - Switch active project
-router.put('/switch-project', dashboardController.switchProject);
+router.put('/switch-project', validateDto(SwitchProjectDto), dashboardController.switchProject);
 
 // GET /api/dashboard/stats - Get dashboard statistics
 router.get('/stats', dashboardController.getStats);
