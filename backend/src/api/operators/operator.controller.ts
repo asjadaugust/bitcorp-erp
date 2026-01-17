@@ -1,94 +1,133 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import { OperatorService } from '../../services/operator.service';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 const operatorService = new OperatorService();
 
 export class OperatorController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const { status, search, skill, page, limit } = req.query;
-      const result = await operatorService.findAll({
+      const { status, search, cargo, especialidad, page, limit, sort_by, sort_order } = req.query;
+
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
+
+      const filters = {
         isActive: status === 'active' || status === 'activo' || !status ? true : false,
         search: search as string,
-        page: page ? parseInt(page as string) : undefined,
-        limit: limit ? parseInt(limit as string) : undefined,
-      });
+        cargo: cargo as string,
+        especialidad: especialidad as string,
+        page: pageNum,
+        limit: limitNum,
+        sort_by: sort_by as string,
+        sort_order: (String(sort_order).toUpperCase() === 'DESC' ? 'DESC' : 'ASC') as
+          | 'ASC'
+          | 'DESC',
+      };
 
-      res.json({
-        success: true,
-        data: result.data,
-        pagination: {
-          page: parseInt(page as string) || 1,
-          limit: parseInt(limit as string) || 10,
-          total: result.total,
-          totalPages: Math.ceil(result.total / (parseInt(limit as string) || 10)),
-        },
+      const result = await operatorService.findAll(filters);
+
+      sendPaginatedSuccess(res, result.data, {
+        page: pageNum,
+        limit: limitNum,
+        total: result.total,
       });
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'FETCH_OPERATORS_FAILED',
+        'No se pudieron obtener los operadores',
+        error.message
+      );
     }
   }
 
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
-      const operator = await operatorService.findById(parseInt(id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
 
-      res.json({
-        success: true,
-        data: operator,
-      });
-    } catch (error) {
-      next(error);
+      const operator = await operatorService.findById(id);
+      sendSuccess(res, operator);
+    } catch (error: any) {
+      if (error.message === 'Operator not found') {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      sendError(res, 500, 'FETCH_OPERATOR_FAILED', 'No se pudo obtener el operador', error.message);
     }
   }
 
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id;
       const operator = await operatorService.create(req.body);
-
-      res.status(201).json({
-        success: true,
-        message: 'Operator created successfully',
-        data: operator,
-      });
+      sendCreated(res, operator);
     } catch (error: any) {
-      if (error.code === '23505') {
-        return res.status(400).json({ error: 'Email or DNI already exists' });
+      if (error.message?.includes('already exists')) {
+        sendError(res, 409, 'DUPLICATE_OPERATOR', error.message);
+        return;
       }
-      next(error);
+      sendError(res, 400, 'CREATE_OPERATOR_FAILED', 'No se pudo crear el operador', error.message);
     }
   }
 
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
-      const userId = (req as any).user?.id;
-      const operator = await operatorService.update(parseInt(id), req.body);
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
 
-      res.json({
-        success: true,
-        message: 'Operator updated successfully',
-        data: operator,
-      });
-    } catch (error) {
-      next(error);
+      const operator = await operatorService.update(id, req.body);
+      sendSuccess(res, operator);
+    } catch (error: any) {
+      if (error.message === 'Operator not found') {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      if (error.message?.includes('already exists')) {
+        sendError(res, 409, 'DUPLICATE_OPERATOR', error.message);
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'UPDATE_OPERATOR_FAILED',
+        'No se pudo actualizar el operador',
+        error.message
+      );
     }
   }
 
   static async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
-      await operatorService.delete(parseInt(id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
 
-      res.json({
-        success: true,
-        message: 'Operator deleted successfully',
-      });
-    } catch (error) {
-      next(error);
+      await operatorService.delete(id);
+      res.status(204).send();
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'DELETE_OPERATOR_FAILED',
+        'No se pudo eliminar el operador',
+        error.message
+      );
     }
   }
 
@@ -139,82 +178,82 @@ export class OperatorController {
   static async exportExcel(req: Request, res: Response, next: NextFunction) {
     try {
       const { ExportUtil } = await import('../../utils/export.util');
-      const { search, skillIds, status } = req.query;
+      const { search, cargo, especialidad, status } = req.query;
 
-      const filters: any = {};
+      const filters: any = {
+        isActive: status === 'active' || status === 'activo' || !status ? true : false,
+      };
       if (search) filters.search = search as string;
-      if (skillIds) filters.skillIds = (skillIds as string).split(',').map(Number);
-      if (status) filters.status = status as string;
+      if (cargo) filters.cargo = cargo as string;
+      if (especialidad) filters.especialidad = especialidad as string;
 
       const result = await operatorService.findAll(filters);
       const operators = result.data;
 
       const data = operators.map((op: any) => ({
-        codigo: op.employee_code || '',
-        nombre: `${op.first_name} ${op.last_name}`,
-        documento: op.national_id,
-        telefono: op.phone || '',
+        dni: op.dni || '',
+        nombre_completo: op.nombre_completo,
+        telefono: op.telefono || '',
         email: op.email || '',
-        habilidades: op.skills?.map((s: any) => s.skill_name).join(', ') || '',
-        estado: op.status,
-        fecha_contrato: ExportUtil.formatDate(op.hire_date),
+        cargo: op.cargo || '',
+        especialidad: op.especialidad || '',
+        fecha_ingreso: ExportUtil.formatDate(op.fecha_ingreso),
       }));
 
       const columns = [
-        { header: 'Código', key: 'codigo', width: 12 },
-        { header: 'Nombre Completo', key: 'nombre', width: 30 },
-        { header: 'Documento', key: 'documento', width: 15 },
+        { header: 'DNI', key: 'dni', width: 15 },
+        { header: 'Nombre Completo', key: 'nombre_completo', width: 30 },
         { header: 'Teléfono', key: 'telefono', width: 15 },
         { header: 'Email', key: 'email', width: 25 },
-        { header: 'Habilidades', key: 'habilidades', width: 40 },
-        { header: 'Estado', key: 'estado', width: 15 },
-        { header: 'Fecha Contrato', key: 'fecha_contrato', width: 15 },
+        { header: 'Cargo', key: 'cargo', width: 20 },
+        { header: 'Especialidad', key: 'especialidad', width: 20 },
+        { header: 'Fecha Ingreso', key: 'fecha_ingreso', width: 15 },
       ];
 
       await ExportUtil.exportToExcel(res, data, columns, `operadores_${Date.now()}`);
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(res, 500, 'EXPORT_EXCEL_FAILED', 'No se pudo exportar a Excel', error.message);
     }
   }
 
   static async exportCSV(req: Request, res: Response, next: NextFunction) {
     try {
       const { ExportUtil } = await import('../../utils/export.util');
-      const { search, skillIds, status } = req.query;
+      const { search, cargo, especialidad, status } = req.query;
 
-      const filters: any = {};
+      const filters: any = {
+        isActive: status === 'active' || status === 'activo' || !status ? true : false,
+      };
       if (search) filters.search = search as string;
-      if (skillIds) filters.skillIds = (skillIds as string).split(',').map(Number);
-      if (status) filters.status = status as string;
+      if (cargo) filters.cargo = cargo as string;
+      if (especialidad) filters.especialidad = especialidad as string;
 
-      const result2 = await operatorService.findAll(filters);
-      const operators2 = result2.data;
+      const result = await operatorService.findAll(filters);
+      const operators = result.data;
 
-      const data = operators2.map((op: any) => ({
-        codigo: op.employee_code || '',
-        nombre: `${op.first_name} ${op.last_name}`,
-        documento: op.national_id,
-        telefono: op.phone || '',
+      const data = operators.map((op: any) => ({
+        dni: op.dni || '',
+        nombre_completo: op.nombre_completo,
+        telefono: op.telefono || '',
         email: op.email || '',
-        habilidades: op.skills?.map((s: any) => s.skill_name).join(', ') || '',
-        estado: op.status,
-        fecha_contrato: ExportUtil.formatDate(op.hire_date),
+        cargo: op.cargo || '',
+        especialidad: op.especialidad || '',
+        fecha_ingreso: ExportUtil.formatDate(op.fecha_ingreso),
       }));
 
       const fields = [
-        { label: 'Código', value: 'codigo' },
-        { label: 'Nombre Completo', value: 'nombre' },
-        { label: 'Documento', value: 'documento' },
+        { label: 'DNI', value: 'dni' },
+        { label: 'Nombre Completo', value: 'nombre_completo' },
         { label: 'Teléfono', value: 'telefono' },
         { label: 'Email', value: 'email' },
-        { label: 'Habilidades', value: 'habilidades' },
-        { label: 'Estado', value: 'estado' },
-        { label: 'Fecha Contrato', value: 'fecha_contrato' },
+        { label: 'Cargo', value: 'cargo' },
+        { label: 'Especialidad', value: 'especialidad' },
+        { label: 'Fecha Ingreso', value: 'fecha_ingreso' },
       ];
 
       ExportUtil.exportToCSV(res, data, fields, `operadores_${Date.now()}`);
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      sendError(res, 500, 'EXPORT_CSV_FAILED', 'No se pudo exportar a CSV', error.message);
     }
   }
 }

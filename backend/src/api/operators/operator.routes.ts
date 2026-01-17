@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { OperatorController } from './operator.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import { OperatorCreateDto, OperatorUpdateDto } from '../../types/dto/operator.dto';
 import { ROLES } from '../../types/roles';
 
 const router = Router();
@@ -36,11 +38,13 @@ router.get(
 router.post(
   '/',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  validateDto(OperatorCreateDto),
   OperatorController.create
 );
 router.put(
   '/:id',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  validateDto(OperatorUpdateDto),
   OperatorController.update
 );
 router.delete('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR), OperatorController.delete);

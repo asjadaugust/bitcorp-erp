@@ -8,6 +8,7 @@
  */
 
 import { Trabajador } from '../../models/trabajador.model';
+import { IsString, IsOptional, IsEmail, IsDateString, MaxLength } from 'class-validator';
 
 export interface OperatorDto {
   id: number;
@@ -116,4 +117,145 @@ export function fromOperatorDto(dto: Partial<OperatorDto>): Partial<Trabajador> 
   if (dto.is_active !== undefined) entity.isActive = dto.is_active;
 
   return entity;
+}
+
+/**
+ * DTO for creating a new operator with validation
+ */
+export class OperatorCreateDto {
+  @IsString({ message: 'DNI debe ser texto' })
+  @MaxLength(20, { message: 'DNI no puede exceder 20 caracteres' })
+  dni!: string;
+
+  @IsString({ message: 'Nombres debe ser texto' })
+  @MaxLength(100, { message: 'Nombres no puede exceder 100 caracteres' })
+  nombres!: string;
+
+  @IsString({ message: 'Apellido paterno debe ser texto' })
+  @MaxLength(100, { message: 'Apellido paterno no puede exceder 100 caracteres' })
+  apellido_paterno!: string;
+
+  @IsOptional()
+  @IsString({ message: 'Apellido materno debe ser texto' })
+  @MaxLength(100, { message: 'Apellido materno no puede exceder 100 caracteres' })
+  apellido_materno?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de nacimiento debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_nacimiento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Teléfono debe ser texto' })
+  @MaxLength(20, { message: 'Teléfono no puede exceder 20 caracteres' })
+  telefono?: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'Email debe ser válido' })
+  @MaxLength(100, { message: 'Email no puede exceder 100 caracteres' })
+  email?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Dirección debe ser texto' })
+  @MaxLength(200, { message: 'Dirección no puede exceder 200 caracteres' })
+  direccion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Tipo de contrato debe ser texto' })
+  @MaxLength(50, { message: 'Tipo de contrato no puede exceder 50 caracteres' })
+  tipo_contrato?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de ingreso debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_ingreso?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de cese debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_cese?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Cargo debe ser texto' })
+  @MaxLength(100, { message: 'Cargo no puede exceder 100 caracteres' })
+  cargo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Especialidad debe ser texto' })
+  @MaxLength(100, { message: 'Especialidad no puede exceder 100 caracteres' })
+  especialidad?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Licencia de conducir debe ser texto' })
+  @MaxLength(50, { message: 'Licencia de conducir no puede exceder 50 caracteres' })
+  licencia_conducir?: string;
+}
+
+/**
+ * DTO for updating an operator (all fields optional)
+ */
+export class OperatorUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'DNI debe ser texto' })
+  @MaxLength(20, { message: 'DNI no puede exceder 20 caracteres' })
+  dni?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Nombres debe ser texto' })
+  @MaxLength(100, { message: 'Nombres no puede exceder 100 caracteres' })
+  nombres?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Apellido paterno debe ser texto' })
+  @MaxLength(100, { message: 'Apellido paterno no puede exceder 100 caracteres' })
+  apellido_paterno?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Apellido materno debe ser texto' })
+  @MaxLength(100, { message: 'Apellido materno no puede exceder 100 caracteres' })
+  apellido_materno?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de nacimiento debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_nacimiento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Teléfono debe ser texto' })
+  @MaxLength(20, { message: 'Teléfono no puede exceder 20 caracteres' })
+  telefono?: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'Email debe ser válido' })
+  @MaxLength(100, { message: 'Email no puede exceder 100 caracteres' })
+  email?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Dirección debe ser texto' })
+  @MaxLength(200, { message: 'Dirección no puede exceder 200 caracteres' })
+  direccion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Tipo de contrato debe ser texto' })
+  @MaxLength(50, { message: 'Tipo de contrato no puede exceder 50 caracteres' })
+  tipo_contrato?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de ingreso debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_ingreso?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de cese debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_cese?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Cargo debe ser texto' })
+  @MaxLength(100, { message: 'Cargo no puede exceder 100 caracteres' })
+  cargo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Especialidad debe ser texto' })
+  @MaxLength(100, { message: 'Especialidad no puede exceder 100 caracteres' })
+  especialidad?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Licencia de conducir debe ser texto' })
+  @MaxLength(50, { message: 'Licencia de conducir no puede exceder 50 caracteres' })
+  licencia_conducir?: string;
 }

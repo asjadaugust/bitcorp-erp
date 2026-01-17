@@ -13,6 +13,8 @@ export interface OperatorFilter {
   operatingUnitId?: number;
   page?: number;
   limit?: number;
+  sort_by?: string;
+  sort_order?: 'ASC' | 'DESC';
 }
 
 // DTOs for create/update operations
@@ -65,8 +67,6 @@ export class OperatorService {
   async findAll(filters?: OperatorFilter): Promise<{
     data: OperatorDto[];
     total: number;
-    page: number;
-    limit: number;
   }> {
     try {
       const page = filters?.page || 1;
@@ -102,8 +102,33 @@ export class OperatorService {
         );
       }
 
-      // Order by apellido_paterno, nombres
-      queryBuilder.orderBy('t.apellido_paterno', 'ASC').addOrderBy('t.nombres', 'ASC');
+      // Sorting with whitelist
+      const sortableFields: Record<string, string> = {
+        nombres: 't.nombres',
+        apellido_paterno: 't.apellido_paterno',
+        apellido_materno: 't.apellido_materno',
+        dni: 't.dni',
+        email: 't.email',
+        telefono: 't.telefono',
+        cargo: 't.cargo',
+        especialidad: 't.especialidad',
+        fecha_ingreso: 't.fecha_ingreso',
+        fecha_nacimiento: 't.fecha_nacimiento',
+        created_at: 't.created_at',
+        updated_at: 't.updated_at',
+      };
+
+      const sortBy =
+        filters?.sort_by && sortableFields[filters.sort_by]
+          ? sortableFields[filters.sort_by]
+          : 't.apellido_paterno';
+      const sortOrder = filters?.sort_order === 'DESC' ? 'DESC' : 'ASC';
+
+      queryBuilder.orderBy(sortBy, sortOrder);
+      if (sortBy !== 't.apellido_paterno') {
+        queryBuilder.addOrderBy('t.apellido_paterno', 'ASC');
+      }
+      queryBuilder.addOrderBy('t.nombres', 'ASC');
 
       // Get total count
       const total = await queryBuilder.getCount();
@@ -116,7 +141,7 @@ export class OperatorService {
       // Map to DTO format
       const data = trabajadores.map((t) => toOperatorDto(t));
 
-      return { data, total, page, limit };
+      return { data, total };
     } catch (error) {
       Logger.error('Error finding operators', {
         error: error instanceof Error ? error.message : String(error),
