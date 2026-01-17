@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProviderContactService } from '../../services/provider-contact.service';
-import Logger from '../../utils/logger';
+import { sendError, sendSuccess, sendCreated } from '../../utils/api-response';
 
 export class ProviderContactController {
   private service: ProviderContactService;
@@ -16,18 +16,22 @@ export class ProviderContactController {
    */
   getByProviderId = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { providerId } = req.params;
+      const providerId = parseInt(req.params.providerId);
+      if (isNaN(providerId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de proveedor inválido');
+        return;
+      }
 
       const contacts = await this.service.findByProviderId(providerId);
-      res.json(contacts);
+      sendSuccess(res, contacts);
     } catch (error: any) {
-      Logger.error('Error in getByProviderId', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        providerId: req.params.providerId,
-        context: 'ProviderContactController.getByProviderId',
-      });
-      res.status(500).json({ error: error.message || 'Error fetching contacts' });
+      sendError(
+        res,
+        500,
+        'PROVIDER_CONTACTS_LIST_FAILED',
+        'Error al obtener los contactos del proveedor',
+        error.message
+      );
     }
   };
 
@@ -37,18 +41,30 @@ export class ProviderContactController {
    */
   getById = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
 
-      const contact = await this.service.findById(parseInt(id));
-      res.json(contact);
+      const contact = await this.service.findById(id);
+      if (!contact) {
+        sendError(res, 404, 'PROVIDER_CONTACT_NOT_FOUND', 'Contacto no encontrado');
+        return;
+      }
+      sendSuccess(res, contact);
     } catch (error: any) {
-      Logger.error('Error in getById', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        contactId: req.params.id,
-        context: 'ProviderContactController.getById',
-      });
-      res.status(404).json({ error: error.message || 'Contact not found' });
+      if (error.message === 'Contact not found') {
+        sendError(res, 404, 'PROVIDER_CONTACT_NOT_FOUND', 'Contacto no encontrado');
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'PROVIDER_CONTACT_GET_FAILED',
+        'Error al obtener el contacto',
+        error.message
+      );
     }
   };
 
@@ -58,7 +74,12 @@ export class ProviderContactController {
    */
   create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { providerId } = req.params;
+      const providerId = parseInt(req.params.providerId);
+      if (isNaN(providerId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de proveedor inválido');
+        return;
+      }
+
       const data = {
         ...req.body,
         provider_id: providerId,
@@ -66,15 +87,15 @@ export class ProviderContactController {
       };
 
       const contact = await this.service.create(data);
-      res.status(201).json(contact);
+      sendCreated(res, contact);
     } catch (error: any) {
-      Logger.error('Error in create', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        providerId: req.params.providerId,
-        context: 'ProviderContactController.create',
-      });
-      res.status(400).json({ error: error.message || 'Error creating contact' });
+      sendError(
+        res,
+        400,
+        'PROVIDER_CONTACT_CREATE_FAILED',
+        'Error al crear el contacto',
+        error.message
+      );
     }
   };
 
@@ -84,22 +105,35 @@ export class ProviderContactController {
    */
   update = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
       const data = {
         ...req.body,
         updated_by: (req as any).user?.id,
       };
 
-      const contact = await this.service.update(parseInt(id), data);
-      res.json(contact);
+      const contact = await this.service.update(id, data);
+      if (!contact) {
+        sendError(res, 404, 'PROVIDER_CONTACT_NOT_FOUND', 'Contacto no encontrado');
+        return;
+      }
+      sendSuccess(res, contact);
     } catch (error: any) {
-      Logger.error('Error in update', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        contactId: req.params.id,
-        context: 'ProviderContactController.update',
-      });
-      res.status(400).json({ error: error.message || 'Error updating contact' });
+      if (error.message === 'Contact not found') {
+        sendError(res, 404, 'PROVIDER_CONTACT_NOT_FOUND', 'Contacto no encontrado');
+        return;
+      }
+      sendError(
+        res,
+        400,
+        'PROVIDER_CONTACT_UPDATE_FAILED',
+        'Error al actualizar el contacto',
+        error.message
+      );
     }
   };
 
@@ -109,23 +143,27 @@ export class ProviderContactController {
    */
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
 
-      const deleted = await this.service.delete(parseInt(id));
+      const deleted = await this.service.delete(id);
 
       if (deleted) {
         res.status(204).send();
       } else {
-        res.status(404).json({ error: 'Contact not found' });
+        sendError(res, 404, 'PROVIDER_CONTACT_NOT_FOUND', 'Contacto no encontrado');
       }
     } catch (error: any) {
-      Logger.error('Error in delete', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        contactId: req.params.id,
-        context: 'ProviderContactController.delete',
-      });
-      res.status(500).json({ error: error.message || 'Error deleting contact' });
+      sendError(
+        res,
+        500,
+        'PROVIDER_CONTACT_DELETE_FAILED',
+        'Error al eliminar el contacto',
+        error.message
+      );
     }
   };
 }

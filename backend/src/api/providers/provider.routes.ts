@@ -5,6 +5,14 @@ import { ProviderContactController } from './provider-contact.controller';
 import { ProviderFinancialInfoController } from './provider-financial-info.controller';
 import { validateDto } from '../../middleware/validation.middleware';
 import { ProviderCreateDto, ProviderUpdateDto } from '../../types/dto/provider.dto';
+import {
+  ProviderContactCreateDto,
+  ProviderContactUpdateDto,
+} from '../../types/dto/provider-contact.dto';
+import {
+  ProviderFinancialInfoCreateDto,
+  ProviderFinancialInfoUpdateDto,
+} from '../../types/dto/provider-financial-info.dto';
 
 const router = Router();
 
@@ -34,10 +42,18 @@ router.get('/:providerId/financial-info', financialInfoController.getByProviderI
 router.get('/financial-info/:id', financialInfoController.getById);
 
 // POST /api/providers/:providerId/financial-info - Create financial info
-router.post('/:providerId/financial-info', financialInfoController.create);
+router.post(
+  '/:providerId/financial-info',
+  validateDto(ProviderFinancialInfoCreateDto),
+  financialInfoController.create
+);
 
 // PUT /api/providers/financial-info/:id - Update financial info
-router.put('/financial-info/:id', financialInfoController.update);
+router.put(
+  '/financial-info/:id',
+  validateDto(ProviderFinancialInfoUpdateDto),
+  financialInfoController.update
+);
 
 // DELETE /api/providers/financial-info/:id - Delete financial info
 router.delete('/financial-info/:id', financialInfoController.delete);
@@ -49,10 +65,14 @@ router.get('/:providerId/contacts', contactController.getByProviderId);
 router.get('/contacts/:id', contactController.getById);
 
 // POST /api/providers/:providerId/contacts - Create contact
-router.post('/:providerId/contacts', contactController.create);
+router.post(
+  '/:providerId/contacts',
+  validateDto(ProviderContactCreateDto),
+  contactController.create
+);
 
 // PUT /api/providers/contacts/:id - Update contact
-router.put('/contacts/:id', contactController.update);
+router.put('/contacts/:id', validateDto(ProviderContactUpdateDto), contactController.update);
 
 // DELETE /api/providers/contacts/:id - Delete contact
 router.delete('/contacts/:id', contactController.delete);

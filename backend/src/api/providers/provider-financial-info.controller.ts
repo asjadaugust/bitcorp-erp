@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProviderFinancialInfoService } from '../../services/provider-financial-info.service';
-import Logger from '../../utils/logger';
+import { sendError, sendSuccess, sendCreated } from '../../utils/api-response';
 
 export class ProviderFinancialInfoController {
   private service: ProviderFinancialInfoService;
@@ -16,18 +16,22 @@ export class ProviderFinancialInfoController {
    */
   getByProviderId = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { providerId } = req.params;
+      const providerId = parseInt(req.params.providerId);
+      if (isNaN(providerId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de proveedor inválido');
+        return;
+      }
 
       const financialInfo = await this.service.findByProviderId(providerId);
-      res.json(financialInfo);
+      sendSuccess(res, financialInfo);
     } catch (error: any) {
-      Logger.error('Error in getByProviderId', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        providerId: req.params.providerId,
-        context: 'ProviderFinancialInfoController.getByProviderId',
-      });
-      res.status(500).json({ error: error.message || 'Error fetching financial info' });
+      sendError(
+        res,
+        500,
+        'PROVIDER_FINANCIAL_INFO_LIST_FAILED',
+        'Error al obtener la información financiera del proveedor',
+        error.message
+      );
     }
   };
 
@@ -37,18 +41,40 @@ export class ProviderFinancialInfoController {
    */
   getById = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
 
-      const financialInfo = await this.service.findById(parseInt(id));
-      res.json(financialInfo);
+      const financialInfo = await this.service.findById(id);
+      if (!financialInfo) {
+        sendError(
+          res,
+          404,
+          'PROVIDER_FINANCIAL_INFO_NOT_FOUND',
+          'Información financiera no encontrada'
+        );
+        return;
+      }
+      sendSuccess(res, financialInfo);
     } catch (error: any) {
-      Logger.error('Error in getById', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        financialInfoId: req.params.id,
-        context: 'ProviderFinancialInfoController.getById',
-      });
-      res.status(404).json({ error: error.message || 'Financial info not found' });
+      if (error.message === 'Financial info not found') {
+        sendError(
+          res,
+          404,
+          'PROVIDER_FINANCIAL_INFO_NOT_FOUND',
+          'Información financiera no encontrada'
+        );
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'PROVIDER_FINANCIAL_INFO_GET_FAILED',
+        'Error al obtener la información financiera',
+        error.message
+      );
     }
   };
 
@@ -58,7 +84,12 @@ export class ProviderFinancialInfoController {
    */
   create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { providerId } = req.params;
+      const providerId = parseInt(req.params.providerId);
+      if (isNaN(providerId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de proveedor inválido');
+        return;
+      }
+
       const data = {
         ...req.body,
         provider_id: providerId,
@@ -66,15 +97,15 @@ export class ProviderFinancialInfoController {
       };
 
       const financialInfo = await this.service.create(data);
-      res.status(201).json(financialInfo);
+      sendCreated(res, financialInfo);
     } catch (error: any) {
-      Logger.error('Error in create', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        providerId: req.params.providerId,
-        context: 'ProviderFinancialInfoController.create',
-      });
-      res.status(400).json({ error: error.message || 'Error creating financial info' });
+      sendError(
+        res,
+        400,
+        'PROVIDER_FINANCIAL_INFO_CREATE_FAILED',
+        'Error al crear la información financiera',
+        error.message
+      );
     }
   };
 
@@ -84,22 +115,45 @@ export class ProviderFinancialInfoController {
    */
   update = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
       const data = {
         ...req.body,
         updated_by: (req as any).user?.id,
       };
 
-      const financialInfo = await this.service.update(parseInt(id), data);
-      res.json(financialInfo);
+      const financialInfo = await this.service.update(id, data);
+      if (!financialInfo) {
+        sendError(
+          res,
+          404,
+          'PROVIDER_FINANCIAL_INFO_NOT_FOUND',
+          'Información financiera no encontrada'
+        );
+        return;
+      }
+      sendSuccess(res, financialInfo);
     } catch (error: any) {
-      Logger.error('Error in update', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        financialInfoId: req.params.id,
-        context: 'ProviderFinancialInfoController.update',
-      });
-      res.status(400).json({ error: error.message || 'Error updating financial info' });
+      if (error.message === 'Financial info not found') {
+        sendError(
+          res,
+          404,
+          'PROVIDER_FINANCIAL_INFO_NOT_FOUND',
+          'Información financiera no encontrada'
+        );
+        return;
+      }
+      sendError(
+        res,
+        400,
+        'PROVIDER_FINANCIAL_INFO_UPDATE_FAILED',
+        'Error al actualizar la información financiera',
+        error.message
+      );
     }
   };
 
@@ -109,23 +163,32 @@ export class ProviderFinancialInfoController {
    */
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
 
-      const deleted = await this.service.delete(parseInt(id));
+      const deleted = await this.service.delete(id);
 
       if (deleted) {
         res.status(204).send();
       } else {
-        res.status(404).json({ error: 'Financial info not found' });
+        sendError(
+          res,
+          404,
+          'PROVIDER_FINANCIAL_INFO_NOT_FOUND',
+          'Información financiera no encontrada'
+        );
       }
     } catch (error: any) {
-      Logger.error('Error in delete', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        financialInfoId: req.params.id,
-        context: 'ProviderFinancialInfoController.delete',
-      });
-      res.status(500).json({ error: error.message || 'Error deleting financial info' });
+      sendError(
+        res,
+        500,
+        'PROVIDER_FINANCIAL_INFO_DELETE_FAILED',
+        'Error al eliminar la información financiera',
+        error.message
+      );
     }
   };
 }
