@@ -88,6 +88,42 @@ export class Logger {
   static debug(message: string, metadata?: Record<string, unknown>): void {
     logger.debug(message, { ...this.getBaseMetadata(), ...metadata });
   }
+
+  /**
+   * Log security event (authentication, authorization, access control)
+   * Goes to security log file with extended retention
+   */
+  static security(message: string, metadata?: Record<string, unknown>): void {
+    logger.info(message, {
+      ...this.getBaseMetadata(),
+      category: 'security',
+      ...metadata,
+    });
+  }
+
+  /**
+   * Log performance event (slow query, slow endpoint, metrics)
+   * Goes to performance log file
+   */
+  static performance(message: string, metadata?: Record<string, unknown>): void {
+    logger.info(message, {
+      ...this.getBaseMetadata(),
+      category: 'performance',
+      ...metadata,
+    });
+  }
+
+  /**
+   * Log audit event (business operation, data modification)
+   * Goes to audit log file with long retention for compliance
+   */
+  static audit(message: string, metadata?: Record<string, unknown>): void {
+    logger.info(message, {
+      ...this.getBaseMetadata(),
+      category: 'audit',
+      ...metadata,
+    });
+  }
 }
 
 export default Logger;

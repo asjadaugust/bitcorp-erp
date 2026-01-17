@@ -1,6 +1,7 @@
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
+import { logAggregationConfig } from './log-aggregation.config';
 
 // Define log levels
 const levels = {
@@ -80,8 +81,8 @@ const prodFormat = winston.format.combine(
 // Determine which format to use
 const format = process.env.NODE_ENV === 'production' ? prodFormat : devFormat;
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(process.cwd(), 'logs');
+// Create logs directory
+const logsDir = path.join(process.cwd(), logAggregationConfig.logsDir);
 
 // Define transports
 const transports: winston.transport[] = [
@@ -93,42 +94,84 @@ const transports: winston.transport[] = [
 ];
 
 // Add file transports for production or if explicitly enabled
-if (process.env.NODE_ENV === 'production' || process.env.ENABLE_FILE_LOGGING === 'true') {
+if (logAggregationConfig.enabled) {
+  const { categories } = logAggregationConfig;
+
   // Error log file (errors only)
   transports.push(
     new DailyRotateFile({
-      filename: path.join(logsDir, 'error-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      level: 'error',
+      filename: path.join(logsDir, categories.error.filename),
+      datePattern: categories.error.datePattern,
+      level: categories.error.level,
       format: prodFormat,
-      maxSize: '20m',
-      maxFiles: '14d', // Keep 14 days of logs
-      zippedArchive: true,
+      maxSize: categories.error.maxSize,
+      maxFiles: categories.error.maxFiles,
+      zippedArchive: categories.error.zippedArchive,
+    })
+  );
+
+  // Security log file (authentication, authorization)
+  transports.push(
+    new DailyRotateFile({
+      filename: path.join(logsDir, categories.security.filename),
+      datePattern: categories.security.datePattern,
+      level: categories.security.level,
+      format: prodFormat,
+      maxSize: categories.security.maxSize,
+      maxFiles: categories.security.maxFiles,
+      zippedArchive: categories.security.zippedArchive,
+    })
+  );
+
+  // Performance log file (slow queries, slow endpoints)
+  transports.push(
+    new DailyRotateFile({
+      filename: path.join(logsDir, categories.performance.filename),
+      datePattern: categories.performance.datePattern,
+      level: categories.performance.level,
+      format: prodFormat,
+      maxSize: categories.performance.maxSize,
+      maxFiles: categories.performance.maxFiles,
+      zippedArchive: categories.performance.zippedArchive,
+    })
+  );
+
+  // Audit log file (business operations, compliance)
+  transports.push(
+    new DailyRotateFile({
+      filename: path.join(logsDir, categories.audit.filename),
+      datePattern: categories.audit.datePattern,
+      level: categories.audit.level,
+      format: prodFormat,
+      maxSize: categories.audit.maxSize,
+      maxFiles: categories.audit.maxFiles,
+      zippedArchive: categories.audit.zippedArchive,
+    })
+  );
+
+  // HTTP access log file
+  transports.push(
+    new DailyRotateFile({
+      filename: path.join(logsDir, categories.http.filename),
+      datePattern: categories.http.datePattern,
+      level: categories.http.level,
+      format: prodFormat,
+      maxSize: categories.http.maxSize,
+      maxFiles: categories.http.maxFiles,
+      zippedArchive: categories.http.zippedArchive,
     })
   );
 
   // Combined log file (all levels)
   transports.push(
     new DailyRotateFile({
-      filename: path.join(logsDir, 'combined-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
+      filename: path.join(logsDir, categories.combined.filename),
+      datePattern: categories.combined.datePattern,
+      level: categories.combined.level,
       format: prodFormat,
-      maxSize: '20m',
-      maxFiles: '14d',
-      zippedArchive: true,
-    })
-  );
-
-  // Audit log file (separate for security events)
-  transports.push(
-    new DailyRotateFile({
-      filename: path.join(logsDir, 'audit-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      level: 'info',
-      format: prodFormat,
-      maxSize: '20m',
-      maxFiles: '90d', // Keep audit logs for 90 days
-      zippedArchive: true,
+      maxSize: categories.combined.maxSize,
+      maxFiles: categories.combined.maxFiles,
+      zippedArchive: categories.combined.zippedArchive,
     })
   );
 }
