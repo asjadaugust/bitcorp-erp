@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
 import { ChecklistService } from '../../services/checklist.service';
+import {
+  sendSuccess,
+  sendCreated,
+  sendPaginatedSuccess,
+  sendError,
+} from '../../utils/api-response';
 import PDFDocument from 'pdfkit';
 
 export class ChecklistController {
@@ -11,18 +17,44 @@ export class ChecklistController {
   }
 
   // ===== TEMPLATES =====
+  /**
+   * GET /api/checklists/templates
+   * List all checklist templates with pagination and filters
+   * @query page - Page number (default: 1)
+   * @query limit - Items per page (default: 10, max: 100)
+   * @query activo - Filter by active status
+   * @query tipoEquipo - Filter by equipment type
+   * @query search - Search by name
+   */
   getAllTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Parse pagination
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100
+
       const filters = {
         activo: req.query.activo,
         tipoEquipo: req.query.tipoEquipo,
         search: req.query.search,
       };
 
-      const templates = await this.checklistService.getAllTemplates(filters);
-      res.json({ success: true, data: templates });
+      // Get all templates from service
+      const allTemplates = await this.checklistService.getAllTemplates(filters);
+
+      // Paginate in memory
+      const total = allTemplates.length;
+      const offset = (page - 1) * limit;
+      const templates = allTemplates.slice(offset, offset + limit);
+
+      return sendPaginatedSuccess(res, templates, { page, limit, total });
     } catch (error) {
-      next(error);
+      return sendError(
+        res,
+        500,
+        'FETCH_ERROR',
+        'Failed to fetch templates',
+        (error as Error).message
+      );
     }
   };
 
@@ -32,12 +64,18 @@ export class ChecklistController {
       const template = await this.checklistService.getTemplateById(parseInt(id));
 
       if (!template) {
-        return res.status(404).json({ success: false, message: 'Template not found' });
+        return sendError(res, 404, 'NOT_FOUND', 'Template not found');
       }
 
-      res.json({ success: true, data: template });
+      return sendSuccess(res, template);
     } catch (error) {
-      next(error);
+      return sendError(
+        res,
+        500,
+        'FETCH_ERROR',
+        'Failed to fetch template',
+        (error as Error).message
+      );
     }
   };
 
@@ -45,9 +83,15 @@ export class ChecklistController {
     try {
       const userId = (req as any).user.id;
       const template = await this.checklistService.createTemplate(req.body, userId);
-      res.status(201).json({ success: true, data: template });
+      return sendCreated(res, template);
     } catch (error) {
-      next(error);
+      return sendError(
+        res,
+        400,
+        'CREATE_ERROR',
+        'Failed to create template',
+        (error as Error).message
+      );
     }
   };
 
@@ -57,12 +101,18 @@ export class ChecklistController {
       const template = await this.checklistService.updateTemplate(parseInt(id), req.body);
 
       if (!template) {
-        return res.status(404).json({ success: false, message: 'Template not found' });
+        return sendError(res, 404, 'NOT_FOUND', 'Template not found');
       }
 
-      res.json({ success: true, data: template });
+      return sendSuccess(res, template);
     } catch (error) {
-      next(error);
+      return sendError(
+        res,
+        400,
+        'UPDATE_ERROR',
+        'Failed to update template',
+        (error as Error).message
+      );
     }
   };
 
@@ -72,12 +122,18 @@ export class ChecklistController {
       const success = await this.checklistService.deleteTemplate(parseInt(id));
 
       if (!success) {
-        return res.status(404).json({ success: false, message: 'Template not found' });
+        return sendError(res, 404, 'NOT_FOUND', 'Template not found');
       }
 
-      res.json({ success: true, message: 'Template deleted successfully' });
+      return sendSuccess(res, { message: 'Template deleted successfully' });
     } catch (error) {
-      next(error);
+      return sendError(
+        res,
+        500,
+        'DELETE_ERROR',
+        'Failed to delete template',
+        (error as Error).message
+      );
     }
   };
 
@@ -85,9 +141,9 @@ export class ChecklistController {
   createItem = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const item = await this.checklistService.createItem(req.body);
-      res.status(201).json({ success: true, data: item });
+      return sendCreated(res, item);
     } catch (error) {
-      next(error);
+      return sendError(res, 400, 'CREATE_ERROR', 'Failed to create item', (error as Error).message);
     }
   };
 
@@ -97,12 +153,12 @@ export class ChecklistController {
       const item = await this.checklistService.updateItem(parseInt(id), req.body);
 
       if (!item) {
-        return res.status(404).json({ success: false, message: 'Item not found' });
+        return sendError(res, 404, 'NOT_FOUND', 'Item not found');
       }
 
-      res.json({ success: true, data: item });
+      return sendSuccess(res, item);
     } catch (error) {
-      next(error);
+      return sendError(res, 400, 'UPDATE_ERROR', 'Failed to update item', (error as Error).message);
     }
   };
 
@@ -112,16 +168,21 @@ export class ChecklistController {
       const success = await this.checklistService.deleteItem(parseInt(id));
 
       if (!success) {
-        return res.status(404).json({ success: false, message: 'Item not found' });
+        return sendError(res, 404, 'NOT_FOUND', 'Item not found');
       }
 
-      res.json({ success: true, message: 'Item deleted successfully' });
+      return sendSuccess(res, { message: 'Item deleted successfully' });
     } catch (error) {
-      next(error);
+      return sendError(res, 500, 'DELETE_ERROR', 'Failed to delete item', (error as Error).message);
     }
   };
 
   // ===== INSPECTIONS =====
+  /**
+   * GET /api/checklists/inspections
+   * List all checklist inspections with pagination and filters
+   * Service already handles pagination at DB level
+   */
   getAllInspections = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const filters = {
@@ -137,18 +198,20 @@ export class ChecklistController {
 
       const result = await this.checklistService.getAllInspections(filters);
 
-      res.json({
-        success: true,
-        data: result.data,
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
+      // Use standard pagination helper (converts totalPages to total_pages)
+      return sendPaginatedSuccess(res, result.data, {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
       });
     } catch (error) {
-      next(error);
+      return sendError(
+        res,
+        500,
+        'FETCH_ERROR',
+        'Failed to fetch inspections',
+        (error as Error).message
+      );
     }
   };
 
