@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import * as maintenanceScheduleController from './maintenance-schedule.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import {
+  MaintenanceScheduleCreateDto,
+  MaintenanceScheduleUpdateDto,
+} from '../../types/dto/maintenance-schedule.dto';
 
 const router = Router();
 
@@ -11,10 +16,18 @@ router.get('/', maintenanceScheduleController.listSchedules);
 router.get('/:id', maintenanceScheduleController.getScheduleById);
 
 // Create new schedule
-router.post('/', maintenanceScheduleController.createSchedule);
+router.post(
+  '/',
+  validateDto(MaintenanceScheduleCreateDto),
+  maintenanceScheduleController.createSchedule
+);
 
 // Update schedule
-router.put('/:id', maintenanceScheduleController.updateSchedule);
+router.put(
+  '/:id',
+  validateDto(MaintenanceScheduleUpdateDto),
+  maintenanceScheduleController.updateSchedule
+);
 
 // Delete schedule
 router.delete('/:id', maintenanceScheduleController.deleteSchedule);

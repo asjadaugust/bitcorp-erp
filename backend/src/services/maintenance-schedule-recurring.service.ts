@@ -44,6 +44,10 @@ export interface MaintenanceScheduleFilter {
   status?: string;
   maintenanceType?: string;
   isActive?: boolean;
+  page?: number;
+  limit?: number;
+  sort_by?: string;
+  sort_order?: 'ASC' | 'DESC';
 }
 
 export interface MaintenanceScheduleDto {
@@ -157,9 +161,35 @@ export class MaintenanceScheduleRecurringService {
   }
 
   /**
-   * Find all maintenance schedules with filters
+   * Find all maintenance schedules with filters, pagination, and sorting
    */
-  async findAll(filters: MaintenanceScheduleFilter): Promise<MaintenanceScheduleDto[]> {
+  async findAll(
+    filters: MaintenanceScheduleFilter
+  ): Promise<{ data: MaintenanceScheduleDto[]; total: number }> {
+    const page = filters.page || 1;
+    const limit = filters.limit || 20;
+    const skip = (page - 1) * limit;
+
+    // Define sortable fields (snake_case API → camelCase DB)
+    const sortableFields: Record<string, string> = {
+      equipment_id: 'ms.equipmentId',
+      project_id: 'ms.projectId',
+      maintenance_type: 'ms.maintenanceType',
+      interval_type: 'ms.intervalType',
+      interval_value: 'ms.intervalValue',
+      status: 'ms.status',
+      next_due_date: 'ms.nextDueDate',
+      last_completed_date: 'ms.lastCompletedDate',
+      created_at: 'ms.createdAt',
+      updated_at: 'ms.updatedAt',
+    };
+
+    const sortBy =
+      filters.sort_by && sortableFields[filters.sort_by]
+        ? sortableFields[filters.sort_by]
+        : 'ms.createdAt';
+    const sortOrder = filters.sort_order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
     const queryBuilder = this.repository
       .createQueryBuilder('ms')
       .leftJoinAndSelect('ms.equipment', 'e')
@@ -184,10 +214,22 @@ export class MaintenanceScheduleRecurringService {
       });
     }
 
-    queryBuilder.orderBy('ms.createdAt', 'DESC');
+    // Apply sorting
+    queryBuilder.orderBy(sortBy, sortOrder);
 
+    // Get total count
+    const total = await queryBuilder.getCount();
+
+    // Apply pagination
+    queryBuilder.skip(skip).take(limit);
+
+    // Get results
     const schedules = await queryBuilder.getMany();
-    return schedules.map((s) => this.transformToDto(s));
+
+    return {
+      data: schedules.map((s) => this.transformToDto(s)),
+      total,
+    };
   }
 
   /**

@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
-import { sendSuccess, sendError } from '../../utils/api-response';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 import { MaintenanceScheduleRecurringService } from '../../services/maintenance-schedule-recurring.service';
 import Logger from '../../utils/logger';
 
@@ -21,28 +26,47 @@ const service = new MaintenanceScheduleRecurringService();
 
 /**
  * GET /api/scheduling/maintenance-schedules
- * List all maintenance schedules with optional filters
+ * List all maintenance schedules with pagination, sorting, and filters
  */
 export const listSchedules = async (req: Request, res: Response) => {
   try {
-    const { equipment_id, status, project_id } = req.query;
+    // Extract pagination params
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
 
-    const filters: any = {};
+    // Extract sorting params
+    const sort_by = req.query.sort_by as string;
+    const sort_order = req.query.sort_order?.toString().toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+    // Extract filters
+    const { equipment_id, status, project_id, maintenance_type } = req.query;
+
+    const filters: any = {
+      page,
+      limit,
+      sort_by,
+      sort_order,
+    };
 
     if (equipment_id) {
       filters.equipmentId = parseInt(equipment_id as string);
     }
 
     if (status) {
-      filters.status = status === 'active' ? 'active' : 'inactive';
+      filters.status = status === 'active' ? 'active' : status;
     }
 
     if (project_id) {
       filters.projectId = parseInt(project_id as string);
     }
 
-    const schedules = await service.findAll(filters);
-    return sendSuccess(res, schedules);
+    if (maintenance_type) {
+      filters.maintenanceType = maintenance_type;
+    }
+
+    const result = await service.findAll(filters);
+
+    return sendPaginatedSuccess(res, result.data, { page, limit, total: result.total });
   } catch (error: any) {
     Logger.error('Error listing maintenance schedules', {
       error: error instanceof Error ? error.message : String(error),
@@ -53,7 +77,7 @@ export const listSchedules = async (req: Request, res: Response) => {
       res,
       500,
       'MAINTENANCE_SCHEDULE_LIST_FAILED',
-      'Failed to list maintenance schedules',
+      'Error al listar programas de mantenimiento',
       error.message
     );
   }
@@ -65,15 +89,19 @@ export const listSchedules = async (req: Request, res: Response) => {
  */
 export const getScheduleById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const schedule = await service.findById(parseInt(id));
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
+    const schedule = await service.findById(id);
 
     if (!schedule) {
       return sendError(
         res,
         404,
         'MAINTENANCE_SCHEDULE_NOT_FOUND',
-        'Maintenance schedule not found'
+        'Programa de mantenimiento no encontrado'
       );
     }
 
@@ -89,7 +117,7 @@ export const getScheduleById = async (req: Request, res: Response) => {
       res,
       500,
       'MAINTENANCE_SCHEDULE_GET_FAILED',
-      'Failed to get maintenance schedule',
+      'Error al obtener programa de mantenimiento',
       error.message
     );
   }
@@ -114,16 +142,6 @@ export const createSchedule = async (req: Request, res: Response) => {
 
     const createdBy = (req as any).user?.id;
 
-    // Validate required fields
-    if (!equipment_id || !interval_value) {
-      return sendError(
-        res,
-        400,
-        'MAINTENANCE_SCHEDULE_INVALID_DATA',
-        'Equipment ID and interval value are required'
-      );
-    }
-
     const schedule = await service.create({
       equipmentId: equipment_id,
       projectId: project_id,
@@ -136,7 +154,7 @@ export const createSchedule = async (req: Request, res: Response) => {
       createdById: createdBy,
     });
 
-    return sendSuccess(res, schedule, undefined, 201);
+    return sendCreated(res, schedule.id, 'Programa de mantenimiento creado exitosamente');
   } catch (error: any) {
     Logger.error('Error creating maintenance schedule', {
       error: error instanceof Error ? error.message : String(error),
@@ -148,7 +166,7 @@ export const createSchedule = async (req: Request, res: Response) => {
       res,
       500,
       'MAINTENANCE_SCHEDULE_CREATE_FAILED',
-      error.message || 'Failed to create maintenance schedule'
+      error.message || 'Error al crear programa de mantenimiento'
     );
   }
 };
@@ -159,7 +177,11 @@ export const createSchedule = async (req: Request, res: Response) => {
  */
 export const updateSchedule = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
     const updates = req.body;
 
     // Map snake_case from frontend to camelCase for service
@@ -183,17 +205,17 @@ export const updateSchedule = async (req: Request, res: Response) => {
       dto.lastCompletedHours = updates.last_completed_hours;
 
     if (Object.keys(dto).length === 0) {
-      return sendError(res, 400, 'MAINTENANCE_SCHEDULE_NO_FIELDS', 'No valid fields to update');
+      return sendError(res, 400, 'NO_FIELDS', 'No hay campos válidos para actualizar');
     }
 
-    const schedule = await service.update(parseInt(id), dto);
+    const schedule = await service.update(id, dto);
 
     if (!schedule) {
       return sendError(
         res,
         404,
         'MAINTENANCE_SCHEDULE_NOT_FOUND',
-        'Maintenance schedule not found'
+        'Programa de mantenimiento no encontrado'
       );
     }
 
@@ -209,7 +231,7 @@ export const updateSchedule = async (req: Request, res: Response) => {
       res,
       500,
       'MAINTENANCE_SCHEDULE_UPDATE_FAILED',
-      'Failed to update maintenance schedule',
+      'Error al actualizar programa de mantenimiento',
       error.message
     );
   }
@@ -221,19 +243,23 @@ export const updateSchedule = async (req: Request, res: Response) => {
  */
 export const deleteSchedule = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const deleted = await service.delete(parseInt(id));
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
+    const deleted = await service.delete(id);
 
     if (!deleted) {
       return sendError(
         res,
         404,
         'MAINTENANCE_SCHEDULE_NOT_FOUND',
-        'Maintenance schedule not found'
+        'Programa de mantenimiento no encontrado'
       );
     }
 
-    return sendSuccess(res, { message: 'Maintenance schedule deleted successfully' });
+    return res.status(204).send();
   } catch (error: any) {
     Logger.error('Error deleting maintenance schedule', {
       error: error instanceof Error ? error.message : String(error),
@@ -245,7 +271,7 @@ export const deleteSchedule = async (req: Request, res: Response) => {
       res,
       500,
       'MAINTENANCE_SCHEDULE_DELETE_FAILED',
-      'Failed to delete maintenance schedule',
+      'Error al eliminar programa de mantenimiento',
       error.message
     );
   }
@@ -272,13 +298,7 @@ export const generateTasks = async (req: Request, res: Response) => {
       daysAhead: req.body.daysAhead,
       context: 'MaintenanceScheduleController.generateTasks',
     });
-    return sendError(
-      res,
-      500,
-      'MAINTENANCE_SCHEDULE_TASK_GENERATION_FAILED',
-      'Failed to generate tasks',
-      error.message
-    );
+    return sendError(res, 500, 'TASK_GENERATION_FAILED', 'Error al generar tareas', error.message);
   }
 };
 
@@ -288,17 +308,21 @@ export const generateTasks = async (req: Request, res: Response) => {
  */
 export const completeSchedule = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+    }
+
     const { completionHours } = req.body;
 
-    const schedule = await service.complete(parseInt(id), completionHours);
+    const schedule = await service.complete(id, completionHours);
 
     if (!schedule) {
       return sendError(
         res,
         404,
         'MAINTENANCE_SCHEDULE_NOT_FOUND',
-        'Maintenance schedule not found'
+        'Programa de mantenimiento no encontrado'
       );
     }
 
@@ -313,8 +337,8 @@ export const completeSchedule = async (req: Request, res: Response) => {
     return sendError(
       res,
       500,
-      'MAINTENANCE_SCHEDULE_COMPLETE_FAILED',
-      error.message || 'Failed to complete schedule'
+      'SCHEDULE_COMPLETE_FAILED',
+      error.message || 'Error al completar programa de mantenimiento'
     );
   }
 };
