@@ -5,8 +5,12 @@ import { authenticate } from '../../middleware/auth.middleware';
 import { validateDto } from '../../middleware/validation.middleware';
 import {
   ChecklistTemplateCreateDto,
+  ChecklistTemplateUpdateDto,
   ChecklistItemCreateDto,
+  ChecklistItemUpdateDto,
   ChecklistInspectionCreateDto,
+  ChecklistInspectionUpdateDto,
+  ChecklistResultCreateDto,
 } from '../../types/dto/checklist.dto';
 
 const router = Router();
@@ -47,7 +51,7 @@ router.post('/templates', validateDto(ChecklistTemplateCreateDto), controller.cr
  * @desc    Update template
  * @access  Private (Admin/Manager)
  */
-router.put('/templates/:id', controller.updateTemplate);
+router.put('/templates/:id', validateDto(ChecklistTemplateUpdateDto), controller.updateTemplate);
 
 /**
  * @route   DELETE /api/checklists/templates/:id
@@ -73,7 +77,7 @@ router.post('/items', validateDto(ChecklistItemCreateDto), controller.createItem
  * @desc    Update checklist item
  * @access  Private (Admin/Manager)
  */
-router.put('/items/:id', controller.updateItem);
+router.put('/items/:id', validateDto(ChecklistItemUpdateDto), controller.updateItem);
 
 /**
  * @route   DELETE /api/checklists/items/:id
@@ -136,7 +140,11 @@ router.post('/inspections', validateDto(ChecklistInspectionCreateDto), controlle
  * @desc    Update inspection
  * @access  Private
  */
-router.put('/inspections/:id', controller.updateInspection);
+router.put(
+  '/inspections/:id',
+  validateDto(ChecklistInspectionUpdateDto),
+  controller.updateInspection
+);
 
 /**
  * @route   POST /api/checklists/inspections/:id/complete
@@ -169,6 +177,6 @@ router.get('/inspections/:inspectionId/results', controller.getResultsByInspecti
  * @body    { inspeccionId, itemId, conforme?, valorMedido?, observaciones?, accionRequerida?, fotoUrl? }
  * @access  Private
  */
-router.post('/results', controller.saveResult);
+router.post('/results', validateDto(ChecklistResultCreateDto), controller.saveResult);
 
 export default router;

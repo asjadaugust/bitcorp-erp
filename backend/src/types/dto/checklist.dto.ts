@@ -306,6 +306,141 @@ export class ChecklistInspectionCreateDto {
   odometro_inicial?: number;
 }
 
+/**
+ * DTO for updating a checklist template
+ * All fields optional for partial updates
+ */
+export class ChecklistTemplateUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'codigo debe ser un string' })
+  @MaxLength(50, { message: 'codigo no puede exceder 50 caracteres' })
+  codigo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'nombre debe ser un string' })
+  @MaxLength(200, { message: 'nombre no puede exceder 200 caracteres' })
+  nombre?: string;
+
+  @IsOptional()
+  @IsString({ message: 'descripcion debe ser un string' })
+  descripcion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_equipo debe ser un string' })
+  @MaxLength(100, { message: 'tipo_equipo no puede exceder 100 caracteres' })
+  tipo_equipo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'frecuencia debe ser un string' })
+  @MaxLength(50, { message: 'frecuencia no puede exceder 50 caracteres' })
+  frecuencia?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'activo debe ser un booleano' })
+  activo?: boolean;
+}
+
+/**
+ * DTO for updating a checklist item
+ * All fields optional for partial updates
+ */
+export class ChecklistItemUpdateDto {
+  @IsOptional()
+  @IsNumber({}, { message: 'plantilla_id debe ser un número' })
+  plantilla_id?: number;
+
+  @IsOptional()
+  @IsString({ message: 'codigo debe ser un string' })
+  @MaxLength(50, { message: 'codigo no puede exceder 50 caracteres' })
+  codigo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'descripcion debe ser un string' })
+  descripcion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'categoria debe ser un string' })
+  @MaxLength(100, { message: 'categoria no puede exceder 100 caracteres' })
+  categoria?: string;
+
+  @IsOptional()
+  @IsIn(['check', 'text', 'number', 'select'], {
+    message: 'tipo_respuesta debe ser check, text, number o select',
+  })
+  tipo_respuesta?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'es_critico debe ser un booleano' })
+  es_critico?: boolean;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'orden debe ser un número' })
+  @Min(0, { message: 'orden no puede ser negativo' })
+  orden?: number;
+}
+
+/**
+ * DTO for updating a checklist inspection
+ * All fields optional for partial updates
+ */
+export class ChecklistInspectionUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'ubicacion debe ser un string' })
+  @MaxLength(200, { message: 'ubicacion no puede exceder 200 caracteres' })
+  ubicacion?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'horometro_inicial debe ser un número' })
+  @Min(0, { message: 'horometro_inicial no puede ser negativo' })
+  horometro_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'odometro_inicial debe ser un número' })
+  @Min(0, { message: 'odometro_inicial no puede ser negativo' })
+  odometro_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'horometro_final debe ser un número' })
+  @Min(0, { message: 'horometro_final no puede ser negativo' })
+  horometro_final?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'odometro_final debe ser un número' })
+  @Min(0, { message: 'odometro_final no puede ser negativo' })
+  odometro_final?: number;
+
+  @IsOptional()
+  @IsString({ message: 'observaciones debe ser un string' })
+  observaciones?: string;
+}
+
+/**
+ * DTO for creating a checklist result (saving inspection item results)
+ */
+export class ChecklistResultCreateDto {
+  @IsNumber({}, { message: 'inspeccion_id debe ser un número' })
+  inspeccion_id!: number;
+
+  @IsNumber({}, { message: 'item_id debe ser un número' })
+  item_id!: number;
+
+  @IsOptional()
+  @IsString({ message: 'valor debe ser un string' })
+  valor?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'conforme debe ser un booleano' })
+  conforme?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'observacion debe ser un string' })
+  observacion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'foto_url debe ser un string' })
+  foto_url?: string;
+}
+
 // ===== TRANSFORMATION FUNCTIONS =====
 
 /**
