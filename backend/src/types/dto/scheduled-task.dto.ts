@@ -405,3 +405,12 @@ export function mapCreateScheduledTaskDto(
     proyecto_id: input.proyecto_id ?? input.projectId,
   };
 }
+
+/**
+ * DTO for assigning an operator to a scheduled task
+ */
+export class AssignOperatorDto {
+  @IsNotEmpty({ message: 'El ID del operador es requerido' })
+  @IsInt({ message: 'El ID del operador debe ser numérico' })
+  operator_id!: number;
+}

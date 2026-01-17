@@ -2,7 +2,11 @@
 import { Router } from 'express';
 import * as scheduledTaskController from './scheduled-task.controller';
 import { validateDto } from '../../middleware/validation.middleware';
-import { ScheduledTaskCreateDto, ScheduledTaskUpdateDto } from '../../types/dto/scheduled-task.dto';
+import {
+  ScheduledTaskCreateDto,
+  ScheduledTaskUpdateDto,
+  AssignOperatorDto,
+} from '../../types/dto/scheduled-task.dto';
 
 const router = Router();
 
@@ -22,7 +26,7 @@ router.put('/:id', validateDto(ScheduledTaskUpdateDto), scheduledTaskController.
 router.delete('/:id', scheduledTaskController.deleteTask);
 
 // Assign operator to task
-router.post('/:id/assign', scheduledTaskController.assignOperator);
+router.post('/:id/assign', validateDto(AssignOperatorDto), scheduledTaskController.assignOperator);
 
 // Complete task
 router.post('/:id/complete', scheduledTaskController.completeTask);
