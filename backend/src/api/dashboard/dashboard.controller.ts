@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { DashboardService } from '../../services/dashboard.service';
+import Logger from '../../utils/logger';
 
 export class DashboardController {
   private dashboardService = new DashboardService();
@@ -11,7 +12,7 @@ export class DashboardController {
    */
   getModules = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
 
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });
@@ -25,7 +26,11 @@ export class DashboardController {
         data: modules,
       });
     } catch (error) {
-      console.error('Error in getModules:', error);
+      Logger.error('Error in getModules', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'DashboardController.getModules',
+      });
       res.status(500).json({
         success: false,
         error: (error as Error).message,
@@ -39,7 +44,7 @@ export class DashboardController {
    */
   getUserInfo = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
 
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });
@@ -53,7 +58,11 @@ export class DashboardController {
         data: userInfo,
       });
     } catch (error) {
-      console.error('Error in getUserInfo:', error);
+      Logger.error('Error in getUserInfo', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'DashboardController.getUserInfo',
+      });
       res.status(500).json({
         success: false,
         error: (error as Error).message,
@@ -67,7 +76,7 @@ export class DashboardController {
    */
   switchProject = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       const { project_id } = req.body;
 
       if (!userId) {
@@ -91,7 +100,12 @@ export class DashboardController {
         data: { active_project: project },
       });
     } catch (error) {
-      console.error('Error in switchProject:', error);
+      Logger.error('Error in switchProject', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.body.project_id,
+        context: 'DashboardController.switchProject',
+      });
       res.status(400).json({
         success: false,
         error: (error as Error).message,
@@ -105,7 +119,7 @@ export class DashboardController {
    */
   getStats = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).user?.id || (req as any).user?.userId;
       const projectId = req.query.project_id as string | undefined;
 
       if (!userId) {
@@ -120,7 +134,11 @@ export class DashboardController {
         data: stats,
       });
     } catch (error) {
-      console.error('Error in getStats:', error);
+      Logger.error('Error in getStats', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'DashboardController.getStats',
+      });
       res.status(500).json({
         success: false,
         error: (error as Error).message,

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { CostCenterService } from '../../services/cost-center.service';
+import Logger from '../../utils/logger';
 
 export class AdministrationController {
   private costCenterService = new CostCenterService();
@@ -17,7 +18,11 @@ export class AdministrationController {
         data: costCenters,
       });
     } catch (error: any) {
-      console.error('Error fetching cost centers:', error);
+      Logger.error('Error fetching cost centers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'AdministrationController.getCostCenters',
+      });
       res.status(500).json({
         success: false,
         message: 'Error fetching cost centers',
@@ -34,7 +39,11 @@ export class AdministrationController {
         data: costCenter,
       });
     } catch (error: any) {
-      console.error('Error creating cost center:', error);
+      Logger.error('Error creating cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'AdministrationController.createCostCenter',
+      });
       res.status(500).json({
         success: false,
         message: 'Error creating cost center',
@@ -57,7 +66,12 @@ export class AdministrationController {
         data: costCenter,
       });
     } catch (error: any) {
-      console.error('Error fetching cost center:', error);
+      Logger.error('Error fetching cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        costCenterId: req.params.id,
+        context: 'AdministrationController.getCostCenterById',
+      });
       res.status(500).json({
         success: false,
         message: 'Error fetching cost center',
@@ -74,7 +88,12 @@ export class AdministrationController {
         data: costCenter,
       });
     } catch (error: any) {
-      console.error('Error updating cost center:', error);
+      Logger.error('Error updating cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        costCenterId: req.params.id,
+        context: 'AdministrationController.updateCostCenter',
+      });
       res.status(500).json({
         success: false,
         message: 'Error updating cost center',
@@ -88,7 +107,12 @@ export class AdministrationController {
       await this.costCenterService.delete(parseInt(req.params.id));
       res.status(204).send();
     } catch (error: any) {
-      console.error('Error deleting cost center:', error);
+      Logger.error('Error deleting cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        costCenterId: req.params.id,
+        context: 'AdministrationController.deleteCostCenter',
+      });
       res.status(500).json({
         success: false,
         message: 'Error deleting cost center',

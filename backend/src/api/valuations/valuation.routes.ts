@@ -2,122 +2,45 @@
 import { Router } from 'express';
 import { ValuationController } from './valuation.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { ROLES } from '../../types/roles';
 
 const router = Router();
 const controller = new ValuationController();
 
 router.use(authenticate);
 
-router.get(
-  '/',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'finanzas',
-    'director_proyecto',
-    'director_compania'
-  ),
-  controller.getAll
-);
+router.get('/', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.getAll);
 router.get(
   '/analytics',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'finanzas',
-    'director_proyecto',
-    'director_compania'
-  ),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   controller.getAnalytics
 );
-router.get(
-  '/:id',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'finanzas',
-    'director_proyecto',
-    'director_compania'
-  ),
-  controller.getById
-);
+router.get('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.getById);
 router.get(
   '/:id/pdf',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'finanzas',
-    'director_proyecto',
-    'director_compania'
-  ),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   controller.downloadPdf
 );
-router.post(
-  '/',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'director_proyecto',
-    'director_compania'
-  ),
-  controller.create
-);
+router.post('/', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.create);
 router.post(
   '/calculate',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'director_proyecto',
-    'director_compania'
-  ),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   controller.calculate
 );
 router.post(
   '/generate',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'director_proyecto',
-    'director_compania'
-  ),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   controller.generate
 );
 router.post(
   '/preview-pdf',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'director_proyecto',
-    'director_compania'
-  ),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   (req, res, next) => {
     req.params.id = 'preview';
     controller.downloadPdf(req, res, next);
   }
 );
-router.put(
-  '/:id',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'director_proyecto',
-    'director_compania'
-  ),
-  controller.update
-);
-router.delete(
-  '/:id',
-  authorize('director_general', 'administrador', 'director_proyecto', 'director_compania'),
-  controller.delete
-);
+router.put('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.update);
+router.delete('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR), controller.delete);
 
 export default router;

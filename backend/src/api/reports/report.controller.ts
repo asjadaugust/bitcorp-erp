@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { ReportService } from '../../services/report.service';
 import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
 import { sendError } from '../../utils/api-response';
+import Logger from '../../utils/logger';
 
 const reportService = new ReportService();
 
@@ -31,7 +32,13 @@ export class ReportController {
         },
       });
     } catch (error: any) {
-      console.error('Error fetching reports:', error);
+      Logger.error('Error fetching reports', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        page: req.query.page,
+        limit: req.query.limit,
+        context: 'ReportController.getReports',
+      });
       return sendError(res, 500, 'REPORT_LIST_FAILED', 'Failed to fetch reports', error.message);
     }
   }
@@ -50,7 +57,12 @@ export class ReportController {
         data: report,
       });
     } catch (error: any) {
-      console.error('Error fetching report:', error);
+      Logger.error('Error fetching report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: req.params.id,
+        context: 'ReportController.getReportById',
+      });
       return sendError(res, 500, 'REPORT_GET_FAILED', 'Failed to fetch report', error.message);
     }
   }
@@ -64,7 +76,11 @@ export class ReportController {
         data: report,
       });
     } catch (error: any) {
-      console.error('Error creating report:', error);
+      Logger.error('Error creating report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ReportController.createReport',
+      });
       return sendError(res, 500, 'REPORT_CREATE_FAILED', 'Failed to create report', error.message);
     }
   }
@@ -83,7 +99,12 @@ export class ReportController {
         data: report,
       });
     } catch (error: any) {
-      console.error('Error updating report:', error);
+      Logger.error('Error updating report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: req.params.id,
+        context: 'ReportController.updateReport',
+      });
       return sendError(res, 500, 'REPORT_UPDATE_FAILED', 'Failed to update report', error.message);
     }
   }
@@ -108,7 +129,12 @@ export class ReportController {
         data: report,
       });
     } catch (error: any) {
-      console.error('Error approving report:', error);
+      Logger.error('Error approving report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: req.params.id,
+        context: 'ReportController.approveReport',
+      });
       return sendError(
         res,
         500,
@@ -139,7 +165,12 @@ export class ReportController {
         data: report,
       });
     } catch (error: any) {
-      console.error('Error rejecting report:', error);
+      Logger.error('Error rejecting report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: req.params.id,
+        context: 'ReportController.rejectReport',
+      });
       return sendError(res, 500, 'REPORT_REJECT_FAILED', 'Failed to reject report', error.message);
     }
   }
@@ -158,7 +189,12 @@ export class ReportController {
         data: { message: 'Report deleted successfully' },
       });
     } catch (error: any) {
-      console.error('Error deleting report:', error);
+      Logger.error('Error deleting report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: req.params.id,
+        context: 'ReportController.deleteReport',
+      });
       return sendError(res, 500, 'REPORT_DELETE_FAILED', 'Failed to delete report', error.message);
     }
   }
@@ -187,7 +223,12 @@ export class ReportController {
       res.setHeader('Content-Length', pdf.length);
       res.send(pdf);
     } catch (error: any) {
-      console.error('Error generating PDF:', error);
+      Logger.error('Error generating PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: req.params.id,
+        context: 'ReportController.downloadPdf',
+      });
       return sendError(res, 500, 'PDF_GENERATION_FAILED', 'Failed to generate PDF', error.message);
     }
   }

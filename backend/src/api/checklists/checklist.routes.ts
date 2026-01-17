@@ -111,6 +111,13 @@ router.get('/inspections/:id', controller.getInspectionById);
 router.get('/inspections/:id/with-results', controller.getInspectionWithResults);
 
 /**
+ * @route   GET /api/checklists/inspections/:id/export-pdf
+ * @desc    Export inspection as PDF
+ * @access  Private
+ */
+router.get('/inspections/:id/export-pdf', controller.exportInspectionPDF);
+
+/**
  * @route   POST /api/checklists/inspections
  * @desc    Create new inspection
  * @body    { plantillaId, equipoId, trabajadorId, fechaInspeccion?, etc. }

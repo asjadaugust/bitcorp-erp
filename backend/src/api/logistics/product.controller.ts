@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { Product } from '../../models/product.model';
 import { AppDataSource } from '../../config/database.config';
+import Logger from '../../utils/logger';
 
 export class ProductController {
   async getAll(req: Request, res: Response) {
@@ -36,7 +37,11 @@ export class ProductController {
         data: transformedProducts,
       });
     } catch (error) {
-      console.error(error);
+      Logger.error('Error fetching products', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProductController.getAll',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch products',
@@ -128,7 +133,11 @@ export class ProductController {
         data: saved,
       });
     } catch (error) {
-      console.error(error);
+      Logger.error('Error creating product', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProductController.create',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create product',
@@ -180,7 +189,12 @@ export class ProductController {
         data: updated,
       });
     } catch (error) {
-      console.error(error);
+      Logger.error('Error updating product', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        productId: req.params.id,
+        context: 'ProductController.update',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to update product',
@@ -212,7 +226,12 @@ export class ProductController {
 
       res.status(204).send();
     } catch (error) {
-      console.error(error);
+      Logger.error('Error deleting product', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        productId: req.params.id,
+        context: 'ProductController.delete',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to delete product',

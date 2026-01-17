@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ContractService } from '../../services/contract.service';
+import Logger from '../../utils/logger';
 
 const contractService = new ContractService();
 
@@ -25,7 +26,11 @@ export class ContractController {
 
       res.json(contracts);
     } catch (error: any) {
-      console.error('Error in getAll contracts:', error);
+      Logger.error('Error in getAll contracts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ContractController.getAll',
+      });
       res.status(500).json({
         error: 'Failed to fetch contracts',
         message: error.message,
@@ -50,7 +55,12 @@ export class ContractController {
 
       res.json(contract);
     } catch (error: any) {
-      console.error('Error in getById contract:', error);
+      Logger.error('Error in getById contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contractId: req.params.id,
+        context: 'ContractController.getById',
+      });
 
       if (error.message === 'Contract not found') {
         res.status(404).json({ error: 'Contract not found' });
@@ -81,7 +91,12 @@ export class ContractController {
 
       res.json(contract);
     } catch (error: any) {
-      console.error('Error in getByNumero contract:', error);
+      Logger.error('Error in getByNumero contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        numero: req.params.numero,
+        context: 'ContractController.getByNumero',
+      });
       res.status(500).json({
         error: 'Failed to fetch contract',
         message: error.message,
@@ -99,7 +114,11 @@ export class ContractController {
 
       res.status(201).json(contract);
     } catch (error: any) {
-      console.error('Error in create contract:', error);
+      Logger.error('Error in create contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ContractController.create',
+      });
 
       if (error.message.includes('already exists')) {
         res.status(409).json({ error: error.message });
@@ -135,7 +154,12 @@ export class ContractController {
 
       res.json(contract);
     } catch (error: any) {
-      console.error('Error in update contract:', error);
+      Logger.error('Error in update contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contractId: req.params.id,
+        context: 'ContractController.update',
+      });
 
       if (error.message === 'Contract not found') {
         res.status(404).json({ error: 'Contract not found' });
@@ -176,7 +200,12 @@ export class ContractController {
 
       res.status(204).send();
     } catch (error: any) {
-      console.error('Error in delete contract:', error);
+      Logger.error('Error in delete contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contractId: req.params.id,
+        context: 'ContractController.delete',
+      });
       res.status(500).json({
         error: 'Failed to delete contract',
         message: error.message,
@@ -196,7 +225,12 @@ export class ContractController {
 
       res.json(contracts);
     } catch (error: any) {
-      console.error('Error in getExpiring contracts:', error);
+      Logger.error('Error in getExpiring contracts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        days: req.params.days,
+        context: 'ContractController.getExpiring',
+      });
       res.status(500).json({
         error: 'Failed to fetch expiring contracts',
         message: error.message,
@@ -221,7 +255,12 @@ export class ContractController {
 
       res.json(addendums);
     } catch (error: any) {
-      console.error('Error in getAddendums:', error);
+      Logger.error('Error in getAddendums', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contractId: req.params.id,
+        context: 'ContractController.getAddendums',
+      });
       res.status(500).json({
         error: 'Failed to fetch addendums',
         message: error.message,
@@ -249,7 +288,12 @@ export class ContractController {
 
       res.status(201).json(addendum);
     } catch (error: any) {
-      console.error('Error in createAddendum:', error);
+      Logger.error('Error in createAddendum', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contractId: req.params.id,
+        context: 'ContractController.createAddendum',
+      });
 
       if (error.message.includes('not found')) {
         res.status(404).json({ error: error.message });
@@ -278,7 +322,11 @@ export class ContractController {
 
       res.json({ count });
     } catch (error: any) {
-      console.error('Error in getActiveCount:', error);
+      Logger.error('Error in getActiveCount', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ContractController.getActiveCount',
+      });
       res.status(500).json({
         error: 'Failed to count contracts',
         message: error.message,

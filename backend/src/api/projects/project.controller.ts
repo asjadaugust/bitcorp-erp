@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProjectService, CreateProjectDto, UpdateProjectDto } from '../../services/project.service';
+import Logger from '../../utils/logger';
 
 export class ProjectController {
   private projectService: ProjectService;
@@ -28,7 +29,11 @@ export class ProjectController {
         data: projects,
       });
     } catch (error) {
-      console.error('Error in findAll projects:', error);
+      Logger.error('Error in findAll projects', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProjectController.findAll',
+      });
       res.status(500).json({
         success: false,
         error: (error as Error).message,
@@ -50,7 +55,12 @@ export class ProjectController {
         data: project,
       });
     } catch (error) {
-      console.error('Error in findById project:', error);
+      Logger.error('Error in findById project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.id,
+        context: 'ProjectController.findById',
+      });
       res.status(404).json({
         success: false,
         error: (error as Error).message,
@@ -72,7 +82,12 @@ export class ProjectController {
         data: project,
       });
     } catch (error) {
-      console.error('Error in findByCode project:', error);
+      Logger.error('Error in findByCode project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectCode: req.params.code,
+        context: 'ProjectController.findByCode',
+      });
       res.status(404).json({
         success: false,
         error: (error as Error).message,
@@ -94,7 +109,11 @@ export class ProjectController {
         data: project,
       });
     } catch (error) {
-      console.error('Error in create project:', error);
+      Logger.error('Error in create project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProjectController.create',
+      });
       res.status(400).json({
         success: false,
         error: (error as Error).message,
@@ -117,7 +136,12 @@ export class ProjectController {
         data: project,
       });
     } catch (error) {
-      console.error('Error in update project:', error);
+      Logger.error('Error in update project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.id,
+        context: 'ProjectController.update',
+      });
       res.status(400).json({
         success: false,
         error: (error as Error).message,
@@ -139,7 +163,12 @@ export class ProjectController {
         message: 'Project deleted successfully',
       });
     } catch (error) {
-      console.error('Error in delete project:', error);
+      Logger.error('Error in delete project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.id,
+        context: 'ProjectController.delete',
+      });
       res.status(400).json({
         success: false,
         error: (error as Error).message,
@@ -171,7 +200,13 @@ export class ProjectController {
         message: 'User assigned to project successfully',
       });
     } catch (error) {
-      console.error('Error in assignUser:', error);
+      Logger.error('Error in assignUser', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.id,
+        userId: req.body.user_id,
+        context: 'ProjectController.assignUser',
+      });
       res.status(400).json({
         success: false,
         error: (error as Error).message,
@@ -193,7 +228,13 @@ export class ProjectController {
         message: 'User unassigned from project successfully',
       });
     } catch (error) {
-      console.error('Error in unassignUser:', error);
+      Logger.error('Error in unassignUser', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.id,
+        userId: req.params.userId,
+        context: 'ProjectController.unassignUser',
+      });
       res.status(400).json({
         success: false,
         error: (error as Error).message,
@@ -215,7 +256,12 @@ export class ProjectController {
         data: users,
       });
     } catch (error) {
-      console.error('Error in getProjectUsers:', error);
+      Logger.error('Error in getProjectUsers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.id,
+        context: 'ProjectController.getProjectUsers',
+      });
       res.status(500).json({
         success: false,
         error: (error as Error).message,
@@ -257,7 +303,13 @@ export class ProjectController {
 
       await ExportUtil.exportToExcel(res, data, columns, `proyectos_${Date.now()}`);
     } catch (error) {
-      console.error('Error in exportExcel:', error);
+      Logger.error('Error in exportExcel', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        status: req.query.status,
+        search: req.query.search,
+        context: 'ProjectController.exportExcel',
+      });
       res.status(500).json({ error: (error as Error).message });
     }
   };
@@ -296,7 +348,13 @@ export class ProjectController {
 
       ExportUtil.exportToCSV(res, data, fields, `proyectos_${Date.now()}`);
     } catch (error) {
-      console.error('Error in exportCSV:', error);
+      Logger.error('Error in exportCSV', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        status: req.query.status,
+        search: req.query.search,
+        context: 'ProjectController.exportCSV',
+      });
       res.status(500).json({ error: (error as Error).message });
     }
   };

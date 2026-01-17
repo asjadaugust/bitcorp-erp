@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../../config/database.config';
 import { Movement, MovementDetail } from '../../models/movement.model';
 import { Product } from '../../models/product.model';
+import Logger from '../../utils/logger';
 
 export class MovementController {
   async getAll(req: Request, res: Response) {
@@ -69,7 +70,11 @@ export class MovementController {
         data: movementsWithTotal,
       });
     } catch (error) {
-      console.error(error);
+      Logger.error('Error fetching movements', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'MovementController.getAll',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch movements',
@@ -144,7 +149,12 @@ export class MovementController {
         data: response,
       });
     } catch (error) {
-      console.error(error);
+      Logger.error('Error fetching movement', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        movementId: req.params.id,
+        context: 'MovementController.getById',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch movement',
@@ -220,7 +230,11 @@ export class MovementController {
       });
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.error(error);
+      Logger.error('Error creating movement', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'MovementController.create',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create movement',
@@ -258,7 +272,12 @@ export class MovementController {
         data: movement,
       });
     } catch (error) {
-      console.error(error);
+      Logger.error('Error approving movement', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        movementId: req.params.id,
+        context: 'MovementController.approve',
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to approve movement',

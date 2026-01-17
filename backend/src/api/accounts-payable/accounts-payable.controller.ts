@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { AccountsPayableService } from '../../services/accounts-payable.service';
+import Logger from '../../utils/logger';
 
 export class AccountsPayableController {
   private service: AccountsPayableService;
@@ -15,7 +16,11 @@ export class AccountsPayableController {
       const result = await this.service.create(data);
       res.status(201).json(result);
     } catch (error) {
-      console.error('Error creating accounts payable:', error);
+      Logger.error('Error creating accounts payable', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'AccountsPayableController.create',
+      });
       res.status(500).json({ message: 'Internal server error' });
     }
   };
@@ -25,7 +30,11 @@ export class AccountsPayableController {
       const result = await this.service.findAll();
       res.status(200).json(result);
     } catch (error) {
-      console.error('Error fetching accounts payable:', error);
+      Logger.error('Error fetching accounts payable', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'AccountsPayableController.findAll',
+      });
       res.status(500).json({ message: 'Internal server error' });
     }
   };
@@ -40,7 +49,12 @@ export class AccountsPayableController {
       }
       res.status(200).json(result);
     } catch (error) {
-      console.error('Error fetching accounts payable:', error);
+      Logger.error('Error fetching accounts payable by id', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id: req.params.id,
+        context: 'AccountsPayableController.findOne',
+      });
       res.status(500).json({ message: 'Internal server error' });
     }
   };
@@ -56,7 +70,11 @@ export class AccountsPayableController {
       }
       res.status(200).json(result);
     } catch (error) {
-      console.error('Error updating accounts payable:', error);
+      Logger.error('Error fetching accounts payable', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'AccountsPayableController.findAll',
+      });
       res.status(500).json({ message: 'Internal server error' });
     }
   };
@@ -71,7 +89,12 @@ export class AccountsPayableController {
       }
       res.status(204).send();
     } catch (error) {
-      console.error('Error deleting accounts payable:', error);
+      Logger.error('Error fetching accounts payable', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        accountId: req.params.id,
+        context: 'AccountsPayableController.findOne',
+      });
       res.status(500).json({ message: 'Internal server error' });
     }
   };
@@ -81,7 +104,11 @@ export class AccountsPayableController {
       const result = await this.service.findPending();
       res.status(200).json(result);
     } catch (error) {
-      console.error('Error fetching pending accounts payable:', error);
+      Logger.error('Error fetching pending accounts payable', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'AccountsPayableController.findPending',
+      });
       res.status(500).json({ message: 'Internal server error' });
     }
   };

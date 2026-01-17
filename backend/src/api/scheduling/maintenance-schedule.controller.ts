@@ -1,12 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
-import pool from '../../config/database.config';
 import { sendSuccess, sendError } from '../../utils/api-response';
+import { MaintenanceScheduleRecurringService } from '../../services/maintenance-schedule-recurring.service';
+import Logger from '../../utils/logger';
 
 /**
  * Maintenance Schedule Controller
- * Handles API endpoints for maintenance scheduling using raw SQL
+ * Handles API endpoints for recurring maintenance scheduling using TypeORM
+ *
+ * This controller manages RECURRING maintenance schedules (e.g., "change oil every 250 hours").
+ * For one-time maintenance work orders, use MaintenanceScheduleController (programa_mantenimiento).
+ *
+ * Migration from raw SQL to TypeORM:
+ * - Eliminated 16 raw SQL queries
+ * - Added service layer separation
+ * - Improved type safety and error handling
  */
+
+const service = new MaintenanceScheduleRecurringService();
 
 /**
  * GET /api/scheduling/maintenance-schedules
@@ -16,47 +27,28 @@ export const listSchedules = async (req: Request, res: Response) => {
   try {
     const { equipment_id, status, project_id } = req.query;
 
-    let query = `
-      SELECT 
-        ms.*,
-        e.code as equipment_code,
-        e.description as equipment_name,
-        e.brand as equipment_brand,
-        p.name as project_name
-      FROM maintenance_schedules ms
-      LEFT JOIN equipment e ON ms.equipment_id = e.id
-      LEFT JOIN projects p ON e.project_id = p.id
-      WHERE 1=1
-    `;
-    const params: any[] = [];
-    let paramIndex = 1;
+    const filters: any = {};
 
     if (equipment_id) {
-      query += ` AND ms.equipment_id = $${paramIndex++}`;
-      params.push(equipment_id);
+      filters.equipmentId = parseInt(equipment_id as string);
     }
 
     if (status) {
-      query += ` AND ms.is_active = $${paramIndex++}`;
-      params.push(status === 'active');
+      filters.status = status === 'active' ? 'active' : 'inactive';
     }
 
     if (project_id) {
-      query += ` AND e.project_id = $${paramIndex++}`;
-      params.push(project_id);
+      filters.projectId = parseInt(project_id as string);
     }
 
-    query += ' ORDER BY ms.created_at DESC';
-
-    const result = await pool.query(query, params);
-
-    return sendSuccess(res, result.rows.map(mapSchedule));
+    const schedules = await service.findAll(filters);
+    return sendSuccess(res, schedules);
   } catch (error: any) {
-    console.error('Error listing maintenance schedules:', error);
-    // If table doesn't exist, return empty array
-    if (error.message?.includes('relation "maintenance_schedules" does not exist')) {
-      return sendSuccess(res, [], { message: 'Maintenance schedules table not yet created' });
-    }
+    Logger.error('Error listing maintenance schedules', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      context: 'MaintenanceScheduleController.listSchedules',
+    });
     return sendError(
       res,
       500,
@@ -74,22 +66,9 @@ export const listSchedules = async (req: Request, res: Response) => {
 export const getScheduleById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const schedule = await service.findById(parseInt(id));
 
-    const query = `
-      SELECT 
-        ms.*,
-        e.code as equipment_code,
-        e.description as equipment_name,
-        e.brand as equipment_brand,
-        p.name as project_name
-      FROM maintenance_schedules ms
-      LEFT JOIN equipment e ON ms.equipment_id = e.id
-      LEFT JOIN projects p ON ms.project_id = p.id
-      WHERE ms.id = $1
-    `;
-    const result = await pool.query(query, [id]);
-
-    if (result.rows.length === 0) {
+    if (!schedule) {
       return sendError(
         res,
         404,
@@ -98,9 +77,14 @@ export const getScheduleById = async (req: Request, res: Response) => {
       );
     }
 
-    return sendSuccess(res, mapSchedule(result.rows[0]));
+    return sendSuccess(res, schedule);
   } catch (error: any) {
-    console.error('Error getting maintenance schedule:', error);
+    Logger.error('Error getting maintenance schedule', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      scheduleId: req.params.id,
+      context: 'MaintenanceScheduleController.getScheduleById',
+    });
     return sendError(
       res,
       500,
@@ -127,36 +111,39 @@ export const createSchedule = async (req: Request, res: Response) => {
       notes,
       auto_generate_tasks,
     } = req.body;
+
     const createdBy = (req as any).user?.id;
 
-    // Calculate next due based on interval
-    const nextDueDate = calculateNextDueDate(interval_type, interval_value);
+    // Validate required fields
+    if (!equipment_id || !interval_value) {
+      return sendError(
+        res,
+        400,
+        'MAINTENANCE_SCHEDULE_INVALID_DATA',
+        'Equipment ID and interval value are required'
+      );
+    }
 
-    const query = `
-      INSERT INTO maintenance_schedules (
-        equipment_id, project_id, maintenance_type, interval_type, interval_value,
-        description, notes, auto_generate_tasks, next_due_date, status, created_by
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'active', $10)
-      RETURNING *
-    `;
+    const schedule = await service.create({
+      equipmentId: equipment_id,
+      projectId: project_id,
+      maintenanceType: maintenance_type,
+      intervalType: interval_type,
+      intervalValue: interval_value,
+      description,
+      notes,
+      autoGenerateTasks: auto_generate_tasks,
+      createdById: createdBy,
+    });
 
-    const result = await pool.query(query, [
-      equipment_id,
-      project_id || null,
-      maintenance_type || 'preventive',
-      interval_type || 'hours',
-      interval_value || 250,
-      description || null,
-      notes || null,
-      auto_generate_tasks !== false,
-      nextDueDate,
-      createdBy,
-    ]);
-
-    return sendSuccess(res, mapSchedule(result.rows[0]), undefined, 201);
+    return sendSuccess(res, schedule, undefined, 201);
   } catch (error: any) {
-    console.error('Error creating maintenance schedule:', error);
+    Logger.error('Error creating maintenance schedule', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      equipmentId: req.body.equipment_id,
+      context: 'MaintenanceScheduleController.createSchedule',
+    });
     return sendError(
       res,
       500,
@@ -175,50 +162,33 @@ export const updateSchedule = async (req: Request, res: Response) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const fields: string[] = [];
-    const values: any[] = [];
-    let paramIndex = 1;
+    // Map snake_case from frontend to camelCase for service
+    const dto: any = {};
 
-    const allowedFields = [
-      'equipment_id',
-      'project_id',
-      'maintenance_type',
-      'interval_type',
-      'interval_value',
-      'description',
-      'notes',
-      'status',
-      'auto_generate_tasks',
-      'next_due_date',
-      'next_due_hours',
-      'last_completed_date',
-      'last_completed_hours',
-    ];
+    if (updates.equipment_id !== undefined) dto.equipmentId = updates.equipment_id;
+    if (updates.project_id !== undefined) dto.projectId = updates.project_id;
+    if (updates.maintenance_type !== undefined) dto.maintenanceType = updates.maintenance_type;
+    if (updates.interval_type !== undefined) dto.intervalType = updates.interval_type;
+    if (updates.interval_value !== undefined) dto.intervalValue = updates.interval_value;
+    if (updates.description !== undefined) dto.description = updates.description;
+    if (updates.notes !== undefined) dto.notes = updates.notes;
+    if (updates.status !== undefined) dto.status = updates.status;
+    if (updates.auto_generate_tasks !== undefined)
+      dto.autoGenerateTasks = updates.auto_generate_tasks;
+    if (updates.next_due_date !== undefined) dto.nextDueDate = new Date(updates.next_due_date);
+    if (updates.next_due_hours !== undefined) dto.nextDueHours = updates.next_due_hours;
+    if (updates.last_completed_date !== undefined)
+      dto.lastCompletedDate = new Date(updates.last_completed_date);
+    if (updates.last_completed_hours !== undefined)
+      dto.lastCompletedHours = updates.last_completed_hours;
 
-    allowedFields.forEach((field) => {
-      if (updates[field] !== undefined) {
-        fields.push(`${field} = $${paramIndex++}`);
-        values.push(updates[field]);
-      }
-    });
-
-    if (fields.length === 0) {
+    if (Object.keys(dto).length === 0) {
       return sendError(res, 400, 'MAINTENANCE_SCHEDULE_NO_FIELDS', 'No valid fields to update');
     }
 
-    fields.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(id);
+    const schedule = await service.update(parseInt(id), dto);
 
-    const query = `
-      UPDATE maintenance_schedules 
-      SET ${fields.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-
-    const result = await pool.query(query, values);
-
-    if (result.rows.length === 0) {
+    if (!schedule) {
       return sendError(
         res,
         404,
@@ -227,9 +197,14 @@ export const updateSchedule = async (req: Request, res: Response) => {
       );
     }
 
-    return sendSuccess(res, mapSchedule(result.rows[0]));
+    return sendSuccess(res, schedule);
   } catch (error: any) {
-    console.error('Error updating maintenance schedule:', error);
+    Logger.error('Error updating maintenance schedule', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      scheduleId: req.params.id,
+      context: 'MaintenanceScheduleController.updateSchedule',
+    });
     return sendError(
       res,
       500,
@@ -247,13 +222,9 @@ export const updateSchedule = async (req: Request, res: Response) => {
 export const deleteSchedule = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const deleted = await service.delete(parseInt(id));
 
-    const result = await pool.query(
-      'DELETE FROM maintenance_schedules WHERE id = $1 RETURNING id',
-      [id]
-    );
-
-    if (result.rowCount === 0) {
+    if (!deleted) {
       return sendError(
         res,
         404,
@@ -264,7 +235,12 @@ export const deleteSchedule = async (req: Request, res: Response) => {
 
     return sendSuccess(res, { message: 'Maintenance schedule deleted successfully' });
   } catch (error: any) {
-    console.error('Error deleting maintenance schedule:', error);
+    Logger.error('Error deleting maintenance schedule', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      scheduleId: req.params.id,
+      context: 'MaintenanceScheduleController.deleteSchedule',
+    });
     return sendError(
       res,
       500,
@@ -277,29 +253,25 @@ export const deleteSchedule = async (req: Request, res: Response) => {
 
 /**
  * POST /api/scheduling/maintenance-schedules/generate-tasks
- * Generate tasks from all active schedules
+ * Generate tasks from all active schedules that are due soon
  */
 export const generateTasks = async (req: Request, res: Response) => {
   try {
     const { daysAhead = 30 } = req.body;
 
-    // Find schedules that are due soon
-    const query = `
-      SELECT * FROM maintenance_schedules
-      WHERE status = 'active'
-      AND auto_generate_tasks = true
-      AND next_due_date <= CURRENT_DATE + INTERVAL '${daysAhead} days'
-    `;
+    const schedules = await service.findDueSoon(daysAhead);
 
-    const result = await pool.query(query);
-
-    // For now, just return the schedules that would generate tasks
     return sendSuccess(res, {
-      tasksGenerated: result.rows.length,
-      schedules: result.rows.map(mapSchedule),
+      tasksGenerated: schedules.length,
+      schedules,
     });
   } catch (error: any) {
-    console.error('Error generating tasks:', error);
+    Logger.error('Error generating tasks', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      daysAhead: req.body.daysAhead,
+      context: 'MaintenanceScheduleController.generateTasks',
+    });
     return sendError(
       res,
       500,
@@ -319,10 +291,9 @@ export const completeSchedule = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { completionHours } = req.body;
 
-    // First get the schedule
-    const getResult = await pool.query('SELECT * FROM maintenance_schedules WHERE id = $1', [id]);
+    const schedule = await service.complete(parseInt(id), completionHours);
 
-    if (getResult.rows.length === 0) {
+    if (!schedule) {
       return sendError(
         res,
         404,
@@ -331,32 +302,14 @@ export const completeSchedule = async (req: Request, res: Response) => {
       );
     }
 
-    const schedule = getResult.rows[0];
-    const nextDueDate = calculateNextDueDate(schedule.interval_type, schedule.interval_value);
-    const nextDueHours = completionHours ? completionHours + (schedule.interval_value || 0) : null;
-
-    const updateQuery = `
-      UPDATE maintenance_schedules
-      SET 
-        last_completed_date = CURRENT_TIMESTAMP,
-        last_completed_hours = $1,
-        next_due_date = $2,
-        next_due_hours = $3,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = $4
-      RETURNING *
-    `;
-
-    const result = await pool.query(updateQuery, [
-      completionHours || null,
-      nextDueDate,
-      nextDueHours,
-      id,
-    ]);
-
-    return sendSuccess(res, mapSchedule(result.rows[0]));
+    return sendSuccess(res, schedule);
   } catch (error: any) {
-    console.error('Error completing schedule:', error);
+    Logger.error('Error completing schedule', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      scheduleId: req.params.id,
+      context: 'MaintenanceScheduleController.completeSchedule',
+    });
     return sendError(
       res,
       500,
@@ -365,65 +318,3 @@ export const completeSchedule = async (req: Request, res: Response) => {
     );
   }
 };
-
-// Helper function to calculate next due date
-function calculateNextDueDate(intervalType: string, intervalValue: number): Date {
-  const now = new Date();
-
-  switch (intervalType) {
-    case 'days':
-      now.setDate(now.getDate() + intervalValue);
-      break;
-    case 'weeks':
-      now.setDate(now.getDate() + intervalValue * 7);
-      break;
-    case 'months':
-      now.setMonth(now.getMonth() + intervalValue);
-      break;
-    case 'hours':
-    default:
-      // For hours-based schedules, set a default 30 days
-      now.setDate(now.getDate() + 30);
-      break;
-  }
-
-  return now;
-}
-
-// Helper function to map database row to response format
-function mapSchedule(row: any) {
-  return {
-    id: row.id,
-    equipmentId: row.equipment_id,
-    projectId: row.project_id,
-    maintenanceType: row.maintenance_type,
-    intervalType: row.interval_type,
-    intervalValue: row.interval_value,
-    description: row.description,
-    notes: row.notes,
-    status: row.status,
-    autoGenerateTasks: row.auto_generate_tasks,
-    lastCompletedDate: row.last_completed_date,
-    lastCompletedHours: row.last_completed_hours,
-    nextDueDate: row.next_due_date,
-    nextDueHours: row.next_due_hours,
-    createdBy: row.created_by,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    // Joined fields
-    equipment: row.equipment_code
-      ? {
-          id: row.equipment_id,
-          code: row.equipment_code,
-          name: row.equipment_name,
-          brand: row.equipment_brand,
-        }
-      : undefined,
-    project: row.project_name
-      ? {
-          id: row.project_id,
-          name: row.project_name,
-        }
-      : undefined,
-  };
-}

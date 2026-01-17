@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { CostCenterService } from '../../services/cost-center.service';
+import Logger from '../../utils/logger';
 
 const costCenterService = new CostCenterService();
 
@@ -23,7 +24,11 @@ export class CostCenterController {
 
       res.json(costCenters);
     } catch (error: any) {
-      console.error('Error in getAll cost centers:', error);
+      Logger.error('Error in getAll cost centers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'CostCenterController.getAll',
+      });
       res.status(500).json({
         error: 'Failed to fetch cost centers',
         message: error.message,
@@ -48,7 +53,12 @@ export class CostCenterController {
 
       res.json(costCenter);
     } catch (error: any) {
-      console.error('Error in getById cost center:', error);
+      Logger.error('Error in getById cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        costCenterId: req.params.id,
+        context: 'CostCenterController.getById',
+      });
 
       if (error.message === 'Cost center not found') {
         res.status(404).json({ error: 'Cost center not found' });
@@ -79,7 +89,12 @@ export class CostCenterController {
 
       res.json(costCenter);
     } catch (error: any) {
-      console.error('Error in getByCode cost center:', error);
+      Logger.error('Error in getByCode cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        code: req.params.code,
+        context: 'CostCenterController.getByCode',
+      });
       res.status(500).json({
         error: 'Failed to fetch cost center',
         message: error.message,
@@ -104,7 +119,12 @@ export class CostCenterController {
 
       res.json(costCenters);
     } catch (error: any) {
-      console.error('Error in getByProject:', error);
+      Logger.error('Error in getByProject', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.project_id,
+        context: 'CostCenterController.getByProject',
+      });
       res.status(500).json({
         error: 'Failed to fetch cost centers',
         message: error.message,
@@ -122,7 +142,11 @@ export class CostCenterController {
 
       res.status(201).json(costCenter);
     } catch (error: any) {
-      console.error('Error in create cost center:', error);
+      Logger.error('Error in create cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'CostCenterController.create',
+      });
 
       if (error.message.includes('already exists')) {
         res.status(409).json({ error: error.message });
@@ -158,7 +182,12 @@ export class CostCenterController {
 
       res.json(costCenter);
     } catch (error: any) {
-      console.error('Error in update cost center:', error);
+      Logger.error('Error in update cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        costCenterId: req.params.id,
+        context: 'CostCenterController.update',
+      });
 
       if (error.message === 'Cost center not found') {
         res.status(404).json({ error: 'Cost center not found' });
@@ -194,7 +223,12 @@ export class CostCenterController {
 
       res.status(204).send();
     } catch (error: any) {
-      console.error('Error in delete cost center:', error);
+      Logger.error('Error in delete cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        costCenterId: req.params.id,
+        context: 'CostCenterController.delete',
+      });
       res.status(500).json({
         error: 'Failed to delete cost center',
         message: error.message,
@@ -212,7 +246,11 @@ export class CostCenterController {
 
       res.json({ count });
     } catch (error: any) {
-      console.error('Error in getActiveCount:', error);
+      Logger.error('Error in getActiveCount', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'CostCenterController.getActiveCount',
+      });
       res.status(500).json({
         error: 'Failed to count cost centers',
         message: error.message,
@@ -237,7 +275,12 @@ export class CostCenterController {
 
       res.json({ project_id, total_budget: total });
     } catch (error: any) {
-      console.error('Error in getProjectBudget:', error);
+      Logger.error('Error in getProjectBudget', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.project_id,
+        context: 'CostCenterController.getProjectBudget',
+      });
       res.status(500).json({
         error: 'Failed to calculate budget',
         message: error.message,

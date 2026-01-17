@@ -1,76 +1,149 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Router } from 'express';
-import { Pool } from 'pg';
 import { TenantService } from '../../services/tenant.service';
-import { superAdminMiddleware, developerMiddleware } from '../../middleware/tenant.middleware';
+import { adminOnlyMiddleware } from '../../middleware/tenant.middleware';
 import { authenticate } from '../../middleware/auth.middleware';
+import Logger from '../../utils/logger';
 
-export function createTenantRouter(pool: Pool): Router {
+export function createTenantRouter(): Router {
   const router = Router();
-  const tenantService = new TenantService(pool);
+  const tenantService = new TenantService();
 
   // Apply authentication to all tenant routes
   router.use(authenticate);
 
-  // Company management (super admin only)
-  router.get('/companies', superAdminMiddleware, async (req, res) => {
+  // Company management (admin only)
+  router.get('/companies', adminOnlyMiddleware, async (req, res) => {
     try {
       const companies = await tenantService.getAllCompanies();
       res.json(companies);
-    } catch (error) {
-      console.error('Error fetching companies:', error);
+    } catch (error: any) {
+      Logger.error('Error fetching companies', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'TenantRouter.getAllCompanies',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message: 'Company management requires database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(500).json({ error: 'Error al obtener compañías' });
     }
   });
 
-  router.post('/companies', superAdminMiddleware, async (req, res) => {
+  router.post('/companies', adminOnlyMiddleware, async (req, res) => {
     try {
       const company = await tenantService.createCompany(req.body);
       res.status(201).json(company);
     } catch (error: any) {
-      console.error('Error creating company:', error);
+      Logger.error('Error creating company', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'TenantRouter.createCompany',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message: 'Company management requires database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(400).json({ error: error.message || 'Error al crear compañía' });
     }
   });
 
-  router.get('/companies/:id', superAdminMiddleware, async (req, res) => {
+  router.get('/companies/:id', adminOnlyMiddleware, async (req, res) => {
     try {
       const company = await tenantService.getCompanyById(req.params.id);
       if (!company) {
-        return res.status(404).json({ error: 'Compañía no encontrada' });
+        return res.status(404).json({ error: 'Compañía no encontrada o feature no implementado' });
       }
       res.json(company);
-    } catch (error) {
-      console.error('Error fetching company:', error);
+    } catch (error: any) {
+      Logger.error('Error fetching company', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        companyId: req.params.id,
+        context: 'TenantRouter.getCompanyById',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message: 'Company management requires database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(500).json({ error: 'Error al obtener compañía' });
     }
   });
 
-  router.put('/companies/:id', superAdminMiddleware, async (req, res) => {
+  router.put('/companies/:id', adminOnlyMiddleware, async (req, res) => {
     try {
       const company = await tenantService.updateCompany(req.params.id, req.body);
       res.json(company);
     } catch (error: any) {
-      console.error('Error updating company:', error);
+      Logger.error('Error updating company', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        companyId: req.params.id,
+        context: 'TenantRouter.updateCompany',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message: 'Company management requires database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(400).json({ error: error.message || 'Error al actualizar compañía' });
     }
   });
 
-  router.get('/companies/:id/projects', superAdminMiddleware, async (req, res) => {
+  router.get('/companies/:id/projects', adminOnlyMiddleware, async (req, res) => {
     try {
       const projects = await tenantService.getCompanyProjects(req.params.id);
       res.json(projects);
-    } catch (error) {
-      console.error('Error fetching company projects:', error);
+    } catch (error: any) {
+      Logger.error('Error fetching company projects', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        companyId: req.params.id,
+        context: 'TenantRouter.getCompanyProjects',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message:
+            'Company-project management requires database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(500).json({ error: 'Error al obtener proyectos' });
     }
   });
 
-  router.get('/companies/:id/users', superAdminMiddleware, async (req, res) => {
+  router.get('/companies/:id/users', adminOnlyMiddleware, async (req, res) => {
     try {
       const users = await tenantService.getCompanyUsers(req.params.id);
       res.json(users);
-    } catch (error) {
-      console.error('Error fetching company users:', error);
+    } catch (error: any) {
+      Logger.error('Error fetching company users', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        companyId: req.params.id,
+        context: 'TenantRouter.getCompanyUsers',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message:
+            'User-project assignments require database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(500).json({ error: 'Error al obtener usuarios' });
     }
   });
@@ -79,18 +152,34 @@ export function createTenantRouter(pool: Pool): Router {
   router.get('/my-projects', async (req, res) => {
     try {
       const user = (req as any).user;
-      console.log('MyProjects - User from token:', user);
-      
+      Logger.debug('Fetching user projects', {
+        userId: user?.id,
+        username: user?.username,
+        context: 'TenantRouter.myProjects',
+      });
+
       if (!user || !user.id) {
-        console.warn('MyProjects - No user or user.id in request');
+        Logger.warn('My projects request without valid user', {
+          hasUser: !!user,
+          hasUserId: !!(user && user.id),
+          context: 'TenantRouter.myProjects',
+        });
         return res.json([]);
       }
-      
+
       const projects = await tenantService.getUserProjects(user.id);
-      console.log(`MyProjects - Found ${projects.length} projects for user ${user.id}`);
+      Logger.debug('User projects fetched', {
+        userId: user.id,
+        projectCount: projects.length,
+        context: 'TenantRouter.myProjects',
+      });
       res.json(projects);
     } catch (error) {
-      console.error('Error fetching user projects:', error);
+      Logger.error('Error fetching user projects', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'TenantRouter.myProjects',
+      });
       // Return empty array instead of 500 to prevent login failures
       res.json([]);
     }
@@ -100,9 +189,27 @@ export function createTenantRouter(pool: Pool): Router {
     try {
       const user = (req as any).user;
       await tenantService.switchUserProject(user.id, req.params.projectId);
-      res.json({ message: 'Proyecto cambiado exitosamente' });
-    } catch (error) {
-      console.error('Error switching project:', error);
+      res.json({
+        message: 'Proyecto verificado (switch no implementado - columna faltante)',
+        warning: 'active_project_id column does not exist in sistema.usuario',
+      });
+    } catch (error: any) {
+      Logger.error('Error switching project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId: req.params.projectId,
+        context: 'TenantRouter.switchProject',
+      });
+      if (error.message === 'Project not found') {
+        return res.status(404).json({ error: 'Proyecto no encontrado' });
+      }
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message: 'Project switching requires active_project_id column in sistema.usuario',
+          details: error.message,
+        });
+      }
       res.status(400).json({ error: 'Error al cambiar proyecto' });
     }
   });
@@ -113,8 +220,22 @@ export function createTenantRouter(pool: Pool): Router {
       const { userId, projectId } = req.body;
       await tenantService.assignUserToProject(userId, projectId);
       res.json({ message: 'Usuario asignado exitosamente' });
-    } catch (error) {
-      console.error('Error assigning user to project:', error);
+    } catch (error: any) {
+      Logger.error('Error assigning user to project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: req.body.userId,
+        projectId: req.body.projectId,
+        context: 'TenantRouter.assignUser',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message:
+            'User-project assignments require database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(400).json({ error: 'Error al asignar usuario' });
     }
   });
@@ -124,8 +245,22 @@ export function createTenantRouter(pool: Pool): Router {
       const { userId, projectId } = req.body;
       await tenantService.removeUserFromProject(userId, projectId);
       res.json({ message: 'Usuario removido exitosamente' });
-    } catch (error) {
-      console.error('Error removing user from project:', error);
+    } catch (error: any) {
+      Logger.error('Error removing user from project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: req.body.userId,
+        projectId: req.body.projectId,
+        context: 'TenantRouter.removeUser',
+      });
+      if (error.message?.includes('NOT_IMPLEMENTED')) {
+        return res.status(501).json({
+          error: 'Feature not implemented',
+          message:
+            'User-project assignments require database migrations. See company-entity.model.ts',
+          details: error.message,
+        });
+      }
       res.status(400).json({ error: 'Error al remover usuario' });
     }
   });

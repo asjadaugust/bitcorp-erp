@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { ReportingController } from './reporting.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { ROLES } from '../../types/roles';
 
 const router = Router();
 const controller = new ReportingController();
@@ -10,32 +11,25 @@ router.use(authenticate);
 
 router.get(
   '/equipment-utilization',
-  authorize('director_general', 'administrador', 'jefe_equipos', 'finanzas', 'director_proyecto'),
+  authorize(ROLES.DIRECTOR, ROLES.ADMIN, ROLES.JEFE_EQUIPO),
   controller.getEquipmentUtilization
 );
 
 router.get(
   '/maintenance',
-  authorize('director_general', 'administrador', 'jefe_equipos', 'finanzas', 'director_proyecto'),
+  authorize(ROLES.DIRECTOR, ROLES.ADMIN, ROLES.JEFE_EQUIPO),
   controller.getMaintenanceHistory
 );
 
 router.get(
   '/inventory',
-  authorize('director_general', 'administrador', 'logistica', 'finanzas', 'director_proyecto'),
+  authorize(ROLES.DIRECTOR, ROLES.ADMIN, ROLES.JEFE_EQUIPO),
   controller.getInventoryMovements
 );
 
 router.get(
   '/operator-timesheet',
-  authorize(
-    'director_general',
-    'administrador',
-    'jefe_equipos',
-    'finanzas',
-    'director_proyecto',
-    'rrhh'
-  ),
+  authorize(ROLES.DIRECTOR, ROLES.ADMIN, ROLES.JEFE_EQUIPO),
   controller.getOperatorTimesheet
 );
 

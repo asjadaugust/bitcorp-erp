@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../../config/database.config';
 import { SafetyIncident } from '../../models/safety-incident.model';
+import Logger from '../../utils/logger';
 
 export class SstController {
   getIncidents = async (req: Request, res: Response) => {
@@ -16,7 +17,11 @@ export class SstController {
         data: incidents,
       });
     } catch (error) {
-      console.error('Error fetching incidents:', error);
+      Logger.error('Error fetching incidents', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'SstController.getIncidents',
+      });
       res.status(500).json({
         success: false,
         error: 'Error fetching incidents',
@@ -42,7 +47,11 @@ export class SstController {
         data: savedIncident,
       });
     } catch (error) {
-      console.error('Error creating incident:', error);
+      Logger.error('Error creating incident', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'SstController.createIncident',
+      });
       res.status(500).json({
         success: false,
         error: 'Error creating incident',

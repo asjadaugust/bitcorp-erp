@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../../config/database.config';
 import { ScheduledTask } from '../../models/scheduled-task.model';
 import { Between, LessThanOrEqual, MoreThanOrEqual, Not, In } from 'typeorm';
+import Logger from '../../utils/logger';
 
 /**
  * Scheduled Task Controller
@@ -71,7 +72,11 @@ export const listTasks = async (req: Request, res: Response) => {
       data: tasks,
     });
   } catch (error: any) {
-    console.error('Error listing tasks:', error);
+    Logger.error('Error listing tasks', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      context: 'ScheduledTaskController.listTasks',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to list tasks',
@@ -106,7 +111,12 @@ export const getTaskById = async (req: Request, res: Response) => {
       data: task,
     });
   } catch (error: any) {
-    console.error('Error getting task:', error);
+    Logger.error('Error getting task', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      taskId: req.params.id,
+      context: 'ScheduledTaskController.getTaskById',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to get task',
@@ -161,7 +171,11 @@ export const createTask = async (req: Request, res: Response) => {
       data: savedTask,
     });
   } catch (error: any) {
-    console.error('Error creating task:', error);
+    Logger.error('Error creating task', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      context: 'ScheduledTaskController.createTask',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to create task',
@@ -232,7 +246,12 @@ export const updateTask = async (req: Request, res: Response) => {
       data: updatedTask,
     });
   } catch (error: any) {
-    console.error('Error updating task:', error);
+    Logger.error('Error updating task', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      taskId: req.params.id,
+      context: 'ScheduledTaskController.updateTask',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to update task',
@@ -263,7 +282,12 @@ export const deleteTask = async (req: Request, res: Response) => {
       message: 'Task deleted successfully',
     });
   } catch (error: any) {
-    console.error('Error deleting task:', error);
+    Logger.error('Error deleting task', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      taskId: req.params.id,
+      context: 'ScheduledTaskController.deleteTask',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to delete task',
@@ -323,7 +347,13 @@ export const assignOperator = async (req: Request, res: Response) => {
       data: updatedTask,
     });
   } catch (error: any) {
-    console.error('Error assigning operator:', error);
+    Logger.error('Error assigning operator', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      taskId: req.params.id,
+      operatorId: req.body.operator_id,
+      context: 'ScheduledTaskController.assignOperator',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to assign operator',
@@ -362,7 +392,12 @@ export const completeTask = async (req: Request, res: Response) => {
       data: updatedTask,
     });
   } catch (error: any) {
-    console.error('Error completing task:', error);
+    Logger.error('Error completing task', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      taskId: req.params.id,
+      context: 'ScheduledTaskController.completeTask',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to complete task',
@@ -406,7 +441,13 @@ export const checkConflicts = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error('Error checking conflicts:', error);
+    Logger.error('Error checking conflicts', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      operatorId: req.query.operator_id,
+      date: req.query.date,
+      context: 'ScheduledTaskController.checkConflicts',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to check conflicts',
@@ -467,7 +508,13 @@ export const getCalendarTasks = async (req: Request, res: Response) => {
       data: events,
     });
   } catch (error: any) {
-    console.error('Error getting calendar tasks:', error);
+    Logger.error('Error getting calendar tasks', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      startDate: req.query.start_date,
+      endDate: req.query.end_date,
+      context: 'ScheduledTaskController.getCalendarTasks',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to get calendar tasks',

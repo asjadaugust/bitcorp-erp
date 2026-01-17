@@ -4,6 +4,7 @@ import timesheetService from '../../services/timesheet.service';
 import { AppDataSource } from '../../config/database.config';
 import { Timesheet } from '../../models/timesheet.model';
 import { sendSuccess, sendError } from '../../utils/api-response';
+import Logger from '../../utils/logger';
 
 /**
  * Timesheet Controller
@@ -16,19 +17,22 @@ import { sendSuccess, sendError } from '../../utils/api-response';
  */
 export const listTimesheets = async (req: Request, res: Response) => {
   try {
-    const { operator_id, project_id, status, period_start, period_end } = req.query;
+    const { trabajador_id, periodo, estado, creado_por } = req.query;
 
     const filters: any = {};
-    if (operator_id) filters.operatorId = parseInt(operator_id as string);
-    if (project_id) filters.projectId = project_id;
-    if (status) filters.status = status;
-    if (period_start) filters.periodStart = period_start;
-    if (period_end) filters.periodEnd = period_end;
+    if (trabajador_id) filters.trabajadorId = parseInt(trabajador_id as string);
+    if (periodo) filters.periodo = periodo as string;
+    if (estado) filters.estado = estado as string;
+    if (creado_por) filters.creadoPor = parseInt(creado_por as string);
 
     const timesheets = await timesheetService.listTimesheets(filters);
     return sendSuccess(res, timesheets);
   } catch (error: any) {
-    console.error('Error listing timesheets:', error);
+    Logger.error('Error listing timesheets', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      context: 'TimesheetController.listTimesheets',
+    });
     return sendError(res, 500, 'TIMESHEET_LIST_FAILED', 'Failed to list timesheets', error.message);
   }
 };
@@ -40,11 +44,16 @@ export const listTimesheets = async (req: Request, res: Response) => {
 export const getTimesheetById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const timesheet = await timesheetService.getTimesheetWithDetails(id);
+    const timesheet = await timesheetService.getTimesheetWithDetails(parseInt(id));
     return sendSuccess(res, timesheet);
   } catch (error: any) {
-    console.error('Error getting timesheet:', error);
-    if (error.message === 'Timesheet not found') {
+    Logger.error('Error getting timesheet', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timesheetId: req.params.id,
+      context: 'TimesheetController.getTimesheetById',
+    });
+    if (error.message.includes('no encontrado') || error.message.includes('not found')) {
       return sendError(res, 404, 'TIMESHEET_NOT_FOUND', error.message);
     }
     return sendError(res, 500, 'TIMESHEET_GET_FAILED', 'Failed to get timesheet', error.message);
@@ -57,27 +66,36 @@ export const getTimesheetById = async (req: Request, res: Response) => {
  */
 export const generateTimesheet = async (req: Request, res: Response) => {
   try {
-    const { operatorId, projectId, periodStart, periodEnd } = req.body;
+    const { trabajadorId, periodo, totalDiasTrabajados, totalHoras, observaciones } = req.body;
+    const creadoPor = (req as any).user?.id || 1;
 
-    if (!operatorId || !periodStart || !periodEnd) {
+    if (!trabajadorId || !periodo) {
       return sendError(
         res,
         400,
         'TIMESHEET_MISSING_FIELDS',
-        'operatorId, periodStart, and periodEnd are required'
+        'trabajadorId and periodo are required'
       );
     }
 
     const timesheet = await timesheetService.generateTimesheet({
-      operatorId,
-      projectId,
-      periodStart,
-      periodEnd,
+      trabajadorId: parseInt(trabajadorId),
+      periodo,
+      totalDiasTrabajados: totalDiasTrabajados ? parseInt(totalDiasTrabajados) : 0,
+      totalHoras: totalHoras ? parseFloat(totalHoras) : 0,
+      observaciones,
+      creadoPor,
     });
 
     return sendSuccess(res, timesheet, undefined, 201);
   } catch (error: any) {
-    console.error('Error generating timesheet:', error);
+    Logger.error('Error generating timesheet', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      trabajadorId: req.body.trabajadorId,
+      periodo: req.body.periodo,
+      context: 'TimesheetController.generateTimesheet',
+    });
     return sendError(
       res,
       500,
@@ -96,11 +114,20 @@ export const submitTimesheet = async (req: Request, res: Response) => {
     const { id } = req.params;
     const submittedBy = (req as any).user?.id || 1; // Default to 1 if no user
 
-    const timesheet = await timesheetService.submitTimesheet(id, submittedBy);
+    const timesheet = await timesheetService.submitTimesheet(parseInt(id), submittedBy);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
-    console.error('Error submitting timesheet:', error);
-    if (error.message.includes('not found') || error.message.includes('Only')) {
+    Logger.error('Error submitting timesheet', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timesheetId: req.params.id,
+      context: 'TimesheetController.submitTimesheet',
+    });
+    if (
+      error.message.includes('not found') ||
+      error.message.includes('encontrado') ||
+      error.message.includes('puede')
+    ) {
       return sendError(res, 400, 'TIMESHEET_SUBMIT_INVALID', error.message);
     }
     return sendError(
@@ -122,11 +149,20 @@ export const approveTimesheet = async (req: Request, res: Response) => {
     const { id } = req.params;
     const approvedBy = (req as any).user?.id || 1; // Default to 1 if no user
 
-    const timesheet = await timesheetService.approveTimesheet(id, approvedBy);
+    const timesheet = await timesheetService.approveTimesheet(parseInt(id), approvedBy);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
-    console.error('Error approving timesheet:', error);
-    if (error.message.includes('not found') || error.message.includes('Only')) {
+    Logger.error('Error approving timesheet', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timesheetId: req.params.id,
+      context: 'TimesheetController.approveTimesheet',
+    });
+    if (
+      error.message.includes('not found') ||
+      error.message.includes('encontrado') ||
+      error.message.includes('puede')
+    ) {
       return sendError(res, 400, 'TIMESHEET_APPROVE_INVALID', error.message);
     }
     return sendError(
@@ -158,12 +194,21 @@ export const rejectTimesheet = async (req: Request, res: Response) => {
       );
     }
 
-    const timesheet = await timesheetService.rejectTimesheet(id, rejectedBy, reason);
+    const timesheet = await timesheetService.rejectTimesheet(parseInt(id), rejectedBy, reason);
 
     return sendSuccess(res, timesheet);
   } catch (error: any) {
-    console.error('Error rejecting timesheet:', error);
-    if (error.message.includes('not found') || error.message.includes('Only')) {
+    Logger.error('Error rejecting timesheet', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timesheetId: req.params.id,
+      context: 'TimesheetController.rejectTimesheet',
+    });
+    if (
+      error.message.includes('not found') ||
+      error.message.includes('encontrado') ||
+      error.message.includes('puede')
+    ) {
       return sendError(res, 400, 'TIMESHEET_REJECT_INVALID', error.message);
     }
     return sendError(
@@ -192,7 +237,7 @@ export const updateTimesheet = async (req: Request, res: Response) => {
     }
 
     // Only allow updates to draft timesheets
-    if (timesheet.status !== 'draft') {
+    if (timesheet.estado !== 'BORRADOR') {
       return sendError(
         res,
         400,
@@ -206,7 +251,12 @@ export const updateTimesheet = async (req: Request, res: Response) => {
 
     return sendSuccess(res, updatedTimesheet);
   } catch (error: any) {
-    console.error('Error updating timesheet:', error);
+    Logger.error('Error updating timesheet', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timesheetId: req.params.id,
+      context: 'TimesheetController.updateTimesheet',
+    });
     return sendError(
       res,
       500,
@@ -233,7 +283,7 @@ export const deleteTimesheet = async (req: Request, res: Response) => {
     }
 
     // Only allow deletion of draft timesheets
-    if (timesheet.status !== 'draft') {
+    if (timesheet.estado !== 'BORRADOR') {
       return sendError(
         res,
         400,
@@ -246,7 +296,12 @@ export const deleteTimesheet = async (req: Request, res: Response) => {
 
     return sendSuccess(res, { message: 'Timesheet deleted successfully' });
   } catch (error: any) {
-    console.error('Error deleting timesheet:', error);
+    Logger.error('Error deleting timesheet', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timesheetId: req.params.id,
+      context: 'TimesheetController.deleteTimesheet',
+    });
     return sendError(
       res,
       500,

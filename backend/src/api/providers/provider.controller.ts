@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProviderService } from '../../services/provider.service';
+import Logger from '../../utils/logger';
 
 const providerService = new ProviderService();
 
@@ -23,7 +24,11 @@ export class ProviderController {
 
       res.json(providers);
     } catch (error: any) {
-      console.error('Error in getAll providers:', error);
+      Logger.error('Error in getAll providers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProviderController.getAll',
+      });
       res.status(500).json({
         error: 'Failed to fetch providers',
         message: error.message,
@@ -48,7 +53,12 @@ export class ProviderController {
 
       res.json(provider);
     } catch (error: any) {
-      console.error('Error in getById provider:', error);
+      Logger.error('Error in getById provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId: req.params.id,
+        context: 'ProviderController.getById',
+      });
 
       if (error.message === 'Provider not found') {
         res.status(404).json({ error: 'Provider not found' });
@@ -79,7 +89,12 @@ export class ProviderController {
 
       res.json(provider);
     } catch (error: any) {
-      console.error('Error in getByRuc provider:', error);
+      Logger.error('Error in getByRuc provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        ruc: req.params.ruc,
+        context: 'ProviderController.getByRuc',
+      });
       res.status(500).json({
         error: 'Failed to fetch provider',
         message: error.message,
@@ -97,7 +112,11 @@ export class ProviderController {
 
       res.status(201).json(provider);
     } catch (error: any) {
-      console.error('Error in create provider:', error);
+      Logger.error('Error in create provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProviderController.create',
+      });
 
       if (error.message.includes('already exists')) {
         res.status(409).json({ error: error.message });
@@ -133,7 +152,12 @@ export class ProviderController {
 
       res.json(provider);
     } catch (error: any) {
-      console.error('Error in update provider:', error);
+      Logger.error('Error in update provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId: req.params.id,
+        context: 'ProviderController.update',
+      });
 
       if (error.message === 'Provider not found') {
         res.status(404).json({ error: 'Provider not found' });
@@ -169,7 +193,12 @@ export class ProviderController {
 
       res.status(204).send();
     } catch (error: any) {
-      console.error('Error in delete provider:', error);
+      Logger.error('Error in delete provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId: req.params.id,
+        context: 'ProviderController.delete',
+      });
       res.status(500).json({
         error: 'Failed to delete provider',
         message: error.message,
@@ -189,7 +218,12 @@ export class ProviderController {
 
       res.json(providers);
     } catch (error: any) {
-      console.error('Error in getByType providers:', error);
+      Logger.error('Error in getByType providers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        type: req.params.type,
+        context: 'ProviderController.getByType',
+      });
       res.status(500).json({
         error: 'Failed to fetch providers by type',
         message: error.message,
@@ -207,7 +241,11 @@ export class ProviderController {
 
       res.json({ count });
     } catch (error: any) {
-      console.error('Error in getActiveCount:', error);
+      Logger.error('Error in getActiveCount', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProviderController.getActiveCount',
+      });
       res.status(500).json({
         error: 'Failed to count providers',
         message: error.message,
