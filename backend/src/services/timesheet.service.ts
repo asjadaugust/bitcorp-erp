@@ -3,6 +3,14 @@ import { AppDataSource } from '../config/database.config';
 import { Timesheet, EstadoTareo } from '../models/timesheet.model';
 import { TimesheetDetail } from '../models/timesheet-detail.model';
 import { Trabajador } from '../models/trabajador.model';
+import {
+  TimesheetListDto,
+  TimesheetDetailDto,
+  TimesheetWithDetailsDto,
+  toTimesheetListDtoArray,
+  toTimesheetDetailDto,
+  toTimesheetWithDetailsDto,
+} from '../types/dto/timesheet.dto';
 
 export interface TimesheetGenerationDto {
   trabajadorId: number;
@@ -11,11 +19,6 @@ export interface TimesheetGenerationDto {
   totalHoras?: number;
   observaciones?: string;
   creadoPor?: number;
-}
-
-export interface TimesheetWithDetails extends Timesheet {
-  trabajadorNombre?: string;
-  detalles?: TimesheetDetail[];
 }
 
 export interface TimesheetFilters {
@@ -53,7 +56,7 @@ export class TimesheetService {
    *
    * ✅ MIGRATED: Changed from checking table existence to actual creation
    */
-  async generateTimesheet(dto: TimesheetGenerationDto): Promise<Timesheet> {
+  async generateTimesheet(dto: TimesheetGenerationDto): Promise<TimesheetDetailDto> {
     // Verify trabajador exists
     const trabajador = await this.trabajadorRepository.findOne({
       where: { id: dto.trabajadorId },
@@ -86,7 +89,15 @@ export class TimesheetService {
       creadoPor: dto.creadoPor,
     });
 
-    return await this.timesheetRepository.save(timesheet);
+    const saved = await this.timesheetRepository.save(timesheet);
+
+    // Load relations for DTO
+    const timesheetWithRelations = await this.timesheetRepository.findOne({
+      where: { id: saved.id },
+      relations: ['trabajador', 'creador'],
+    });
+
+    return toTimesheetDetailDto(timesheetWithRelations!);
   }
 
   /**
@@ -94,7 +105,7 @@ export class TimesheetService {
    *
    * ✅ MIGRATED: SELECT with JOIN → TypeORM relations
    */
-  async getTimesheetWithDetails(id: number): Promise<TimesheetWithDetails> {
+  async getTimesheetWithDetails(id: number): Promise<TimesheetWithDetailsDto> {
     const timesheet = await this.timesheetRepository.findOne({
       where: { id },
       relations: ['trabajador', 'creador', 'aprobador'],
@@ -111,16 +122,13 @@ export class TimesheetService {
       order: { fecha: 'ASC' },
     });
 
-    // Build response
-    const result: TimesheetWithDetails = {
+    // Build response with detalles
+    const timesheetWithDetalles = {
       ...timesheet,
-      trabajadorNombre: timesheet.trabajador
-        ? `${timesheet.trabajador.nombres} ${timesheet.trabajador.apellidoPaterno}`
-        : undefined,
       detalles,
     };
 
-    return result;
+    return toTimesheetWithDetailsDto(timesheetWithDetalles);
   }
 
   /**
@@ -128,7 +136,7 @@ export class TimesheetService {
    *
    * ✅ MIGRATED: UPDATE with RETURNING → TypeORM update + findOne
    */
-  async submitTimesheet(id: number, submittedBy: number): Promise<Timesheet> {
+  async submitTimesheet(id: number, submittedBy: number): Promise<TimesheetDetailDto> {
     const timesheet = await this.timesheetRepository.findOne({
       where: { id, estado: 'BORRADOR' },
     });
@@ -141,7 +149,15 @@ export class TimesheetService {
     timesheet.estado = 'ENVIADO';
     timesheet.creadoPor = submittedBy; // Track who submitted
 
-    return await this.timesheetRepository.save(timesheet);
+    const saved = await this.timesheetRepository.save(timesheet);
+
+    // Load relations for DTO
+    const timesheetWithRelations = await this.timesheetRepository.findOne({
+      where: { id: saved.id },
+      relations: ['trabajador', 'creador'],
+    });
+
+    return toTimesheetDetailDto(timesheetWithRelations!);
   }
 
   /**
@@ -149,7 +165,7 @@ export class TimesheetService {
    *
    * ✅ MIGRATED: UPDATE with RETURNING → TypeORM update + findOne
    */
-  async approveTimesheet(id: number, approvedBy: number): Promise<Timesheet> {
+  async approveTimesheet(id: number, approvedBy: number): Promise<TimesheetDetailDto> {
     const timesheet = await this.timesheetRepository.findOne({
       where: { id, estado: 'ENVIADO' },
     });
@@ -163,7 +179,15 @@ export class TimesheetService {
     timesheet.aprobadoPor = approvedBy;
     timesheet.aprobadoEn = new Date();
 
-    return await this.timesheetRepository.save(timesheet);
+    const saved = await this.timesheetRepository.save(timesheet);
+
+    // Load relations for DTO
+    const timesheetWithRelations = await this.timesheetRepository.findOne({
+      where: { id: saved.id },
+      relations: ['trabajador', 'creador', 'aprobador'],
+    });
+
+    return toTimesheetDetailDto(timesheetWithRelations!);
   }
 
   /**
@@ -171,7 +195,11 @@ export class TimesheetService {
    *
    * ✅ MIGRATED: UPDATE with RETURNING → TypeORM update + findOne
    */
-  async rejectTimesheet(id: number, rejectedBy: number, reason: string): Promise<Timesheet> {
+  async rejectTimesheet(
+    id: number,
+    rejectedBy: number,
+    reason: string
+  ): Promise<TimesheetDetailDto> {
     const timesheet = await this.timesheetRepository.findOne({
       where: { id, estado: 'ENVIADO' },
     });
@@ -187,7 +215,15 @@ export class TimesheetService {
     timesheet.observaciones = reason;
     timesheet.aprobadoPor = rejectedBy; // Track who rejected
 
-    return await this.timesheetRepository.save(timesheet);
+    const saved = await this.timesheetRepository.save(timesheet);
+
+    // Load relations for DTO
+    const timesheetWithRelations = await this.timesheetRepository.findOne({
+      where: { id: saved.id },
+      relations: ['trabajador', 'creador', 'aprobador'],
+    });
+
+    return toTimesheetDetailDto(timesheetWithRelations!);
   }
 
   /**
@@ -195,7 +231,7 @@ export class TimesheetService {
    *
    * ✅ MIGRATED: Dynamic SELECT with JOINs → TypeORM QueryBuilder
    */
-  async listTimesheets(filters: TimesheetFilters): Promise<TimesheetWithDetails[]> {
+  async listTimesheets(filters: TimesheetFilters): Promise<TimesheetListDto[]> {
     const queryBuilder = this.timesheetRepository
       .createQueryBuilder('ts')
       .leftJoinAndSelect('ts.trabajador', 't')
@@ -231,13 +267,8 @@ export class TimesheetService {
 
     const timesheets = await queryBuilder.getMany();
 
-    // Map to response format with trabajador name
-    return timesheets.map((ts) => ({
-      ...ts,
-      trabajadorNombre: ts.trabajador
-        ? `${ts.trabajador.nombres} ${ts.trabajador.apellidoPaterno}`
-        : undefined,
-    }));
+    // Map to DTOs
+    return toTimesheetListDtoArray(timesheets);
   }
 
   /**
@@ -246,11 +277,13 @@ export class TimesheetService {
   async getByTrabajadorAndPeriodo(
     trabajadorId: number,
     periodo: string
-  ): Promise<Timesheet | null> {
-    return await this.timesheetRepository.findOne({
+  ): Promise<TimesheetDetailDto | null> {
+    const timesheet = await this.timesheetRepository.findOne({
       where: { trabajadorId, periodo },
-      relations: ['trabajador'],
+      relations: ['trabajador', 'creador'],
     });
+
+    return timesheet ? toTimesheetDetailDto(timesheet) : null;
   }
 
   /**
@@ -274,7 +307,7 @@ export class TimesheetService {
   /**
    * Update timesheet details
    */
-  async updateTimesheet(id: number, updates: Partial<Timesheet>): Promise<Timesheet> {
+  async updateTimesheet(id: number, updates: Partial<Timesheet>): Promise<TimesheetDetailDto> {
     const timesheet = await this.timesheetRepository.findOne({
       where: { id, estado: 'BORRADOR' },
     });
@@ -288,7 +321,15 @@ export class TimesheetService {
     // Apply updates
     Object.assign(timesheet, updates);
 
-    return await this.timesheetRepository.save(timesheet);
+    const saved = await this.timesheetRepository.save(timesheet);
+
+    // Load relations for DTO
+    const timesheetWithRelations = await this.timesheetRepository.findOne({
+      where: { id: saved.id },
+      relations: ['trabajador', 'creador'],
+    });
+
+    return toTimesheetDetailDto(timesheetWithRelations!);
   }
 }
 
