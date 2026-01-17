@@ -5,6 +5,8 @@ import { validateDto } from '../../middleware/validation.middleware';
 import {
   MaintenanceScheduleCreateDto,
   MaintenanceScheduleUpdateDto,
+  GenerateTasksDto,
+  CompleteScheduleDto,
 } from '../../types/dto/maintenance-schedule.dto';
 
 const router = Router();
@@ -33,9 +35,17 @@ router.put(
 router.delete('/:id', maintenanceScheduleController.deleteSchedule);
 
 // Generate tasks from schedules
-router.post('/generate-tasks', maintenanceScheduleController.generateTasks);
+router.post(
+  '/generate-tasks',
+  validateDto(GenerateTasksDto),
+  maintenanceScheduleController.generateTasks
+);
 
 // Complete schedule (mark as done and recalculate next due)
-router.post('/:id/complete', maintenanceScheduleController.completeSchedule);
+router.post(
+  '/:id/complete',
+  validateDto(CompleteScheduleDto),
+  maintenanceScheduleController.completeSchedule
+);
 
 export default router;

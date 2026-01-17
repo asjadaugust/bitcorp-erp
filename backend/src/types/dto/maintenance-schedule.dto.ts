@@ -121,3 +121,23 @@ export class MaintenanceScheduleUpdateDto {
   @IsInt({ message: 'last_completed_hours debe ser un número entero' })
   last_completed_hours?: number;
 }
+
+/**
+ * DTO for generating tasks from schedules
+ */
+export class GenerateTasksDto {
+  @IsOptional()
+  @IsInt({ message: 'days_ahead debe ser un número entero' })
+  @Min(1, { message: 'days_ahead debe ser al menos 1' })
+  days_ahead?: number;
+}
+
+/**
+ * DTO for completing a maintenance schedule
+ */
+export class CompleteScheduleDto {
+  @IsOptional()
+  @IsInt({ message: 'completion_hours debe ser un número entero' })
+  @Min(0, { message: 'completion_hours no puede ser negativo' })
+  completion_hours?: number;
+}

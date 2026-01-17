@@ -104,6 +104,36 @@ export class TimesheetCreateDto {
   creado_por?: number;
 }
 
+/**
+ * Timesheet Update DTO - for updating draft timesheets
+ * All fields optional for partial updates
+ */
+export class TimesheetUpdateDto {
+  @IsOptional()
+  @IsNumber({}, { message: 'total_dias_trabajados debe ser un número' })
+  @Min(0, { message: 'total_dias_trabajados no puede ser negativo' })
+  total_dias_trabajados?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'total_horas debe ser un número' })
+  @Min(0, { message: 'total_horas no puede ser negativo' })
+  total_horas?: number;
+
+  @IsOptional()
+  @IsString({ message: 'observaciones debe ser un string' })
+  @MaxLength(1000, { message: 'observaciones no puede exceder 1000 caracteres' })
+  observaciones?: string;
+}
+
+/**
+ * Timesheet Reject DTO - for rejecting a timesheet with reason
+ */
+export class TimesheetRejectDto {
+  @IsString({ message: 'reason debe ser un string' })
+  @MaxLength(500, { message: 'reason no puede exceder 500 caracteres' })
+  reason!: string;
+}
+
 // ===== TRANSFORMATION FUNCTIONS =====
 
 /**

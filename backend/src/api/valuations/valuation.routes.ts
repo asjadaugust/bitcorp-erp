@@ -3,7 +3,12 @@ import { Router } from 'express';
 import { ValuationController } from './valuation.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
 import { validateDto } from '../../middleware/validation.middleware';
-import { ValuationCreateDto, ValuationUpdateDto } from '../../types/dto/valuation.dto';
+import {
+  ValuationCreateDto,
+  ValuationUpdateDto,
+  ValuationCalculateDto,
+  ValuationGenerateDto,
+} from '../../types/dto/valuation.dto';
 import { ROLES } from '../../types/roles';
 
 const router = Router();
@@ -32,11 +37,13 @@ router.post(
 router.post(
   '/calculate',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  validateDto(ValuationCalculateDto),
   controller.calculate
 );
 router.post(
   '/generate',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  validateDto(ValuationGenerateDto),
   controller.generate
 );
 router.post(

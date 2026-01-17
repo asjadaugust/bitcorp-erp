@@ -15,6 +15,7 @@ import {
   IsDateString,
   IsIn,
   Min,
+  Max,
   IsInt,
 } from 'class-validator';
 import { Valorizacion, EstadoValorizacion } from '../../models/valuation.model';
@@ -388,4 +389,39 @@ export class ValuationUpdateDto {
   @IsOptional()
   @IsString({ message: 'Las observaciones deben ser texto' })
   observaciones?: string;
+}
+
+/**
+ * DTO for calculating valuation (preview only)
+ */
+export class ValuationCalculateDto {
+  @IsNumber({}, { message: 'contract_id debe ser un número' })
+  contract_id!: number;
+
+  @IsNumber({}, { message: 'month debe ser un número' })
+  @Min(1, { message: 'month debe ser entre 1 y 12' })
+  @Max(12, { message: 'month debe ser entre 1 y 12' })
+  month!: number;
+
+  @IsNumber({}, { message: 'year debe ser un número' })
+  @Min(2020, { message: 'year debe ser mayor o igual a 2020' })
+  year!: number;
+}
+
+/**
+ * DTO for generating valuation(s) for a period
+ */
+export class ValuationGenerateDto {
+  @IsOptional()
+  @IsNumber({}, { message: 'contract_id debe ser un número' })
+  contract_id?: number;
+
+  @IsNumber({}, { message: 'month debe ser un número' })
+  @Min(1, { message: 'month debe ser entre 1 y 12' })
+  @Max(12, { message: 'month debe ser entre 1 y 12' })
+  month!: number;
+
+  @IsNumber({}, { message: 'year debe ser un número' })
+  @Min(2020, { message: 'year debe ser mayor o igual a 2020' })
+  year!: number;
 }

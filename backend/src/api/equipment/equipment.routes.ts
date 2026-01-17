@@ -48,6 +48,7 @@ router.patch(
 router.patch(
   '/:id/transfer',
   authorize(ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.ADMIN),
+  validateDto(EquipmentTransferCreateDto),
   equipmentController.transferEquipment
 );
 router.get(

@@ -2,7 +2,11 @@
 import { Router } from 'express';
 import * as timesheetController from './timesheet.controller';
 import { validateDto } from '../../middleware/validation.middleware';
-import { TimesheetCreateDto } from '../../types/dto/timesheet.dto';
+import {
+  TimesheetCreateDto,
+  TimesheetUpdateDto,
+  TimesheetRejectDto,
+} from '../../types/dto/timesheet.dto';
 
 const router = Router();
 
@@ -16,7 +20,7 @@ router.get('/:id', timesheetController.getTimesheetById);
 router.post('/generate', validateDto(TimesheetCreateDto), timesheetController.generateTimesheet);
 
 // Update timesheet (draft only)
-router.put('/:id', timesheetController.updateTimesheet);
+router.put('/:id', validateDto(TimesheetUpdateDto), timesheetController.updateTimesheet);
 
 // Delete timesheet (draft only)
 router.delete('/:id', timesheetController.deleteTimesheet);
@@ -28,6 +32,6 @@ router.post('/:id/submit', timesheetController.submitTimesheet);
 router.post('/:id/approve', timesheetController.approveTimesheet);
 
 // Reject timesheet
-router.post('/:id/reject', timesheetController.rejectTimesheet);
+router.post('/:id/reject', validateDto(TimesheetRejectDto), timesheetController.rejectTimesheet);
 
 export default router;
