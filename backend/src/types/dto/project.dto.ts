@@ -17,6 +17,7 @@ import {
   MaxLength,
   IsDateString,
   Min,
+  IsNotEmpty,
 } from 'class-validator';
 
 export interface ProjectDto {
@@ -279,4 +280,18 @@ export class ProjectUpdateDto {
   @IsOptional()
   @IsNumber({}, { message: 'actualizado_por debe ser un número' })
   actualizado_por?: number | null;
+}
+
+/**
+ * DTO for assigning a user to a project
+ */
+export class AssignUserToProjectDto {
+  @IsNotEmpty({ message: 'El ID del usuario es requerido' })
+  @IsNumber({}, { message: 'El ID del usuario debe ser numérico' })
+  user_id!: number;
+
+  @IsOptional()
+  @IsString({ message: 'El rol en proyecto debe ser texto' })
+  @MaxLength(100, { message: 'El rol en proyecto no puede exceder 100 caracteres' })
+  rol_en_proyecto?: string;
 }

@@ -3,7 +3,11 @@ import { Router } from 'express';
 import { ProjectController } from './project.controller';
 import { authenticate } from '../../middleware/auth.middleware';
 import { validateDto } from '../../middleware/validation.middleware';
-import { ProjectCreateDto, ProjectUpdateDto } from '../../types/dto/project.dto';
+import {
+  ProjectCreateDto,
+  ProjectUpdateDto,
+  AssignUserToProjectDto,
+} from '../../types/dto/project.dto';
 
 const router = Router();
 const projectController = new ProjectController();
@@ -30,7 +34,7 @@ router.put('/:id', validateDto(ProjectUpdateDto), projectController.update);
 router.delete('/:id', projectController.delete);
 
 // POST /api/projects/:id/users - Assign user to project
-router.post('/:id/users', projectController.assignUser);
+router.post('/:id/users', validateDto(AssignUserToProjectDto), projectController.assignUser);
 
 // DELETE /api/projects/:id/users/:userId - Unassign user from project
 router.delete('/:id/users/:userId', projectController.unassignUser);
