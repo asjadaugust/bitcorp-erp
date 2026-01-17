@@ -5,6 +5,12 @@ import { Movement, MovementDetail } from '../../models/movement.model';
 import { Product } from '../../models/product.model';
 import Logger from '../../utils/logger';
 import {
+  sendSuccess,
+  sendCreated,
+  sendPaginatedSuccess,
+  sendError,
+} from '../../utils/api-response';
+import {
   MovementListDto,
   toMovementListDto,
   toMovementDetailDto,
@@ -20,18 +26,54 @@ import {
 export class MovementController {
   /**
    * GET /api/movements
-   * List all movements with computed totals
+   * List all movements with computed totals and pagination
+   * @query page - Page number (default: 1)
+   * @query limit - Items per page (default: 10, max: 100)
+   * @query tipo_movimiento - Filter by movement type (entrada/salida/transferencia/ajuste)
+   * @query proyecto_id - Filter by project ID
+   * @query estado - Filter by status (pendiente/aprobado/rechazado)
+   * @returns MovementListDto[] with Spanish snake_case fields and pagination
    */
   async getAll(req: Request, res: Response) {
     try {
+      // Parse pagination parameters
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100
+      const offset = (page - 1) * limit;
+
+      // Parse filters
+      const tipoMovimiento = req.query.tipo_movimiento as string;
+      const proyectoId = req.query.proyecto_id
+        ? parseInt(req.query.proyecto_id as string)
+        : undefined;
+      const estado = req.query.estado as string;
+
       const movementRepo = AppDataSource.getRepository(Movement);
-      const movements = await movementRepo
+
+      // Build query
+      const queryBuilder = movementRepo
         .createQueryBuilder('m')
         .leftJoinAndSelect('m.project', 'p')
         .leftJoinAndSelect('m.creator', 'u')
         .loadRelationCountAndMap('m.items_count', 'm.details')
-        .orderBy('m.createdAt', 'DESC')
-        .getMany();
+        .orderBy('m.createdAt', 'DESC');
+
+      // Apply filters
+      if (tipoMovimiento) {
+        queryBuilder.andWhere('m.tipoMovimiento = :tipoMovimiento', { tipoMovimiento });
+      }
+      if (proyectoId) {
+        queryBuilder.andWhere('m.projectId = :proyectoId', { proyectoId });
+      }
+      if (estado) {
+        queryBuilder.andWhere('m.estado = :estado', { estado });
+      }
+
+      // Count total matching movements
+      const total = await queryBuilder.getCount();
+
+      // Get paginated movements
+      const movements = await queryBuilder.take(limit).skip(offset).getMany();
 
       // Calculate total_amount for each movement and transform to DTO
       const movementDtos: MovementListDto[] = await Promise.all(
@@ -56,27 +98,27 @@ export class MovementController {
         })
       );
 
-      res.json({
-        success: true,
-        data: movementDtos,
-      });
+      return sendPaginatedSuccess(res, movementDtos, { page, limit, total });
     } catch (error) {
       Logger.error('Error fetching movements', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'MovementController.getAll',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch movements',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'FETCH_ERROR',
+        'Failed to fetch movements',
+        (error as Error).message
+      );
     }
   }
 
   /**
    * GET /api/movements/:id
    * Get single movement with details
+   * @returns MovementDetailDto with Spanish snake_case fields
    */
   async getById(req: Request, res: Response) {
     try {
@@ -94,19 +136,13 @@ export class MovementController {
         .getOne();
 
       if (!movement) {
-        return res.status(404).json({
-          success: false,
-          error: 'Movement not found',
-        });
+        return sendError(res, 404, 'NOT_FOUND', 'Movement not found');
       }
 
       // Transform to DTO
       const movementDto = toMovementDetailDto(movement as unknown as Record<string, unknown>);
 
-      res.json({
-        success: true,
-        data: movementDto,
-      });
+      return sendSuccess(res, movementDto);
     } catch (error) {
       Logger.error('Error fetching movement', {
         error: error instanceof Error ? error.message : String(error),
@@ -114,18 +150,21 @@ export class MovementController {
         movementId: req.params.id,
         context: 'MovementController.getById',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch movement',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'FETCH_ERROR',
+        'Failed to fetch movement',
+        (error as Error).message
+      );
     }
   }
 
   /**
    * POST /api/movements
    * Create new movement with details and update stock
-   * Body expects Spanish snake_case fields (MovementCreateDto)
+   * @body MovementCreateDto (Spanish snake_case fields)
+   * @returns MovementDetailDto with created movement
    */
   async create(req: Request, res: Response) {
     const queryRunner = AppDataSource.createQueryRunner();
@@ -189,10 +228,7 @@ export class MovementController {
         ? toMovementDetailDto(createdMovement as unknown as Record<string, unknown>)
         : null;
 
-      res.status(201).json({
-        success: true,
-        data: movementDto,
-      });
+      return sendCreated(res, movementDto);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       Logger.error('Error creating movement', {
@@ -200,11 +236,13 @@ export class MovementController {
         stack: error instanceof Error ? error.stack : undefined,
         context: 'MovementController.create',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to create movement',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'CREATE_ERROR',
+        'Failed to create movement',
+        (error as Error).message
+      );
     } finally {
       await queryRunner.release();
     }
@@ -213,6 +251,7 @@ export class MovementController {
   /**
    * PUT /api/movements/:id/approve
    * Approve a movement
+   * @returns MovementDetailDto with updated movement
    */
   async approve(req: Request, res: Response) {
     try {
@@ -225,10 +264,7 @@ export class MovementController {
       });
 
       if (!movement) {
-        return res.status(404).json({
-          success: false,
-          error: 'Movement not found',
-        });
+        return sendError(res, 404, 'NOT_FOUND', 'Movement not found');
       }
 
       movement.estado = 'aprobado';
@@ -240,10 +276,7 @@ export class MovementController {
       // Return updated movement as DTO
       const movementDto = toMovementDetailDto(movement as unknown as Record<string, unknown>);
 
-      res.json({
-        success: true,
-        data: movementDto,
-      });
+      return sendSuccess(res, movementDto);
     } catch (error) {
       Logger.error('Error approving movement', {
         error: error instanceof Error ? error.message : String(error),
@@ -251,11 +284,13 @@ export class MovementController {
         movementId: req.params.id,
         context: 'MovementController.approve',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to approve movement',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'UPDATE_ERROR',
+        'Failed to approve movement',
+        (error as Error).message
+      );
     }
   }
 }
