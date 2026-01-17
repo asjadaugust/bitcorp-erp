@@ -3,37 +3,48 @@ import { Request, Response } from 'express';
 import { ProviderService } from '../../services/provider.service';
 import { TipoProveedor } from '../../models/provider.model';
 import Logger from '../../utils/logger';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 const providerService = new ProviderService();
 
 export class ProviderController {
   /**
    * GET /api/providers
-   * Get all providers with optional filters
+   * Get all providers with optional filters, pagination, and sorting
    */
   static async getAll(req: Request, res: Response): Promise<void> {
     try {
-      const { search, is_active, tipo_proveedor } = req.query;
+      const { search, is_active, tipo_proveedor, page, limit, sort_by, sort_order } = req.query;
 
       const filters: any = {};
 
       if (search) filters.search = String(search);
       if (is_active !== undefined) filters.is_active = is_active === 'true';
-      if (tipo_proveedor) filters.tipo_proveedor = String(tipo_proveedor);
+      if (tipo_proveedor) filters.tipo_proveedor = String(tipo_proveedor) as TipoProveedor;
+      if (sort_by) filters.sort_by = String(sort_by);
+      if (sort_order)
+        filters.sort_order = (String(sort_order).toUpperCase() === 'DESC' ? 'DESC' : 'ASC') as
+          | 'ASC'
+          | 'DESC';
 
-      const providers = await providerService.findAll(filters);
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
 
-      res.json(providers);
+      const { data, total } = await providerService.findAll(filters, pageNum, limitNum);
+
+      sendPaginatedSuccess(res, data, { page: pageNum, limit: limitNum, total });
     } catch (error: any) {
       Logger.error('Error in getAll providers', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ProviderController.getAll',
       });
-      res.status(500).json({
-        error: 'Failed to fetch providers',
-        message: error.message,
-      });
+      sendError(res, 500, 'PROVIDER_FETCH_FAILED', 'Failed to fetch providers', error.message);
     }
   }
 
@@ -46,13 +57,13 @@ export class ProviderController {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid provider ID' });
+        sendError(res, 400, 'INVALID_ID', 'Invalid provider ID');
         return;
       }
 
       const provider = await providerService.findById(id);
 
-      res.json(provider);
+      sendSuccess(res, provider);
     } catch (error: any) {
       Logger.error('Error in getById provider', {
         error: error instanceof Error ? error.message : String(error),
@@ -62,14 +73,11 @@ export class ProviderController {
       });
 
       if (error.message === 'Provider not found') {
-        res.status(404).json({ error: 'Provider not found' });
+        sendError(res, 404, 'PROVIDER_NOT_FOUND', 'Provider not found');
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to fetch provider',
-        message: error.message,
-      });
+      sendError(res, 500, 'PROVIDER_FETCH_FAILED', 'Failed to fetch provider', error.message);
     }
   }
 
@@ -84,11 +92,11 @@ export class ProviderController {
       const provider = await providerService.findByRuc(ruc);
 
       if (!provider) {
-        res.status(404).json({ error: 'Provider not found' });
+        sendError(res, 404, 'PROVIDER_NOT_FOUND', 'Provider not found');
         return;
       }
 
-      res.json(provider);
+      sendSuccess(res, provider);
     } catch (error: any) {
       Logger.error('Error in getByRuc provider', {
         error: error instanceof Error ? error.message : String(error),
@@ -96,10 +104,7 @@ export class ProviderController {
         ruc: req.params.ruc,
         context: 'ProviderController.getByRuc',
       });
-      res.status(500).json({
-        error: 'Failed to fetch provider',
-        message: error.message,
-      });
+      sendError(res, 500, 'PROVIDER_FETCH_FAILED', 'Failed to fetch provider', error.message);
     }
   }
 
@@ -111,7 +116,7 @@ export class ProviderController {
     try {
       const provider = await providerService.create(req.body);
 
-      res.status(201).json(provider);
+      sendCreated(res, provider);
     } catch (error: any) {
       Logger.error('Error in create provider', {
         error: error instanceof Error ? error.message : String(error),
@@ -120,19 +125,16 @@ export class ProviderController {
       });
 
       if (error.message.includes('already exists')) {
-        res.status(409).json({ error: error.message });
+        sendError(res, 409, 'DUPLICATE_PROVIDER', error.message);
         return;
       }
 
       if (error.message.includes('required')) {
-        res.status(400).json({ error: error.message });
+        sendError(res, 400, 'VALIDATION_ERROR', error.message);
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to create provider',
-        message: error.message,
-      });
+      sendError(res, 500, 'PROVIDER_CREATE_FAILED', 'Failed to create provider', error.message);
     }
   }
 
@@ -145,13 +147,13 @@ export class ProviderController {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid provider ID' });
+        sendError(res, 400, 'INVALID_ID', 'Invalid provider ID');
         return;
       }
 
       const provider = await providerService.update(id, req.body);
 
-      res.json(provider);
+      sendSuccess(res, provider);
     } catch (error: any) {
       Logger.error('Error in update provider', {
         error: error instanceof Error ? error.message : String(error),
@@ -161,19 +163,16 @@ export class ProviderController {
       });
 
       if (error.message === 'Provider not found') {
-        res.status(404).json({ error: 'Provider not found' });
+        sendError(res, 404, 'PROVIDER_NOT_FOUND', 'Provider not found');
         return;
       }
 
       if (error.message.includes('already exists')) {
-        res.status(409).json({ error: error.message });
+        sendError(res, 409, 'DUPLICATE_PROVIDER', error.message);
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to update provider',
-        message: error.message,
-      });
+      sendError(res, 500, 'PROVIDER_UPDATE_FAILED', 'Failed to update provider', error.message);
     }
   }
 
@@ -186,7 +185,7 @@ export class ProviderController {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid provider ID' });
+        sendError(res, 400, 'INVALID_ID', 'Invalid provider ID');
         return;
       }
 
@@ -200,10 +199,7 @@ export class ProviderController {
         providerId: req.params.id,
         context: 'ProviderController.delete',
       });
-      res.status(500).json({
-        error: 'Failed to delete provider',
-        message: error.message,
-      });
+      sendError(res, 500, 'PROVIDER_DELETE_FAILED', 'Failed to delete provider', error.message);
     }
   }
 
@@ -217,7 +213,7 @@ export class ProviderController {
 
       const providers = await providerService.findByType(type as TipoProveedor);
 
-      res.json(providers);
+      sendSuccess(res, providers);
     } catch (error: any) {
       Logger.error('Error in getByType providers', {
         error: error instanceof Error ? error.message : String(error),
@@ -225,10 +221,13 @@ export class ProviderController {
         type: req.params.type,
         context: 'ProviderController.getByType',
       });
-      res.status(500).json({
-        error: 'Failed to fetch providers by type',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'PROVIDER_FETCH_FAILED',
+        'Failed to fetch providers by type',
+        error.message
+      );
     }
   }
 
@@ -240,17 +239,14 @@ export class ProviderController {
     try {
       const count = await providerService.getActiveCount();
 
-      res.json({ count });
+      sendSuccess(res, { count });
     } catch (error: any) {
       Logger.error('Error in getActiveCount', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ProviderController.getActiveCount',
       });
-      res.status(500).json({
-        error: 'Failed to count providers',
-        message: error.message,
-      });
+      sendError(res, 500, 'PROVIDER_COUNT_FAILED', 'Failed to count providers', error.message);
     }
   }
 }

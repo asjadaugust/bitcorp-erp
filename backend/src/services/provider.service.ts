@@ -35,50 +35,79 @@ export class ProviderService {
   }
 
   /**
-   * Get all providers with optional filters
+   * Get all providers with optional filters, pagination, and sorting
    */
-  async findAll(filters?: {
-    search?: string;
-    is_active?: boolean;
-    tipo_proveedor?: TipoProveedor;
-  }): Promise<ProviderDto[]> {
+  async findAll(
+    filters?: {
+      search?: string;
+      is_active?: boolean;
+      tipo_proveedor?: TipoProveedor;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+    },
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: ProviderDto[]; total: number }> {
     try {
-      const where: Record<string, unknown> = {};
+      const queryBuilder = this.providerRepository.createQueryBuilder('provider');
 
-      if (filters?.is_active !== undefined) {
-        where.is_active = filters.is_active;
-      }
+      // Apply is_active filter (default to true)
+      queryBuilder.where('provider.is_active = :is_active', {
+        is_active: filters?.is_active ?? true,
+      });
 
+      // Apply tipo_proveedor filter
       if (filters?.tipo_proveedor) {
-        where.tipo_proveedor = filters.tipo_proveedor;
-      }
-
-      let providers: Provider[];
-
-      if (filters?.search) {
-        // Search across multiple fields
-        providers = await this.providerRepository
-          .createQueryBuilder('provider')
-          .where('provider.is_active = :is_active', { is_active: filters.is_active ?? true })
-          .andWhere(
-            '(provider.razon_social ILIKE :search OR provider.ruc ILIKE :search OR provider.correo_electronico ILIKE :search OR provider.nombre_comercial ILIKE :search)',
-            { search: `%${filters.search}%` }
-          )
-          .orderBy('provider.razon_social', 'ASC')
-          .getMany();
-      } else {
-        providers = await this.providerRepository.find({
-          where,
-          order: { razon_social: 'ASC' },
+        queryBuilder.andWhere('provider.tipo_proveedor = :tipo_proveedor', {
+          tipo_proveedor: filters.tipo_proveedor,
         });
       }
 
-      return providers.map((p) => toProviderDto(p));
+      // Apply search filter
+      if (filters?.search) {
+        queryBuilder.andWhere(
+          '(provider.razon_social ILIKE :search OR provider.ruc ILIKE :search OR provider.email ILIKE :search OR provider.nombre_comercial ILIKE :search)',
+          { search: `%${filters.search}%` }
+        );
+      }
+
+      // Apply sorting
+      const sortBy = filters?.sort_by || 'razon_social';
+      const sortOrder = filters?.sort_order || 'ASC';
+
+      // Valid sortable fields (snake_case API → entity property)
+      const validSortFields: Record<string, string> = {
+        razon_social: 'provider.razon_social',
+        ruc: 'provider.ruc',
+        nombre_comercial: 'provider.nombre_comercial',
+        tipo_proveedor: 'provider.tipo_proveedor',
+        email: 'provider.email',
+        telefono: 'provider.telefono',
+        created_at: 'provider.created_at',
+        updated_at: 'provider.updated_at',
+      };
+
+      const sortField = validSortFields[sortBy] || 'provider.razon_social';
+      queryBuilder.orderBy(sortField, sortOrder);
+
+      // Apply pagination
+      const offset = (page - 1) * limit;
+      queryBuilder.skip(offset).take(limit);
+
+      // Get total and data
+      const [providers, total] = await queryBuilder.getManyAndCount();
+
+      return {
+        data: providers.map((p) => toProviderDto(p)),
+        total,
+      };
     } catch (error) {
       Logger.error('Error finding providers', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         filters,
+        page,
+        limit,
         context: 'ProviderService.findAll',
       });
       throw new Error('Failed to fetch providers');

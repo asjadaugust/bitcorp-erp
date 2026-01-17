@@ -3,6 +3,8 @@ import { Router } from 'express';
 import { ProviderController } from './provider.controller';
 import { ProviderContactController } from './provider-contact.controller';
 import { ProviderFinancialInfoController } from './provider-financial-info.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import { ProviderCreateDto, ProviderUpdateDto } from '../../types/dto/provider.dto';
 
 const router = Router();
 
@@ -56,10 +58,10 @@ router.put('/contacts/:id', contactController.update);
 router.delete('/contacts/:id', contactController.delete);
 
 // POST /api/providers - Create new provider
-router.post('/', ProviderController.create);
+router.post('/', validateDto(ProviderCreateDto), ProviderController.create);
 
 // PUT /api/providers/:id - Update provider
-router.put('/:id', ProviderController.update);
+router.put('/:id', validateDto(ProviderUpdateDto), ProviderController.update);
 
 // DELETE /api/providers/:id - Soft delete provider
 router.delete('/:id', ProviderController.delete);

@@ -8,6 +8,16 @@
  */
 
 import { Provider, TipoProveedor } from '../../models/provider.model';
+import {
+  IsString,
+  IsEmail,
+  IsBoolean,
+  IsOptional,
+  IsIn,
+  MaxLength,
+  MinLength,
+  Matches,
+} from 'class-validator';
 
 export interface ProviderDto {
   id: number;
@@ -74,4 +84,110 @@ export function fromProviderDto(dto: Partial<ProviderDto>): Partial<Provider> {
   if (dto.is_active !== undefined) entity.is_active = dto.is_active;
 
   return entity;
+}
+
+/**
+ * Provider Create DTO - for creating new providers
+ * Validation with class-validator decorators
+ */
+export class ProviderCreateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser un string' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string;
+
+  @IsString({ message: 'ruc es requerido' })
+  @MinLength(11, { message: 'ruc debe tener exactamente 11 dígitos' })
+  @MaxLength(11, { message: 'ruc debe tener exactamente 11 dígitos' })
+  @Matches(/^\d{11}$/, { message: 'ruc debe contener solo dígitos (11 caracteres)' })
+  ruc!: string;
+
+  @IsString({ message: 'razon_social es requerido' })
+  @MaxLength(200, { message: 'razon_social no puede exceder 200 caracteres' })
+  razon_social!: string;
+
+  @IsOptional()
+  @IsString({ message: 'nombre_comercial debe ser un string' })
+  @MaxLength(200, { message: 'nombre_comercial no puede exceder 200 caracteres' })
+  nombre_comercial?: string;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_proveedor debe ser un string' })
+  @IsIn(['EQUIPOS', 'MATERIALES', 'SERVICIOS', 'MIXTO'], {
+    message: 'tipo_proveedor debe ser EQUIPOS, MATERIALES, SERVICIOS o MIXTO',
+  })
+  tipo_proveedor?: TipoProveedor;
+
+  @IsOptional()
+  @IsString({ message: 'direccion debe ser un string' })
+  @MaxLength(500, { message: 'direccion no puede exceder 500 caracteres' })
+  direccion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'telefono debe ser un string' })
+  @MaxLength(20, { message: 'telefono no puede exceder 20 caracteres' })
+  telefono?: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'email debe ser un correo electrónico válido' })
+  @MaxLength(100, { message: 'email no puede exceder 100 caracteres' })
+  email?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'is_active debe ser un booleano' })
+  is_active?: boolean;
+}
+
+/**
+ * Provider Update DTO - for updating existing providers
+ * All fields optional
+ */
+export class ProviderUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser un string' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string;
+
+  @IsOptional()
+  @IsString({ message: 'ruc debe ser un string' })
+  @MinLength(11, { message: 'ruc debe tener exactamente 11 dígitos' })
+  @MaxLength(11, { message: 'ruc debe tener exactamente 11 dígitos' })
+  @Matches(/^\d{11}$/, { message: 'ruc debe contener solo dígitos (11 caracteres)' })
+  ruc?: string;
+
+  @IsOptional()
+  @IsString({ message: 'razon_social debe ser un string' })
+  @MaxLength(200, { message: 'razon_social no puede exceder 200 caracteres' })
+  razon_social?: string;
+
+  @IsOptional()
+  @IsString({ message: 'nombre_comercial debe ser un string' })
+  @MaxLength(200, { message: 'nombre_comercial no puede exceder 200 caracteres' })
+  nombre_comercial?: string;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_proveedor debe ser un string' })
+  @IsIn(['EQUIPOS', 'MATERIALES', 'SERVICIOS', 'MIXTO'], {
+    message: 'tipo_proveedor debe ser EQUIPOS, MATERIALES, SERVICIOS o MIXTO',
+  })
+  tipo_proveedor?: TipoProveedor;
+
+  @IsOptional()
+  @IsString({ message: 'direccion debe ser un string' })
+  @MaxLength(500, { message: 'direccion no puede exceder 500 caracteres' })
+  direccion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'telefono debe ser un string' })
+  @MaxLength(20, { message: 'telefono no puede exceder 20 caracteres' })
+  telefono?: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'email debe ser un correo electrónico válido' })
+  @MaxLength(100, { message: 'email no puede exceder 100 caracteres' })
+  email?: string;
+
+  @IsOptional()
+  @IsBoolean({ message: 'is_active debe ser un booleano' })
+  is_active?: boolean;
 }
