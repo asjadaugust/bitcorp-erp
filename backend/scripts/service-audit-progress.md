@@ -10,11 +10,11 @@
 ## Progress Overview
 
 **Total Services**: 31  
-**Audited**: 4 (equipment, fuel, sig, inventory)  
-**Fixed**: 3 (fuel, sig, inventory) ✅  
-**Remaining**: 28
+**Audited**: 5 (equipment, fuel, sig, inventory, export)  
+**Fixed**: 4 (fuel, sig, inventory, export) ✅  
+**Remaining**: 27
 
-**Overall Progress**: ▓▓▓░░░░░░░ 10% (3/31 complete)
+**Overall Progress**: ▓▓▓▓░░░░░░ 13% (4/31 complete)
 
 ---
 
@@ -22,13 +22,13 @@
 
 ### Priority 1: Simple CRUD Services (Start Here)
 
-| Service                | LOC | Complexity | Status      | Effort | Notes           |
-| ---------------------- | --- | ---------- | ----------- | ------ | --------------- |
-| `fuel.service.ts`      | 177 | 🟢 Simple  | ✅ Complete | Small  | Basic CRUD      |
-| `sig.service.ts`       | 30  | 🟢 Simple  | ✅ Complete | Small  | Very small      |
-| `inventory.service.ts` | 75  | 🟢 Simple  | ✅ Complete | Small  | Inventory logic |
-| `export.service.ts`    | 35  | 🟢 Simple  | ⭐ Next     | Small  | Utility service |
-| `report.service.ts`    | 109 | 🟢 Simple  | 📝 Todo     | Small  | Read-only       |
+| Service                | LOC | Complexity | Status      | Effort | Notes                    |
+| ---------------------- | --- | ---------- | ----------- | ------ | ------------------------ |
+| `fuel.service.ts`      | 177 | 🟢 Simple  | ✅ Complete | Small  | Basic CRUD               |
+| `sig.service.ts`       | 30  | 🟢 Simple  | ✅ Complete | Small  | Very small               |
+| `inventory.service.ts` | 75  | 🟢 Simple  | ✅ Complete | Small  | Inventory logic          |
+| `export.service.ts`    | 35  | 🟢 Simple  | ✅ Complete | Small  | Utility (no tenant/DTOs) |
+| `report.service.ts`    | 109 | 🟢 Simple  | ⭐ Next     | Small  | Read-only                |
 
 ### Priority 2: Moderate Services
 
