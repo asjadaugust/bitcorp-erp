@@ -26,12 +26,14 @@ import {
 export class MovementController {
   /**
    * GET /api/movements
-   * List all movements with computed totals and pagination
+   * List all movements with computed totals, pagination, and sorting
    * @query page - Page number (default: 1)
    * @query limit - Items per page (default: 10, max: 100)
    * @query tipo_movimiento - Filter by movement type (entrada/salida/transferencia/ajuste)
    * @query proyecto_id - Filter by project ID
    * @query estado - Filter by status (pendiente/aprobado/rechazado)
+   * @query sort_by - Sort field (default: 'fecha_movimiento')
+   * @query sort_order - Sort order 'ASC' or 'DESC' (default: 'DESC')
    * @returns MovementListDto[] with Spanish snake_case fields and pagination
    */
   async getAll(req: Request, res: Response) {
@@ -48,7 +50,24 @@ export class MovementController {
         : undefined;
       const estado = req.query.estado as string;
 
+      // Parse sorting parameters
+      const sortBy = (req.query.sort_by as string) || 'fecha_movimiento';
+      const sortOrder = (req.query.sort_order as string)?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
       const movementRepo = AppDataSource.getRepository(Movement);
+
+      // Valid sortable fields (snake_case API → entity property)
+      const validSortFields: Record<string, string> = {
+        fecha_movimiento: 'm.fechaMovimiento',
+        tipo_movimiento: 'm.tipoMovimiento',
+        numero_movimiento: 'm.numeroMovimiento',
+        estado: 'm.estado',
+        created_at: 'm.createdAt',
+        updated_at: 'm.updatedAt',
+      };
+
+      // Get sort field or default
+      const sortField = validSortFields[sortBy] || 'm.fechaMovimiento';
 
       // Build query
       const queryBuilder = movementRepo
@@ -56,7 +75,7 @@ export class MovementController {
         .leftJoinAndSelect('m.project', 'p')
         .leftJoinAndSelect('m.creator', 'u')
         .loadRelationCountAndMap('m.items_count', 'm.details')
-        .orderBy('m.createdAt', 'DESC');
+        .orderBy(sortField, sortOrder);
 
       // Apply filters
       if (tipoMovimiento) {

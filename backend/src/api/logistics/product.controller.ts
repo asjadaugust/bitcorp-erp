@@ -19,10 +19,12 @@ import {
 export class ProductController {
   /**
    * GET /api/products
-   * List all active products with pagination
+   * List all active products with pagination and sorting
    * @query page - Page number (default: 1)
    * @query limit - Items per page (default: 10, max: 100)
    * @query categoria - Filter by category
+   * @query sort_by - Sort field (default: 'nombre')
+   * @query sort_order - Sort order 'ASC' or 'DESC' (default: 'ASC')
    * @returns ProductListDto[] with Spanish snake_case fields and pagination
    */
   async getAll(req: Request, res: Response) {
@@ -35,6 +37,10 @@ export class ProductController {
       // Parse filters
       const categoria = req.query.categoria as string;
 
+      // Parse sorting parameters
+      const sortBy = (req.query.sort_by as string) || 'nombre';
+      const sortOrder = (req.query.sort_order as string)?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
       const productRepo = AppDataSource.getRepository(Product);
 
       // Build where clause
@@ -43,13 +49,32 @@ export class ProductController {
         where.categoria = categoria;
       }
 
+      // Valid sortable fields (entity property names)
+      const validSortFields: Record<string, string> = {
+        nombre: 'nombre',
+        codigo: 'codigo',
+        categoria: 'categoria',
+        unidad_medida: 'unidadMedida',
+        precio_unitario: 'precioUnitario',
+        stock_minimo: 'stockMinimo',
+        created_at: 'createdAt',
+        updated_at: 'updatedAt',
+      };
+
+      // Map snake_case API field to entity property
+      const entitySortField = validSortFields[sortBy] || 'nombre';
+
+      // Build order clause
+      const order: any = {};
+      order[entitySortField] = sortOrder;
+
       // Count total matching products
       const total = await productRepo.count({ where });
 
-      // Get paginated products
+      // Get paginated and sorted products
       const products = await productRepo.find({
         where,
-        order: { nombre: 'ASC' },
+        order,
         take: limit,
         skip: offset,
       });

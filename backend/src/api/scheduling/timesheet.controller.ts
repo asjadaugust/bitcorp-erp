@@ -18,14 +18,18 @@ import Logger from '../../utils/logger';
 
 /**
  * GET /api/scheduling/timesheets
- * List all timesheets with filters and pagination
- * Query params: ?page=1&limit=10&trabajador_id=X&periodo=YYYY-MM&estado=X&creado_por=X
+ * List all timesheets with filters, pagination, and sorting
+ * Query params: ?page=1&limit=10&trabajador_id=X&periodo=YYYY-MM&estado=X&creado_por=X&sort_by=periodo&sort_order=DESC
  */
 export const listTimesheets = async (req: Request, res: Response) => {
   try {
     // Pagination parameters
     const page = parseInt(req.query.page as string) || 1;
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100 items
+
+    // Sorting parameters
+    const sortBy = (req.query.sort_by as string) || 'periodo';
+    const sortOrder = (req.query.sort_order as string)?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
     // Filters
     const { trabajador_id, periodo, estado, creado_por } = req.query;
@@ -39,7 +43,41 @@ export const listTimesheets = async (req: Request, res: Response) => {
     // Get all timesheets from service
     const allTimesheets = await timesheetService.listTimesheets(filters);
 
-    // Paginate in memory (TODO: move pagination to service for better performance)
+    // Apply sorting in memory
+    const validSortFields = [
+      'periodo',
+      'trabajador_id',
+      'estado',
+      'total_dias_trabajados',
+      'total_horas',
+      'created_at',
+      'updated_at',
+    ];
+
+    if (validSortFields.includes(sortBy)) {
+      allTimesheets.sort((a: any, b: any) => {
+        const aVal = a[sortBy];
+        const bVal = b[sortBy];
+
+        // Handle null/undefined
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return sortOrder === 'ASC' ? 1 : -1;
+        if (bVal == null) return sortOrder === 'ASC' ? -1 : 1;
+
+        // String comparison (for periodo, estado)
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          const comparison = aVal.localeCompare(bVal, 'es');
+          return sortOrder === 'ASC' ? comparison : -comparison;
+        }
+
+        // Numeric/Date comparison
+        if (aVal < bVal) return sortOrder === 'ASC' ? -1 : 1;
+        if (aVal > bVal) return sortOrder === 'ASC' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    // Paginate in memory after sorting
     const total = allTimesheets.length;
     const offset = (page - 1) * limit;
     const timesheets = allTimesheets.slice(offset, offset + limit);

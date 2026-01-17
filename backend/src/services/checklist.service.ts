@@ -152,6 +152,10 @@ export class ChecklistService {
     const limit = parseInt(filters?.limit) || 20;
     const skip = (page - 1) * limit;
 
+    // Parse sorting parameters
+    const sortBy = filters?.sort_by || 'fecha_inspeccion';
+    const sortOrder = filters?.sort_order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
     const where: any = {};
 
     if (filters?.equipoId) where.equipoId = filters.equipoId;
@@ -159,10 +163,29 @@ export class ChecklistService {
     if (filters?.estado) where.estado = filters.estado;
     if (filters?.resultadoGeneral) where.resultadoGeneral = filters.resultadoGeneral;
 
+    // Valid sortable fields (snake_case API → entity property)
+    const validSortFields: Record<string, string> = {
+      fecha_inspeccion: 'fechaInspeccion',
+      estado: 'estado',
+      resultado_general: 'resultadoGeneral',
+      created_at: 'createdAt',
+      updated_at: 'updatedAt',
+    };
+
+    const entitySortField = validSortFields[sortBy] || 'fechaInspeccion';
+
+    // Build order clause
+    const order: any = {};
+    order[entitySortField] = sortOrder;
+    // Add secondary sort by createdAt for consistency
+    if (entitySortField !== 'createdAt') {
+      order['createdAt'] = 'DESC';
+    }
+
     const [data, total] = await this.inspectionRepository.findAndCount({
       where,
       relations: ['plantilla', 'equipo', 'trabajador'],
-      order: { fechaInspeccion: 'DESC', createdAt: 'DESC' },
+      order,
       skip,
       take: limit,
     });

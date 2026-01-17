@@ -19,18 +19,24 @@ export class ChecklistController {
   // ===== TEMPLATES =====
   /**
    * GET /api/checklists/templates
-   * List all checklist templates with pagination and filters
+   * List all checklist templates with pagination, sorting, and filters
    * @query page - Page number (default: 1)
    * @query limit - Items per page (default: 10, max: 100)
    * @query activo - Filter by active status
    * @query tipoEquipo - Filter by equipment type
    * @query search - Search by name
+   * @query sort_by - Sort field (default: 'nombre')
+   * @query sort_order - Sort order 'ASC' or 'DESC' (default: 'ASC')
    */
   getAllTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Parse pagination
       const page = parseInt(req.query.page as string) || 1;
       const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100
+
+      // Parse sorting
+      const sortBy = (req.query.sort_by as string) || 'nombre';
+      const sortOrder = (req.query.sort_order as string)?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
       const filters = {
         activo: req.query.activo,
@@ -41,7 +47,33 @@ export class ChecklistController {
       // Get all templates from service
       const allTemplates = await this.checklistService.getAllTemplates(filters);
 
-      // Paginate in memory
+      // Apply sorting in memory
+      const validSortFields = ['nombre', 'tipo_equipo', 'created_at', 'updated_at'];
+
+      if (validSortFields.includes(sortBy)) {
+        allTemplates.sort((a: any, b: any) => {
+          const aVal = a[sortBy];
+          const bVal = b[sortBy];
+
+          // Handle null/undefined
+          if (aVal == null && bVal == null) return 0;
+          if (aVal == null) return sortOrder === 'ASC' ? 1 : -1;
+          if (bVal == null) return sortOrder === 'ASC' ? -1 : 1;
+
+          // String comparison
+          if (typeof aVal === 'string' && typeof bVal === 'string') {
+            const comparison = aVal.localeCompare(bVal, 'es');
+            return sortOrder === 'ASC' ? comparison : -comparison;
+          }
+
+          // Numeric/Date comparison
+          if (aVal < bVal) return sortOrder === 'ASC' ? -1 : 1;
+          if (aVal > bVal) return sortOrder === 'ASC' ? 1 : -1;
+          return 0;
+        });
+      }
+
+      // Paginate in memory after sorting
       const total = allTemplates.length;
       const offset = (page - 1) * limit;
       const templates = allTemplates.slice(offset, offset + limit);
@@ -194,6 +226,8 @@ export class ChecklistController {
         resultadoGeneral: req.query.resultadoGeneral,
         startDate: req.query.startDate,
         endDate: req.query.endDate,
+        sort_by: req.query.sort_by,
+        sort_order: req.query.sort_order,
       };
 
       const result = await this.checklistService.getAllInspections(filters);

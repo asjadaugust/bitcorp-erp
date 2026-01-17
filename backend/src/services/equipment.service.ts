@@ -45,6 +45,8 @@ export interface EquipmentFilter {
   providerId?: number;
   search?: string;
   isActive?: boolean;
+  sort_by?: string;
+  sort_order?: 'ASC' | 'DESC';
 }
 
 export class EquipmentService {
@@ -89,7 +91,25 @@ export class EquipmentService {
         );
       }
 
-      queryBuilder.orderBy('e.codigo_equipo', 'ASC');
+      // Apply sorting
+      const sortBy = filter?.sort_by || 'codigo_equipo';
+      const sortOrder = filter?.sort_order || 'ASC';
+
+      // Valid sortable fields (snake_case API → entity property)
+      const validSortFields: Record<string, string> = {
+        codigo_equipo: 'e.codigo_equipo',
+        categoria: 'e.categoria',
+        marca: 'e.marca',
+        modelo: 'e.modelo',
+        placa: 'e.placa',
+        estado: 'e.estado',
+        anio_fabricacion: 'e.anio_fabricacion',
+        created_at: 'e.created_at',
+        updated_at: 'e.updated_at',
+      };
+
+      const sortField = validSortFields[sortBy] || 'e.codigo_equipo';
+      queryBuilder.orderBy(sortField, sortOrder);
 
       // Add pagination
       queryBuilder.skip((page - 1) * limit).take(limit);

@@ -63,12 +63,16 @@ export class EquipmentController {
 
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { status, equipment_type, search, is_active, page, limit } = req.query;
+      const { status, equipment_type, search, is_active, page, limit, sort_by, sort_order } =
+        req.query;
 
       const filters = {
         status: is_active === 'false' ? 'inactive' : (status as string), // If is_active is 'false', set status to 'inactive', otherwise use the provided status
         equipment_type: equipment_type as string,
         search: search as string,
+        sort_by: sort_by as string,
+        sort_order:
+          (sort_order as string)?.toUpperCase() === 'DESC' ? ('DESC' as const) : ('ASC' as const),
       };
 
       const pageNum = parseInt(page as string) || 1;

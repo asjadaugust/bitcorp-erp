@@ -12,10 +12,12 @@ const employeeService = new EmployeeService();
 
 /**
  * GET /api/employees
- * List all employees with pagination and optional search
+ * List all employees with pagination, sorting, and optional search
  * @query page - Page number (default: 1)
  * @query limit - Items per page (default: 10, max: 100)
  * @query search - Search by name, DNI, or cargo
+ * @query sort_by - Sort field (default: 'nombre_completo')
+ * @query sort_order - Sort order 'ASC' or 'DESC' (default: 'ASC')
  * @returns EmployeeListDto[] with Spanish snake_case fields and pagination
  */
 export const getEmployees = async (req: Request, res: Response) => {
@@ -25,25 +27,64 @@ export const getEmployees = async (req: Request, res: Response) => {
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100
     const search = req.query.search as string;
 
-    let employees;
-    let total;
+    // Parse sorting parameters
+    const sortBy = (req.query.sort_by as string) || 'nombre_completo';
+    const sortOrder = (req.query.sort_order as string)?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
+    let employees: any[];
+    let total: number;
 
     if (search) {
-      // Search mode - get all matching, then paginate in memory
+      // Search mode - get all matching
       const allEmployees = await employeeService.searchEmployees(search);
+      employees = allEmployees;
       total = allEmployees.length;
-      const offset = (page - 1) * limit;
-      employees = allEmployees.slice(offset, offset + limit);
     } else {
-      // List mode - get all, then paginate in memory
-      // TODO: Update service to support pagination at DB level for better performance
+      // List mode - get all
       const allEmployees = await employeeService.getAllEmployees();
+      employees = allEmployees;
       total = allEmployees.length;
-      const offset = (page - 1) * limit;
-      employees = allEmployees.slice(offset, offset + limit);
     }
 
-    return sendPaginatedSuccess(res, employees, { page, limit, total });
+    // Apply sorting in memory
+    const validSortFields = [
+      'nombre_completo',
+      'dni',
+      'cargo',
+      'email',
+      'fecha_ingreso',
+      'fecha_nacimiento',
+      'telefono',
+    ];
+
+    if (validSortFields.includes(sortBy)) {
+      employees.sort((a: any, b: any) => {
+        const aVal = a[sortBy];
+        const bVal = b[sortBy];
+
+        // Handle null/undefined
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return sortOrder === 'ASC' ? 1 : -1;
+        if (bVal == null) return sortOrder === 'ASC' ? -1 : 1;
+
+        // String comparison
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          const comparison = aVal.localeCompare(bVal, 'es');
+          return sortOrder === 'ASC' ? comparison : -comparison;
+        }
+
+        // Numeric/Date comparison
+        if (aVal < bVal) return sortOrder === 'ASC' ? -1 : 1;
+        if (aVal > bVal) return sortOrder === 'ASC' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    // Apply pagination after sorting
+    const offset = (page - 1) * limit;
+    const paginatedEmployees = employees.slice(offset, offset + limit);
+
+    return sendPaginatedSuccess(res, paginatedEmployees, { page, limit, total });
   } catch (error: any) {
     return sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch employees', error.message);
   }
