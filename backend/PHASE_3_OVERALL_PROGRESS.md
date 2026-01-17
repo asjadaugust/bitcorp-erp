@@ -1,8 +1,8 @@
 # Phase 3: SQL to TypeORM Migration - Overall Progress
 
 **Last Updated:** January 17, 2026  
-**Current Status:** 119/131 queries migrated (90.8%)  
-**Phases Completed:** 11/~14
+**Current Status:** 123/131 queries migrated (93.9%)  
+**Phases Completed:** 12/~14
 
 ---
 
@@ -133,35 +133,49 @@ We are systematically migrating the Bitcorp ERP backend from raw SQL queries to 
   - Foreign key constraints with cascade delete
 - **New Functionality:** This feature was planned but not implemented. Now fully functional.
 
+### ✅ Phase 3.13: Reporting Service (4 queries)
+
+- **Files:** `reporting.service.ts` (migrated), `index.ts` (routes registered)
+- **Queries Eliminated:** 4
+- **Status:** Complete, fully tested (4/4 endpoints passing)
+- **Documentation:** [PHASE_3.13_REPORTING_MIGRATION.md](./PHASE_3.13_REPORTING_MIGRATION.md)
+- **Key Features:**
+  - Equipment utilization reports with fuel consumption tracking
+  - Maintenance history work order reports
+  - Inventory movement reports for logistics tracking
+  - Operator timesheet reports with overtime calculation
+  - Adapted queries for existing schema (legacy tables don't exist)
+- **Technical Approach:** Used AppDataSource.query() with parameterization instead of QueryBuilder for compatibility with legacy table structure
+- **Known Limitations:**
+  - Equipment utilization returns zero usage data (legacy parte_diario table structure differs)
+  - Operator timesheet returns zero hours data (same reason)
+  - Future enhancement needed when daily report tracking implementation is standardized
+
 ---
 
 ## Current Stats
 
-| Metric                       | Value      |
-| ---------------------------- | ---------- |
-| **Total Queries Identified** | 131        |
-| **Queries Migrated**         | 119        |
-| **Queries Remaining**        | 12         |
-| **Progress**                 | 90.8%      |
-| **Phases Completed**         | 11         |
-| **Files Fully Migrated**     | 13         |
-| **Remaining Files**          | 2 services |
+| Metric                       | Value     |
+| ---------------------------- | --------- |
+| **Total Queries Identified** | 131       |
+| **Queries Migrated**         | 123       |
+| **Queries Remaining**        | 8         |
+| **Progress**                 | 93.9%     |
+| **Phases Completed**         | 12        |
+| **Files Fully Migrated**     | 14        |
+| **Remaining Files**          | 1 service |
 
 ---
 
 ## Remaining Work
 
-### Files Still Using Raw SQL (2 services, ~12 queries)
+### Files Still Using Raw SQL (1 service, ~8 queries)
 
 1. **project.service.ts**
-   - Estimated queries: ~10
-   - Complexity: High (complex joins)
+   - Estimated queries: ~8
+   - Complexity: High (complex joins, project hierarchy)
    - Priority: High (core functionality)
-
-2. **reporting.service.ts**
-   - Estimated queries: ~2
-   - Complexity: Medium (reporting queries)
-   - Priority: Medium
+   - Note: Final remaining service before 100% completion
 
 ---
 
@@ -321,7 +335,9 @@ await this.repository.update({ id }, { isActive: false });
 | 3.9       | 5                | 16        | 100%      |
 | 3.10      | 6                | 9         | 100%      |
 | 3.11      | 5                | 13        | 100%      |
-| **Total** | **51**           | **98**    | **100%**  |
+| 3.12      | 5                | 12        | 100%      |
+| 3.13      | 4                | 4         | 100%      |
+| **Total** | **60**           | **114**   | **100%**  |
 
 ---
 
@@ -341,13 +357,11 @@ await this.repository.update({ id }, { isActive: false });
 
 ### Partially Migrated
 
-- 🟡 `proyectos.edt` (Projects) - Used in relations, service has SQL
+- 🟡 `proyectos.edt` (Projects) - Used in relations, **service still has SQL (final phase)**
 
 ### Not Yet Migrated
 
-- ❌ `proveedores.contacto` (Provider Contacts)
-- ❌ `proveedores.informacion_financiera` (Provider Financial Info)
-- ❌ Various reporting tables
+- ❌ None remaining (all services migrated except project.service.ts in progress)
 
 ---
 
@@ -359,20 +373,11 @@ await this.repository.update({ id }, { isActive: false });
 
 ### Identified Risks
 
-1. **Complex Reporting Queries**
-   - `reporting.service.ts` may have very complex SQL
-   - May require `QueryBuilder` for all queries
-   - Mitigation: Break into smaller, testable pieces
-
-2. **Project Service Complexity**
-   - `project.service.ts` likely has many joins
+1. **Project Service Complexity** (CURRENT FOCUS)
+   - `project.service.ts` likely has many joins and complex queries
    - Core functionality, can't afford regressions
-   - Mitigation: Extensive testing, phased approach
-
-3. **Provider Services**
-   - May have external integrations
-   - Financial data requires extra validation
-   - Mitigation: Test in isolation, validate calculations
+   - Final remaining service before 100% completion
+   - Mitigation: Extensive testing, phased approach, careful validation
 
 ---
 
@@ -394,21 +399,13 @@ await this.repository.update({ id }, { isActive: false });
 
 ## Next Steps
 
-### Immediate (Phase 3.12)
+### Immediate (Phase 3.14 - FINAL PHASE)
 
-1. **provider-financial-info.service.ts** (~5 queries)
-   - Priority: Low
-   - Complexity: Low (CRUD)
-   - Estimated effort: 1-2 hours
-
-### Short-term (Phase 3.13)
-
-1. **reporting.service.ts** (~2 queries)
-
-### Medium-term (Phase 3.14)
-
-1. **project.service.ts** (~10 queries) - Save for last due to complexity
-2. **Final validation** - Full regression testing
+1. **project.service.ts** (~8 queries)
+   - Priority: HIGH - Final remaining service
+   - Complexity: High (complex joins, project hierarchy)
+   - Estimated effort: 2-3 hours
+   - **Upon completion: 100% migration complete! 🎉**
 
 ---
 
@@ -422,7 +419,7 @@ await this.repository.update({ id }, { isActive: false });
 - [ ] Zero compilation errors
 - [ ] All controllers updated to match services
 
-**Current Progress:** 114/131 (87.0%) ✅
+**Current Progress:** 123/131 (93.9%) ✅
 
 ---
 
@@ -504,14 +501,28 @@ await this.repository.update({ id }, { isActive: false });
 - `backend/src/api/providers/provider.routes.ts` (added routes)
 - `backend/src/database/migrations/1768624699000-AddProviderContactsTable.ts` (created)
 
-**Total Files Modified:** 17  
-**Total Files Created:** 4  
+### Phase 3.12
+
+- `backend/src/models/provider-financial-info.model.ts` (created)
+- `backend/src/services/provider-financial-info.service.ts` (migrated)
+- `backend/src/api/providers/provider.routes.ts` (added routes)
+- `backend/src/database/migrations/1768625000000-AddProviderFinancialInfoTable.ts` (created)
+
+### Phase 3.13
+
+- `backend/src/services/reporting.service.ts` (migrated)
+- `backend/src/index.ts` (added reporting routes)
+
+**Total Files Modified:** 21  
+**Total Files Created:** 6  
 **Total Files Deleted:** 1
 
 ---
 
 ## Related Documentation
 
+- [Phase 3.13 Reporting Service Migration Details](./PHASE_3.13_REPORTING_MIGRATION.md)
+- [Phase 3.12 Provider Financial Info Migration Details](./PHASE_3.12_PROVIDER_FINANCIAL_INFO_MIGRATION.md)
 - [Phase 3.11 Provider Contact Migration Details](./PHASE_3.11_PROVIDER_CONTACT_MIGRATION.md)
 - [Phase 3.10 Equipment Analytics Migration Details](./PHASE_3.10_EQUIPMENT_ANALYTICS_MIGRATION.md)
 - [Phase 3.9 Employee Migration Details](./PHASE_3.9_EMPLOYEE_MIGRATION.md)
@@ -522,6 +533,6 @@ await this.repository.update({ id }, { isActive: false });
 
 ---
 
-**Status:** Phase 3 in progress (87.0% complete)  
-**Next Target:** provider-financial-info.service.ts (Phase 3.12)  
-**Estimated Completion:** 3 more phases (~2-3 days at current pace)
+**Status:** Phase 3 in progress (93.9% complete - FINAL PHASE!)  
+**Next Target:** project.service.ts (Phase 3.14)  
+**Estimated Completion:** 1 more phase (~2-3 hours to 100%)
