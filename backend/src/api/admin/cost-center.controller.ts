@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { CostCenterService } from '../../services/cost-center.service';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 import Logger from '../../utils/logger';
 
 const costCenterService = new CostCenterService();
@@ -8,31 +14,48 @@ const costCenterService = new CostCenterService();
 export class CostCenterController {
   /**
    * GET /api/admin/cost-centers
-   * Get all cost centers with optional filters
+   * Get all cost centers with optional filters and pagination
    */
   static async getAll(req: Request, res: Response): Promise<void> {
     try {
       const { search, project_id, is_active } = req.query;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+      const sort_by = req.query.sort_by as string;
+      const sort_order =
+        (req.query.sort_order as string)?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
-      const filters: any = {};
+      const filters: any = {
+        page,
+        limit,
+        sort_by,
+        sort_order,
+      };
 
       if (search) filters.search = String(search);
-      if (project_id) filters.project_id = parseInt(String(project_id));
-      if (is_active !== undefined) filters.is_active = is_active === 'true';
+      if (project_id) filters.projectId = parseInt(String(project_id));
+      if (is_active !== undefined) filters.isActive = is_active === 'true';
 
-      const costCenters = await costCenterService.findAll(filters);
+      const result = await costCenterService.findAll(filters);
 
-      res.json(costCenters);
+      sendPaginatedSuccess(res, result.data, {
+        page,
+        limit,
+        total: result.total,
+      });
     } catch (error: any) {
       Logger.error('Error in getAll cost centers', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'CostCenterController.getAll',
       });
-      res.status(500).json({
-        error: 'Failed to fetch cost centers',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_LIST_FAILED',
+        'Error al obtener centros de costo',
+        error.message
+      );
     }
   }
 
@@ -45,13 +68,13 @@ export class CostCenterController {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid cost center ID' });
+        sendError(res, 400, 'INVALID_ID', 'ID de centro de costo inválido');
         return;
       }
 
       const costCenter = await costCenterService.findById(id);
 
-      res.json(costCenter);
+      sendSuccess(res, costCenter);
     } catch (error: any) {
       Logger.error('Error in getById cost center', {
         error: error instanceof Error ? error.message : String(error),
@@ -61,14 +84,17 @@ export class CostCenterController {
       });
 
       if (error.message === 'Cost center not found') {
-        res.status(404).json({ error: 'Cost center not found' });
+        sendError(res, 404, 'COST_CENTER_NOT_FOUND', 'Centro de costo no encontrado');
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to fetch cost center',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_FETCH_FAILED',
+        'Error al obtener centro de costo',
+        error.message
+      );
     }
   }
 
@@ -83,11 +109,11 @@ export class CostCenterController {
       const costCenter = await costCenterService.findByCode(code);
 
       if (!costCenter) {
-        res.status(404).json({ error: 'Cost center not found' });
+        sendError(res, 404, 'COST_CENTER_NOT_FOUND', 'Centro de costo no encontrado');
         return;
       }
 
-      res.json(costCenter);
+      sendSuccess(res, costCenter);
     } catch (error: any) {
       Logger.error('Error in getByCode cost center', {
         error: error instanceof Error ? error.message : String(error),
@@ -95,10 +121,13 @@ export class CostCenterController {
         code: req.params.code,
         context: 'CostCenterController.getByCode',
       });
-      res.status(500).json({
-        error: 'Failed to fetch cost center',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_FETCH_FAILED',
+        'Error al obtener centro de costo',
+        error.message
+      );
     }
   }
 
@@ -111,13 +140,13 @@ export class CostCenterController {
       const project_id = parseInt(req.params.project_id);
 
       if (isNaN(project_id)) {
-        res.status(400).json({ error: 'Invalid project ID' });
+        sendError(res, 400, 'INVALID_ID', 'ID de proyecto inválido');
         return;
       }
 
       const costCenters = await costCenterService.findByProject(project_id);
 
-      res.json(costCenters);
+      sendSuccess(res, costCenters);
     } catch (error: any) {
       Logger.error('Error in getByProject', {
         error: error instanceof Error ? error.message : String(error),
@@ -125,10 +154,13 @@ export class CostCenterController {
         projectId: req.params.project_id,
         context: 'CostCenterController.getByProject',
       });
-      res.status(500).json({
-        error: 'Failed to fetch cost centers',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_LIST_FAILED',
+        'Error al obtener centros de costo',
+        error.message
+      );
     }
   }
 
@@ -140,7 +172,7 @@ export class CostCenterController {
     try {
       const costCenter = await costCenterService.create(req.body);
 
-      res.status(201).json(costCenter);
+      sendCreated(res, costCenter.id, 'Centro de costo creado exitosamente');
     } catch (error: any) {
       Logger.error('Error in create cost center', {
         error: error instanceof Error ? error.message : String(error),
@@ -149,19 +181,22 @@ export class CostCenterController {
       });
 
       if (error.message.includes('already exists')) {
-        res.status(409).json({ error: error.message });
+        sendError(res, 409, 'COST_CENTER_DUPLICATE', error.message);
         return;
       }
 
       if (error.message.includes('required')) {
-        res.status(400).json({ error: error.message });
+        sendError(res, 400, 'VALIDATION_ERROR', error.message);
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to create cost center',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_CREATE_FAILED',
+        'Error al crear centro de costo',
+        error.message
+      );
     }
   }
 
@@ -174,13 +209,13 @@ export class CostCenterController {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid cost center ID' });
+        sendError(res, 400, 'INVALID_ID', 'ID de centro de costo inválido');
         return;
       }
 
       const costCenter = await costCenterService.update(id, req.body);
 
-      res.json(costCenter);
+      sendSuccess(res, costCenter);
     } catch (error: any) {
       Logger.error('Error in update cost center', {
         error: error instanceof Error ? error.message : String(error),
@@ -190,19 +225,22 @@ export class CostCenterController {
       });
 
       if (error.message === 'Cost center not found') {
-        res.status(404).json({ error: 'Cost center not found' });
+        sendError(res, 404, 'COST_CENTER_NOT_FOUND', 'Centro de costo no encontrado');
         return;
       }
 
       if (error.message.includes('already exists')) {
-        res.status(409).json({ error: error.message });
+        sendError(res, 409, 'COST_CENTER_DUPLICATE', error.message);
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to update cost center',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_UPDATE_FAILED',
+        'Error al actualizar centro de costo',
+        error.message
+      );
     }
   }
 
@@ -210,12 +248,12 @@ export class CostCenterController {
    * DELETE /api/admin/cost-centers/:id
    * Soft delete cost center
    */
-  static async delete(req: Request, res: Response): Promise<void> {
+  static async remove(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid cost center ID' });
+        sendError(res, 400, 'INVALID_ID', 'ID de centro de costo inválido');
         return;
       }
 
@@ -229,10 +267,13 @@ export class CostCenterController {
         costCenterId: req.params.id,
         context: 'CostCenterController.delete',
       });
-      res.status(500).json({
-        error: 'Failed to delete cost center',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_DELETE_FAILED',
+        'Error al eliminar centro de costo',
+        error.message
+      );
     }
   }
 
@@ -244,17 +285,20 @@ export class CostCenterController {
     try {
       const count = await costCenterService.getActiveCount();
 
-      res.json({ count });
+      sendSuccess(res, { count });
     } catch (error: any) {
       Logger.error('Error in getActiveCount', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'CostCenterController.getActiveCount',
       });
-      res.status(500).json({
-        error: 'Failed to count cost centers',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_COUNT_FAILED',
+        'Error al contar centros de costo',
+        error.message
+      );
     }
   }
 
@@ -267,13 +311,13 @@ export class CostCenterController {
       const project_id = parseInt(req.params.project_id);
 
       if (isNaN(project_id)) {
-        res.status(400).json({ error: 'Invalid project ID' });
+        sendError(res, 400, 'INVALID_ID', 'ID de proyecto inválido');
         return;
       }
 
       const total = await costCenterService.getTotalBudgetByProject(project_id);
 
-      res.json({ project_id, total_budget: total });
+      sendSuccess(res, { project_id, total_budget: total });
     } catch (error: any) {
       Logger.error('Error in getProjectBudget', {
         error: error instanceof Error ? error.message : String(error),
@@ -281,10 +325,13 @@ export class CostCenterController {
         projectId: req.params.project_id,
         context: 'CostCenterController.getProjectBudget',
       });
-      res.status(500).json({
-        error: 'Failed to calculate budget',
-        message: error.message,
-      });
+      sendError(
+        res,
+        500,
+        'COST_CENTER_BUDGET_FAILED',
+        'Error al calcular presupuesto',
+        error.message
+      );
     }
   }
 }

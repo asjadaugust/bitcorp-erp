@@ -15,8 +15,32 @@ export class CostCenterService {
     search?: string;
     projectId?: number;
     isActive?: boolean;
-  }): Promise<CentroCosto[]> {
+    page?: number;
+    limit?: number;
+    sort_by?: string;
+    sort_order?: 'ASC' | 'DESC';
+  }): Promise<{ data: CentroCosto[]; total: number }> {
     try {
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 20;
+      const skip = (page - 1) * limit;
+
+      // Sortable fields whitelist
+      const sortableFields: Record<string, string> = {
+        codigo: 'cc.codigo',
+        nombre: 'cc.nombre',
+        presupuesto: 'cc.presupuesto',
+        proyecto_id: 'cc.projectId',
+        is_active: 'cc.isActive',
+        created_at: 'cc.createdAt',
+      };
+
+      const sortBy =
+        filters?.sort_by && sortableFields[filters.sort_by]
+          ? sortableFields[filters.sort_by]
+          : 'cc.codigo';
+      const sortOrder = filters?.sort_order === 'DESC' ? 'DESC' : 'ASC';
+
       const queryBuilder = this.repository
         .createQueryBuilder('cc')
         .where('cc.isActive = :isActive', { isActive: filters?.isActive ?? true });
@@ -31,9 +55,15 @@ export class CostCenterService {
         });
       }
 
-      queryBuilder.orderBy('cc.codigo', 'ASC');
+      queryBuilder.orderBy(sortBy, sortOrder);
 
-      return await queryBuilder.getMany();
+      // Get total count
+      const total = await queryBuilder.getCount();
+
+      // Get paginated data
+      const data = await queryBuilder.skip(skip).take(limit).getMany();
+
+      return { data, total };
     } catch (error) {
       Logger.error('Error finding cost centers', {
         error: error instanceof Error ? error.message : String(error),

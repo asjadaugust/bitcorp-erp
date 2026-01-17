@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { CostCenterController } from './cost-center.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import { CostCenterCreateDto, CostCenterUpdateDto } from '../../types/dto/cost-center.dto';
 
 const router = Router();
 
@@ -23,12 +25,12 @@ router.get('/project/:project_id/budget', CostCenterController.getProjectBudget)
 router.get('/:id', CostCenterController.getById);
 
 // POST /api/admin/cost-centers - Create new cost center
-router.post('/', CostCenterController.create);
+router.post('/', validateDto(CostCenterCreateDto), CostCenterController.create);
 
 // PUT /api/admin/cost-centers/:id - Update cost center
-router.put('/:id', CostCenterController.update);
+router.put('/:id', validateDto(CostCenterUpdateDto), CostCenterController.update);
 
 // DELETE /api/admin/cost-centers/:id - Soft delete cost center
-router.delete('/:id', CostCenterController.delete);
+router.delete('/:id', CostCenterController.remove);
 
 export default router;
