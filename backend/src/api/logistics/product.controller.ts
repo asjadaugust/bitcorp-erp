@@ -3,8 +3,19 @@ import { Request, Response } from 'express';
 import { Product } from '../../models/product.model';
 import { AppDataSource } from '../../config/database.config';
 import Logger from '../../utils/logger';
+import {
+  toProductListDto,
+  toProductDetailDto,
+  fromProductCreateDto,
+  fromProductUpdateDto,
+} from '../../types/dto/product.dto';
 
 export class ProductController {
+  /**
+   * GET /api/products
+   * List all active products
+   * @returns ProductListDto[] with Spanish snake_case fields
+   */
   async getAll(req: Request, res: Response) {
     try {
       const productRepo = AppDataSource.getRepository(Product);
@@ -13,28 +24,12 @@ export class ProductController {
         order: { nombre: 'ASC' },
       });
 
-      // Transform to match frontend expectations
-      const transformedProducts = products.map((p) => ({
-        id: p.id,
-        codigo: p.codigo,
-        nombre: p.nombre,
-        descripcion: p.descripcion,
-        categoria: p.categoria,
-        unidad_medida: p.unidadMedida,
-        stock_actual: p.stockActual,
-        stock_minimo: p.stockMinimo,
-        costo_unitario: p.precioUnitario || 0,
-        ubicacion: 'Almacén Principal', // Default location - would come from warehouse table in full implementation
-        is_active: p.isActive,
-        created_at: p.createdAt,
-        updated_at: p.updatedAt,
-        // Computed field for frontend
-        valor_total: Number(p.stockActual || 0) * Number(p.precioUnitario || 0),
-      }));
+      // Transform to DTOs (Spanish snake_case)
+      const dtos = products.map((p) => toProductListDto(p as unknown as Record<string, unknown>));
 
       res.json({
         success: true,
-        data: transformedProducts,
+        data: dtos,
       });
     } catch (error) {
       Logger.error('Error fetching products', {
@@ -50,6 +45,11 @@ export class ProductController {
     }
   }
 
+  /**
+   * GET /api/products/:id
+   * Get single product by ID
+   * @returns ProductDetailDto with Spanish snake_case fields
+   */
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -65,27 +65,12 @@ export class ProductController {
         });
       }
 
-      // Transform to match frontend expectations
-      const transformed = {
-        id: product.id,
-        codigo: product.codigo,
-        nombre: product.nombre,
-        descripcion: product.descripcion,
-        categoria: product.categoria,
-        unidad_medida: product.unidadMedida,
-        stock_actual: product.stockActual,
-        stock_minimo: product.stockMinimo,
-        costo_unitario: product.precioUnitario || 0,
-        ubicacion: 'Almacén Principal',
-        is_active: product.isActive,
-        created_at: product.createdAt,
-        updated_at: product.updatedAt,
-        valor_total: Number(product.stockActual || 0) * Number(product.precioUnitario || 0),
-      };
+      // Transform to DTO (Spanish snake_case)
+      const dto = toProductDetailDto(product as unknown as Record<string, unknown>);
 
       res.json({
         success: true,
-        data: transformed,
+        data: dto,
       });
     } catch (error) {
       res.status(500).json({
@@ -96,41 +81,28 @@ export class ProductController {
     }
   }
 
+  /**
+   * POST /api/products
+   * Create new product
+   * @body ProductCreateDto (Spanish snake_case)
+   * @returns ProductDetailDto with created product
+   */
   async create(req: Request, res: Response) {
     try {
-      const {
-        codigo,
-        nombre,
-        descripcion,
-        categoria,
-        unidad_medida,
-        stock_actual,
-        stock_minimo,
-        stock_maximo,
-        costo_unitario,
-        ubicacion,
-      } = req.body;
-
       const productRepo = AppDataSource.getRepository(Product);
-      const product = productRepo.create({
-        codigo,
-        nombre,
-        descripcion,
-        categoria,
-        unidadMedida: unidad_medida,
-        stockActual: stock_actual || 0,
-        stockMinimo: stock_minimo || 0,
-        // stock_maximo: stock_maximo || 0,
-        precioUnitario: costo_unitario || 0,
-        // ubicacion,
-        isActive: true,
-        // created_by: (req as any).user?.id,
-      });
+
+      // Transform DTO (snake_case) to entity (camelCase)
+      const entityData = fromProductCreateDto(req.body);
+      const product = productRepo.create(entityData);
 
       const saved = await productRepo.save(product);
+
+      // Transform entity back to DTO for response
+      const dto = toProductDetailDto(saved as unknown as Record<string, unknown>);
+
       res.status(201).json({
         success: true,
-        data: saved,
+        data: dto,
       });
     } catch (error) {
       Logger.error('Error creating product', {
@@ -146,20 +118,15 @@ export class ProductController {
     }
   }
 
+  /**
+   * PUT /api/products/:id
+   * Update product
+   * @body ProductUpdateDto (Spanish snake_case, partial)
+   * @returns ProductDetailDto with updated product
+   */
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const {
-        nombre,
-        descripcion,
-        categoria,
-        unidad_medida,
-        ubicacion,
-        stock_minimo,
-        stock_maximo,
-        costo_unitario,
-      } = req.body;
-
       const productRepo = AppDataSource.getRepository(Product);
       const product = await productRepo.findOne({
         where: { id: parseInt(id), isActive: true },
@@ -172,21 +139,18 @@ export class ProductController {
         });
       }
 
-      // Update fields
-      if (nombre !== undefined) product.nombre = nombre;
-      if (descripcion !== undefined) product.descripcion = descripcion;
-      if (categoria !== undefined) product.categoria = categoria;
-      if (unidad_medida !== undefined) product.unidadMedida = unidad_medida;
-      // if (ubicacion !== undefined) product.ubicacion = ubicacion;
-      if (stock_minimo !== undefined) product.stockMinimo = stock_minimo;
-      // if (stock_maximo !== undefined) product.stock_maximo = stock_maximo;
-      if (costo_unitario !== undefined) product.precioUnitario = costo_unitario;
-      // product.updated_by = (req as any).user?.id;
+      // Transform DTO (snake_case) to entity fields (camelCase)
+      const updates = fromProductUpdateDto(req.body);
+      Object.assign(product, updates);
 
       const updated = await productRepo.save(product);
+
+      // Transform entity back to DTO for response
+      const dto = toProductDetailDto(updated as unknown as Record<string, unknown>);
+
       res.json({
         success: true,
-        data: updated,
+        data: dto,
       });
     } catch (error) {
       Logger.error('Error updating product', {
@@ -203,6 +167,11 @@ export class ProductController {
     }
   }
 
+  /**
+   * DELETE /api/products/:id
+   * Soft delete product (sets isActive = false)
+   * @returns 204 No Content on success
+   */
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -221,7 +190,6 @@ export class ProductController {
 
       // Soft delete
       product.isActive = false;
-      // product.updated_by = (req as any).user?.id;
       await productRepo.save(product);
 
       res.status(204).send();
