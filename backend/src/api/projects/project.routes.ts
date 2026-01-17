@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { ProjectController } from './project.controller';
 import { authenticate } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import { ProjectCreateDto, ProjectUpdateDto } from '../../types/dto/project.dto';
 
 const router = Router();
 const projectController = new ProjectController();
@@ -19,10 +21,10 @@ router.get('/code/:code', projectController.findByCode);
 router.get('/:id', projectController.findById);
 
 // POST /api/projects - Create new project
-router.post('/', projectController.create);
+router.post('/', validateDto(ProjectCreateDto), projectController.create);
 
 // PUT /api/projects/:id - Update project
-router.put('/:id', projectController.update);
+router.put('/:id', validateDto(ProjectUpdateDto), projectController.update);
 
 // DELETE /api/projects/:id - Delete project
 router.delete('/:id', projectController.delete);

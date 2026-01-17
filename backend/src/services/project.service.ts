@@ -33,12 +33,18 @@ export class ProjectService {
   /**
    * Get all projects (optionally filtered by user)
    */
-  async findAll(filters?: string | { status?: string; search?: string }): Promise<ProjectDto[]> {
+  async findAll(
+    filters?:
+      | string
+      | { status?: string; search?: string; sort_by?: string; sort_order?: 'ASC' | 'DESC' },
+    page?: number,
+    limit?: number
+  ): Promise<ProjectDto[] | { data: ProjectDto[]; total: number }> {
     // Handle both old string userId format and new filter object format
     if (typeof filters === 'string') {
       return this.findAllByUser(filters);
     }
-    return this.findAllWithFilters(filters);
+    return this.findAllWithFilters(filters, page, limit);
   }
 
   async findAllByUser(userId?: string): Promise<ProjectDto[]> {
@@ -69,7 +75,16 @@ export class ProjectService {
     }
   }
 
-  async findAllWithFilters(filters?: { status?: string; search?: string }): Promise<ProjectDto[]> {
+  async findAllWithFilters(
+    filters?: {
+      status?: string;
+      search?: string;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+    },
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: ProjectDto[]; total: number }> {
     try {
       const query = this.repository
         .createQueryBuilder('p')
@@ -85,10 +100,37 @@ export class ProjectService {
         });
       }
 
-      query.orderBy('p.nombre', 'ASC');
+      // Sorting with whitelisted fields
+      const sortableFields: Record<string, string> = {
+        nombre: 'p.nombre',
+        codigo: 'p.codigo',
+        estado: 'p.estado',
+        fecha_inicio: 'p.fechaInicio',
+        fecha_fin: 'p.fechaFin',
+        presupuesto: 'p.presupuesto',
+        cliente: 'p.cliente',
+        created_at: 'p.createdAt',
+        updated_at: 'p.updatedAt',
+      };
 
-      const projects = await query.getMany();
-      return projects.map((p) => toProjectDto(p));
+      const sortBy =
+        filters?.sort_by && sortableFields[filters.sort_by]
+          ? sortableFields[filters.sort_by]
+          : 'p.nombre';
+      const sortOrder = filters?.sort_order === 'DESC' ? 'DESC' : 'ASC';
+
+      query.orderBy(sortBy, sortOrder);
+
+      // Pagination
+      const offset = (page - 1) * limit;
+      query.skip(offset).take(limit);
+
+      const [projects, total] = await query.getManyAndCount();
+
+      return {
+        data: projects.map((p) => toProjectDto(p)),
+        total,
+      };
     } catch (error) {
       Logger.error('Error finding projects with filters', {
         error: error instanceof Error ? error.message : String(error),
@@ -96,8 +138,8 @@ export class ProjectService {
         filters,
         context: 'ProjectService.findAllWithFilters',
       });
-      // Return empty array instead of throwing to prevent login failures
-      return [];
+      // Return empty result instead of throwing to prevent login failures
+      return { data: [], total: 0 };
     }
   }
 

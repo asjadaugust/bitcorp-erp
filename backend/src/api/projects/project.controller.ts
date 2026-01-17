@@ -2,6 +2,12 @@
 import { Request, Response } from 'express';
 import { ProjectService, CreateProjectDto, UpdateProjectDto } from '../../services/project.service';
 import Logger from '../../utils/logger';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 export class ProjectController {
   private projectService: ProjectService;
@@ -17,27 +23,57 @@ export class ProjectController {
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = (req as any).user?.id;
-      const { user_filter } = req.query;
+      const { user_filter, status, search, page, limit, sort_by, sort_order } = req.query;
 
-      // If user_filter is true, filter by authenticated user
+      // If user_filter is true, filter by authenticated user (legacy support)
       const filterByUser = user_filter === 'true' ? userId : undefined;
 
-      const projects = await this.projectService.findAll(filterByUser);
+      if (filterByUser) {
+        // Legacy path - return as array without pagination
+        const projects = await this.projectService.findAll(filterByUser);
+        sendSuccess(res, projects);
+        return;
+      }
 
-      res.json({
-        success: true,
-        data: projects,
-      });
+      // New path with pagination and sorting
+      const filters: any = {};
+      if (status) filters.status = String(status);
+      if (search) filters.search = String(search);
+      if (sort_by) filters.sort_by = String(sort_by);
+      if (sort_order)
+        filters.sort_order = (String(sort_order).toUpperCase() === 'DESC' ? 'DESC' : 'ASC') as
+          | 'ASC'
+          | 'DESC';
+
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
+
+      const result = await this.projectService.findAll(filters, pageNum, limitNum);
+
+      // Check if result has pagination (new format)
+      if ('data' in result && 'total' in result) {
+        sendPaginatedSuccess(res, result.data, {
+          page: pageNum,
+          limit: limitNum,
+          total: result.total,
+        });
+      } else {
+        // Legacy format - array without pagination
+        sendSuccess(res, result);
+      }
     } catch (error) {
       Logger.error('Error in findAll projects', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ProjectController.findAll',
       });
-      res.status(500).json({
-        success: false,
-        error: (error as Error).message,
-      });
+      sendError(
+        res,
+        500,
+        'PROJECT_FETCH_FAILED',
+        'Failed to fetch projects',
+        (error as Error).message
+      );
     }
   };
 
@@ -274,10 +310,16 @@ export class ProjectController {
       const { ExportUtil } = await import('../../utils/export.util');
       const { status, search } = req.query;
 
-      const projects = await this.projectService.findAll({
-        status: status as string,
-        search: search as string,
-      });
+      const result = await this.projectService.findAll(
+        {
+          status: status as string,
+          search: search as string,
+        },
+        1,
+        9999
+      ); // Get all records for export
+
+      const projects = 'data' in result ? result.data : result;
 
       const data = projects.map((p: any) => ({
         codigo: p.project_code,
@@ -319,10 +361,16 @@ export class ProjectController {
       const { ExportUtil } = await import('../../utils/export.util');
       const { status, search } = req.query;
 
-      const projects = await this.projectService.findAll({
-        status: status as string,
-        search: search as string,
-      });
+      const result = await this.projectService.findAll(
+        {
+          status: status as string,
+          search: search as string,
+        },
+        1,
+        9999
+      ); // Get all records for export
+
+      const projects = 'data' in result ? result.data : result;
 
       const data = projects.map((p: any) => ({
         codigo: p.project_code,

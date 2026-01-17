@@ -8,6 +8,16 @@
  */
 
 import { Proyecto, EstadoProyecto } from '../../models/project.model';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsIn,
+  MaxLength,
+  IsDateString,
+  Min,
+} from 'class-validator';
 
 export interface ProjectDto {
   id: number;
@@ -132,4 +142,141 @@ export function fromProjectDto(dto: Partial<ProjectDto>): Partial<Proyecto> {
   if (dto.actualizado_por !== undefined) entity.updatedBy = dto.actualizado_por || undefined;
 
   return entity;
+}
+
+/**
+ * DTO for creating a new project
+ * Validates required fields and business rules
+ */
+export class ProjectCreateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser texto' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string | null;
+
+  @IsString({ message: 'codigo debe ser texto' })
+  @MaxLength(50, { message: 'codigo no puede exceder 50 caracteres' })
+  codigo!: string;
+
+  @IsString({ message: 'nombre debe ser texto' })
+  @MaxLength(200, { message: 'nombre no puede exceder 200 caracteres' })
+  nombre!: string;
+
+  @IsOptional()
+  @IsString({ message: 'descripcion debe ser texto' })
+  descripcion?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'ubicacion debe ser texto' })
+  @MaxLength(200, { message: 'ubicacion no puede exceder 200 caracteres' })
+  ubicacion?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_inicio debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_inicio?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_fin debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_fin?: string | null;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'presupuesto debe ser un número' })
+  @Min(0, { message: 'presupuesto debe ser mayor o igual a 0' })
+  presupuesto?: number | null;
+
+  @IsIn(['PLANIFICACION', 'ACTIVO', 'PAUSADO', 'COMPLETADO', 'CANCELADO'], {
+    message: 'estado debe ser PLANIFICACION, ACTIVO, PAUSADO, COMPLETADO o CANCELADO',
+  })
+  estado!: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'empresa_id debe ser un número' })
+  empresa_id?: number | null;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'unidad_operativa_id debe ser un número' })
+  unidad_operativa_id?: number | null;
+
+  @IsOptional()
+  @IsString({ message: 'cliente debe ser texto' })
+  @MaxLength(200, { message: 'cliente no puede exceder 200 caracteres' })
+  cliente?: string | null;
+
+  @IsOptional()
+  @IsBoolean({ message: 'is_active debe ser true o false' })
+  is_active?: boolean;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'creado_por debe ser un número' })
+  creado_por?: number | null;
+}
+
+/**
+ * DTO for updating a project
+ * All fields are optional for partial updates
+ */
+export class ProjectUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser texto' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'codigo debe ser texto' })
+  @MaxLength(50, { message: 'codigo no puede exceder 50 caracteres' })
+  codigo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'nombre debe ser texto' })
+  @MaxLength(200, { message: 'nombre no puede exceder 200 caracteres' })
+  nombre?: string;
+
+  @IsOptional()
+  @IsString({ message: 'descripcion debe ser texto' })
+  descripcion?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'ubicacion debe ser texto' })
+  @MaxLength(200, { message: 'ubicacion no puede exceder 200 caracteres' })
+  ubicacion?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_inicio debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_inicio?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_fin debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_fin?: string | null;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'presupuesto debe ser un número' })
+  @Min(0, { message: 'presupuesto debe ser mayor o igual a 0' })
+  presupuesto?: number | null;
+
+  @IsOptional()
+  @IsIn(['PLANIFICACION', 'ACTIVO', 'PAUSADO', 'COMPLETADO', 'CANCELADO'], {
+    message: 'estado debe ser PLANIFICACION, ACTIVO, PAUSADO, COMPLETADO o CANCELADO',
+  })
+  estado?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'empresa_id debe ser un número' })
+  empresa_id?: number | null;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'unidad_operativa_id debe ser un número' })
+  unidad_operativa_id?: number | null;
+
+  @IsOptional()
+  @IsString({ message: 'cliente debe ser texto' })
+  @MaxLength(200, { message: 'cliente no puede exceder 200 caracteres' })
+  cliente?: string | null;
+
+  @IsOptional()
+  @IsBoolean({ message: 'is_active debe ser true o false' })
+  is_active?: boolean;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'actualizado_por debe ser un número' })
+  actualizado_por?: number | null;
 }
