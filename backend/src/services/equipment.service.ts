@@ -2,6 +2,7 @@
 import { AppDataSource } from '../config/database.config';
 import { Equipment } from '../models/equipment.model';
 import { Repository } from 'typeorm';
+import Logger from '../utils/logger';
 
 export interface CreateEquipmentDto {
   codigo_equipo: string;
@@ -156,7 +157,14 @@ export class EquipmentService {
         total,
       };
     } catch (error) {
-      console.error('Error finding equipment:', error);
+      Logger.error('Error finding equipment', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filter,
+        page,
+        limit,
+        context: 'EquipmentService.findAll',
+      });
       throw new Error('Failed to fetch equipment');
     }
   }
@@ -174,7 +182,12 @@ export class EquipmentService {
 
       return this.transformToDto(equipment);
     } catch (error) {
-      console.error('Error finding equipment:', error);
+      Logger.error('Error finding equipment by ID', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'EquipmentService.findById',
+      });
       throw error;
     }
   }
@@ -185,7 +198,12 @@ export class EquipmentService {
         where: { codigo_equipo: codigo },
       });
     } catch (error) {
-      console.error('Error finding equipment by code:', error);
+      Logger.error('Error finding equipment by code', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        codigo,
+        context: 'EquipmentService.findByCode',
+      });
       throw error;
     }
   }
@@ -232,7 +250,12 @@ export class EquipmentService {
 
       return this.transformToDto(withRelations!);
     } catch (error) {
-      console.error('Error creating equipment:', error);
+      Logger.error('Error creating equipment', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        data,
+        context: 'EquipmentService.create',
+      });
       throw error;
     }
   }
@@ -293,7 +316,13 @@ export class EquipmentService {
 
       return this.transformToDto(withRelations!);
     } catch (error) {
-      console.error('Error updating equipment:', error);
+      Logger.error('Error updating equipment', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        data,
+        context: 'EquipmentService.update',
+      });
       throw error;
     }
   }
@@ -302,7 +331,12 @@ export class EquipmentService {
     try {
       await this.repository.update(id, { is_active: false });
     } catch (error) {
-      console.error('Error deleting equipment:', error);
+      Logger.error('Error deleting equipment', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'EquipmentService.delete',
+      });
       throw new Error('Failed to delete equipment');
     }
   }
@@ -323,7 +357,13 @@ export class EquipmentService {
 
       return this.transformToDto(saved);
     } catch (error) {
-      console.error('Error updating equipment status:', error);
+      Logger.error('Error updating equipment status', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        estado,
+        context: 'EquipmentService.updateStatus',
+      });
       throw error;
     }
   }
@@ -406,7 +446,11 @@ export class EquipmentService {
 
       return result;
     } catch (error) {
-      console.error('Error getting equipment statistics:', error);
+      Logger.error('Error getting equipment statistics', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'EquipmentService.getStatistics',
+      });
       throw error;
     }
   }
@@ -422,19 +466,31 @@ export class EquipmentService {
 
       return result.map((r) => r.categoria);
     } catch (error) {
-      console.error('Error getting equipment types:', error);
+      Logger.error('Error getting equipment types', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'EquipmentService.getEquipmentTypes',
+      });
       throw error;
     }
   }
 
   // Stub methods for compatibility
   async assignToProject(id: number, data: any) {
-    console.log('Assigning equipment', id, 'to project', data);
+    Logger.debug('Equipment assignment to project requested', {
+      equipmentId: id,
+      projectData: data,
+      context: 'EquipmentService.assignToProject',
+    });
     return { id, ...data, status: 'assigned' };
   }
 
   async transferEquipment(id: number, data: any) {
-    console.log('Transferring equipment', id, data);
+    Logger.debug('Equipment transfer requested', {
+      equipmentId: id,
+      transferData: data,
+      context: 'EquipmentService.transferEquipment',
+    });
     return { id, ...data, status: 'transferred' };
   }
 

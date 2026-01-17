@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/database.config';
 import { Contract, Addendum } from '../models/contract.model';
 import { Repository, Between } from 'typeorm';
 import { ContractDto, toContractDto, fromContractDto } from '../types/dto/contract.dto';
+import Logger from '../utils/logger';
 
 export class ContractService {
   private get contractRepository(): Repository<Contract> {
@@ -59,7 +60,11 @@ export class ContractService {
       // Transform entities to DTOs
       return contracts.map(toContractDto);
     } catch (error) {
-      console.error('Error finding contracts:', error);
+      Logger.error('Error finding contracts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ContractService.findAll',
+      });
       // Return empty array instead of throwing to prevent login failures
       return [];
     }
@@ -82,7 +87,12 @@ export class ContractService {
       // Transform entity to DTO
       return toContractDto(contract);
     } catch (error) {
-      console.error('Error finding contract:', error);
+      Logger.error('Error finding contract by ID', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ContractService.findById',
+      });
       throw error;
     }
   }
@@ -96,7 +106,12 @@ export class ContractService {
         where: { numeroContrato },
       });
     } catch (error) {
-      console.error('Error finding contract by numero:', error);
+      Logger.error('Error finding contract by numero', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        numeroContrato,
+        context: 'ContractService.findByNumero',
+      });
       throw error;
     }
   }
@@ -148,7 +163,12 @@ export class ContractService {
       // Return as DTO
       return toContractDto(saved);
     } catch (error) {
-      console.error('Error creating contract:', error);
+      Logger.error('Error creating contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        data,
+        context: 'ContractService.create',
+      });
       throw error;
     }
   }
@@ -193,7 +213,13 @@ export class ContractService {
 
       return toContractDto(updated);
     } catch (error) {
-      console.error('Error updating contract:', error);
+      Logger.error('Error updating contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        data,
+        context: 'ContractService.update',
+      });
       throw error;
     }
   }
@@ -207,7 +233,12 @@ export class ContractService {
         estado: 'CANCELADO' as any,
       });
     } catch (error) {
-      console.error('Error deleting contract:', error);
+      Logger.error('Error deleting contract', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ContractService.delete',
+      });
       throw new Error('Failed to delete contract');
     }
   }
@@ -232,7 +263,12 @@ export class ContractService {
 
       return contracts.map(toContractDto);
     } catch (error) {
-      console.error('Error finding expiring contracts:', error);
+      Logger.error('Error finding expiring contracts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        days,
+        context: 'ContractService.findExpiring',
+      });
       throw error;
     }
   }
@@ -264,7 +300,15 @@ export class ContractService {
       const count = await query.getCount();
       return count > 0;
     } catch (error) {
-      console.error('Error checking overlapping contracts:', error);
+      Logger.error('Error checking overlapping contracts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        equipoId,
+        fechaInicio: fechaInicio.toISOString(),
+        fechaFin: fechaFin.toISOString(),
+        excludeContractId,
+        context: 'ContractService.checkOverlappingContracts',
+      });
       return false;
     }
   }
@@ -285,7 +329,12 @@ export class ContractService {
 
       return addendums.map(toContractDto);
     } catch (error) {
-      console.error('Error fetching addendums:', error);
+      Logger.error('Error fetching addendums', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        contractId,
+        context: 'ContractService.getAddendums',
+      });
       throw error;
     }
   }
@@ -324,7 +373,12 @@ export class ContractService {
 
       return toContractDto(savedAddendum);
     } catch (error) {
-      console.error('Error creating addendum:', error);
+      Logger.error('Error creating addendum', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        data,
+        context: 'ContractService.createAddendum',
+      });
       throw error;
     }
   }
@@ -341,7 +395,11 @@ export class ContractService {
         },
       });
     } catch (error) {
-      console.error('Error counting contracts:', error);
+      Logger.error('Error counting contracts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ContractService.getActiveCount',
+      });
       throw error;
     }
   }
