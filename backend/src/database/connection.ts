@@ -1,4 +1,5 @@
 import { Sequelize } from 'sequelize';
+import Logger from '../utils/logger';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -7,7 +8,10 @@ const sequelize = new Sequelize({
   database: process.env.POSTGRES_DB || process.env.DB_NAME || 'bitcorp_dev',
   username: process.env.POSTGRES_USER || process.env.DB_USER || 'bitcorp',
   password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || 'dev_password_change_me',
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  logging:
+    process.env.NODE_ENV === 'development'
+      ? (sql: string) => Logger.debug('Sequelize SQL', { sql, context: 'Sequelize' })
+      : false,
   pool: {
     max: 10,
     min: 0,
@@ -21,14 +25,28 @@ export { sequelize };
 export const connectDatabase = async (): Promise<void> => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Database connection established successfully');
-    
+    Logger.info('Sequelize database connection established successfully', {
+      dialect: 'postgres',
+      host: process.env.DB_HOST || 'postgres',
+      database: process.env.POSTGRES_DB || process.env.DB_NAME || 'bitcorp_dev',
+      context: 'Database.connect',
+    });
+
     if (process.env.NODE_ENV === 'development') {
       await sequelize.sync({ alter: true });
-      console.log('✅ Database models synchronized');
+      Logger.info('Sequelize database models synchronized', {
+        mode: 'alter',
+        context: 'Database.connect',
+      });
     }
   } catch (error) {
-    console.error('❌ Unable to connect to database:', error);
+    Logger.error('Sequelize database connection failed', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      host: process.env.DB_HOST || 'postgres',
+      database: process.env.POSTGRES_DB || process.env.DB_NAME || 'bitcorp_dev',
+      context: 'Database.connect',
+    });
     throw error;
   }
 };

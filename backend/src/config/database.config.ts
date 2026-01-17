@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { Pool } from 'pg';
 import * as path from 'path';
+import Logger from '../utils/logger';
 
 dotenv.config();
 
@@ -141,9 +142,21 @@ export const pool = new Pool({
 export const initializeDatabase = async (): Promise<void> => {
   try {
     await AppDataSource.initialize();
-    console.log('✅ Database connected successfully');
+    Logger.info('TypeORM database connection initialized successfully', {
+      type: 'postgres',
+      host: process.env.DB_HOST || 'postgres',
+      database: process.env.POSTGRES_DB || 'bitcorp_dev',
+      entities: AppDataSource.entityMetadatas.length,
+      context: 'Database.initialize',
+    });
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
+    Logger.error('TypeORM database connection failed', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      host: process.env.DB_HOST || 'postgres',
+      database: process.env.POSTGRES_DB || 'bitcorp_dev',
+      context: 'Database.initialize',
+    });
     process.exit(1);
   }
 };

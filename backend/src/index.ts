@@ -33,6 +33,7 @@ import testErrorRoutes from './api/test-errors/test-errors.routes';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import { requestLogger } from './middleware/request-logger.middleware';
 import { setupProcessErrorHandlers } from './middleware/error-handler.middleware';
+import Logger from './utils/logger';
 
 // Setup process-level error handlers
 setupProcessErrorHandlers();
@@ -100,27 +101,38 @@ app.use(errorHandler);
 // Start server
 const startServer = async () => {
   try {
-    console.log('Initializing databases...');
+    Logger.info('Initializing database connections', { context: 'Server.startup' });
     await connectDatabase(); // Sequelize for legacy tables
     await initializeDatabase(); // TypeORM for new entities
-    console.log('✅ All database connections established');
+    Logger.info('Database connections established successfully', {
+      databases: ['Sequelize', 'TypeORM'],
+      context: 'Server.startup',
+    });
 
     // Auto-run migrations (TypeORM)
     if (process.env.NODE_ENV !== 'test') {
       try {
-        console.log('🔄 Checking for pending migrations...');
+        Logger.info('Checking for pending database migrations', {
+          context: 'Server.startup.migrations',
+        });
         const { AppDataSource } = await import('./config/database.config');
         const pendingMigrations = await AppDataSource.showMigrations();
 
         if (pendingMigrations) {
-          console.log('📝 Running pending migrations...');
+          Logger.info('Running pending migrations', { context: 'Server.startup.migrations' });
           await AppDataSource.runMigrations();
-          console.log('✅ Migrations completed successfully');
+          Logger.info('Database migrations completed successfully', {
+            context: 'Server.startup.migrations',
+          });
         } else {
-          console.log('✅ Database schema is up to date');
+          Logger.info('Database schema is up to date', { context: 'Server.startup.migrations' });
         }
       } catch (error) {
-        console.error('⚠️ Migration check/run failed:', error);
+        Logger.error('Migration check/run failed', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          context: 'Server.startup.migrations',
+        });
         // Don't crash on migration errors in development
         if (process.env.NODE_ENV === 'production') {
           throw error;
@@ -131,18 +143,30 @@ const startServer = async () => {
     // Note: To seed the database, run: npm run seed:typeorm
 
     // Load routes
-    console.log('Loading API routes...');
-    console.log('✅ API routes loaded');
+    Logger.info('Loading API routes', { context: 'Server.startup' });
+    Logger.info('API routes loaded successfully', {
+      routeCount: 25,
+      context: 'Server.startup',
+    });
 
     app.listen(port, () => {
-      console.log(`🚀 Bitcorp ERP Backend Server v2.0`);
-      console.log(`📍 Server running on port ${port}`);
-      console.log(`📍 Health check: http://localhost:${port}/health`);
-      console.log(`🔐 Auth API: http://localhost:${port}/api/auth`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+      Logger.info('Bitcorp ERP Backend Server started', {
+        version: '2.0',
+        port,
+        environment: process.env.NODE_ENV || 'development',
+        healthCheck: `http://localhost:${port}/health`,
+        authEndpoint: `http://localhost:${port}/api/auth`,
+        context: 'Server.startup',
+      });
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    Logger.error('Server startup failed', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      port,
+      environment: process.env.NODE_ENV,
+      context: 'Server.startup',
+    });
     process.exit(1);
   }
 };
