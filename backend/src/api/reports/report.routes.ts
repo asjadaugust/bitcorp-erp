@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { ReportController } from './report.controller';
 import { authenticate } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import { DailyReportCreateDto, DailyReportUpdateDto } from '../../types/dto/daily-report.dto';
 
 const router = Router();
 const controller = new ReportController();
@@ -9,9 +11,9 @@ const controller = new ReportController();
 router.use(authenticate);
 
 router.get('/', controller.getReports.bind(controller));
-router.post('/', controller.createReport.bind(controller));
+router.post('/', validateDto(DailyReportCreateDto), controller.createReport.bind(controller));
 router.get('/:id', controller.getReportById.bind(controller));
-router.put('/:id', controller.updateReport.bind(controller));
+router.put('/:id', validateDto(DailyReportUpdateDto), controller.updateReport.bind(controller));
 router.delete('/:id', controller.deleteReport.bind(controller));
 
 // Approval workflow

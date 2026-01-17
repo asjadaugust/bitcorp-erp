@@ -5,6 +5,17 @@
  * Following architecture guidelines in ARCHITECTURE.md section 3.2
  */
 
+import {
+  IsInt,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsNumber,
+  MaxLength,
+  Min,
+} from 'class-validator';
+
 export interface DailyReportDto {
   id: number;
 
@@ -116,4 +127,157 @@ export function fromDailyReportDto(dto: Partial<DailyReportDto>): any {
   if (dto.estado !== undefined) entity.estado = dto.estado;
 
   return entity;
+}
+
+/**
+ * DTO for creating a new daily report with validation
+ * Used by validation middleware for POST requests
+ */
+export class DailyReportCreateDto {
+  @IsDateString({}, { message: 'Fecha debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha!: string;
+
+  @IsInt({ message: 'ID de trabajador debe ser un número entero' })
+  trabajador_id!: number;
+
+  @IsInt({ message: 'ID de equipo debe ser un número entero' })
+  equipo_id!: number;
+
+  @IsOptional()
+  @IsInt({ message: 'ID de proyecto debe ser un número entero' })
+  proyecto_id?: number;
+
+  @IsString({ message: 'Hora de inicio debe ser texto (HH:MM)' })
+  @MaxLength(5, { message: 'Hora de inicio debe tener formato HH:MM' })
+  hora_inicio!: string;
+
+  @IsString({ message: 'Hora de fin debe ser texto (HH:MM)' })
+  @MaxLength(5, { message: 'Hora de fin debe tener formato HH:MM' })
+  hora_fin!: string;
+
+  @IsNumber({}, { message: 'Horómetro inicial debe ser un número' })
+  @Min(0, { message: 'Horómetro inicial debe ser mayor o igual a 0' })
+  horometro_inicial!: number;
+
+  @IsNumber({}, { message: 'Horómetro final debe ser un número' })
+  @Min(0, { message: 'Horómetro final debe ser mayor o igual a 0' })
+  horometro_final!: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Odómetro inicial debe ser un número' })
+  @Min(0, { message: 'Odómetro inicial debe ser mayor o igual a 0' })
+  odometro_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Odómetro final debe ser un número' })
+  @Min(0, { message: 'Odómetro final debe ser mayor o igual a 0' })
+  odometro_final?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Combustible inicial debe ser un número' })
+  @Min(0, { message: 'Combustible inicial debe ser mayor o igual a 0' })
+  combustible_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Combustible consumido debe ser un número' })
+  @Min(0, { message: 'Combustible consumido debe ser mayor o igual a 0' })
+  combustible_consumido?: number;
+
+  @IsString({ message: 'Lugar de salida debe ser texto' })
+  @MaxLength(200, { message: 'Lugar de salida no puede exceder 200 caracteres' })
+  lugar_salida!: string;
+
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones!: string;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones correcciones debe ser texto' })
+  observaciones_correcciones?: string;
+
+  @IsOptional()
+  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO', 'RECHAZADO'], {
+    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO o RECHAZADO',
+  })
+  estado?: 'BORRADOR' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+}
+
+/**
+ * DTO for updating a daily report (all fields optional)
+ * Used by validation middleware for PUT requests
+ */
+export class DailyReportUpdateDto {
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'ID de trabajador debe ser un número entero' })
+  trabajador_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'ID de equipo debe ser un número entero' })
+  equipo_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'ID de proyecto debe ser un número entero' })
+  proyecto_id?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Hora de inicio debe ser texto (HH:MM)' })
+  @MaxLength(5, { message: 'Hora de inicio debe tener formato HH:MM' })
+  hora_inicio?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Hora de fin debe ser texto (HH:MM)' })
+  @MaxLength(5, { message: 'Hora de fin debe tener formato HH:MM' })
+  hora_fin?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Horómetro inicial debe ser un número' })
+  @Min(0, { message: 'Horómetro inicial debe ser mayor o igual a 0' })
+  horometro_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Horómetro final debe ser un número' })
+  @Min(0, { message: 'Horómetro final debe ser mayor o igual a 0' })
+  horometro_final?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Odómetro inicial debe ser un número' })
+  @Min(0, { message: 'Odómetro inicial debe ser mayor o igual a 0' })
+  odometro_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Odómetro final debe ser un número' })
+  @Min(0, { message: 'Odómetro final debe ser mayor o igual a 0' })
+  odometro_final?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Combustible inicial debe ser un número' })
+  @Min(0, { message: 'Combustible inicial debe ser mayor o igual a 0' })
+  combustible_inicial?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Combustible consumido debe ser un número' })
+  @Min(0, { message: 'Combustible consumido debe ser mayor o igual a 0' })
+  combustible_consumido?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Lugar de salida debe ser texto' })
+  @MaxLength(200, { message: 'Lugar de salida no puede exceder 200 caracteres' })
+  lugar_salida?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones correcciones debe ser texto' })
+  observaciones_correcciones?: string;
+
+  @IsOptional()
+  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO', 'RECHAZADO'], {
+    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO o RECHAZADO',
+  })
+  estado?: 'BORRADOR' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
 }
