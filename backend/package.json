@@ -17,10 +17,8 @@
     "migrate": "npm run typeorm migration:run -- -d src/config/database.config.ts",
     "migrate:revert": "npm run typeorm migration:revert -- -d src/config/database.config.ts",
     "migrate:create": "npm run typeorm migration:create",
-    "seed": "ts-node src/utils/seed.ts",
-    "seed:v2": "ts-node src/utils/seed-v2.ts",
-    "seed:prod": "node dist/utils/seed-v2.js",
-    "db:reset": "npm run migrate:revert && npm run migrate && npm run seed:v2",
+    "seed:typeorm": "ts-node src/database/seeders/index.ts",
+    "db:reset": "npm run migrate:revert && npm run migrate && npm run seed:typeorm",
     "migrate:prod": "typeorm migration:run -d dist/config/database.config.js",
     "schema:drop:prod": "typeorm schema:drop -d dist/config/database.config.js"
   },
@@ -35,6 +33,7 @@
     "dotenv": "^16.6.1",
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
+    "express-async-handler": "^1.2.0",
     "fastify": "^4.25.1",
     "handlebars": "^4.7.8",
     "helmet": "^7.2.0",
@@ -49,7 +48,8 @@
     "sequelize": "^6.37.7",
     "typeorm": "^0.3.27",
     "uuid": "^9.0.1",
-    "winston": "^3.18.3"
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

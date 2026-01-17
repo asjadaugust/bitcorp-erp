@@ -30,6 +30,7 @@ import costCenterRoutes from './api/admin/cost-center.routes';
 import accountsPayableRoutes from './api/accounts-payable/accounts-payable.routes';
 import analyticsRoutes from './api/analytics';
 import { errorHandler } from './middleware/error.middleware';
+import { requestLogger } from './middleware/request-logger.middleware';
 
 const app = express();
 const port = process.env.PORT || 3400;
@@ -43,6 +44,9 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging with correlation IDs
+app.use(requestLogger);
 
 // Health check
 app.get('/health', (req, res) => {
