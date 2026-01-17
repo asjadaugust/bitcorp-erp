@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from 'express';
 import { Pool } from 'pg';
+import { ROLES } from '../types/roles';
+import Logger from '../utils/logger';
 
 export interface TenantRequest extends Request {
   tenant?: {
@@ -61,7 +64,12 @@ export const tenantMiddleware = (pool: Pool) => {
 
       next();
     } catch (error) {
-      console.error('Tenant middleware error:', error);
+      Logger.error('Tenant middleware error', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: (req as any).user?.id,
+        context: 'tenantMiddleware',
+      });
       // Don't fail - just continue without tenant context
       next();
     }
@@ -103,38 +111,36 @@ export const optionalTenantMiddleware = (pool: Pool) => {
 
       next();
     } catch (error) {
-      console.error('Optional tenant middleware error:', error);
+      Logger.error('Optional tenant middleware error', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: (req as any).user?.id,
+        context: 'optionalTenantMiddleware',
+      });
       next(); // Continue even if error
     }
   };
 };
 
 /**
- * Developer-only middleware
- * Allows access only to users with developer role
+ * Admin-only middleware
+ * Allows access only to users with ADMIN role
  */
-export const developerMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const adminOnlyMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const user = (req as any).user;
 
-  if (!user || user.role !== 'developer') {
+  if (!user || !user.roles || !Array.isArray(user.roles)) {
     return res.status(403).json({
-      error: 'Acceso denegado. Solo desarrolladores pueden acceder a este recurso.',
+      error: 'Acceso denegado. Solo administradores pueden acceder a este recurso.',
     });
   }
 
-  next();
-};
+  // Check if user has ADMIN role (case-insensitive for backward compatibility)
+  const hasAdminRole = user.roles.some((role: string) => role.toUpperCase() === ROLES.ADMIN);
 
-/**
- * Super admin middleware
- * Allows cross-tenant access for super admins
- */
-export const superAdminMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const user = (req as any).user;
-
-  if (!user || user.role !== 'super_admin') {
+  if (!hasAdminRole) {
     return res.status(403).json({
-      error: 'Acceso denegado. Solo super administradores pueden acceder a este recurso.',
+      error: 'Acceso denegado. Solo administradores pueden acceder a este recurso.',
     });
   }
 
