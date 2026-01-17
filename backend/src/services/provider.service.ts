@@ -2,6 +2,7 @@ import { AppDataSource } from '../config/database.config';
 import { Provider, TipoProveedor } from '../models/provider.model';
 import { Repository } from 'typeorm';
 import { toProviderDto, fromProviderDto, ProviderDto } from '../types/dto/provider.dto';
+import Logger from '../utils/logger';
 
 // DTOs for create/update operations
 // Support both English camelCase (from frontend) and Spanish snake_case (from API)
@@ -74,7 +75,12 @@ export class ProviderService {
 
       return providers.map((p) => toProviderDto(p));
     } catch (error) {
-      console.error('Error finding providers:', error);
+      Logger.error('Error finding providers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters,
+        context: 'ProviderService.findAll',
+      });
       throw new Error('Failed to fetch providers');
     }
   }
@@ -94,7 +100,12 @@ export class ProviderService {
 
       return toProviderDto(provider);
     } catch (error) {
-      console.error('Error finding provider:', error);
+      Logger.error('Error finding provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ProviderService.findById',
+      });
       throw error;
     }
   }
@@ -108,7 +119,12 @@ export class ProviderService {
         where: { ruc },
       });
     } catch (error) {
-      console.error('Error finding provider by RUC:', error);
+      Logger.error('Error finding provider by RUC', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        ruc,
+        context: 'ProviderService.findByRuc',
+      });
       throw error;
     }
   }
@@ -146,7 +162,12 @@ export class ProviderService {
 
       return toProviderDto(saved);
     } catch (error) {
-      console.error('Error creating provider:', error);
+      Logger.error('Error creating provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        ruc: data.ruc,
+        context: 'ProviderService.create',
+      });
       throw error;
     }
   }
@@ -196,7 +217,12 @@ export class ProviderService {
       const saved = await this.providerRepository.save(provider);
       return toProviderDto(saved);
     } catch (error) {
-      console.error('Error updating provider:', error);
+      Logger.error('Error updating provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ProviderService.update',
+      });
       throw error;
     }
   }
@@ -210,7 +236,12 @@ export class ProviderService {
         is_active: false,
       });
     } catch (error) {
-      console.error('Error deleting provider:', error);
+      Logger.error('Error deleting provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ProviderService.delete',
+      });
       throw new Error('Failed to delete provider');
     }
   }
@@ -229,7 +260,12 @@ export class ProviderService {
       });
       return providers.map((p) => toProviderDto(p));
     } catch (error) {
-      console.error('Error finding providers by type:', error);
+      Logger.error('Error finding providers by type', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tipo,
+        context: 'ProviderService.findByType',
+      });
       throw error;
     }
   }
@@ -243,7 +279,11 @@ export class ProviderService {
         where: { is_active: true },
       });
     } catch (error) {
-      console.error('Error counting providers:', error);
+      Logger.error('Error counting providers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ProviderService.getActiveCount',
+      });
       throw error;
     }
   }

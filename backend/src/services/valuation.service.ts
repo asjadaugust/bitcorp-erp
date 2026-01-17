@@ -25,6 +25,7 @@ import {
   ValuationPage7Dto,
 } from '../types/dto/valuation-pdf.dto';
 import { toValuationDto, fromValuationDto, ValuationDto } from '../types/dto/valuation.dto';
+import Logger from '../utils/logger';
 
 export class ValuationService {
   private get repository(): Repository<Valorizacion> {
@@ -89,7 +90,12 @@ export class ValuationService {
 
       return { data, total, page, limit };
     } catch (error) {
-      console.error('Error fetching valuations:', error);
+      Logger.error('Error fetching valuations', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters,
+        context: 'ValuationService.findAll',
+      });
       throw new Error('Failed to fetch valuations');
     }
   }
@@ -106,7 +112,12 @@ export class ValuationService {
       // Transform to DTO (Spanish snake_case)
       return toValuationDto(v);
     } catch (error) {
-      console.error('Error fetching valuation by id:', error);
+      Logger.error('Error fetching valuation by id', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.findById',
+      });
       throw error;
     }
   }
@@ -121,7 +132,12 @@ export class ValuationService {
 
       return await this.repository.save(valorizacion);
     } catch (error) {
-      console.error('Error creating valuation:', error);
+      Logger.error('Error creating valuation', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        context: 'ValuationService.create',
+      });
       throw error;
     }
   }
@@ -137,7 +153,12 @@ export class ValuationService {
       const updated = await this.repository.save(valorizacion);
       return toValuationDto(updated);
     } catch (error) {
-      console.error('Error updating valuation:', error);
+      Logger.error('Error updating valuation', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.update',
+      });
       throw error;
     }
   }
@@ -147,7 +168,12 @@ export class ValuationService {
       const result = await this.repository.delete(id);
       return (result.affected || 0) > 0;
     } catch (error) {
-      console.error('Error deleting valuation:', error);
+      Logger.error('Error deleting valuation', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.delete',
+      });
       throw new Error('Failed to delete valuation');
     }
   }
@@ -166,7 +192,13 @@ export class ValuationService {
       const approved = await this.repository.save(valorizacion);
       return toValuationDto(approved);
     } catch (error) {
-      console.error('Error approving valuation:', error);
+      Logger.error('Error approving valuation', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        userId,
+        context: 'ValuationService.approve',
+      });
       throw error;
     }
   }
@@ -203,7 +235,11 @@ export class ValuationService {
         top_equipment: [], // TODO: Implement with equipment join
       };
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      Logger.error('Error fetching analytics', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'ValuationService.getAnalytics',
+      });
       throw new Error('Failed to fetch analytics');
     }
   }
@@ -323,7 +359,12 @@ export class ValuationService {
       // Transform entities to DTO using centralized transformer
       return transformToValuationPage1Dto(valuation, contract, contract.equipo);
     } catch (error) {
-      console.error('Error fetching valuation Page 1 data:', error);
+      Logger.error('Error fetching valuation Page 1 data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.getValuationPage1Data',
+      });
       throw error;
     }
   }
@@ -396,7 +437,12 @@ export class ValuationService {
         contract.equipo
       );
     } catch (error) {
-      console.error('Error fetching valuation Page 2 data:', error);
+      Logger.error('Error fetching valuation Page 2 data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.getValuationPage2Data',
+      });
       throw error;
     }
   }
@@ -434,7 +480,12 @@ export class ValuationService {
 
       return transformToValuationPage3Dto(valuation, fuelRecords, contract.equipo);
     } catch (error) {
-      console.error('Error fetching valuation Page 3 data:', error);
+      Logger.error('Error fetching valuation Page 3 data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.getValuationPage3Data',
+      });
       throw error;
     }
   }
@@ -470,7 +521,12 @@ export class ValuationService {
 
       return transformToValuationPage4Dto(valuation, excessFuel, contract.equipo);
     } catch (error) {
-      console.error('Error fetching valuation Page 4 data:', error);
+      Logger.error('Error fetching valuation Page 4 data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.getValuationPage4Data',
+      });
       throw error;
     }
   }
@@ -509,7 +565,12 @@ export class ValuationService {
 
       return transformToValuationPage5Dto(valuation, workExpenses, contract.equipo);
     } catch (error) {
-      console.error('Error fetching valuation Page 5 data:', error);
+      Logger.error('Error fetching valuation Page 5 data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.getValuationPage5Data',
+      });
       throw error;
     }
   }
@@ -548,7 +609,12 @@ export class ValuationService {
 
       return transformToValuationPage6Dto(valuation, advances, contract.equipo);
     } catch (error) {
-      console.error('Error fetching valuation Page 6 data:', error);
+      Logger.error('Error fetching valuation Page 6 data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.getValuationPage6Data',
+      });
       throw error;
     }
   }
@@ -586,7 +652,12 @@ export class ValuationService {
 
       return transformToValuationPage7Dto(valuation, contract, contract.equipo);
     } catch (error) {
-      console.error('Error fetching valuation Page 7 data:', error);
+      Logger.error('Error fetching valuation Page 7 data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'ValuationService.getValuationPage7Data',
+      });
       throw error;
     }
   }

@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/database.config';
 import { Trabajador } from '../models/trabajador.model';
 import { Repository, ILike } from 'typeorm';
 import { toOperatorDto, fromOperatorDto, OperatorDto } from '../types/dto/operator.dto';
+import Logger from '../utils/logger';
 
 export interface OperatorFilter {
   search?: string;
@@ -117,7 +118,12 @@ export class OperatorService {
 
       return { data, total, page, limit };
     } catch (error) {
-      console.error('Error finding operators:', error);
+      Logger.error('Error finding operators', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters,
+        context: 'OperatorService.findAll',
+      });
       throw new Error('Failed to fetch operators');
     }
   }
@@ -134,7 +140,12 @@ export class OperatorService {
 
       return toOperatorDto(trabajador);
     } catch (error) {
-      console.error('Error finding operator:', error);
+      Logger.error('Error finding operator', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'OperatorService.findById',
+      });
       throw error;
     }
   }
@@ -145,7 +156,12 @@ export class OperatorService {
         where: { dni },
       });
     } catch (error) {
-      console.error('Error finding operator by DNI:', error);
+      Logger.error('Error finding operator by DNI', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        dni,
+        context: 'OperatorService.findByDni',
+      });
       throw error;
     }
   }
@@ -185,7 +201,12 @@ export class OperatorService {
 
       return toOperatorDto(saved);
     } catch (error) {
-      console.error('Error creating operator:', error);
+      Logger.error('Error creating operator', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        dni: data.dni,
+        context: 'OperatorService.create',
+      });
       throw error;
     }
   }
@@ -245,7 +266,12 @@ export class OperatorService {
       const saved = await this.repository.save(trabajador);
       return toOperatorDto(saved);
     } catch (error) {
-      console.error('Error updating operator:', error);
+      Logger.error('Error updating operator', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'OperatorService.update',
+      });
       throw error;
     }
   }
@@ -254,7 +280,12 @@ export class OperatorService {
     try {
       await this.repository.update(id, { isActive: false });
     } catch (error) {
-      console.error('Error deleting operator:', error);
+      Logger.error('Error deleting operator', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'OperatorService.delete',
+      });
       throw new Error('Failed to delete operator');
     }
   }
@@ -299,7 +330,11 @@ export class OperatorService {
 
       return { total, activos, porCargo, porEspecialidad };
     } catch (error) {
-      console.error('Error getting operator stats:', error);
+      Logger.error('Error getting operator stats', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'OperatorService.getStats',
+      });
       throw error;
     }
   }
