@@ -7,7 +7,12 @@ import {
 } from '../../services/equipment.service';
 import { EquipmentStatus } from '../../models/equipment.model';
 import { ExportUtil } from '../../utils/export.util';
-import { sendError } from '../../utils/api-response';
+import {
+  sendError,
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+} from '../../utils/api-response';
 
 export class EquipmentController {
   private equipmentService = new EquipmentService();
@@ -50,7 +55,7 @@ export class EquipmentController {
       };
 
       const equipment = await this.equipmentService.create(data);
-      res.status(201).json({ success: true, data: equipment });
+      sendCreated(res, equipment);
     } catch (error: any) {
       sendError(res, 400, 'EQUIPMENT_CREATE_FAILED', error.message);
     }
@@ -67,20 +72,11 @@ export class EquipmentController {
       };
 
       const pageNum = parseInt(page as string) || 1;
-      const limitNum = parseInt(limit as string) || 10;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Max 100
 
       const { data, total } = await this.equipmentService.findAll(filters, pageNum, limitNum);
 
-      res.json({
-        success: true,
-        data,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total,
-          totalPages: Math.ceil(total / limitNum),
-        },
-      });
+      sendPaginatedSuccess(res, data, { page: pageNum, limit: limitNum, total });
     } catch (error: any) {
       sendError(res, 500, 'EQUIPMENT_LIST_FAILED', 'Failed to fetch equipment', error.message);
     }
@@ -96,7 +92,7 @@ export class EquipmentController {
         return;
       }
 
-      res.json({ success: true, data: equipment });
+      sendSuccess(res, equipment);
     } catch (error: any) {
       if (error.message === 'Equipment not found') {
         sendError(res, 404, 'EQUIPMENT_NOT_FOUND', error.message);
@@ -116,7 +112,7 @@ export class EquipmentController {
         return;
       }
 
-      res.json({ success: true, data: equipment });
+      sendSuccess(res, equipment);
     } catch (error: any) {
       sendError(res, 500, 'EQUIPMENT_GET_FAILED', 'Failed to fetch equipment', error.message);
     }
