@@ -1,25 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { TenderService } from '../../services/tender.service';
+import { sendSuccess, sendError, sendCreated } from '../../utils/api-response';
 
 export class TenderController {
   private tenderService = new TenderService();
 
-  getTenders = async (req: Request, res: Response) => {
+  getTenders = async (req: Request, res: Response): Promise<void> => {
     try {
       const tenders = await this.tenderService.getAllTenders();
-      res.json(tenders);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching tenders', error });
+      sendSuccess(res, tenders);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'TENDERS_FETCH_FAILED',
+        'Error al obtener las licitaciones',
+        error.message
+      );
     }
   };
 
-  createTender = async (req: Request, res: Response) => {
+  createTender = async (req: Request, res: Response): Promise<void> => {
     try {
       const tender = await this.tenderService.createTender(req.body);
-      res.status(201).json(tender);
-    } catch (error) {
-      res.status(500).json({ message: 'Error creating tender', error });
+      sendCreated(res, tender);
+    } catch (error: any) {
+      sendError(res, 500, 'TENDER_CREATE_FAILED', 'Error al crear la licitación', error.message);
     }
   };
 }
