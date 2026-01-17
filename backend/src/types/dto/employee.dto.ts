@@ -9,6 +9,16 @@
  * Controller: backend/src/api/hr/employee.controller.ts
  */
 
+import {
+  IsString,
+  IsOptional,
+  IsEmail,
+  IsDateString,
+  MaxLength,
+  MinLength,
+  IsNumber,
+} from 'class-validator';
+
 /**
  * EmployeeListDto - Minimal fields for grid views
  * Used by: GET /api/employees (list view)
@@ -61,21 +71,74 @@ export interface EmployeeDetailDto {
  * EmployeeCreateDto - Input validation for creating employees
  * Used by: POST /api/employees
  */
-export interface EmployeeCreateDto {
+export class EmployeeCreateDto {
+  @IsOptional()
+  @IsString({ message: 'codigo_trabajador debe ser un string' })
+  @MaxLength(50, { message: 'codigo_trabajador no puede exceder 50 caracteres' })
   codigo_trabajador?: string;
-  nombres: string;
-  apellido_paterno: string;
+
+  @IsString({ message: 'nombres es requerido' })
+  @MaxLength(200, { message: 'nombres no puede exceder 200 caracteres' })
+  nombres!: string;
+
+  @IsString({ message: 'apellido_paterno es requerido' })
+  @MaxLength(100, { message: 'apellido_paterno no puede exceder 100 caracteres' })
+  apellido_paterno!: string;
+
+  @IsOptional()
+  @IsString({ message: 'apellido_materno debe ser un string' })
+  @MaxLength(100, { message: 'apellido_materno no puede exceder 100 caracteres' })
   apellido_materno?: string;
-  dni: string;
-  fecha_nacimiento?: string; // ISO date
+
+  @IsString({ message: 'dni es requerido' })
+  @MinLength(8, { message: 'dni debe tener al menos 8 caracteres' })
+  @MaxLength(12, { message: 'dni no puede exceder 12 caracteres' })
+  dni!: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_nacimiento debe ser una fecha válida (ISO 8601)' })
+  fecha_nacimiento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'direccion debe ser un string' })
+  @MaxLength(500, { message: 'direccion no puede exceder 500 caracteres' })
   direccion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'telefono debe ser un string' })
+  @MaxLength(20, { message: 'telefono no puede exceder 20 caracteres' })
   telefono?: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'email debe ser un email válido' })
   email?: string;
-  fecha_ingreso?: string; // ISO date
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_ingreso debe ser una fecha válida (ISO 8601)' })
+  fecha_ingreso?: string;
+
+  @IsOptional()
+  @IsString({ message: 'cargo debe ser un string' })
+  @MaxLength(100, { message: 'cargo no puede exceder 100 caracteres' })
   cargo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'especialidad debe ser un string' })
+  @MaxLength(100, { message: 'especialidad no puede exceder 100 caracteres' })
   especialidad?: string;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_contrato debe ser un string' })
+  @MaxLength(50, { message: 'tipo_contrato no puede exceder 50 caracteres' })
   tipo_contrato?: string;
+
+  @IsOptional()
+  @IsString({ message: 'licencia_conducir debe ser un string' })
+  @MaxLength(20, { message: 'licencia_conducir no puede exceder 20 caracteres' })
   licencia_conducir?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'operating_unit_id debe ser un número' })
   operating_unit_id?: number;
 }
 
@@ -83,19 +146,66 @@ export interface EmployeeCreateDto {
  * EmployeeUpdateDto - Input validation for updating employees
  * Used by: PUT /api/employees/:dni
  */
-export interface EmployeeUpdateDto {
+export class EmployeeUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'nombres debe ser un string' })
+  @MaxLength(200, { message: 'nombres no puede exceder 200 caracteres' })
   nombres?: string;
+
+  @IsOptional()
+  @IsString({ message: 'apellido_paterno debe ser un string' })
+  @MaxLength(100, { message: 'apellido_paterno no puede exceder 100 caracteres' })
   apellido_paterno?: string;
+
+  @IsOptional()
+  @IsString({ message: 'apellido_materno debe ser un string' })
+  @MaxLength(100, { message: 'apellido_materno no puede exceder 100 caracteres' })
   apellido_materno?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_nacimiento debe ser una fecha válida (ISO 8601)' })
   fecha_nacimiento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'direccion debe ser un string' })
+  @MaxLength(500, { message: 'direccion no puede exceder 500 caracteres' })
   direccion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'telefono debe ser un string' })
+  @MaxLength(20, { message: 'telefono no puede exceder 20 caracteres' })
   telefono?: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'email debe ser un email válido' })
   email?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_cese debe ser una fecha válida (ISO 8601)' })
   fecha_cese?: string;
+
+  @IsOptional()
+  @IsString({ message: 'cargo debe ser un string' })
+  @MaxLength(100, { message: 'cargo no puede exceder 100 caracteres' })
   cargo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'especialidad debe ser un string' })
+  @MaxLength(100, { message: 'especialidad no puede exceder 100 caracteres' })
   especialidad?: string;
+
+  @IsOptional()
+  @IsString({ message: 'tipo_contrato debe ser un string' })
+  @MaxLength(50, { message: 'tipo_contrato no puede exceder 50 caracteres' })
   tipo_contrato?: string;
+
+  @IsOptional()
+  @IsString({ message: 'licencia_conducir debe ser un string' })
+  @MaxLength(20, { message: 'licencia_conducir no puede exceder 20 caracteres' })
   licencia_conducir?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'operating_unit_id debe ser un número' })
   operating_unit_id?: number;
 }
 

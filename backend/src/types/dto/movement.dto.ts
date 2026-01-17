@@ -8,6 +8,19 @@
  * Controller: backend/src/api/logistics/movement.controller.ts
  */
 
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsArray,
+  ValidateNested,
+  IsIn,
+  IsDateString,
+  Min,
+  ArrayMinSize,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
 /**
  * MovementListDto - Minimal fields for grid views
  * Used by: GET /api/movements (list view)
@@ -73,26 +86,56 @@ export interface MovementDetailEntryDto {
 }
 
 /**
- * MovementCreateDto - Input validation for creating movements
- * Used by: POST /api/movements
+ * MovementItemCreateDto - Detail line item for creation
  */
-export interface MovementCreateDto {
-  proyecto_id?: number;
-  fecha: string; // ISO date
-  tipo_movimiento: string; // entrada, salida, transferencia, ajuste
-  numero_documento?: string;
+export class MovementItemCreateDto {
+  @IsNumber({}, { message: 'producto_id debe ser un número' })
+  producto_id!: number;
+
+  @IsNumber({}, { message: 'cantidad debe ser un número' })
+  @Min(0.01, { message: 'cantidad debe ser mayor a 0' })
+  cantidad!: number;
+
+  @IsNumber({}, { message: 'precio_unitario debe ser un número' })
+  @Min(0, { message: 'precio_unitario no puede ser negativo' })
+  precio_unitario!: number;
+
+  @IsOptional()
+  @IsString({ message: 'observaciones debe ser un string' })
   observaciones?: string;
-  items: MovementItemCreateDto[]; // Details
 }
 
 /**
- * MovementItemCreateDto - Detail line item for creation
+ * MovementCreateDto - Input validation for creating movements
+ * Used by: POST /api/movements
  */
-export interface MovementItemCreateDto {
-  producto_id: number;
-  cantidad: number;
-  precio_unitario: number;
+export class MovementCreateDto {
+  @IsOptional()
+  @IsNumber({}, { message: 'proyecto_id debe ser un número' })
+  proyecto_id?: number;
+
+  @IsDateString({}, { message: 'fecha debe ser una fecha válida (ISO 8601)' })
+  fecha!: string; // ISO date
+
+  @IsString({ message: 'tipo_movimiento debe ser un string' })
+  @IsIn(['entrada', 'salida', 'transferencia', 'ajuste'], {
+    message: 'tipo_movimiento debe ser: entrada, salida, transferencia o ajuste',
+  })
+  tipo_movimiento!: string;
+
+  @IsOptional()
+  @IsString({ message: 'numero_documento debe ser un string' })
+  numero_documento?: string;
+
+  @IsOptional()
+  @IsString({ message: 'observaciones debe ser un string' })
   observaciones?: string;
+
+  @IsArray({ message: 'items debe ser un array' })
+  @ArrayMinSize(1, { message: 'items debe contener al menos 1 elemento' })
+  @ValidateNested({ each: true })
+  @Type(() => MovementItemCreateDto)
+  items!: MovementItemCreateDto[]; // Details
 }
 
 // ============================================

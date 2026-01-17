@@ -8,6 +8,8 @@ import {
   deleteEmployee,
 } from './employee.controller';
 import { authenticate } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import { EmployeeCreateDto, EmployeeUpdateDto } from '../../types/dto/employee.dto';
 
 const router = Router();
 
@@ -17,8 +19,8 @@ router.use(authenticate);
 router.get('/employees', getEmployees);
 router.get('/', getEmployees);
 router.get('/:dni', getEmployee);
-router.post('/', createEmployee);
-router.put('/:dni', updateEmployee);
+router.post('/', validateDto(EmployeeCreateDto), createEmployee);
+router.put('/:dni', validateDto(EmployeeUpdateDto), updateEmployee);
 router.delete('/:dni', deleteEmployee);
 
 export default router;

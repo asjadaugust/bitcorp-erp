@@ -13,6 +13,8 @@
  * - esta_activo, created_at, updated_at
  */
 
+import { IsString, IsOptional, IsNumber, Min, MaxLength } from 'class-validator';
+
 /**
  * ProductListDto - Minimal fields for grid views
  * Used by: GET /api/products (list view)
@@ -56,14 +58,43 @@ export interface ProductDetailDto {
  * ProductCreateDto - Input validation for creation
  * Used by: POST /api/products
  */
-export interface ProductCreateDto {
-  codigo: string;
-  nombre: string;
+export class ProductCreateDto {
+  @IsString({ message: 'codigo debe ser un string' })
+  @MaxLength(50, { message: 'codigo no puede exceder 50 caracteres' })
+  codigo!: string;
+
+  @IsString({ message: 'nombre debe ser un string' })
+  @MaxLength(255, { message: 'nombre no puede exceder 255 caracteres' })
+  nombre!: string;
+
+  @IsOptional()
+  @IsString({ message: 'descripcion debe ser un string' })
+  @MaxLength(1000, { message: 'descripcion no puede exceder 1000 caracteres' })
   descripcion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'categoria debe ser un string' })
+  @MaxLength(100, { message: 'categoria no puede exceder 100 caracteres' })
   categoria?: string;
+
+  @IsOptional()
+  @IsString({ message: 'unidad_medida debe ser un string' })
+  @MaxLength(50, { message: 'unidad_medida no puede exceder 50 caracteres' })
   unidad_medida?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'stock_actual debe ser un número' })
+  @Min(0, { message: 'stock_actual no puede ser negativo' })
   stock_actual?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'stock_minimo debe ser un número' })
+  @Min(0, { message: 'stock_minimo no puede ser negativo' })
   stock_minimo?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'precio_unitario debe ser un número' })
+  @Min(0, { message: 'precio_unitario no puede ser negativo' })
   precio_unitario?: number;
 }
 
@@ -71,12 +102,35 @@ export interface ProductCreateDto {
  * ProductUpdateDto - Partial update fields
  * Used by: PUT /api/products/:id
  */
-export interface ProductUpdateDto {
+export class ProductUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'nombre debe ser un string' })
+  @MaxLength(255, { message: 'nombre no puede exceder 255 caracteres' })
   nombre?: string;
+
+  @IsOptional()
+  @IsString({ message: 'descripcion debe ser un string' })
+  @MaxLength(1000, { message: 'descripcion no puede exceder 1000 caracteres' })
   descripcion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'categoria debe ser un string' })
+  @MaxLength(100, { message: 'categoria no puede exceder 100 caracteres' })
   categoria?: string;
+
+  @IsOptional()
+  @IsString({ message: 'unidad_medida debe ser un string' })
+  @MaxLength(50, { message: 'unidad_medida no puede exceder 50 caracteres' })
   unidad_medida?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'stock_minimo debe ser un número' })
+  @Min(0, { message: 'stock_minimo no puede ser negativo' })
   stock_minimo?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'precio_unitario debe ser un número' })
+  @Min(0, { message: 'precio_unitario no puede ser negativo' })
   precio_unitario?: number;
 }
 
