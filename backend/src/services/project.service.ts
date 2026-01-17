@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/database.config';
 import { Proyecto } from '../models/project.model';
 import { Repository } from 'typeorm';
 import { toProjectDto, fromProjectDto, ProjectDto } from '../types/dto/project.dto';
+import Logger from '../utils/logger';
 
 export interface CreateProjectDto {
   // Frontend sends camelCase field names
@@ -57,7 +58,12 @@ export class ProjectService {
       const projects = await query.getMany();
       return projects.map((p) => toProjectDto(p));
     } catch (error) {
-      console.error('Error finding projects:', error);
+      Logger.error('Error finding projects by user', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        context: 'ProjectService.findAllByUser',
+      });
       // Return empty array instead of throwing to prevent login failures
       return [];
     }
@@ -84,7 +90,12 @@ export class ProjectService {
       const projects = await query.getMany();
       return projects.map((p) => toProjectDto(p));
     } catch (error) {
-      console.error('Error finding projects with filters:', error);
+      Logger.error('Error finding projects with filters', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters,
+        context: 'ProjectService.findAllWithFilters',
+      });
       // Return empty array instead of throwing to prevent login failures
       return [];
     }
@@ -106,7 +117,12 @@ export class ProjectService {
 
       return toProjectDto(project);
     } catch (error) {
-      console.error('Error finding project:', error);
+      Logger.error('Error finding project by ID', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        context: 'ProjectService.findById',
+      });
       throw error;
     }
   }
@@ -127,7 +143,12 @@ export class ProjectService {
 
       return toProjectDto(project);
     } catch (error) {
-      console.error('Error finding project:', error);
+      Logger.error('Error finding project by code', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        code,
+        context: 'ProjectService.findByCode',
+      });
       throw error;
     }
   }
@@ -171,7 +192,12 @@ export class ProjectService {
 
       return toProjectDto(saved);
     } catch (error) {
-      console.error('Error creating project:', error);
+      Logger.error('Error creating project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        data,
+        context: 'ProjectService.create',
+      });
       throw new Error('Failed to create project');
     }
   }
@@ -243,7 +269,13 @@ export class ProjectService {
       const saved = await this.repository.save(project);
       return toProjectDto(saved);
     } catch (error) {
-      console.error('Error updating project:', error);
+      Logger.error('Error updating project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        data,
+        context: 'ProjectService.update',
+      });
       throw error;
     }
   }
@@ -264,7 +296,12 @@ export class ProjectService {
       project.isActive = false;
       await this.repository.save(project);
     } catch (error) {
-      console.error('Error deleting project:', error);
+      Logger.error('Error deleting project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        context: 'ProjectService.delete',
+      });
       throw new Error('Failed to delete project');
     }
   }
@@ -288,7 +325,13 @@ export class ProjectService {
       `);
 
       if (!tableCheck[0]?.table_exists) {
-        console.warn('sistema.user_projects table does not exist - assignment not persisted');
+        Logger.warn('User assignment table missing - operation not persisted', {
+          table: 'sistema.user_projects',
+          operation: 'assign',
+          projectId,
+          userId,
+          context: 'ProjectService.assignUser',
+        });
         return; // Silently succeed without persisting
       }
 
@@ -311,7 +354,13 @@ export class ProjectService {
 
       await AppDataSource.query(insertQuery, [userId, projectId]);
     } catch (error) {
-      console.error('Error assigning user to project:', error);
+      Logger.error('Error assigning user to project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        userId,
+        context: 'ProjectService.assignUser',
+      });
       throw error;
     }
   }
@@ -334,7 +383,13 @@ export class ProjectService {
       `);
 
       if (!tableCheck[0]?.table_exists) {
-        console.warn('sistema.user_projects table does not exist - unassignment not persisted');
+        Logger.warn('User assignment table missing - operation not persisted', {
+          table: 'sistema.user_projects',
+          operation: 'unassign',
+          projectId,
+          userId,
+          context: 'ProjectService.unassignUser',
+        });
         return; // Silently succeed
       }
 
@@ -345,7 +400,13 @@ export class ProjectService {
 
       await AppDataSource.query(query, [userId, projectId]);
     } catch (error) {
-      console.error('Error unassigning user from project:', error);
+      Logger.error('Error unassigning user from project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        userId,
+        context: 'ProjectService.unassignUser',
+      });
       throw new Error('Failed to unassign user from project');
     }
   }
@@ -369,7 +430,12 @@ export class ProjectService {
       `);
 
       if (!tableCheck[0]?.table_exists) {
-        console.warn('sistema.user_projects table does not exist - returning empty array');
+        Logger.warn('User assignment table missing - returning empty array', {
+          table: 'sistema.user_projects',
+          operation: 'getProjectUsers',
+          projectId,
+          context: 'ProjectService.getProjectUsers',
+        });
         return []; // Return empty array instead of error
       }
 
@@ -390,7 +456,12 @@ export class ProjectService {
       const results = await AppDataSource.query(query, [projectId]);
       return results;
     } catch (error) {
-      console.error('Error getting project users:', error);
+      Logger.error('Error getting project users', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        context: 'ProjectService.getProjectUsers',
+      });
       // Return empty array instead of throwing to prevent API failures
       return [];
     }

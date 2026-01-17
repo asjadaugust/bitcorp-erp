@@ -3,6 +3,7 @@ import { User } from '../models/user.model';
 import { Role } from '../models/role.model';
 import { SecurityUtil, JwtPayload } from '../utils/security.util';
 import { ValidationUtil } from '../utils/validation.util';
+import Logger from '../utils/logger';
 
 export interface RegisterDto {
   username: string;
@@ -94,7 +95,11 @@ export class AuthService {
   }
 
   async login(data: LoginDto): Promise<AuthResponse> {
-    console.log(`Login attempt for username: ${data.username}`);
+    Logger.debug('Login attempt started', {
+      username: data.username,
+      context: 'AuthService.login',
+    });
+
     // Find user with password and roles
     const user = await this.userRepository
       .createQueryBuilder('user')
@@ -104,29 +109,36 @@ export class AuthService {
       .getOne();
 
     if (user) {
-      console.log('User fetched from DB:', user.username);
-      console.log(
-        'Roles fetched:',
-        user.roles?.map((r) => r.code)
-      );
+      Logger.debug('User fetched from database', {
+        username: user.username,
+        roles: user.roles?.map((r) => r.code),
+        hasPassword: !!user.password_hash,
+        context: 'AuthService.login',
+      });
     }
 
     if (!user) {
-      console.log('User not found');
+      Logger.warn('Login failed - user not found', {
+        username: data.username,
+        context: 'AuthService.login',
+      });
       throw new Error('Invalid credentials');
     }
-
-    console.log(
-      `User found: ${user.username}, Hash: ${user.password_hash ? 'Present' : 'Missing'}`
-    );
 
     // Verify password
     const isValidPassword = await SecurityUtil.comparePassword(data.password, user.password_hash);
 
-    console.log(`Password valid: ${isValidPassword}`);
+    Logger.debug('Password verification completed', {
+      username: user.username,
+      isValid: isValidPassword,
+      context: 'AuthService.login',
+    });
 
     if (!isValidPassword) {
-      console.log('Password mismatch');
+      Logger.warn('Login failed - invalid password', {
+        username: data.username,
+        context: 'AuthService.login',
+      });
       throw new Error('Invalid credentials');
     }
 
@@ -143,7 +155,7 @@ export class AuthService {
       const payload = SecurityUtil.verifyRefreshToken(refreshToken);
 
       const user = await this.userRepository.findOne({
-        where: { id: payload.userId as any },
+        where: { id: parseInt(String(payload.userId)) },
         relations: ['roles'],
       });
 
@@ -158,14 +170,30 @@ export class AuthService {
   }
 
   private generateAuthResponse(user: User): AuthResponse {
-    console.log('Generating auth response for user:', user.username);
-    console.log('User roles:', JSON.stringify(user.roles, null, 2));
+    Logger.debug('Generating authentication response', {
+      username: user.username,
+      userId: user.id,
+      roleCount: user.roles?.length || 0,
+      context: 'AuthService.generateAuthResponse',
+    });
+
     const roleCodes =
       user.roles?.map((r) => {
-        console.log(`Role: ${r.name}, Code: ${r.code}`);
+        Logger.debug('Processing user role', {
+          roleName: r.name,
+          roleCode: r.code,
+          username: user.username,
+          context: 'AuthService.generateAuthResponse',
+        });
         return r.code || r.name;
       }) || [];
-    console.log('Final role codes:', roleCodes);
+
+    Logger.debug('Authentication tokens generated', {
+      username: user.username,
+      roles: roleCodes,
+      context: 'AuthService.generateAuthResponse',
+    });
+
     const payload: JwtPayload = {
       userId: String(user.id),
       username: user.username,
