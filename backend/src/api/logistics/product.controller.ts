@@ -4,6 +4,12 @@ import { Product } from '../../models/product.model';
 import { AppDataSource } from '../../config/database.config';
 import Logger from '../../utils/logger';
 import {
+  sendSuccess,
+  sendCreated,
+  sendPaginatedSuccess,
+  sendError,
+} from '../../utils/api-response';
+import {
   toProductListDto,
   toProductDetailDto,
   fromProductCreateDto,
@@ -13,35 +19,58 @@ import {
 export class ProductController {
   /**
    * GET /api/products
-   * List all active products
-   * @returns ProductListDto[] with Spanish snake_case fields
+   * List all active products with pagination
+   * @query page - Page number (default: 1)
+   * @query limit - Items per page (default: 10, max: 100)
+   * @query categoria - Filter by category
+   * @returns ProductListDto[] with Spanish snake_case fields and pagination
    */
   async getAll(req: Request, res: Response) {
     try {
+      // Parse pagination parameters
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100
+      const offset = (page - 1) * limit;
+
+      // Parse filters
+      const categoria = req.query.categoria as string;
+
       const productRepo = AppDataSource.getRepository(Product);
+
+      // Build where clause
+      const where: any = { isActive: true };
+      if (categoria) {
+        where.categoria = categoria;
+      }
+
+      // Count total matching products
+      const total = await productRepo.count({ where });
+
+      // Get paginated products
       const products = await productRepo.find({
-        where: { isActive: true },
+        where,
         order: { nombre: 'ASC' },
+        take: limit,
+        skip: offset,
       });
 
       // Transform to DTOs (Spanish snake_case)
       const dtos = products.map((p) => toProductListDto(p as unknown as Record<string, unknown>));
 
-      res.json({
-        success: true,
-        data: dtos,
-      });
+      return sendPaginatedSuccess(res, dtos, { page, limit, total });
     } catch (error) {
       Logger.error('Error fetching products', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ProductController.getAll',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch products',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'FETCH_ERROR',
+        'Failed to fetch products',
+        (error as Error).message
+      );
     }
   }
 
@@ -59,25 +88,21 @@ export class ProductController {
       });
 
       if (!product) {
-        return res.status(404).json({
-          success: false,
-          error: 'Product not found',
-        });
+        return sendError(res, 404, 'NOT_FOUND', 'Product not found');
       }
 
       // Transform to DTO (Spanish snake_case)
       const dto = toProductDetailDto(product as unknown as Record<string, unknown>);
 
-      res.json({
-        success: true,
-        data: dto,
-      });
+      return sendSuccess(res, dto);
     } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch product',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'FETCH_ERROR',
+        'Failed to fetch product',
+        (error as Error).message
+      );
     }
   }
 
@@ -100,21 +125,20 @@ export class ProductController {
       // Transform entity back to DTO for response
       const dto = toProductDetailDto(saved as unknown as Record<string, unknown>);
 
-      res.status(201).json({
-        success: true,
-        data: dto,
-      });
+      return sendCreated(res, dto);
     } catch (error) {
       Logger.error('Error creating product', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ProductController.create',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to create product',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'CREATE_ERROR',
+        'Failed to create product',
+        (error as Error).message
+      );
     }
   }
 
@@ -133,10 +157,7 @@ export class ProductController {
       });
 
       if (!product) {
-        return res.status(404).json({
-          success: false,
-          error: 'Product not found',
-        });
+        return sendError(res, 404, 'NOT_FOUND', 'Product not found');
       }
 
       // Transform DTO (snake_case) to entity fields (camelCase)
@@ -148,10 +169,7 @@ export class ProductController {
       // Transform entity back to DTO for response
       const dto = toProductDetailDto(updated as unknown as Record<string, unknown>);
 
-      res.json({
-        success: true,
-        data: dto,
-      });
+      return sendSuccess(res, dto);
     } catch (error) {
       Logger.error('Error updating product', {
         error: error instanceof Error ? error.message : String(error),
@@ -159,11 +177,13 @@ export class ProductController {
         productId: req.params.id,
         context: 'ProductController.update',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to update product',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'UPDATE_ERROR',
+        'Failed to update product',
+        (error as Error).message
+      );
     }
   }
 
@@ -182,17 +202,14 @@ export class ProductController {
       });
 
       if (!product) {
-        return res.status(404).json({
-          success: false,
-          error: 'Product not found',
-        });
+        return sendError(res, 404, 'NOT_FOUND', 'Product not found');
       }
 
       // Soft delete
       product.isActive = false;
       await productRepo.save(product);
 
-      res.status(204).send();
+      return res.status(204).send(); // 204 No Content is correct for DELETE
     } catch (error) {
       Logger.error('Error deleting product', {
         error: error instanceof Error ? error.message : String(error),
@@ -200,11 +217,13 @@ export class ProductController {
         productId: req.params.id,
         context: 'ProductController.delete',
       });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to delete product',
-        details: (error as Error).message,
-      });
+      return sendError(
+        res,
+        500,
+        'DELETE_ERROR',
+        'Failed to delete product',
+        (error as Error).message
+      );
     }
   }
 }
