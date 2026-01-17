@@ -7,6 +7,16 @@
  * - Returns Spanish column names to API
  */
 
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsDateString,
+  IsIn,
+  Min,
+  IsInt,
+} from 'class-validator';
 import { Valorizacion, EstadoValorizacion } from '../../models/valuation.model';
 
 export interface ValuationDto {
@@ -166,4 +176,216 @@ export function fromValuationDto(dto: Partial<ValuationDto>): Partial<Valorizaci
     entity.approvedAt = dto.aprobado_en ? new Date(dto.aprobado_en) : undefined;
 
   return entity;
+}
+
+/**
+ * Validation DTO for creating a valuation
+ */
+export class ValuationCreateDto {
+  @IsNotEmpty({ message: 'El ID del equipo es requerido' })
+  @IsInt({ message: 'El ID del equipo debe ser un número entero' })
+  equipo_id!: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del contrato debe ser un número entero' })
+  contrato_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del proyecto debe ser un número entero' })
+  proyecto_id?: number;
+
+  @IsNotEmpty({ message: 'El periodo es requerido' })
+  @IsString({ message: 'El periodo debe ser texto' })
+  periodo!: string;
+
+  @IsNotEmpty({ message: 'La fecha de inicio es requerida' })
+  @IsDateString({}, { message: 'La fecha de inicio debe ser una fecha válida (ISO 8601)' })
+  fecha_inicio!: string;
+
+  @IsNotEmpty({ message: 'La fecha de fin es requerida' })
+  @IsDateString({}, { message: 'La fecha de fin debe ser una fecha válida (ISO 8601)' })
+  fecha_fin!: string;
+
+  @IsOptional()
+  @IsInt({ message: 'Los días trabajados deben ser un número entero' })
+  @Min(0, { message: 'Los días trabajados no pueden ser negativos' })
+  dias_trabajados?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Las horas trabajadas deben ser un número' })
+  @Min(0, { message: 'Las horas trabajadas no pueden ser negativas' })
+  horas_trabajadas?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El combustible consumido debe ser un número' })
+  @Min(0, { message: 'El combustible consumido no puede ser negativo' })
+  combustible_consumido?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El costo base debe ser un número' })
+  @Min(0, { message: 'El costo base no puede ser negativo' })
+  costo_base?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El costo de combustible debe ser un número' })
+  @Min(0, { message: 'El costo de combustible no puede ser negativo' })
+  costo_combustible?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Los cargos adicionales deben ser un número' })
+  cargos_adicionales?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El total valorizado debe ser un número' })
+  @Min(0, { message: 'El total valorizado no puede ser negativo' })
+  total_valorizado?: number;
+
+  @IsOptional()
+  @IsString({ message: 'El número de valorización debe ser texto' })
+  numero_valorizacion?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El tipo de cambio debe ser un número' })
+  @Min(0, { message: 'El tipo de cambio no puede ser negativo' })
+  tipo_cambio?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El porcentaje de descuento debe ser un número' })
+  @Min(0, { message: 'El porcentaje de descuento no puede ser negativo' })
+  descuento_porcentaje?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El monto de descuento debe ser un número' })
+  descuento_monto?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El porcentaje de IGV debe ser un número' })
+  @Min(0, { message: 'El porcentaje de IGV no puede ser negativo' })
+  igv_porcentaje?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El monto de IGV debe ser un número' })
+  @Min(0, { message: 'El monto de IGV no puede ser negativo' })
+  igv_monto?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El total con IGV debe ser un número' })
+  @Min(0, { message: 'El total con IGV no puede ser negativo' })
+  total_con_igv?: number;
+
+  @IsOptional()
+  @IsIn(['PENDIENTE', 'APROBADO', 'RECHAZADO', 'PAGADO'], {
+    message: 'El estado debe ser PENDIENTE, APROBADO, RECHAZADO o PAGADO',
+  })
+  estado?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Las observaciones deben ser texto' })
+  observaciones?: string;
+}
+
+/**
+ * Validation DTO for updating a valuation
+ */
+export class ValuationUpdateDto {
+  @IsOptional()
+  @IsInt({ message: 'El ID del equipo debe ser un número entero' })
+  equipo_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del contrato debe ser un número entero' })
+  contrato_id?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'El ID del proyecto debe ser un número entero' })
+  proyecto_id?: number;
+
+  @IsOptional()
+  @IsString({ message: 'El periodo debe ser texto' })
+  periodo?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha de inicio debe ser una fecha válida (ISO 8601)' })
+  fecha_inicio?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha de fin debe ser una fecha válida (ISO 8601)' })
+  fecha_fin?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'Los días trabajados deben ser un número entero' })
+  @Min(0, { message: 'Los días trabajados no pueden ser negativos' })
+  dias_trabajados?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Las horas trabajadas deben ser un número' })
+  @Min(0, { message: 'Las horas trabajadas no pueden ser negativas' })
+  horas_trabajadas?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El combustible consumido debe ser un número' })
+  @Min(0, { message: 'El combustible consumido no puede ser negativo' })
+  combustible_consumido?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El costo base debe ser un número' })
+  @Min(0, { message: 'El costo base no puede ser negativo' })
+  costo_base?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El costo de combustible debe ser un número' })
+  @Min(0, { message: 'El costo de combustible no puede ser negativo' })
+  costo_combustible?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Los cargos adicionales deben ser un número' })
+  cargos_adicionales?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El total valorizado debe ser un número' })
+  @Min(0, { message: 'El total valorizado no puede ser negativo' })
+  total_valorizado?: number;
+
+  @IsOptional()
+  @IsString({ message: 'El número de valorización debe ser texto' })
+  numero_valorizacion?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El tipo de cambio debe ser un número' })
+  @Min(0, { message: 'El tipo de cambio no puede ser negativo' })
+  tipo_cambio?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El porcentaje de descuento debe ser un número' })
+  @Min(0, { message: 'El porcentaje de descuento no puede ser negativo' })
+  descuento_porcentaje?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El monto de descuento debe ser un número' })
+  descuento_monto?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El porcentaje de IGV debe ser un número' })
+  @Min(0, { message: 'El porcentaje de IGV no puede ser negativo' })
+  igv_porcentaje?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El monto de IGV debe ser un número' })
+  @Min(0, { message: 'El monto de IGV no puede ser negativo' })
+  igv_monto?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El total con IGV debe ser un número' })
+  @Min(0, { message: 'El total con IGV no puede ser negativo' })
+  total_con_igv?: number;
+
+  @IsOptional()
+  @IsIn(['PENDIENTE', 'APROBADO', 'RECHAZADO', 'PAGADO'], {
+    message: 'El estado debe ser PENDIENTE, APROBADO, RECHAZADO o PAGADO',
+  })
+  estado?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Las observaciones deben ser texto' })
+  observaciones?: string;
 }

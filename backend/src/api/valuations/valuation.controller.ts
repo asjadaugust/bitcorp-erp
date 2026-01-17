@@ -3,6 +3,12 @@ import { Request, Response, NextFunction } from 'express';
 import { ValuationService } from '../../services/valuation.service';
 import { PdfService } from '../../services/pdf.service';
 import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 export class ValuationController {
   private valuationService: ValuationService;
@@ -13,24 +19,26 @@ export class ValuationController {
 
   getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+      const sort_by = req.query.sort_by as string;
+      const sort_order = req.query.sort_order?.toString().toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
       const filters = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
+        page,
+        limit,
+        sort_by,
+        sort_order,
         status: req.query.status as string,
         search: req.query.search as string,
       };
 
       const result = await this.valuationService.getAllValuations(filters);
 
-      res.json({
-        success: true,
-        data: result.data,
-        pagination: {
-          page: filters.page,
-          limit: filters.limit,
-          total: result.total,
-          totalPages: Math.ceil(result.total / filters.limit),
-        },
+      sendPaginatedSuccess(res, result.data, {
+        page,
+        limit,
+        total: result.total,
       });
     } catch (error) {
       next(error);
@@ -39,10 +47,19 @@ export class ValuationController {
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const record = await this.valuationService.getValuationById(id);
-      if (!record) return res.status(404).json({ success: false, message: 'Valuation not found' });
-      res.json({ success: true, data: record });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const record = await this.valuationService.getValuationById(id.toString());
+      if (!record) {
+        sendError(res, 404, 'VALUATION_NOT_FOUND', 'Valorización no encontrada');
+        return;
+      }
+
+      sendSuccess(res, record);
     } catch (error) {
       next(error);
     }
@@ -51,7 +68,7 @@ export class ValuationController {
   getAnalytics = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await this.valuationService.getAnalytics();
-      res.json({ success: true, data });
+      sendSuccess(res, data);
     } catch (error) {
       next(error);
     }
@@ -61,7 +78,7 @@ export class ValuationController {
     try {
       const userId = (req as any).user.id;
       const record = await this.valuationService.createValuation(req.body, userId);
-      res.status(201).json({ success: true, data: record });
+      sendCreated(res, (record as any).id, 'Valorización creada exitosamente');
     } catch (error) {
       next(error);
     }
@@ -69,22 +86,40 @@ export class ValuationController {
 
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
       const userId = (req as any).user.id;
-      const record = await this.valuationService.updateValuation(id, req.body, userId);
-      if (!record) return res.status(404).json({ success: false, message: 'Valuation not found' });
-      res.json({ success: true, data: record });
+      const record = await this.valuationService.updateValuation(id.toString(), req.body, userId);
+      if (!record) {
+        sendError(res, 404, 'VALUATION_NOT_FOUND', 'Valorización no encontrada');
+        return;
+      }
+
+      sendSuccess(res, record);
     } catch (error) {
       next(error);
     }
   };
 
-  delete = async (req: Request, res: Response, next: NextFunction) => {
+  remove = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const success = await this.valuationService.deleteValuation(id);
-      if (!success) return res.status(404).json({ success: false, message: 'Valuation not found' });
-      res.json({ success: true, message: 'Valuation deleted successfully' });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const success = await this.valuationService.deleteValuation(id.toString());
+      if (!success) {
+        sendError(res, 404, 'VALUATION_NOT_FOUND', 'Valorización no encontrada');
+        return;
+      }
+
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
@@ -94,10 +129,11 @@ export class ValuationController {
     try {
       const { contract_id, month, year } = req.body;
       if (!contract_id || !month || !year) {
-        return res.status(400).json({ success: false, message: 'Missing required fields' });
+        sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: contract_id, month, year');
+        return;
       }
       const result = await this.valuationService.calculateValuation(contract_id, month, year);
-      res.json({ success: true, data: result });
+      sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
@@ -109,7 +145,8 @@ export class ValuationController {
       const userId = (req as any).user.id;
 
       if (!month || !year) {
-        return res.status(400).json({ success: false, message: 'Month and year are required' });
+        sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: month, year');
+        return;
       }
 
       let result;
@@ -124,7 +161,7 @@ export class ValuationController {
         result = await this.valuationService.generateValuationsForPeriod(month, year, userId);
       }
 
-      res.json({ success: true, data: result });
+      sendSuccess(res, result);
     } catch (error) {
       next(error);
     }

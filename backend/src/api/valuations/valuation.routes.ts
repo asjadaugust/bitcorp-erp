@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { ValuationController } from './valuation.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import { ValuationCreateDto, ValuationUpdateDto } from '../../types/dto/valuation.dto';
 import { ROLES } from '../../types/roles';
 
 const router = Router();
@@ -21,7 +23,12 @@ router.get(
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   controller.downloadPdf
 );
-router.post('/', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.create);
+router.post(
+  '/',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  validateDto(ValuationCreateDto),
+  controller.create
+);
 router.post(
   '/calculate',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
@@ -40,7 +47,12 @@ router.post(
     controller.downloadPdf(req, res, next);
   }
 );
-router.put('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.update);
-router.delete('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR), controller.delete);
+router.put(
+  '/:id',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  validateDto(ValuationUpdateDto),
+  controller.update
+);
+router.delete('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR), controller.remove);
 
 export default router;

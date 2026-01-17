@@ -49,11 +49,33 @@ export class ValuationService {
     equipmentId?: number;
     page?: number;
     limit?: number;
+    sort_by?: string;
+    sort_order?: 'ASC' | 'DESC';
   }) {
     try {
       const page = filters?.page || 1;
-      const limit = filters?.limit || 10;
+      const limit = filters?.limit || 20;
       const skip = (page - 1) * limit;
+
+      // Define sortable fields (snake_case API → camelCase DB mapping)
+      const sortableFields: Record<string, string> = {
+        numero_valorizacion: 'v.numeroValorizacion',
+        periodo: 'v.periodo',
+        fecha_inicio: 'v.fechaInicio',
+        fecha_fin: 'v.fechaFin',
+        total_valorizado: 'v.totalValorizado',
+        total_con_igv: 'v.totalConIgv',
+        estado: 'v.estado',
+        created_at: 'v.createdAt',
+        equipo_id: 'v.equipmentId',
+        contrato_id: 'v.contractId',
+      };
+
+      const sortBy =
+        filters?.sort_by && sortableFields[filters.sort_by]
+          ? sortableFields[filters.sort_by]
+          : 'v.createdAt';
+      const sortOrder = filters?.sort_order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
       const queryBuilder = this.repository
         .createQueryBuilder('v')
@@ -78,7 +100,7 @@ export class ValuationService {
         });
       }
 
-      queryBuilder.orderBy('v.createdAt', 'DESC');
+      queryBuilder.orderBy(sortBy, sortOrder);
 
       const total = await queryBuilder.getCount();
       queryBuilder.skip(skip).take(limit);
@@ -88,7 +110,7 @@ export class ValuationService {
       // Transform to DTO (Spanish snake_case)
       const data = records.map((v) => toValuationDto(v));
 
-      return { data, total, page, limit };
+      return { data, total };
     } catch (error) {
       Logger.error('Error fetching valuations', {
         error: error instanceof Error ? error.message : String(error),
