@@ -1,6 +1,7 @@
 import { AppDataSource } from '../config/database.config';
 import { Incidente } from '../models/safety-incident.model';
 import { Repository } from 'typeorm';
+import Logger from '../utils/logger';
 
 export class SstService {
   private get repository(): Repository<Incidente> {
@@ -10,7 +11,11 @@ export class SstService {
     return AppDataSource.getRepository(Incidente);
   }
 
-  async findAll(filters?: { search?: string; estado?: string; severidad?: string }): Promise<Incidente[]> {
+  async findAll(filters?: {
+    search?: string;
+    estado?: string;
+    severidad?: string;
+  }): Promise<Incidente[]> {
     try {
       const queryBuilder = this.repository.createQueryBuilder('i');
 
@@ -33,7 +38,12 @@ export class SstService {
 
       return await queryBuilder.getMany();
     } catch (error) {
-      console.error('Error finding incidents:', error);
+      Logger.error('Error finding incidents', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters,
+        context: 'SstService.findAll',
+      });
       throw new Error('Error fetching incidents');
     }
   }
@@ -42,7 +52,12 @@ export class SstService {
     try {
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
-      console.error('Error finding incident by id:', error);
+      Logger.error('Error finding incident by id', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'SstService.findById',
+      });
       throw error;
     }
   }
@@ -52,7 +67,11 @@ export class SstService {
       const incidente = this.repository.create(data);
       return await this.repository.save(incidente);
     } catch (error) {
-      console.error('Error creating incident:', error);
+      Logger.error('Error creating incident', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'SstService.create',
+      });
       throw error;
     }
   }
@@ -67,7 +86,12 @@ export class SstService {
       Object.assign(incidente, data);
       return await this.repository.save(incidente);
     } catch (error) {
-      console.error('Error updating incident:', error);
+      Logger.error('Error updating incident', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'SstService.update',
+      });
       throw error;
     }
   }
@@ -76,7 +100,12 @@ export class SstService {
     try {
       await this.repository.delete(id);
     } catch (error) {
-      console.error('Error deleting incident:', error);
+      Logger.error('Error deleting incident', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'SstService.delete',
+      });
       throw new Error('Failed to delete incident');
     }
   }
@@ -90,10 +119,11 @@ export class SstService {
     return this.findById(parseInt(id));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async createIncident(data: any): Promise<Incidente> {
     // Map old field names to new Spanish names
     const mappedData: Partial<Incidente> = {
-      projectId: data.projectId,
+      proyectoId: data.projectId || data.proyectoId,
       fechaIncidente: data.incidentDate || data.fechaIncidente,
       tipoIncidente: data.incidentType || data.injuryType || data.tipoIncidente,
       severidad: data.severity || data.severidad,

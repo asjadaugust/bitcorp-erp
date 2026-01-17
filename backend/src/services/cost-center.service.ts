@@ -1,6 +1,7 @@
 import { AppDataSource } from '../config/database.config';
 import { CentroCosto } from '../models/cost-center.model';
 import { Repository } from 'typeorm';
+import Logger from '../utils/logger';
 
 export class CostCenterService {
   private get repository(): Repository<CentroCosto> {
@@ -34,7 +35,12 @@ export class CostCenterService {
 
       return await queryBuilder.getMany();
     } catch (error) {
-      console.error('Error finding cost centers:', error);
+      Logger.error('Error finding cost centers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters,
+        context: 'CostCenterService.findAll',
+      });
       throw new Error('Failed to fetch cost centers');
     }
   }
@@ -51,7 +57,12 @@ export class CostCenterService {
 
       return costCenter;
     } catch (error) {
-      console.error('Error finding cost center:', error);
+      Logger.error('Error finding cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'CostCenterService.findById',
+      });
       throw error;
     }
   }
@@ -62,7 +73,12 @@ export class CostCenterService {
         where: { codigo },
       });
     } catch (error) {
-      console.error('Error finding cost center by code:', error);
+      Logger.error('Error finding cost center by code', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        codigo,
+        context: 'CostCenterService.findByCode',
+      });
       throw error;
     }
   }
@@ -74,7 +90,12 @@ export class CostCenterService {
         order: { codigo: 'ASC' },
       });
     } catch (error) {
-      console.error('Error finding cost centers by project:', error);
+      Logger.error('Error finding cost centers by project', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        context: 'CostCenterService.findByProject',
+      });
       throw error;
     }
   }
@@ -99,7 +120,12 @@ export class CostCenterService {
 
       return await this.repository.save(costCenter);
     } catch (error) {
-      console.error('Error creating cost center:', error);
+      Logger.error('Error creating cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        codigo: data.codigo,
+        context: 'CostCenterService.create',
+      });
       throw error;
     }
   }
@@ -119,7 +145,12 @@ export class CostCenterService {
       Object.assign(costCenter, data);
       return await this.repository.save(costCenter);
     } catch (error) {
-      console.error('Error updating cost center:', error);
+      Logger.error('Error updating cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'CostCenterService.update',
+      });
       throw error;
     }
   }
@@ -128,7 +159,12 @@ export class CostCenterService {
     try {
       await this.repository.update(id, { isActive: false });
     } catch (error) {
-      console.error('Error deleting cost center:', error);
+      Logger.error('Error deleting cost center', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'CostCenterService.delete',
+      });
       throw new Error('Failed to delete cost center');
     }
   }
@@ -144,7 +180,12 @@ export class CostCenterService {
 
       return parseFloat(result?.total || '0');
     } catch (error) {
-      console.error('Error calculating total budget:', error);
+      Logger.error('Error calculating total budget', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        projectId,
+        context: 'CostCenterService.getTotalBudgetByProject',
+      });
       throw error;
     }
   }
@@ -155,7 +196,11 @@ export class CostCenterService {
         where: { isActive: true },
       });
     } catch (error) {
-      console.error('Error counting cost centers:', error);
+      Logger.error('Error counting cost centers', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'CostCenterService.getActiveCount',
+      });
       throw error;
     }
   }

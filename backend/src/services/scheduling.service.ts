@@ -9,6 +9,7 @@ import {
   fromScheduledTaskDto,
   mapCreateScheduledTaskDto,
 } from '../types/dto/scheduled-task.dto';
+import Logger from '../utils/logger';
 
 export interface TaskFilter {
   startDate?: Date;
@@ -69,7 +70,12 @@ export class SchedulingService {
       const tasks = await queryBuilder.getMany();
       return tasks.map((task) => toScheduledTaskDto(task));
     } catch (error) {
-      console.error('Error listing tasks:', error);
+      Logger.error('Error listing tasks', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filter,
+        context: 'SchedulingService.findAll',
+      });
       throw error;
     }
   }
@@ -82,7 +88,12 @@ export class SchedulingService {
       });
       return task ? toScheduledTaskDto(task) : null;
     } catch (error) {
-      console.error('Error finding task:', error);
+      Logger.error('Error finding task', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'SchedulingService.findById',
+      });
       throw error;
     }
   }
@@ -103,7 +114,11 @@ export class SchedulingService {
 
       return toScheduledTaskDto(withRelations!);
     } catch (error) {
-      console.error('Error creating task:', error);
+      Logger.error('Error creating task', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'SchedulingService.create',
+      });
       throw error;
     }
   }
@@ -132,7 +147,12 @@ export class SchedulingService {
 
       return toScheduledTaskDto(withRelations!);
     } catch (error) {
-      console.error('Error updating task:', error);
+      Logger.error('Error updating task', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'SchedulingService.update',
+      });
       throw error;
     }
   }
@@ -141,7 +161,12 @@ export class SchedulingService {
     try {
       await this.repository.delete(id);
     } catch (error) {
-      console.error('Error deleting task:', error);
+      Logger.error('Error deleting task', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        context: 'SchedulingService.delete',
+      });
       throw error;
     }
   }

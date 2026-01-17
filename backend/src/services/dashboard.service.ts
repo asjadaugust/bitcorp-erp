@@ -1,145 +1,108 @@
-import db from '../config/database.config';
-import {
-  ModuleWithPermissions,
-  Module,
-  UserModulePermission,
-  ModulePage,
-} from '../models/module.model';
+import { AppDataSource } from '../config/database.config';
+import { User } from '../models/user.model';
+import { Equipment } from '../models/equipment.model';
+import { Trabajador } from '../models/trabajador.model';
+import { DailyReport } from '../models/daily-report-typeorm.model';
 import { Project } from '../models/project.model';
+import { Repository } from 'typeorm';
+import { ModuleWithPermissions } from '../models/module.model';
+import Logger from '../utils/logger';
 
+/**
+ * Dashboard Service
+ * Migrated from raw SQL to TypeORM
+ *
+ * Note: Module-related methods (getModulesForUser) are marked as not implemented
+ * because the required tables (sistema.modulo, usuario_modulo_permiso, module_pages)
+ * do not exist in the database. These are planned features.
+ */
 export class DashboardService {
-  /**
-   * Get all modules with permissions for a specific user
-   */
-  async getModulesForUser(userId: string): Promise<ModuleWithPermissions[]> {
-    try {
-      const query = `
-        SELECT 
-          m.*,
-          ump.puede_ver,
-          ump.puede_crear,
-          ump.puede_editar,
-          ump.puede_eliminar,
-          ump.puede_aprobar
-        FROM sistema.modulo m
-        LEFT JOIN sistema.usuario_modulo_permiso ump 
-          ON m.id = ump.modulo_id AND ump.usuario_id = $1
-        WHERE m.is_active = true
-        ORDER BY m.orden_visualizacion
-      `;
+  private get userRepository(): Repository<User> {
+    return AppDataSource.getRepository(User);
+  }
 
-      const result = await db.query(query, [userId]);
+  private get equipmentRepository(): Repository<Equipment> {
+    return AppDataSource.getRepository(Equipment);
+  }
 
-      const modules: ModuleWithPermissions[] = result.rows.map((row) => ({
-        id: row.id,
-        codigo: row.codigo,
-        nombre_es: row.nombre_es,
-        nombre_en: row.nombre_en,
-        descripcion: row.descripcion,
-        icono: row.icono,
-        ruta: row.ruta,
-        nivel: row.nivel,
-        orden: row.orden,
-        parent_id: row.parent_id,
-        is_active: row.is_active,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        permissions: {
-          puede_ver: row.puede_ver || false,
-          puede_crear: row.puede_crear || false,
-          puede_editar: row.puede_editar || false,
-          puede_eliminar: row.puede_eliminar || false,
-          puede_aprobar: row.puede_aprobar || false,
-        },
-      }));
+  private get trabajadorRepository(): Repository<Trabajador> {
+    return AppDataSource.getRepository(Trabajador);
+  }
 
-      // Get pages for each module
-      for (const module of modules) {
-        if (module.permissions.puede_ver) {
-          const pagesQuery = `
-            SELECT * FROM module_pages 
-            WHERE module_id = $1 AND is_active = true 
-            ORDER BY orden
-          `;
-          const pagesResult = await db.query(pagesQuery, [module.id]);
-          module.pages = pagesResult.rows;
-        }
-      }
+  private get dailyReportRepository(): Repository<DailyReport> {
+    return AppDataSource.getRepository(DailyReport);
+  }
 
-      return modules;
-    } catch (error) {
-      console.error('Error fetching modules for user:', error);
-      throw new Error('Failed to fetch user modules');
-    }
+  private get projectRepository(): Repository<Project> {
+    return AppDataSource.getRepository(Project);
   }
 
   /**
-   * Get user information with active project
+   * Get all modules with permissions for a specific user
+   *
+   * @deprecated NOT IMPLEMENTED - Required tables do not exist
+   * Tables needed: sistema.modulo, sistema.usuario_modulo_permiso, sistema.module_pages
+   *
+   * Returns empty array until module system is implemented
+   */
+  async getModulesForUser(userId: string): Promise<ModuleWithPermissions[]> {
+    Logger.warn('Module system not implemented', {
+      message:
+        'Required tables (sistema.modulo, usuario_modulo_permiso, module_pages) do not exist',
+      userId,
+      context: 'DashboardService.getModulesForUser',
+    });
+
+    // Return empty array instead of throwing error for graceful degradation
+    return [];
+  }
+
+  /**
+   * Get user information with roles and projects
+   * Migrated to TypeORM
    */
   async getUserInfo(userId: string) {
     try {
-      const userQuery = `
-        SELECT 
-          u.id,
-          u.username,
-          u.first_name,
-          u.last_name,
-          u.email,
-          u.active_project_id
-        FROM sistema.usuario u
-        WHERE u.id = $1
-      `;
+      const user = await this.userRepository.findOne({
+        where: { id: parseInt(userId) },
+        relations: ['roles', 'rol', 'unidadOperativa'],
+      });
 
-      console.log('getUserInfo - userId:', userId, 'type:', typeof userId);
-      const userResult = await db.query(userQuery, [userId]);
-      console.log('getUserInfo - userResult rows:', userResult.rows.length);
-
-      if (userResult.rows.length === 0) {
+      if (!user) {
         throw new Error('User not found');
       }
 
-      const user = userResult.rows[0];
+      // Get role names
+      const roles = user.roles?.map((r) => r.name) || [];
 
-      // Get user roles
-      const rolesQuery = `
-        SELECT r.name 
-        FROM sistema.user_roles ur
-        JOIN sistema.rol r ON ur.role_id = r.id
-        WHERE ur.user_id = $1
-      `;
-      const rolesResult = await db.query(rolesQuery, [userId]);
-      const roles = rolesResult.rows.map((r) => r.name);
-
-      // Get active project if set
-      let active_project = null;
-      if (user.active_project_id) {
-        const projectQuery = `
-          SELECT id, code as codigo_proyecto, name as nombre, description as descripcion, status as estado
-          FROM projects
-          WHERE id = $1
-        `;
-        const projectResult = await db.query(projectQuery, [user.active_project_id]);
-        if (projectResult.rows.length > 0) {
-          active_project = projectResult.rows[0];
-        }
+      // If no roles in many-to-many, use the single rol relationship
+      if (roles.length === 0 && user.rol) {
+        roles.push(user.rol.name);
       }
 
-      // Get all assigned projects
-      const assignedProjectsQuery = `
-        SELECT 
-          p.id, 
-          p.code as codigo_proyecto, 
-          p.name as nombre, 
-          p.description as descripcion, 
-          p.status as estado,
-          up.created_at as assigned_date
-        FROM sistema.user_projects up
-        JOIN proyectos.edt p ON up.project_id = p.id
-        WHERE up.user_id = $1
-        ORDER BY p.name
-      `;
+      // Get all assigned projects from proyectos.edt where user is related
+      // Note: There's no user_projects junction table, so we'll query projects
+      // where the user is creator or updater
+      const assignedProjects = await this.projectRepository
+        .createQueryBuilder('p')
+        .where('p.createdBy = :userId OR p.updatedBy = :userId', {
+          userId: parseInt(userId),
+        })
+        .andWhere('p.isActive = :isActive', { isActive: true })
+        .orderBy('p.nombre', 'ASC')
+        .select([
+          'p.id as id',
+          'p.codigo as codigo_proyecto',
+          'p.nombre as nombre',
+          'p.descripcion as descripcion',
+          'p.estado as estado',
+          'p.createdAt as assigned_date',
+        ])
+        .getRawMany();
 
-      const assignedProjectsResult = await db.query(assignedProjectsQuery, [userId]);
+      // Note: active_project_id field doesn't exist in sistema.usuario table
+      // This is a planned feature. For now, return null for active_project
+      const active_project = null;
 
       return {
         user: {
@@ -151,64 +114,68 @@ export class DashboardService {
           roles: roles,
         },
         active_project,
-        assigned_projects: assignedProjectsResult.rows,
+        assigned_projects: assignedProjects,
       };
     } catch (error) {
-      console.error('Error fetching user info:', error);
+      Logger.error('Error fetching user info', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        context: 'DashboardService.getUserInfo',
+      });
       throw new Error('Failed to fetch user information');
     }
   }
 
   /**
    * Switch user's active project
+   *
+   * @deprecated NOT IMPLEMENTED - Required fields/tables do not exist
+   * The sistema.usuario table does not have an active_project_id column
+   * The sistema.user_projects table does not exist
+   *
+   * This is a planned feature.
    */
-  async switchProject(userId: string, projectId: string): Promise<Project> {
-    try {
-      // Verify user has access to the project
-      const accessQuery = `
-        SELECT 1 FROM sistema.user_projects 
-        WHERE user_id = $1 AND project_id = $2 AND is_active = true
-      `;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async switchProject(userId: string, projectId: string): Promise<any> {
+    Logger.warn('Active project switching not implemented', {
+      message: 'Required: sistema.usuario.active_project_id column and sistema.user_projects table',
+      userId,
+      projectId,
+      context: 'DashboardService.switchProject',
+    });
 
-      const accessResult = await db.query(accessQuery, [userId, projectId]);
+    // Verify project exists
+    const project = await this.projectRepository.findOne({
+      where: { id: parseInt(projectId) },
+    });
 
-      if (accessResult.rows.length === 0) {
-        throw new Error('User does not have access to this project');
-      }
-
-      // Update user's active project
-      const updateQuery = `
-        UPDATE sistema.usuario 
-        SET active_project_id = $1, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-        RETURNING active_project_id
-      `;
-
-      await db.query(updateQuery, [projectId, userId]);
-
-      // Get project details
-      const projectQuery = `
-        SELECT * FROM proyectos.edt WHERE id = $1
-      `;
-
-      const projectResult = await db.query(projectQuery, [projectId]);
-
-      if (projectResult.rows.length === 0) {
-        throw new Error('Project not found');
-      }
-
-      return projectResult.rows[0];
-    } catch (error) {
-      console.error('Error switching project:', error);
-      throw error;
+    if (!project) {
+      throw new Error('Project not found');
     }
+
+    // Return project but don't actually switch (field doesn't exist)
+    return {
+      id: project.id,
+      codigo: project.codigo,
+      nombre: project.nombre,
+      descripcion: project.descripcion,
+      estado: project.estado,
+      message: 'Project switching not yet implemented. Feature requires database schema updates.',
+    };
   }
 
   /**
    * Get dashboard statistics
+   * Fully migrated to TypeORM - ELIMINATED 4 RAW SQL QUERIES
+   *
+   * Note: projectId filter is ignored as equipo.equipo table doesn't have a project_id column.
+   * Equipment-project relationships are managed through equipo.equipo_edt (EquipmentAssignment).
    */
-  async getDashboardStats(userId: string, projectId?: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getDashboardStats(userId: string, _projectId?: string) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stats: any = {
         total_equipment: 0,
         active_equipment: 0,
@@ -216,47 +183,48 @@ export class DashboardService {
         pending_reports: 0,
       };
 
-      // Equipment stats
-      let equipmentQuery = 'SELECT COUNT(*) as total FROM equipo.equipo WHERE is_active = true';
-      const equipmentParams: any[] = [];
+      // Equipment stats - using TypeORM simple count
+      // Note: Project filtering not implemented as equipment table lacks project_id
+      stats.total_equipment = await this.equipmentRepository.count({
+        where: { is_active: true },
+      });
 
-      if (projectId) {
-        equipmentQuery += ' AND project_id = $1';
-        equipmentParams.push(projectId);
-      }
+      // Active equipment (in use or available) - using TypeORM QueryBuilder
+      const activeEquipmentQuery = this.equipmentRepository
+        .createQueryBuilder('e')
+        .where('e.is_active = :isActive', { isActive: true })
+        .andWhere('e.estado IN (:...statuses)', {
+          statuses: ['disponible', 'en_uso', 'operativo'],
+        });
 
-      const equipmentResult = await db.query(equipmentQuery, equipmentParams);
-      stats.total_equipment = parseInt(equipmentResult.rows[0].total);
+      stats.active_equipment = await activeEquipmentQuery.getCount();
 
-      // Active equipment (in use or available)
-      let activeEquipmentQuery =
-        "SELECT COUNT(*) as total FROM equipo.equipo WHERE is_active = true AND status IN ('available', 'in_use')";
-      const activeEquipmentParams: any[] = [];
+      // Operators count - using TypeORM simple count
+      stats.total_operators = await this.trabajadorRepository.count({
+        where: { isActive: true },
+      });
 
-      if (projectId) {
-        activeEquipmentQuery += ' AND project_id = $1';
-        activeEquipmentParams.push(projectId);
-      }
+      // Pending reports (from today) - using TypeORM QueryBuilder with date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      const activeEquipmentResult = await db.query(activeEquipmentQuery, activeEquipmentParams);
-      stats.active_equipment = parseInt(activeEquipmentResult.rows[0].total);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
-      // Operators count
-      const operatorsQuery = 'SELECT COUNT(*) as total FROM rrhh.trabajador WHERE is_active = true';
-      const operatorsResult = await db.query(operatorsQuery);
-      stats.total_operators = parseInt(operatorsResult.rows[0].total);
-
-      // Pending reports (from today)
-      const pendingReportsQuery = `
-        SELECT COUNT(*) as total FROM equipo.parte_diario 
-        WHERE DATE(created_at) = CURRENT_DATE
-      `;
-      const pendingReportsResult = await db.query(pendingReportsQuery);
-      stats.pending_reports = parseInt(pendingReportsResult.rows[0].total);
+      stats.pending_reports = await this.dailyReportRepository
+        .createQueryBuilder('dr')
+        .where('dr.createdAt >= :today', { today })
+        .andWhere('dr.createdAt < :tomorrow', { tomorrow })
+        .getCount();
 
       return stats;
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
+      Logger.error('Error fetching dashboard stats', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        context: 'DashboardService.getDashboardStats',
+      });
       throw new Error('Failed to fetch dashboard statistics');
     }
   }

@@ -1,89 +1,122 @@
-import { pool } from '../config/database.config';
+import { Repository } from 'typeorm';
+import { AppDataSource } from '../config/database.config';
+import { Notification, NotificationType } from '../models/notification.model';
+import Logger from '../utils/logger';
 
-interface NotificationData {
-  id: string;
-  usuario_id: string;
-  tipo: string;
-  titulo: string;
-  mensaje: string | null;
-  url: string | null;
-  leido: boolean;
-  leido_at: Date | null;
-  created_at: Date;
-}
+export { NotificationType };
 
-export type NotificationType =
-  | 'info'
-  | 'warning'
-  | 'error'
-  | 'success'
-  | 'approval_required'
-  | 'approval_completed';
-
+/**
+ * NotificationService - User Notification Management
+ *
+ * ✅ FULLY MIGRATED TO TYPEORM
+ * - All 6 raw SQL queries replaced with TypeORM
+ * - Full type safety with Notification entity
+ * - Proper relations and eager loading support
+ *
+ * Migration completed: Phase 3.6
+ */
 export class NotificationService {
+  private get repository(): Repository<Notification> {
+    return AppDataSource.getRepository(Notification);
+  }
+
+  /**
+   * Create a new notification
+   *
+   * ✅ MIGRATED: INSERT query → TypeORM save()
+   */
   async create(
     userId: string,
     type: NotificationType,
     title: string,
     message: string,
     options?: { link?: string }
-  ): Promise<NotificationData> {
-    const query = `
-      INSERT INTO notificaciones (usuario_id, tipo, titulo, mensaje, url)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
-    `;
-    const result = await pool.query(query, [userId, type, title, message, options?.link || null]);
-    return result.rows[0];
+  ): Promise<Notification> {
+    const notification = this.repository.create({
+      userId: parseInt(userId),
+      type,
+      title,
+      message,
+      url: options?.link || null,
+      read: false,
+      readAt: null,
+    });
+
+    return await this.repository.save(notification);
   }
 
-  async getUserNotifications(userId: string, limit: number = 20): Promise<NotificationData[]> {
-    const query = `
-      SELECT * FROM notificaciones 
-      WHERE usuario_id = $1 
-      ORDER BY created_at DESC 
-      LIMIT $2
-    `;
-    const result = await pool.query(query, [userId, limit]);
-    return result.rows;
+  /**
+   * Get user's notifications with pagination
+   *
+   * ✅ MIGRATED: SELECT with ORDER BY and LIMIT → TypeORM find() with options
+   */
+  async getUserNotifications(userId: string, limit: number = 20): Promise<Notification[]> {
+    return await this.repository.find({
+      where: { userId: parseInt(userId) },
+      order: { created_at: 'DESC' },
+      take: limit,
+    });
   }
 
+  /**
+   * Get count of unread notifications
+   *
+   * ✅ MIGRATED: SELECT COUNT(*) → TypeORM count()
+   */
   async getUnreadCount(userId: string): Promise<number> {
-    const query = `
-      SELECT COUNT(*) as count FROM notificaciones 
-      WHERE usuario_id = $1 AND leido = false
-    `;
-    const result = await pool.query(query, [userId]);
-    return parseInt(result.rows[0].count, 10);
+    return await this.repository.count({
+      where: {
+        userId: parseInt(userId),
+        read: false,
+      },
+    });
   }
 
-  async markAsRead(id: string, userId: string): Promise<NotificationData | null> {
-    const query = `
-      UPDATE notificaciones 
-      SET leido = true, leido_at = CURRENT_TIMESTAMP 
-      WHERE id = $1 AND usuario_id = $2 
-      RETURNING *
-    `;
-    const result = await pool.query(query, [id, userId]);
-    return result.rows[0] || null;
+  /**
+   * Mark a notification as read
+   *
+   * ✅ MIGRATED: UPDATE with RETURNING → TypeORM update() + findOne()
+   */
+  async markAsRead(id: string, userId: string): Promise<Notification | null> {
+    const notificationId = parseInt(id);
+    const parsedUserId = parseInt(userId);
+
+    // Update the notification
+    await this.repository.update(
+      { id: notificationId, userId: parsedUserId },
+      { read: true, readAt: new Date() }
+    );
+
+    // Fetch and return the updated notification
+    return await this.repository.findOne({
+      where: { id: notificationId, userId: parsedUserId },
+    });
   }
 
+  /**
+   * Mark all user's notifications as read
+   *
+   * ✅ MIGRATED: UPDATE with WHERE → TypeORM update() with criteria
+   */
   async markAllAsRead(userId: string): Promise<void> {
-    const query = `
-      UPDATE notificaciones 
-      SET leido = true, leido_at = CURRENT_TIMESTAMP 
-      WHERE usuario_id = $1 AND leido = false
-    `;
-    await pool.query(query, [userId]);
+    await this.repository.update(
+      { userId: parseInt(userId), read: false },
+      { read: true, readAt: new Date() }
+    );
   }
 
+  /**
+   * Delete a notification
+   *
+   * ✅ MIGRATED: DELETE query → TypeORM delete()
+   */
   async deleteNotification(id: string, userId: string): Promise<boolean> {
-    const query = `
-      DELETE FROM notificaciones 
-      WHERE id = $1 AND usuario_id = $2
-    `;
-    const result = await pool.query(query, [id, userId]);
-    return (result.rowCount || 0) > 0;
+    const result = await this.repository.delete({
+      id: parseInt(id),
+      userId: parseInt(userId),
+    });
+
+    return (result.affected || 0) > 0;
   }
 
   // --- Notification Creation Helpers ---
@@ -93,7 +126,7 @@ export class NotificationService {
     title: string,
     message: string,
     link?: string
-  ): Promise<NotificationData> {
+  ): Promise<Notification> {
     return this.create(userId, 'approval_required', title, message, { link });
   }
 
@@ -102,7 +135,7 @@ export class NotificationService {
     title: string,
     message: string,
     link?: string
-  ): Promise<NotificationData> {
+  ): Promise<Notification> {
     return this.create(userId, 'approval_completed', title, message, { link });
   }
 
@@ -111,7 +144,7 @@ export class NotificationService {
     title: string,
     message: string,
     options?: { link?: string }
-  ): Promise<NotificationData> {
+  ): Promise<Notification> {
     return this.create(userId, 'warning', title, message, options);
   }
 
@@ -120,7 +153,7 @@ export class NotificationService {
     title: string,
     message: string,
     options?: { link?: string }
-  ): Promise<NotificationData> {
+  ): Promise<Notification> {
     return this.create(userId, 'error', title, message, options);
   }
 
@@ -129,7 +162,7 @@ export class NotificationService {
     title: string,
     message: string,
     options?: { link?: string }
-  ): Promise<NotificationData> {
+  ): Promise<Notification> {
     return this.create(userId, 'success', title, message, options);
   }
 
@@ -138,22 +171,28 @@ export class NotificationService {
     title: string,
     message: string,
     options?: { link?: string }
-  ): Promise<NotificationData> {
+  ): Promise<Notification> {
     return this.create(userId, 'info', title, message, options);
   }
 
   async checkMaintenanceDue(): Promise<void> {
     // TODO: Implement maintenance check logic
-    console.log('Checking maintenance due...');
+    Logger.debug('Checking maintenance due', {
+      context: 'NotificationService.checkMaintenanceDue',
+    });
   }
 
   async checkContractExpirations(): Promise<void> {
     // TODO: Implement contract expiration check logic
-    console.log('Checking contract expirations...');
+    Logger.debug('Checking contract expirations', {
+      context: 'NotificationService.checkContractExpirations',
+    });
   }
 
   async checkCertificationExpiry(): Promise<void> {
     // TODO: Implement certification expiry check logic
-    console.log('Checking certification expiry...');
+    Logger.debug('Checking certification expiry', {
+      context: 'NotificationService.checkCertificationExpiry',
+    });
   }
 }
