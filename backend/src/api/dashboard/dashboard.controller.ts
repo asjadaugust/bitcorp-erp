@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { DashboardService } from '../../services/dashboard.service';
 import Logger from '../../utils/logger';
+import { sendSuccess, sendError } from '../../utils/api-response';
 
 export class DashboardController {
   private dashboardService = new DashboardService();
@@ -15,26 +16,20 @@ export class DashboardController {
       const userId = (req as any).user?.id || (req as any).user?.userId;
 
       if (!userId) {
-        res.status(401).json({ error: 'Unauthorized' });
+        sendError(res, 401, 'UNAUTHORIZED', 'No autorizado');
         return;
       }
 
       const modules = await this.dashboardService.getModulesForUser(userId.toString());
 
-      res.json({
-        success: true,
-        data: modules,
-      });
+      sendSuccess(res, modules);
     } catch (error) {
       Logger.error('Error in getModules', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'DashboardController.getModules',
       });
-      res.status(500).json({
-        success: false,
-        error: (error as Error).message,
-      });
+      sendError(res, 500, 'INTERNAL_ERROR', 'Error al obtener los módulos');
     }
   };
 
@@ -47,26 +42,20 @@ export class DashboardController {
       const userId = (req as any).user?.id || (req as any).user?.userId;
 
       if (!userId) {
-        res.status(401).json({ error: 'Unauthorized' });
+        sendError(res, 401, 'UNAUTHORIZED', 'No autorizado');
         return;
       }
 
       const userInfo = await this.dashboardService.getUserInfo(userId.toString());
 
-      res.json({
-        success: true,
-        data: userInfo,
-      });
+      sendSuccess(res, userInfo);
     } catch (error) {
       Logger.error('Error in getUserInfo', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'DashboardController.getUserInfo',
       });
-      res.status(500).json({
-        success: false,
-        error: (error as Error).message,
-      });
+      sendError(res, 500, 'INTERNAL_ERROR', 'Error al obtener la información del usuario');
     }
   };
 
@@ -80,24 +69,28 @@ export class DashboardController {
       const { project_id } = req.body;
 
       if (!userId) {
-        res.status(401).json({ error: 'Unauthorized' });
+        sendError(res, 401, 'UNAUTHORIZED', 'No autorizado');
         return;
       }
 
       if (!project_id) {
-        res.status(400).json({
-          success: false,
-          error: 'project_id is required',
-        });
+        sendError(res, 400, 'VALIDATION_ERROR', 'El ID del proyecto es requerido');
         return;
       }
 
-      const project = await this.dashboardService.switchProject(userId.toString(), project_id);
+      // Validate project_id is a valid number (can be string or number)
+      const projectIdStr = String(project_id);
+      const projectIdNum = parseInt(projectIdStr);
+      if (isNaN(projectIdNum)) {
+        sendError(res, 400, 'INVALID_ID', 'El ID del proyecto debe ser un número');
+        return;
+      }
 
-      res.json({
-        success: true,
-        message: 'Project switched successfully',
-        data: { active_project: project },
+      const project = await this.dashboardService.switchProject(userId.toString(), projectIdStr);
+
+      sendSuccess(res, {
+        active_project: project,
+        message: 'Proyecto cambiado exitosamente',
       });
     } catch (error) {
       Logger.error('Error in switchProject', {
@@ -106,10 +99,9 @@ export class DashboardController {
         projectId: req.body.project_id,
         context: 'DashboardController.switchProject',
       });
-      res.status(400).json({
-        success: false,
-        error: (error as Error).message,
-      });
+
+      const errorMessage = error instanceof Error ? error.message : 'Error al cambiar de proyecto';
+      sendError(res, 400, 'SWITCH_PROJECT_FAILED', errorMessage);
     }
   };
 
@@ -123,26 +115,20 @@ export class DashboardController {
       const projectId = req.query.project_id as string | undefined;
 
       if (!userId) {
-        res.status(401).json({ error: 'Unauthorized' });
+        sendError(res, 401, 'UNAUTHORIZED', 'No autorizado');
         return;
       }
 
       const stats = await this.dashboardService.getDashboardStats(userId.toString(), projectId);
 
-      res.json({
-        success: true,
-        data: stats,
-      });
+      sendSuccess(res, stats);
     } catch (error) {
       Logger.error('Error in getStats', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'DashboardController.getStats',
       });
-      res.status(500).json({
-        success: false,
-        error: (error as Error).message,
-      });
+      sendError(res, 500, 'INTERNAL_ERROR', 'Error al obtener las estadísticas');
     }
   };
 }
