@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { ContractController } from './contract.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import { ContractCreateDto, ContractUpdateDto } from '../../types/dto/contract.dto';
 
 const router = Router();
 
@@ -10,9 +12,6 @@ router.get('/', ContractController.getAll);
 // GET /api/contracts/stats/count - Get active contracts count
 router.get('/stats/count', ContractController.getActiveCount);
 
-// GET /api/contracts/expiring/:days - Get expiring contracts
-router.get('/expiring/:days?', ContractController.getExpiring);
-
 // GET /api/contracts/numero/:numero - Get contract by numero
 router.get('/numero/:numero', ContractController.getByNumero);
 
@@ -20,10 +19,10 @@ router.get('/numero/:numero', ContractController.getByNumero);
 router.get('/:id', ContractController.getById);
 
 // POST /api/contracts - Create new contract
-router.post('/', ContractController.create);
+router.post('/', validateDto(ContractCreateDto), ContractController.create);
 
 // PUT /api/contracts/:id - Update contract
-router.put('/:id', ContractController.update);
+router.put('/:id', validateDto(ContractUpdateDto), ContractController.update);
 
 // DELETE /api/contracts/:id - Soft delete contract
 router.delete('/:id', ContractController.delete);
@@ -31,7 +30,7 @@ router.delete('/:id', ContractController.delete);
 // GET /api/contracts/:id/addendums - Get addendums for a contract
 router.get('/:id/addendums', ContractController.getAddendums);
 
-// POST /api/contracts/:id/addendums - Create addendum
-router.post('/:id/addendums', ContractController.createAddendum);
+// POST /api/contracts/addendums - Create addendum
+router.post('/addendums', validateDto(ContractCreateDto), ContractController.createAddendum);
 
 export default router;

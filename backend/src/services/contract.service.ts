@@ -14,14 +14,20 @@ export class ContractService {
   }
 
   /**
-   * Get all contracts with optional filters
+   * Get all contracts with optional filters, pagination, and sorting
    */
-  async findAll(filters?: {
-    search?: string;
-    estado?: string;
-    equipment_id?: number;
-    provider_id?: number;
-  }): Promise<ContractDto[]> {
+  async findAll(
+    filters?: {
+      search?: string;
+      estado?: string;
+      equipment_id?: number;
+      provider_id?: number;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+    },
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: ContractDto[]; total: number }> {
     try {
       const query = this.contractRepository
         .createQueryBuilder('contract')
@@ -53,20 +59,46 @@ export class ContractService {
         );
       }
 
-      query.orderBy('contract.fechaInicio', 'DESC');
+      // Sorting with whitelisted fields
+      const sortableFields: Record<string, string> = {
+        numero_contrato: 'contract.numeroContrato',
+        fecha_contrato: 'contract.fechaContrato',
+        fecha_inicio: 'contract.fechaInicio',
+        fecha_fin: 'contract.fechaFin',
+        estado: 'contract.estado',
+        moneda: 'contract.moneda',
+        tarifa: 'contract.tarifa',
+        created_at: 'contract.createdAt',
+        updated_at: 'contract.updatedAt',
+      };
 
-      const contracts = await query.getMany();
+      const sortBy =
+        filters?.sort_by && sortableFields[filters.sort_by]
+          ? sortableFields[filters.sort_by]
+          : 'contract.fechaInicio';
+      const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
+
+      query.orderBy(sortBy, sortOrder);
+
+      // Pagination
+      const offset = (page - 1) * limit;
+      query.skip(offset).take(limit);
+
+      const [contracts, total] = await query.getManyAndCount();
 
       // Transform entities to DTOs
-      return contracts.map(toContractDto);
+      return {
+        data: contracts.map(toContractDto),
+        total,
+      };
     } catch (error) {
       Logger.error('Error finding contracts', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ContractService.findAll',
       });
-      // Return empty array instead of throwing to prevent login failures
-      return [];
+      // Return empty result instead of throwing to prevent login failures
+      return { data: [], total: 0 };
     }
   }
 

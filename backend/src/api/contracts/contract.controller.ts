@@ -2,17 +2,33 @@
 import { Request, Response } from 'express';
 import { ContractService } from '../../services/contract.service';
 import Logger from '../../utils/logger';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 const contractService = new ContractService();
 
 export class ContractController {
   /**
    * GET /api/contracts
-   * Get all contracts with optional filters
+   * Get all contracts with optional filters, pagination, and sorting
    */
   static async getAll(req: Request, res: Response): Promise<void> {
     try {
-      const { search, estado, equipment_id, provider_id, project_id } = req.query;
+      const {
+        search,
+        estado,
+        equipment_id,
+        provider_id,
+        project_id,
+        page,
+        limit,
+        sort_by,
+        sort_order,
+      } = req.query;
 
       const filters: any = {};
 
@@ -21,20 +37,25 @@ export class ContractController {
       if (equipment_id) filters.equipment_id = parseInt(String(equipment_id));
       if (provider_id) filters.provider_id = parseInt(String(provider_id));
       if (project_id) filters.project_id = parseInt(String(project_id));
+      if (sort_by) filters.sort_by = String(sort_by);
+      if (sort_order)
+        filters.sort_order = (String(sort_order).toUpperCase() === 'DESC' ? 'DESC' : 'ASC') as
+          | 'ASC'
+          | 'DESC';
 
-      const contracts = await contractService.findAll(filters);
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
 
-      res.json(contracts);
+      const { data, total } = await contractService.findAll(filters, pageNum, limitNum);
+
+      sendPaginatedSuccess(res, data, { page: pageNum, limit: limitNum, total });
     } catch (error: any) {
       Logger.error('Error in getAll contracts', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ContractController.getAll',
       });
-      res.status(500).json({
-        error: 'Failed to fetch contracts',
-        message: error.message,
-      });
+      sendError(res, 500, 'CONTRACT_FETCH_FAILED', 'Failed to fetch contracts', error.message);
     }
   }
 
@@ -47,13 +68,13 @@ export class ContractController {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid contract ID' });
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
 
       const contract = await contractService.findById(id);
 
-      res.json(contract);
+      sendSuccess(res, contract);
     } catch (error: any) {
       Logger.error('Error in getById contract', {
         error: error instanceof Error ? error.message : String(error),
@@ -63,14 +84,11 @@ export class ContractController {
       });
 
       if (error.message === 'Contract not found') {
-        res.status(404).json({ error: 'Contract not found' });
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', 'Contract not found');
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to fetch contract',
-        message: error.message,
-      });
+      sendError(res, 500, 'CONTRACT_FETCH_FAILED', 'Failed to fetch contract', error.message);
     }
   }
 
@@ -85,11 +103,11 @@ export class ContractController {
       const contract = await contractService.findByNumero(numero);
 
       if (!contract) {
-        res.status(404).json({ error: 'Contract not found' });
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', 'Contract not found');
         return;
       }
 
-      res.json(contract);
+      sendSuccess(res, contract);
     } catch (error: any) {
       Logger.error('Error in getByNumero contract', {
         error: error instanceof Error ? error.message : String(error),
@@ -97,10 +115,7 @@ export class ContractController {
         numero: req.params.numero,
         context: 'ContractController.getByNumero',
       });
-      res.status(500).json({
-        error: 'Failed to fetch contract',
-        message: error.message,
-      });
+      sendError(res, 500, 'CONTRACT_FETCH_FAILED', 'Failed to fetch contract', error.message);
     }
   }
 
@@ -112,7 +127,7 @@ export class ContractController {
     try {
       const contract = await contractService.create(req.body);
 
-      res.status(201).json(contract);
+      sendCreated(res, contract);
     } catch (error: any) {
       Logger.error('Error in create contract', {
         error: error instanceof Error ? error.message : String(error),
@@ -121,19 +136,16 @@ export class ContractController {
       });
 
       if (error.message.includes('already exists')) {
-        res.status(409).json({ error: error.message });
+        sendError(res, 409, 'DUPLICATE_CONTRACT', error.message);
         return;
       }
 
-      if (error.message.includes('required') || error.message.includes('must be')) {
-        res.status(400).json({ error: error.message });
+      if (error.message.includes('required')) {
+        sendError(res, 400, 'VALIDATION_ERROR', error.message);
         return;
       }
 
-      res.status(500).json({
-        error: 'Failed to create contract',
-        message: error.message,
-      });
+      sendError(res, 500, 'CONTRACT_CREATE_FAILED', 'Failed to create contract', error.message);
     }
   }
 
@@ -146,13 +158,13 @@ export class ContractController {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid contract ID' });
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
 
       const contract = await contractService.update(id, req.body);
 
-      res.json(contract);
+      sendSuccess(res, contract);
     } catch (error: any) {
       Logger.error('Error in update contract', {
         error: error instanceof Error ? error.message : String(error),
@@ -162,37 +174,24 @@ export class ContractController {
       });
 
       if (error.message === 'Contract not found') {
-        res.status(404).json({ error: 'Contract not found' });
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', 'Contract not found');
         return;
       }
 
-      if (error.message.includes('already exists')) {
-        res.status(409).json({ error: error.message });
-        return;
-      }
-
-      if (error.message.includes('must be')) {
-        res.status(400).json({ error: error.message });
-        return;
-      }
-
-      res.status(500).json({
-        error: 'Failed to update contract',
-        message: error.message,
-      });
+      sendError(res, 500, 'CONTRACT_UPDATE_FAILED', 'Failed to update contract', error.message);
     }
   }
 
   /**
    * DELETE /api/contracts/:id
-   * Soft delete contract
+   * Cancel contract (soft delete)
    */
   static async delete(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid contract ID' });
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
 
@@ -206,54 +205,26 @@ export class ContractController {
         contractId: req.params.id,
         context: 'ContractController.delete',
       });
-      res.status(500).json({
-        error: 'Failed to delete contract',
-        message: error.message,
-      });
-    }
-  }
-
-  /**
-   * GET /api/contracts/expiring/:days
-   * Get expiring contracts
-   */
-  static async getExpiring(req: Request, res: Response): Promise<void> {
-    try {
-      const days = parseInt(req.params.days || '30');
-
-      const contracts = await contractService.findExpiring(days);
-
-      res.json(contracts);
-    } catch (error: any) {
-      Logger.error('Error in getExpiring contracts', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        days: req.params.days,
-        context: 'ContractController.getExpiring',
-      });
-      res.status(500).json({
-        error: 'Failed to fetch expiring contracts',
-        message: error.message,
-      });
+      sendError(res, 500, 'CONTRACT_DELETE_FAILED', 'Failed to delete contract', error.message);
     }
   }
 
   /**
    * GET /api/contracts/:id/addendums
-   * Get addendums for a contract
+   * Get all addendums for a contract
    */
   static async getAddendums(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
+      const contractId = parseInt(req.params.id);
 
-      if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid contract ID' });
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
 
-      const addendums = await contractService.getAddendums(id);
+      const addendums = await contractService.getAddendums(contractId);
 
-      res.json(addendums);
+      sendSuccess(res, addendums);
     } catch (error: any) {
       Logger.error('Error in getAddendums', {
         error: error instanceof Error ? error.message : String(error),
@@ -261,76 +232,51 @@ export class ContractController {
         contractId: req.params.id,
         context: 'ContractController.getAddendums',
       });
-      res.status(500).json({
-        error: 'Failed to fetch addendums',
-        message: error.message,
-      });
+      sendError(res, 500, 'ADDENDUM_FETCH_FAILED', 'Failed to fetch addendums', error.message);
     }
   }
 
   /**
-   * POST /api/contracts/:id/addendums
+   * POST /api/contracts/addendums
    * Create addendum for a contract
    */
   static async createAddendum(req: Request, res: Response): Promise<void> {
     try {
-      const contract_id = parseInt(req.params.id);
+      const addendum = await contractService.createAddendum(req.body);
 
-      if (isNaN(contract_id)) {
-        res.status(400).json({ error: 'Invalid contract ID' });
-        return;
-      }
-
-      const addendum = await contractService.createAddendum({
-        ...req.body,
-        contract_id,
-      });
-
-      res.status(201).json(addendum);
+      sendCreated(res, addendum);
     } catch (error: any) {
       Logger.error('Error in createAddendum', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        contractId: req.params.id,
         context: 'ContractController.createAddendum',
       });
 
       if (error.message.includes('not found')) {
-        res.status(404).json({ error: error.message });
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', error.message);
         return;
       }
 
-      if (error.message.includes('required') || error.message.includes('must be')) {
-        res.status(400).json({ error: error.message });
-        return;
-      }
-
-      res.status(500).json({
-        error: 'Failed to create addendum',
-        message: error.message,
-      });
+      sendError(res, 500, 'ADDENDUM_CREATE_FAILED', 'Failed to create addendum', error.message);
     }
   }
 
   /**
    * GET /api/contracts/stats/count
-   * Get active contracts count
+   * Get active contract count
    */
   static async getActiveCount(req: Request, res: Response): Promise<void> {
     try {
       const count = await contractService.getActiveCount();
 
-      res.json({ count });
+      sendSuccess(res, { count });
     } catch (error: any) {
       Logger.error('Error in getActiveCount', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ContractController.getActiveCount',
       });
-      res.status(500).json({
-        error: 'Failed to count contracts',
-        message: error.message,
-      });
+      sendError(res, 500, 'COUNT_FETCH_FAILED', 'Failed to fetch count', error.message);
     }
   }
 }
