@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { OperatorAvailabilityController } from './operator-availability.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import {
+  OperatorAvailabilityCreateDto,
+  OperatorAvailabilityUpdateDto,
+  OperatorAvailabilityBulkCreateDto,
+} from '../../types/dto/operator-availability.dto';
 
 const router = Router();
 const controller = new OperatorAvailabilityController();
@@ -18,13 +24,19 @@ router.get('/operator/:operatorId', (req, res) => controller.getAvailabilityByOp
 router.get('/:id', (req, res) => controller.getAvailabilityById(req, res));
 
 // POST /api/hr/availability - Create new availability
-router.post('/', (req, res) => controller.createAvailability(req, res));
+router.post('/', validateDto(OperatorAvailabilityCreateDto), (req, res) =>
+  controller.createAvailability(req, res)
+);
 
 // POST /api/hr/availability/bulk - Bulk create availabilities
-router.post('/bulk', (req, res) => controller.bulkCreateAvailability(req, res));
+router.post('/bulk', validateDto(OperatorAvailabilityBulkCreateDto), (req, res) =>
+  controller.bulkCreateAvailability(req, res)
+);
 
 // PUT /api/hr/availability/:id - Update availability
-router.put('/:id', (req, res) => controller.updateAvailability(req, res));
+router.put('/:id', validateDto(OperatorAvailabilityUpdateDto), (req, res) =>
+  controller.updateAvailability(req, res)
+);
 
 // DELETE /api/hr/availability/:id - Delete availability
 router.delete('/:id', (req, res) => controller.deleteAvailability(req, res));

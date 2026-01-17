@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { OperatorDocumentController } from './operator-document.controller';
+import { validateDto } from '../../middleware/validation.middleware';
+import {
+  OperatorDocumentCreateDto,
+  OperatorDocumentUpdateDto,
+} from '../../types/dto/operator-document.dto';
 
 const router = Router();
 const controller = new OperatorDocumentController();
@@ -18,10 +23,14 @@ router.get('/operator/:operatorId', (req, res) => controller.getDocumentsByOpera
 router.get('/:id', (req, res) => controller.getDocumentById(req, res));
 
 // POST /api/hr/documents - Create new document
-router.post('/', (req, res) => controller.createDocument(req, res));
+router.post('/', validateDto(OperatorDocumentCreateDto), (req, res) =>
+  controller.createDocument(req, res)
+);
 
 // PUT /api/hr/documents/:id - Update document
-router.put('/:id', (req, res) => controller.updateDocument(req, res));
+router.put('/:id', validateDto(OperatorDocumentUpdateDto), (req, res) =>
+  controller.updateDocument(req, res)
+);
 
 // DELETE /api/hr/documents/:id - Delete document
 router.delete('/:id', (req, res) => controller.deleteDocument(req, res));

@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { OperatorAvailabilityService } from '../../services/operator-availability.service';
-import { sendError } from '../../utils/api-response';
+import {
+  sendError,
+  sendSuccess,
+  sendCreated,
+  sendPaginatedSuccess,
+} from '../../utils/api-response';
 
 const availabilityService = new OperatorAvailabilityService();
 
@@ -17,22 +22,17 @@ export class OperatorAvailabilityController {
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
       });
-      res.json({
-        success: true,
-        data: result.data,
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
+      sendPaginatedSuccess(res, result.data, {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
       });
     } catch (error: any) {
       sendError(
         res,
         500,
         'OPERATOR_AVAILABILITY_LIST_FAILED',
-        'Failed to fetch operator availabilities',
+        'Error al obtener las disponibilidades de operadores',
         error.message
       );
     }
@@ -40,19 +40,29 @@ export class OperatorAvailabilityController {
 
   async getAvailabilityById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
-      const availability = await availabilityService.findById(Number(id));
-      if (!availability) {
-        sendError(res, 404, 'OPERATOR_AVAILABILITY_NOT_FOUND', 'Operator availability not found');
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
-      res.json({ success: true, data: availability });
+
+      const availability = await availabilityService.findById(id);
+      if (!availability) {
+        sendError(
+          res,
+          404,
+          'OPERATOR_AVAILABILITY_NOT_FOUND',
+          'Disponibilidad de operador no encontrada'
+        );
+        return;
+      }
+      sendSuccess(res, availability);
     } catch (error: any) {
       sendError(
         res,
         500,
         'OPERATOR_AVAILABILITY_GET_FAILED',
-        'Failed to fetch operator availability',
+        'Error al obtener la disponibilidad del operador',
         error.message
       );
     }
@@ -60,20 +70,25 @@ export class OperatorAvailabilityController {
 
   async getAvailabilityByOperator(req: Request, res: Response): Promise<void> {
     try {
-      const { operatorId } = req.params;
+      const operatorId = parseInt(req.params.operatorId);
+      if (isNaN(operatorId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
+
       const { fecha_inicio, fecha_fin } = req.query;
       const availabilities = await availabilityService.findByOperator(
-        Number(operatorId),
+        operatorId,
         fecha_inicio ? new Date(fecha_inicio as string) : undefined,
         fecha_fin ? new Date(fecha_fin as string) : undefined
       );
-      res.json({ success: true, data: availabilities });
+      sendSuccess(res, availabilities);
     } catch (error: any) {
       sendError(
         res,
         500,
         'OPERATOR_AVAILABILITY_BY_OPERATOR_FAILED',
-        'Failed to fetch operator availability',
+        'Error al obtener la disponibilidad del operador',
         error.message
       );
     }
@@ -87,7 +102,7 @@ export class OperatorAvailabilityController {
           res,
           400,
           'MISSING_PARAMETERS',
-          'fecha_inicio and fecha_fin parameters are required'
+          'Los parámetros fecha_inicio y fecha_fin son requeridos'
         );
         return;
       }
@@ -95,13 +110,13 @@ export class OperatorAvailabilityController {
         new Date(fecha_inicio as string),
         new Date(fecha_fin as string)
       );
-      res.json({ success: true, data: availabilities });
+      sendSuccess(res, availabilities);
     } catch (error: any) {
       sendError(
         res,
         500,
         'AVAILABLE_OPERATORS_FAILED',
-        'Failed to fetch available operators',
+        'Error al obtener los operadores disponibles',
         error.message
       );
     }
@@ -110,13 +125,13 @@ export class OperatorAvailabilityController {
   async createAvailability(req: Request, res: Response): Promise<void> {
     try {
       const availability = await availabilityService.create(req.body);
-      res.status(201).json({ success: true, data: availability });
+      sendCreated(res, availability);
     } catch (error: any) {
       sendError(
         res,
         500,
         'OPERATOR_AVAILABILITY_CREATE_FAILED',
-        'Failed to create operator availability',
+        'Error al crear la disponibilidad del operador',
         error.message
       );
     }
@@ -126,17 +141,17 @@ export class OperatorAvailabilityController {
     try {
       const { availabilities } = req.body;
       if (!Array.isArray(availabilities)) {
-        sendError(res, 400, 'INVALID_INPUT', 'Availabilities must be an array');
+        sendError(res, 400, 'INVALID_INPUT', 'Las disponibilidades deben ser un arreglo');
         return;
       }
       const created = await availabilityService.bulkCreate(availabilities);
-      res.status(201).json({ success: true, data: created });
+      sendCreated(res, created);
     } catch (error: any) {
       sendError(
         res,
         500,
         'OPERATOR_AVAILABILITY_BULK_CREATE_FAILED',
-        'Failed to bulk create operator availabilities',
+        'Error al crear las disponibilidades en lote',
         error.message
       );
     }
@@ -144,19 +159,29 @@ export class OperatorAvailabilityController {
 
   async updateAvailability(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
-      const availability = await availabilityService.update(Number(id), req.body);
-      if (!availability) {
-        sendError(res, 404, 'OPERATOR_AVAILABILITY_NOT_FOUND', 'Operator availability not found');
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
-      res.json({ success: true, data: availability });
+
+      const availability = await availabilityService.update(id, req.body);
+      if (!availability) {
+        sendError(
+          res,
+          404,
+          'OPERATOR_AVAILABILITY_NOT_FOUND',
+          'Disponibilidad de operador no encontrada'
+        );
+        return;
+      }
+      sendSuccess(res, availability);
     } catch (error: any) {
       sendError(
         res,
         500,
         'OPERATOR_AVAILABILITY_UPDATE_FAILED',
-        'Failed to update operator availability',
+        'Error al actualizar la disponibilidad del operador',
         error.message
       );
     }
@@ -164,10 +189,20 @@ export class OperatorAvailabilityController {
 
   async deleteAvailability(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
-      const success = await availabilityService.delete(Number(id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const success = await availabilityService.delete(id);
       if (!success) {
-        sendError(res, 404, 'OPERATOR_AVAILABILITY_NOT_FOUND', 'Operator availability not found');
+        sendError(
+          res,
+          404,
+          'OPERATOR_AVAILABILITY_NOT_FOUND',
+          'Disponibilidad de operador no encontrada'
+        );
         return;
       }
       res.status(204).send();
@@ -176,7 +211,7 @@ export class OperatorAvailabilityController {
         res,
         500,
         'OPERATOR_AVAILABILITY_DELETE_FAILED',
-        'Failed to delete operator availability',
+        'Error al eliminar la disponibilidad del operador',
         error.message
       );
     }
