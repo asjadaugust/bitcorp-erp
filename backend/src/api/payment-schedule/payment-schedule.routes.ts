@@ -2,6 +2,12 @@
 import { Router } from 'express';
 import { PaymentScheduleController } from './payment-schedule.controller';
 import { authenticate } from '../../middleware/auth.middleware';
+import { validateDto } from '../../middleware/validation.middleware';
+import {
+  PaymentScheduleCreateDto,
+  PaymentScheduleUpdateDto,
+  PaymentScheduleDetailCreateDto,
+} from '../../types/dto/payment-schedule.dto';
 
 const router = Router();
 const paymentScheduleController = new PaymentScheduleController();
@@ -11,13 +17,25 @@ router.use(authenticate);
 
 // CRUD routes
 router.get('/', paymentScheduleController.findAll.bind(paymentScheduleController));
-router.post('/', paymentScheduleController.create.bind(paymentScheduleController));
+router.post(
+  '/',
+  validateDto(PaymentScheduleCreateDto),
+  paymentScheduleController.create.bind(paymentScheduleController)
+);
 router.get('/:id', paymentScheduleController.findOne.bind(paymentScheduleController));
-router.put('/:id', paymentScheduleController.update.bind(paymentScheduleController));
-router.delete('/:id', paymentScheduleController.delete.bind(paymentScheduleController));
+router.put(
+  '/:id',
+  validateDto(PaymentScheduleUpdateDto),
+  paymentScheduleController.update.bind(paymentScheduleController)
+);
+router.delete('/:id', paymentScheduleController.remove.bind(paymentScheduleController));
 
 // Detail management
-router.post('/:id/details', paymentScheduleController.addDetail.bind(paymentScheduleController));
+router.post(
+  '/:id/details',
+  validateDto(PaymentScheduleDetailCreateDto),
+  paymentScheduleController.addDetail.bind(paymentScheduleController)
+);
 router.delete(
   '/:id/details/:detailId',
   paymentScheduleController.removeDetail.bind(paymentScheduleController)

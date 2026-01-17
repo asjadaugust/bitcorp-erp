@@ -2,18 +2,12 @@
 import { Response } from 'express';
 import { PaymentScheduleService } from '../../services/payment-schedule.service';
 import { AuthRequest } from '../../middleware/auth.middleware';
-import { sendError } from '../../utils/api-response';
-
-export interface CreatePaymentScheduleDto {
-  schedule_date: Date;
-  payment_date: Date;
-  description?: string;
-  currency?: string;
-}
-
-export interface AddScheduleDetailDto {
-  amount_to_pay: number;
-}
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendCreated,
+  sendError,
+} from '../../utils/api-response';
 
 const paymentScheduleService = new PaymentScheduleService();
 
@@ -25,13 +19,13 @@ export class PaymentScheduleController {
         Number(req.user!.userId),
         1 // Default tenant
       );
-      res.status(201).json({ success: true, data: schedule });
+      sendCreated(res, (schedule as any).id, 'Cronograma de pagos creado exitosamente');
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_CREATE_FAILED',
-        'Failed to create payment schedule',
+        'Error al crear cronograma de pagos',
         error.message
       );
     }
@@ -39,14 +33,29 @@ export class PaymentScheduleController {
 
   async findAll(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const schedules = await paymentScheduleService.findAll(1); // Default tenant
-      res.json({ success: true, data: schedules });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+      const sort_by = req.query.sort_by as string;
+      const sort_order = (req.query.sort_order as string)?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+      const result = await paymentScheduleService.findAll(1, {
+        page,
+        limit,
+        sort_by,
+        sort_order,
+      });
+
+      sendPaginatedSuccess(res, result.data, {
+        page,
+        limit,
+        total: result.total,
+      });
     } catch (error: any) {
       sendError(
         res,
         500,
         'PAYMENT_SCHEDULE_LIST_FAILED',
-        'Failed to fetch payment schedules',
+        'Error al obtener cronogramas de pago',
         error.message
       );
     }
@@ -54,14 +63,20 @@ export class PaymentScheduleController {
 
   async findOne(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const schedule = await paymentScheduleService.findOne(Number(req.params.id));
-      res.json({ success: true, data: schedule });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const schedule = await paymentScheduleService.findOne(id);
+      sendSuccess(res, schedule);
     } catch (error: any) {
       sendError(
         res,
         404,
         'PAYMENT_SCHEDULE_NOT_FOUND',
-        'Payment schedule not found',
+        'Cronograma de pagos no encontrado',
         error.message
       );
     }
@@ -69,29 +84,41 @@ export class PaymentScheduleController {
 
   async update(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const schedule = await paymentScheduleService.update(Number(req.params.id), req.body);
-      res.json({ success: true, data: schedule });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const schedule = await paymentScheduleService.update(id, req.body);
+      sendSuccess(res, schedule);
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_UPDATE_FAILED',
-        'Failed to update payment schedule',
+        'Error al actualizar cronograma de pagos',
         error.message
       );
     }
   }
 
-  async delete(req: AuthRequest, res: Response): Promise<void> {
+  async remove(req: AuthRequest, res: Response): Promise<void> {
     try {
-      await paymentScheduleService.delete(Number(req.params.id));
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      await paymentScheduleService.delete(id);
       res.status(204).send();
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_DELETE_FAILED',
-        'Failed to delete payment schedule',
+        'Error al eliminar cronograma de pagos',
         error.message
       );
     }
@@ -99,14 +126,20 @@ export class PaymentScheduleController {
 
   async addDetail(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const detail = await paymentScheduleService.addDetail(Number(req.params.id), req.body);
-      res.status(201).json({ success: true, data: detail });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const detail = await paymentScheduleService.addDetail(id, req.body);
+      sendCreated(res, (detail as any).id, 'Detalle agregado exitosamente');
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_DETAIL_ADD_FAILED',
-        'Failed to add payment schedule detail',
+        'Error al agregar detalle',
         error.message
       );
     }
@@ -114,14 +147,21 @@ export class PaymentScheduleController {
 
   async removeDetail(req: AuthRequest, res: Response): Promise<void> {
     try {
-      await paymentScheduleService.removeDetail(Number(req.params.id), Number(req.params.detailId));
+      const id = parseInt(req.params.id);
+      const detailId = parseInt(req.params.detailId);
+      if (isNaN(id) || isNaN(detailId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      await paymentScheduleService.removeDetail(id, detailId);
       res.status(204).send();
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_DETAIL_REMOVE_FAILED',
-        'Failed to remove payment schedule detail',
+        'Error al eliminar detalle',
         error.message
       );
     }
@@ -129,14 +169,20 @@ export class PaymentScheduleController {
 
   async approve(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const schedule = await paymentScheduleService.approve(Number(req.params.id));
-      res.json({ success: true, data: schedule });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const schedule = await paymentScheduleService.approve(id);
+      sendSuccess(res, schedule);
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_APPROVE_FAILED',
-        'Failed to approve payment schedule',
+        'Error al aprobar cronograma de pagos',
         error.message
       );
     }
@@ -144,14 +190,20 @@ export class PaymentScheduleController {
 
   async process(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const schedule = await paymentScheduleService.process(Number(req.params.id));
-      res.json({ success: true, data: schedule });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const schedule = await paymentScheduleService.process(id);
+      sendSuccess(res, schedule);
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_PROCESS_FAILED',
-        'Failed to process payment schedule',
+        'Error al procesar cronograma de pagos',
         error.message
       );
     }
@@ -159,14 +211,20 @@ export class PaymentScheduleController {
 
   async cancelSchedule(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const schedule = await paymentScheduleService.cancel(Number(req.params.id));
-      res.json({ success: true, data: schedule });
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const schedule = await paymentScheduleService.cancel(id);
+      sendSuccess(res, schedule);
     } catch (error: any) {
       sendError(
         res,
         400,
         'PAYMENT_SCHEDULE_CANCEL_FAILED',
-        'Failed to cancel payment schedule',
+        'Error al cancelar cronograma de pagos',
         error.message
       );
     }

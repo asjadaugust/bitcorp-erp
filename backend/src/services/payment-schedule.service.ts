@@ -4,12 +4,16 @@ import {
   PaymentScheduleDetailRepository,
 } from '../repositories/payment-schedule.repository';
 import {
-  CreatePaymentScheduleDto,
-  AddScheduleDetailDto,
-} from '../api/payment-schedule/payment-schedule.controller';
+  PaymentScheduleCreateDto,
+  PaymentScheduleDetailCreateDto,
+} from '../types/dto/payment-schedule.dto';
+
+// Re-export for backwards compatibility
+export type CreatePaymentScheduleDto = PaymentScheduleCreateDto;
+export type AddScheduleDetailDto = PaymentScheduleDetailCreateDto;
 
 export class PaymentScheduleService {
-  async create(data: CreatePaymentScheduleDto, _userId: number, _tenantId: number) {
+  async create(data: PaymentScheduleCreateDto, _userId: number, _tenantId: number) {
     const schedule = PaymentScheduleRepository.create({
       ...data,
       status: PaymentScheduleStatus.DRAFT,
@@ -17,10 +21,51 @@ export class PaymentScheduleService {
     return PaymentScheduleRepository.save(schedule);
   }
 
-  async findAll(_tenantId: number) {
-    return PaymentScheduleRepository.find({
-      order: { created_at: 'DESC' },
-    });
+  async findAll(
+    _tenantId: number,
+    filters?: {
+      page?: number;
+      limit?: number;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+    }
+  ): Promise<{ data: PaymentSchedule[]; total: number }> {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 20;
+    const skip = (page - 1) * limit;
+
+    // Sortable fields whitelist
+    const sortableFields: Record<string, string> = {
+      schedule_date: 'ps.schedule_date',
+      payment_date: 'ps.payment_date',
+      total_amount: 'ps.total_amount',
+      status: 'ps.status',
+      currency: 'ps.currency',
+      created_at: 'ps.created_at',
+    };
+
+    const sortBy =
+      filters?.sort_by && sortableFields[filters.sort_by]
+        ? sortableFields[filters.sort_by]
+        : 'ps.created_at';
+    const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
+
+    // Use query builder for dynamic sorting
+    const queryBuilder = PaymentScheduleRepository.createQueryBuilder('ps').orderBy(
+      sortBy,
+      sortOrder
+    );
+
+    // Get total count
+    const total = await queryBuilder.getCount();
+
+    // Get paginated data
+    const schedules = await queryBuilder.skip(skip).take(limit).getMany();
+
+    return {
+      data: schedules,
+      total,
+    };
   }
 
   async findOne(id: number) {
@@ -45,7 +90,7 @@ export class PaymentScheduleService {
     return PaymentScheduleRepository.remove(schedule);
   }
 
-  async addDetail(scheduleId: number, data: AddScheduleDetailDto) {
+  async addDetail(scheduleId: number, data: PaymentScheduleDetailCreateDto) {
     const schedule = await PaymentScheduleRepository.findOne({ where: { id: scheduleId } });
     if (!schedule) {
       throw new Error('Payment schedule not found');

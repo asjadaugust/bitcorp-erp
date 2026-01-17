@@ -15,6 +15,7 @@ jest.mock('../repositories/payment-schedule.repository', () => ({
     findWithDetails: jest.fn(),
     merge: jest.fn(),
     remove: jest.fn(),
+    createQueryBuilder: jest.fn(),
   },
   PaymentScheduleDetailRepository: {
     create: jest.fn(),
@@ -66,20 +67,29 @@ describe('PaymentScheduleService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all payment schedules', async () => {
+    it('should return paginated payment schedules with total', async () => {
       const mockSchedules = [
         { id: 1, periodo: '2025-01' },
         { id: 2, periodo: '2025-02' },
       ];
 
-      mockScheduleRepo.find.mockResolvedValue(mockSchedules);
+      // Mock the query builder chain
+      const mockQueryBuilder = {
+        orderBy: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(2),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockSchedules),
+      };
 
-      const result = await service.findAll(1);
+      mockScheduleRepo.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
-      expect(mockScheduleRepo.find).toHaveBeenCalledWith({
-        order: { created_at: 'DESC' },
-      });
-      expect(result).toEqual(mockSchedules);
+      const result = await service.findAll(1, { page: 1, limit: 10 });
+
+      expect(mockScheduleRepo.createQueryBuilder).toHaveBeenCalledWith('ps');
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalled();
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(2);
     });
   });
 
