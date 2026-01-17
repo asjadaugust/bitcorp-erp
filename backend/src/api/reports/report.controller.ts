@@ -9,28 +9,32 @@ import {
   sendCreated,
 } from '../../utils/api-response';
 import Logger from '../../utils/logger';
+import { NotFoundError } from '../../errors/http.errors';
+import { ValidationError } from '../../errors/validation.error';
 
 const reportService = new ReportService();
 
 export class ReportController {
   async getReports(req: Request, res: Response) {
     try {
+      // TODO: Get tenantId from authenticated user context
+      // For now, hardcode to 1 until authentication middleware is in place
+      const tenantId = 1;
+
       // Extract and validate pagination parameters
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
 
-      const filters = req.query;
-      const reports = await reportService.getAllReports(filters);
+      // Extract filters (excluding pagination params)
+      const { page: _page, limit: _limit, ...filters } = req.query;
 
-      // Manual pagination since service returns full array
-      const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
-      const paginatedReports = reports.slice(startIndex, endIndex);
+      // Service now handles pagination internally
+      const result = await reportService.getAllReports(tenantId, page, limit, filters as any);
 
-      sendPaginatedSuccess(res, paginatedReports, {
+      sendPaginatedSuccess(res, result.data, {
         page,
         limit,
-        total: reports.length,
+        total: result.total,
       });
     } catch (error: any) {
       Logger.error('Error fetching reports', {
@@ -40,12 +44,20 @@ export class ReportController {
         limit: req.query.limit,
         context: 'ReportController.getReports',
       });
+
+      if (error instanceof ValidationError) {
+        return sendError(res, 422, error.name, error.message, error.metadata);
+      }
+
       return sendError(res, 500, 'REPORT_LIST_FAILED', 'Failed to fetch reports', error.message);
     }
   }
 
   async getReportById(req: Request, res: Response) {
     try {
+      // TODO: Get tenantId from authenticated user context
+      const tenantId = 1;
+
       const { id } = req.params;
 
       // Validate ID format if needed (keep as string for now since service expects string)
@@ -53,11 +65,8 @@ export class ReportController {
         return sendError(res, 400, 'INVALID_ID', 'ID de reporte es requerido');
       }
 
-      const report = await reportService.getReportById(id);
-
-      if (!report) {
-        return sendError(res, 404, 'REPORT_NOT_FOUND', 'Reporte no encontrado');
-      }
+      // Service now throws NotFoundError instead of returning null
+      const report = await reportService.getReportById(tenantId, id);
 
       sendSuccess(res, report);
     } catch (error: any) {
@@ -67,13 +76,21 @@ export class ReportController {
         reportId: req.params.id,
         context: 'ReportController.getReportById',
       });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message, error.metadata);
+      }
+
       return sendError(res, 500, 'REPORT_GET_FAILED', 'Failed to fetch report', error.message);
     }
   }
 
   async createReport(req: Request, res: Response) {
     try {
-      const report = await reportService.createReport(req.body);
+      // TODO: Get tenantId from authenticated user context
+      const tenantId = 1;
+
+      const report = await reportService.createReport(tenantId, req.body);
       sendCreated(res, report);
     } catch (error: any) {
       Logger.error('Error creating report', {
@@ -81,23 +98,28 @@ export class ReportController {
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ReportController.createReport',
       });
+
+      if (error instanceof ValidationError) {
+        return sendError(res, 422, error.name, error.message, error.metadata);
+      }
+
       return sendError(res, 500, 'REPORT_CREATE_FAILED', 'Failed to create report', error.message);
     }
   }
 
   async updateReport(req: Request, res: Response) {
     try {
+      // TODO: Get tenantId from authenticated user context
+      const tenantId = 1;
+
       const { id } = req.params;
 
       if (!id) {
         return sendError(res, 400, 'INVALID_ID', 'ID de reporte es requerido');
       }
 
-      const report = await reportService.updateReport(id, req.body);
-
-      if (!report) {
-        return sendError(res, 404, 'REPORT_NOT_FOUND', 'Reporte no encontrado');
-      }
+      // Service now throws NotFoundError instead of returning null
+      const report = await reportService.updateReport(tenantId, id, req.body);
 
       sendSuccess(res, report);
     } catch (error: any) {
@@ -107,12 +129,24 @@ export class ReportController {
         reportId: req.params.id,
         context: 'ReportController.updateReport',
       });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message, error.metadata);
+      }
+
+      if (error instanceof ValidationError) {
+        return sendError(res, 422, error.name, error.message, error.metadata);
+      }
+
       return sendError(res, 500, 'REPORT_UPDATE_FAILED', 'Failed to update report', error.message);
     }
   }
 
   async approveReport(req: Request, res: Response) {
     try {
+      // TODO: Get tenantId from authenticated user context
+      const tenantId = 1;
+
       const { id } = req.params;
       const userId = (req as any).user?.id;
 
@@ -124,11 +158,8 @@ export class ReportController {
         return sendError(res, 401, 'UNAUTHORIZED', 'Usuario no autenticado');
       }
 
-      const report = await reportService.approveReport(id, userId);
-
-      if (!report) {
-        return sendError(res, 404, 'REPORT_NOT_FOUND', 'Reporte no encontrado');
-      }
+      // Service now throws NotFoundError instead of returning null
+      const report = await reportService.approveReport(tenantId, id, userId);
 
       sendSuccess(res, report);
     } catch (error: any) {
@@ -138,6 +169,11 @@ export class ReportController {
         reportId: req.params.id,
         context: 'ReportController.approveReport',
       });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message, error.metadata);
+      }
+
       return sendError(
         res,
         500,
@@ -150,6 +186,9 @@ export class ReportController {
 
   async rejectReport(req: Request, res: Response) {
     try {
+      // TODO: Get tenantId from authenticated user context
+      const tenantId = 1;
+
       const { id } = req.params;
       const { reason } = req.body;
 
@@ -157,15 +196,9 @@ export class ReportController {
         return sendError(res, 400, 'INVALID_ID', 'ID de reporte es requerido');
       }
 
-      if (!reason) {
-        return sendError(res, 400, 'REJECTION_REASON_REQUIRED', 'Razón de rechazo es requerida');
-      }
-
-      const report = await reportService.rejectReport(id, reason);
-
-      if (!report) {
-        return sendError(res, 404, 'REPORT_NOT_FOUND', 'Reporte no encontrado');
-      }
+      // Service now validates reason, so we don't need to check here
+      // Service now throws NotFoundError instead of returning null
+      const report = await reportService.rejectReport(tenantId, id, reason);
 
       sendSuccess(res, report);
     } catch (error: any) {
@@ -175,24 +208,34 @@ export class ReportController {
         reportId: req.params.id,
         context: 'ReportController.rejectReport',
       });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message, error.metadata);
+      }
+
+      if (error instanceof ValidationError) {
+        return sendError(res, 422, error.name, error.message, error.metadata);
+      }
+
       return sendError(res, 500, 'REPORT_REJECT_FAILED', 'Failed to reject report', error.message);
     }
   }
 
   async deleteReport(req: Request, res: Response) {
     try {
+      // TODO: Get tenantId from authenticated user context
+      const tenantId = 1;
+
       const { id } = req.params;
 
       if (!id) {
         return sendError(res, 400, 'INVALID_ID', 'ID de reporte es requerido');
       }
 
-      const success = await reportService.deleteReport(id);
+      // Service now throws NotFoundError instead of returning boolean
+      await reportService.deleteReport(tenantId, id);
 
-      if (!success) {
-        return sendError(res, 404, 'REPORT_NOT_FOUND', 'Reporte no encontrado');
-      }
-
+      // 204 No Content on successful deletion
       res.status(204).send();
     } catch (error: any) {
       Logger.error('Error deleting report', {
@@ -201,12 +244,20 @@ export class ReportController {
         reportId: req.params.id,
         context: 'ReportController.deleteReport',
       });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message, error.metadata);
+      }
+
       return sendError(res, 500, 'REPORT_DELETE_FAILED', 'Failed to delete report', error.message);
     }
   }
 
   async downloadPdf(req: Request, res: Response) {
     try {
+      // TODO: Get tenantId from authenticated user context
+      const tenantId = 1;
+
       const { id } = req.params;
       const reportId = parseInt(id);
 
@@ -214,8 +265,8 @@ export class ReportController {
         return sendError(res, 400, 'INVALID_ID', 'ID de reporte debe ser un número');
       }
 
-      // Get report data formatted for PDF
-      const pdfData = await reportService.getDailyReportPdfData(reportId);
+      // Get report data formatted for PDF (service now throws NotFoundError)
+      const pdfData = await reportService.getDailyReportPdfData(tenantId, reportId);
 
       // Generate PDF
       const pdf = await puppeteerPdfService.generateDailyReportPdf(pdfData);
@@ -235,6 +286,11 @@ export class ReportController {
         reportId: req.params.id,
         context: 'ReportController.downloadPdf',
       });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message, error.metadata);
+      }
+
       return sendError(res, 500, 'PDF_GENERATION_FAILED', 'Failed to generate PDF', error.message);
     }
   }

@@ -10,100 +10,626 @@ import {
 } from '../types/dto/daily-report.dto';
 import { DailyReportAdapter, DailyReportFrontendModel } from '../types/daily-report-adapter';
 import { DailyReportRawRow } from '../types/daily-report-raw.interface';
+import { DailyReportFiltersDto } from '../types/dto/report.dto';
+import Logger from '../utils/logger';
+import { NotFoundError } from '../errors/http.errors';
+import { ValidationError } from '../errors/validation.error';
 
+/**
+ * ReportService
+ *
+ * Manages daily report operations (partes diarios) for equipment usage tracking.
+ *
+ * Responsibilities:
+ * - CRUD operations for daily reports
+ * - Report approval/rejection workflow
+ * - PDF data generation for report printing
+ * - Filtering and querying reports by various criteria
+ *
+ * Standards Applied:
+ * ✅ Tenant context (tenantId parameter on all methods)
+ * ✅ Error handling (try/catch with comprehensive logging)
+ * ✅ Custom errors (NotFoundError instead of null returns)
+ * ✅ Type safety (DailyReportFiltersDto interface, no 'any' types)
+ * ✅ Pagination (service-level, returns { data, total })
+ * ✅ Logging (info on success, error on failure with full context)
+ * ✅ Business validation (date ranges, required fields)
+ *
+ * Database: partes_diarios table
+ * Note: Uses DailyReportModel as data access layer (TypeORM wrapper)
+ *
+ * TODO: Update DailyReportModel to accept tenantId parameter
+ * TODO: Add tenant_id column to partes_diarios table
+ * TODO: Remove tenant_id TODO comments once schema updated
+ */
 export class ReportService {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getAllReports(filters?: any): Promise<DailyReportDto[]> {
-    const entities: DailyReportRawRow[] = await DailyReportModel.findAll(filters);
-    return entities.map(toDailyReportDto);
+  /**
+   * Get all daily reports with optional filters and pagination
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param page - Page number (1-indexed)
+   * @param limit - Items per page (default: 10, max: 100)
+   * @param filters - Optional filters (status, date range, worker, equipment, project)
+   *
+   * @returns Paginated list of daily reports with total count
+   *
+   * @example
+   * const result = await reportService.getAllReports(1, 1, 10, {
+   *   estado: 'PENDIENTE',
+   *   fecha_inicio: '2026-01-01',
+   *   fecha_fin: '2026-01-31',
+   *   proyecto_id: '5'
+   * });
+   * // Returns: { data: [...], total: 45 }
+   */
+  async getAllReports(
+    tenantId: number,
+    page: number = 1,
+    limit: number = 10,
+    filters?: DailyReportFiltersDto
+  ): Promise<{ data: DailyReportDto[]; total: number }> {
+    try {
+      Logger.info('Fetching daily reports', {
+        tenantId,
+        page,
+        limit,
+        filters,
+        context: 'ReportService.getAllReports',
+      });
+
+      // TODO: Add tenant_id filter when column exists in partes_diarios table
+      // filters = { ...filters, tenant_id: tenantId };
+
+      // Fetch all matching reports (model layer doesn't support pagination yet)
+      const entities: DailyReportRawRow[] = await DailyReportModel.findAll(filters);
+
+      // Calculate pagination
+      const total = entities.length;
+      const startIndex = (page - 1) * limit;
+      const endIndex = page * limit;
+      const paginatedEntities = entities.slice(startIndex, endIndex);
+
+      // Transform to DTOs
+      const data = paginatedEntities.map(toDailyReportDto);
+
+      Logger.info('Daily reports fetched successfully', {
+        tenantId,
+        count: data.length,
+        total,
+        page,
+        limit,
+        context: 'ReportService.getAllReports',
+      });
+
+      return { data, total };
+    } catch (error) {
+      Logger.error('Error fetching daily reports', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        page,
+        limit,
+        filters,
+        context: 'ReportService.getAllReports',
+      });
+      throw error;
+    }
   }
 
-  async getReportById(id: string): Promise<DailyReportDto | null> {
-    const entity: DailyReportRawRow | null = await DailyReportModel.findById(id);
-    return entity ? toDailyReportDto(entity) : null;
+  /**
+   * Get single daily report by ID
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param id - Daily report ID
+   *
+   * @returns Daily report details
+   * @throws {NotFoundError} If report not found
+   *
+   * @example
+   * const report = await reportService.getReportById(1, '123');
+   */
+  async getReportById(tenantId: number, id: string): Promise<DailyReportDto> {
+    try {
+      Logger.info('Fetching daily report by ID', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.getReportById',
+      });
+
+      // TODO: Add tenant_id filter when column exists
+      const entity: DailyReportRawRow | null = await DailyReportModel.findById(id);
+
+      if (!entity) {
+        throw new NotFoundError('Daily report', id, { tenantId });
+      }
+
+      const report = toDailyReportDto(entity);
+
+      Logger.info('Daily report fetched successfully', {
+        tenantId,
+        reportId: id,
+        estado: report.estado,
+        context: 'ReportService.getReportById',
+      });
+
+      return report;
+    } catch (error) {
+      Logger.error('Error fetching daily report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        reportId: id,
+        context: 'ReportService.getReportById',
+      });
+      throw error;
+    }
   }
 
-  async getReportsByOperator(operatorId: string): Promise<DailyReportDto[]> {
-    const entities: DailyReportRawRow[] = await DailyReportModel.findByOperator(operatorId);
-    return entities.map(toDailyReportDto);
+  /**
+   * Get all daily reports for specific operator/worker
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param operatorId - Operator/worker ID
+   *
+   * @returns List of daily reports for the operator
+   *
+   * @example
+   * const reports = await reportService.getReportsByOperator(1, '456');
+   */
+  async getReportsByOperator(tenantId: number, operatorId: string): Promise<DailyReportDto[]> {
+    try {
+      Logger.info('Fetching daily reports by operator', {
+        tenantId,
+        operatorId,
+        context: 'ReportService.getReportsByOperator',
+      });
+
+      // TODO: Add tenant_id filter when column exists
+      const entities: DailyReportRawRow[] = await DailyReportModel.findByOperator(operatorId);
+
+      const reports = entities.map(toDailyReportDto);
+
+      Logger.info('Daily reports fetched successfully', {
+        tenantId,
+        operatorId,
+        count: reports.length,
+        context: 'ReportService.getReportsByOperator',
+      });
+
+      return reports;
+    } catch (error) {
+      Logger.error('Error fetching daily reports by operator', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        operatorId,
+        context: 'ReportService.getReportsByOperator',
+      });
+      throw error;
+    }
   }
 
+  /**
+   * Create new daily report
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param data - Daily report data (DTO or frontend model)
+   *
+   * @returns Created daily report
+   * @throws {ValidationError} If data validation fails
+   *
+   * @example
+   * const report = await reportService.createReport(1, {
+   *   equipo_id: 123,
+   *   trabajador_id: 456,
+   *   proyecto_id: 789,
+   *   fecha: '2026-01-18',
+   *   horas_trabajadas: 8
+   * });
+   */
   async createReport(
+    tenantId: number,
     data: Partial<DailyReportDto> | DailyReportFrontendModel
   ): Promise<DailyReportDto> {
-    // 1. Adapter: sanitize input
-    // If input has frontend keys (English), convert to Backend DTO (Spanish)
-    const sanitizedDto: Partial<DailyReportDto> = {
-      ...DailyReportAdapter.toBackendDto(data as DailyReportFrontendModel),
-      ...(data as Partial<DailyReportDto>), // Allow explicit DTO properties to override if mixed
-    };
+    try {
+      // Extract fields safely from either DTO or frontend model
+      const dtoData = data as Partial<DailyReportDto>;
+      const frontendData = data as DailyReportFrontendModel;
 
-    // 2. Transform to Entity (Raw SQL)
-    const entity = fromDailyReportDto(sanitizedDto);
+      Logger.info('Creating daily report', {
+        tenantId,
+        equipoId: dtoData.equipo_id || frontendData.equipmentId,
+        trabajadorId: dtoData.trabajador_id || frontendData.operatorId,
+        fecha: dtoData.fecha || frontendData.reportDate,
+        context: 'ReportService.createReport',
+      });
 
-    // 3. Persist
-    const created: DailyReportRawRow = await DailyReportModel.create(entity);
-    return toDailyReportDto(created);
+      // Business validation: fecha cannot be in the future
+      const fecha = dtoData.fecha || frontendData.reportDate;
+      if (fecha) {
+        const reportDate = new Date(fecha);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (reportDate > today) {
+          throw new ValidationError('Report date cannot be in the future', [
+            {
+              field: 'fecha',
+              message: 'La fecha no puede ser futura',
+              rule: 'max',
+              value: fecha,
+              constraints: { max: today.toISOString().split('T')[0] },
+            },
+          ]);
+        }
+      }
+
+      // Business validation: horas_trabajadas must be positive and <= 24
+      // Note: Frontend model may not have this field
+      const horasTrabajadas = dtoData.horas_trabajadas;
+      if (horasTrabajadas !== undefined && horasTrabajadas !== null) {
+        if (horasTrabajadas <= 0) {
+          throw new ValidationError('Hours worked must be positive', [
+            {
+              field: 'horas_trabajadas',
+              message: 'Horas trabajadas debe ser mayor a 0',
+              rule: 'min',
+              value: horasTrabajadas,
+              constraints: { min: 0 },
+            },
+          ]);
+        }
+
+        if (horasTrabajadas > 24) {
+          throw new ValidationError('Hours worked cannot exceed 24', [
+            {
+              field: 'horas_trabajadas',
+              message: 'Horas trabajadas no puede exceder 24',
+              rule: 'max',
+              value: horasTrabajadas,
+              constraints: { max: 24 },
+            },
+          ]);
+        }
+      }
+
+      // Adapter: sanitize input (convert frontend model to backend DTO if needed)
+      const sanitizedDto: Partial<DailyReportDto> = {
+        ...DailyReportAdapter.toBackendDto(data as DailyReportFrontendModel),
+        ...(data as Partial<DailyReportDto>), // Allow explicit DTO properties to override
+      };
+
+      // Transform to Entity (for raw SQL/TypeORM)
+      const entity = fromDailyReportDto(sanitizedDto);
+
+      // TODO: Add tenant_id to entity when column exists
+      // entity.tenant_id = tenantId;
+
+      // Persist
+      const created: DailyReportRawRow = await DailyReportModel.create(entity);
+      const report = toDailyReportDto(created);
+
+      Logger.info('Daily report created successfully', {
+        tenantId,
+        reportId: report.id,
+        equipoId: report.equipo_id,
+        trabajadorId: report.trabajador_id,
+        context: 'ReportService.createReport',
+      });
+
+      return report;
+    } catch (error) {
+      Logger.error('Error creating daily report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        data,
+        context: 'ReportService.createReport',
+      });
+      throw error;
+    }
   }
 
+  /**
+   * Update existing daily report
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param id - Daily report ID
+   * @param data - Updated daily report data
+   *
+   * @returns Updated daily report
+   * @throws {NotFoundError} If report not found
+   *
+   * @example
+   * const updated = await reportService.updateReport(1, '123', {
+   *   horas_trabajadas: 9,
+   *   observaciones: 'Trabajo extendido'
+   * });
+   */
   async updateReport(
+    tenantId: number,
     id: string,
     data: Partial<DailyReportDto> | DailyReportFrontendModel
-  ): Promise<DailyReportDto | null> {
-    // 1. Adapter: sanitize input
-    const sanitizedDto: Partial<DailyReportDto> = {
-      ...DailyReportAdapter.toBackendDto(data as DailyReportFrontendModel),
-      ...(data as Partial<DailyReportDto>), // Allow explicit DTO properties to override if mixed
-    };
+  ): Promise<DailyReportDto> {
+    try {
+      Logger.info('Updating daily report', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.updateReport',
+      });
 
-    // 2. Transform to Entity (Raw SQL)
-    const entity = fromDailyReportDto(sanitizedDto);
+      // Verify report exists first
+      await this.getReportById(tenantId, id);
 
-    // 3. Persist
-    const updated: DailyReportRawRow | null = await DailyReportModel.update(id, entity);
-    return updated ? toDailyReportDto(updated) : null;
+      // Adapter: sanitize input
+      const sanitizedDto: Partial<DailyReportDto> = {
+        ...DailyReportAdapter.toBackendDto(data as DailyReportFrontendModel),
+        ...(data as Partial<DailyReportDto>),
+      };
+
+      // Transform to Entity
+      const entity = fromDailyReportDto(sanitizedDto);
+
+      // TODO: Add tenant_id verification when column exists
+
+      // Persist
+      const updated: DailyReportRawRow | null = await DailyReportModel.update(id, entity);
+
+      if (!updated) {
+        throw new NotFoundError('Daily report', id, { tenantId });
+      }
+
+      const report = toDailyReportDto(updated);
+
+      Logger.info('Daily report updated successfully', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.updateReport',
+      });
+
+      return report;
+    } catch (error) {
+      Logger.error('Error updating daily report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        reportId: id,
+        data,
+        context: 'ReportService.updateReport',
+      });
+      throw error;
+    }
   }
 
-  async approveReport(id: string, approvedBy: string): Promise<DailyReportDto | null> {
-    const entity: DailyReportRawRow | null = await DailyReportModel.approve(id, approvedBy);
-    return entity ? toDailyReportDto(entity) : null;
+  /**
+   * Approve daily report
+   *
+   * Changes report status to APROBADO and records approver
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param id - Daily report ID
+   * @param approvedBy - ID of user approving the report
+   *
+   * @returns Approved daily report
+   * @throws {NotFoundError} If report not found
+   *
+   * @example
+   * const approved = await reportService.approveReport(1, '123', 'user_456');
+   */
+  async approveReport(tenantId: number, id: string, approvedBy: string): Promise<DailyReportDto> {
+    try {
+      Logger.info('Approving daily report', {
+        tenantId,
+        reportId: id,
+        approvedBy,
+        context: 'ReportService.approveReport',
+      });
+
+      // TODO: Add tenant_id verification when column exists
+      const entity: DailyReportRawRow | null = await DailyReportModel.approve(id, approvedBy);
+
+      if (!entity) {
+        throw new NotFoundError('Daily report', id, { tenantId });
+      }
+
+      const report = toDailyReportDto(entity);
+
+      Logger.info('Daily report approved successfully', {
+        tenantId,
+        reportId: id,
+        approvedBy,
+        context: 'ReportService.approveReport',
+      });
+
+      return report;
+    } catch (error) {
+      Logger.error('Error approving daily report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        reportId: id,
+        approvedBy,
+        context: 'ReportService.approveReport',
+      });
+      throw error;
+    }
   }
 
-  async rejectReport(id: string, reason: string): Promise<DailyReportDto | null> {
-    const entity: DailyReportRawRow | null = await DailyReportModel.reject(id, reason);
-    return entity ? toDailyReportDto(entity) : null;
+  /**
+   * Reject daily report
+   *
+   * Changes report status to RECHAZADO and records rejection reason
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param id - Daily report ID
+   * @param reason - Reason for rejection
+   *
+   * @returns Rejected daily report
+   * @throws {NotFoundError} If report not found
+   * @throws {ValidationError} If reason is empty
+   *
+   * @example
+   * const rejected = await reportService.rejectReport(1, '123', 'Datos incompletos');
+   */
+  async rejectReport(tenantId: number, id: string, reason: string): Promise<DailyReportDto> {
+    try {
+      Logger.info('Rejecting daily report', {
+        tenantId,
+        reportId: id,
+        reason,
+        context: 'ReportService.rejectReport',
+      });
+
+      // Business validation: reason required
+      if (!reason || reason.trim() === '') {
+        throw new ValidationError('Rejection reason is required', [
+          {
+            field: 'reason',
+            message: 'Razón de rechazo es requerida',
+            rule: 'required',
+            value: reason,
+          },
+        ]);
+      }
+
+      // TODO: Add tenant_id verification when column exists
+      const entity: DailyReportRawRow | null = await DailyReportModel.reject(id, reason);
+
+      if (!entity) {
+        throw new NotFoundError('Daily report', id, { tenantId });
+      }
+
+      const report = toDailyReportDto(entity);
+
+      Logger.info('Daily report rejected successfully', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.rejectReport',
+      });
+
+      return report;
+    } catch (error) {
+      Logger.error('Error rejecting daily report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        reportId: id,
+        reason,
+        context: 'ReportService.rejectReport',
+      });
+      throw error;
+    }
   }
 
-  async deleteReport(id: string): Promise<boolean> {
-    return DailyReportModel.delete(id);
+  /**
+   * Delete daily report (soft delete)
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param id - Daily report ID
+   *
+   * @throws {NotFoundError} If report not found
+   *
+   * @example
+   * await reportService.deleteReport(1, '123');
+   */
+  async deleteReport(tenantId: number, id: string): Promise<void> {
+    try {
+      Logger.info('Deleting daily report', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.deleteReport',
+      });
+
+      // TODO: Add tenant_id verification when column exists
+      const deleted = await DailyReportModel.delete(id);
+
+      if (!deleted) {
+        throw new NotFoundError('Daily report', id, { tenantId });
+      }
+
+      Logger.info('Daily report deleted successfully', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.deleteReport',
+      });
+    } catch (error) {
+      Logger.error('Error deleting daily report', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        reportId: id,
+        context: 'ReportService.deleteReport',
+      });
+      throw error;
+    }
   }
 
   /**
    * Get daily report data formatted for PDF generation
-   * Fetches report with all relations and transforms to PDF DTO
+   *
+   * Fetches report with all relations (equipment, worker, project, production data, etc.)
+   * and transforms to PDF-specific DTO
+   *
+   * @param tenantId - Tenant identifier for data isolation
+   * @param id - Daily report ID
+   *
+   * @returns Daily report data formatted for PDF
+   * @throws {NotFoundError} If report not found
+   *
+   * @example
+   * const pdfData = await reportService.getDailyReportPdfData(1, 123);
+   * // Use pdfData to generate PDF
    */
-  async getDailyReportPdfData(id: number): Promise<DailyReportPdfDto> {
-    const repository = AppDataSource.getRepository(DailyReportEntity);
+  async getDailyReportPdfData(tenantId: number, id: number): Promise<DailyReportPdfDto> {
+    try {
+      Logger.info('Fetching daily report PDF data', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.getDailyReportPdfData',
+      });
 
-    const report = await repository.findOne({
-      where: { id },
-      relations: [
-        'equipo',
-        'trabajador',
-        'proyecto',
-        'produccionRows',
-        'actividadesProduccion',
-        'demorasOperativas',
-        'otrosEventos',
-        'demorasMecanicas',
-      ],
-    });
+      const repository = AppDataSource.getRepository(DailyReportEntity);
 
-    if (!report) {
-      throw new Error(`Daily report with ID ${id} not found`);
+      // TODO: Add tenant_id filter when column exists
+      // where: { id, tenant_id: tenantId }
+      const report = await repository.findOne({
+        where: { id },
+        relations: [
+          'equipo',
+          'trabajador',
+          'proyecto',
+          'produccionRows',
+          'actividadesProduccion',
+          'demorasOperativas',
+          'otrosEventos',
+          'demorasMecanicas',
+        ],
+      });
+
+      if (!report) {
+        throw new NotFoundError('Daily report', id, { tenantId });
+      }
+
+      // Transform to PDF DTO (handles all nested relations)
+      const pdfDto = transformToDailyReportPdfDto(report);
+
+      Logger.info('Daily report PDF data fetched successfully', {
+        tenantId,
+        reportId: id,
+        hasProduccion: Array.isArray((pdfDto as unknown as Record<string, unknown>).produccionRows),
+        context: 'ReportService.getDailyReportPdfData',
+      });
+
+      return pdfDto;
+    } catch (error) {
+      Logger.error('Error fetching daily report PDF data', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        reportId: id,
+        context: 'ReportService.getDailyReportPdfData',
+      });
+      throw error;
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return transformToDailyReportPdfDto(report as any);
   }
 }
