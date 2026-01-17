@@ -1,8 +1,8 @@
 # Phase 3: SQL to TypeORM Migration - Overall Progress
 
 **Last Updated:** January 17, 2026  
-**Current Status:** 109/131 queries migrated (83.2%)  
-**Phases Completed:** 9/~15
+**Current Status:** 114/131 queries migrated (87.0%)  
+**Phases Completed:** 10/~15
 
 ---
 
@@ -101,6 +101,21 @@ We are systematically migrating the Bitcorp ERP backend from raw SQL queries to 
   - Project filtering not implemented (needs junction table join)
   - Maintenance data placeholder (table structure TBD)
 
+### ✅ Phase 3.11: Provider Contact Service (5 queries)
+
+- **Files:** `provider-contact.model.ts` (created), `provider-contact.service.ts` (migrated), `provider.routes.ts` (updated)
+- **Queries Eliminated:** 5
+- **Status:** Complete, fully tested (13/13 tests passing)
+- **Documentation:** [PHASE_3.11_PROVIDER_CONTACT_MIGRATION.md](./PHASE_3.11_PROVIDER_CONTACT_MIGRATION.md)
+- **Migration Created:** `1768624699000-AddProviderContactsTable`
+- **Key Features:**
+  - Created missing provider_contacts table
+  - Full CRUD operations for provider contacts
+  - Support for multiple contact types (commercial, technical, financial)
+  - Primary contact designation and ordering
+  - Foreign key constraints with cascade delete
+- **New Functionality:** This feature was planned but not implemented. Now fully functional.
+
 ---
 
 ## Current Stats
@@ -108,35 +123,30 @@ We are systematically migrating the Bitcorp ERP backend from raw SQL queries to 
 | Metric                       | Value      |
 | ---------------------------- | ---------- |
 | **Total Queries Identified** | 131        |
-| **Queries Migrated**         | 109        |
-| **Queries Remaining**        | 22         |
-| **Progress**                 | 83.2%      |
-| **Phases Completed**         | 9          |
-| **Files Fully Migrated**     | 11         |
-| **Remaining Files**          | 4 services |
+| **Queries Migrated**         | 114        |
+| **Queries Remaining**        | 17         |
+| **Progress**                 | 87.0%      |
+| **Phases Completed**         | 10         |
+| **Files Fully Migrated**     | 12         |
+| **Remaining Files**          | 3 services |
 
 ---
 
 ## Remaining Work
 
-### Files Still Using Raw SQL (4 services, ~22 queries)
+### Files Still Using Raw SQL (3 services, ~17 queries)
 
 1. **project.service.ts**
    - Estimated queries: ~10
    - Complexity: High (complex joins)
    - Priority: High (core functionality)
 
-2. **provider-contact.service.ts**
+2. **provider-financial-info.service.ts**
    - Estimated queries: ~5
    - Complexity: Low (CRUD)
    - Priority: Low
 
-3. **provider-financial-info.service.ts**
-   - Estimated queries: ~5
-   - Complexity: Low (CRUD)
-   - Priority: Low
-
-4. **reporting.service.ts**
+3. **reporting.service.ts**
    - Estimated queries: ~2
    - Complexity: Medium (reporting queries)
    - Priority: Medium
@@ -298,7 +308,8 @@ await this.repository.update({ id }, { isActive: false });
 | 3.7       | 7                | 16        | 100%      |
 | 3.9       | 5                | 16        | 100%      |
 | 3.10      | 6                | 9         | 100%      |
-| **Total** | **46**           | **85**    | **100%**  |
+| 3.11      | 5                | 13        | 100%      |
+| **Total** | **51**           | **98**    | **100%**  |
 
 ---
 
@@ -371,17 +382,16 @@ await this.repository.update({ id }, { isActive: false });
 
 ## Next Steps
 
-### Immediate (Phase 3.11)
+### Immediate (Phase 3.12)
 
-1. **provider-contact.service.ts** (~5 queries)
+1. **provider-financial-info.service.ts** (~5 queries)
    - Priority: Low
    - Complexity: Low (CRUD)
    - Estimated effort: 1-2 hours
 
-### Short-term (Phases 3.12-3.13)
+### Short-term (Phase 3.13)
 
-1. **provider-financial-info.service.ts** (~5 queries)
-2. **reporting.service.ts** (~2 queries)
+1. **reporting.service.ts** (~2 queries)
 
 ### Medium-term (Phase 3.14)
 
@@ -400,7 +410,7 @@ await this.repository.update({ id }, { isActive: false });
 - [ ] Zero compilation errors
 - [ ] All controllers updated to match services
 
-**Current Progress:** 109/131 (83.2%) ✅
+**Current Progress:** 114/131 (87.0%) ✅
 
 ---
 
@@ -475,14 +485,22 @@ await this.repository.update({ id }, { isActive: false });
 - `backend/src/services/equipment-analytics.service.ts` (migrated)
 - `backend/src/index.ts` (added analytics routes)
 
-**Total Files Modified:** 14  
-**Total Files Created:** 2  
+### Phase 3.11
+
+- `backend/src/models/provider-contact.model.ts` (created)
+- `backend/src/services/provider-contact.service.ts` (migrated)
+- `backend/src/api/providers/provider.routes.ts` (added routes)
+- `backend/src/database/migrations/1768624699000-AddProviderContactsTable.ts` (created)
+
+**Total Files Modified:** 17  
+**Total Files Created:** 4  
 **Total Files Deleted:** 1
 
 ---
 
 ## Related Documentation
 
+- [Phase 3.11 Provider Contact Migration Details](./PHASE_3.11_PROVIDER_CONTACT_MIGRATION.md)
 - [Phase 3.10 Equipment Analytics Migration Details](./PHASE_3.10_EQUIPMENT_ANALYTICS_MIGRATION.md)
 - [Phase 3.9 Employee Migration Details](./PHASE_3.9_EMPLOYEE_MIGRATION.md)
 - [Phase 3.7 Timesheet Migration Details](./PHASE_3.7_TIMESHEET_MIGRATION.md)
@@ -492,6 +510,6 @@ await this.repository.update({ id }, { isActive: false });
 
 ---
 
-**Status:** Phase 3 in progress (83.2% complete)  
-**Next Target:** provider-contact.service.ts (Phase 3.11)  
-**Estimated Completion:** 4 more phases (~3-5 days at current pace)
+**Status:** Phase 3 in progress (87.0% complete)  
+**Next Target:** provider-financial-info.service.ts (Phase 3.12)  
+**Estimated Completion:** 3 more phases (~2-3 days at current pace)

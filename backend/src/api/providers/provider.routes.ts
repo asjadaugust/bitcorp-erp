@@ -34,8 +34,17 @@ router.post('/:providerId/financial-info', financialInfoController.create);
 // GET /api/providers/:providerId/contacts - Get contacts for a provider
 router.get('/:providerId/contacts', contactController.getByProviderId);
 
+// GET /api/providers/contacts/:id - Get contact by ID
+router.get('/contacts/:id', contactController.getById);
+
 // POST /api/providers/:providerId/contacts - Create contact
 router.post('/:providerId/contacts', contactController.create);
+
+// PUT /api/providers/contacts/:id - Update contact
+router.put('/contacts/:id', contactController.update);
+
+// DELETE /api/providers/contacts/:id - Delete contact
+router.delete('/contacts/:id', contactController.delete);
 
 // POST /api/providers - Create new provider
 router.post('/', ProviderController.create);

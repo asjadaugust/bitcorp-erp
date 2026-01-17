@@ -12,12 +12,14 @@ import { Permission } from '../models/permission.model';
 import { UnidadOperativa } from '../models/unidad-operativa.model';
 import { Project } from '../models/project.model';
 import { Provider } from '../models/provider.model';
+import { ProviderContact } from '../models/provider-contact.model';
 import { Equipment } from '../models/equipment.model';
 import { Contract, Addendum } from '../models/contract.model';
 import { Valuation } from '../models/valuation.model';
 import { Product } from '../models/product.model';
 import { Movement, MovementDetail } from '../models/movement.model';
 import { MaintenanceSchedule } from '../models/maintenance-schedule.model';
+import { MaintenanceScheduleRecurring } from '../models/maintenance-schedule-recurring.model';
 import { ScheduledTask } from '../models/scheduled-task.model'; // Spanish schema: equipo.tarea_programada
 import { OperatorAvailability } from '../models/operator-availability.model';
 import { Notification } from '../models/notification.model';
@@ -35,6 +37,8 @@ import { PaymentScheduleDetail } from '../models/payment-schedule-detail.model';
 import { OperatorDocument } from '../models/operator-document.entity';
 // import { OperatorAvailability as OperatorAvailabilityEntity } from '../models/operator-availability.entity'; // DELETED
 import { Trabajador } from '../models/trabajador.model';
+import { Timesheet } from '../models/timesheet.model';
+import { TimesheetDetail } from '../models/timesheet-detail.model';
 import { EquipmentAssignment } from '../models/equipment-assignment.model';
 import { FuelRecord } from '../models/fuel-record.model';
 import { ChecklistTemplate } from '../models/checklist-template.model';
@@ -50,6 +54,7 @@ import { DailyReportProductionActivity } from '../models/daily-report-activity.m
 import { DailyReportOperationalDelay } from '../models/daily-report-operational-delay.model';
 import { DailyReportOtherEvent } from '../models/daily-report-other-event.model';
 import { DailyReportMechanicalDelay } from '../models/daily-report-mechanical-delay.model';
+import { Company, UserProject } from '../models/company-entity.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -67,6 +72,7 @@ export const AppDataSource = new DataSource({
     UnidadOperativa,
     Project,
     Provider,
+    ProviderContact,
     Equipment,
     Contract,
     Addendum,
@@ -75,6 +81,7 @@ export const AppDataSource = new DataSource({
     Movement,
     MovementDetail,
     MaintenanceSchedule,
+    MaintenanceScheduleRecurring,
     ScheduledTask,
     OperatorAvailability,
     Notification,
@@ -92,6 +99,8 @@ export const AppDataSource = new DataSource({
     OperatorDocument,
     // OperatorAvailabilityEntity, // DELETED
     Trabajador,
+    Timesheet,
+    TimesheetDetail,
     EquipmentAssignment,
     FuelRecord,
     ChecklistTemplate,
@@ -107,6 +116,9 @@ export const AppDataSource = new DataSource({
     DailyReportOperationalDelay,
     DailyReportOtherEvent,
     DailyReportMechanicalDelay,
+    // Tenant / Multi-tenancy entities (tables don't exist yet - see company-entity.model.ts)
+    Company,
+    UserProject,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

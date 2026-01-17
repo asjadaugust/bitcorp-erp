@@ -1,25 +1,60 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import db from '../config/database.config';
+import { Repository } from 'typeorm';
+import { AppDataSource } from '../config/database.config';
+import { ProviderContact, ContactType, ContactStatus } from '../models/provider-contact.model';
+
+// DTO type that accepts both snake_case (from API) and camelCase (from entity)
+interface ProviderContactInput {
+  // Snake case (API input)
+  provider_id?: number;
+  contact_name?: string;
+  primary_phone?: string;
+  secondary_phone?: string;
+  secondary_email?: string;
+  contact_type?: string;
+  is_primary?: boolean;
+  tenant_id?: number;
+  created_by?: number;
+  updated_by?: number;
+
+  // Camel case (Entity properties)
+  providerId?: number;
+  contactName?: string;
+  position?: string;
+  primaryPhone?: string;
+  secondaryPhone?: string;
+  email?: string;
+  secondaryEmail?: string;
+  contactType?: string;
+  isPrimary?: boolean;
+  status?: string;
+  notes?: string;
+  tenantId?: number;
+  createdBy?: number;
+  updatedBy?: number;
+}
 
 export class ProviderContactService {
+  private get repository(): Repository<ProviderContact> {
+    return AppDataSource.getRepository(ProviderContact);
+  }
+
   /**
    * Get all contacts for a provider
+   *
+   * ✅ MIGRATED: FROM pool.query to TypeORM find
    */
-  async findByProviderId(providerId: string): Promise<any[]> {
+  async findByProviderId(providerId: string | number): Promise<ProviderContact[]> {
     try {
-      const query = `
-        SELECT * FROM provider_contacts 
-        WHERE provider_id = $1 
-        ORDER BY is_primary DESC, created_at DESC
-      `;
-      const result = await db.query(query, [providerId]);
-      return result.rows.map((row) => this.mapToContact(row));
-    } catch (error: any) {
-      // If table doesn't exist, return empty array
-      if (error.message?.includes('does not exist')) {
-        console.log('provider_contacts table does not exist, returning empty array');
-        return [];
-      }
+      const contacts = await this.repository.find({
+        where: { providerId: Number(providerId) },
+        order: {
+          isPrimary: 'DESC',
+          createdAt: 'DESC',
+        },
+      });
+
+      return contacts;
+    } catch (error) {
       console.error('Error finding contacts:', error);
       throw error;
     }
@@ -27,17 +62,20 @@ export class ProviderContactService {
 
   /**
    * Get contact by ID
+   *
+   * ✅ MIGRATED: FROM pool.query to TypeORM findOne
    */
-  async findById(id: number): Promise<any> {
+  async findById(id: number): Promise<ProviderContact> {
     try {
-      const query = 'SELECT * FROM provider_contacts WHERE id = $1';
-      const result = await db.query(query, [id]);
+      const contact = await this.repository.findOne({
+        where: { id },
+      });
 
-      if (result.rows.length === 0) {
+      if (!contact) {
         throw new Error('Contact not found');
       }
 
-      return this.mapToContact(result.rows[0]);
+      return contact;
     } catch (error) {
       console.error('Error finding contact:', error);
       throw error;
@@ -46,36 +84,29 @@ export class ProviderContactService {
 
   /**
    * Create new contact
+   *
+   * ✅ MIGRATED: FROM pool.query INSERT to TypeORM save
    */
-  async create(data: any): Promise<any> {
+  async create(data: ProviderContactInput): Promise<ProviderContact> {
     try {
-      const query = `
-        INSERT INTO provider_contacts (
-          provider_id, contact_name, position, primary_phone, 
-          secondary_phone, email, secondary_email, contact_type, 
-          is_primary, status, notes, tenant_id, created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING *
-      `;
+      const contact = this.repository.create({
+        providerId: data.providerId || data.provider_id,
+        contactName: data.contactName || data.contact_name || '',
+        position: data.position,
+        primaryPhone: data.primaryPhone || data.primary_phone,
+        secondaryPhone: data.secondaryPhone || data.secondary_phone,
+        email: data.email,
+        secondaryEmail: data.secondaryEmail || data.secondary_email,
+        contactType: (data.contactType || data.contact_type || 'general') as ContactType,
+        isPrimary: data.isPrimary ?? data.is_primary ?? false,
+        status: (data.status || 'active') as ContactStatus,
+        notes: data.notes,
+        tenantId: data.tenantId || data.tenant_id || 1,
+        createdBy: data.createdBy || data.created_by,
+      });
 
-      const values = [
-        data.provider_id,
-        data.contact_name,
-        data.position || null,
-        data.primary_phone || null,
-        data.secondary_phone || null,
-        data.email || null,
-        data.secondary_email || null,
-        data.contact_type || 'general',
-        data.is_primary || false,
-        data.status || 'active',
-        data.notes || null,
-        data.tenant_id || 1,
-        data.created_by || null,
-      ];
-
-      const result = await db.query(query, values);
-      return this.mapToContact(result.rows[0]);
+      const saved = await this.repository.save(contact);
+      return saved;
     } catch (error) {
       console.error('Error creating contact:', error);
       throw error;
@@ -84,50 +115,39 @@ export class ProviderContactService {
 
   /**
    * Update contact
+   *
+   * ✅ MIGRATED: FROM pool.query UPDATE to TypeORM update + findOne
    */
-  async update(id: number, data: any): Promise<any> {
+  async update(id: number, data: ProviderContactInput): Promise<ProviderContact> {
     try {
-      const query = `
-        UPDATE provider_contacts 
-        SET 
-          contact_name = $1,
-          position = $2,
-          primary_phone = $3,
-          secondary_phone = $4,
-          email = $5,
-          secondary_email = $6,
-          contact_type = $7,
-          is_primary = $8,
-          status = $9,
-          notes = $10,
-          updated_at = CURRENT_TIMESTAMP,
-          updated_by = $11
-        WHERE id = $12
-        RETURNING *
-      `;
-
-      const values = [
-        data.contact_name,
-        data.position || null,
-        data.primary_phone || null,
-        data.secondary_phone || null,
-        data.email || null,
-        data.secondary_email || null,
-        data.contact_type || 'general',
-        data.is_primary || false,
-        data.status || 'active',
-        data.notes || null,
-        data.updated_by || null,
-        id,
-      ];
-
-      const result = await db.query(query, values);
-
-      if (result.rows.length === 0) {
+      // Check if contact exists
+      const existing = await this.repository.findOne({ where: { id } });
+      if (!existing) {
         throw new Error('Contact not found');
       }
 
-      return this.mapToContact(result.rows[0]);
+      // Update fields
+      await this.repository.update(id, {
+        contactName: data.contactName || data.contact_name,
+        position: data.position,
+        primaryPhone: data.primaryPhone || data.primary_phone,
+        secondaryPhone: data.secondaryPhone || data.secondary_phone,
+        email: data.email,
+        secondaryEmail: data.secondaryEmail || data.secondary_email,
+        contactType: (data.contactType || data.contact_type || 'general') as ContactType,
+        isPrimary: data.isPrimary ?? data.is_primary ?? false,
+        status: (data.status || 'active') as ContactStatus,
+        notes: data.notes,
+        updatedBy: data.updatedBy || data.updated_by,
+      });
+
+      // Return updated contact
+      const updated = await this.repository.findOne({ where: { id } });
+      if (!updated) {
+        throw new Error('Contact not found after update');
+      }
+
+      return updated;
     } catch (error) {
       console.error('Error updating contact:', error);
       throw error;
@@ -136,40 +156,16 @@ export class ProviderContactService {
 
   /**
    * Delete contact
+   *
+   * ✅ MIGRATED: FROM pool.query DELETE to TypeORM delete
    */
   async delete(id: number): Promise<boolean> {
     try {
-      const query = 'DELETE FROM provider_contacts WHERE id = $1';
-      const result = await db.query(query, [id]);
-      return result.rowCount > 0;
+      const result = await this.repository.delete(id);
+      return (result.affected ?? 0) > 0;
     } catch (error) {
       console.error('Error deleting contact:', error);
       throw error;
     }
-  }
-
-  /**
-   * Map database row to Contact object
-   */
-  private mapToContact(row: any): any {
-    return {
-      id: row.id,
-      provider_id: row.provider_id,
-      contact_name: row.contact_name,
-      position: row.position,
-      primary_phone: row.primary_phone,
-      secondary_phone: row.secondary_phone,
-      email: row.email,
-      secondary_email: row.secondary_email,
-      contact_type: row.contact_type,
-      is_primary: row.is_primary,
-      status: row.status,
-      notes: row.notes,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-      created_by: row.created_by,
-      updated_by: row.updated_by,
-      tenant_id: row.tenant_id,
-    };
   }
 }
