@@ -48,7 +48,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
 
-        <button type="button" class="btn btn-secondary">
+        <button type="button" class="btn btn-secondary" (click)="openGenerationModal()">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Generar
         </button>
 

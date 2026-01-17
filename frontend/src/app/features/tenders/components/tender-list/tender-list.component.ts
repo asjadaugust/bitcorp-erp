@@ -162,6 +162,6 @@ export class TenderListComponent implements OnInit {
   }
 
   createTender(): void {
-    this.router.navigate(['/tenders/new']);
+    this.router.navigate(['/licitaciones/new']);
   }
 }

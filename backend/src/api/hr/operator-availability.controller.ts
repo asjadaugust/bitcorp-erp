@@ -43,12 +43,8 @@ export class OperatorAvailabilityController {
       const { id } = req.params;
       const availability = await availabilityService.findById(Number(id));
       if (!availability) {
-        return sendError(
-          res,
-          404,
-          'OPERATOR_AVAILABILITY_NOT_FOUND',
-          'Operator availability not found'
-        );
+        sendError(res, 404, 'OPERATOR_AVAILABILITY_NOT_FOUND', 'Operator availability not found');
+        return;
       }
       res.json({ success: true, data: availability });
     } catch (error: any) {
@@ -87,12 +83,13 @@ export class OperatorAvailabilityController {
     try {
       const { fecha_inicio, fecha_fin } = req.query;
       if (!fecha_inicio || !fecha_fin) {
-        return sendError(
+        sendError(
           res,
           400,
           'MISSING_PARAMETERS',
           'fecha_inicio and fecha_fin parameters are required'
         );
+        return;
       }
       const availabilities = await availabilityService.findAvailableOperators(
         new Date(fecha_inicio as string),
@@ -129,7 +126,8 @@ export class OperatorAvailabilityController {
     try {
       const { availabilities } = req.body;
       if (!Array.isArray(availabilities)) {
-        return sendError(res, 400, 'INVALID_INPUT', 'Availabilities must be an array');
+        sendError(res, 400, 'INVALID_INPUT', 'Availabilities must be an array');
+        return;
       }
       const created = await availabilityService.bulkCreate(availabilities);
       res.status(201).json({ success: true, data: created });
@@ -149,12 +147,8 @@ export class OperatorAvailabilityController {
       const { id } = req.params;
       const availability = await availabilityService.update(Number(id), req.body);
       if (!availability) {
-        return sendError(
-          res,
-          404,
-          'OPERATOR_AVAILABILITY_NOT_FOUND',
-          'Operator availability not found'
-        );
+        sendError(res, 404, 'OPERATOR_AVAILABILITY_NOT_FOUND', 'Operator availability not found');
+        return;
       }
       res.json({ success: true, data: availability });
     } catch (error: any) {
@@ -173,12 +167,8 @@ export class OperatorAvailabilityController {
       const { id } = req.params;
       const success = await availabilityService.delete(Number(id));
       if (!success) {
-        return sendError(
-          res,
-          404,
-          'OPERATOR_AVAILABILITY_NOT_FOUND',
-          'Operator availability not found'
-        );
+        sendError(res, 404, 'OPERATOR_AVAILABILITY_NOT_FOUND', 'Operator availability not found');
+        return;
       }
       res.status(204).send();
     } catch (error: any) {

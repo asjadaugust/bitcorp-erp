@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { MainNavComponent } from '../../shared/components/main-nav.component';
+import { Role, ROLES, getRoleName } from '../../core/types/roles';
 
 interface Module {
   id: string;
@@ -11,7 +12,7 @@ interface Module {
   icon: string;
   route: string;
   level: number;
-  requiredRoles: string[];
+  requiredRoles: Role[];
   description: string;
   isActive: boolean;
 }
@@ -251,12 +252,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-chart-pie',
           route: '/sig',
           level: 1,
-          requiredRoles: [
-            'administrador', 'director_general',
-            'ingeniero_planificacion',
-            'ingeniero_costos',
-            'supervisor',
-          ],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
           description: 'Sistema Integrado de Gestión (ISO 9001, 14001, 45001)',
           isActive: true,
         },
@@ -272,7 +268,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-file-signature',
           route: '/licitaciones',
           level: 2,
-          requiredRoles: ['administrador', 'director_general', 'ingeniero_planificacion'],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
           description: 'Gestión de Licitaciones y Propuestas',
           isActive: true,
         },
@@ -282,7 +278,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-helmet-safety',
           route: '/operaciones',
           level: 2,
-          requiredRoles: ['administrador', 'director_general', 'ingeniero_planificacion', 'supervisor'],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
           description: 'Control Operacional de Proyectos',
           isActive: true,
         },
@@ -298,7 +294,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-user-shield',
           route: '/sst',
           level: 3,
-          requiredRoles: ['administrador', 'director_general', 'ingeniero_planificacion', 'supervisor'],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
           description: 'Seguridad y Salud en el Trabajo',
           isActive: true,
         },
@@ -308,7 +304,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-briefcase',
           route: '/administracion',
           level: 3,
-          requiredRoles: ['administrador', 'director_general', 'ingeniero_costos'],
+          requiredRoles: ['ADMIN', 'DIRECTOR'],
           description: 'Gestión Administrativa',
           isActive: true,
         },
@@ -318,7 +314,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-users',
           route: '/rrhh',
           level: 3,
-          requiredRoles: ['administrador', 'director_general', 'ingeniero_costos'],
+          requiredRoles: ['ADMIN', 'DIRECTOR'],
           description: 'Recursos Humanos',
           isActive: true,
         },
@@ -328,7 +324,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-truck-fast',
           route: '/logistics',
           level: 3,
-          requiredRoles: ['administrador', 'director_general', 'ingeniero_planificacion'],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
           description: 'Gestión Logística',
           isActive: true,
         },
@@ -338,7 +334,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-handshake',
           route: '/providers',
           level: 3,
-          requiredRoles: ['administrador', 'director_general', 'ingeniero_costos', 'ingeniero_planificacion'],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
           description: 'Gestión de Proveedores',
           isActive: true,
         },
@@ -348,13 +344,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-tractor',
           route: '/equipment',
           level: 3,
-          requiredRoles: [
-            'administrador', 'director_general',
-            'ingeniero_planificacion',
-            'ingeniero_costos',
-            'operador',
-            'supervisor',
-          ],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO', 'OPERADOR'],
           description: 'Gestión de Equipos y Maquinaria',
           isActive: true,
         },
@@ -365,12 +355,7 @@ export class DashboardComponent implements OnInit {
           icon: 'fa-solid fa-id-card',
           route: '/operators',
           level: 3,
-          requiredRoles: [
-            'administrador', 'director_general',
-            'ingeniero_planificacion',
-            'ingeniero_costos',
-            'supervisor',
-          ],
+          requiredRoles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
           description: 'Gestión de Operadores y Certificaciones',
           isActive: true,
         },
@@ -400,17 +385,10 @@ export class DashboardComponent implements OnInit {
   }
 
   getRoleDisplay(roles?: string[]): string {
-    const roleMap: { [key: string]: string } = {
-      administrador: 'Administrador del Sistema',
-      ingeniero_planificacion: 'Ingeniero de Planificación',
-      ingeniero_costos: 'Ingeniero de Costos y Presupuestos',
-      operador: 'Operador de Equipos',
-      supervisor: 'Supervisor de Obra',
-    };
-
     if (!roles || roles.length === 0) return '';
 
-    // Return the first role's display name
-    return roleMap[roles[0]] || roles[0];
+    // Use the typed getRoleName function from roles.ts
+    const firstRole = roles[0].toUpperCase() as Role;
+    return getRoleName(firstRole);
   }
 }

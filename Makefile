@@ -12,11 +12,15 @@ help:
 	@echo "  make logs          - Show container logs"
 	@echo "  make shell         - Shell into backend container"
 	@echo ""
-	@echo "🗄️  Database Commands:"
-	@echo "  make db-clean      - Drop all tables and reset database"
-	@echo "  make db-migrate    - Run database migrations"
-	@echo "  make db-seed       - Seed database with sample data"
-	@echo "  make db-fresh      - Clean + Migrate + Seed (full reset)"
+	@echo "🗄️  Database Commands (TypeORM):"
+	@echo "  make db-clean           - Drop all schemas and reset database"
+	@echo "  make db-migrate         - Run TypeORM migrations"
+	@echo "  make db-migrate-revert  - Revert last migration"
+	@echo "  make db-migrate-create  - Create new migration file"
+	@echo "  make db-migrate-generate- Generate migration from entity changes"
+	@echo "  make db-seed            - Run TypeORM seeders"
+	@echo "  make db-fresh           - Clean + Migrate + Seed (full reset)"
+	@echo "  make db-status          - Show migration and database status"
 	@echo ""
 	@echo "🧪 Testing Commands:"
 	@echo "  make test          - Run all tests"
@@ -59,35 +63,68 @@ shell:
 # Database commands
 db-clean:
 	@echo "🧹 Cleaning database..."
-	@docker-compose exec -T postgres psql -U bitcorp -d bitcorp_dev -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO bitcorp; GRANT ALL ON SCHEMA public TO PUBLIC;" || true
+	@docker-compose exec -T postgres psql -U bitcorp -d bitcorp_dev -c "DROP SCHEMA IF EXISTS sistema, proyectos, proveedores, administracion, rrhh, logistica, equipo, sst, sig, public CASCADE; CREATE SCHEMA sistema; CREATE SCHEMA proyectos; CREATE SCHEMA proveedores; CREATE SCHEMA administracion; CREATE SCHEMA rrhh; CREATE SCHEMA logistica; CREATE SCHEMA equipo; CREATE SCHEMA sst; CREATE SCHEMA sig; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO bitcorp; GRANT ALL ON SCHEMA public TO PUBLIC;" || true
 	@echo "✅ Database cleaned"
 
 db-migrate:
-	@echo "🔄 Running migrations..."
-	@cat database/001_init_schema.sql | docker-compose exec -T postgres psql -U bitcorp -d bitcorp_dev
-	@echo "✅ Migrations complete - Modern schema with integer IDs"
+	@echo "🔄 Running TypeORM migrations..."
+	@docker-compose exec backend npm run migrate
+	@echo "✅ Migrations complete!"
+
+db-migrate-revert:
+	@echo "⏪ Reverting last migration..."
+	@docker-compose exec backend npm run migrate:revert
+	@echo "✅ Migration reverted"
+
+db-migrate-create:
+	@echo "📝 Creating new migration..."
+	@read -p "Migration name: " name; \
+	docker-compose exec backend npm run typeorm migration:create src/database/migrations/$$name
+	@echo "✅ Migration file created"
+
+db-migrate-generate:
+	@echo "🔍 Generating migration from entity changes..."
+	@read -p "Migration name: " name; \
+	docker-compose exec backend npm run typeorm migration:generate src/database/migrations/$$name -- -d src/config/database.config.ts
+	@echo "✅ Migration generated"
 
 db-seed:
-	@echo "🌱 Seeding database..."
-	@cat database/002_seed.sql | docker-compose exec -T postgres psql -U bitcorp -d bitcorp_dev
-	@echo "✅ Database seeded with sample data"
+	@echo "🌱 Running TypeORM seeders..."
+	@docker-compose exec backend npm run seed:typeorm
+	@echo "✅ Database seeded!"
 
 db-fresh: db-clean db-migrate db-seed
 	@echo ""
-	@echo "✨ Database refreshed with clean data!"
+	@echo "✨ Database refreshed with TypeORM migrations and seeders!"
 	@echo "🔑 Default Login:"
 	@echo "   Username: admin"
 	@echo "   Password: admin123"
 	@echo ""
 	@echo "📊 Seeded Data:"
-	@echo "   • 2 Companies"
-	@echo "   • 5 Users (admin, director, jefe_equipo, operador1, admin_fin)"
-	@echo "   • 12 Equipment"
-	@echo "   • 8 Operators"
-	@echo "   • 18 Daily Reports"
-	@echo "   • 6 Contracts"
-	@echo "   • 3 Projects"
+	@echo "   • 4 Roles (Admin, Director, Jefe Equipo, Operador)"
+	@echo "   • 4 Users (admin, director, jefe_equipo, operador1)"
+	@echo "   • 2 Operating Units"
+	@echo "   • 2 Projects"
+	@echo "   • 2 Providers"
+	@echo "   • 3 Equipment"
+	@echo "   • 2 Workers"
+	@echo "   • 3 Products"
 	@echo ""
+
+db-status:
+	@echo "📊 Database Status:"
+	@echo ""
+	@echo "🔌 Connection:"
+	@docker-compose exec -T postgres psql -U bitcorp -d bitcorp_dev -c "SELECT version();" 2>/dev/null || echo "❌ Database not connected"
+	@echo ""
+	@echo "📋 Migration Status:"
+	@docker-compose exec backend npm run typeorm migration:show -- -d src/config/database.config.ts 2>/dev/null || echo "❌ Cannot retrieve migration status"
+	@echo ""
+	@echo "📋 Tables by Schema:"
+	@docker-compose exec -T postgres psql -U bitcorp -d bitcorp_dev -c "SELECT schemaname, COUNT(*) AS table_count FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') GROUP BY schemaname ORDER BY schemaname;" 2>/dev/null || echo "❌ Cannot retrieve tables"
+	@echo ""
+	@echo "📈 Top Tables by Row Count:"
+	@docker-compose exec -T postgres psql -U bitcorp -d bitcorp_dev -c "SELECT schemaname || '.' || tablename AS table, n_live_tup AS rows FROM pg_stat_user_tables ORDER BY n_live_tup DESC LIMIT 20;" 2>/dev/null || echo "❌ Cannot retrieve row counts"
 
 # Test commands
 test:
@@ -124,8 +161,3 @@ deploy-nas:
 	@echo "🚀 Deploying to Synology NAS..."
 	@./deploy_to_nas.py
 	@echo "✅ Deployed to NAS!"
-
-
-
-
-sudo docker compose exec -T postgres psql -U bitcorp -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='bitcorp_dev' AND pid<>pg_backend_pid();" && sudo docker compose exec -T postgres psql -U bitcorp -d bitcorp_dev -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public AUTHORIZATION bitcorp; GRANT ALL ON SCHEMA public TO PUBLIC;"

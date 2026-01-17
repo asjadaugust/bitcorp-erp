@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ProviderService } from '../../services/provider.service';
+import { TipoProveedor } from '../../models/provider.model';
 import Logger from '../../utils/logger';
 
 const providerService = new ProviderService();
@@ -214,7 +215,7 @@ export class ProviderController {
     try {
       const { type } = req.params;
 
-      const providers = await providerService.findByType(type);
+      const providers = await providerService.findByType(type as TipoProveedor);
 
       res.json(providers);
     } catch (error: any) {

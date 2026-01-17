@@ -46,6 +46,21 @@ import { InventoryService, Product, Movement } from '../../services/inventory.se
 
       <div class="form-container">
         <form [formGroup]="movementForm" (ngSubmit)="onSubmit()">
+          <!-- Actions at Top -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="movementForm.invalid || submitting || details.length === 0"
+              *ngIf="!isEditMode"
+            >
+              <i class="fa-solid fa-save" *ngIf="!submitting"></i>
+              <span class="spinner-sm" *ngIf="submitting"></span>
+              {{ submitting ? 'Procesando...' : 'Registrar Movimiento' }}
+            </button>
+          </div>
+
           <!-- Header Section -->
           <div class="form-section">
             <h2 class="section-title">Datos del Movimiento</h2>
@@ -217,21 +232,6 @@ import { InventoryService, Product, Movement } from '../../services/inventory.se
                 </tfoot>
               </table>
             </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              [disabled]="movementForm.invalid || submitting || details.length === 0"
-              *ngIf="!isEditMode"
-            >
-              <i class="fa-solid fa-save" *ngIf="!submitting"></i>
-              <span class="spinner-sm" *ngIf="submitting"></span>
-              {{ submitting ? 'Procesando...' : 'Registrar Movimiento' }}
-            </button>
           </div>
         </form>
       </div>

@@ -77,3 +77,13 @@ docs/
 **.bak**
 
 logs.txt
+# OpenCode Skills - Exclude large Anthropics skills, keep custom skills
+.opencode/skill/pdf/
+.opencode/skill/docx/
+.opencode/skill/xlsx/
+.opencode/skill/doc-coauthoring/
+.opencode/skill/skill-creator/
+.opencode/skill/mcp-builder/
+.opencode/skill/frontend-design/
+# Keep custom skills committed:
+# !.opencode/skill/bitcorp-prd-analyzer/

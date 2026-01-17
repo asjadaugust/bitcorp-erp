@@ -1,8 +1,11 @@
 {
-  "/api": {
+  "/api/**": {
     "target": "http://backend:3400",
     "secure": false,
     "changeOrigin": true,
-    "logLevel": "debug"
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api": "/api"
+    }
   }
 }

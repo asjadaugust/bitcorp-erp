@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Project } from '../models/project.model';
+import { environment } from '../../../environments/environment';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -13,7 +14,7 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class ProjectService {
-  private apiUrl = '/api/projects';
+  private apiUrl = `${environment.apiUrl}/projects`;
 
   constructor(private http: HttpClient) {}
 

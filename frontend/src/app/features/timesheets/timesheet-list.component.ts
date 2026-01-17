@@ -316,11 +316,11 @@ export class TimesheetListComponent implements OnInit {
   }
 
   navigateToGenerate() {
-    this.router.navigate(['/timesheets/generate']);
+    this.router.navigate(['/operaciones/timesheets/generate']);
   }
 
   viewTimesheet(id: number) {
-    this.router.navigate(['/timesheets', id]);
+    this.router.navigate(['/operaciones/timesheets', id]);
   }
 
   formatDate(date: any): string {

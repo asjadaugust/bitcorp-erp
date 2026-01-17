@@ -54,7 +54,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           (click)="createNewReport()"
           data-testid="btn-new-report"
         >
-          <i class="fa-solid fa-file-pen"></i> Nuevo Parte
+          <i class="fa-solid fa-file-pen"></i> Nuevo Informe Diario
         </button>
       </app-actions-container>
 

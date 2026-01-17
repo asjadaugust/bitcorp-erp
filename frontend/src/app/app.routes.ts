@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { ROLES } from './core/types/roles';
 
 export const routes: Routes = [
   {
@@ -20,7 +21,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./layouts/main-layout.component').then((m) => m.MainLayoutComponent),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['administrador', 'supervisor', 'staff', 'director_general'] }, // Allow admin and other staff roles
+    data: { roles: [ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO] }, // Allow admin and other staff roles
     children: [
       {
         path: 'app',
@@ -318,7 +319,7 @@ export const routes: Routes = [
         (m) => m.OperatorLayoutComponent
       ),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['operador', 'operator'] },
+    data: { roles: [ROLES.OPERADOR] },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {

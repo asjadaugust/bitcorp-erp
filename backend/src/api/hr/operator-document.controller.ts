@@ -41,7 +41,8 @@ export class OperatorDocumentController {
       const { id } = req.params;
       const document = await documentService.findById(Number(id));
       if (!document) {
-        return sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Operator document not found');
+        sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Operator document not found');
+        return;
       }
       res.json({ success: true, data: document });
     } catch (error: any) {
@@ -107,7 +108,8 @@ export class OperatorDocumentController {
       const { id } = req.params;
       const document = await documentService.update(Number(id), req.body);
       if (!document) {
-        return sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Operator document not found');
+        sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Operator document not found');
+        return;
       }
       res.json({ success: true, data: document });
     } catch (error: any) {
@@ -126,7 +128,8 @@ export class OperatorDocumentController {
       const { id } = req.params;
       const success = await documentService.delete(Number(id));
       if (!success) {
-        return sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Operator document not found');
+        sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Operator document not found');
+        return;
       }
       res.status(204).send();
     } catch (error: any) {

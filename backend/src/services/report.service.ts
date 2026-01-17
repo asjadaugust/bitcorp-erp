@@ -8,6 +8,7 @@ import {
   toDailyReportDto,
   fromDailyReportDto,
 } from '../types/dto/daily-report.dto';
+import { DailyReportAdapter, DailyReportFrontendModel } from '../types/daily-report-adapter';
 import { DailyReportRawRow } from '../types/daily-report-raw.interface';
 
 export class ReportService {
@@ -27,14 +28,38 @@ export class ReportService {
     return entities.map(toDailyReportDto);
   }
 
-  async createReport(data: Partial<DailyReportDto>): Promise<DailyReportDto> {
-    const entity = fromDailyReportDto(data);
+  async createReport(
+    data: Partial<DailyReportDto> | DailyReportFrontendModel
+  ): Promise<DailyReportDto> {
+    // 1. Adapter: sanitize input
+    // If input has frontend keys (English), convert to Backend DTO (Spanish)
+    const sanitizedDto: Partial<DailyReportDto> = {
+      ...DailyReportAdapter.toBackendDto(data as DailyReportFrontendModel),
+      ...(data as Partial<DailyReportDto>), // Allow explicit DTO properties to override if mixed
+    };
+
+    // 2. Transform to Entity (Raw SQL)
+    const entity = fromDailyReportDto(sanitizedDto);
+
+    // 3. Persist
     const created: DailyReportRawRow = await DailyReportModel.create(entity);
     return toDailyReportDto(created);
   }
 
-  async updateReport(id: string, data: Partial<DailyReportDto>): Promise<DailyReportDto | null> {
-    const entity = fromDailyReportDto(data);
+  async updateReport(
+    id: string,
+    data: Partial<DailyReportDto> | DailyReportFrontendModel
+  ): Promise<DailyReportDto | null> {
+    // 1. Adapter: sanitize input
+    const sanitizedDto: Partial<DailyReportDto> = {
+      ...DailyReportAdapter.toBackendDto(data as DailyReportFrontendModel),
+      ...(data as Partial<DailyReportDto>), // Allow explicit DTO properties to override if mixed
+    };
+
+    // 2. Transform to Entity (Raw SQL)
+    const entity = fromDailyReportDto(sanitizedDto);
+
+    // 3. Persist
     const updated: DailyReportRawRow | null = await DailyReportModel.update(id, entity);
     return updated ? toDailyReportDto(updated) : null;
   }

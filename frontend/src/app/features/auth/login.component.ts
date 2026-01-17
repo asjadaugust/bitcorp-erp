@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
-
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -52,9 +51,9 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
 
           <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || loading">
-          <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
-          {{ loading ? "..." : "Iniciar Sesión" }}
-        </button>
+            <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
+            {{ loading ? '...' : 'Iniciar Sesión' }}
+          </button>
         </form>
 
         <!-- Registration disabled - Only admin can create users -->
@@ -235,22 +234,22 @@ export class LoginComponent {
         console.log('✅ Login successful!', response);
         this.loading = false;
         // Redirect based on user role
-        const userRole = response.user.roles?.[0];
+        const userRole = response.user.roles?.[0]?.toUpperCase();
         console.log('Login successful, user role:', userRole);
-        
-        // TEMP: Just log, don't navigate yet
-        console.log('Would navigate to:', userRole === 'operador' || userRole === 'OPERADOR' ? '/operator/dashboard' : '/app');
-        
-        // Actually navigate
-        if (userRole === 'operador' || userRole === 'OPERADOR') {
+
+        // Navigate based on role
+        if (userRole === 'OPERADOR') {
+          console.log('Navigating to operator dashboard');
           this.router.navigate(['/operator/dashboard']);
         } else {
+          console.log('Navigating to main app');
           this.router.navigate(['/app']);
         }
       },
       error: (error) => {
         console.error('❌ Login failed:', error);
-        this.errorMessage = error.error?.error || 'Error de inicio de sesión. Por favor verifique sus credenciales.';
+        this.errorMessage =
+          error.error?.error || 'Error de inicio de sesión. Por favor verifique sus credenciales.';
         this.loading = false;
       },
     });

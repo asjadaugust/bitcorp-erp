@@ -2,12 +2,13 @@ import { Component, inject, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { Role } from '../../core/types/roles';
 
 interface NavItem {
   label: string;
   route: string;
   icon: string;
-  roles?: string[];
+  roles?: Role[];
 }
 
 @Component({
@@ -271,7 +272,7 @@ export class SidebarComponent {
       label: 'Configuración',
       route: '/settings',
       icon: 'fa-solid fa-gear',
-      roles: ['administrador'],
+      roles: ['ADMIN'],
     },
   ];
 
@@ -279,7 +280,8 @@ export class SidebarComponent {
     if (!item.roles) return true;
     const userRole = this.authService.getCurrentUserRole();
     if (!userRole) return false;
-    return item.roles.includes(userRole);
+    // Case-insensitive comparison for backward compatibility
+    return item.roles.some((role) => role.toLowerCase() === userRole.toLowerCase());
   }
 
   toggleCollapse() {

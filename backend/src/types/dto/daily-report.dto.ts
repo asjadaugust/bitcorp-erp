@@ -107,6 +107,8 @@ export function fromDailyReportDto(dto: Partial<DailyReportDto>): any {
   if (dto.odometro_final !== undefined) entity.odometro_final = dto.odometro_final || null;
   if (dto.combustible_inicial !== undefined)
     entity.combustible_inicial = dto.combustible_inicial || null;
+  if (dto.combustible_consumido !== undefined)
+    entity.combustible_consumido = dto.combustible_consumido || null;
   if (dto.lugar_salida !== undefined) entity.lugar_salida = dto.lugar_salida;
   if (dto.observaciones !== undefined) entity.observaciones = dto.observaciones;
   if (dto.observaciones_correcciones !== undefined)

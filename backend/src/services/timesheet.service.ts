@@ -1,249 +1,294 @@
-import pool from '../config/database.config';
-import { DailyReportModel } from '../models/daily-report.model';
+import { Repository } from 'typeorm';
+import { AppDataSource } from '../config/database.config';
+import { Timesheet, EstadoTareo } from '../models/timesheet.model';
+import { TimesheetDetail } from '../models/timesheet-detail.model';
+import { Trabajador } from '../models/trabajador.model';
 
-interface TimesheetGenerationDto {
-  operatorId: string;
-  projectId?: string;
-  periodStart: string; // YYYY-MM-DD
-  periodEnd: string; // YYYY-MM-DD
+export interface TimesheetGenerationDto {
+  trabajadorId: number;
+  periodo: string; // Format: YYYY-MM
+  totalDiasTrabajados?: number;
+  totalHoras?: number;
+  observaciones?: string;
+  creadoPor?: number;
 }
 
-interface Timesheet {
-  id: string;
-  timesheet_code: string;
-  operator_id: string;
-  project_id?: string;
-  period_start: Date;
-  period_end: Date;
-  total_hours: number;
-  total_days: number;
-  regular_hours?: number;
-  overtime_hours?: number;
-  status: string;
-  generated_from_reports: boolean;
-  notes?: string;
-  submitted_at?: Date;
-  submitted_by?: string;
-  approved_at?: Date;
-  approved_by?: string;
-  rejected_at?: Date;
-  rejected_by?: string;
-  rejection_reason?: string;
-  created_at: Date;
-  updated_at: Date;
+export interface TimesheetWithDetails extends Timesheet {
+  trabajadorNombre?: string;
+  detalles?: TimesheetDetail[];
+}
+
+export interface TimesheetFilters {
+  trabajadorId?: number;
+  periodo?: string;
+  estado?: EstadoTareo;
+  creadoPor?: number;
 }
 
 /**
- * Timesheet Service
- * Note: This is a placeholder service. Timesheets table doesn't exist yet.
- * Returns mock data until the timesheets feature is fully implemented.
+ * TimesheetService - Employee Timesheet Management
+ *
+ * ✅ FULLY MIGRATED TO TYPEORM
+ * - All 6 raw SQL queries replaced with TypeORM
+ * - Uses existing rrhh.tareo and rrhh.detalle_tareo tables
+ * - Full type safety with Timesheet and TimesheetDetail entities
+ *
+ * Migration completed: Phase 3.7
  */
 export class TimesheetService {
-  /**
-   * Check if timesheets table exists
-   */
-  private async tableExists(): Promise<boolean> {
-    try {
-      const result = await pool.query(`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'timesheets'
-        );
-      `);
-      return result.rows[0].exists;
-    } catch {
-      return false;
-    }
+  private get timesheetRepository(): Repository<Timesheet> {
+    return AppDataSource.getRepository(Timesheet);
+  }
+
+  private get timesheetDetailRepository(): Repository<TimesheetDetail> {
+    return AppDataSource.getRepository(TimesheetDetail);
+  }
+
+  private get trabajadorRepository(): Repository<Trabajador> {
+    return AppDataSource.getRepository(Trabajador);
   }
 
   /**
-   * Calculate hours from time strings
+   * Generate/Create a new timesheet
+   *
+   * ✅ MIGRATED: Changed from checking table existence to actual creation
    */
-  private calculateHours(startTime: string, endTime: string): number {
-    const start = new Date(`2000-01-01T${startTime}`);
-    const end = new Date(`2000-01-01T${endTime}`);
-    const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    return Math.max(0, Math.round(diff * 100) / 100);
+  async generateTimesheet(dto: TimesheetGenerationDto): Promise<Timesheet> {
+    // Verify trabajador exists
+    const trabajador = await this.trabajadorRepository.findOne({
+      where: { id: dto.trabajadorId },
+    });
+
+    if (!trabajador) {
+      throw new Error('Trabajador no encontrado');
+    }
+
+    // Check if timesheet already exists for this period
+    const existing = await this.timesheetRepository.findOne({
+      where: {
+        trabajadorId: dto.trabajadorId,
+        periodo: dto.periodo,
+      },
+    });
+
+    if (existing) {
+      throw new Error(`Ya existe un tareo para el periodo ${dto.periodo}`);
+    }
+
+    // Create new timesheet
+    const timesheet = this.timesheetRepository.create({
+      trabajadorId: dto.trabajadorId,
+      periodo: dto.periodo,
+      totalDiasTrabajados: dto.totalDiasTrabajados || 0,
+      totalHoras: dto.totalHoras || 0,
+      estado: 'BORRADOR',
+      observaciones: dto.observaciones,
+      creadoPor: dto.creadoPor,
+    });
+
+    return await this.timesheetRepository.save(timesheet);
   }
 
   /**
-   * Generate timesheet from daily reports (placeholder)
+   * Get timesheet by ID with trabajador details
+   *
+   * ✅ MIGRATED: SELECT with JOIN → TypeORM relations
    */
-  async generateTimesheet(dto: TimesheetGenerationDto): Promise<any> {
-    const tableExists = await this.tableExists();
-    if (!tableExists) {
-      // Return a mock timesheet
-      return {
-        id: 'mock-timesheet-id',
-        timesheet_code: `TS-${new Date().getFullYear()}-001`,
-        operator_id: dto.operatorId,
-        project_id: dto.projectId,
-        period_start: dto.periodStart,
-        period_end: dto.periodEnd,
-        total_hours: 0,
-        total_days: 0,
-        status: 'draft',
-        message: 'Timesheets feature not yet implemented. Table does not exist.',
-      };
+  async getTimesheetWithDetails(id: number): Promise<TimesheetWithDetails> {
+    const timesheet = await this.timesheetRepository.findOne({
+      where: { id },
+      relations: ['trabajador', 'creador', 'aprobador'],
+    });
+
+    if (!timesheet) {
+      throw new Error('Tareo no encontrado');
     }
 
-    // Full implementation when table exists
-    return null;
-  }
+    // Get timesheet details
+    const detalles = await this.timesheetDetailRepository.find({
+      where: { tareoId: id },
+      relations: ['proyecto'],
+      order: { fecha: 'ASC' },
+    });
 
-  /**
-   * Get timesheet with details
-   */
-  async getTimesheetWithDetails(id: string): Promise<any> {
-    const tableExists = await this.tableExists();
-    if (!tableExists) {
-      throw new Error('Timesheets feature not yet implemented');
-    }
+    // Build response
+    const result: TimesheetWithDetails = {
+      ...timesheet,
+      trabajadorNombre: timesheet.trabajador
+        ? `${timesheet.trabajador.nombres} ${timesheet.trabajador.apellidoPaterno}`
+        : undefined,
+      detalles,
+    };
 
-    const result = await pool.query(
-      `SELECT ts.*, 
-              o.first_name || ' ' || o.last_name as operator_name
-       FROM timesheets ts
-       LEFT JOIN rrhh.trabajador o ON ts.operator_id = o.id
-       WHERE ts.id = $1`,
-      [id]
-    );
-
-    if (result.rows.length === 0) {
-      throw new Error('Timesheet not found');
-    }
-
-    return result.rows[0];
+    return result;
   }
 
   /**
    * Submit timesheet for approval
+   *
+   * ✅ MIGRATED: UPDATE with RETURNING → TypeORM update + findOne
    */
-  async submitTimesheet(id: string, submittedBy: string): Promise<any> {
-    const tableExists = await this.tableExists();
-    if (!tableExists) {
-      throw new Error('Timesheets feature not yet implemented');
+  async submitTimesheet(id: number, submittedBy: number): Promise<Timesheet> {
+    const timesheet = await this.timesheetRepository.findOne({
+      where: { id, estado: 'BORRADOR' },
+    });
+
+    if (!timesheet) {
+      throw new Error('Tareo no encontrado o no puede ser enviado (debe estar en estado BORRADOR)');
     }
 
-    const result = await pool.query(
-      `UPDATE timesheets 
-       SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP, submitted_by = $1
-       WHERE id = $2 AND status = 'draft'
-       RETURNING *`,
-      [submittedBy, id]
-    );
+    // Update to submitted state
+    timesheet.estado = 'ENVIADO';
+    timesheet.creadoPor = submittedBy; // Track who submitted
 
-    if (result.rows.length === 0) {
-      throw new Error('Timesheet not found or cannot be submitted');
-    }
-
-    return result.rows[0];
+    return await this.timesheetRepository.save(timesheet);
   }
 
   /**
    * Approve timesheet
+   *
+   * ✅ MIGRATED: UPDATE with RETURNING → TypeORM update + findOne
    */
-  async approveTimesheet(id: string, approvedBy: string): Promise<any> {
-    const tableExists = await this.tableExists();
-    if (!tableExists) {
-      throw new Error('Timesheets feature not yet implemented');
+  async approveTimesheet(id: number, approvedBy: number): Promise<Timesheet> {
+    const timesheet = await this.timesheetRepository.findOne({
+      where: { id, estado: 'ENVIADO' },
+    });
+
+    if (!timesheet) {
+      throw new Error('Tareo no encontrado o no puede ser aprobado (debe estar en estado ENVIADO)');
     }
 
-    const result = await pool.query(
-      `UPDATE timesheets 
-       SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = $1
-       WHERE id = $2 AND status = 'submitted'
-       RETURNING *`,
-      [approvedBy, id]
-    );
+    // Update to approved state
+    timesheet.estado = 'APROBADO';
+    timesheet.aprobadoPor = approvedBy;
+    timesheet.aprobadoEn = new Date();
 
-    if (result.rows.length === 0) {
-      throw new Error('Timesheet not found or cannot be approved');
-    }
-
-    return result.rows[0];
+    return await this.timesheetRepository.save(timesheet);
   }
 
   /**
    * Reject timesheet
+   *
+   * ✅ MIGRATED: UPDATE with RETURNING → TypeORM update + findOne
    */
-  async rejectTimesheet(id: string, rejectedBy: string, reason: string): Promise<any> {
-    const tableExists = await this.tableExists();
-    if (!tableExists) {
-      throw new Error('Timesheets feature not yet implemented');
+  async rejectTimesheet(id: number, rejectedBy: number, reason: string): Promise<Timesheet> {
+    const timesheet = await this.timesheetRepository.findOne({
+      where: { id, estado: 'ENVIADO' },
+    });
+
+    if (!timesheet) {
+      throw new Error(
+        'Tareo no encontrado o no puede ser rechazado (debe estar en estado ENVIADO)'
+      );
     }
 
-    const result = await pool.query(
-      `UPDATE timesheets 
-       SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = $1, rejection_reason = $2
-       WHERE id = $3 AND status = 'submitted'
-       RETURNING *`,
-      [rejectedBy, reason, id]
-    );
+    // Update to rejected state (back to BORRADOR with observation)
+    timesheet.estado = 'RECHAZADO';
+    timesheet.observaciones = reason;
+    timesheet.aprobadoPor = rejectedBy; // Track who rejected
 
-    if (result.rows.length === 0) {
-      throw new Error('Timesheet not found or cannot be rejected');
-    }
-
-    return result.rows[0];
+    return await this.timesheetRepository.save(timesheet);
   }
 
   /**
    * List timesheets with filters
+   *
+   * ✅ MIGRATED: Dynamic SELECT with JOINs → TypeORM QueryBuilder
    */
-  async listTimesheets(filters: {
-    operatorId?: string;
-    projectId?: string;
-    status?: string;
-    periodStart?: string;
-    periodEnd?: string;
-  }): Promise<any[]> {
-    const tableExists = await this.tableExists();
-    if (!tableExists) {
-      // Return empty array - feature not implemented
-      return [];
+  async listTimesheets(filters: TimesheetFilters): Promise<TimesheetWithDetails[]> {
+    const queryBuilder = this.timesheetRepository
+      .createQueryBuilder('ts')
+      .leftJoinAndSelect('ts.trabajador', 't')
+      .leftJoinAndSelect('ts.creador', 'c')
+      .leftJoinAndSelect('ts.aprobador', 'a');
+
+    // Apply filters
+    if (filters.trabajadorId) {
+      queryBuilder.andWhere('ts.trabajador_id = :trabajadorId', {
+        trabajadorId: filters.trabajadorId,
+      });
     }
 
-    let query = `
-      SELECT ts.*, 
-             o.first_name || ' ' || o.last_name as operator_name
-      FROM timesheets ts
-      LEFT JOIN rrhh.trabajador o ON ts.operator_id = o.id
-      WHERE 1=1
-    `;
-    const params: any[] = [];
-    let paramIndex = 1;
-
-    if (filters.operatorId) {
-      query += ` AND ts.operator_id = $${paramIndex++}`;
-      params.push(filters.operatorId);
+    if (filters.periodo) {
+      queryBuilder.andWhere('ts.periodo = :periodo', {
+        periodo: filters.periodo,
+      });
     }
 
-    if (filters.projectId) {
-      query += ` AND ts.project_id = $${paramIndex++}`;
-      params.push(filters.projectId);
+    if (filters.estado) {
+      queryBuilder.andWhere('ts.estado = :estado', {
+        estado: filters.estado,
+      });
     }
 
-    if (filters.status) {
-      query += ` AND ts.status = $${paramIndex++}`;
-      params.push(filters.status);
+    if (filters.creadoPor) {
+      queryBuilder.andWhere('ts.creado_por = :creadoPor', {
+        creadoPor: filters.creadoPor,
+      });
     }
 
-    if (filters.periodStart) {
-      query += ` AND ts.period_start >= $${paramIndex++}`;
-      params.push(filters.periodStart);
+    queryBuilder.orderBy('ts.created_at', 'DESC');
+
+    const timesheets = await queryBuilder.getMany();
+
+    // Map to response format with trabajador name
+    return timesheets.map((ts) => ({
+      ...ts,
+      trabajadorNombre: ts.trabajador
+        ? `${ts.trabajador.nombres} ${ts.trabajador.apellidoPaterno}`
+        : undefined,
+    }));
+  }
+
+  /**
+   * Get timesheet by trabajador and periodo
+   */
+  async getByTrabajadorAndPeriodo(
+    trabajadorId: number,
+    periodo: string
+  ): Promise<Timesheet | null> {
+    return await this.timesheetRepository.findOne({
+      where: { trabajadorId, periodo },
+      relations: ['trabajador'],
+    });
+  }
+
+  /**
+   * Delete timesheet (only if in BORRADOR state)
+   */
+  async deleteTimesheet(id: number): Promise<boolean> {
+    const timesheet = await this.timesheetRepository.findOne({
+      where: { id, estado: 'BORRADOR' },
+    });
+
+    if (!timesheet) {
+      throw new Error(
+        'Tareo no encontrado o no puede ser eliminado (solo se pueden eliminar borradores)'
+      );
     }
 
-    if (filters.periodEnd) {
-      query += ` AND ts.period_end <= $${paramIndex++}`;
-      params.push(filters.periodEnd);
+    await this.timesheetRepository.remove(timesheet);
+    return true;
+  }
+
+  /**
+   * Update timesheet details
+   */
+  async updateTimesheet(id: number, updates: Partial<Timesheet>): Promise<Timesheet> {
+    const timesheet = await this.timesheetRepository.findOne({
+      where: { id, estado: 'BORRADOR' },
+    });
+
+    if (!timesheet) {
+      throw new Error(
+        'Tareo no encontrado o no puede ser actualizado (solo se pueden actualizar borradores)'
+      );
     }
 
-    query += ' ORDER BY ts.created_at DESC';
+    // Apply updates
+    Object.assign(timesheet, updates);
 
-    const result = await pool.query(query, params);
-    return result.rows;
+    return await this.timesheetRepository.save(timesheet);
   }
 }
 

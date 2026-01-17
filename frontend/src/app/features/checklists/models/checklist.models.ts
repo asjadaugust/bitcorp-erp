@@ -118,10 +118,10 @@ export interface ChecklistSummary {
   by_type: {
     [key in ChecklistType]?: number;
   };
-  recent_failures: Array<{
+  recent_failures: {
     id: string;
     equipment_code: string;
     checklist_date: string;
     failed_items: number;
-  }>;
+  }[];
 }

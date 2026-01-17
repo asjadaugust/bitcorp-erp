@@ -40,25 +40,32 @@ import { ScheduledTask } from '../../../core/models/scheduled-task.model';
         <div class="weekday" *ngFor="let day of weekDays">{{ day }}</div>
 
         <!-- Days -->
-        <div 
-          *ngFor="let day of calendarDays" 
-          class="calendar-day" 
+        <div
+          *ngFor="let day of calendarDays"
+          class="calendar-day"
           [class.other-month]="!day.isCurrentMonth"
           [class.today]="day.isToday"
-          (click)="selectDay(day)">
-          
+          (click)="selectDay(day)"
+        >
           <div class="day-header">
             <span class="day-number">{{ day.date.getDate() }}</span>
-            <button *ngIf="day.isCurrentMonth" class="btn-add-mini" (click)="createTaskForDate(day.date, $event)">+</button>
+            <button
+              *ngIf="day.isCurrentMonth"
+              class="btn-add-mini"
+              (click)="createTaskForDate(day.date, $event)"
+            >
+              +
+            </button>
           </div>
 
           <div class="day-tasks">
-            <div 
-              *ngFor="let task of getTasksForDate(day.date)" 
-              class="task-pill" 
+            <div
+              *ngFor="let task of getTasksForDate(day.date)"
+              class="task-pill"
               [class]="'priority-' + task.priority"
               (click)="editTask(task.id, $event)"
-              [title]="task.description">
+              [title]="task.description"
+            >
               {{ task.equipment?.code }} - {{ task.task_type }}
             </div>
           </div>
@@ -66,72 +73,188 @@ import { ScheduledTask } from '../../../core/models/scheduled-task.model';
       </div>
     </div>
   `,
-  styles: [`
-    .container-fluid { padding: 2rem; max-width: 1400px; margin: 0 auto; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .header-actions { display: flex; gap: 1rem; }
-    
-    .calendar-controls {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 1rem 2rem; background: white; border-radius: 12px; margin-bottom: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .calendar-controls h2 { margin: 0; font-size: 1.5rem; color: #2d3748; }
-    
-    .calendar-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      background: white; border-radius: 12px; overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      border: 1px solid #e2e8f0;
-    }
-    
-    .weekday {
-      padding: 1rem; text-align: center; font-weight: 600; color: #718096;
-      background: #f7fafc; border-bottom: 1px solid #e2e8f0;
-      text-transform: uppercase; font-size: 0.875rem;
-    }
-    
-    .calendar-day {
-      min-height: 120px; padding: 0.5rem; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
-      background: white; transition: background 0.2s; cursor: pointer;
-    }
-    .calendar-day:hover { background: #f7fafc; }
-    .calendar-day.other-month { background: #fcfcfc; color: #cbd5e0; }
-    .calendar-day.today { background: #ebf8ff; }
-    
-    .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .day-number { font-weight: 600; font-size: 0.9rem; }
-    
-    .btn-add-mini {
-      width: 20px; height: 20px; border-radius: 50%; border: none;
-      background: transparent; color: #a0aec0; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; line-height: 1; opacity: 0; transition: all 0.2s;
-    }
-    .calendar-day:hover .btn-add-mini { opacity: 1; }
-    .btn-add-mini:hover { background: #3182ce; color: white; }
-    
-    .day-tasks { display: flex; flex-direction: column; gap: 2px; }
-    
-    .task-pill {
-      font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      cursor: pointer; color: #2d3748; background: #edf2f7;
-      border-left: 3px solid #cbd5e0;
-    }
-    .task-pill:hover { filter: brightness(0.95); }
-    
-    .priority-low { border-left-color: #38b2ac; background: #e6fffa; }
-    .priority-medium { border-left-color: #dd6b20; background: #fffaf0; }
-    .priority-high { border-left-color: #e53e3e; background: #fff5f5; }
-    .priority-critical { border-left-color: #822727; background: #fed7d7; color: #822727; }
-    
-    .btn { padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
-    .btn-primary { background: #3182ce; color: white; }
-    .btn-secondary { background: #e2e8f0; color: #2d3748; }
-    .btn-icon { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #4a5568; padding: 0.5rem; border-radius: 50%; }
-    .btn-icon:hover { background: #edf2f7; }
-  `]
+  styles: [
+    `
+      .container-fluid {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .calendar-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .calendar-controls h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #2d3748;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+      }
+
+      .weekday {
+        padding: 1rem;
+        text-align: center;
+        font-weight: 600;
+        color: #718096;
+        background: #f7fafc;
+        border-bottom: 1px solid #e2e8f0;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+      }
+
+      .calendar-day {
+        min-height: 120px;
+        padding: 0.5rem;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        background: white;
+        transition: background 0.2s;
+        cursor: pointer;
+      }
+      .calendar-day:hover {
+        background: #f7fafc;
+      }
+      .calendar-day.other-month {
+        background: #fcfcfc;
+        color: #cbd5e0;
+      }
+      .calendar-day.today {
+        background: #ebf8ff;
+      }
+
+      .day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .day-number {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .btn-add-mini {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: #a0aec0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        line-height: 1;
+        opacity: 0;
+        transition: all 0.2s;
+      }
+      .calendar-day:hover .btn-add-mini {
+        opacity: 1;
+      }
+      .btn-add-mini:hover {
+        background: #3182ce;
+        color: white;
+      }
+
+      .day-tasks {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .task-pill {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+        color: #2d3748;
+        background: #edf2f7;
+        border-left: 3px solid #cbd5e0;
+      }
+      .task-pill:hover {
+        filter: brightness(0.95);
+      }
+
+      .priority-low {
+        border-left-color: #38b2ac;
+        background: #e6fffa;
+      }
+      .priority-medium {
+        border-left-color: #dd6b20;
+        background: #fffaf0;
+      }
+      .priority-high {
+        border-left-color: #e53e3e;
+        background: #fff5f5;
+      }
+      .priority-critical {
+        border-left-color: #822727;
+        background: #fed7d7;
+        color: #822727;
+      }
+
+      .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-primary {
+        background: #3182ce;
+        color: white;
+      }
+      .btn-secondary {
+        background: #e2e8f0;
+        color: #2d3748;
+      }
+      .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        color: #4a5568;
+        padding: 0.5rem;
+        border-radius: 50%;
+      }
+      .btn-icon:hover {
+        background: #edf2f7;
+      }
+    `,
+  ],
 })
 export class ScheduledTaskCalendarComponent implements OnInit {
   private taskService = inject(ScheduledTaskService);
@@ -152,33 +275,34 @@ export class ScheduledTaskCalendarComponent implements OnInit {
   updateCalendar() {
     this.currentYear = this.currentDate.getFullYear();
     this.currentMonthName = this.currentDate.toLocaleString('es-ES', { month: 'long' });
-    this.currentMonthName = this.currentMonthName.charAt(0).toUpperCase() + this.currentMonthName.slice(1);
-    
+    this.currentMonthName =
+      this.currentMonthName.charAt(0).toUpperCase() + this.currentMonthName.slice(1);
+
     this.generateCalendarGrid();
   }
 
   generateCalendarGrid() {
     const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();
-    
+
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-    
+
     const startDay = firstDayOfMonth.getDay(); // 0 = Sunday
     const endDay = lastDayOfMonth.getDate();
-    
+
     this.calendarDays = [];
-    
+
     // Previous month days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startDay - 1; i >= 0; i--) {
       this.calendarDays.push({
         date: new Date(year, month - 1, prevMonthLastDay - i),
         isCurrentMonth: false,
-        isToday: false
+        isToday: false,
       });
     }
-    
+
     // Current month days
     const today = new Date();
     for (let i = 1; i <= endDay; i++) {
@@ -186,17 +310,17 @@ export class ScheduledTaskCalendarComponent implements OnInit {
       this.calendarDays.push({
         date: date,
         isCurrentMonth: true,
-        isToday: date.toDateString() === today.toDateString()
+        isToday: date.toDateString() === today.toDateString(),
       });
     }
-    
+
     // Next month days
     const remainingCells = 42 - this.calendarDays.length; // 6 rows * 7 cols
     for (let i = 1; i <= remainingCells; i++) {
       this.calendarDays.push({
         date: new Date(year, month + 1, i),
         isCurrentMonth: false,
-        isToday: false
+        isToday: false,
       });
     }
   }
@@ -205,18 +329,21 @@ export class ScheduledTaskCalendarComponent implements OnInit {
     // Load tasks for current month view (including padding days)
     const start = this.calendarDays[0].date.toISOString().split('T')[0];
     const end = this.calendarDays[this.calendarDays.length - 1].date.toISOString().split('T')[0];
-    
+
     this.taskService.getAll({ date_from: start, date_to: end }).subscribe({
       next: (res: any) => {
         this.tasks = res.data;
       },
-      error: (err: any) => console.error('Error loading tasks:', err)
+      error: (err: any) => console.error('Error loading tasks:', err),
     });
   }
 
   getTasksForDate(date: Date): ScheduledTask[] {
+    if (!this.tasks || !Array.isArray(this.tasks)) {
+      return [];
+    }
     const dateStr = date.toISOString().split('T')[0];
-    return this.tasks.filter(t => {
+    return this.tasks.filter((t) => {
       const taskDate = t.start_date || t.scheduled_date;
       return taskDate && taskDate.startsWith(dateStr);
     });
@@ -235,18 +362,18 @@ export class ScheduledTaskCalendarComponent implements OnInit {
   }
 
   createTask() {
-    this.router.navigate(['/scheduling/tasks/new']);
+    this.router.navigate(['/operaciones/scheduling/tasks/new']);
   }
 
   createTaskForDate(date: Date, event: Event) {
     event.stopPropagation();
     const dateStr = date.toISOString().split('T')[0];
-    this.router.navigate(['/scheduling/tasks/new'], { queryParams: { date: dateStr } });
+    this.router.navigate(['/operaciones/scheduling/tasks/new'], { queryParams: { date: dateStr } });
   }
 
   editTask(id: number, event: Event) {
     event.stopPropagation();
-    this.router.navigate(['/scheduling/tasks', id, 'edit']);
+    this.router.navigate(['/operaciones/scheduling/tasks', id, 'edit']);
   }
 
   selectDay(day: any) {
@@ -254,6 +381,6 @@ export class ScheduledTaskCalendarComponent implements OnInit {
   }
 
   viewList() {
-    this.router.navigate(['/scheduling/tasks']);
+    this.router.navigate(['/operaciones/scheduling/tasks']);
   }
 }

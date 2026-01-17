@@ -370,6 +370,6 @@ export class TimesheetGenerateComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/timesheets']);
+    this.router.navigate(['/operaciones/timesheets']);
   }
 }
