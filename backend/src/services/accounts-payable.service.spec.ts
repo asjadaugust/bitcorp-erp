@@ -12,6 +12,7 @@ jest.mock('../repositories/accounts-payable.repository', () => ({
     merge: jest.fn(),
     remove: jest.fn(),
     findPending: jest.fn(),
+    createQueryBuilder: jest.fn(),
   },
 }));
 
@@ -79,15 +80,29 @@ describe('AccountsPayableService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all accounts payable records', async () => {
+    it('should return paginated accounts payable records with total', async () => {
       const mockEntities = [createMockEntity(1), createMockEntity(2)];
-      mockRepository.find.mockResolvedValue(mockEntities);
 
-      const result = await service.findAll();
+      // Mock the query builder chain
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(2),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockEntities),
+      };
 
-      expect(mockRepository.find).toHaveBeenCalled();
-      expect(result).toHaveLength(2);
-      expect(result[0].numero_factura).toBe('INV-001');
+      mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+
+      const result = await service.findAll({ page: 1, limit: 10 });
+
+      expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith('ap');
+      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('ap.provider', 'provider');
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalled();
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(2);
+      expect(result.data[0].numero_factura).toBe('INV-001');
     });
   });
 

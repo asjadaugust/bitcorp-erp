@@ -61,12 +61,49 @@ export class AccountsPayableService {
     return toAccountsPayableDto(reloaded!);
   }
 
-  async findAll(): Promise<AccountsPayableDto[]> {
-    const accounts = await AccountsPayableRepository.find({
-      relations: ['provider'],
-      order: { created_at: 'DESC' },
-    });
-    return accounts.map((a) => toAccountsPayableDto(a));
+  async findAll(filters?: {
+    page?: number;
+    limit?: number;
+    sort_by?: string;
+    sort_order?: 'ASC' | 'DESC';
+  }): Promise<{ data: AccountsPayableDto[]; total: number }> {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 20;
+    const skip = (page - 1) * limit;
+
+    // Sortable fields whitelist
+    const sortableFields: Record<string, string> = {
+      fecha_emision: 'ap.issue_date',
+      fecha_vencimiento: 'ap.due_date',
+      monto_total: 'ap.amount',
+      monto_pagado: 'ap.amount_paid',
+      saldo: 'ap.balance',
+      estado: 'ap.status',
+      numero_factura: 'ap.document_number',
+      created_at: 'ap.created_at',
+    };
+
+    const sortBy =
+      filters?.sort_by && sortableFields[filters.sort_by]
+        ? sortableFields[filters.sort_by]
+        : 'ap.created_at';
+    const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
+
+    // Use query builder for dynamic sorting
+    const queryBuilder = AccountsPayableRepository.createQueryBuilder('ap')
+      .leftJoinAndSelect('ap.provider', 'provider')
+      .orderBy(sortBy, sortOrder);
+
+    // Get total count
+    const total = await queryBuilder.getCount();
+
+    // Get paginated data
+    const accounts = await queryBuilder.skip(skip).take(limit).getMany();
+
+    return {
+      data: accounts.map((a) => toAccountsPayableDto(a)),
+      total,
+    };
   }
 
   async findOne(id: number): Promise<AccountsPayableDto | null> {

@@ -8,6 +8,16 @@
  */
 
 import { AccountsPayable, AccountsPayableStatus } from '../../models/accounts-payable.model';
+import {
+  IsInt,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsNumber,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export interface AccountsPayableDto {
   id: number;
@@ -111,4 +121,114 @@ export function fromAccountsPayableDto(dto: Partial<AccountsPayableDto>): Partia
   if (dto.observaciones !== undefined) entity.description = dto.observaciones || undefined;
 
   return entity;
+}
+
+/**
+ * DTO for creating a new accounts payable record with validation
+ * Used by validation middleware for POST requests
+ */
+export class AccountsPayableCreateDto {
+  @IsOptional()
+  @IsString({ message: 'ID legacy debe ser texto' })
+  @MaxLength(50, { message: 'ID legacy no puede exceder 50 caracteres' })
+  legacy_id?: string;
+
+  @IsInt({ message: 'ID de proveedor debe ser un número entero' })
+  proveedor_id!: number;
+
+  @IsString({ message: 'Número de factura debe ser texto' })
+  @MaxLength(100, { message: 'Número de factura no puede exceder 100 caracteres' })
+  numero_factura!: string;
+
+  @IsDateString({}, { message: 'Fecha de emisión debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_emision!: string;
+
+  @IsDateString({}, { message: 'Fecha de vencimiento debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_vencimiento!: string;
+
+  @IsNumber({}, { message: 'Monto total debe ser un número' })
+  @Min(0, { message: 'Monto total debe ser mayor o igual a 0' })
+  monto_total!: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Monto pagado debe ser un número' })
+  @Min(0, { message: 'Monto pagado debe ser mayor o igual a 0' })
+  monto_pagado?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Saldo debe ser un número' })
+  @Min(0, { message: 'Saldo debe ser mayor o igual a 0' })
+  saldo?: number;
+
+  @IsString({ message: 'Moneda debe ser texto' })
+  @MaxLength(3, { message: 'Moneda debe ser de 3 caracteres (PEN, USD, EUR)' })
+  moneda!: string;
+
+  @IsOptional()
+  @IsIn(['PENDIENTE', 'PAGADO_PARCIAL', 'PAGADO', 'ANULADO'], {
+    message: 'Estado debe ser PENDIENTE, PAGADO_PARCIAL, PAGADO o ANULADO',
+  })
+  estado?: AccountsPayableStatus;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones?: string;
+}
+
+/**
+ * DTO for updating an accounts payable record (all fields optional)
+ * Used by validation middleware for PUT requests
+ */
+export class AccountsPayableUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'ID legacy debe ser texto' })
+  @MaxLength(50, { message: 'ID legacy no puede exceder 50 caracteres' })
+  legacy_id?: string;
+
+  @IsOptional()
+  @IsInt({ message: 'ID de proveedor debe ser un número entero' })
+  proveedor_id?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Número de factura debe ser texto' })
+  @MaxLength(100, { message: 'Número de factura no puede exceder 100 caracteres' })
+  numero_factura?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de emisión debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_emision?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Fecha de vencimiento debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_vencimiento?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Monto total debe ser un número' })
+  @Min(0, { message: 'Monto total debe ser mayor o igual a 0' })
+  monto_total?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Monto pagado debe ser un número' })
+  @Min(0, { message: 'Monto pagado debe ser mayor o igual a 0' })
+  monto_pagado?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Saldo debe ser un número' })
+  @Min(0, { message: 'Saldo debe ser mayor o igual a 0' })
+  saldo?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Moneda debe ser texto' })
+  @MaxLength(3, { message: 'Moneda debe ser de 3 caracteres (PEN, USD, EUR)' })
+  moneda?: string;
+
+  @IsOptional()
+  @IsIn(['PENDIENTE', 'PAGADO_PARCIAL', 'PAGADO', 'ANULADO'], {
+    message: 'Estado debe ser PENDIENTE, PAGADO_PARCIAL, PAGADO o ANULADO',
+  })
+  estado?: AccountsPayableStatus;
+
+  @IsOptional()
+  @IsString({ message: 'Observaciones debe ser texto' })
+  observaciones?: string;
 }
