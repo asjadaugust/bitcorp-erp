@@ -20,7 +20,263 @@ This directory contains SQL migration scripts for the BitCorp ERP database schem
 | `002_seed.sql`                         | 5.0     | Comprehensive seed data (system, projects, equipment, operators) | ✅ Applied |
 | `003_seed_additional_providers.sql`    | 1.0     | Additional realistic Peruvian provider data                      | ✅ Applied |
 | `004_seed_additional_equipment.sql`    | 1.0     | Additional construction equipment across all categories          | ✅ Applied |
+| `005_seed_additional_contracts.sql`    | 1.0     | Comprehensive equipment contracts with various pricing models    | ✅ Applied |
 | `012_add_user_project_assignments.sql` | N/A     | User-project assignments (WIP - not applied)                     | ⏸️ Pending |
+
+---
+
+## Migration 005: Additional Contract Seed Data
+
+**Date**: 2026-01-18  
+**Purpose**: Add comprehensive equipment contract seed data covering various pricing models and scenarios
+
+### Contracts Added (15 new contracts)
+
+#### Contract Distribution by Equipment Category
+
+```sql
+Total Contracts: 19 items (4 original + 15 new)
+├── Excavators: 7 contracts (37%)
+├── Loaders: 3 contracts (16%)
+├── Trucks: 4 contracts (21%)
+├── Tractors/Bulldozers: 3 contracts (16%)
+├── Compactors: 1 contract (5%)
+└── Motor Graders: 1 contract (5%)
+```
+
+#### Contracts by Pricing Model
+
+| Pricing Model          | Count | Percentage | Typical Use Case                    |
+| ---------------------- | ----- | ---------- | ----------------------------------- |
+| POR_HORA (Hourly Rate) | 11    | 58%        | Standard equipment rental           |
+| TARIFA_FIJA_MENSUAL    | 6     | 32%        | Long-term projects with predictable |
+| (Monthly Flat Rate)    |       |            | usage                               |
+| POR_DIA (Daily Rate)   | 2     | 10%        | Trucks and transport equipment      |
+
+#### Contracts by Status
+
+| Status         | Count | Description                           |
+| -------------- | ----- | ------------------------------------- |
+| **ACTIVO**     | 17    | Active contracts in effect            |
+| **FINALIZADO** | 2     | Completed contracts (historical data) |
+
+#### Contracts by Modality
+
+| Modality                            | Count | Description                                |
+| ----------------------------------- | ----- | ------------------------------------------ |
+| ALQUILER CON OPERADOR               | 10    | Equipment with certified operator          |
+| ALQUILER CON OPERADOR Y COMBUSTIBLE | 6     | Full service (equipment + operator + fuel) |
+| ALQUILER SOLO EQUIPO                | 3     | Equipment only (client provides operator)  |
+
+### Detailed Contract Listing
+
+#### Excavator Contracts (5 new)
+
+1. **CONT-2025-004** - CAT 336 (EXC-002)
+   - Type: POR_HORA (S/ 280/hour)
+   - Duration: 2025-02-01 to 2025-12-31 (11 months)
+   - Modality: With operator
+   - Status: ACTIVO
+
+2. **CONT-2025-005** - Komatsu PC200-8 (EXC-003)
+   - Type: POR_HORA (S/ 220/hour)
+   - Duration: 2025-03-01 to 2025-08-31 (6 months)
+   - Modality: Equipment only (no operator)
+   - Status: ACTIVO
+
+3. **CONT-2025-006** - CAT 320D2 (EXC-004)
+   - Type: TARIFA_FIJA_MENSUAL (S/ 45,000/month)
+   - Duration: 2025-02-15 to 2025-07-15 (5 months)
+   - Includes: 200 hours/month, operator, fuel, maintenance
+   - Status: ACTIVO
+
+4. **CONT-2024-087** - Hyundai R210LC-9 (EXC-005)
+   - Type: POR_HORA (S/ 240/hour)
+   - Duration: 2024-09-01 to 2024-12-31 (completed)
+   - Status: FINALIZADO
+
+5. **CONT-2025-007** - Komatsu PC300-8 (EXC-006)
+   - Type: POR_HORA (S/ 300/hour + S/ 50/hour fuel)
+   - Duration: 2025-02-10 to 2025-11-10 (9 months)
+   - Status: ACTIVO
+
+#### Loader Contracts (3 new)
+
+6. **CONT-2025-008** - CAT 950GC (CAR-001)
+   - Type: POR_HORA (S/ 260/hour)
+   - Duration: 2025-01-20 to 2025-12-20 (11 months)
+   - Status: ACTIVO
+
+7. **CONT-2025-009** - Komatsu WA380-8 (CAR-002)
+   - Type: TARIFA_FIJA_MENSUAL (S/ 38,000/month)
+   - Includes: 180 hours/month, S/ 75/hour penalty for excess
+   - Duration: 2025-02-20 to 2025-08-20 (6 months)
+   - Modality: Equipment only
+   - Status: ACTIVO
+
+8. **CONT-2025-010** - John Deere 544K (CAR-003)
+   - Type: POR_HORA (S/ 250/hour)
+   - Duration: 2025-03-15 to 2025-09-15 (6 months)
+   - Status: ACTIVO
+
+#### Truck Contracts (3 new)
+
+9. **CONT-2025-011** - Volvo FM440 (VOL-002)
+   - Type: POR_DIA (S/ 1,200/day)
+   - Includes: Driver, fuel, max 200 km/day (S/ 3/km excess)
+   - Duration: 2025-02-01 to 2025-07-31 (6 months)
+   - Status: ACTIVO
+
+10. **CONT-2025-012** - Mercedes-Benz Actros (VOL-003)
+    - Type: TARIFA_FIJA_MENSUAL (S/ 32,000/month)
+    - Includes: Driver, fuel, maintenance, 22 days/month
+    - Duration: 2025-03-01 to 2025-12-31 (10 months)
+    - Status: ACTIVO
+
+11. **CONT-2024-095** - Scania P410B (VOL-004)
+    - Type: POR_DIA (S/ 1,100/day)
+    - Duration: 2024-10-01 to 2024-12-31 (completed)
+    - Status: FINALIZADO
+
+#### Tractor Contracts (2 new)
+
+12. **CONT-2025-013** - CAT D6T XL (TRA-002)
+    - Type: POR_HORA (S/ 320/hour)
+    - Duration: 2025-02-15 to 2025-11-15 (9 months)
+    - Status: ACTIVO
+
+13. **CONT-2025-014** - Komatsu D85EX-18 (TRA-003)
+    - Type: TARIFA_FIJA_MENSUAL (S/ 52,000/month)
+    - Includes: 220 hours/month, operator, fuel, maintenance
+    - Duration: 2025-02-25 to 2025-08-25 (6 months)
+    - Status: ACTIVO
+
+#### Compactor Contract (1 new)
+
+14. **CONT-2025-015** - CAT CS54B (COM-001)
+    - Type: POR_HORA (S/ 180/hour)
+    - Modality: Equipment only
+    - Duration: 2025-03-01 to 2025-09-30 (7 months)
+    - Status: ACTIVO
+
+#### Motor Grader Contract (1 new)
+
+15. **CONT-2025-016** - CAT 140M (MOT-001)
+    - Type: TARIFA_FIJA_MENSUAL (S/ 48,000/month)
+    - Includes: 200 hours/month, specialized operator, fuel, maintenance
+    - Duration: 2025-02-20 to 2025-12-20 (10 months)
+    - Status: ACTIVO
+
+### Database Statistics After Migration
+
+```sql
+Total Contracts: 19 (4 original + 15 new)
+├── Active Contracts: 17 (89%)
+└── Finalized Contracts: 2 (11%)
+
+Equipment with Contracts: 16 items (70% of fleet)
+Equipment without Contracts: 7 items (30% of fleet)
+
+Pricing Models:
+├── Hourly (POR_HORA): 11 contracts (58%)
+├── Monthly Flat (TARIFA_FIJA_MENSUAL): 6 contracts (32%)
+└── Daily (POR_DIA): 2 contracts (10%)
+
+Average Hourly Rate: S/ 264/hour
+Average Monthly Rate: S/ 43,000/month
+Average Daily Rate: S/ 1,150/day
+```
+
+### How to Apply This Migration
+
+```bash
+# From project root directory
+docker exec -i bitcorp-postgres-dev psql -U bitcorp -d bitcorp_dev < database/005_seed_additional_contracts.sql
+```
+
+### Verification Queries
+
+```sql
+-- Count contracts by pricing model
+SELECT tipo_tarifa, COUNT(*) as total
+FROM equipo.contrato_adenda
+GROUP BY tipo_tarifa
+ORDER BY total DESC;
+
+-- Count contracts by status
+SELECT estado, COUNT(*) as total
+FROM equipo.contrato_adenda
+GROUP BY estado
+ORDER BY total DESC;
+
+-- Equipment with contract counts
+SELECT
+  e.codigo_equipo,
+  e.marca,
+  e.modelo,
+  COUNT(c.id) as contract_count
+FROM equipo.equipo e
+LEFT JOIN equipo.contrato_adenda c ON e.id = c.equipo_id
+GROUP BY e.id, e.codigo_equipo, e.marca, e.modelo
+ORDER BY contract_count DESC, e.codigo_equipo;
+
+-- Active contracts with details
+SELECT
+  c.numero_contrato,
+  e.codigo_equipo,
+  e.marca,
+  e.modelo,
+  c.tipo_tarifa,
+  c.tarifa,
+  c.modalidad,
+  c.fecha_inicio,
+  c.fecha_fin
+FROM equipo.contrato_adenda c
+JOIN equipo.equipo e ON c.equipo_id = e.id
+WHERE c.estado = 'ACTIVO'
+ORDER BY c.fecha_inicio DESC;
+
+-- Equipment without contracts (available for new contracts)
+SELECT
+  e.codigo_equipo,
+  e.marca,
+  e.modelo,
+  e.categoria,
+  e.estado
+FROM equipo.equipo e
+LEFT JOIN equipo.contrato_adenda c ON e.id = c.equipo_id
+WHERE c.id IS NULL
+  AND e.is_active = true
+ORDER BY e.categoria, e.codigo_equipo;
+```
+
+### Rollback Instructions
+
+```sql
+-- Remove contracts added in migration 005
+DELETE FROM equipo.contrato_adenda WHERE numero_contrato IN (
+  'CONT-2025-004', 'CONT-2025-005', 'CONT-2025-006', 'CONT-2025-007',
+  'CONT-2025-008', 'CONT-2025-009', 'CONT-2025-010', 'CONT-2025-011',
+  'CONT-2025-012', 'CONT-2024-095', 'CONT-2025-013', 'CONT-2025-014',
+  'CONT-2025-015', 'CONT-2025-016', 'CONT-2024-087'
+);
+
+-- Verify rollback
+SELECT COUNT(*) FROM equipo.contrato_adenda;
+-- Should return 4 (original contracts)
+```
+
+### Contract Features Included
+
+All contracts include realistic features:
+
+- ✅ **Multiple Pricing Models**: Hourly, daily, and monthly flat rates
+- ✅ **Various Modalities**: With/without operator, with/without fuel
+- ✅ **Realistic Rates**: Based on actual Peruvian market rates (2025)
+- ✅ **Special Conditions**: Included hours, penalty rates, minimum charges
+- ✅ **Contract Duration**: Short-term (3-6 months) and long-term (10-12 months)
+- ✅ **Historical Data**: 2 finalized contracts for testing reports
+- ✅ **Additional Costs**: Fuel surcharges, excess hour penalties
 
 ---
 
@@ -383,10 +639,10 @@ SELECT COUNT(*) FROM proveedores.proveedor WHERE is_active = true;
 
 ## Next Migrations (Planned)
 
-- `005_add_operator_certifications.sql` - Operator certifications and licenses
-- `006_add_equipment_maintenance_history.sql` - Maintenance records and schedules
-- `007_add_daily_reports_enhancements.sql` - Enhanced daily report fields
-- `008_add_audit_triggers.sql` - Automatic audit logging for sensitive tables
+- `006_seed_additional_daily_reports.sql` - Comprehensive daily reports (partes diarios)
+- `007_seed_additional_operators.sql` - Operator certifications and licenses
+- `008_add_equipment_maintenance_history.sql` - Maintenance records and schedules
+- `009_add_audit_triggers.sql` - Automatic audit logging for sensitive tables
 
 ---
 
@@ -395,5 +651,5 @@ SELECT COUNT(*) FROM proveedores.proveedor WHERE is_active = true;
 For migration issues or questions, contact the development team.
 
 **Last Updated**: 2026-01-18  
-**Migration Version**: 004  
+**Migration Version**: 005  
 **Status**: ✅ All migrations applied successfully
