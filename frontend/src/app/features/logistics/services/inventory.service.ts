@@ -13,6 +13,7 @@ export interface Product {
   unidad_medida: string;
   stock_actual: number;
   costo_unitario: number;
+  valor_total?: number; // Computed: stock_actual * costo_unitario
   ubicacion?: string;
   is_active: boolean;
 }
@@ -47,15 +48,37 @@ export class InventoryService {
 
   constructor(private http: HttpClient) {}
 
+  /**
+   * Map API snake_case response to Product model
+   * Backend returns: precio_unitario, esta_activo, valor_total
+   * Frontend expects: costo_unitario, is_active, valor_total
+   */
+  private mapApiToProduct(apiData: any): Product {
+    return {
+      id: apiData.id?.toString() || apiData.legacy_id || '',
+      codigo: apiData.codigo || '',
+      nombre: apiData.nombre || '',
+      descripcion: apiData.descripcion,
+      categoria: apiData.categoria,
+      unidad_medida: apiData.unidad_medida || '',
+      stock_actual: Number(apiData.stock_actual) || 0,
+      costo_unitario: Number(apiData.precio_unitario) || Number(apiData.costo_unitario) || 0, // Map precio_unitario → costo_unitario
+      valor_total: apiData.valor_total ? Number(apiData.valor_total) : undefined,
+      ubicacion: apiData.ubicacion,
+      is_active: apiData.esta_activo !== undefined ? apiData.esta_activo : apiData.is_active, // Map esta_activo → is_active
+    };
+  }
+
   getProducts(): Observable<Product[]> {
     return this.http.get<any>(`${this.apiUrl}/products`).pipe(
       map((response) => {
         // Handle response that has success/data structure
-        if (response && typeof response === 'object' && 'data' in response) {
-          return response.data;
+        const dataArray = response?.data || response;
+        if (Array.isArray(dataArray)) {
+          return dataArray.map((item) => this.mapApiToProduct(item));
         }
         // Fallback to direct array
-        return Array.isArray(response) ? response : [];
+        return Array.isArray(response) ? response.map((item) => this.mapApiToProduct(item)) : [];
       })
     );
   }
@@ -64,10 +87,8 @@ export class InventoryService {
     return this.http.get<any>(`${this.apiUrl}/products/${id}`).pipe(
       map((response) => {
         // Handle response that has success/data structure
-        if (response && typeof response === 'object' && 'data' in response) {
-          return response.data;
-        }
-        return response;
+        const data = response?.data || response;
+        return this.mapApiToProduct(data);
       })
     );
   }
