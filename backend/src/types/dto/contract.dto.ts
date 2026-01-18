@@ -18,6 +18,7 @@ import {
 
 export interface ContractDto {
   id: number;
+  legacy_id?: string | null;
 
   // Basic information
   equipo_id: number;
@@ -74,6 +75,7 @@ export interface ContractDto {
 export function toContractDto(entity: any): ContractDto {
   return {
     id: entity.id,
+    legacy_id: entity.legacyId || entity.legacy_id || null,
     equipo_id: entity.equipoId,
     equipo_codigo: entity.equipo?.codigo_equipo,
     equipo_marca: entity.equipo?.marca,
@@ -119,6 +121,7 @@ export function fromContractDto(dto: Partial<ContractDto>): any {
   const entity: any = {};
 
   // Map all fields that might come from API
+  if (dto.legacy_id !== undefined) entity.legacyId = dto.legacy_id;
   if (dto.equipo_id !== undefined) entity.equipoId = dto.equipo_id;
   if (dto.numero_contrato !== undefined) entity.numeroContrato = dto.numero_contrato;
   if (dto.tipo !== undefined) entity.tipo = dto.tipo;
@@ -151,6 +154,11 @@ export function fromContractDto(dto: Partial<ContractDto>): any {
  * Validates required fields and business rules
  */
 export class ContractCreateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser texto' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string | null;
+
   @IsNumber({}, { message: 'equipo_id debe ser un número' })
   equipo_id!: number;
 
@@ -244,6 +252,11 @@ export class ContractCreateDto {
  * All fields are optional for partial updates
  */
 export class ContractUpdateDto {
+  @IsOptional()
+  @IsString({ message: 'legacy_id debe ser texto' })
+  @MaxLength(50, { message: 'legacy_id no puede exceder 50 caracteres' })
+  legacy_id?: string | null;
+
   @IsOptional()
   @IsNumber({}, { message: 'equipo_id debe ser un número' })
   equipo_id?: number;
