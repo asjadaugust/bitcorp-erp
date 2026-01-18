@@ -11,6 +11,10 @@ export interface Valuation {
   invoice_number?: string;
   issue_date?: string;
   payment_date?: string;
+  fecha_pago?: string; // Payment date for PAGADO state
+  approved_by?: number; // User ID who approved
+  approved_at?: string; // Timestamp when approved
+  observaciones?: string; // Rejection reason or payment details
   created_at?: string;
   updated_at?: string;
 
@@ -21,4 +25,10 @@ export interface Valuation {
     project_name: string;
     client_name: string;
   };
+}
+
+export interface PaymentData {
+  fecha_pago: string;
+  metodo_pago: string;
+  referencia_pago: string;
 }

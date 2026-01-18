@@ -75,6 +75,7 @@ export class ValuationService {
     if (!estado) return 'pending';
     const estadoMap: Record<string, string> = {
       PENDIENTE: 'pending',
+      EN_REVISION: 'under_review',
       APROBADO: 'approved',
       RECHAZADO: 'rejected',
       PAGADO: 'paid',
@@ -91,7 +92,7 @@ export class ValuationService {
       pending: 'PENDIENTE',
       draft: 'PENDIENTE',
       submitted: 'PENDIENTE',
-      under_review: 'PENDIENTE',
+      under_review: 'EN_REVISION',
       approved: 'APROBADO',
       rejected: 'RECHAZADO',
       paid: 'PAGADO',
@@ -171,5 +172,44 @@ export class ValuationService {
 
   downloadPdf(id: number | string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
+  }
+
+  /**
+   * Submit valuation for review (PENDIENTE → EN_REVISION)
+   */
+  submitForReview(id: number | string): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/submit-review`, {})
+      .pipe(map((response) => response?.data || response));
+  }
+
+  /**
+   * Approve valuation (EN_REVISION → APROBADO)
+   */
+  approve(id: number | string): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/approve`, {})
+      .pipe(map((response) => response?.data || response));
+  }
+
+  /**
+   * Reject valuation (any state → RECHAZADO)
+   */
+  reject(id: number | string, reason: string): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/reject`, { reason: reason })
+      .pipe(map((response) => response?.data || response));
+  }
+
+  /**
+   * Mark valuation as paid (APROBADO → PAGADO)
+   */
+  markAsPaid(
+    id: number | string,
+    paymentData: { fecha_pago: string; metodo_pago: string; referencia_pago: string }
+  ): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/mark-paid`, paymentData)
+      .pipe(map((response) => response?.data || response));
   }
 }

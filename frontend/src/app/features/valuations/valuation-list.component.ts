@@ -370,9 +370,10 @@ export class ValuationListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Borrador', value: 'draft' },
-        { label: 'Enviado', value: 'submitted' },
+        { label: 'Pendiente', value: 'pending' },
+        { label: 'En Revisión', value: 'under_review' },
         { label: 'Aprobado', value: 'approved' },
+        { label: 'Rechazado', value: 'rejected' },
         { label: 'Pagado', value: 'paid' },
       ],
     },
@@ -394,6 +395,7 @@ export class ValuationListComponent implements OnInit {
         draft: { label: 'Borrador', class: 'badge status-draft' },
         pending: { label: 'Pendiente', class: 'badge status-pending' },
         under_review: { label: 'En Revisión', class: 'badge status-under_review' },
+        rejected: { label: 'Rechazado', class: 'badge status-rejected' },
       },
     },
   ];
