@@ -17,8 +17,28 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { Licitacion } from '../../models/tender.model';
 
 export type EstadoLicitacion = 'PUBLICADO' | 'EVALUACION' | 'ADJUDICADO' | 'DESIERTO' | 'CANCELADO';
+
+/**
+ * Response DTO for tender (licitación)
+ * Returns snake_case fields matching database columns
+ */
+export interface TenderDto {
+  id: number;
+  legacy_id?: string;
+  codigo: string;
+  nombre: string;
+  entidad_convocante?: string;
+  monto_referencial?: number;
+  fecha_convocatoria?: string; // ISO date string (YYYY-MM-DD)
+  fecha_presentacion?: string; // ISO date string (YYYY-MM-DD)
+  estado: EstadoLicitacion;
+  observaciones?: string;
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
 
 /**
  * DTO for creating a new tender (licitación)
@@ -105,4 +125,37 @@ export class LicitacionUpdateDto {
   @IsOptional()
   @IsString({ message: 'Las observaciones deben ser texto' })
   observaciones?: string;
+}
+
+/**
+ * Transformation functions
+ */
+
+/**
+ * Transform Licitacion entity to TenderDto (snake_case response format)
+ */
+export function toTenderDto(licitacion: Licitacion): TenderDto {
+  return {
+    id: licitacion.id,
+    legacy_id: licitacion.legacyId,
+    codigo: licitacion.codigo,
+    nombre: licitacion.nombre,
+    entidad_convocante: licitacion.entidadConvocante,
+    monto_referencial: licitacion.montoReferencial
+      ? Number(licitacion.montoReferencial)
+      : undefined,
+    fecha_convocatoria: licitacion.fechaConvocatoria?.toISOString().split('T')[0],
+    fecha_presentacion: licitacion.fechaPresentacion?.toISOString().split('T')[0],
+    estado: licitacion.estado,
+    observaciones: licitacion.observaciones,
+    created_at: licitacion.createdAt.toISOString(),
+    updated_at: licitacion.updatedAt.toISOString(),
+  };
+}
+
+/**
+ * Transform array of Licitacion entities to TenderDto array
+ */
+export function toTenderDtoArray(licitaciones: Licitacion[]): TenderDto[] {
+  return licitaciones.map(toTenderDto);
 }
