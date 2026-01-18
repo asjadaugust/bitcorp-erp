@@ -46,10 +46,18 @@ export class ProjectService {
         }
       });
     }
-    // Interceptor already unwraps {success, data} -> data
-    return this.http
-      .get<any[]>(this.apiUrl, { params })
-      .pipe(map((data) => data.map((p) => this.mapApiToProject(p))));
+    // Interceptor does NOT unwrap paginated responses {success, data, pagination}
+    // So we need to extract data ourselves
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map((response) => {
+        // Handle paginated response
+        const dataArray = response?.data || response;
+        if (Array.isArray(dataArray)) {
+          return dataArray.map((p) => this.mapApiToProject(p));
+        }
+        return [];
+      })
+    );
   }
 
   getById(id: string): Observable<Project> {
