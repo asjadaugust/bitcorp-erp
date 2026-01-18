@@ -60,6 +60,15 @@ export interface EquipmentDetailDto {
   tipo_motor: string | null;
   medidor_uso: string | null;
   estado: string;
+
+  // Document and Certification Fields
+  documento_acreditacion: string | null;
+  fecha_acreditacion: string | null; // ISO date string (YYYY-MM-DD)
+  codigo_externo: string | null;
+  fecha_venc_poliza: string | null; // ISO date string (YYYY-MM-DD)
+  fecha_venc_soat: string | null; // ISO date string (YYYY-MM-DD)
+  fecha_venc_citv: string | null; // ISO date string (YYYY-MM-DD)
+
   is_active: boolean;
   creado_por: number | null;
   actualizado_por: number | null;
@@ -157,6 +166,19 @@ export function toEquipmentListDto(entity: any): EquipmentListDto {
 }
 
 /**
+ * Helper function to convert Date to YYYY-MM-DD string
+ */
+function toDateString(date?: Date | string | null): string | null {
+  if (!date) return null;
+  if (typeof date === 'string') {
+    // If already a string, extract YYYY-MM-DD
+    return date.split('T')[0];
+  }
+  // Convert Date object to YYYY-MM-DD
+  return date.toISOString().split('T')[0];
+}
+
+/**
  * Transform TypeORM Equipment entity to Detail DTO
  * Includes all fields and relations
  */
@@ -182,6 +204,15 @@ export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
     tipo_motor: entity.tipo_motor || null,
     medidor_uso: entity.medidor_uso || null,
     estado: entity.estado?.toUpperCase() || 'DISPONIBLE', // Ensure uppercase
+
+    // Document and Certification Fields
+    documento_acreditacion: entity.documento_acreditacion || null,
+    fecha_acreditacion: toDateString(entity.fecha_acreditacion),
+    codigo_externo: entity.codigo_externo || null,
+    fecha_venc_poliza: toDateString(entity.fecha_venc_poliza),
+    fecha_venc_soat: toDateString(entity.fecha_venc_soat),
+    fecha_venc_citv: toDateString(entity.fecha_venc_citv),
+
     is_active: entity.is_active,
     creado_por: entity.creadoPor || entity.creado_por || null,
     actualizado_por: entity.actualizadoPor || entity.actualizado_por || null,
@@ -215,6 +246,16 @@ export function fromEquipmentDto(dto: Partial<EquipmentDetailDto>): any {
   if (dto.tipo_motor !== undefined) entity.tipo_motor = dto.tipo_motor;
   if (dto.medidor_uso !== undefined) entity.medidor_uso = dto.medidor_uso;
   if (dto.estado !== undefined) entity.estado = dto.estado;
+
+  // Document and Certification Fields
+  if (dto.documento_acreditacion !== undefined)
+    entity.documento_acreditacion = dto.documento_acreditacion;
+  if (dto.fecha_acreditacion !== undefined) entity.fecha_acreditacion = dto.fecha_acreditacion;
+  if (dto.codigo_externo !== undefined) entity.codigo_externo = dto.codigo_externo;
+  if (dto.fecha_venc_poliza !== undefined) entity.fecha_venc_poliza = dto.fecha_venc_poliza;
+  if (dto.fecha_venc_soat !== undefined) entity.fecha_venc_soat = dto.fecha_venc_soat;
+  if (dto.fecha_venc_citv !== undefined) entity.fecha_venc_citv = dto.fecha_venc_citv;
+
   if (dto.is_active !== undefined) entity.is_active = dto.is_active;
   if (dto.creado_por !== undefined) entity.creadoPor = dto.creado_por;
   if (dto.actualizado_por !== undefined) entity.actualizadoPor = dto.actualizado_por;
