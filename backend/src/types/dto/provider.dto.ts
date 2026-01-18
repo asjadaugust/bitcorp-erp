@@ -7,7 +7,7 @@
  * - Returns Spanish column names to API
  */
 
-import { Provider, TipoProveedor } from '../../models/provider.model';
+import { Provider } from '../../models/provider.model';
 import {
   IsString,
   IsEmail,
@@ -25,7 +25,7 @@ export interface ProviderDto {
   ruc: string;
   razon_social: string;
   nombre_comercial?: string | null;
-  tipo_proveedor?: TipoProveedor | null;
+  tipo_proveedor?: string | null; // Spanish uppercase: EQUIPOS, MATERIALES, SERVICIOS, MIXTO
   direccion?: string | null;
   telefono?: string | null;
   correo_electronico?: string | null; // ✅ Spanish naming (was: email)
@@ -47,13 +47,42 @@ export function toProviderDto(entity: Provider): ProviderDto {
     return date.toISOString();
   };
 
+  // Map database/model values to Spanish uppercase for API
+  const normalizeTipoProveedor = (tipo?: string | null): string | null => {
+    if (!tipo) return null;
+
+    const mapping: Record<string, string> = {
+      // English lowercase → Spanish uppercase
+      equipment: 'EQUIPOS',
+      services: 'SERVICIOS',
+      supplies: 'MATERIALES',
+      materials: 'MATERIALES',
+      fuel: 'MATERIALES',
+      other: 'MIXTO',
+      // Spanish with underscore → Spanish uppercase
+      EQUIPO_PESADO: 'EQUIPOS',
+      EQUIPO: 'EQUIPOS',
+      OPERADOR: 'SERVICIOS',
+      SERVICIO: 'SERVICIOS',
+      MATERIAL: 'MATERIALES',
+      // Already correct (passthrough)
+      EQUIPOS: 'EQUIPOS',
+      MATERIALES: 'MATERIALES',
+      SERVICIOS: 'SERVICIOS',
+      MIXTO: 'MIXTO',
+    };
+
+    const normalized = mapping[tipo] || mapping[tipo.toUpperCase()];
+    return normalized || 'MIXTO'; // Default to MIXTO if unknown
+  };
+
   return {
     id: entity.id,
     legacy_id: entity.legacy_id || null,
     ruc: entity.ruc,
     razon_social: entity.razon_social,
     nombre_comercial: entity.nombre_comercial || null,
-    tipo_proveedor: entity.tipo_proveedor || null,
+    tipo_proveedor: normalizeTipoProveedor(entity.tipo_proveedor),
     direccion: entity.direccion || null,
     telefono: entity.telefono || null,
     correo_electronico: entity.email || null, // ✅ Map entity.email → DTO.correo_electronico
@@ -77,7 +106,12 @@ export function fromProviderDto(dto: Partial<ProviderDto>): Partial<Provider> {
   if (dto.razon_social !== undefined) entity.razon_social = dto.razon_social;
   if (dto.nombre_comercial !== undefined)
     entity.nombre_comercial = dto.nombre_comercial || undefined;
-  if (dto.tipo_proveedor !== undefined) entity.tipo_proveedor = dto.tipo_proveedor || undefined;
+
+  // Map Spanish uppercase to database format (database column accepts varchar, no enum constraint)
+  if (dto.tipo_proveedor !== undefined) {
+    entity.tipo_proveedor = dto.tipo_proveedor as unknown as typeof entity.tipo_proveedor;
+  }
+
   if (dto.direccion !== undefined) entity.direccion = dto.direccion || undefined;
   if (dto.telefono !== undefined) entity.telefono = dto.telefono || undefined;
   if (dto.correo_electronico !== undefined) entity.email = dto.correo_electronico || undefined; // ✅ Map DTO.correo_electronico → entity.email
@@ -116,7 +150,7 @@ export class ProviderCreateDto {
   @IsIn(['EQUIPOS', 'MATERIALES', 'SERVICIOS', 'MIXTO'], {
     message: 'tipo_proveedor debe ser EQUIPOS, MATERIALES, SERVICIOS o MIXTO',
   })
-  tipo_proveedor?: TipoProveedor;
+  tipo_proveedor?: string;
 
   @IsOptional()
   @IsString({ message: 'direccion debe ser un string' })
@@ -170,7 +204,7 @@ export class ProviderUpdateDto {
   @IsIn(['EQUIPOS', 'MATERIALES', 'SERVICIOS', 'MIXTO'], {
     message: 'tipo_proveedor debe ser EQUIPOS, MATERIALES, SERVICIOS o MIXTO',
   })
-  tipo_proveedor?: TipoProveedor;
+  tipo_proveedor?: string;
 
   @IsOptional()
   @IsString({ message: 'direccion debe ser un string' })
