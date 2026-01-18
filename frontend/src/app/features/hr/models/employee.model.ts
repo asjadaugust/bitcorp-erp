@@ -16,4 +16,5 @@ export interface Employee {
   updatedAt?: Date;
   updatedBy?: string;
   fullName?: string;
+  role?: string; // Cargo/position
 }
