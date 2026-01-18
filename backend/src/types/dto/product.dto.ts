@@ -21,6 +21,7 @@ import { IsString, IsOptional, IsNumber, Min, MaxLength } from 'class-validator'
  */
 export interface ProductListDto {
   id: number;
+  legacy_id: string | null;
   codigo: string;
   nombre: string;
   categoria: string | null;
@@ -39,6 +40,7 @@ export interface ProductListDto {
  */
 export interface ProductDetailDto {
   id: number;
+  legacy_id: string | null;
   codigo: string;
   nombre: string;
   descripcion: string | null;
@@ -149,6 +151,7 @@ export function toProductListDto(product: Record<string, unknown>): ProductListD
 
   return {
     id: product.id as number,
+    legacy_id: (product.legacyId as string) || null,
     codigo: product.codigo as string,
     nombre: product.nombre as string,
     categoria: (product.categoria as string) || null,
@@ -172,6 +175,7 @@ export function toProductDetailDto(product: Record<string, unknown>): ProductDet
 
   return {
     id: product.id as number,
+    legacy_id: (product.legacyId as string) || null,
     codigo: product.codigo as string,
     nombre: product.nombre as string,
     descripcion: (product.descripcion as string) || null,
