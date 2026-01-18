@@ -9,6 +9,25 @@ import {
 } from 'class-validator';
 
 /**
+ * DTO for operator document response (snake_case)
+ */
+export interface OperatorDocumentDto {
+  id: number;
+  trabajador_id: number;
+  tipo_documento: string;
+  numero_documento: string | null;
+  fecha_emision: Date | null;
+  fecha_vencimiento: Date | null;
+  archivo_url: string | null;
+  observaciones: string | null;
+  created_at: Date;
+  updated_at: Date;
+  // Optional relation fields
+  trabajador_nombre?: string;
+  trabajador_apellido?: string;
+}
+
+/**
  * DTO for creating operator document
  */
 export class OperatorDocumentCreateDto {

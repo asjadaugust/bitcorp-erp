@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { OperatorDocumentService } from '../../services/operator-document.service';
+import { NotFoundError, ConflictError } from '../../errors/http.errors';
 import {
   sendError,
   sendSuccess,
@@ -13,16 +14,22 @@ const documentService = new OperatorDocumentService();
 export class OperatorDocumentController {
   async getDocuments(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
       const { trabajador_id, tipo_documento, page, limit } = req.query;
-      const result = await documentService.findAll({
-        trabajadorId: trabajador_id ? Number(trabajador_id) : undefined,
-        tipoDocumento: tipo_documento as string,
-        page: page ? Number(page) : undefined,
-        limit: limit ? Number(limit) : undefined,
-      });
+
+      const result = await documentService.findAll(
+        tenantId,
+        {
+          trabajadorId: trabajador_id ? Number(trabajador_id) : undefined,
+          tipoDocumento: tipo_documento as string,
+        },
+        page ? Number(page) : 1,
+        limit ? Number(limit) : 10
+      );
+
       sendPaginatedSuccess(res, result.data, {
-        page: result.page,
-        limit: result.limit,
+        page: page ? Number(page) : 1,
+        limit: limit ? Number(limit) : 10,
         total: result.total,
       });
     } catch (error: any) {
@@ -38,19 +45,20 @@ export class OperatorDocumentController {
 
   async getDocumentById(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const document = await documentService.findById(id);
-      if (!document) {
+      const document = await documentService.findById(tenantId, id);
+      sendSuccess(res, document);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
         sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Documento de operador no encontrado');
         return;
       }
-      sendSuccess(res, document);
-    } catch (error: any) {
       sendError(
         res,
         500,
@@ -63,13 +71,14 @@ export class OperatorDocumentController {
 
   async getDocumentsByOperator(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext
       const operatorId = parseInt(req.params.operatorId);
       if (isNaN(operatorId)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
         return;
       }
 
-      const documents = await documentService.findByOperator(operatorId);
+      const documents = await documentService.findByOperator(tenantId, operatorId);
       sendSuccess(res, documents);
     } catch (error: any) {
       sendError(
@@ -84,9 +93,21 @@ export class OperatorDocumentController {
 
   async getExpiringDocuments(req: Request, res: Response): Promise<void> {
     try {
-      const { days } = req.query;
-      const documents = await documentService.findExpiring(days ? Number(days) : 30);
-      sendSuccess(res, documents);
+      const tenantId = 1; // TODO: Get from req.tenantContext
+      const { days, page, limit } = req.query;
+
+      const result = await documentService.findExpiring(
+        tenantId,
+        days ? Number(days) : 30,
+        page ? Number(page) : 1,
+        limit ? Number(limit) : 50
+      );
+
+      sendPaginatedSuccess(res, result.data, {
+        page: page ? Number(page) : 1,
+        limit: limit ? Number(limit) : 50,
+        total: result.total,
+      });
     } catch (error: any) {
       sendError(
         res,
@@ -100,9 +121,14 @@ export class OperatorDocumentController {
 
   async createDocument(req: Request, res: Response): Promise<void> {
     try {
-      const document = await documentService.create(req.body);
+      const tenantId = 1; // TODO: Get from req.tenantContext
+      const document = await documentService.create(tenantId, req.body);
       sendCreated(res, document);
     } catch (error: any) {
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'OPERATOR_DOCUMENT_CONFLICT', error.message, error.metadata);
+        return;
+      }
       sendError(
         res,
         500,
@@ -115,19 +141,24 @@ export class OperatorDocumentController {
 
   async updateDocument(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const document = await documentService.update(id, req.body);
-      if (!document) {
+      const document = await documentService.update(tenantId, id, req.body);
+      sendSuccess(res, document);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
         sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Documento de operador no encontrado');
         return;
       }
-      sendSuccess(res, document);
-    } catch (error: any) {
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'OPERATOR_DOCUMENT_CONFLICT', error.message, error.metadata);
+        return;
+      }
       sendError(
         res,
         500,
@@ -140,19 +171,20 @@ export class OperatorDocumentController {
 
   async deleteDocument(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const success = await documentService.delete(id);
-      if (!success) {
+      await documentService.delete(tenantId, id);
+      res.status(204).send();
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
         sendError(res, 404, 'OPERATOR_DOCUMENT_NOT_FOUND', 'Documento de operador no encontrado');
         return;
       }
-      res.status(204).send();
-    } catch (error: any) {
       sendError(
         res,
         500,
