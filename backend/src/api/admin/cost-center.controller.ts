@@ -7,6 +7,7 @@ import {
   sendCreated,
   sendError,
 } from '../../utils/api-response';
+import { toCostCenterListDtoArray, toCostCenterDetailDto } from '../../types/dto/cost-center.dto';
 import Logger from '../../utils/logger';
 
 const costCenterService = new CostCenterService();
@@ -38,7 +39,10 @@ export class CostCenterController {
 
       const result = await costCenterService.findAll(filters);
 
-      sendPaginatedSuccess(res, result.data, {
+      // Transform entities to DTOs (snake_case)
+      const dtos = toCostCenterListDtoArray(result.data);
+
+      sendPaginatedSuccess(res, dtos, {
         page,
         limit,
         total: result.total,
@@ -74,7 +78,10 @@ export class CostCenterController {
 
       const costCenter = await costCenterService.findById(id);
 
-      sendSuccess(res, costCenter);
+      // Transform to DTO (snake_case)
+      const dto = toCostCenterDetailDto(costCenter as any);
+
+      sendSuccess(res, dto);
     } catch (error: any) {
       Logger.error('Error in getById cost center', {
         error: error instanceof Error ? error.message : String(error),
@@ -113,7 +120,10 @@ export class CostCenterController {
         return;
       }
 
-      sendSuccess(res, costCenter);
+      // Transform to DTO (snake_case)
+      const dto = toCostCenterDetailDto(costCenter as any);
+
+      sendSuccess(res, dto);
     } catch (error: any) {
       Logger.error('Error in getByCode cost center', {
         error: error instanceof Error ? error.message : String(error),
@@ -146,7 +156,10 @@ export class CostCenterController {
 
       const costCenters = await costCenterService.findByProject(project_id);
 
-      sendSuccess(res, costCenters);
+      // Transform to DTOs (snake_case)
+      const dtos = toCostCenterListDtoArray(costCenters);
+
+      sendSuccess(res, dtos);
     } catch (error: any) {
       Logger.error('Error in getByProject', {
         error: error instanceof Error ? error.message : String(error),
@@ -215,7 +228,10 @@ export class CostCenterController {
 
       const costCenter = await costCenterService.update(id, req.body);
 
-      sendSuccess(res, costCenter);
+      // Transform to DTO (snake_case)
+      const dto = toCostCenterDetailDto(costCenter as any);
+
+      sendSuccess(res, dto);
     } catch (error: any) {
       Logger.error('Error in update cost center', {
         error: error instanceof Error ? error.message : String(error),
