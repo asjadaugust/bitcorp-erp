@@ -20,7 +20,7 @@ export interface OperatorDto {
   nombre_completo: string; // Computed field
   fecha_nacimiento?: string | null; // ISO date string (YYYY-MM-DD)
   telefono?: string | null;
-  email?: string | null;
+  correo_electronico?: string | null; // ✅ Spanish naming (was: email)
   direccion?: string | null;
   tipo_contrato?: string | null;
   fecha_ingreso?: string | null; // ISO date string (YYYY-MM-DD)
@@ -78,7 +78,7 @@ export function toOperatorDto(entity: Trabajador): OperatorDto {
     nombre_completo: entity.nombreCompleto, // Computed from entity
     fecha_nacimiento: toDateString(entity.fechaNacimiento),
     telefono: entity.telefono || null,
-    email: entity.email || null,
+    correo_electronico: entity.email || null, // ✅ Map entity.email → DTO.correo_electronico
     direccion: entity.direccion || null,
     tipo_contrato: entity.tipoContrato || null,
     fecha_ingreso: toDateString(entity.fechaIngreso),
@@ -117,7 +117,7 @@ export function fromOperatorDto(dto: Partial<OperatorDto>): Partial<Trabajador> 
     entity.apellidoMaterno = dto.apellido_materno || undefined;
   if (dto.fecha_nacimiento !== undefined) entity.fechaNacimiento = toDate(dto.fecha_nacimiento);
   if (dto.telefono !== undefined) entity.telefono = dto.telefono || undefined;
-  if (dto.email !== undefined) entity.email = dto.email || undefined;
+  if (dto.correo_electronico !== undefined) entity.email = dto.correo_electronico || undefined; // ✅ Map DTO.correo_electronico → entity.email
   if (dto.direccion !== undefined) entity.direccion = dto.direccion || undefined;
   if (dto.tipo_contrato !== undefined) entity.tipoContrato = dto.tipo_contrato || undefined;
   if (dto.fecha_ingreso !== undefined) entity.fechaIngreso = toDate(dto.fecha_ingreso);
@@ -164,9 +164,9 @@ export class OperatorCreateDto {
   telefono?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'Email debe ser válido' })
-  @MaxLength(100, { message: 'Email no puede exceder 100 caracteres' })
-  email?: string;
+  @IsEmail({}, { message: 'correo_electronico debe ser válido' })
+  @MaxLength(100, { message: 'correo_electronico no puede exceder 100 caracteres' })
+  correo_electronico?: string;
 
   @IsOptional()
   @IsString({ message: 'Dirección debe ser texto' })
@@ -236,9 +236,9 @@ export class OperatorUpdateDto {
   telefono?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'Email debe ser válido' })
-  @MaxLength(100, { message: 'Email no puede exceder 100 caracteres' })
-  email?: string;
+  @IsEmail({}, { message: 'correo_electronico debe ser válido' })
+  @MaxLength(100, { message: 'correo_electronico no puede exceder 100 caracteres' })
+  correo_electronico?: string;
 
   @IsOptional()
   @IsString({ message: 'Dirección debe ser texto' })

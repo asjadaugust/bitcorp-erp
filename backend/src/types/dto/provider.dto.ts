@@ -28,7 +28,7 @@ export interface ProviderDto {
   tipo_proveedor?: TipoProveedor | null;
   direccion?: string | null;
   telefono?: string | null;
-  email?: string | null;
+  correo_electronico?: string | null; // ✅ Spanish naming (was: email)
   is_active: boolean;
   created_at: string; // ISO datetime string
   updated_at: string; // ISO datetime string
@@ -56,7 +56,7 @@ export function toProviderDto(entity: Provider): ProviderDto {
     tipo_proveedor: entity.tipo_proveedor || null,
     direccion: entity.direccion || null,
     telefono: entity.telefono || null,
-    email: entity.email || null,
+    correo_electronico: entity.email || null, // ✅ Map entity.email → DTO.correo_electronico
     is_active: entity.is_active,
     created_at: toDateTimeString(entity.created_at),
     updated_at: toDateTimeString(entity.updated_at),
@@ -80,7 +80,7 @@ export function fromProviderDto(dto: Partial<ProviderDto>): Partial<Provider> {
   if (dto.tipo_proveedor !== undefined) entity.tipo_proveedor = dto.tipo_proveedor || undefined;
   if (dto.direccion !== undefined) entity.direccion = dto.direccion || undefined;
   if (dto.telefono !== undefined) entity.telefono = dto.telefono || undefined;
-  if (dto.email !== undefined) entity.email = dto.email || undefined;
+  if (dto.correo_electronico !== undefined) entity.email = dto.correo_electronico || undefined; // ✅ Map DTO.correo_electronico → entity.email
   if (dto.is_active !== undefined) entity.is_active = dto.is_active;
 
   return entity;
@@ -129,9 +129,9 @@ export class ProviderCreateDto {
   telefono?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'email debe ser un correo electrónico válido' })
-  @MaxLength(100, { message: 'email no puede exceder 100 caracteres' })
-  email?: string;
+  @IsEmail({}, { message: 'correo_electronico debe ser un correo electrónico válido' })
+  @MaxLength(100, { message: 'correo_electronico no puede exceder 100 caracteres' })
+  correo_electronico?: string; // ✅ Spanish naming (was: email)
 
   @IsOptional()
   @IsBoolean({ message: 'is_active debe ser un booleano' })
@@ -183,9 +183,9 @@ export class ProviderUpdateDto {
   telefono?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'email debe ser un correo electrónico válido' })
-  @MaxLength(100, { message: 'email no puede exceder 100 caracteres' })
-  email?: string;
+  @IsEmail({}, { message: 'correo_electronico debe ser un correo electrónico válido' })
+  @MaxLength(100, { message: 'correo_electronico no puede exceder 100 caracteres' })
+  correo_electronico?: string; // ✅ Spanish naming (was: email)
 
   @IsOptional()
   @IsBoolean({ message: 'is_active debe ser un booleano' })
