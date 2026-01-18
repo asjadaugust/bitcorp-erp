@@ -58,16 +58,16 @@ export class MovementController {
 
       // Valid sortable fields (snake_case API → entity property)
       const validSortFields: Record<string, string> = {
-        fecha_movimiento: 'm.fechaMovimiento',
+        fecha_movimiento: 'm.fecha',
         tipo_movimiento: 'm.tipoMovimiento',
-        numero_movimiento: 'm.numeroMovimiento',
+        numero_movimiento: 'm.numeroDocumento',
         estado: 'm.estado',
         created_at: 'm.createdAt',
         updated_at: 'm.updatedAt',
       };
 
       // Get sort field or default
-      const sortField = validSortFields[sortBy] || 'm.fechaMovimiento';
+      const sortField = validSortFields[sortBy] || 'm.fecha';
 
       // Build query
       const queryBuilder = movementRepo
