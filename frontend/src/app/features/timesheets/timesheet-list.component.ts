@@ -303,8 +303,15 @@ export class TimesheetListComponent implements OnInit {
     this.error = null;
 
     this.timesheetService.listTimesheets(this.currentFilters).subscribe({
-      next: (response) => {
-        this.timesheets = Array.isArray(response) ? response : [];
+      next: (response: any) => {
+        // Handle paginated response { success, data, pagination } or direct array
+        if (response && typeof response === 'object' && 'data' in response) {
+          this.timesheets = Array.isArray(response.data) ? response.data : [];
+        } else if (Array.isArray(response)) {
+          this.timesheets = response;
+        } else {
+          this.timesheets = [];
+        }
         this.loading = false;
       },
       error: (err) => {

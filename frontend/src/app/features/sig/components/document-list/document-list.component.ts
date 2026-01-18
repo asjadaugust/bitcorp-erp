@@ -161,8 +161,15 @@ export class DocumentListComponent implements OnInit {
   loadDocuments() {
     this.loading = true;
     this.sigService.getDocuments().subscribe({
-      next: (docs) => {
-        this.documents = Array.isArray(docs) ? docs : [];
+      next: (response: any) => {
+        // Handle paginated response { success, data, meta/pagination } or direct array
+        if (response && typeof response === 'object' && 'data' in response) {
+          this.documents = Array.isArray(response.data) ? response.data : [];
+        } else if (Array.isArray(response)) {
+          this.documents = response;
+        } else {
+          this.documents = [];
+        }
         this.applyFilters();
         this.loading = false;
       },

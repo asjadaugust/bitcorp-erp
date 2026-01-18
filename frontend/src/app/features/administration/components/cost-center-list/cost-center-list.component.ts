@@ -131,8 +131,15 @@ export class CostCenterListComponent implements OnInit {
   loadCostCenters() {
     this.loading = true;
     this.adminService.getCostCenters().subscribe({
-      next: (costCenters) => {
-        this.costCenters = Array.isArray(costCenters) ? costCenters : [];
+      next: (response: any) => {
+        // Handle paginated response { success, data, pagination } or direct array
+        if (response && typeof response === 'object' && 'data' in response) {
+          this.costCenters = Array.isArray(response.data) ? response.data : [];
+        } else if (Array.isArray(response)) {
+          this.costCenters = response;
+        } else {
+          this.costCenters = [];
+        }
         this.applyFilters();
         this.loading = false;
       },

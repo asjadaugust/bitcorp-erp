@@ -143,8 +143,15 @@ export class IncidentListComponent implements OnInit {
   loadIncidents() {
     this.loading = true;
     this.sstService.getIncidents().subscribe({
-      next: (incidents) => {
-        this.incidents = Array.isArray(incidents) ? incidents : [];
+      next: (response: any) => {
+        // Handle paginated response { success, data, meta/pagination } or direct array
+        if (response && typeof response === 'object' && 'data' in response) {
+          this.incidents = Array.isArray(response.data) ? response.data : [];
+        } else if (Array.isArray(response)) {
+          this.incidents = response;
+        } else {
+          this.incidents = [];
+        }
         this.applyFilters();
         this.loading = false;
       },
