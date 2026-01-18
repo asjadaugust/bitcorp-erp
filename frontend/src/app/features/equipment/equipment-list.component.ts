@@ -470,7 +470,7 @@ export class EquipmentListComponent implements OnInit {
   }
 
   editEquipment(item: Equipment): void {
-    this.router.navigate(['/equipment/edit', item.id]);
+    this.router.navigate(['/equipment', item.id, 'edit']);
   }
 
   viewDetails(item: Equipment): void {
