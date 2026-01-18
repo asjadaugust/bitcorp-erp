@@ -14,14 +14,194 @@ This directory contains SQL migration scripts for the BitCorp ERP database schem
 
 ### Schema Migrations
 
-| File                                   | Version | Description                                                      | Status     |
-| -------------------------------------- | ------- | ---------------------------------------------------------------- | ---------- |
-| `001_init_schema.sql`                  | 1.0     | Initial database schema (all modules)                            | ✅ Applied |
-| `002_seed.sql`                         | 5.0     | Comprehensive seed data (system, projects, equipment, operators) | ✅ Applied |
-| `003_seed_additional_providers.sql`    | 1.0     | Additional realistic Peruvian provider data                      | ✅ Applied |
-| `004_seed_additional_equipment.sql`    | 1.0     | Additional construction equipment across all categories          | ✅ Applied |
-| `005_seed_additional_contracts.sql`    | 1.0     | Comprehensive equipment contracts with various pricing models    | ✅ Applied |
-| `012_add_user_project_assignments.sql` | N/A     | User-project assignments (WIP - not applied)                     | ⏸️ Pending |
+| File                                    | Version | Description                                                      | Status     |
+| --------------------------------------- | ------- | ---------------------------------------------------------------- | ---------- |
+| `001_init_schema.sql`                   | 1.0     | Initial database schema (all modules)                            | ✅ Applied |
+| `002_seed.sql`                          | 5.0     | Comprehensive seed data (system, projects, equipment, operators) | ✅ Applied |
+| `003_seed_additional_providers.sql`     | 1.0     | Additional realistic Peruvian provider data                      | ✅ Applied |
+| `004_seed_additional_equipment.sql`     | 1.0     | Additional construction equipment across all categories          | ✅ Applied |
+| `005_seed_additional_contracts.sql`     | 1.0     | Comprehensive equipment contracts with various pricing models    | ✅ Applied |
+| `006_seed_additional_daily_reports.sql` | 1.0     | Comprehensive daily reports (partes diarios) for usage tracking  | ✅ Applied |
+| `012_add_user_project_assignments.sql`  | N/A     | User-project assignments (WIP - not applied)                     | ⏸️ Pending |
+
+---
+
+## Migration 006: Additional Daily Reports Seed Data
+
+**Date**: 2026-01-18  
+**Purpose**: Add comprehensive daily reports (partes diarios) covering all contracted equipment for the last 30 days
+
+### Daily Reports Added (73 new reports)
+
+#### Report Distribution Overview
+
+```sql
+Total Daily Reports: 79 (6 original + 73 new)
+Date Range: 2025-12-17 to 2026-01-18 (32 days)
+Equipment Coverage: 18/18 contracted equipment items (100%)
+
+Reports by Status:
+├── APROBADO (Approved): 56 reports (70.89%)
+├── ENVIADO (Submitted): 15 reports (18.99%)
+└── BORRADOR (Draft): 8 reports (10.13%)
+
+Reports by Equipment Category:
+├── Excavators: 32 reports (6 equipment items)
+├── Loaders: 14 reports (3 equipment items)
+├── Trucks: 14 reports (4 equipment items)
+├── Tractors: 11 reports (3 equipment items)
+├── Compactor: 4 reports (1 equipment item)
+└── Grader: 4 reports (1 equipment item)
+```
+
+#### Equipment Report Counts
+
+| Equipment Code | Category       | Contract      | Reports | Avg Hours | Avg Fuel |
+| -------------- | -------------- | ------------- | ------- | --------- | -------- |
+| EXC-002        | Excavadora     | CONT-2025-004 | 7       | 10.0      | 48.6 L   |
+| EXC-004        | Excavadora     | CONT-2025-006 | 7       | 9.9       | 47.6 L   |
+| EXC-003        | Excavadora     | CONT-2025-005 | 6       | 9.3       | 45.1 L   |
+| EXC-006        | Excavadora     | CONT-2025-007 | 6       | 9.4       | 49.7 L   |
+| CAR-001        | Cargador       | CONT-2025-008 | 5       | 10.1      | 53.4 L   |
+| CAR-002        | Cargador       | CONT-2025-009 | 5       | 9.8       | 50.8 L   |
+| TRA-002        | Tractor        | CONT-2025-013 | 5       | 10.2      | 56.6 L   |
+| VOL-002        | Volquete       | CONT-2025-011 | 5       | 10.1      | 71.0 L   |
+| VOL-003        | Volquete       | CONT-2025-012 | 5       | 9.8       | 72.2 L   |
+| CAR-003        | Cargador       | CONT-2025-010 | 4       | 10.3      | 50.5 L   |
+| COM-001        | Compactador    | CONT-2025-015 | 4       | 9.9       | 37.8 L   |
+| MOT-001        | Motoniveladora | CONT-2025-016 | 4       | 10.3      | 46.3 L   |
+| TRA-003        | Tractor        | CONT-2025-014 | 4       | 10.1      | 59.0 L   |
+| EXC-001        | Excavadora     | CONT-2025-001 | 3       | 9.5       | 46.5 L   |
+| EXC-005        | Excavadora     | CONT-2024-087 | 3       | 9.8       | 46.7 L   |
+| VOL-004        | Volquete       | CONT-2024-095 | 3       | 9.5       | 70.3 L   |
+| TRA-001        | Tractor        | CONT-2025-002 | 2       | 10.8      | 56.5 L   |
+| VOL-001        | Volquete       | CONT-2025-003 | 1       | 8.0       | 68.0 L   |
+
+#### Report Characteristics
+
+**Work Hours Distribution**:
+
+- Typical shift: 8-12 hours/day
+- Average hours worked: 9.82 hours/day
+- Range: 6.0 hours (standby day) to 11.0 hours (overtime)
+
+**Fuel Consumption by Category**:
+
+- Excavators: 47.6 L/day average (range: 30-58 L)
+- Loaders: 51.6 L/day average (range: 46-58 L)
+- Tractors: 57.5 L/day average (range: 52-64 L)
+- Trucks: 71.1 L/day average (range: 65-78 L)
+- Compactors: 37.8 L/day average (range: 35-40 L)
+- Graders: 46.3 L/day average (range: 42-50 L)
+
+**Horometer/Odometer Progression**:
+
+- Excavators: Progressive horometer tracking (e.g., EXC-002: 8500→8569 hrs)
+- Loaders: Progressive horometer tracking (e.g., CAR-001: 4800→4851 hrs)
+- Trucks: Progressive odometer tracking (e.g., VOL-002: 145000→146380 km)
+- Tractors: Progressive horometer tracking (e.g., TRA-002: 7800→7851 hrs)
+
+**Special Scenarios Included**:
+
+- ✅ Standby days (reduced hours due to weather)
+- ✅ Maintenance days (partial work hours)
+- ✅ Overtime shifts (11+ hours)
+- ✅ Historical data (finalized contracts: EXC-005, VOL-004)
+- ✅ Various work shifts (morning/afternoon)
+
+### How to Apply This Migration
+
+```bash
+# From project root directory
+docker exec -i bitcorp-postgres-dev psql -U bitcorp -d bitcorp_dev < database/006_seed_additional_daily_reports.sql
+```
+
+### Verification Queries
+
+```sql
+-- Total daily reports count
+SELECT COUNT(*) as total_reports FROM equipo.parte_diario;
+-- Expected: 79
+
+-- Reports by equipment
+SELECT e.codigo_equipo, e.categoria, COUNT(pd.id) as report_count
+FROM equipo.equipo e
+LEFT JOIN equipo.parte_diario pd ON e.id = pd.equipo_id
+WHERE e.id IN (SELECT equipo_id FROM equipo.contrato_adenda WHERE estado IN ('ACTIVO', 'FINALIZADO'))
+GROUP BY e.codigo_equipo, e.categoria
+ORDER BY report_count DESC, e.codigo_equipo;
+
+-- Reports by status
+SELECT estado, COUNT(*) as count,
+       ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM equipo.parte_diario), 2) as percentage
+FROM equipo.parte_diario
+GROUP BY estado
+ORDER BY count DESC;
+
+-- Reports by date range (weekly)
+SELECT DATE_TRUNC('week', fecha)::date as week_start, COUNT(*) as reports
+FROM equipo.parte_diario
+GROUP BY week_start
+ORDER BY week_start DESC;
+
+-- Average hours and fuel by equipment category
+SELECT e.categoria,
+       ROUND(AVG(pd.horas_trabajadas)::numeric, 2) as avg_hours,
+       ROUND(AVG(pd.combustible_consumido)::numeric, 2) as avg_fuel
+FROM equipo.parte_diario pd
+JOIN equipo.equipo e ON pd.equipo_id = e.id
+WHERE pd.horas_trabajadas IS NOT NULL
+GROUP BY e.categoria
+ORDER BY e.categoria;
+
+-- Equipment without reports (should be empty after migration)
+SELECT e.codigo_equipo, e.categoria, ca.numero_contrato
+FROM equipo.equipo e
+INNER JOIN equipo.contrato_adenda ca ON e.id = ca.equipo_id
+LEFT JOIN equipo.parte_diario pd ON e.id = pd.equipo_id
+WHERE ca.estado IN ('ACTIVO', 'FINALIZADO')
+  AND pd.id IS NULL
+GROUP BY e.codigo_equipo, e.categoria, ca.numero_contrato;
+-- Expected: 0 rows
+```
+
+### Rollback Instructions
+
+```sql
+-- Remove all daily reports added in migration 006
+-- (Keep original 6 reports: IDs 1-6)
+DELETE FROM equipo.parte_diario WHERE id > 6;
+
+-- Or safer rollback based on date range:
+DELETE FROM equipo.parte_diario
+WHERE fecha BETWEEN '2025-12-17' AND '2026-01-18'
+  AND id NOT IN (1, 2, 3, 4, 5, 6);
+
+-- Verify rollback
+SELECT COUNT(*) FROM equipo.parte_diario;
+-- Should return 6 (original reports)
+```
+
+### Impact on Valuation System
+
+This migration enables:
+
+- ✅ **Monthly Valuation Calculations**: Sufficient data for January 2026 valorization
+- ✅ **Equipment Usage Analysis**: Track actual vs contracted hours
+- ✅ **Fuel Cost Tracking**: Monitor fuel consumption patterns
+- ✅ **Billing Preparation**: Generate invoices based on hourly usage
+- ✅ **Historical Reporting**: Compare current vs previous month performance
+- ✅ **Operator Performance**: Track equipment productivity by operator
+
+### Next Steps
+
+With daily reports in place, the system can now:
+
+1. Calculate monthly equipment valuations (valorizaciones)
+2. Generate equipment utilization reports
+3. Track fuel efficiency metrics
+4. Compare budgeted vs actual equipment costs
+5. Prepare client billing based on actual usage
 
 ---
 

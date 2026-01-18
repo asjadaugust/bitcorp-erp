@@ -18,6 +18,10 @@ export class DailyReportService {
         if (filters[key]) params = params.set(key, filters[key]);
       });
     }
+    // Default limit to 100 to avoid pagination issues (like equipment/provider/contract services)
+    if (!filters?.limit) {
+      params = params.set('limit', '100');
+    }
     // API might return paginated response: {success, data, pagination}
     // Extract data array if it exists, otherwise return as-is
     return this.http.get<any>(this.apiUrl, { params }).pipe(
