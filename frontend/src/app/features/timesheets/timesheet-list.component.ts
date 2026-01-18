@@ -304,11 +304,12 @@ export class TimesheetListComponent implements OnInit {
 
     this.timesheetService.listTimesheets(this.currentFilters).subscribe({
       next: (response) => {
-        this.timesheets = response;
+        this.timesheets = Array.isArray(response) ? response : [];
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading timesheets:', err);
+        this.timesheets = [];
         this.error = 'No se pudieron cargar las planillas';
         this.loading = false;
       },

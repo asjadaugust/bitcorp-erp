@@ -162,11 +162,13 @@ export class DocumentListComponent implements OnInit {
     this.loading = true;
     this.sigService.getDocuments().subscribe({
       next: (docs) => {
-        this.documents = docs;
+        this.documents = Array.isArray(docs) ? docs : [];
         this.applyFilters();
         this.loading = false;
       },
       error: () => {
+        this.documents = [];
+        this.filteredDocuments = [];
         this.loading = false;
       },
     });
