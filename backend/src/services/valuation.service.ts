@@ -6,6 +6,7 @@ import { ExcessFuel } from '../models/excess-fuel.model';
 import { WorkExpense } from '../models/work-expense.model';
 import { AdvanceAmortization } from '../models/advance-amortization.model';
 import { Repository } from 'typeorm';
+import { valuationEmailNotifier } from './valuation-email-notifier';
 import {
   transformToValuationPage1Dto,
   transformToValuationPage2Dto,
@@ -219,6 +220,12 @@ export class ValuationService {
       valorizacion.approvedAt = new Date();
 
       const approved = await this.repository.save(valorizacion);
+
+      // Send email notification (non-blocking)
+      valuationEmailNotifier.notifyApproved(approved, userId).catch((err) => {
+        Logger.error('Failed to send approved email', { error: err, valuationId: id });
+      });
+
       return toValuationDto(approved);
     } catch (error) {
       Logger.error('Error approving valuation', {
@@ -249,6 +256,12 @@ export class ValuationService {
       valorizacion.updatedAt = new Date();
 
       const updated = await this.repository.save(valorizacion);
+
+      // Send email notification (non-blocking)
+      valuationEmailNotifier.notifySubmitted(updated).catch((err) => {
+        Logger.error('Failed to send submitted email', { error: err, valuationId: id });
+      });
+
       return toValuationDto(updated);
     } catch (error) {
       Logger.error('Error submitting valuation for review', {
@@ -284,6 +297,12 @@ export class ValuationService {
       valorizacion.updatedAt = new Date();
 
       const rejected = await this.repository.save(valorizacion);
+
+      // Send email notification (non-blocking)
+      valuationEmailNotifier.notifyRejected(rejected, reason, userId).catch((err) => {
+        Logger.error('Failed to send rejected email', { error: err, valuationId: id });
+      });
+
       return toValuationDto(rejected);
     } catch (error) {
       Logger.error('Error rejecting valuation', {
@@ -333,6 +352,19 @@ export class ValuationService {
       }
 
       const paid = await this.repository.save(valorizacion);
+
+      // Send email notification (non-blocking)
+      const emailPaymentData = {
+        fecha_pago:
+          paymentData.fechaPago?.toISOString().split('T')[0] ||
+          new Date().toISOString().split('T')[0],
+        metodo_pago: paymentData.metodoPago || 'No especificado',
+        referencia_pago: paymentData.referenciaPago,
+      };
+      valuationEmailNotifier.notifyPaid(paid, emailPaymentData).catch((err) => {
+        Logger.error('Failed to send paid email', { error: err, valuationId: id });
+      });
+
       return toValuationDto(paid);
     } catch (error) {
       Logger.error('Error marking valuation as paid', {
