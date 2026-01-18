@@ -128,6 +128,12 @@ export class ContractService {
     if (filters.status) params = params.set('status', filters.status);
     if (filters.equipmentId) params = params.set('equipmentId', filters.equipmentId);
 
+    // DEFAULT LIMIT: Backend defaults to limit=10, but for dropdowns/lists we want all
+    // Set default limit to 100 to show all contracts unless explicitly filtered
+    if (!filters.limit) {
+      params = params.set('limit', '100');
+    }
+
     // API might return paginated response: {success, data, pagination}
     // Extract data array if it exists, otherwise return as-is
     return this.http.get<any>(this.apiUrl, { params }).pipe(
