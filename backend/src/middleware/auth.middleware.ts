@@ -50,6 +50,15 @@ export const authorize = (...allowedRoles: Role[]) => {
       return;
     }
 
+    // Check if roles exist and is an array
+    if (!req.user.roles || !Array.isArray(req.user.roles)) {
+      res.status(403).json({
+        error: 'User roles not found in token',
+        required: allowedRoles,
+      });
+      return;
+    }
+
     // Case-insensitive role comparison for backward compatibility
     const userRolesLower = req.user.roles.map((r) => r.toLowerCase());
     const allowedRolesLower = allowedRoles.map((r) => r.toLowerCase());

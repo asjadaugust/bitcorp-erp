@@ -12,8 +12,6 @@ import {
   ReconcilePayment,
   PaymentRecordQuery,
   PaginatedPaymentResponse,
-  SinglePaymentResponse,
-  PaymentSummaryResponse,
 } from '../models/payment-record.model';
 
 @Injectable({
@@ -48,59 +46,52 @@ export class PaymentService {
    * Get single payment by ID
    */
   getPaymentById(id: number): Observable<PaymentRecordDetail> {
-    return this.http
-      .get<SinglePaymentResponse>(`${this.apiUrl}/${id}`)
-      .pipe(map((response) => response.data));
+    // Note: API response is auto-unwrapped by apiResponseInterceptor
+    return this.http.get<PaymentRecordDetail>(`${this.apiUrl}/${id}`);
   }
 
   /**
    * Get all payments for a specific valuation
    */
   getPaymentsByValuation(valuationId: number): Observable<PaymentRecordList[]> {
-    return this.http
-      .get<{
-        success: boolean;
-        data: PaymentRecordList[];
-      }>(`${environment.apiUrl}/valuations/${valuationId}/payments`)
-      .pipe(map((response) => response.data));
+    // Note: API response is auto-unwrapped by apiResponseInterceptor
+    return this.http.get<PaymentRecordList[]>(
+      `${environment.apiUrl}/valuations/${valuationId}/payments`
+    );
   }
 
   /**
    * Get payment summary for a valuation
    */
   getPaymentSummary(valuationId: number): Observable<PaymentSummary> {
-    return this.http
-      .get<PaymentSummaryResponse>(
-        `${environment.apiUrl}/valuations/${valuationId}/payment-summary`
-      )
-      .pipe(map((response) => response.data));
+    // Note: API response is auto-unwrapped by apiResponseInterceptor
+    return this.http.get<PaymentSummary>(
+      `${environment.apiUrl}/valuations/${valuationId}/payment-summary`
+    );
   }
 
   /**
    * Create new payment
    */
   createPayment(data: CreatePaymentRecord): Observable<PaymentRecordDetail> {
-    return this.http
-      .post<SinglePaymentResponse>(this.apiUrl, data)
-      .pipe(map((response) => response.data));
+    // Note: API response is auto-unwrapped by apiResponseInterceptor
+    return this.http.post<PaymentRecordDetail>(this.apiUrl, data);
   }
 
   /**
    * Update existing payment
    */
   updatePayment(id: number, data: UpdatePaymentRecord): Observable<PaymentRecordDetail> {
-    return this.http
-      .put<SinglePaymentResponse>(`${this.apiUrl}/${id}`, data)
-      .pipe(map((response) => response.data));
+    // Note: API response is auto-unwrapped by apiResponseInterceptor
+    return this.http.put<PaymentRecordDetail>(`${this.apiUrl}/${id}`, data);
   }
 
   /**
    * Reconcile payment with bank statement
    */
   reconcilePayment(id: number, data: ReconcilePayment): Observable<PaymentRecordDetail> {
-    return this.http
-      .post<SinglePaymentResponse>(`${this.apiUrl}/${id}/reconcile`, data)
-      .pipe(map((response) => response.data));
+    // Note: API response is auto-unwrapped by apiResponseInterceptor
+    return this.http.post<PaymentRecordDetail>(`${this.apiUrl}/${id}/reconcile`, data);
   }
 
   /**
