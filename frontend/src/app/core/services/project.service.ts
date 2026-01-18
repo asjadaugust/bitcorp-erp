@@ -5,11 +5,6 @@ import { map } from 'rxjs/operators';
 import { Project } from '../models/project.model';
 import { environment } from '../../../environments/environment';
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -51,21 +46,17 @@ export class ProjectService {
         }
       });
     }
-    return this.http.get<ApiResponse<any[]> | any[]>(this.apiUrl, { params }).pipe(
-      map((response) => {
-        const data = Array.isArray(response) ? response : response.data || [];
-        return data.map((p) => this.mapApiToProject(p));
-      })
-    );
+    // Interceptor already unwraps {success, data} -> data
+    return this.http
+      .get<any[]>(this.apiUrl, { params })
+      .pipe(map((data) => data.map((p) => this.mapApiToProject(p))));
   }
 
   getById(id: string): Observable<Project> {
-    return this.http.get<ApiResponse<any> | any>(`${this.apiUrl}/${id}`).pipe(
-      map((response) => {
-        const data = response.data || response;
-        return this.mapApiToProject(data);
-      })
-    );
+    // Interceptor already unwraps {success, data} -> data
+    return this.http
+      .get<any>(`${this.apiUrl}/${id}`)
+      .pipe(map((data) => this.mapApiToProject(data)));
   }
 
   create(
@@ -94,8 +85,8 @@ export class ProjectService {
       client: (project as any).client || project.cliente,
     };
     return this.http
-      .post<ApiResponse<any> | any>(this.apiUrl, apiData)
-      .pipe(map((response) => this.mapApiToProject(response.data || response)));
+      .post<any>(this.apiUrl, apiData)
+      .pipe(map((data) => this.mapApiToProject(data)));
   }
 
   update(
@@ -136,8 +127,8 @@ export class ProjectService {
     if (client) apiData.client = client;
 
     return this.http
-      .put<ApiResponse<any> | any>(`${this.apiUrl}/${id}`, apiData)
-      .pipe(map((response) => this.mapApiToProject(response.data || response)));
+      .put<any>(`${this.apiUrl}/${id}`, apiData)
+      .pipe(map((data) => this.mapApiToProject(data)));
   }
 
   delete(id: string): Observable<void> {

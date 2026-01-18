@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { FuelRecord, FuelListResponse, FuelResponse } from '../models/fuel-record.model';
+import { FuelRecord, FuelListResponse } from '../models/fuel-record.model';
 
 @Injectable({
   providedIn: 'root',
@@ -26,19 +25,18 @@ export class FuelService {
   }
 
   getById(id: number): Observable<FuelRecord> {
-    return this.http
-      .get<FuelResponse>(`${this.apiUrl}/${id}`)
-      .pipe(map((response) => response.data));
+    // Interceptor already unwraps {success, data} -> data
+    return this.http.get<FuelRecord>(`${this.apiUrl}/${id}`);
   }
 
   create(record: Omit<FuelRecord, 'id'>): Observable<FuelRecord> {
-    return this.http.post<FuelResponse>(this.apiUrl, record).pipe(map((response) => response.data));
+    // Interceptor already unwraps {success, data} -> data
+    return this.http.post<FuelRecord>(this.apiUrl, record);
   }
 
   update(id: number, record: Partial<FuelRecord>): Observable<FuelRecord> {
-    return this.http
-      .put<FuelResponse>(`${this.apiUrl}/${id}`, record)
-      .pipe(map((response) => response.data));
+    // Interceptor already unwraps {success, data} -> data
+    return this.http.put<FuelRecord>(`${this.apiUrl}/${id}`, record);
   }
 
   delete(id: number): Observable<void> {
