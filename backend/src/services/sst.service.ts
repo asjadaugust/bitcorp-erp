@@ -43,9 +43,8 @@ export class SstService {
         context: 'SstService.findAll',
       });
 
-      const queryBuilder = this.repository
-        .createQueryBuilder('i')
-        .leftJoinAndSelect('i.reportador', 'r'); // Load reportador relation
+      const queryBuilder = this.repository.createQueryBuilder('i');
+      // .leftJoinAndSelect('i.reportador', 'r'); // Load reportador relation - DISABLED: causing TypeORM error
       // TODO: Add tenant_id filter when column exists in sst.incidente table
       // .where('i.tenant_id = :tenantId', { tenantId })
 
