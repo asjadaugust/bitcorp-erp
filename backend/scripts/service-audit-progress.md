@@ -252,4 +252,37 @@ async findAll(tenantId: number): Promise<EntityDto[]> {
 
 ---
 
-**Next Action**: Continue with inventory.service.ts (75 LOC, simple inventory logic)
+## 🚨 Critical Bug Fixed - Session 12
+
+### Singleton Instantiation Bug (b3d2eb5, b4ddb93)
+
+**Problem**: Backend crashed with "Database not initialized" error when starting.
+
+**Root Cause**:
+
+- Route files instantiated controllers at module load time (before DB connects)
+- Controllers instantiated services in constructor
+- Service constructors checked `AppDataSource.isInitialized` → FAILED
+
+**Fix Applied**:
+
+1. **Removed singleton exports** from services (sst, tender, operator)
+2. **Lazy controller instantiation** in route files (sst.routes.ts, tender.routes.ts)
+3. Controllers now created on first HTTP request (after DB connects)
+
+**Files Fixed**:
+
+- ✅ src/services/sst.service.ts
+- ✅ src/services/tender.service.ts
+- ✅ src/services/operator.service.ts
+- ✅ src/api/sst/sst.routes.ts
+- ✅ src/api/sst/sst.controller.ts (line 25 bug)
+- ✅ src/api/tenders/tender.routes.ts
+
+**Testing**: ✅ Backend starts successfully, all 152 tests passing
+
+**Documentation**: See `scripts/debugging/singleton-instantiation-bug-fix.md`
+
+---
+
+**Next Action**: Continue with dashboard.service.ts (231 LOC, moderate analytics)
