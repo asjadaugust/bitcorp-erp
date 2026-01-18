@@ -119,21 +119,21 @@ export class IncidentListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'fechaIncidente', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
-    { key: 'descripcion', label: 'Descripción', type: 'text' },
-    { key: 'ubicacion', label: 'Ubicación', type: 'text' },
+    { key: 'date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
+    { key: 'description', label: 'Descripción', type: 'text' },
+    { key: 'location', label: 'Ubicación', type: 'text' },
     {
-      key: 'severidad',
+      key: 'severity',
       label: 'Severidad',
       type: 'badge',
       badgeConfig: {
-        LEVE: { label: 'Baja', class: 'badge low' },
-        MODERADO: { label: 'Media', class: 'badge medium' },
-        ALTA: { label: 'Alta', class: 'badge high' },
-        CRITICA: { label: 'Crítica', class: 'badge critical' },
+        Low: { label: 'Baja', class: 'badge low' },
+        Medium: { label: 'Media', class: 'badge medium' },
+        High: { label: 'Alta', class: 'badge high' },
+        Critical: { label: 'Crítica', class: 'badge critical' },
       },
     },
-    { key: 'reportadoPor', label: 'Reportado Por', type: 'text' },
+    { key: 'reportedBy', label: 'Reportado Por', type: 'template' },
   ];
 
   ngOnInit() {
