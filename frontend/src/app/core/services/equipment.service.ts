@@ -17,6 +17,13 @@ export class EquipmentService {
         if (filters[key]) params = params.set(key, filters[key]);
       });
     }
+
+    // For equipment list/dropdowns, request all items (up to 100 max by backend)
+    // This prevents pagination cutting off equipment visibility in lists
+    if (!filters?.limit) {
+      params = params.set('limit', '100');
+    }
+
     return this.http.get<EquipmentListResponse>(this.apiUrl, { params });
   }
 

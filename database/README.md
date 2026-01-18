@@ -19,7 +19,172 @@ This directory contains SQL migration scripts for the BitCorp ERP database schem
 | `001_init_schema.sql`                  | 1.0     | Initial database schema (all modules)                            | ✅ Applied |
 | `002_seed.sql`                         | 5.0     | Comprehensive seed data (system, projects, equipment, operators) | ✅ Applied |
 | `003_seed_additional_providers.sql`    | 1.0     | Additional realistic Peruvian provider data                      | ✅ Applied |
+| `004_seed_additional_equipment.sql`    | 1.0     | Additional construction equipment across all categories          | ✅ Applied |
 | `012_add_user_project_assignments.sql` | N/A     | User-project assignments (WIP - not applied)                     | ⏸️ Pending |
+
+---
+
+## Migration 004: Additional Equipment Seed Data
+
+**Date**: 2026-01-18  
+**Purpose**: Add realistic construction equipment fleet for comprehensive testing
+
+### Equipment Added (20 new items)
+
+#### Equipment Distribution by Category
+
+```sql
+Total Equipment: 23 items (3 original + 20 new)
+├── Excavators (EXCAVADORA): 6 items
+├── Loaders (CARGADOR_FRONTAL): 3 items
+├── Dump Trucks (VOLQUETE): 5 items
+├── Bulldozers (TRACTOR): 4 items
+├── Compactors (COMPACTADOR): 2 items
+├── Motor Graders (MOTONIVELADORA): 2 items
+└── Crane (GRUA): 1 item
+```
+
+#### Equipment by Provider
+
+| Provider               | Equipment Count | Brands                   |
+| ---------------------- | --------------- | ------------------------ |
+| FERREYROS S.A.A.       | 7 items         | Caterpillar (all CAT)    |
+| MAQUINARIAS U&C S.A.C. | 6 items         | Mixed (Hyundai, JD, etc) |
+| UNIMAQ S.A.            | 5 items         | Komatsu (all)            |
+| DERCO PERÚ S.A.        | 2 items         | Volvo trucks             |
+
+#### Excavators (6 items)
+
+1. **EXC-002** - Caterpillar 336 (268 HP, 2019) - FERREYROS
+2. **EXC-003** - Komatsu PC200-8 (148 HP, 2020) - UNIMAQ
+3. **EXC-004** - Caterpillar 320D2 (158 HP, 2021) - FERREYROS
+4. **EXC-005** - Hyundai R210LC-9 (161 HP, 2018) - MAQUINARIAS U&C
+5. **EXC-006** - Komatsu PC300-8 (215 HP, 2019) - UNIMAQ
+
+#### Loaders (3 items)
+
+6. **CAR-001** - Caterpillar 950GC (189 HP, 2020) - FERREYROS
+7. **CAR-002** - Komatsu WA380-8 (196 HP, 2021) - UNIMAQ
+8. **CAR-003** - John Deere 544K (164 HP, 2019) - MAQUINARIAS U&C
+
+#### Dump Trucks (4 items)
+
+9. **VOL-002** - Volvo FM440 (440 HP, Placa AYU-823, 2020) - DERCO
+10. **VOL-003** - Mercedes-Benz Actros 4144K (435 HP, Placa BRT-941, 2019) - MAQUINARIAS U&C
+11. **VOL-004** - Scania P410B8x4 (410 HP, Placa CWM-752, 2021) - MAQUINARIAS U&C
+12. **VOL-005** - Volvo FMX500 (500 HP, Placa DLT-368, 2022) - DERCO
+
+#### Bulldozers/Tractors (3 items)
+
+13. **TRA-002** - Caterpillar D6T XL (215 HP, 2020) - FERREYROS
+14. **TRA-003** - Komatsu D85EX-18 (264 HP, 2021) - UNIMAQ
+15. **TRA-004** - Caterpillar D8T (310 HP, 2019) - FERREYROS
+
+#### Compactors (2 items)
+
+16. **COM-001** - Caterpillar CS54B (130 HP, 2020) - FERREYROS
+17. **COM-002** - Dynapac CA2500D (99 HP, 2019) - MAQUINARIAS U&C
+
+#### Motor Graders (2 items)
+
+18. **MOT-001** - Caterpillar 140M (190 HP, 2020) - FERREYROS
+19. **MOT-002** - Komatsu GD655-6 (197 HP, 2021) - UNIMAQ
+
+#### Crane (1 item)
+
+20. **GRU-001** - Liebherr LTM 1100-5.2 (536 HP, Placa FRM-489, 2018) - MAQUINARIAS U&C
+
+### Database Statistics After Migration
+
+```sql
+Total Equipment: 23 items (3 original seed + 20 new)
+Equipment by Estado: 23 DISPONIBLE (100%)
+Equipment Years: 2018-2022 (realistic fleet age)
+Equipment with Placas: 8 items (trucks, crane)
+Equipment with Providers: 20 items (87%)
+```
+
+### How to Apply This Migration
+
+```bash
+# From project root directory
+docker exec -i bitcorp-postgres-dev psql -U bitcorp -d bitcorp_dev < database/004_seed_additional_equipment.sql
+```
+
+### Verification Queries
+
+```sql
+-- Count equipment by category
+SELECT categoria, COUNT(*) as total
+FROM equipo.equipo
+WHERE is_active = true
+GROUP BY categoria
+ORDER BY categoria;
+
+-- List all equipment with provider names
+SELECT
+    e.codigo_equipo,
+    e.categoria,
+    e.marca,
+    e.modelo,
+    e.anio_fabricacion,
+    p.razon_social as proveedor,
+    e.estado
+FROM equipo.equipo e
+LEFT JOIN proveedores.proveedor p ON e.proveedor_id = p.id
+WHERE e.is_active = true
+ORDER BY e.categoria, e.codigo_equipo;
+
+-- Count equipment by provider
+SELECT
+    p.razon_social,
+    COUNT(*) as total_equipos
+FROM equipo.equipo e
+INNER JOIN proveedores.proveedor p ON e.proveedor_id = p.id
+WHERE e.is_active = true
+GROUP BY p.razon_social
+ORDER BY total_equipos DESC;
+
+-- Check equipment years distribution
+SELECT
+    anio_fabricacion,
+    COUNT(*) as count
+FROM equipo.equipo
+WHERE is_active = true AND anio_fabricacion IS NOT NULL
+GROUP BY anio_fabricacion
+ORDER BY anio_fabricacion DESC;
+```
+
+### Equipment Technical Details
+
+All equipment includes:
+
+- ✅ Realistic serial numbers (format: `BRAND+MODEL+SERIAL`)
+- ✅ Engine specifications (modelo, potencia_neta, tipo_motor)
+- ✅ Manufacturing years (2018-2022 range)
+- ✅ Proper categorization (categoria field)
+- ✅ Provider assignment (FERREYROS→CAT, UNIMAQ→Komatsu, etc.)
+- ✅ Measurement type (horometro for heavy equipment, odometro for trucks)
+
+### Rollback Instructions
+
+```sql
+-- Remove equipment added in migration 004
+DELETE FROM equipo.equipo
+WHERE codigo_equipo IN (
+    'EXC-002', 'EXC-003', 'EXC-004', 'EXC-005', 'EXC-006',
+    'CAR-001', 'CAR-002', 'CAR-003',
+    'VOL-002', 'VOL-003', 'VOL-004', 'VOL-005',
+    'TRA-002', 'TRA-003', 'TRA-004',
+    'COM-001', 'COM-002',
+    'MOT-001', 'MOT-002',
+    'GRU-001'
+);
+
+-- Verify rollback
+SELECT COUNT(*) FROM equipo.equipo WHERE is_active = true;
+-- Should return 3 (original equipment)
+```
 
 ---
 
@@ -218,10 +383,10 @@ SELECT COUNT(*) FROM proveedores.proveedor WHERE is_active = true;
 
 ## Next Migrations (Planned)
 
-- `004_add_equipment_gps_tracking.sql` - GPS location tracking for equipment
-- `005_add_user_project_assignments.sql` - User-project many-to-many relationships
-- `006_add_daily_reports_api.sql` - Daily reports API support
-- `007_add_audit_triggers.sql` - Automatic audit logging
+- `005_add_operator_certifications.sql` - Operator certifications and licenses
+- `006_add_equipment_maintenance_history.sql` - Maintenance records and schedules
+- `007_add_daily_reports_enhancements.sql` - Enhanced daily report fields
+- `008_add_audit_triggers.sql` - Automatic audit logging for sensitive tables
 
 ---
 
@@ -230,5 +395,5 @@ SELECT COUNT(*) FROM proveedores.proveedor WHERE is_active = true;
 For migration issues or questions, contact the development team.
 
 **Last Updated**: 2026-01-18  
-**Migration Version**: 003  
+**Migration Version**: 004  
 **Status**: ✅ All migrations applied successfully
