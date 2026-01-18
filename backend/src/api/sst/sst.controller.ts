@@ -1,19 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
-import { AppDataSource } from '../../config/database.config';
-import { SafetyIncident } from '../../models/safety-incident.model';
+import sstService from '../../services/sst.service';
 import { sendSuccess, sendError, sendCreated } from '../../utils/api-response';
 import Logger from '../../utils/logger';
+import { NotFoundError, ConflictError } from '../../errors/http.errors';
 
 export class SstController {
+  /**
+   * GET /incidents - List all safety incidents with pagination and filters
+   */
   getIncidents = async (req: Request, res: Response): Promise<void> => {
     try {
-      const incidentRepo = AppDataSource.getRepository(SafetyIncident);
-      const incidents = await incidentRepo.find({
-        order: { fechaIncidente: 'DESC' },
-      });
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const filters = {
+        search: req.query.search as string,
+        estado: req.query.estado as string,
+        severidad: req.query.severidad as string,
+      };
 
-      sendSuccess(res, incidents);
+      const result = await sstService.findAll(tenantId, filters, page, limit);
+
+      sendSuccess(res, result.data, {
+        page,
+        limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / limit),
+      });
     } catch (error: any) {
       Logger.error('Error fetching incidents', {
         error: error instanceof Error ? error.message : String(error),
@@ -30,20 +44,48 @@ export class SstController {
     }
   };
 
+  /**
+   * GET /incidents/:id - Get single safety incident by ID
+   */
+  getIncidentById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const tenantId = 1; // TODO: Get from req.tenantContext
+      const id = parseInt(req.params.id);
+
+      const incident = await sstService.findById(tenantId, id);
+      sendSuccess(res, incident);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'INCIDENT_NOT_FOUND', 'Incidente no encontrado');
+        return;
+      }
+      Logger.error('Error fetching incident by ID', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'SstController.getIncidentById',
+      });
+      sendError(res, 500, 'INTERNAL_ERROR', 'Error al obtener el incidente', error.message);
+    }
+  };
+
+  /**
+   * POST /incidents - Create new safety incident
+   */
   createIncident = async (req: Request, res: Response): Promise<void> => {
     try {
-      const incidentRepo = AppDataSource.getRepository(SafetyIncident);
-
+      const tenantId = 1; // TODO: Get from req.tenantContext
       const incidentData = {
         ...req.body,
-        reportedById: (req as any).user?.id,
+        reportado_por: (req as any).user?.id,
       };
 
-      const incident = incidentRepo.create(incidentData);
-      const savedIncident = await incidentRepo.save(incident);
-
-      sendCreated(res, savedIncident);
+      const incident = await sstService.create(tenantId, incidentData);
+      sendCreated(res, incident);
     } catch (error: any) {
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'VALIDATION_ERROR', error.message);
+        return;
+      }
       Logger.error('Error creating incident', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -56,6 +98,58 @@ export class SstController {
         'Error al crear el incidente de seguridad',
         error.message
       );
+    }
+  };
+
+  /**
+   * PUT /incidents/:id - Update safety incident
+   */
+  updateIncident = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const tenantId = 1; // TODO: Get from req.tenantContext
+      const id = parseInt(req.params.id);
+
+      const incident = await sstService.update(tenantId, id, req.body);
+      sendSuccess(res, incident);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'INCIDENT_NOT_FOUND', 'Incidente no encontrado');
+        return;
+      }
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'VALIDATION_ERROR', error.message);
+        return;
+      }
+      Logger.error('Error updating incident', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'SstController.updateIncident',
+      });
+      sendError(res, 500, 'INTERNAL_ERROR', 'Error al actualizar el incidente', error.message);
+    }
+  };
+
+  /**
+   * DELETE /incidents/:id - Delete safety incident
+   */
+  deleteIncident = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const tenantId = 1; // TODO: Get from req.tenantContext
+      const id = parseInt(req.params.id);
+
+      await sstService.delete(tenantId, id);
+      sendSuccess(res, { message: 'Incidente eliminado exitosamente' });
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'INCIDENT_NOT_FOUND', 'Incidente no encontrado');
+        return;
+      }
+      Logger.error('Error deleting incident', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'SstController.deleteIncident',
+      });
+      sendError(res, 500, 'INTERNAL_ERROR', 'Error al eliminar el incidente', error.message);
     }
   };
 }
