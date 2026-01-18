@@ -86,8 +86,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       <ng-template #contactTemplate let-row>
         <div class="contact-info">
-          <div *ngIf="row.email" class="contact-item">
-            <i class="fa-regular fa-envelope"></i> {{ row.email }}
+          <div *ngIf="row.correo_electronico" class="contact-item">
+            <i class="fa-regular fa-envelope"></i> {{ row.correo_electronico }}
           </div>
           <div *ngIf="row.telefono" class="contact-item">
             <i class="fa-solid fa-phone"></i> {{ row.telefono }}
@@ -333,7 +333,7 @@ export class ProviderListComponent implements OnInit {
       RUC: provider.ruc || '',
       'Tipo Proveedor': provider.tipo_proveedor || '',
       // 'Nombre Contacto': provider.contact_name || '',
-      Email: provider.email || '',
+      Email: provider.correo_electronico || '',
       Teléfono: provider.telefono || '',
       Dirección: provider.direccion || '',
       Estado: provider.is_active ? 'Activo' : 'Inactivo',
@@ -360,7 +360,7 @@ export class ProviderListComponent implements OnInit {
       RUC: provider.ruc || '',
       'Tipo Proveedor': provider.tipo_proveedor || '',
       // 'Nombre Contacto': provider.contact_name || '', // Removed
-      Email: provider.email || '',
+      Email: provider.correo_electronico || '',
       Teléfono: provider.telefono || '',
       Dirección: provider.direccion || '',
       Estado: provider.is_active ? 'Activo' : 'Inactivo',

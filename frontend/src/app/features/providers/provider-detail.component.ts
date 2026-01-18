@@ -69,7 +69,7 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
                   </div>
                   <div class="info-item">
                     <label>Email</label>
-                    <p>{{ provider.email || '-' }}</p>
+                    <p>{{ provider.correo_electronico || '-' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Teléfono</label>

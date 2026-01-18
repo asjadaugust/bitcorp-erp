@@ -33,7 +33,7 @@ export class ProviderService {
       tipo_proveedor: apiData.tipo_proveedor,
       direccion: apiData.direccion,
       telefono: apiData.telefono,
-      email: apiData.email,
+      correo_electronico: apiData.correo_electronico,
       is_active: apiData.is_active,
       created_at: apiData.created_at,
       updated_at: apiData.updated_at,
@@ -65,7 +65,7 @@ export class ProviderService {
       tipo_proveedor: provider.tipo_proveedor,
       direccion: provider.direccion,
       telefono: provider.telefono,
-      email: provider.email,
+      correo_electronico: provider.correo_electronico,
     };
     return this.http
       .post<any>(this.apiUrl, payload)
@@ -81,7 +81,7 @@ export class ProviderService {
     if (provider.tipo_proveedor) payload.tipo_proveedor = provider.tipo_proveedor;
     if (provider.direccion) payload.direccion = provider.direccion;
     if (provider.telefono) payload.telefono = provider.telefono;
-    if (provider.email) payload.email = provider.email;
+    if (provider.correo_electronico) payload.correo_electronico = provider.correo_electronico;
     if (provider.is_active !== undefined) payload.is_active = provider.is_active;
 
     return this.http
