@@ -32,12 +32,12 @@ import { Equipment } from '../../core/models/equipment.model';
                 <h2>Basic Information</h2>
                 <div class="form-grid">
                   <div class="form-group">
-                    <label for="code">Código Equipo *</label>
+                    <label for="codigo_equipo">Código de Equipo *</label>
                     <input
                       type="text"
-                      id="code"
-                      name="code"
-                      [(ngModel)]="equipment.code"
+                      id="codigo_equipo"
+                      name="codigo_equipo"
+                      [(ngModel)]="equipment.codigo_equipo"
                       required
                       placeholder="ej. EQ-2025-001"
                     />
@@ -46,26 +46,28 @@ import { Equipment } from '../../core/models/equipment.model';
                   <!-- Name removed as not in model -->
 
                   <div class="form-group">
-                    <label for="brand">Marca *</label>
+                    <label for="marca">Marca *</label>
                     <input
                       type="text"
-                      id="brand"
-                      name="brand"
-                      [(ngModel)]="equipment.brand"
+                      id="marca"
+                      name="marca"
+                      [(ngModel)]="equipment.marca"
                       required
                     />
                   </div>
 
                   <div class="form-group">
-                    <label for="model">Modelo *</label>
+                    <label for="modelo">Modelo *</label>
                     <input
                       type="text"
-                      id="model"
-                      name="model"
-                      [(ngModel)]="equipment.model"
+                      id="modelo"
+                      name="modelo"
+                      [(ngModel)]="equipment.modelo"
                       required
                     />
                   </div>
+
+                  <!-- Name removed as not in model -->
 
                   <div class="form-group">
                     <label for="manufacture_year">Año</label>
@@ -80,8 +82,8 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
 
                   <div class="form-group">
-                    <label for="status">Estado *</label>
-                    <select id="status" name="status" [(ngModel)]="equipment.status" required>
+                    <label for="estado">Estado *</label>
+                    <select id="estado" name="estado" [(ngModel)]="equipment.estado" required>
                       <option value="DISPONIBLE">Disponible</option>
                       <option value="EN_USO">En Uso</option>
                       <option value="MANTENIMIENTO">Mantenimiento</option>
@@ -268,7 +270,7 @@ export class EquipmentCreateComponent {
   private router = inject(Router);
 
   equipment: Partial<Equipment> = {
-    status: 'DISPONIBLE',
+    estado: 'DISPONIBLE',
     engine_type: 'DIESEL',
   };
 

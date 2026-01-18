@@ -699,16 +699,16 @@ export class EquipmentFormComponent implements OnInit {
     this.loading = true;
     this.equipmentService.getById(id).subscribe({
       next: (equipment) => {
-        // Map English response fields to Spanish form fields
+        // Map API response (Spanish snake_case) to form fields
         this.equipmentForm.patchValue({
-          codigo_equipo: equipment.code,
-          marca: equipment.brand,
-          modelo: equipment.model,
-          estado: equipment.status,
-          categoria: equipment.category,
-          proveedor_id: equipment.provider_id,
+          codigo_equipo: equipment.codigo_equipo,
+          marca: equipment.marca,
+          modelo: equipment.modelo,
+          estado: equipment.estado,
+          categoria: equipment.categoria,
+          proveedor_id: equipment.proveedor_id,
           anio_fabricacion: equipment.manufacture_year,
-          placa: equipment.plate_number,
+          placa: equipment.placa,
           medidor_uso: equipment.meter_type,
           potencia_neta: equipment.net_power,
           tipo_motor: equipment.engine_type,

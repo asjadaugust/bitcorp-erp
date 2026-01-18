@@ -24,8 +24,8 @@ import { Equipment } from '../../core/models/equipment.model';
           <div class="detail-main card">
             <div class="detail-header">
               <div>
-                <h1>{{ equipment.brand }} {{ equipment.model }}</h1>
-                <p class="equipment-code">{{ equipment.code }}</p>
+                <h1>{{ equipment.marca }} {{ equipment.modelo }}</h1>
+                <p class="equipment-code">{{ equipment.codigo_equipo }}</p>
               </div>
               <div class="detail-actions">
                 <button class="btn btn-primary" (click)="editEquipment()">✏️ Editar</button>
@@ -34,8 +34,8 @@ import { Equipment } from '../../core/models/equipment.model';
             </div>
 
             <div class="detail-status">
-              <span [class]="'badge badge-' + equipment.status">
-                {{ equipment.status | uppercase }}
+              <span [class]="'badge badge-' + equipment.estado">
+                {{ equipment.estado | uppercase }}
               </span>
             </div>
 
@@ -45,15 +45,15 @@ import { Equipment } from '../../core/models/equipment.model';
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Marca</label>
-                    <p>{{ equipment.brand }}</p>
+                    <p>{{ equipment.marca }}</p>
                   </div>
                   <div class="info-item">
                     <label>Modelo</label>
-                    <p>{{ equipment.model }}</p>
+                    <p>{{ equipment.modelo }}</p>
                   </div>
                   <div class="info-item">
                     <label>Categoría</label>
-                    <p>{{ equipment.category || 'N/A' }}</p>
+                    <p>{{ equipment.categoria || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Número de Serie</label>
@@ -67,7 +67,7 @@ import { Equipment } from '../../core/models/equipment.model';
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Placa</label>
-                    <p>{{ equipment.plate_number || 'N/A' }}</p>
+                    <p>{{ equipment.placa || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Número de Chasis</label>

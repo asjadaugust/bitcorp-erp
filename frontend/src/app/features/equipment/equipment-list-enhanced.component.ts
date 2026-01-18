@@ -743,13 +743,13 @@ export class EquipmentListEnhancedComponent implements OnInit {
 
     // Prepare data for export with Spanish headers
     const exportData = this.equipment.map((eq) => ({
-      Código: eq.code || '',
-      Marca: eq.brand || '',
-      Modelo: eq.model || '',
-      Categoría: eq.category || '',
-      Estado: eq.status || '',
-      Proveedor: eq.provider_name || '',
-      Placa: eq.plate_number || '',
+      Código: eq.codigo_equipo || '',
+      Marca: eq.marca || '',
+      Modelo: eq.modelo || '',
+      Categoría: eq.categoria || '',
+      Estado: eq.estado || '',
+      Proveedor: eq.proveedor_nombre || '',
+      Placa: eq.placa || '',
       'Año Fabricación': eq.manufacture_year || '',
       'Tipo Medidor': eq.meter_type || '',
       'Tipo Motor': eq.engine_type || '',

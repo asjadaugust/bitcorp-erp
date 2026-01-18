@@ -39,12 +39,12 @@ import { Equipment } from '../../core/models/equipment.model';
                 <h2>Basic Information</h2>
                 <div class="form-grid">
                   <div class="form-group">
-                    <label for="code">Equipment Code *</label>
+                    <label for="codigo_equipo">Código de Equipo *</label>
                     <input
                       type="text"
-                      id="code"
-                      name="code"
-                      [(ngModel)]="equipment.code"
+                      id="codigo_equipo"
+                      name="codigo_equipo"
+                      [(ngModel)]="equipment.codigo_equipo"
                       required
                       [disabled]="true"
                     />
@@ -52,38 +52,23 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
 
                   <div class="form-group">
-                    <label for="name">Equipment Name *</label>
+                    <label for="marca">Marca *</label>
                     <input
                       type="text"
-                      id="name"
-                      name="name"
-                      [(ngModel)]="equipment.name"
-                      required
-                      #nameField="ngModel"
-                    />
-                    <span *ngIf="nameField.invalid && nameField.touched" class="error-message">
-                      Name is required
-                    </span>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="brand">Brand *</label>
-                    <input
-                      type="text"
-                      id="brand"
-                      name="brand"
-                      [(ngModel)]="equipment.brand"
+                      id="marca"
+                      name="marca"
+                      [(ngModel)]="equipment.marca"
                       required
                     />
                   </div>
 
                   <div class="form-group">
-                    <label for="model">Model *</label>
+                    <label for="modelo">Modelo *</label>
                     <input
                       type="text"
-                      id="model"
-                      name="model"
-                      [(ngModel)]="equipment.model"
+                      id="modelo"
+                      name="modelo"
+                      [(ngModel)]="equipment.modelo"
                       required
                     />
                   </div>
@@ -132,12 +117,12 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
 
                   <div class="form-group">
-                    <label for="status">Status *</label>
-                    <select id="status" name="status" [(ngModel)]="equipment.status" required>
-                      <option value="available">Available</option>
-                      <option value="in_use">In Use</option>
-                      <option value="maintenance">Maintenance</option>
-                      <option value="retired">Retired</option>
+                    <label for="estado">Estado *</label>
+                    <select id="estado" name="estado" [(ngModel)]="equipment.estado" required>
+                      <option value="DISPONIBLE">Available</option>
+                      <option value="EN_USO">In Use</option>
+                      <option value="MANTENIMIENTO">Maintenance</option>
+                      <option value="RETIRADO">Retired</option>
                     </select>
                   </div>
                 </div>

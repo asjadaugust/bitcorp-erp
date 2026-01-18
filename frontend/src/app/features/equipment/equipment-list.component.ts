@@ -94,9 +94,9 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          code: codeTemplate,
+          codigo_equipo: codeTemplate,
           brand_model: brandModelTemplate,
-          status: statusTemplate,
+          estado: statusTemplate,
         }"
         (rowClick)="viewDetails($event)"
       >
@@ -429,9 +429,9 @@ export class EquipmentListComponent implements OnInit {
     { key: 'brand_model', label: 'Marca / Modelo', type: 'template' },
     { key: 'categoria', label: 'Categoría', type: 'text' },
     { key: 'placa', label: 'Placa', type: 'text' },
-    { key: 'equipment_type_id', label: 'Tipo ID', type: 'text' },
+    { key: 'tipo_proveedor', label: 'Tipo Proveedor', type: 'text' },
     { key: 'estado', label: 'Estado', type: 'template' },
-    { key: 'meter_type', label: 'Medidor', type: 'text' },
+    { key: 'proveedor_nombre', label: 'Proveedor', type: 'text' },
   ];
 
   ngOnInit(): void {
