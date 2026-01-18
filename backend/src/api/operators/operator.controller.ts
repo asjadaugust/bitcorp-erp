@@ -7,12 +7,14 @@ import {
   sendCreated,
   sendError,
 } from '../../utils/api-response';
+import { NotFoundError, ConflictError } from '../../errors/http.errors';
 
 const operatorService = new OperatorService();
 
 export class OperatorController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
       const { status, search, cargo, especialidad, page, limit, sort_by, sort_order } = req.query;
 
       const pageNum = parseInt(page as string) || 1;
@@ -23,15 +25,13 @@ export class OperatorController {
         search: search as string,
         cargo: cargo as string,
         especialidad: especialidad as string,
-        page: pageNum,
-        limit: limitNum,
         sort_by: sort_by as string,
         sort_order: (String(sort_order).toUpperCase() === 'DESC' ? 'DESC' : 'ASC') as
           | 'ASC'
           | 'DESC',
       };
 
-      const result = await operatorService.findAll(filters);
+      const result = await operatorService.findAll(tenantId, filters, pageNum, limitNum);
 
       sendPaginatedSuccess(res, result.data, {
         page: pageNum,
@@ -51,16 +51,17 @@ export class OperatorController {
 
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
         return;
       }
 
-      const operator = await operatorService.findById(id);
+      const operator = await operatorService.findById(tenantId, id);
       sendSuccess(res, operator);
     } catch (error: any) {
-      if (error.message === 'Operator not found') {
+      if (error instanceof NotFoundError) {
         sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
         return;
       }
@@ -70,11 +71,12 @@ export class OperatorController {
 
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const operator = await operatorService.create(req.body);
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      const operator = await operatorService.create(tenantId, req.body);
       sendCreated(res, operator);
     } catch (error: any) {
-      if (error.message?.includes('already exists')) {
-        sendError(res, 409, 'DUPLICATE_OPERATOR', error.message);
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'DUPLICATE_OPERATOR', 'Ya existe un operador con este DNI');
         return;
       }
       sendError(res, 400, 'CREATE_OPERATOR_FAILED', 'No se pudo crear el operador', error.message);
@@ -83,21 +85,22 @@ export class OperatorController {
 
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
         return;
       }
 
-      const operator = await operatorService.update(id, req.body);
+      const operator = await operatorService.update(tenantId, id, req.body);
       sendSuccess(res, operator);
     } catch (error: any) {
-      if (error.message === 'Operator not found') {
+      if (error instanceof NotFoundError) {
         sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
         return;
       }
-      if (error.message?.includes('already exists')) {
-        sendError(res, 409, 'DUPLICATE_OPERATOR', error.message);
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'DUPLICATE_OPERATOR', 'Ya existe un operador con este DNI');
         return;
       }
       sendError(
@@ -112,15 +115,20 @@ export class OperatorController {
 
   static async delete(req: Request, res: Response, next: NextFunction) {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
         return;
       }
 
-      await operatorService.delete(id);
+      await operatorService.delete(tenantId, id);
       res.status(204).send();
     } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
       sendError(
         res,
         500,
@@ -177,6 +185,7 @@ export class OperatorController {
 
   static async exportExcel(req: Request, res: Response, next: NextFunction) {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
       const { ExportUtil } = await import('../../utils/export.util');
       const { search, cargo, especialidad, status } = req.query;
 
@@ -187,7 +196,7 @@ export class OperatorController {
       if (cargo) filters.cargo = cargo as string;
       if (especialidad) filters.especialidad = especialidad as string;
 
-      const result = await operatorService.findAll(filters);
+      const result = await operatorService.findAll(tenantId, filters, 1, 10000); // Get all for export
       const operators = result.data;
 
       const data = operators.map((op: any) => ({
@@ -218,6 +227,7 @@ export class OperatorController {
 
   static async exportCSV(req: Request, res: Response, next: NextFunction) {
     try {
+      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
       const { ExportUtil } = await import('../../utils/export.util');
       const { search, cargo, especialidad, status } = req.query;
 
@@ -228,7 +238,7 @@ export class OperatorController {
       if (cargo) filters.cargo = cargo as string;
       if (especialidad) filters.especialidad = especialidad as string;
 
-      const result = await operatorService.findAll(filters);
+      const result = await operatorService.findAll(tenantId, filters, 1, 10000); // Get all for export
       const operators = result.data;
 
       const data = operators.map((op: any) => ({

@@ -2,59 +2,16 @@
 import { AppDataSource } from '../config/database.config';
 import { Trabajador } from '../models/trabajador.model';
 import { Repository, ILike } from 'typeorm';
-import { toOperatorDto, fromOperatorDto, OperatorDto } from '../types/dto/operator.dto';
+import {
+  toOperatorDto,
+  fromOperatorDto,
+  OperatorDto,
+  OperatorCreateDto,
+  OperatorUpdateDto,
+  OperatorFiltersDto,
+} from '../types/dto/operator.dto';
 import Logger from '../utils/logger';
-
-export interface OperatorFilter {
-  search?: string;
-  cargo?: string;
-  especialidad?: string;
-  isActive?: boolean;
-  operatingUnitId?: number;
-  page?: number;
-  limit?: number;
-  sort_by?: string;
-  sort_order?: 'ASC' | 'DESC';
-}
-
-// DTOs for create/update operations
-// Support both English camelCase (from frontend) and Spanish snake_case (from API)
-export interface CreateOperatorDto {
-  // Frontend sends camelCase field names
-  dni?: string;
-  firstName?: string; // nombres
-  lastName?: string; // apellido_paterno (combined with apellido_materno)
-  apellidoPaterno?: string;
-  apellidoMaterno?: string;
-  dateOfBirth?: string; // fecha_nacimiento
-  phone?: string; // telefono
-  email?: string;
-  address?: string; // direccion
-  contractType?: string; // tipo_contrato
-  hireDate?: string; // fecha_ingreso
-  terminationDate?: string; // fecha_cese
-  position?: string; // cargo
-  specialty?: string; // especialidad
-  driverLicense?: string; // licencia_conducir
-  operatingUnitId?: number;
-
-  // Also support Spanish snake_case
-  nombres?: string;
-  apellido_paterno?: string;
-  apellido_materno?: string;
-  fecha_nacimiento?: string;
-  telefono?: string;
-  direccion?: string;
-  tipo_contrato?: string;
-  fecha_ingreso?: string;
-  fecha_cese?: string;
-  cargo?: string;
-  especialidad?: string;
-  licencia_conducir?: string;
-  operating_unit_id?: number;
-}
-
-export interface UpdateOperatorDto extends Partial<CreateOperatorDto> {}
+import { NotFoundError, ConflictError } from '../errors/http.errors';
 
 export class OperatorService {
   private get repository(): Repository<Trabajador> {
@@ -64,18 +21,32 @@ export class OperatorService {
     return AppDataSource.getRepository(Trabajador);
   }
 
-  async findAll(filters?: OperatorFilter): Promise<{
+  async findAll(
+    tenantId: number,
+    filters?: OperatorFiltersDto,
+    page = 1,
+    limit = 10
+  ): Promise<{
     data: OperatorDto[];
     total: number;
   }> {
     try {
-      const page = filters?.page || 1;
-      const limit = filters?.limit || 50;
+      Logger.info('Fetching operators', {
+        tenantId,
+        filters,
+        page,
+        limit,
+        context: 'OperatorService.findAll',
+      });
+
       const skip = (page - 1) * limit;
 
       const queryBuilder = this.repository
         .createQueryBuilder('t')
         .where('t.is_active = :isActive', { isActive: filters?.isActive ?? true });
+
+      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
+      // .andWhere('t.tenant_id = :tenantId', { tenantId })
 
       // Filter by cargo
       if (filters?.cargo) {
@@ -141,33 +112,58 @@ export class OperatorService {
       // Map to DTO format
       const data = trabajadores.map((t) => toOperatorDto(t));
 
+      Logger.info('Operators fetched successfully', {
+        tenantId,
+        count: trabajadores.length,
+        total,
+        context: 'OperatorService.findAll',
+      });
+
       return { data, total };
     } catch (error) {
       Logger.error('Error finding operators', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         filters,
+        page,
+        limit,
         context: 'OperatorService.findAll',
       });
-      throw new Error('Failed to fetch operators');
+      throw error;
     }
   }
 
-  async findById(id: number): Promise<OperatorDto> {
+  async findById(tenantId: number, id: number): Promise<OperatorDto> {
     try {
+      Logger.info('Fetching operator by ID', {
+        tenantId,
+        id,
+        context: 'OperatorService.findById',
+      });
+
       const trabajador = await this.repository.findOne({
         where: { id },
       });
+      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
+      // .where({ id, tenant_id: tenantId })
 
       if (!trabajador) {
-        throw new Error('Operator not found');
+        throw new NotFoundError('Operator', id, { tenantId });
       }
+
+      Logger.info('Operator fetched successfully', {
+        tenantId,
+        id,
+        context: 'OperatorService.findById',
+      });
 
       return toOperatorDto(trabajador);
     } catch (error) {
       Logger.error('Error finding operator', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         id,
         context: 'OperatorService.findById',
       });
@@ -175,15 +171,36 @@ export class OperatorService {
     }
   }
 
-  async findByDni(dni: string): Promise<Trabajador | null> {
+  async findByDni(tenantId: number, dni: string): Promise<OperatorDto> {
     try {
-      return await this.repository.findOne({
+      Logger.info('Fetching operator by DNI', {
+        tenantId,
+        dni,
+        context: 'OperatorService.findByDni',
+      });
+
+      const trabajador = await this.repository.findOne({
         where: { dni },
       });
+      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
+      // .where({ dni, tenant_id: tenantId })
+
+      if (!trabajador) {
+        throw new NotFoundError('Operator', dni, { tenantId });
+      }
+
+      Logger.info('Operator fetched successfully', {
+        tenantId,
+        dni,
+        context: 'OperatorService.findByDni',
+      });
+
+      return toOperatorDto(trabajador);
     } catch (error) {
       Logger.error('Error finding operator by DNI', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         dni,
         context: 'OperatorService.findByDni',
       });
@@ -191,44 +208,40 @@ export class OperatorService {
     }
   }
 
-  async create(data: CreateOperatorDto): Promise<OperatorDto> {
+  async create(tenantId: number, data: OperatorCreateDto): Promise<OperatorDto> {
     try {
-      // Map frontend camelCase and Spanish snake_case to DTO format
-      const operatorData: Partial<OperatorDto> = {
+      Logger.info('Creating operator', {
+        tenantId,
         dni: data.dni,
-        nombres: data.nombres || data.firstName,
-        apellido_paterno: data.apellido_paterno || data.apellidoPaterno,
-        apellido_materno: data.apellido_materno || data.apellidoMaterno || null,
-        fecha_nacimiento: data.fecha_nacimiento || data.dateOfBirth || null,
-        telefono: data.telefono || data.phone || null,
-        email: data.email,
-        direccion: data.direccion || data.address || null,
-        tipo_contrato: data.tipo_contrato || data.contractType || null,
-        fecha_ingreso: data.fecha_ingreso || data.hireDate || null,
-        fecha_cese: data.fecha_cese || data.terminationDate || null,
-        cargo: data.cargo || data.position || null,
-        especialidad: data.especialidad || data.specialty || null,
-        licencia_conducir: data.licencia_conducir || data.driverLicense || null,
-        operating_unit_id: data.operating_unit_id || data.operatingUnitId || null,
-        is_active: true,
-      };
+        context: 'OperatorService.create',
+      });
 
-      // Check if DNI already exists
-      if (operatorData.dni) {
-        const existing = await this.findByDni(operatorData.dni);
-        if (existing) {
-          throw new Error('An operator with this DNI already exists');
-        }
+      // Check for duplicate DNI
+      const existing = await this.repository.findOne({ where: { dni: data.dni } });
+      if (existing) {
+        throw new ConflictError('Operator', { dni: data.dni, tenantId });
       }
 
-      const entity = this.repository.create(fromOperatorDto(operatorData));
+      // Create entity using DTO transformer
+      const operatorDto: Partial<OperatorDto> = {
+        ...data,
+        is_active: true,
+      };
+      const entity = this.repository.create(fromOperatorDto(operatorDto));
       const saved = await this.repository.save(entity);
+
+      Logger.info('Operator created successfully', {
+        tenantId,
+        id: saved.id,
+        context: 'OperatorService.create',
+      });
 
       return toOperatorDto(saved);
     } catch (error) {
       Logger.error('Error creating operator', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         dni: data.dni,
         context: 'OperatorService.create',
       });
@@ -236,92 +249,122 @@ export class OperatorService {
     }
   }
 
-  async update(id: number, data: UpdateOperatorDto): Promise<OperatorDto> {
+  async update(tenantId: number, id: number, data: OperatorUpdateDto): Promise<OperatorDto> {
     try {
+      Logger.info('Updating operator', {
+        tenantId,
+        id,
+        data,
+        context: 'OperatorService.update',
+      });
+
       const trabajador = await this.repository.findOne({ where: { id } });
+      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
+      // .where({ id, tenant_id: tenantId })
 
       if (!trabajador) {
-        throw new Error('Operator not found');
+        throw new NotFoundError('Operator', id, { tenantId });
       }
 
-      // Map frontend camelCase and Spanish snake_case to DTO format
-      const updateData: Partial<OperatorDto> = {};
-
-      if (data.dni !== undefined) updateData.dni = data.dni;
-      if (data.nombres !== undefined || data.firstName !== undefined)
-        updateData.nombres = data.nombres || data.firstName;
-      if (data.apellido_paterno !== undefined || data.apellidoPaterno !== undefined)
-        updateData.apellido_paterno = data.apellido_paterno || data.apellidoPaterno;
-      if (data.apellido_materno !== undefined || data.apellidoMaterno !== undefined)
-        updateData.apellido_materno = data.apellido_materno || data.apellidoMaterno;
-      if (data.fecha_nacimiento !== undefined || data.dateOfBirth !== undefined)
-        updateData.fecha_nacimiento = data.fecha_nacimiento || data.dateOfBirth;
-      if (data.telefono !== undefined || data.phone !== undefined)
-        updateData.telefono = data.telefono || data.phone;
-      if (data.email !== undefined) updateData.email = data.email;
-      if (data.direccion !== undefined || data.address !== undefined)
-        updateData.direccion = data.direccion || data.address;
-      if (data.tipo_contrato !== undefined || data.contractType !== undefined)
-        updateData.tipo_contrato = data.tipo_contrato || data.contractType;
-      if (data.fecha_ingreso !== undefined || data.hireDate !== undefined)
-        updateData.fecha_ingreso = data.fecha_ingreso || data.hireDate;
-      if (data.fecha_cese !== undefined || data.terminationDate !== undefined)
-        updateData.fecha_cese = data.fecha_cese || data.terminationDate;
-      if (data.cargo !== undefined || data.position !== undefined)
-        updateData.cargo = data.cargo || data.position;
-      if (data.especialidad !== undefined || data.specialty !== undefined)
-        updateData.especialidad = data.especialidad || data.specialty;
-      if (data.licencia_conducir !== undefined || data.driverLicense !== undefined)
-        updateData.licencia_conducir = data.licencia_conducir || data.driverLicense;
-      if (data.operating_unit_id !== undefined || data.operatingUnitId !== undefined)
-        updateData.operating_unit_id = data.operating_unit_id || data.operatingUnitId;
-
-      // If updating DNI, check it doesn't exist
-      if (updateData.dni && updateData.dni !== trabajador.dni) {
-        const existing = await this.findByDni(updateData.dni);
-        if (existing && existing.id !== id) {
-          throw new Error('An operator with this DNI already exists');
+      // Check for duplicate DNI (if DNI is being updated)
+      if (data.dni && data.dni !== trabajador.dni) {
+        const existing = await this.repository.findOne({ where: { dni: data.dni } });
+        if (existing) {
+          throw new ConflictError('Operator', { dni: data.dni, tenantId });
         }
       }
 
-      // Merge changes
-      const entityChanges = fromOperatorDto(updateData);
+      // Merge changes using DTO transformer
+      const entityChanges = fromOperatorDto(data);
       Object.assign(trabajador, entityChanges);
 
       const saved = await this.repository.save(trabajador);
+
+      Logger.info('Operator updated successfully', {
+        tenantId,
+        id,
+        context: 'OperatorService.update',
+      });
+
       return toOperatorDto(saved);
     } catch (error) {
       Logger.error('Error updating operator', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         id,
+        data,
         context: 'OperatorService.update',
       });
       throw error;
     }
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(tenantId: number, id: number): Promise<void> {
     try {
-      await this.repository.update(id, { isActive: false });
+      Logger.info('Deleting operator', {
+        tenantId,
+        id,
+        context: 'OperatorService.delete',
+      });
+
+      // Verify operator exists
+      const trabajador = await this.repository.findOne({ where: { id } });
+      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
+      // .where({ id, tenant_id: tenantId })
+
+      if (!trabajador) {
+        throw new NotFoundError('Operator', id, { tenantId });
+      }
+
+      // TODO: Business rule - check for active assignments
+      // const activeAssignments = await this.assignmentRepository.count({
+      //   where: { operator_id: id, status: 'ACTIVE' }
+      // });
+      // if (activeAssignments > 0) {
+      //   throw new BusinessRuleError('Cannot delete operator with active assignments', {
+      //     operator_id: id,
+      //     active_assignments: activeAssignments
+      //   });
+      // }
+
+      // Soft delete
+      const result = await this.repository.update(id, { isActive: false });
+
+      if (!result.affected || result.affected === 0) {
+        throw new NotFoundError('Operator', id, { tenantId });
+      }
+
+      Logger.info('Operator deleted successfully', {
+        tenantId,
+        id,
+        context: 'OperatorService.delete',
+      });
     } catch (error) {
       Logger.error('Error deleting operator', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         id,
         context: 'OperatorService.delete',
       });
-      throw new Error('Failed to delete operator');
+      throw error;
     }
   }
 
-  async getStats(): Promise<{
+  async getStats(tenantId: number): Promise<{
     total: number;
     activos: number;
     porCargo: Record<string, number>;
     porEspecialidad: Record<string, number>;
   }> {
     try {
+      Logger.info('Fetching operator statistics', {
+        tenantId,
+        context: 'OperatorService.getStats',
+      });
+
+      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
       const total = await this.repository.count();
       const activos = await this.repository.count({ where: { isActive: true } });
 
@@ -331,6 +374,8 @@ export class OperatorService {
         .select('t.cargo', 'cargo')
         .addSelect('COUNT(*)', 'count')
         .where('t.is_active = true')
+        // TODO: Add tenant_id filter
+        // .andWhere('t.tenant_id = :tenantId', { tenantId })
         .groupBy('t.cargo')
         .getRawMany();
 
@@ -345,6 +390,8 @@ export class OperatorService {
         .select('t.especialidad', 'especialidad')
         .addSelect('COUNT(*)', 'count')
         .where('t.is_active = true')
+        // TODO: Add tenant_id filter
+        // .andWhere('t.tenant_id = :tenantId', { tenantId })
         .groupBy('t.especialidad')
         .getRawMany();
 
@@ -353,11 +400,19 @@ export class OperatorService {
         if (r.especialidad) porEspecialidad[r.especialidad] = parseInt(r.count);
       });
 
+      Logger.info('Operator statistics fetched successfully', {
+        tenantId,
+        total,
+        activos,
+        context: 'OperatorService.getStats',
+      });
+
       return { total, activos, porCargo, porEspecialidad };
     } catch (error) {
       Logger.error('Error getting operator stats', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         context: 'OperatorService.getStats',
       });
       throw error;

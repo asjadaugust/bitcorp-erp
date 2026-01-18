@@ -35,6 +35,20 @@ export interface OperatorDto {
 }
 
 /**
+ * Operator filters for list queries
+ * Excludes pagination params (page, limit) - pass separately
+ */
+export interface OperatorFiltersDto {
+  search?: string;
+  cargo?: string;
+  especialidad?: string;
+  isActive?: boolean;
+  operatingUnitId?: number;
+  sort_by?: string;
+  sort_order?: 'ASC' | 'DESC';
+}
+
+/**
  * Transform TypeORM entity to DTO (Spanish snake_case)
  * @param entity - Trabajador entity from database
  * @returns OperatorDto with Spanish field names
