@@ -350,10 +350,10 @@ export class TenderFormComponent implements OnInit {
         this.form.patchValue({
           codigo: tender.codigo,
           nombre: tender.nombre,
-          entidadConvocante: tender.entidadConvocante,
-          montoReferencial: tender.montoReferencial,
-          fechaConvocatoria: tender.fechaConvocatoria,
-          fechaPresentacion: tender.fechaPresentacion,
+          entidadConvocante: tender.entidad_convocante,
+          montoReferencial: tender.monto_referencial,
+          fechaConvocatoria: tender.fecha_convocatoria,
+          fechaPresentacion: tender.fecha_presentacion,
           estado: tender.estado,
           observaciones: tender.observaciones,
         });

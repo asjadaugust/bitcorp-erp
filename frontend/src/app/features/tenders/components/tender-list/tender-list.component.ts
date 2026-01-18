@@ -106,9 +106,9 @@ export class TenderListComponent implements OnInit {
   columns: TableColumn[] = [
     { key: 'codigo', label: 'Código', type: 'text' },
     { key: 'nombre', label: 'Título', type: 'text' },
-    { key: 'entidadConvocante', label: 'Cliente', type: 'text' },
-    { key: 'fechaPresentacion', label: 'Fecha Límite', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'montoReferencial', label: 'Presupuesto', type: 'currency', format: 'PEN' },
+    { key: 'entidad_convocante', label: 'Cliente', type: 'text' },
+    { key: 'fecha_presentacion', label: 'Fecha Límite', type: 'date', format: 'dd/MM/yyyy' },
+    { key: 'monto_referencial', label: 'Presupuesto', type: 'currency', format: 'PEN' },
     {
       key: 'estado',
       label: 'Estado',
@@ -148,11 +148,17 @@ export class TenderListComponent implements OnInit {
   }
 
   applyFilters(): void {
+    // Guard clause: if tenders not loaded yet, skip filtering
+    if (!this.tenders) {
+      this.filteredTenders = [];
+      return;
+    }
+
     this.filteredTenders = this.tenders.filter((tender) => {
       const matchesSearch =
         !this.filters.search ||
         tender.nombre?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        tender.entidadConvocante?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        tender.entidad_convocante?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
         tender.codigo?.toLowerCase().includes(this.filters.search.toLowerCase());
 
       const matchesStatus = !this.filters.status || tender.estado === this.filters.status;

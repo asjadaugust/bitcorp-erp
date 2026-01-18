@@ -132,7 +132,48 @@ export class LicitacionUpdateDto {
  */
 
 /**
- * Transform Licitacion entity to TenderDto (snake_case response format)
+ * Helper function to safely convert date to ISO string
+ * Handles both Date objects and string dates from database
+ */
+function toISODateString(value: Date | string | undefined | null): string | undefined {
+  if (!value) return undefined;
+
+  // If it's already a string (from database), return just the date part
+  if (typeof value === 'string') {
+    return value.split('T')[0];
+  }
+
+  // If it's a Date object, convert to ISO string and get date part
+  if (value instanceof Date) {
+    return value.toISOString().split('T')[0];
+  }
+
+  return undefined;
+}
+
+/**
+ * Helper function to safely convert datetime to ISO string
+ * Handles both Date objects and string timestamps from database
+ */
+function toISOTimestamp(value: Date | string | undefined | null): string {
+  if (!value) return new Date().toISOString();
+
+  // If it's already a string (from database), return as-is
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  // If it's a Date object, convert to ISO string
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  return new Date().toISOString();
+}
+
+/**
+ * Transform Licitacion entity to TenderDto
+ * Following ARCHITECTURE.md Rule 3: Explicit transformation from entity to DTO
  */
 export function toTenderDto(licitacion: Licitacion): TenderDto {
   return {
@@ -144,12 +185,12 @@ export function toTenderDto(licitacion: Licitacion): TenderDto {
     monto_referencial: licitacion.montoReferencial
       ? Number(licitacion.montoReferencial)
       : undefined,
-    fecha_convocatoria: licitacion.fechaConvocatoria?.toISOString().split('T')[0],
-    fecha_presentacion: licitacion.fechaPresentacion?.toISOString().split('T')[0],
+    fecha_convocatoria: toISODateString(licitacion.fechaConvocatoria),
+    fecha_presentacion: toISODateString(licitacion.fechaPresentacion),
     estado: licitacion.estado,
     observaciones: licitacion.observaciones,
-    created_at: licitacion.createdAt.toISOString(),
-    updated_at: licitacion.updatedAt.toISOString(),
+    created_at: toISOTimestamp(licitacion.createdAt),
+    updated_at: toISOTimestamp(licitacion.updatedAt),
   };
 }
 
