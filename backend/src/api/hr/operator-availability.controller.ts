@@ -7,24 +7,36 @@ import {
   sendCreated,
   sendPaginatedSuccess,
 } from '../../utils/api-response';
+import { NotFoundError, ConflictError } from '../../errors/http.errors';
 
 const availabilityService = new OperatorAvailabilityService();
 
 export class OperatorAvailabilityController {
   async getAvailabilities(req: Request, res: Response): Promise<void> {
     try {
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
       const { trabajador_id, disponible, fecha_inicio, fecha_fin, page, limit } = req.query;
-      const result = await availabilityService.findAll({
-        trabajadorId: trabajador_id ? Number(trabajador_id) : undefined,
-        disponible: disponible === 'true' ? true : disponible === 'false' ? false : undefined,
-        fechaInicio: fecha_inicio ? new Date(fecha_inicio as string) : undefined,
-        fechaFin: fecha_fin ? new Date(fecha_fin as string) : undefined,
-        page: page ? Number(page) : undefined,
-        limit: limit ? Number(limit) : undefined,
-      });
+
+      const pageNumber = page ? Number(page) : 1;
+      const limitNumber = limit ? Number(limit) : 10;
+
+      const result = await availabilityService.findAll(
+        tenantId,
+        {
+          trabajadorId: trabajador_id ? Number(trabajador_id) : undefined,
+          disponible: disponible === 'true' ? true : disponible === 'false' ? false : undefined,
+          fechaInicio: fecha_inicio ? new Date(fecha_inicio as string) : undefined,
+          fechaFin: fecha_fin ? new Date(fecha_fin as string) : undefined,
+        },
+        pageNumber,
+        limitNumber
+      );
+
       sendPaginatedSuccess(res, result.data, {
-        page: result.page,
-        limit: result.limit,
+        page: pageNumber,
+        limit: limitNumber,
         total: result.total,
       });
     } catch (error: any) {
@@ -40,14 +52,19 @@ export class OperatorAvailabilityController {
 
   async getAvailabilityById(req: Request, res: Response): Promise<void> {
     try {
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const availability = await availabilityService.findById(id);
-      if (!availability) {
+      const availability = await availabilityService.findById(tenantId, id);
+      sendSuccess(res, availability);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
         sendError(
           res,
           404,
@@ -56,8 +73,7 @@ export class OperatorAvailabilityController {
         );
         return;
       }
-      sendSuccess(res, availability);
-    } catch (error: any) {
+
       sendError(
         res,
         500,
@@ -70,19 +86,34 @@ export class OperatorAvailabilityController {
 
   async getAvailabilityByOperator(req: Request, res: Response): Promise<void> {
     try {
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
       const operatorId = parseInt(req.params.operatorId);
       if (isNaN(operatorId)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
         return;
       }
 
-      const { fecha_inicio, fecha_fin } = req.query;
-      const availabilities = await availabilityService.findByOperator(
+      const { fecha_inicio, fecha_fin, page, limit } = req.query;
+
+      const pageNumber = page ? Number(page) : 1;
+      const limitNumber = limit ? Number(limit) : 10;
+
+      const result = await availabilityService.findByOperator(
+        tenantId,
         operatorId,
         fecha_inicio ? new Date(fecha_inicio as string) : undefined,
-        fecha_fin ? new Date(fecha_fin as string) : undefined
+        fecha_fin ? new Date(fecha_fin as string) : undefined,
+        pageNumber,
+        limitNumber
       );
-      sendSuccess(res, availabilities);
+
+      sendPaginatedSuccess(res, result.data, {
+        page: pageNumber,
+        limit: limitNumber,
+        total: result.total,
+      });
     } catch (error: any) {
       sendError(
         res,
@@ -96,7 +127,10 @@ export class OperatorAvailabilityController {
 
   async getAvailableOperators(req: Request, res: Response): Promise<void> {
     try {
-      const { fecha_inicio, fecha_fin } = req.query;
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
+      const { fecha_inicio, fecha_fin, page, limit } = req.query;
       if (!fecha_inicio || !fecha_fin) {
         sendError(
           res,
@@ -106,11 +140,23 @@ export class OperatorAvailabilityController {
         );
         return;
       }
-      const availabilities = await availabilityService.findAvailableOperators(
+
+      const pageNumber = page ? Number(page) : 1;
+      const limitNumber = limit ? Number(limit) : 10;
+
+      const result = await availabilityService.findAvailableOperators(
+        tenantId,
         new Date(fecha_inicio as string),
-        new Date(fecha_fin as string)
+        new Date(fecha_fin as string),
+        pageNumber,
+        limitNumber
       );
-      sendSuccess(res, availabilities);
+
+      sendPaginatedSuccess(res, result.data, {
+        page: pageNumber,
+        limit: limitNumber,
+        total: result.total,
+      });
     } catch (error: any) {
       sendError(
         res,
@@ -124,9 +170,17 @@ export class OperatorAvailabilityController {
 
   async createAvailability(req: Request, res: Response): Promise<void> {
     try {
-      const availability = await availabilityService.create(req.body);
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
+      const availability = await availabilityService.create(tenantId, req.body);
       sendCreated(res, availability);
     } catch (error: any) {
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'OPERATOR_AVAILABILITY_CONFLICT', error.message, error.metadata);
+        return;
+      }
+
       sendError(
         res,
         500,
@@ -139,14 +193,23 @@ export class OperatorAvailabilityController {
 
   async bulkCreateAvailability(req: Request, res: Response): Promise<void> {
     try {
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
       const { availabilities } = req.body;
       if (!Array.isArray(availabilities)) {
         sendError(res, 400, 'INVALID_INPUT', 'Las disponibilidades deben ser un arreglo');
         return;
       }
-      const created = await availabilityService.bulkCreate(availabilities);
+
+      const created = await availabilityService.bulkCreate(tenantId, availabilities);
       sendCreated(res, created);
     } catch (error: any) {
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'OPERATOR_AVAILABILITY_BULK_CONFLICT', error.message, error.metadata);
+        return;
+      }
+
       sendError(
         res,
         500,
@@ -159,14 +222,19 @@ export class OperatorAvailabilityController {
 
   async updateAvailability(req: Request, res: Response): Promise<void> {
     try {
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const availability = await availabilityService.update(id, req.body);
-      if (!availability) {
+      const availability = await availabilityService.update(tenantId, id, req.body);
+      sendSuccess(res, availability);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
         sendError(
           res,
           404,
@@ -175,8 +243,12 @@ export class OperatorAvailabilityController {
         );
         return;
       }
-      sendSuccess(res, availability);
-    } catch (error: any) {
+
+      if (error instanceof ConflictError) {
+        sendError(res, 409, 'OPERATOR_AVAILABILITY_CONFLICT', error.message, error.metadata);
+        return;
+      }
+
       sendError(
         res,
         500,
@@ -189,14 +261,19 @@ export class OperatorAvailabilityController {
 
   async deleteAvailability(req: Request, res: Response): Promise<void> {
     try {
+      // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = 1;
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const success = await availabilityService.delete(id);
-      if (!success) {
+      await availabilityService.delete(tenantId, id);
+      res.status(204).send();
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
         sendError(
           res,
           404,
@@ -205,8 +282,7 @@ export class OperatorAvailabilityController {
         );
         return;
       }
-      res.status(204).send();
-    } catch (error: any) {
+
       sendError(
         res,
         500,

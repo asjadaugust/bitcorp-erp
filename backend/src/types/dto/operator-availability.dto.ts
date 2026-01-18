@@ -11,6 +11,23 @@ import {
 import { Type } from 'class-transformer';
 
 /**
+ * DTO for operator availability response (snake_case for API)
+ */
+export interface OperatorAvailabilityDto {
+  id: number;
+  trabajador_id: number;
+  fecha_inicio: Date;
+  fecha_fin: Date;
+  disponible: boolean;
+  motivo: string | null;
+  created_at: Date;
+  updated_at: Date;
+  // Optional relation fields
+  trabajador_nombre?: string;
+  trabajador_apellido?: string;
+}
+
+/**
  * DTO for creating operator availability
  */
 export class OperatorAvailabilityCreateDto {
