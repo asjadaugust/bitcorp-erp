@@ -137,6 +137,31 @@ export const routes: Routes = [
       // - /equipment/contracts
       // - /equipment/valuations
 
+      // Payment Records (for valuations)
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./features/payments/payment-list.component').then((m) => m.PaymentListComponent),
+        data: { title: 'Registro de Pagos' },
+      },
+      {
+        path: 'payments/create',
+        loadComponent: () =>
+          import('./features/payments/payment-form.component').then((m) => m.PaymentFormComponent),
+      },
+      {
+        path: 'payments/:id',
+        loadComponent: () =>
+          import('./features/payments/payment-detail.component').then(
+            (m) => m.PaymentDetailComponent
+          ),
+      },
+      {
+        path: 'payments/:id/edit',
+        loadComponent: () =>
+          import('./features/payments/payment-form.component').then((m) => m.PaymentFormComponent),
+      },
+
       // Scheduling Engine - Moved to Operations
       // Timesheets & Scheduling - Moved to Operations
       // Projects - Moved to Operations

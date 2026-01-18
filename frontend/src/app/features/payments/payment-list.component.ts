@@ -1,0 +1,528 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
+import { PaymentService } from '../../core/services/payment.service';
+import {
+  PaymentRecordList,
+  PaymentRecordQuery,
+  EstadoPago,
+  MetodoPago,
+} from '../../core/models/payment-record.model';
+
+@Component({
+  selector: 'app-payment-list',
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule],
+  template: `
+    <div class="list-container">
+      <div class="container">
+        <div class="page-header">
+          <h1>Registro de Pagos</h1>
+          <button class="btn btn-primary" (click)="navigateToCreate()">
+            <i class="fa-solid fa-plus"></i> Nuevo Pago
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="card filters-card">
+          <div class="filters-grid">
+            <div class="filter-item">
+              <label>Estado</label>
+              <select [(ngModel)]="filters.estado" (change)="applyFilters()">
+                <option [ngValue]="undefined">Todos</option>
+                <option *ngFor="let estado of estadoOptions" [value]="estado">
+                  {{ paymentService.getPaymentStatusLabel(estado) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Método de Pago</label>
+              <select [(ngModel)]="filters.metodo_pago" (change)="applyFilters()">
+                <option [ngValue]="undefined">Todos</option>
+                <option *ngFor="let metodo of metodoOptions" [value]="metodo">
+                  {{ paymentService.getPaymentMethodLabel(metodo) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Conciliado</label>
+              <select [(ngModel)]="filters.conciliado" (change)="applyFilters()">
+                <option [ngValue]="undefined">Todos</option>
+                <option [ngValue]="true">Sí</option>
+                <option [ngValue]="false">No</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Fecha Desde</label>
+              <input type="date" [(ngModel)]="filters.fecha_desde" (change)="applyFilters()" />
+            </div>
+
+            <div class="filter-item">
+              <label>Fecha Hasta</label>
+              <input type="date" [(ngModel)]="filters.fecha_hasta" (change)="applyFilters()" />
+            </div>
+
+            <div class="filter-item">
+              <label>Moneda</label>
+              <select [(ngModel)]="filters.moneda" (change)="applyFilters()">
+                <option [ngValue]="undefined">Todas</option>
+                <option value="PEN">Soles (PEN)</option>
+                <option value="USD">Dólares (USD)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn btn-secondary" (click)="clearFilters()">
+              <i class="fa-solid fa-times"></i> Limpiar Filtros
+            </button>
+            <button class="btn btn-primary" (click)="exportToExcel()">
+              <i class="fa-solid fa-file-excel"></i> Exportar
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading">
+          <div class="spinner"></div>
+          <p>Cargando pagos...</p>
+        </div>
+
+        <!-- Payments Table -->
+        <div *ngIf="!loading" class="card table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>N° Pago</th>
+                  <th>N° Valorización</th>
+                  <th>Fecha</th>
+                  <th>Monto</th>
+                  <th>Método</th>
+                  <th>Estado</th>
+                  <th>Conciliado</th>
+                  <th>N° Operación</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let payment of payments">
+                  <td>
+                    <a [routerLink]="['/payments', payment.id]" class="link-primary">
+                      {{ payment.numero_pago }}
+                    </a>
+                  </td>
+                  <td>
+                    <span *ngIf="payment.numero_valorizacion">
+                      {{ payment.numero_valorizacion }}
+                    </span>
+                    <span *ngIf="!payment.numero_valorizacion" class="text-muted"> N/A </span>
+                  </td>
+                  <td>{{ payment.fecha_pago | date: 'dd/MM/yyyy' }}</td>
+                  <td class="text-right">
+                    <strong>
+                      {{ paymentService.formatCurrency(payment.monto_pagado, payment.moneda) }}
+                    </strong>
+                  </td>
+                  <td>
+                    <span class="badge badge-secondary">
+                      {{ paymentService.getPaymentMethodLabel(payment.metodo_pago) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      [class]="
+                        'badge badge-' + paymentService.getPaymentStatusColor(payment.estado)
+                      "
+                    >
+                      {{ paymentService.getPaymentStatusLabel(payment.estado) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span *ngIf="payment.conciliado" class="badge badge-success">
+                      <i class="fa-solid fa-check"></i> Sí
+                    </span>
+                    <span *ngIf="!payment.conciliado" class="badge badge-warning">
+                      <i class="fa-solid fa-clock"></i> No
+                    </span>
+                  </td>
+                  <td>
+                    <span *ngIf="payment.numero_operacion" class="code-text">
+                      {{ payment.numero_operacion }}
+                    </span>
+                    <span *ngIf="!payment.numero_operacion" class="text-muted"> - </span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button
+                        class="btn btn-sm btn-primary"
+                        (click)="viewPayment(payment.id)"
+                        title="Ver Detalle"
+                      >
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button
+                        *ngIf="payment.estado !== 'ANULADO'"
+                        class="btn btn-sm btn-secondary"
+                        (click)="editPayment(payment.id)"
+                        title="Editar"
+                      >
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button
+                        *ngIf="payment.estado === 'CONFIRMADO' && !payment.conciliado"
+                        class="btn btn-sm btn-success"
+                        (click)="reconcilePayment(payment.id)"
+                        title="Conciliar"
+                      >
+                        <i class="fa-solid fa-check-double"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr *ngIf="payments.length === 0">
+                  <td colspan="9" class="text-center text-muted">
+                    <p>No se encontraron pagos con los filtros aplicados</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="pagination" class="pagination-container">
+            <div class="pagination-info">
+              Mostrando {{ (pagination.page - 1) * pagination.limit + 1 }} a
+              {{ Math.min(pagination.page * pagination.limit, pagination.total) }}
+              de {{ pagination.total }} registros
+            </div>
+            <div class="pagination-controls">
+              <button
+                class="btn btn-sm btn-secondary"
+                (click)="goToPage(pagination.page - 1)"
+                [disabled]="pagination.page === 1"
+              >
+                <i class="fa-solid fa-chevron-left"></i> Anterior
+              </button>
+              <span class="page-indicator">
+                Página {{ pagination.page }} de {{ pagination.total_pages }}
+              </span>
+              <button
+                class="btn btn-sm btn-secondary"
+                (click)="goToPage(pagination.page + 1)"
+                [disabled]="pagination.page === pagination.total_pages"
+              >
+                Siguiente <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [
+    `
+      .list-container {
+        padding: 2rem 0;
+      }
+
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        color: #333;
+      }
+
+      .filters-card {
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+      }
+
+      .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .filter-item label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #555;
+      }
+
+      .filter-item select,
+      .filter-item input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+      }
+
+      .filter-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+      }
+
+      .table-card {
+        padding: 0;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .data-table thead {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+      }
+
+      .data-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+      }
+
+      .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .data-table tbody tr:hover {
+        background-color: #f8f9fa;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+      }
+
+      .badge-primary {
+        background-color: #007bff;
+        color: white;
+      }
+      .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+      }
+      .badge-success {
+        background-color: #28a745;
+        color: white;
+      }
+      .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+      }
+      .badge-danger {
+        background-color: #dc3545;
+        color: white;
+      }
+
+      .link-primary {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .link-primary:hover {
+        text-decoration: underline;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      .text-muted {
+        color: #6c757d;
+      }
+
+      .code-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        background-color: #f8f9fa;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+      }
+
+      .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #dee2e6;
+      }
+
+      .pagination-info {
+        color: #6c757d;
+        font-size: 0.875rem;
+      }
+
+      .pagination-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .page-indicator {
+        font-weight: 500;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 3rem;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    `,
+  ],
+})
+export class PaymentListComponent implements OnInit {
+  paymentService = inject(PaymentService);
+  private router = inject(Router);
+
+  payments: PaymentRecordList[] = [];
+  loading = false;
+  Math = Math;
+
+  filters: PaymentRecordQuery = {
+    page: 1,
+    limit: 20,
+  };
+
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  } | null = null;
+
+  // Filter options
+  estadoOptions = Object.values(EstadoPago);
+  metodoOptions = Object.values(MetodoPago);
+
+  ngOnInit() {
+    this.loadPayments();
+  }
+
+  loadPayments() {
+    this.loading = true;
+    this.paymentService.getPayments(this.filters).subscribe({
+      next: (response) => {
+        this.payments = response.data;
+        this.pagination = response.pagination;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading payments:', error);
+        this.loading = false;
+        alert('Error al cargar los pagos');
+      },
+    });
+  }
+
+  applyFilters() {
+    this.filters.page = 1; // Reset to first page
+    this.loadPayments();
+  }
+
+  clearFilters() {
+    this.filters = {
+      page: 1,
+      limit: 20,
+    };
+    this.loadPayments();
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && this.pagination && page <= this.pagination.total_pages) {
+      this.filters.page = page;
+      this.loadPayments();
+    }
+  }
+
+  viewPayment(id: number) {
+    this.router.navigate(['/payments', id]);
+  }
+
+  editPayment(id: number) {
+    this.router.navigate(['/payments', id, 'edit']);
+  }
+
+  reconcilePayment(id: number) {
+    const observaciones = prompt('Observaciones de conciliación (opcional):');
+    if (observaciones !== null) {
+      const today = new Date().toISOString().split('T')[0];
+      this.paymentService
+        .reconcilePayment(id, {
+          fecha_conciliacion: today,
+          observaciones: observaciones || undefined,
+        })
+        .subscribe({
+          next: () => {
+            alert('Pago conciliado exitosamente');
+            this.loadPayments();
+          },
+          error: (error) => {
+            console.error('Error reconciling payment:', error);
+            alert('Error al conciliar el pago');
+          },
+        });
+    }
+  }
+
+  navigateToCreate() {
+    this.router.navigate(['/payments', 'create']);
+  }
+
+  exportToExcel() {
+    // TODO: Implement Excel export
+    alert('Funcionalidad de exportación próximamente');
+  }
+}
