@@ -57,23 +57,20 @@ export class TenderService {
 
   getTender(id: string | number): Observable<Tender> {
     // Backend returns: { success: true, data: Tender }
-    return this.http.get<ApiResponse<Tender>>(`${this.apiUrl}/${id}`).pipe(
-      map((response) => response.data) // Unwrap data from response
-    );
+    // But apiResponseInterceptor unwraps it automatically, so we get Tender directly
+    return this.http.get<Tender>(`${this.apiUrl}/${id}`);
   }
 
   createTender(tender: Partial<Tender>): Observable<Tender> {
     // Backend returns: { success: true, data: Tender }
-    return this.http.post<ApiResponse<Tender>>(this.apiUrl, tender).pipe(
-      map((response) => response.data) // Unwrap data from response
-    );
+    // But apiResponseInterceptor unwraps it automatically, so we get Tender directly
+    return this.http.post<Tender>(this.apiUrl, tender);
   }
 
   updateTender(id: string | number, tender: Partial<Tender>): Observable<Tender> {
     // Backend returns: { success: true, data: Tender }
-    return this.http.put<ApiResponse<Tender>>(`${this.apiUrl}/${id}`, tender).pipe(
-      map((response) => response.data) // Unwrap data from response
-    );
+    // But apiResponseInterceptor unwraps it automatically, so we get Tender directly
+    return this.http.put<Tender>(`${this.apiUrl}/${id}`, tender);
   }
 
   deleteTender(id: string | number): Observable<void> {

@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { TenderService } from '../../services/tender.service';
+import {
+  EstadoStateMachineService,
+  EstadoLicitacion,
+  EstadoOption,
+} from '../../../../core/services/estado-state-machine.service';
 
 @Component({
   selector: 'app-tender-form',
@@ -125,14 +130,26 @@ import { TenderService } from '../../services/tender.service';
 
               <div class="form-group">
                 <label for="estado">Estado *</label>
-                <select id="estado" formControlName="estado" class="form-select">
-                  <option value="PUBLICADO">Publicado</option>
-                  <option value="EVALUACION">En Evaluación</option>
-                  <option value="ADJUDICADO">Adjudicado</option>
-                  <option value="DESIERTO">Desierto</option>
-                  <option value="CANCELADO">Cancelado</option>
+                <select
+                  id="estado"
+                  formControlName="estado"
+                  class="form-select"
+                  [disabled]="isEstadoDisabled"
+                  [title]="estadoTooltip"
+                >
+                  <option *ngFor="let option of availableEstados" [value]="option.value">
+                    {{ option.label }}
+                  </option>
                 </select>
                 <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
+                <div class="info-msg" *ngIf="terminalStateMessage">
+                  <i class="fa-solid fa-info-circle"></i>
+                  {{ terminalStateMessage }}
+                </div>
+                <div class="info-msg" *ngIf="isEditMode && !isTerminalState">
+                  <i class="fa-solid fa-arrow-right"></i>
+                  Transiciones válidas: {{ validTransitionsText }}
+                </div>
               </div>
 
               <div class="form-group full-width">
@@ -264,6 +281,20 @@ import { TenderService } from '../../services/tender.service';
         font-size: 13px;
         margin-top: 0.25rem;
       }
+      .info-msg {
+        color: var(--primary-600);
+        font-size: 13px;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: var(--primary-50);
+        border-radius: 4px;
+      }
+      .info-msg i {
+        flex-shrink: 0;
+      }
       textarea.form-control {
         resize: vertical;
         min-height: 80px;
@@ -316,16 +347,27 @@ export class TenderFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private tenderService = inject(TenderService);
+  private estadoStateMachine = inject(EstadoStateMachineService);
 
   form!: FormGroup;
   loading = false;
   isEditMode = false;
   tenderId?: string;
 
+  // Estado state machine properties
+  currentEstado?: EstadoLicitacion;
+  availableEstados: EstadoOption[] = [];
+  isEstadoDisabled = false;
+  estadoTooltip = '';
+  terminalStateMessage = '';
+  validTransitionsText = '';
+  isTerminalState = false;
+
   ngOnInit() {
     this.tenderId = this.route.snapshot.params['id'];
     this.isEditMode = !!this.tenderId;
     this.initForm();
+    this.updateAvailableEstados(); // Set initial estados for create mode
     if (this.isEditMode) this.loadTender();
   }
 
@@ -347,6 +389,9 @@ export class TenderFormComponent implements OnInit {
     this.loading = true;
     this.tenderService.getTender(this.tenderId).subscribe({
       next: (tender) => {
+        // Store current estado before patching form
+        this.currentEstado = tender.estado as EstadoLicitacion;
+
         this.form.patchValue({
           codigo: tender.codigo,
           nombre: tender.nombre,
@@ -357,6 +402,10 @@ export class TenderFormComponent implements OnInit {
           estado: tender.estado,
           observaciones: tender.observaciones,
         });
+
+        // Update available estados based on current estado
+        this.updateAvailableEstados();
+
         this.loading = false;
       },
       error: () => {
@@ -395,5 +444,50 @@ export class TenderFormComponent implements OnInit {
   hasError(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return !!(field && field.invalid && field.touched);
+  }
+
+  /**
+   * Update available estados based on current estado and edit mode
+   */
+  private updateAvailableEstados() {
+    this.availableEstados = this.estadoStateMachine.getAvailableEstados(
+      this.currentEstado,
+      this.isEditMode
+    );
+
+    // Check if current estado is terminal
+    if (this.currentEstado) {
+      this.isTerminalState = this.estadoStateMachine.isTerminalState(this.currentEstado);
+      this.isEstadoDisabled = this.isTerminalState;
+      this.terminalStateMessage = this.isTerminalState
+        ? this.estadoStateMachine.getTerminalStateMessage(this.currentEstado)
+        : '';
+
+      // Disable/enable the form control programmatically
+      if (this.isTerminalState) {
+        this.form.get('estado')?.disable();
+      } else {
+        this.form.get('estado')?.enable();
+      }
+
+      // Build valid transitions text
+      const validTransitions = this.estadoStateMachine.getValidTransitions(this.currentEstado);
+      this.validTransitionsText =
+        validTransitions.length > 0
+          ? validTransitions.map((e) => this.estadoStateMachine.getEstadoLabel(e)).join(', ')
+          : 'ninguna (estado final)';
+
+      this.estadoTooltip = this.isTerminalState
+        ? 'No se puede cambiar el estado porque es un estado final'
+        : 'Selecciona un nuevo estado';
+    } else {
+      // Create mode: all estados available
+      this.isEstadoDisabled = false;
+      this.form.get('estado')?.enable();
+      this.estadoTooltip = 'Selecciona el estado inicial de la licitación';
+      this.terminalStateMessage = '';
+      this.validTransitionsText = '';
+      this.isTerminalState = false;
+    }
   }
 }
