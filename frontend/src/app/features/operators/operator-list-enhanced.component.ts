@@ -103,7 +103,7 @@ import { Operator } from '../../core/models/operator.model';
                   <div class="avatar-circle">{{ getInitials(operator) }}</div>
                   <div class="user-info">
                     <span class="user-name">{{
-                      operator.nombres + ' ' + operator.apellidoPaterno
+                      operator.nombres + ' ' + operator.apellido_paterno
                     }}</span>
                     <span class="user-role">Operador</span>
                   </div>
@@ -111,8 +111,8 @@ import { Operator } from '../../core/models/operator.model';
               </td>
               <td>
                 <div class="contact-info">
-                  <div *ngIf="operator.email" class="contact-item">
-                    <i class="fa-regular fa-envelope"></i> {{ operator.email }}
+                  <div *ngIf="operator.correo_electronico" class="contact-item">
+                    <i class="fa-regular fa-envelope"></i> {{ operator.correo_electronico }}
                   </div>
                   <div *ngIf="operator.telefono" class="contact-item">
                     <i class="fa-solid fa-phone"></i> {{ operator.telefono }}
@@ -120,29 +120,21 @@ import { Operator } from '../../core/models/operator.model';
                 </div>
               </td>
               <td>
-                <span class="license-badge" *ngIf="operator.licenciaConducir">
-                  {{ operator.licenciaConducir }}
+                <span class="license-badge" *ngIf="operator.licencia_conducir">
+                  {{ operator.licencia_conducir }}
                 </span>
-                <span class="text-muted" *ngIf="!operator.licenciaConducir">-</span>
+                <span class="text-muted" *ngIf="!operator.licencia_conducir">-</span>
               </td>
               <!-- Hourly rate removed -->
               <td>-</td>
               <td>
-                {{ operator.fechaIngreso | date: 'mediumDate' }}
+                {{ operator.fecha_ingreso | date: 'mediumDate' }}
               </td>
               <!-- Skills removed/placeholder -->
               <td>-</td>
               <td>
-                <span [class]="'status-badge status-' + operator.estado">
-                  {{
-                    operator.estado === 'activo'
-                      ? 'Activo'
-                      : operator.estado === 'inactivo'
-                        ? 'Inactivo'
-                        : operator.estado === 'vacaciones'
-                          ? 'Vacaciones'
-                          : operator.estado
-                  }}
+                <span [class]="'status-badge status-' + getEstadoClass(operator)">
+                  {{ getEstadoLabel(operator) }}
                 </span>
               </td>
               <td class="text-right">
@@ -600,16 +592,25 @@ export class OperatorListEnhancedComponent implements OnInit {
 
   getInitials(operator: Operator): string {
     const first = operator.nombres?.charAt(0) || '';
-    const last = operator.apellidoPaterno?.charAt(0) || '';
+    const last = operator.apellido_paterno?.charAt(0) || '';
     return (first + last).toUpperCase();
   }
 
   getActiveCount(): number {
-    return this.operators.filter((o) => o.estado === 'activo').length;
+    return this.operators.filter((o) => o.is_active).length;
   }
 
   getOnLeaveCount(): number {
-    return this.operators.filter((o) => o.estado === 'vacaciones').length;
+    // Since we don't have a specific "vacaciones" status, return 0 for now
+    return 0;
+  }
+
+  getEstadoClass(operator: Operator): string {
+    return operator.is_active ? 'activo' : 'inactivo';
+  }
+
+  getEstadoLabel(operator: Operator): string {
+    return operator.is_active ? 'Activo' : 'Inactivo';
   }
 
   viewOperator(operator: Operator): void {
@@ -625,7 +626,7 @@ export class OperatorListEnhancedComponent implements OnInit {
   }
 
   deleteOperator(operator: Operator): void {
-    const fullName = `${operator.nombres} ${operator.apellidoPaterno}`;
+    const fullName = `${operator.nombres} ${operator.apellido_paterno}`;
     if (
       confirm(
         `¿Desea desactivar al operador "${fullName}"? El operador no será eliminado permanentemente.`

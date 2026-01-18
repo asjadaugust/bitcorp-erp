@@ -20,17 +20,22 @@ import { Operator } from '../../core/models/operator.model';
           <div class="title-group">
             <h1>{{ isNew ? 'Nuevo Operador' : 'Editar Operador' }}</h1>
             <p class="subtitle">
-              {{ isNew ? 'Registrar un nuevo operador en el sistema' : 'Actualizar información del operador' }}
+              {{
+                isNew
+                  ? 'Registrar un nuevo operador en el sistema'
+                  : 'Actualizar información del operador'
+              }}
             </p>
           </div>
         </div>
         <div class="header-actions">
           <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             form="operatorForm"
-            class="btn btn-primary" 
-            [disabled]="opForm.invalid || saving">
+            class="btn btn-primary"
+            [disabled]="opForm.invalid || saving"
+          >
             <i *ngIf="saving" class="fa-solid fa-spinner fa-spin"></i>
             <i *ngIf="!saving" class="fa-solid fa-save"></i>
             {{ isNew ? 'Crear Operador' : 'Guardar Cambios' }}
@@ -78,7 +83,7 @@ import { Operator } from '../../core/models/operator.model';
                   type="text"
                   id="apellidoPaterno"
                   name="apellidoPaterno"
-                  [(ngModel)]="operator.apellidoPaterno"
+                  [(ngModel)]="operator.apellido_paterno"
                   required
                   class="form-control"
                   placeholder="Ej. Pérez"
@@ -91,7 +96,7 @@ import { Operator } from '../../core/models/operator.model';
                   type="text"
                   id="apellidoMaterno"
                   name="apellidoMaterno"
-                  [(ngModel)]="operator.apellidoMaterno"
+                  [(ngModel)]="operator.apellido_materno"
                   class="form-control"
                   placeholder="Ej. Gomez"
                 />
@@ -103,7 +108,7 @@ import { Operator } from '../../core/models/operator.model';
                   type="email"
                   id="email"
                   name="email"
-                  [(ngModel)]="operator.email"
+                  [(ngModel)]="operator.correo_electronico"
                   class="form-control"
                   placeholder="juan.perez@bitcorp.com"
                 />
@@ -128,16 +133,16 @@ import { Operator } from '../../core/models/operator.model';
             <h3>Información Laboral</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="estado">Estado *</label>
-                <select 
-                  id="estado" 
-                  name="estado" 
-                  [(ngModel)]="operator.estado" 
-                  required 
-                  class="form-select">
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
-                  <option value="vacaciones">De Vacaciones</option>
+                <label for="is_active">Estado *</label>
+                <select
+                  id="is_active"
+                  name="is_active"
+                  [(ngModel)]="operator.is_active"
+                  required
+                  class="form-select"
+                >
+                  <option [ngValue]="true">Activo</option>
+                  <option [ngValue]="false">Inactivo</option>
                 </select>
               </div>
 
@@ -147,7 +152,7 @@ import { Operator } from '../../core/models/operator.model';
                   type="date"
                   id="fechaIngreso"
                   name="fechaIngreso"
-                  [(ngModel)]="operator.fechaIngreso"
+                  [(ngModel)]="operator.fecha_ingreso"
                   class="form-control"
                 />
               </div>
@@ -164,7 +169,7 @@ import { Operator } from '../../core/models/operator.model';
                   type="text"
                   id="licenciaConducir"
                   name="licenciaConducir"
-                  [(ngModel)]="operator.licenciaConducir"
+                  [(ngModel)]="operator.licencia_conducir"
                   class="form-control"
                   placeholder="A-12345678"
                 />
@@ -176,7 +181,7 @@ import { Operator } from '../../core/models/operator.model';
                   type="date"
                   id="vencimientoLicencia"
                   name="vencimientoLicencia"
-                  [(ngModel)]="operator.vencimientoLicencia"
+                  [(ngModel)]="operator.vencimiento_licencia"
                   class="form-control"
                 />
               </div>
@@ -520,9 +525,8 @@ export class OperatorEditComponent implements OnInit {
       next: (data) => {
         this.operator = {
           ...data,
-          fechaIngreso: data.fechaIngreso ? new Date(data.fechaIngreso).toISOString().split('T')[0] : '',
-          vencimientoLicencia: data.vencimientoLicencia
-            ? new Date(data.vencimientoLicencia).toISOString().split('T')[0]
+          fecha_ingreso: data.fecha_ingreso
+            ? new Date(data.fecha_ingreso).toISOString().split('T')[0]
             : '',
           dni: data.dni || '',
         };

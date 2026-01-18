@@ -13,18 +13,14 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
   template: `
     <app-page-layout
       [title]="
-        operator
-          ? operator.nombres + ' ' + operator.apellidoPaterno
-          : 'Detalles del Operador'
+        operator ? operator.nombres + ' ' + operator.apellido_paterno : 'Detalles del Operador'
       "
       icon="fa-user"
       [breadcrumbs]="[
         { label: 'Dashboard', url: '/app' },
         { label: 'Operadores', url: '/operators' },
         {
-          label: operator
-            ? operator.nombres + ' ' + operator.apellidoPaterno
-            : 'Detalles',
+          label: operator ? operator.nombres + ' ' + operator.apellido_paterno : 'Detalles',
         },
       ]"
       [loading]="loading"
@@ -44,20 +40,16 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
           <div class="card profile-card">
             <div class="profile-header">
               <div class="avatar-large">
-                {{ operator.nombres.charAt(0) }}{{ operator.apellidoPaterno.charAt(0) }}
+                {{ operator.nombres.charAt(0) }}{{ operator.apellido_paterno.charAt(0) }}
               </div>
               <div class="profile-info">
-                <h2>{{ operator.nombres }} {{ operator.apellidoPaterno }}</h2>
-                <p class="email"><i class="fa-regular fa-envelope"></i> {{ operator.email }}</p>
+                <h2>{{ operator.nombres }} {{ operator.apellido_paterno }}</h2>
+                <p class="email">
+                  <i class="fa-regular fa-envelope"></i> {{ operator.correo_electronico }}
+                </p>
                 <div class="badges">
-                  <span [class]="'badge status-' + operator.estado">
-                    {{
-                      operator.estado === 'activo'
-                        ? 'Activo'
-                        : operator.estado === 'inactivo'
-                          ? 'Inactivo'
-                          : 'Vacaciones'
-                    }}
+                  <span [class]="'badge status-' + getEstadoClass()">
+                    {{ getEstadoLabel() }}
                   </span>
                   <span class="badge role-badge">Operador</span>
                 </div>
@@ -75,7 +67,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
               </div>
               <div class="info-item">
                 <label>Email</label>
-                <p>{{ operator.email }}</p>
+                <p>{{ operator.correo_electronico }}</p>
               </div>
             </div>
           </div>
@@ -85,22 +77,22 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
             <div class="info-grid">
               <div class="info-item">
                 <label>Fecha de Ingreso</label>
-                <p>{{ operator.fechaIngreso | date: 'mediumDate' }}</p>
+                <p>{{ operator.fecha_ingreso | date: 'mediumDate' }}</p>
               </div>
-              
+
               <!-- Hourly rate removed -->
 
-              <div class="info-item" *ngIf="operator.licenciaConducir">
+              <div class="info-item" *ngIf="operator.licencia_conducir">
                 <label>Número de Licencia</label>
-                <p>{{ operator.licenciaConducir }}</p>
+                <p>{{ operator.licencia_conducir }}</p>
               </div>
-              <div class="info-item" *ngIf="operator.vencimientoLicencia">
+              <div class="info-item" *ngIf="operator.vencimiento_licencia">
                 <label>Vencimiento Licencia</label>
-                <p>{{ operator.vencimientoLicencia | date: 'mediumDate' }}</p>
+                <p>{{ operator.vencimiento_licencia | date: 'mediumDate' }}</p>
               </div>
             </div>
           </div>
-          
+
           <!-- Skills, Notes, Performance removed -->
         </div>
       </div>
@@ -371,6 +363,14 @@ export class OperatorDetailComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  getEstadoClass(): string {
+    return this.operator?.is_active ? 'activo' : 'inactivo';
+  }
+
+  getEstadoLabel(): string {
+    return this.operator?.is_active ? 'Activo' : 'Inactivo';
   }
 
   editOperator(): void {

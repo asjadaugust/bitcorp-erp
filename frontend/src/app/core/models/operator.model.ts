@@ -1,38 +1,25 @@
 export interface Operator {
   id: number;
-  // user_id: number; // Not present in backend entity explicitly, maybe logic handles it? keeping for safety if used elsewhere or optional
-  legacyId?: string;
-  codigoTrabajador: string;
+  legacy_id?: string | null;
   dni: string;
   nombres: string;
-  apellidoPaterno: string;
-  apellidoMaterno?: string;
-  direccion?: string;
-  telefono?: string;
-  email?: string;
-  fechaIngreso?: string;
-  tipoContrato?: string;
-  cargo?: string;
-  especialidad?: string;
-  licenciaConducir?: string;
-  categoriaLicencia?: string;
-  vencimientoLicencia?: string;
-  estado: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  
-  // Computed or joined fields that might be coming from backend if transformed, 
-  // but looking at entity, these are the core fields.
-  // Keeping some old ones as optional if needed for transition or if I missed a transformation layer.
-  // But purely based on "backend sends spanish names":
-  
-  // Helpers for frontend display if needed, but better to use the spanish ones directly.
-  full_name?: string; // Backend entity has get fullName, maybe it IS serialized? 
-                      // If user says "api sends spanish names", I'll trust the entity property names.
-  skills?: any[]; // The entity doesn't show skills relation explicitly in the snippet I saw, 
-                 // but the frontend code uses it. 
-                 // I will keep `skills` as it was likely a joined relation.
+  apellido_paterno: string;
+  apellido_materno?: string | null;
+  nombre_completo?: string; // Computed field from backend
+  fecha_nacimiento?: string | null;
+  direccion?: string | null;
+  telefono?: string | null;
+  correo_electronico?: string | null;
+  fecha_ingreso?: string | null;
+  fecha_cese?: string | null;
+  tipo_contrato?: string | null;
+  cargo?: string | null;
+  especialidad?: string | null;
+  licencia_conducir?: string | null;
+  operating_unit_id?: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PersonalDocument {
@@ -65,18 +52,15 @@ export interface OperatorSkill {
 }
 
 export interface CreateOperatorDto {
-  // mapped from user_id if needed, or remove if unused in backend
-  // user_id: number; 
-  CodigoTrabajador: string; // Convention? Or lowercase? Usually camelCase in JSON: codigoTrabajador
+  dni: string;
   nombres: string;
-  apellidoPaterno: string;
-  apellidoMaterno?: string;
-  email: string;
-  telefono: string;
-  licenciaConducir?: string;
-  vencimientoLicencia?: string;
-  fechaIngreso: string;
-  // hourly_rate: number; // Removed as it's not in backend
-  cargo?: string; // Replacement for role/hourly_rate context
-  // notes?: string; // Not in backend entity
+  apellido_paterno: string;
+  apellido_materno?: string;
+  correo_electronico?: string;
+  telefono?: string;
+  fecha_ingreso?: string;
+  tipo_contrato?: string;
+  cargo?: string;
+  especialidad?: string;
+  licencia_conducir?: string;
 }

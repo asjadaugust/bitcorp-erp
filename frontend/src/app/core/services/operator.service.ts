@@ -19,32 +19,31 @@ export class OperatorService {
   /**
    * Maps API response to frontend Operator model
    * API returns Spanish snake_case (e.g., apellido_paterno, fecha_ingreso, is_active)
+   * We now directly use the API fields without transformation
    */
   private mapOperator(apiOp: any): Operator {
     return {
       id: apiOp.id,
-      legacyId: apiOp.legacyId || apiOp.legacy_id,
-      codigoTrabajador: apiOp.codigoTrabajador || apiOp.codigo_trabajador || apiOp.dni || '',
+      legacy_id: apiOp.legacy_id,
       dni: apiOp.dni,
       nombres: apiOp.nombres,
-      apellidoPaterno: apiOp.apellidoPaterno || apiOp.apellido_paterno || '',
-      apellidoMaterno: apiOp.apellidoMaterno || apiOp.apellido_materno || '',
-      email: apiOp.email || apiOp.correo_electronico,
-      telefono: apiOp.telefono || apiOp.phone,
+      apellido_paterno: apiOp.apellido_paterno,
+      apellido_materno: apiOp.apellido_materno,
+      nombre_completo: apiOp.nombre_completo,
+      fecha_nacimiento: apiOp.fecha_nacimiento,
+      correo_electronico: apiOp.correo_electronico,
+      telefono: apiOp.telefono,
       direccion: apiOp.direccion,
-      fechaIngreso: apiOp.fechaIngreso || apiOp.fecha_ingreso,
+      fecha_ingreso: apiOp.fecha_ingreso,
+      fecha_cese: apiOp.fecha_cese,
+      tipo_contrato: apiOp.tipo_contrato,
       cargo: apiOp.cargo,
       especialidad: apiOp.especialidad,
-      licenciaConducir: apiOp.licenciaConducir || apiOp.licencia_conducir,
-      tipoContrato: apiOp.tipoContrato || apiOp.tipo_contrato,
-      isActive: apiOp.isActive ?? apiOp.is_active ?? true,
-      estado: apiOp.estado || ((apiOp.isActive ?? apiOp.is_active) ? 'activo' : 'inactivo'),
-      createdAt: apiOp.createdAt || apiOp.created_at,
-      updatedAt: apiOp.updatedAt || apiOp.updated_at,
-      full_name:
-        apiOp.nombre_completo ||
-        apiOp.full_name ||
-        `${apiOp.nombres} ${apiOp.apellidoPaterno || apiOp.apellido_paterno || ''} ${apiOp.apellidoMaterno || apiOp.apellido_materno || ''}`.trim(),
+      licencia_conducir: apiOp.licencia_conducir,
+      operating_unit_id: apiOp.operating_unit_id,
+      is_active: apiOp.is_active,
+      created_at: apiOp.created_at,
+      updated_at: apiOp.updated_at,
     };
   }
 
