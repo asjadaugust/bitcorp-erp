@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
-import sstService from '../../services/sst.service';
+import { SstService } from '../../services/sst.service';
 import { sendSuccess, sendError, sendCreated } from '../../utils/api-response';
 import Logger from '../../utils/logger';
 import { NotFoundError, ConflictError } from '../../errors/http.errors';
 
 export class SstController {
+  private sstService = new SstService();
+
   /**
    * GET /incidents - List all safety incidents with pagination and filters
    */
@@ -20,7 +22,7 @@ export class SstController {
         severidad: req.query.severidad as string,
       };
 
-      const result = await sstService.findAll(tenantId, filters, page, limit);
+      const result = await this.sstService.findAll(tenantId, filters, page, limit);
 
       sendSuccess(res, result.data, {
         page,
@@ -52,7 +54,7 @@ export class SstController {
       const tenantId = 1; // TODO: Get from req.tenantContext
       const id = parseInt(req.params.id);
 
-      const incident = await sstService.findById(tenantId, id);
+      const incident = await this.sstService.findById(tenantId, id);
       sendSuccess(res, incident);
     } catch (error: any) {
       if (error instanceof NotFoundError) {
@@ -79,7 +81,7 @@ export class SstController {
         reportado_por: (req as any).user?.id,
       };
 
-      const incident = await sstService.create(tenantId, incidentData);
+      const incident = await this.sstService.create(tenantId, incidentData);
       sendCreated(res, incident);
     } catch (error: any) {
       if (error instanceof ConflictError) {
@@ -109,7 +111,7 @@ export class SstController {
       const tenantId = 1; // TODO: Get from req.tenantContext
       const id = parseInt(req.params.id);
 
-      const incident = await sstService.update(tenantId, id, req.body);
+      const incident = await this.sstService.update(tenantId, id, req.body);
       sendSuccess(res, incident);
     } catch (error: any) {
       if (error instanceof NotFoundError) {
@@ -137,7 +139,7 @@ export class SstController {
       const tenantId = 1; // TODO: Get from req.tenantContext
       const id = parseInt(req.params.id);
 
-      await sstService.delete(tenantId, id);
+      await this.sstService.delete(tenantId, id);
       sendSuccess(res, { message: 'Incidente eliminado exitosamente' });
     } catch (error: any) {
       if (error instanceof NotFoundError) {

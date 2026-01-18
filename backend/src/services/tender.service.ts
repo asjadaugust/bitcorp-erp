@@ -413,4 +413,5 @@ export class TenderService {
   }
 }
 
-export default new TenderService();
+// Note: Do not export singleton instance - causes "Database not initialized" error at module load time
+// Controllers should instantiate: new TenderService() in constructor

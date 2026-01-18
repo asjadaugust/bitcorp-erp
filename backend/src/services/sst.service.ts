@@ -325,4 +325,5 @@ export class SstService {
   }
 }
 
-export default new SstService();
+// Note: Do not export singleton instance - causes "Database not initialized" error at module load time
+// Controllers should instantiate: new SstService() in constructor

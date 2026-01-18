@@ -420,4 +420,5 @@ export class OperatorService {
   }
 }
 
-export default new OperatorService();
+// Note: Do not export singleton - causes "Database not initialized" error
+// The controller instantiates the service directly: const operatorService = new OperatorService();
