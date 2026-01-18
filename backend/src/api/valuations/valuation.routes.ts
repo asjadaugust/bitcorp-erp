@@ -62,4 +62,22 @@ router.put(
 );
 router.delete('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR), controller.remove);
 
+// Approval workflow endpoints
+router.post(
+  '/:id/submit-review',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
+  controller.submitForReview
+);
+router.post(
+  '/:id/approve',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  controller.approveValuation
+);
+router.post(
+  '/:id/reject',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  controller.rejectValuation
+);
+router.post('/:id/mark-paid', authorize(ROLES.ADMIN), controller.markAsPaid);
+
 export default router;

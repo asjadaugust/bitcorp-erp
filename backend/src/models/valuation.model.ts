@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { User } from './user.model';
 
-export type EstadoValorizacion = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'PAGADO';
+export type EstadoValorizacion = 'PENDIENTE' | 'EN_REVISION' | 'APROBADO' | 'RECHAZADO' | 'PAGADO';
 
 @Entity('valorizacion_equipo', { schema: 'equipo' })
 export class Valorizacion {
@@ -106,6 +106,9 @@ export class Valorizacion {
 
   @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
   approvedAt?: Date;
+
+  @Column({ name: 'fecha_pago', type: 'date', nullable: true })
+  fechaPago?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

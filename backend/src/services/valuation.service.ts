@@ -207,6 +207,13 @@ export class ValuationService {
         throw new Error('Valuation not found');
       }
 
+      // Validate state transition: Only EN_REVISION can be approved
+      if (valorizacion.estado !== 'EN_REVISION') {
+        throw new Error(
+          `Cannot approve valuation in state ${valorizacion.estado}. Must be EN_REVISION.`
+        );
+      }
+
       valorizacion.estado = 'APROBADO';
       valorizacion.approvedBy = userId;
       valorizacion.approvedAt = new Date();
@@ -220,6 +227,121 @@ export class ValuationService {
         id,
         userId,
         context: 'ValuationService.approve',
+      });
+      throw error;
+    }
+  }
+
+  async submitForReview(id: number, userId: number): Promise<ValuationDto> {
+    try {
+      const valorizacion = await this.repository.findOne({ where: { id } });
+      if (!valorizacion) {
+        throw new Error('Valuation not found');
+      }
+
+      if (valorizacion.estado !== 'PENDIENTE') {
+        throw new Error(
+          `Cannot submit valuation in state ${valorizacion.estado}. Must be PENDIENTE.`
+        );
+      }
+
+      valorizacion.estado = 'EN_REVISION';
+      valorizacion.updatedAt = new Date();
+
+      const updated = await this.repository.save(valorizacion);
+      return toValuationDto(updated);
+    } catch (error) {
+      Logger.error('Error submitting valuation for review', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        userId,
+        context: 'ValuationService.submitForReview',
+      });
+      throw error;
+    }
+  }
+
+  async reject(id: number, userId: number, reason: string): Promise<ValuationDto> {
+    try {
+      const valorizacion = await this.repository.findOne({ where: { id } });
+      if (!valorizacion) {
+        throw new Error('Valuation not found');
+      }
+
+      if (valorizacion.estado === 'PAGADO') {
+        throw new Error('Cannot reject valuation that has been paid');
+      }
+
+      if (!reason || reason.trim().length === 0) {
+        throw new Error('Rejection reason is required');
+      }
+
+      valorizacion.estado = 'RECHAZADO';
+      valorizacion.observaciones = valorizacion.observaciones
+        ? `${valorizacion.observaciones}\n\nRECHAZADO: ${reason}`
+        : `RECHAZADO: ${reason}`;
+      valorizacion.updatedAt = new Date();
+
+      const rejected = await this.repository.save(valorizacion);
+      return toValuationDto(rejected);
+    } catch (error) {
+      Logger.error('Error rejecting valuation', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        userId,
+        reason,
+        context: 'ValuationService.reject',
+      });
+      throw error;
+    }
+  }
+
+  async markAsPaid(
+    id: number,
+    userId: number,
+    paymentData: { fechaPago?: Date; referenciaPago?: string; metodoPago?: string }
+  ): Promise<ValuationDto> {
+    try {
+      const valorizacion = await this.repository.findOne({ where: { id } });
+      if (!valorizacion) {
+        throw new Error('Valuation not found');
+      }
+
+      if (valorizacion.estado !== 'APROBADO') {
+        throw new Error(
+          `Cannot mark as paid valuation in state ${valorizacion.estado}. Must be APROBADO.`
+        );
+      }
+
+      valorizacion.estado = 'PAGADO';
+      valorizacion.fechaPago = paymentData.fechaPago || new Date();
+      valorizacion.updatedAt = new Date();
+
+      if (paymentData.referenciaPago || paymentData.metodoPago) {
+        const paymentInfo = [
+          paymentData.metodoPago && `Método: ${paymentData.metodoPago}`,
+          paymentData.referenciaPago && `Referencia: ${paymentData.referenciaPago}`,
+        ]
+          .filter(Boolean)
+          .join(' | ');
+
+        valorizacion.observaciones = valorizacion.observaciones
+          ? `${valorizacion.observaciones}\n\nPAGO: ${paymentInfo}`
+          : `PAGO: ${paymentInfo}`;
+      }
+
+      const paid = await this.repository.save(valorizacion);
+      return toValuationDto(paid);
+    } catch (error) {
+      Logger.error('Error marking valuation as paid', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        id,
+        userId,
+        paymentData,
+        context: 'ValuationService.markAsPaid',
       });
       throw error;
     }

@@ -301,4 +301,148 @@ export class ValuationController {
       next(error);
     }
   };
+
+  /**
+   * Submit valuation for review
+   * POST /api/valuations/:id/submit-review
+   */
+  submitForReview = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const userId = (req as any).user.id;
+      const record = await this.valuationService.submitForReview(id, userId);
+
+      sendSuccess(res, record);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Cannot submit')) {
+        sendError(res, 400, 'INVALID_STATE_TRANSITION', error.message);
+        return;
+      }
+      next(error);
+    }
+  };
+
+  /**
+   * Approve valuation
+   * POST /api/valuations/:id/approve
+   * Requires ADMIN or DIRECTOR role
+   */
+  approveValuation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const user = (req as any).user;
+      const userRoles = user.roles || [user.rol];
+      const allowedRoles = ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'];
+
+      const hasPermission = userRoles.some((role: string) => allowedRoles.includes(role));
+
+      if (!hasPermission) {
+        sendError(res, 403, 'FORBIDDEN', 'No tienes permisos para aprobar valorizaciones');
+        return;
+      }
+
+      const record = await this.valuationService.approve(id, user.id);
+      sendSuccess(res, record);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Cannot approve')) {
+        sendError(res, 400, 'INVALID_STATE_TRANSITION', error.message);
+        return;
+      }
+      next(error);
+    }
+  };
+
+  /**
+   * Reject valuation
+   * POST /api/valuations/:id/reject
+   * Requires ADMIN or DIRECTOR role
+   */
+  rejectValuation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const { reason } = req.body;
+      if (!reason || reason.trim().length === 0) {
+        sendError(res, 400, 'MISSING_REASON', 'Motivo de rechazo requerido');
+        return;
+      }
+
+      const user = (req as any).user;
+      const userRoles = user.roles || [user.rol];
+      const allowedRoles = ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'];
+
+      const hasPermission = userRoles.some((role: string) => allowedRoles.includes(role));
+
+      if (!hasPermission) {
+        sendError(res, 403, 'FORBIDDEN', 'No tienes permisos para rechazar valorizaciones');
+        return;
+      }
+
+      const record = await this.valuationService.reject(id, user.id, reason);
+      sendSuccess(res, record);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Cannot reject')) {
+        sendError(res, 400, 'INVALID_STATE_TRANSITION', error.message);
+        return;
+      }
+      next(error);
+    }
+  };
+
+  /**
+   * Mark valuation as paid
+   * POST /api/valuations/:id/mark-paid
+   * Requires ADMIN role (Finance)
+   */
+  markAsPaid = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const user = (req as any).user;
+      const userRoles = user.roles || [user.rol];
+
+      if (!userRoles.includes('ADMIN')) {
+        sendError(
+          res,
+          403,
+          'FORBIDDEN',
+          'Solo el rol ADMIN puede marcar valorizaciones como pagadas'
+        );
+        return;
+      }
+
+      const paymentData = {
+        fechaPago: req.body.fecha_pago ? new Date(req.body.fecha_pago) : undefined,
+        referenciaPago: req.body.referencia_pago,
+        metodoPago: req.body.metodo_pago,
+      };
+
+      const record = await this.valuationService.markAsPaid(id, user.id, paymentData);
+      sendSuccess(res, record);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Cannot mark as paid')) {
+        sendError(res, 400, 'INVALID_STATE_TRANSITION', error.message);
+        return;
+      }
+      next(error);
+    }
+  };
 }
