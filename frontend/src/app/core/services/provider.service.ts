@@ -45,15 +45,29 @@ export class ProviderService {
     if (filters.search) params = params.set('search', filters.search);
     if (filters.status) params = params.set('status', filters.status);
 
-    return this.http
-      .get<any[]>(this.apiUrl, { params })
-      .pipe(map((providers) => providers.map((p) => this.mapApiToProvider(p))));
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map((response) => {
+        // Handle paginated response format: { success: true, data: [], pagination: {...} }
+        const providers = response.data || response;
+
+        // Handle empty array or null
+        if (!Array.isArray(providers)) {
+          return [];
+        }
+
+        return providers.map((p: any) => this.mapApiToProvider(p));
+      })
+    );
   }
 
   getById(id: number | string): Observable<Provider> {
-    return this.http
-      .get<any>(`${this.apiUrl}/${id}`)
-      .pipe(map((provider) => this.mapApiToProvider(provider)));
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map((response) => {
+        // Handle wrapped response format: { success: true, data: {...} }
+        const provider = response.data || response;
+        return this.mapApiToProvider(provider);
+      })
+    );
   }
 
   create(provider: Omit<Provider, 'id'>): Observable<Provider> {
@@ -67,9 +81,13 @@ export class ProviderService {
       telefono: provider.telefono,
       correo_electronico: provider.correo_electronico,
     };
-    return this.http
-      .post<any>(this.apiUrl, payload)
-      .pipe(map((provider) => this.mapApiToProvider(provider)));
+    return this.http.post<any>(this.apiUrl, payload).pipe(
+      map((response) => {
+        // Handle wrapped response format: { success: true, data: {...} }
+        const provider = response.data || response;
+        return this.mapApiToProvider(provider);
+      })
+    );
   }
 
   update(id: number | string, provider: Partial<Provider>): Observable<Provider> {
@@ -84,9 +102,13 @@ export class ProviderService {
     if (provider.correo_electronico) payload.correo_electronico = provider.correo_electronico;
     if (provider.is_active !== undefined) payload.is_active = provider.is_active;
 
-    return this.http
-      .put<any>(`${this.apiUrl}/${id}`, payload)
-      .pipe(map((provider) => this.mapApiToProvider(provider)));
+    return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
+      map((response) => {
+        // Handle wrapped response format: { success: true, data: {...} }
+        const provider = response.data || response;
+        return this.mapApiToProvider(provider);
+      })
+    );
   }
 
   delete(id: number | string): Observable<void> {

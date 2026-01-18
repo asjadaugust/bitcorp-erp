@@ -616,8 +616,7 @@ export class EquipmentFormComponent implements OnInit {
       numero_serie_equipo: [''],
       numero_chasis: [''],
       numero_serie_motor: [''],
-
-      // notes: [''], // Not in entity
+      notes: [''], // Optional notes field
     });
   }
 
