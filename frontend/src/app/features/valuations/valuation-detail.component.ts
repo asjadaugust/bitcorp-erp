@@ -5,6 +5,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ValuationService } from '../../core/services/valuation.service';
 import { Valuation, PaymentData } from '../../core/models/valuation.model';
 import { AuthService } from '../../core/services/auth.service';
+import { PaymentService } from '../../core/services/payment.service';
+import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-record.model';
 
 @Component({
   selector: 'app-valuation-detail',
@@ -105,6 +107,156 @@ import { AuthService } from '../../core/services/auth.service';
               <section class="detail-section" *ngIf="valuation.observaciones">
                 <h2>Observaciones</h2>
                 <p class="observaciones-text">{{ valuation.observaciones }}</p>
+              </section>
+
+              <!-- Payments Section -->
+              <section class="detail-section payments-section">
+                <div class="section-header">
+                  <h2>Pagos ({{ paymentCount }})</h2>
+                  <button
+                    *ngIf="valuation.status === 'approved' || valuation.status === 'paid'"
+                    class="btn btn-primary"
+                    (click)="navigateToCreatePayment()"
+                  >
+                    <i class="fa-solid fa-plus"></i> Registrar Pago
+                  </button>
+                </div>
+
+                <!-- Payment Summary Widget -->
+                <div *ngIf="paymentSummary" class="payment-summary-widget">
+                  <div class="summary-row">
+                    <span class="summary-label">Total Valorización:</span>
+                    <strong class="summary-value">{{
+                      paymentService.formatCurrency(paymentSummary.monto_total_valorizacion, 'PEN')
+                    }}</strong>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">Total Pagado:</span>
+                    <strong class="summary-value text-success">{{
+                      paymentService.formatCurrency(paymentSummary.total_pagado, 'PEN')
+                    }}</strong>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">Saldo Pendiente:</span>
+                    <strong class="summary-value text-warning">{{
+                      paymentService.formatCurrency(paymentSummary.saldo_pendiente, 'PEN')
+                    }}</strong>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">Estado:</span>
+                    <span
+                      [class]="
+                        'payment-status-badge status-' +
+                        paymentService.getSummaryStatusColor(paymentSummary.estado_pago)
+                      "
+                    >
+                      {{ paymentService.getSummaryStatusLabel(paymentSummary.estado_pago) }}
+                    </span>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="progress-bar-container">
+                    <div
+                      class="progress-bar-fill"
+                      [style.width.%]="
+                        (paymentSummary.total_pagado / paymentSummary.monto_total_valorizacion) *
+                        100
+                      "
+                    ></div>
+                  </div>
+                  <div class="progress-label">
+                    {{
+                      (
+                        (paymentSummary.total_pagado / paymentSummary.monto_total_valorizacion) *
+                        100
+                      ).toFixed(1)
+                    }}% pagado
+                  </div>
+                </div>
+
+                <!-- Loading State -->
+                <div *ngIf="loadingPayments" class="loading-payments">
+                  <div class="spinner-small"></div>
+                  <p>Cargando pagos...</p>
+                </div>
+
+                <!-- Payments Table -->
+                <div
+                  *ngIf="!loadingPayments && payments.length > 0"
+                  class="payments-table-container"
+                >
+                  <table class="payments-table">
+                    <thead>
+                      <tr>
+                        <th>N° Pago</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Estado</th>
+                        <th>Conciliado</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let payment of payments">
+                        <td>
+                          <a [routerLink]="['/payments', payment.id_pago]" class="payment-link">
+                            {{ payment.numero_pago }}
+                          </a>
+                        </td>
+                        <td>{{ payment.fecha_pago | date: 'dd/MM/yyyy' }}</td>
+                        <td class="amount-cell">
+                          {{ paymentService.formatCurrency(payment.monto_pagado, payment.moneda) }}
+                        </td>
+                        <td>
+                          <span class="badge badge-secondary">{{
+                            paymentService.getPaymentMethodLabel(payment.metodo_pago)
+                          }}</span>
+                        </td>
+                        <td>
+                          <span
+                            [class]="
+                              'badge badge-' + paymentService.getPaymentStatusColor(payment.estado)
+                            "
+                          >
+                            {{ paymentService.getPaymentStatusLabel(payment.estado) }}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            *ngIf="payment.conciliado"
+                            class="badge badge-success conciliado-badge"
+                          >
+                            <i class="fa-solid fa-check"></i> Sí
+                          </span>
+                          <span *ngIf="!payment.conciliado" class="badge badge-warning"> No </span>
+                        </td>
+                        <td>
+                          <button
+                            class="btn-action btn-action-primary"
+                            (click)="viewPayment(payment.id_pago)"
+                            title="Ver detalles"
+                          >
+                            <i class="fa-solid fa-eye"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingPayments && payments.length === 0" class="empty-state-payments">
+                  <i class="fa-solid fa-money-bill-wave empty-icon"></i>
+                  <p class="empty-text">No hay pagos registrados para esta valorización</p>
+                  <button
+                    *ngIf="valuation.status === 'approved' || valuation.status === 'paid'"
+                    class="btn btn-primary"
+                    (click)="navigateToCreatePayment()"
+                  >
+                    <i class="fa-solid fa-plus"></i> Registrar Primer Pago
+                  </button>
+                </div>
               </section>
             </div>
           </div>
@@ -795,6 +947,239 @@ import { AuthService } from '../../core/services/auth.service';
           transform: rotate(360deg);
         }
       }
+
+      /* Payments Section Styles */
+      .payments-section {
+        margin-top: var(--s-32);
+        padding-top: var(--s-32);
+        border-top: 2px solid #e0e0e0;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--s-24);
+
+        h2 {
+          margin: 0;
+        }
+      }
+
+      .payment-summary-widget {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: var(--s-24);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--s-24);
+        box-shadow: var(--shadow-md);
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--s-12);
+
+        &:last-of-type {
+          margin-bottom: var(--s-16);
+        }
+      }
+
+      .summary-label {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .summary-value {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .payment-status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: var(--s-8);
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: white;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+      }
+
+      .progress-label {
+        font-size: 12px;
+        text-align: center;
+        opacity: 0.9;
+      }
+
+      .text-success {
+        color: #4ade80 !important;
+      }
+
+      .text-warning {
+        color: #fbbf24 !important;
+      }
+
+      .loading-payments {
+        display: flex;
+        align-items: center;
+        gap: var(--s-12);
+        padding: var(--s-24);
+        color: var(--grey-500);
+      }
+
+      .spinner-small {
+        border: 2px solid var(--grey-200);
+        border-top: 2px solid var(--primary-500);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+      }
+
+      .payments-table-container {
+        overflow-x: auto;
+        margin-top: var(--s-16);
+      }
+
+      .payments-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+
+        th {
+          background: var(--grey-50);
+          padding: var(--s-12) var(--s-16);
+          text-align: left;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--grey-700);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 2px solid var(--grey-200);
+        }
+
+        td {
+          padding: var(--s-12) var(--s-16);
+          border-bottom: 1px solid var(--grey-100);
+          font-size: 14px;
+          color: #333;
+        }
+
+        tbody tr:hover {
+          background: var(--grey-50);
+        }
+      }
+
+      .payment-link {
+        color: var(--primary-500);
+        text-decoration: none;
+        font-weight: 500;
+        font-family: monospace;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .amount-cell {
+        font-weight: 600;
+        font-family: monospace;
+      }
+
+      .badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      .badge-secondary {
+        background: var(--grey-100);
+        color: var(--grey-700);
+      }
+
+      .badge-success {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+
+      .badge-warning {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+
+      .badge-danger {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+
+      .conciliado-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .btn-action {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--s-4) var(--s-8);
+        border-radius: var(--radius-sm);
+        transition: background 0.2s ease;
+        font-size: 14px;
+
+        &:hover {
+          background: var(--grey-100);
+        }
+      }
+
+      .btn-action-primary {
+        color: var(--primary-500);
+
+        &:hover {
+          background: var(--primary-50);
+        }
+      }
+
+      .empty-state-payments {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--s-48) var(--s-24);
+        text-align: center;
+        background: var(--grey-50);
+        border-radius: var(--radius-md);
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        color: var(--grey-300);
+        margin-bottom: var(--s-16);
+      }
+
+      .empty-text {
+        font-size: 14px;
+        color: var(--grey-500);
+        margin-bottom: var(--s-16);
+      }
     `,
   ],
 })
@@ -803,10 +1188,17 @@ export class ValuationDetailComponent implements OnInit {
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  paymentService = inject(PaymentService); // Made public for template access
 
   valuation: Valuation | null = null;
   loading = true;
   processingWorkflow = false;
+
+  // Payment-related properties
+  payments: PaymentRecordList[] = [];
+  paymentSummary: PaymentSummary | null = null;
+  paymentCount = 0;
+  loadingPayments = false;
 
   // Modal states
   showApproveModal = false;
@@ -824,6 +1216,8 @@ export class ValuationDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
     this.loadValuation(id);
+    this.loadPayments(id);
+    this.loadPaymentSummary(id);
   }
 
   loadValuation(id: number): void {
@@ -835,6 +1229,32 @@ export class ValuationDetailComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  loadPayments(valuationId: number): void {
+    this.loadingPayments = true;
+    this.paymentService.getPaymentsByValuation(valuationId).subscribe({
+      next: (payments) => {
+        this.payments = payments;
+        this.paymentCount = payments.length;
+        this.loadingPayments = false;
+      },
+      error: (error) => {
+        console.error('Error loading payments:', error);
+        this.loadingPayments = false;
+      },
+    });
+  }
+
+  loadPaymentSummary(valuationId: number): void {
+    this.paymentService.getPaymentSummary(valuationId).subscribe({
+      next: (summary) => {
+        this.paymentSummary = summary;
+      },
+      error: (error) => {
+        console.error('Error loading payment summary:', error);
       },
     });
   }
@@ -1007,5 +1427,18 @@ export class ValuationDetailComponent implements OnInit {
         alert('Error al descargar el PDF');
       },
     });
+  }
+
+  // Payment navigation methods
+  navigateToCreatePayment(): void {
+    if (this.valuation) {
+      this.router.navigate(['/payments/create'], {
+        queryParams: { valorizacion_id: this.valuation.id },
+      });
+    }
+  }
+
+  viewPayment(paymentId: number): void {
+    this.router.navigate(['/payments', paymentId]);
   }
 }
