@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
-import { BaseModel } from './base.model';
+// import { BaseModel } from './base.model'; // Unused
 import { Provider } from './provider.model';
-import { Project } from './project.model';
+// import { Project } from './project.model'; // Unused
 
 export enum EquipmentStatus {
   AVAILABLE = 'available',
@@ -97,7 +97,7 @@ export class Equipment {
   @Column({ name: 'medidor_uso', type: 'varchar', length: 20, nullable: true })
   medidor_uso?: string;
 
-  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'disponible' })
+  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'DISPONIBLE' })
   estado!: string;
 
   // project_id removed as it does not exist in equipo.equipo table

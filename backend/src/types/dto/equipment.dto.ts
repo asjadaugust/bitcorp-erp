@@ -148,7 +148,7 @@ export function toEquipmentListDto(entity: any): EquipmentListDto {
     marca: entity.marca || null,
     modelo: entity.modelo || null,
     placa: entity.placa || null,
-    estado: entity.estado,
+    estado: entity.estado?.toUpperCase() || 'DISPONIBLE', // Ensure uppercase
     tipo_proveedor: entity.tipo_proveedor || null,
     proveedor_id: entity.proveedorId || entity.proveedor_id || null,
     proveedor_nombre: entity.provider?.razon_social || null,
@@ -181,7 +181,7 @@ export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
     potencia_neta: entity.potencia_neta ? Number(entity.potencia_neta) : null,
     tipo_motor: entity.tipo_motor || null,
     medidor_uso: entity.medidor_uso || null,
-    estado: entity.estado,
+    estado: entity.estado?.toUpperCase() || 'DISPONIBLE', // Ensure uppercase
     is_active: entity.is_active,
     creado_por: entity.creadoPor || entity.creado_por || null,
     actualizado_por: entity.actualizadoPor || entity.actualizado_por || null,
