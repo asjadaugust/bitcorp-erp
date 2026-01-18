@@ -104,20 +104,20 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
-        <span class="code-badge">{{ row.code }}</span>
+        <span class="code-badge">{{ row.codigo_equipo }}</span>
       </ng-template>
 
       <ng-template #brandModelTemplate let-row>
         <div class="brand-model">
-          <span>{{ row.brand }}</span>
-          <small>{{ row.model }}</small>
+          <span>{{ row.marca }}</span>
+          <small>{{ row.modelo }}</small>
         </div>
       </ng-template>
 
       <ng-template #statusTemplate let-row>
-        <span [class]="'status-badge status-' + (row.status || '').toLowerCase()">
-          <i class="fa-solid" [ngClass]="getStatusIcon(row.status)"></i>
-          {{ getStatusLabel(row.status) }}
+        <span [class]="'status-badge status-' + (row.estado || '').toLowerCase()">
+          <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
+          {{ getStatusLabel(row.estado) }}
         </span>
       </ng-template>
 
@@ -425,12 +425,12 @@ export class EquipmentListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'code', label: 'Código', type: 'template' },
+    { key: 'codigo_equipo', label: 'Código', type: 'template' },
     { key: 'brand_model', label: 'Marca / Modelo', type: 'template' },
-    { key: 'category', label: 'Categoría', type: 'text' },
-    { key: 'plate_number', label: 'Placa', type: 'text' },
+    { key: 'categoria', label: 'Categoría', type: 'text' },
+    { key: 'placa', label: 'Placa', type: 'text' },
     { key: 'equipment_type_id', label: 'Tipo ID', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'template' },
+    { key: 'estado', label: 'Estado', type: 'template' },
     { key: 'meter_type', label: 'Medidor', type: 'text' },
   ];
 
