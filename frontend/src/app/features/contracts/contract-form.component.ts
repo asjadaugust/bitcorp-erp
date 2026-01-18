@@ -75,25 +75,27 @@ import { Provider } from '../../core/models/provider.model';
               </div>
 
               <div class="form-group">
-                <label for="provider_id">Proveedor *</label>
-                <select id="provider_id" formControlName="provider_id" class="form-select">
+                <label for="proveedor_id">Proveedor *</label>
+                <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
                   <option value="">Seleccione un proveedor</option>
                   <option *ngFor="let prov of providerList" [value]="prov.id">
-                    {{ prov.business_name }} ({{ prov.tax_id }})
+                    {{ prov.razon_social }} ({{ prov.ruc }})
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('provider_id')">Proveedor es requerido</div>
+                <div class="error-msg" *ngIf="hasError('proveedor_id')">Proveedor es requerido</div>
               </div>
 
               <div class="form-group">
-                <label for="equipment_id">Equipo (Modelo / Placa) *</label>
-                <select id="equipment_id" formControlName="equipment_id" class="form-select">
+                <label for="equipo_id">Equipo (Marca / Modelo / Placa) *</label>
+                <select id="equipo_id" formControlName="equipo_id" class="form-select">
                   <option value="">Seleccione un equipo</option>
                   <option *ngFor="let eq of equipmentList" [value]="eq.id">
-                    {{ eq.model }} / {{ eq.placa || 'Sin Placa' }} ({{ eq.code }})
+                    {{ eq.marca }} {{ eq.modelo }} / {{ eq.placa || 'Sin Placa' }} ({{
+                      eq.codigo_equipo
+                    }})
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('equipment_id')">Equipo es requerido</div>
+                <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
               </div>
 
               <div class="form-group">
@@ -111,11 +113,10 @@ import { Provider } from '../../core/models/provider.model';
               <div class="form-group">
                 <label for="estado">Estado *</label>
                 <select id="estado" formControlName="estado" class="form-select">
-                  <option value="active">Activo</option>
-                  <option value="draft">Borrador</option>
-                  <option value="expired">Vencido</option>
-                  <option value="extended">Extendido</option>
-                  <option value="cancelled">Cancelado</option>
+                  <option value="ACTIVO">Activo</option>
+                  <option value="PENDIENTE">Pendiente</option>
+                  <option value="COMPLETADO">Completado</option>
+                  <option value="CANCELADO">Cancelado</option>
                 </select>
               </div>
             </div>
@@ -169,10 +170,9 @@ import { Provider } from '../../core/models/provider.model';
               <div class="form-group">
                 <label for="tipo_tarifa">Tipo de Tarifa *</label>
                 <select id="tipo_tarifa" formControlName="tipo_tarifa" class="form-select">
-                  <option value="hourly">Por Hora</option>
-                  <option value="daily">Por Día</option>
-                  <option value="monthly">Mensual</option>
-                  <option value="fixed">Fijo</option>
+                  <option value="POR_HORA">Por Hora</option>
+                  <option value="POR_DIA">Por Día</option>
+                  <option value="FIJO">Fijo</option>
                 </select>
               </div>
 
@@ -189,12 +189,12 @@ import { Provider } from '../../core/models/provider.model';
               </div>
 
               <div class="form-group">
-                <label for="horas_minimas">Horas Mínimas</label>
+                <label for="horas_incluidas">Horas Incluidas</label>
                 <input
-                  id="horas_minimas"
+                  id="horas_incluidas"
                   type="number"
-                  formControlName="horas_minimas"
-                  class="form-control"
+                  formControlName="horas_incluidas"
+                  class="form-input"
                   placeholder="0"
                 />
               </div>
@@ -500,18 +500,18 @@ export class ContractFormComponent implements OnInit {
       {
         numero_contrato: ['', Validators.required],
         fecha_contrato: [new Date().toISOString().split('T')[0], Validators.required],
-        equipment_id: ['', Validators.required],
-        provider_id: ['', Validators.required],
+        equipo_id: ['', Validators.required],
+        proveedor_id: ['', Validators.required],
         modalidad: ['', Validators.required],
         fecha_inicio: ['', Validators.required],
         fecha_fin: ['', Validators.required],
         moneda: ['PEN', Validators.required],
-        tipo_tarifa: ['hourly', Validators.required],
-        tarifa: [0, [Validators.required, Validators.min(0)]],
-        horas_minimas: [0],
-        penalidad_exceso: [0],
+        tipo_tarifa: ['POR_HORA', Validators.required],
+        tarifa: ['', [Validators.required]],
+        horas_incluidas: [0],
+        penalidad_exceso: [''],
         condiciones_especiales: [''],
-        estado: ['active', Validators.required],
+        estado: ['ACTIVO', Validators.required],
       },
       { validators: this.dateRangeValidator }
     );

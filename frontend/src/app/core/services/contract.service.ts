@@ -14,8 +14,7 @@ export class ContractService {
 
   /**
    * Map backend DTO (Spanish snake_case) to frontend model
-   * Backend uses: equipo_id, proveedor_id, estado (ACTIVO/VENCIDO/CANCELADO/BORRADOR)
-   * Frontend uses: equipment_id, provider_id, estado (activo/proximo_vencer/vencido/extendido)
+   * Backend returns all Spanish fields directly
    */
   private mapBackendToFrontend(backendData: any): Contract {
     // Compute display fields
@@ -27,24 +26,27 @@ export class ContractService {
           : '';
 
     return {
-      ...backendData,
-      // Map Spanish to English field names where needed
-      equipment_id: backendData.equipo_id || backendData.equipment_id,
-      provider_id: backendData.proveedor_id || backendData.provider_id,
-      // Map estado values (backend uses UPPERCASE, frontend lowercase)
-      estado: this.mapEstadoBackendToFrontend(backendData.estado),
-      // Keep all Spanish field names as-is
-      id: backendData.id?.toString(),
+      // Core fields from API (Spanish snake_case)
+      id: backendData.id,
+      legacy_id: backendData.legacy_id,
       numero_contrato: backendData.numero_contrato,
+      equipo_id: backendData.equipo_id,
+      equipo_codigo: backendData.equipo_codigo,
+      equipo_marca: backendData.equipo_marca,
+      equipo_modelo: backendData.equipo_modelo,
+      equipo_placa: backendData.equipo_placa,
+      proveedor_id: backendData.proveedor_id,
+      tipo: backendData.tipo,
+      contrato_padre_id: backendData.contrato_padre_id,
       fecha_contrato: backendData.fecha_contrato,
       fecha_inicio: backendData.fecha_inicio,
       fecha_fin: backendData.fecha_fin,
-      start_date: backendData.fecha_inicio, // Alias for templates
-      end_date: backendData.fecha_fin, // Alias for templates
-      status: this.mapEstadoBackendToFrontend(backendData.estado), // Alias for status badge
+      duracion_dias: backendData.duracion_dias,
       moneda: backendData.moneda,
       tipo_tarifa: backendData.tipo_tarifa,
-      tarifa: backendData.tarifa ? parseFloat(backendData.tarifa) : 0,
+      tarifa: backendData.tarifa,
+      modalidad: backendData.modalidad,
+      minimo_por: backendData.minimo_por,
       incluye_motor: backendData.incluye_motor,
       incluye_operador: backendData.incluye_operador,
       costo_adicional_motor: backendData.costo_adicional_motor,
@@ -52,15 +54,21 @@ export class ContractService {
       penalidad_exceso: backendData.penalidad_exceso,
       condiciones_especiales: backendData.condiciones_especiales,
       documento_url: backendData.documento_url,
+      estado: backendData.estado,
       created_at: backendData.created_at,
       updated_at: backendData.updated_at,
-      // Computed display fields for table
-      code: backendData.numero_contrato || backendData.equipo_codigo || backendData.code,
+      creado_por: backendData.creado_por,
+
+      // Computed display fields for table compatibility
+      code: backendData.numero_contrato || backendData.equipo_codigo,
       provider_name: backendData.proveedor_razon_social || '',
       equipment_info: equipmentInfo,
       project_name: backendData.project_name,
       client_name: backendData.client_name,
-    } as Contract;
+      start_date: backendData.fecha_inicio,
+      end_date: backendData.fecha_fin,
+      status: this.mapEstadoBackendToFrontend(backendData.estado),
+    } as any;
   }
 
   /**
@@ -69,17 +77,20 @@ export class ContractService {
   private mapFrontendToBackend(frontendData: any): any {
     return {
       ...frontendData,
-      // Map English to Spanish field names
-      equipo_id: frontendData.equipo_id || frontendData.equipment_id,
-      proveedor_id: frontendData.proveedor_id || frontendData.provider_id,
-      // Map estado values (frontend lowercase, backend UPPERCASE)
+      // Ensure Spanish field names are used
+      equipo_id: frontendData.equipo_id,
+      proveedor_id: frontendData.proveedor_id,
+      // Map estado values (keep uppercase for backend)
       estado: this.mapEstadoFrontendToBackend(frontendData.estado),
-      // Remove frontend-only fields
-      equipment_id: undefined,
-      provider_id: undefined,
+      // Remove computed display fields
       code: undefined,
+      provider_name: undefined,
+      equipment_info: undefined,
       project_name: undefined,
       client_name: undefined,
+      start_date: undefined,
+      end_date: undefined,
+      status: undefined,
     };
   }
 

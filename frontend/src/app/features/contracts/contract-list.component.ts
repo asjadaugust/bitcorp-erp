@@ -35,7 +35,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
-    ActionsContainerComponent
+    ActionsContainerComponent,
   ],
   template: `
     <app-page-layout
@@ -325,8 +325,9 @@ export class ContractListComponent implements OnInit {
 
     const exportData = this.contracts.map((contract) => ({
       'Número Contrato': contract.numero_contrato || '',
-      'Equipo ID': contract.equipment_id || '',
-      'Proveedor ID': contract.provider_id || '',
+      'Equipo ID': contract.equipo_id || '',
+      'Equipo Código': contract.equipo_codigo || '',
+      'Proveedor ID': contract.proveedor_id || '',
       'Fecha Inicio': contract.fecha_inicio
         ? new Date(contract.fecha_inicio).toLocaleDateString('es-PE')
         : '',
@@ -334,7 +335,7 @@ export class ContractListComponent implements OnInit {
         ? new Date(contract.fecha_fin).toLocaleDateString('es-PE')
         : '',
       'Duración (días)': contract.duracion_dias || 0,
-      Tarifa: contract.tarifa ? `${contract.moneda} ${contract.tarifa.toFixed(2)}` : '',
+      Tarifa: contract.tarifa ? `${contract.moneda} ${contract.tarifa}` : '',
       'Tipo Tarifa': contract.tipo_tarifa || '',
       Moneda: contract.moneda || 'PEN',
       Estado: contract.estado || '',
@@ -358,8 +359,9 @@ export class ContractListComponent implements OnInit {
 
     const exportData = this.contracts.map((contract) => ({
       'Número Contrato': contract.numero_contrato || '',
-      'Equipo ID': contract.equipment_id || '',
-      'Proveedor ID': contract.provider_id || '',
+      'Equipo ID': contract.equipo_id || '',
+      'Equipo Código': contract.equipo_codigo || '',
+      'Proveedor ID': contract.proveedor_id || '',
       'Fecha Inicio': contract.fecha_inicio
         ? new Date(contract.fecha_inicio).toLocaleDateString('es-PE')
         : '',
@@ -367,7 +369,7 @@ export class ContractListComponent implements OnInit {
         ? new Date(contract.fecha_fin).toLocaleDateString('es-PE')
         : '',
       'Duración (días)': contract.duracion_dias || 0,
-      Tarifa: contract.tarifa ? `${contract.moneda} ${contract.tarifa.toFixed(2)}` : '',
+      Tarifa: contract.tarifa ? `${contract.moneda} ${contract.tarifa}` : '',
       'Tipo Tarifa': contract.tipo_tarifa || '',
       Moneda: contract.moneda || 'PEN',
       Estado: contract.estado || '',
