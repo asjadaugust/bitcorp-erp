@@ -22,6 +22,7 @@ This directory contains SQL migration scripts for the BitCorp ERP database schem
 | `004_seed_additional_equipment.sql`     | 1.0     | Additional construction equipment across all categories          | ✅ Applied |
 | `005_seed_additional_contracts.sql`     | 1.0     | Comprehensive equipment contracts with various pricing models    | ✅ Applied |
 | `006_seed_additional_daily_reports.sql` | 1.0     | Comprehensive daily reports (partes diarios) for usage tracking  | ✅ Applied |
+| `007_seed_january_2026_valuations.sql`  | 1.0     | Monthly valuations for January 2026 based on daily reports       | ✅ Applied |
 | `012_add_user_project_assignments.sql`  | N/A     | User-project assignments (WIP - not applied)                     | ⏸️ Pending |
 
 ---
@@ -817,12 +818,240 @@ SELECT COUNT(*) FROM proveedores.proveedor WHERE is_active = true;
 
 ---
 
+## Migration 007: January 2026 Monthly Valuations Seed Data
+
+**Date**: 2026-01-18  
+**Purpose**: Create monthly valuation records (valorizaciones) for January 2026 based on daily reports (partes diarios)
+
+### Valuations Added (16 new valuations)
+
+#### Valuation Distribution Overview
+
+```sql
+Total Valuations: 19 (3 existing + 16 new)
+Period: January 2026 ('2026-01')
+Equipment Coverage: 16/18 contracted equipment (88.89%)
+
+Valuations by Status:
+├── APROBADO (Approved): 12 valuations (75.00%)
+├── PENDIENTE (Pending): 3 valuations (18.75%)
+└── EN_REVISION (Under Review): 1 valuation (6.25%)
+
+Valuations by Contract Type:
+├── Hourly (POR_HORA): 10 valuations
+├── Monthly Flat Rate (TARIFA_FIJA_MENSUAL): 5 valuations
+└── Daily Rate (POR_DIA): 1 valuation
+```
+
+#### Financial Summary
+
+| Metric                  | Value        | Details                                |
+| ----------------------- | ------------ | -------------------------------------- |
+| **Total Hours Worked**  | 477.00 hours | Across 16 equipment items              |
+| **Total Fuel Consumed** | 2,553.50 L   | Diesel fuel for equipment operations   |
+| **Base Cost**           | PEN 307,030  | Equipment rental charges               |
+| **Fuel Cost**           | PEN 38,303   | Fuel reimbursement @ PEN 15/liter      |
+| **Total Valorized**     | PEN 345,333  | Base + Fuel costs                      |
+| **IGV (18%)**           | PEN 62,160   | Peruvian sales tax                     |
+| **Total with Tax**      | PEN 407,492  | Final billable amount for January 2026 |
+
+#### Valuations by Equipment
+
+| Equipment Code | Valuation Number | Contract Type | Hours | Total Cost | Status      |
+| -------------- | ---------------- | ------------- | ----- | ---------- | ----------- |
+| EXC-001        | VAL-2026-01-001  | Hourly        | 28.5  | 12,923     | APROBADO    |
+| TRA-001        | VAL-2026-01-002  | Hourly        | 21.5  | 10,725     | APROBADO    |
+| EXC-002        | VAL-2026-01-003  | Hourly        | 38.5  | 13,645     | APROBADO    |
+| EXC-003        | VAL-2026-01-004  | Hourly        | 30.5  | 8,938      | APROBADO    |
+| EXC-006        | VAL-2026-01-005  | Hourly        | 37.5  | 14,220     | APROBADO    |
+| CAR-001        | VAL-2026-01-006  | Hourly        | 31.5  | 10,665     | PENDIENTE   |
+| CAR-003        | VAL-2026-01-007  | Hourly        | 31.0  | 10,060     | APROBADO    |
+| TRA-002        | VAL-2026-01-008  | Hourly        | 31.5  | 12,720     | APROBADO    |
+| COM-001        | VAL-2026-01-009  | Hourly        | 29.5  | 7,005      | APROBADO    |
+| VOL-001        | VAL-2026-01-010  | Monthly       | 8.0   | 9,520      | APROBADO    |
+| EXC-004        | VAL-2026-01-011  | Monthly       | 37.5  | 47,753     | APROBADO    |
+| CAR-002        | VAL-2026-01-012  | Monthly       | 28.5  | 40,250     | PENDIENTE   |
+| VOL-003        | VAL-2026-01-013  | Monthly       | 30.0  | 35,270     | APROBADO    |
+| TRA-003        | VAL-2026-01-014  | Monthly       | 30.5  | 54,670     | APROBADO    |
+| MOT-001        | VAL-2026-01-015  | Monthly       | 31.0  | 50,100     | EN_REVISION |
+| VOL-002        | VAL-2026-01-016  | Daily         | 31.5  | 6,870      | PENDIENTE   |
+
+#### Daily Reports Linkage
+
+- **Total Daily Reports**: 79 reports
+- **Linked to Valuations**: 48 reports (60.76%)
+- **Unlinked**: 31 reports (39.24%)
+  - 27 reports from December 2025 (no valuations yet)
+  - 4 reports from equipment without January valuations
+
+### Cost Calculation Logic
+
+#### Hourly Contracts (POR_HORA)
+
+```
+Formula: hours_worked × hourly_rate
+Example (EXC-001): 28.5 hours × PEN 380/hour = PEN 10,830
+Fuel: 139.5 liters × PEN 15/liter = PEN 2,093
+Total: PEN 12,923
+```
+
+#### Monthly Flat Rate (TARIFA_FIJA_MENSUAL)
+
+```
+Formula: monthly_flat_rate (regardless of hours if within limit)
+Example (EXC-004): PEN 45,000/month (200 hours included)
+  Actual hours: 37.5 (within limit)
+  Base cost: PEN 45,000
+  Fuel: 183.5 liters × PEN 15/liter = PEN 2,753
+  Total: PEN 47,753
+```
+
+#### Daily Rate (POR_DIA)
+
+```
+Formula: days_worked × daily_rate
+Example (VOL-002): 3 days × PEN 1,200/day = PEN 3,600
+Fuel: 218 liters × PEN 15/liter = PEN 3,270
+Total: PEN 6,870
+```
+
+### How to Apply Migration 007
+
+```bash
+# Apply migration
+docker exec -i bitcorp-postgres-dev psql -U bitcorp -d bitcorp_dev < database/007_seed_january_2026_valuations.sql
+
+# Verify application
+docker exec bitcorp-postgres-dev psql -U bitcorp -d bitcorp_dev -c "SELECT COUNT(*) FROM equipo.valorizacion_equipo WHERE periodo = '2026-01';"
+# Expected: 16
+```
+
+### Verification Queries
+
+#### Count Valuations
+
+```sql
+-- Total valuations
+SELECT COUNT(*) as total_valuations FROM equipo.valorizacion_equipo;
+-- Expected: 19 (3 existing + 16 new)
+
+-- January 2026 only
+SELECT COUNT(*) as january_valuations
+FROM equipo.valorizacion_equipo
+WHERE periodo = '2026-01';
+-- Expected: 16
+```
+
+#### Valuation Status Distribution
+
+```sql
+SELECT estado, COUNT(*) as count
+FROM equipo.valorizacion_equipo
+WHERE periodo = '2026-01'
+GROUP BY estado
+ORDER BY estado;
+
+-- Expected Results:
+-- APROBADO: 12
+-- EN_REVISION: 1
+-- PENDIENTE: 3
+```
+
+#### Financial Totals
+
+```sql
+SELECT
+  periodo,
+  COUNT(DISTINCT equipo_id) as equipment_count,
+  ROUND(SUM(horas_trabajadas), 2) as total_hours,
+  ROUND(SUM(combustible_consumido), 2) as total_fuel,
+  TO_CHAR(SUM(costo_base), 'FM999,999,999.00') as total_base_cost,
+  TO_CHAR(SUM(costo_combustible), 'FM999,999.00') as total_fuel_cost,
+  TO_CHAR(SUM(total_valorizado), 'FM999,999,999.00') as total_valorized,
+  TO_CHAR(SUM(total_con_igv), 'FM999,999,999.00') as total_with_tax
+FROM equipo.valorizacion_equipo
+WHERE periodo = '2026-01'
+GROUP BY periodo;
+
+-- Expected: 16 equipment, 477 hours, 2,554 liters fuel
+--           PEN 307,030 base cost, PEN 345,333 total
+```
+
+#### Daily Reports Linkage
+
+```sql
+SELECT
+  COUNT(*) as total_reports,
+  COUNT(valorizacion_id) as linked_reports,
+  COUNT(*) - COUNT(valorizacion_id) as unlinked_reports
+FROM equipo.parte_diario;
+
+-- Expected: 79 total, 48 linked, 31 unlinked
+```
+
+#### Equipment Valuation Details
+
+```sql
+SELECT
+  e.codigo_equipo,
+  v.numero_valorizacion,
+  v.horas_trabajadas,
+  TO_CHAR(v.total_valorizado, 'FM999,999.00') as total_valorizado,
+  v.estado
+FROM equipo.equipo e
+JOIN equipo.valorizacion_equipo v ON e.id = v.equipo_id
+WHERE v.periodo = '2026-01'
+ORDER BY e.codigo_equipo;
+```
+
+### Rollback Instructions
+
+```sql
+-- Remove valuation links from daily reports
+UPDATE equipo.parte_diario
+SET valorizacion_id = NULL
+WHERE valorizacion_id IN (
+  SELECT id FROM equipo.valorizacion_equipo WHERE periodo = '2026-01'
+);
+
+-- Delete January 2026 valuations
+DELETE FROM equipo.valorizacion_equipo WHERE periodo = '2026-01';
+
+-- Verify rollback
+SELECT COUNT(*) FROM equipo.valorizacion_equipo WHERE periodo = '2026-01';
+-- Expected: 0
+```
+
+### Impact on Business Operations
+
+With January 2026 valuations added, the system can now:
+
+1. **Monthly Billing**: Generate invoices for clients based on equipment usage
+2. **Cost Analysis**: Track actual costs vs contracted rates
+3. **Profit Margins**: Calculate profitability per equipment and contract
+4. **Cash Flow**: Project monthly revenue from active contracts
+5. **Financial Reports**:
+   - Equipment utilization rates
+   - Revenue by equipment category
+   - Cost per hour/day comparisons
+6. **Approval Workflow**: Test supervisor/finance approval processes
+7. **Payment Tracking**: Monitor payment status per valuation
+
+### Notes
+
+- **Fuel Cost Assumption**: PEN 15/liter (market rate as of January 2026)
+- **Exchange Rate**: USD 1 = PEN 3.75 (for contracts in dollars)
+- **IGV Rate**: 18% (Peruvian sales tax)
+- **Partial Month Handling**: Monthly contracts charge full rate even for partial usage (contract terms)
+- **Equipment Not Valuated**: 2 equipment items (EXC-005, GRA-001) have no January reports yet
+
+---
+
 ## Next Migrations (Planned)
 
-- `006_seed_additional_daily_reports.sql` - Comprehensive daily reports (partes diarios)
-- `007_seed_additional_operators.sql` - Operator certifications and licenses
-- `008_add_equipment_maintenance_history.sql` - Maintenance records and schedules
-- `009_add_audit_triggers.sql` - Automatic audit logging for sensitive tables
+- `008_seed_additional_operators.sql` - Operator certifications and licenses
+- `009_add_equipment_maintenance_history.sql` - Maintenance records and schedules
+- `010_add_audit_triggers.sql` - Automatic audit logging for sensitive tables
 
 ---
 
@@ -831,5 +1060,5 @@ SELECT COUNT(*) FROM proveedores.proveedor WHERE is_active = true;
 For migration issues or questions, contact the development team.
 
 **Last Updated**: 2026-01-18  
-**Migration Version**: 005  
+**Migration Version**: 007  
 **Status**: ✅ All migrations applied successfully

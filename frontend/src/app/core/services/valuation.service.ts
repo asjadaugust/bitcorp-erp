@@ -105,6 +105,12 @@ export class ValuationService {
     if (filters.status) params = params.set('status', filters.status);
     if (filters.contract_id) params = params.set('contract_id', filters.contract_id);
 
+    // DEFAULT LIMIT: Set limit to 100 if not specified to avoid pagination issues
+    // This ensures list views and dropdowns show all valuations by default
+    if (!filters.limit) {
+      params = params.set('limit', '100');
+    }
+
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map((response) => {
         // Handle paginated response from backend
