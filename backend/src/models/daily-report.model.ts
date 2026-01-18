@@ -18,6 +18,26 @@ import { Repository } from 'typeorm';
  * - Maintains backward compatibility with legacy DailyReportRawRow interface
  */
 
+/**
+ * Helper function to convert Date or string to YYYY-MM-DD format
+ * Handles both Date objects and ISO string inputs from TypeORM
+ */
+function toDateString(date: Date | string | null | undefined): string | null {
+  if (!date) return null;
+  if (typeof date === 'string') return date.split('T')[0];
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Helper function to convert Date or string to ISO string format
+ * Handles both Date objects and ISO string inputs from TypeORM
+ */
+function toISOString(date: Date | string | null | undefined): string | null {
+  if (!date) return null;
+  if (typeof date === 'string') return date;
+  return date.toISOString();
+}
+
 export class DailyReportModel {
   private static getRepository(): Repository<DailyReport> {
     return AppDataSource.getRepository(DailyReport);
@@ -46,7 +66,7 @@ export class DailyReportModel {
         'dr',
         // Computed fields for backward compatibility
         "o.nombres || ' ' || o.apellidoPaterno || ' ' || COALESCE(o.apellidoMaterno, '') as trabajador_nombre",
-        'e.codigoEquipo as equipo_codigo',
+        'e.codigo_equipo as equipo_codigo',
         "e.marca || ' ' || e.modelo as equipo_nombre",
         'p.nombre as proyecto_nombre',
       ]);
@@ -275,7 +295,7 @@ export class DailyReportModel {
       trabajador_id: entity.trabajadorId || null,
       proyecto_id: entity.proyectoId || null,
       valorizacion_id: entity.valorizacionId || null,
-      fecha: entity.fecha.toISOString().split('T')[0], // Convert Date to 'YYYY-MM-DD' string
+      fecha: toDateString(entity.fecha)!, // Convert Date to 'YYYY-MM-DD' string
       hora_inicio: entity.horaInicio || null,
       hora_fin: entity.horaFin || null,
       horas_trabajadas: entity.horasTrabajadas || null,
@@ -293,9 +313,9 @@ export class DailyReportModel {
       lugar_llegada: entity.lugarLlegada || null,
       creado_por: entity.creadoPor || null,
       aprobado_por: entity.aprobadoPor || null,
-      aprobado_en: entity.aprobadoEn?.toISOString() || null,
-      created_at: entity.createdAt.toISOString(),
-      updated_at: entity.updatedAt.toISOString(),
+      aprobado_en: toISOString(entity.aprobadoEn),
+      created_at: toISOString(entity.createdAt)!,
+      updated_at: toISOString(entity.updatedAt)!,
       codigo: entity.codigo || null,
       empresa: entity.empresa || null,
       placa: entity.placa || null,
