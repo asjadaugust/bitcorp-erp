@@ -59,6 +59,7 @@ import { DailyReportOperationalDelay } from '../models/daily-report-operational-
 import { DailyReportOtherEvent } from '../models/daily-report-other-event.model';
 import { DailyReportMechanicalDelay } from '../models/daily-report-mechanical-delay.model';
 import { Company, UserProject } from '../models/company-entity.model';
+import { PaymentRecord } from '../models/payment-record.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -126,6 +127,8 @@ export const AppDataSource = new DataSource({
     // Tenant / Multi-tenancy entities (tables don't exist yet - see company-entity.model.ts)
     Company,
     UserProject,
+    // Payment records
+    PaymentRecord,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

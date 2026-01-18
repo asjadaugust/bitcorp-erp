@@ -30,6 +30,7 @@ import costCenterRoutes from './api/admin/cost-center.routes';
 import accountsPayableRoutes from './api/accounts-payable/accounts-payable.routes';
 import analyticsRoutes from './api/analytics';
 import testErrorRoutes from './api/test-errors/test-errors.routes';
+import paymentRoutes from './api/payments/payment-record.routes';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import { requestLogger } from './middleware/request-logger.middleware';
 import { setupProcessErrorHandlers } from './middleware/error-handler.middleware';
@@ -88,6 +89,7 @@ app.use('/api/checklists', checklistRoutes);
 app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/accounts-payable', accountsPayableRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Test error endpoints (development only)
 if (process.env.NODE_ENV !== 'production') {

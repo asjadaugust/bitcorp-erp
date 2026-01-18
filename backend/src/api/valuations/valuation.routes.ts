@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { ValuationController } from './valuation.controller';
+import { PaymentRecordController } from '../payments/payment-record.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
 import { validateDto } from '../../middleware/validation.middleware';
 import {
@@ -13,6 +14,7 @@ import { ROLES } from '../../types/roles';
 
 const router = Router();
 const controller = new ValuationController();
+const paymentController = new PaymentRecordController();
 
 router.use(authenticate);
 
@@ -79,5 +81,17 @@ router.post(
   controller.rejectValuation
 );
 router.post('/:id/mark-paid', authorize(ROLES.ADMIN), controller.markAsPaid);
+
+// Payment-related endpoints for valuations
+router.get(
+  '/:valuationId/payments',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  paymentController.findByValuation
+);
+router.get(
+  '/:valuationId/payment-summary',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  paymentController.getPaymentSummary
+);
 
 export default router;
