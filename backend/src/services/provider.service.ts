@@ -165,14 +165,14 @@ export class ProviderService {
     try {
       // Map frontend camelCase and Spanish snake_case to DTO format
       // Support both English camelCase and Spanish snake_case input
-      const providerData: Partial<ProviderDto> = {
-        ruc: data.ruc,
-        razon_social: data.razon_social || data.businessName,
-        nombre_comercial: data.nombre_comercial || data.tradeName || null,
-        tipo_proveedor: data.tipo_proveedor || data.providerType || null,
-        direccion: data.direccion || data.address || null,
-        telefono: data.telefono || data.phone || null,
-        email: data.email,
+      const providerData = {
+        ruc: data.ruc as string,
+        razon_social: (data.razon_social || data.businessName || '') as string,
+        nombre_comercial: (data.nombre_comercial || data.tradeName || null) as string | null,
+        tipo_proveedor: (data.tipo_proveedor || data.providerType || null) as string | null,
+        direccion: (data.direccion || data.address || null) as string | null,
+        telefono: (data.telefono || data.phone || null) as string | null,
+        correo_electronico: data.email as string,
         is_active: true,
       };
 
@@ -216,20 +216,28 @@ export class ProviderService {
 
       // Map frontend camelCase and Spanish snake_case to DTO format
       // Support both English camelCase and Spanish snake_case input
-      const updateData: Partial<ProviderDto> = {};
+      const updateData: {
+        ruc?: string;
+        razon_social?: string;
+        nombre_comercial?: string | null;
+        tipo_proveedor?: string | null;
+        direccion?: string | null;
+        telefono?: string | null;
+        correo_electronico?: string;
+      } = {};
 
-      if (data.ruc !== undefined) updateData.ruc = data.ruc;
+      if (data.ruc !== undefined) updateData.ruc = data.ruc as string;
       if (data.businessName !== undefined || data.razon_social !== undefined)
-        updateData.razon_social = data.razon_social || data.businessName;
+        updateData.razon_social = (data.razon_social || data.businessName) as string;
       if (data.tradeName !== undefined || data.nombre_comercial !== undefined)
-        updateData.nombre_comercial = data.nombre_comercial || data.tradeName;
+        updateData.nombre_comercial = (data.nombre_comercial || data.tradeName) as string | null;
       if (data.providerType !== undefined || data.tipo_proveedor !== undefined)
-        updateData.tipo_proveedor = data.tipo_proveedor || data.providerType;
+        updateData.tipo_proveedor = (data.tipo_proveedor || data.providerType) as string | null;
       if (data.address !== undefined || data.direccion !== undefined)
-        updateData.direccion = data.direccion || data.address;
+        updateData.direccion = (data.direccion || data.address) as string | null;
       if (data.phone !== undefined || data.telefono !== undefined)
-        updateData.telefono = data.telefono || data.phone;
-      if (data.email !== undefined) updateData.email = data.email;
+        updateData.telefono = (data.telefono || data.phone) as string | null;
+      if (data.email !== undefined) updateData.correo_electronico = data.email as string;
 
       // If updating RUC, check it doesn't exist for another provider
       if (updateData.ruc && updateData.ruc !== provider.ruc) {

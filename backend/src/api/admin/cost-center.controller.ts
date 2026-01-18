@@ -40,7 +40,7 @@ export class CostCenterController {
       const result = await costCenterService.findAll(filters);
 
       // Transform entities to DTOs (snake_case)
-      const dtos = toCostCenterListDtoArray(result.data);
+      const dtos = toCostCenterListDtoArray(result.data as unknown as Record<string, unknown>[]);
 
       sendPaginatedSuccess(res, dtos, {
         page,
@@ -157,7 +157,7 @@ export class CostCenterController {
       const costCenters = await costCenterService.findByProject(project_id);
 
       // Transform to DTOs (snake_case)
-      const dtos = toCostCenterListDtoArray(costCenters);
+      const dtos = toCostCenterListDtoArray(costCenters as unknown as Record<string, unknown>[]);
 
       sendSuccess(res, dtos);
     } catch (error: any) {

@@ -176,7 +176,7 @@ export function toCostCenterDetailDto(entity: Record<string, unknown>): CostCent
  * Transform array of entities to List DTOs
  */
 export function toCostCenterListDtoArray(entities: Record<string, unknown>[]): CostCenterListDto[] {
-  return entities.map((e) => toCostCenterListDto(e as Record<string, unknown>));
+  return entities.map((e) => toCostCenterListDto(e));
 }
 
 /**
