@@ -45,6 +45,18 @@ export class ProviderService {
     if (filters.search) params = params.set('search', filters.search);
     if (filters.status) params = params.set('status', filters.status);
 
+    // For dropdowns, request all providers (up to 100 max)
+    // This ensures dropdowns show all available options
+    if (!filters.limit) {
+      params = params.set('limit', '100');
+    } else {
+      params = params.set('limit', filters.limit.toString());
+    }
+
+    if (filters.page) {
+      params = params.set('page', filters.page.toString());
+    }
+
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map((response) => {
         // Handle paginated response format: { success: true, data: [], pagination: {...} }
