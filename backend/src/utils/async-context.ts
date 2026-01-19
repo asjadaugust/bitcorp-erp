@@ -7,6 +7,7 @@ export interface RequestContext {
   correlationId: string;
   userId?: number;
   username?: string;
+  tenantId?: number; // Tenant/Company ID for multi-tenancy
   path?: string;
   method?: string;
 }
@@ -52,6 +53,13 @@ class AsyncContext {
    */
   getUsername(): string | undefined {
     return this.getContext()?.username;
+  }
+
+  /**
+   * Get tenant ID from current context
+   */
+  getTenantId(): number | undefined {
+    return this.getContext()?.tenantId;
   }
 
   /**

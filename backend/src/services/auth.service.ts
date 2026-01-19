@@ -56,7 +56,7 @@ import {
  * User authentication follows this workflow:
  *
  * ```
- * 1. Find user by username
+ * 1. Find user by username (with roles and unidad_operativa)
  *    ↓
  * 2. Verify user exists (throw UnauthorizedError if not)
  *    ↓
@@ -66,7 +66,7 @@ import {
  *    ↓
  * 5. Update last_login timestamp
  *    ↓
- * 6. Generate JWT tokens (access + refresh)
+ * 6. Generate JWT tokens with tenant context (id_empresa, codigo_empresa)
  *    ↓
  * 7. Return AuthResponse with user data and tokens
  * ```
@@ -76,6 +76,7 @@ import {
  * - Password never returned in response
  * - Last login tracked for security audit
  * - Roles included in JWT payload for authorization
+ * - Tenant context (id_empresa, codigo_empresa) included for multi-tenancy
  *
  * ### 3. Token Refresh
  *
@@ -137,17 +138,18 @@ import {
  * **Entity**: `User` (table: `sistema.usuario`)
  *
  * Key fields:
- * - `username`: Unique username (nombre_usuario in DB)
- * - `password_hash`: Bcrypt hashed password (contrasena in DB)
- * - `email`: Unique email (correo_electronico in DB)
- * - `first_name`: User first name (nombres in DB)
- * - `last_name`: User last name (apellidos in DB)
- * - `last_login`: Last login timestamp (ultimo_acceso in DB)
- * - `is_active`: Account status (activo in DB)
- * - `roles`: Many-to-many relationship with Role entity
- * - `unidadOperativa`: User's operational unit (optional)
- *
- * **Virtual Field**:
+ * - `username`: Unique username
+ * - `password_hash`: Bcrypt-hashed password
+ * - `email`: Unique email address
+ * - `first_name`: User's first name
+ * - `last_name`: User's last name
+ * - `rolId`: Primary role ID (foreign key to sistema.rol)
+ * - `unidadOperativaId`: Operational unit ID (tenant/company context)
+ * - `rol`: Many-to-one relationship with Role entity
+ * - `roles`: Many-to-many relationship with Role entity (multiple roles)
+ * - `unidadOperativa`: Many-to-one relationship with UnidadOperativa entity
+ * - `last_login`: Last login timestamp
+ * - `is_active`: Account active status
  * - `full_name`: Computed from first_name + last_name
  *
  * ## Role Model (sistema schema)
@@ -155,26 +157,40 @@ import {
  * **Entity**: `Role` (table: `sistema.rol`)
  *
  * Key fields:
- * - `code`: Role code (e.g., 'admin', 'operador', 'director')
+ * - `code`: Role code (e.g., 'ADMIN', 'OPERADOR', 'DIRECTOR')
  * - `name`: Role display name
  * - `users`: Many-to-many relationship with User entity
  *
- * **Default Role**: New users are assigned 'operador' role
+ * **Default Role**: New users are assigned 'OPERADOR' role
  *
  * ## Multi-Tenancy Context
  *
- * **Special Case**: Authentication operates on the **sistema schema**, not tenant-scoped.
+ * **Current Architecture**: Single database with tenant isolation via `unidad_operativa`
  *
- * - Users are stored in `sistema.usuario` (global user table)
- * - Users can belong to multiple companies/tenants (via unidad_operativa)
- * - Authentication does NOT filter by tenant_id
- * - Authorization (role checks) happens in controllers/middleware
- * - User's operational unit (unidad_operativa) determines company access
+ * - Users are stored in `sistema.usuario` (single table for all tenants)
+ * - Each user belongs to ONE operational unit (unidad_operativa) which serves as tenant/company
+ * - Authentication operates on `sistema` schema (not tenant-scoped at DB level)
+ * - Authorization and data filtering happens at application layer via `unidad_operativa_id`
+ * - JWT tokens include tenant context (`id_empresa`, `codigo_empresa`) for controllers
+ *
+ * **JWT Token Structure** (Multi-Tenant):
+ * ```typescript
+ * {
+ *   id_usuario: number,       // User ID
+ *   id_empresa: number,       // Tenant ID (unidad_operativa_id)
+ *   codigo_empresa: string,   // Tenant code (unidad_operativa.codigo)
+ *   username: string,         // Username
+ *   email: string,            // Email
+ *   rol: string,              // Primary role code
+ *   nombre_completo: string,  // Full name
+ * }
+ * ```
  *
  * **Tenant Context in AuthResponse**:
  * - `unidad_operativa_id`: User's operational unit ID (tenant context)
  * - `unidad_operativa_nombre`: Operational unit name (for display)
  * - Frontend uses this to determine company context after login
+ * - Backend controllers extract `id_empresa` from JWT for tenant-aware queries
  *
  * ## Error Handling
  *
@@ -556,7 +572,7 @@ export class AuthService {
    *
    * **Workflow**:
    * 1. Verify refresh token signature and expiration
-   * 2. Extract userId from token payload
+   * 2. Extract id_usuario from token payload
    * 3. Find user by ID (with roles and operational unit)
    * 4. Verify user exists and is active
    * 5. Generate new JWT token pair
@@ -592,15 +608,15 @@ export class AuthService {
       // Verify refresh token
       const payload = SecurityUtil.verifyRefreshToken(refreshToken);
 
-      // Find user with roles
+      // Find user with roles (using new JWT payload structure)
       const user = await this.userRepository.findOne({
-        where: { id: parseInt(String(payload.userId)) },
+        where: { id: payload.id_usuario },
         relations: ['roles', 'unidadOperativa'],
       });
 
       if (!user || !user.is_active) {
         logger.warn('Token refresh failed - user not found or inactive', {
-          user_id: payload.userId,
+          user_id: payload.id_usuario,
           user_exists: !!user,
           is_active: user?.is_active,
         });
@@ -636,8 +652,14 @@ export class AuthService {
    * Private helper method that creates JWT tokens and formats the authentication response.
    * Extracts user data, role codes, and operational unit information.
    *
-   * **JWT Payload**:
-   * - userId: User ID (string)
+   * **JWT Payload Structure (Multi-Tenant)**:
+   * - id_usuario: User ID (number)
+   * - id_empresa: Company/Tenant ID (unidad_operativa_id)
+   * - codigo_empresa: Company/Tenant code (e.g., "UO-001")
+   * - username: Username (string)
+   * - email: Email address (string)
+   * - rol: Primary role code (string, first role in array)
+   * - nombre_completo: Full name (string)
    * - username: Username
    * - email: User email
    * - roles: Array of role codes (e.g., ['admin', 'operador'])
@@ -682,11 +704,16 @@ export class AuthService {
       roles: roleCodes,
     });
 
+    // Build JWT payload with tenant context (multi-tenancy support)
+    // NOTE: unidad_operativa serves as tenant/company in current architecture
     const payload: JwtPayload = {
-      userId: String(user.id),
+      id_usuario: user.id,
+      id_empresa: user.unidadOperativaId || 0, // Tenant ID (0 = no assignment)
+      codigo_empresa: user.unidadOperativa?.codigo || 'SISTEMA', // Tenant code
       username: user.username,
       email: user.email,
-      roles: roleCodes,
+      rol: roleCodes[0] || 'OPERADOR', // Primary role (first in array)
+      nombre_completo: user.full_name,
     };
 
     const authUser: AuthUserDto = {

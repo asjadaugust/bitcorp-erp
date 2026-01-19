@@ -23,8 +23,9 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
     // Add user context to AsyncLocalStorage for logging
     asyncContext.updateContext({
-      userId: parseInt(payload.userId),
+      userId: payload.id_usuario,
       username: payload.username,
+      tenantId: payload.id_empresa, // Add tenant context for multi-tenancy
     });
 
     next();
@@ -35,6 +36,9 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
 /**
  * Authorization middleware - checks if user has one of the allowed roles
+ *
+ * NOTE: JWT payload now contains single 'rol' field (not 'roles' array)
+ * This aligns with multi-tenant architecture where each user has ONE primary role
  *
  * @param allowedRoles - Array of Role constants that are allowed to access the endpoint
  *
@@ -50,25 +54,25 @@ export const authorize = (...allowedRoles: Role[]) => {
       return;
     }
 
-    // Check if roles exist and is an array
-    if (!req.user.roles || !Array.isArray(req.user.roles)) {
+    // Check if rol exists (new JWT structure has single rol field)
+    if (!req.user.rol) {
       res.status(403).json({
-        error: 'User roles not found in token',
+        error: 'User role not found in token',
         required: allowedRoles,
       });
       return;
     }
 
     // Case-insensitive role comparison for backward compatibility
-    const userRolesLower = req.user.roles.map((r) => r.toLowerCase());
+    const userRoleLower = req.user.rol.toLowerCase();
     const allowedRolesLower = allowedRoles.map((r) => r.toLowerCase());
-    const hasRole = userRolesLower.some((role) => allowedRolesLower.includes(role));
+    const hasRole = allowedRolesLower.includes(userRoleLower);
 
     if (!hasRole) {
       res.status(403).json({
         error: 'Insufficient permissions',
         required: allowedRoles,
-        current: req.user.roles,
+        current: req.user.rol,
       });
       return;
     }

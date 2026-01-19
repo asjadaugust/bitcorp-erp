@@ -16,8 +16,8 @@ export class PaymentScheduleController {
     try {
       const schedule = await paymentScheduleService.create(
         req.body,
-        Number(req.user!.userId),
-        1 // Default tenant
+        req.user!.id_usuario, // Use new JWT structure
+        req.user!.id_empresa // Use tenant from JWT (not hardcoded!)
       );
       sendCreated(res, (schedule as any).id, 'Cronograma de pagos creado exitosamente');
     } catch (error: any) {
