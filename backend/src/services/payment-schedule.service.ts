@@ -680,8 +680,8 @@ export class PaymentScheduleService {
         throw new ValidationError('Cannot add details to non-draft schedule', [
           {
             field: 'status',
-            message: 'Status must be DRAFT to add details',
             rule: 'statusCheck',
+            message: 'Status must be DRAFT to add details',
             value: schedule.status,
           },
         ]);
@@ -759,8 +759,8 @@ export class PaymentScheduleService {
         throw new ValidationError('Cannot remove details from non-draft schedule', [
           {
             field: 'status',
-            message: 'Status must be DRAFT to remove details',
             rule: 'statusCheck',
+            message: 'Status must be DRAFT to remove details',
             value: schedule.status,
           },
         ]);
@@ -841,8 +841,8 @@ export class PaymentScheduleService {
         throw new ValidationError('Only draft schedules can be approved', [
           {
             field: 'status',
-            message: 'Status must be DRAFT to approve',
             rule: 'statusCheck',
+            message: 'Status must be DRAFT to approve',
             value: schedule.status,
           },
         ]);
@@ -912,8 +912,8 @@ export class PaymentScheduleService {
         throw new ValidationError('Only approved schedules can be processed', [
           {
             field: 'status',
-            message: 'Status must be APPROVED to process',
             rule: 'statusCheck',
+            message: 'Status must be APPROVED to process',
             value: schedule.status,
           },
         ]);
@@ -984,8 +984,8 @@ export class PaymentScheduleService {
         throw new ValidationError('Processed schedules cannot be cancelled', [
           {
             field: 'status',
-            message: 'Processed schedules cannot be cancelled',
             rule: 'statusCheck',
+            message: 'Processed schedules cannot be cancelled',
             value: schedule.status,
           },
         ]);
