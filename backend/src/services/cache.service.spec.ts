@@ -48,6 +48,8 @@ interface MockRedisClient {
   flushDb: jest.Mock;
   quit: jest.Mock;
   on: jest.Mock;
+  info: jest.Mock;
+  dbSize: jest.Mock;
 }
 
 describe('CacheService', () => {
@@ -78,6 +80,8 @@ describe('CacheService', () => {
       flushDb: jest.fn().mockResolvedValue('OK'),
       quit: jest.fn().mockResolvedValue(undefined),
       on: jest.fn().mockReturnThis(), // Allow chaining
+      info: jest.fn().mockResolvedValue(''),
+      dbSize: jest.fn().mockResolvedValue(0),
     };
 
     // Mock createClient to return our mock client
@@ -670,6 +674,90 @@ describe('CacheService', () => {
       await cacheService.disconnect();
 
       expect(cacheService.isReady()).toBe(false);
+    });
+  });
+
+  describe('getStatus()', () => {
+    it('should return cache status when connected', async () => {
+      mockRedisClient.get.mockResolvedValue(null);
+      mockRedisClient.info.mockResolvedValue(
+        'redis_version:7.2.0\r\nused_memory_human:1.5M\r\nused_memory_peak_human:2.0M\r\nuptime_in_seconds:3600\r\n'
+      );
+      mockRedisClient.dbSize.mockResolvedValue(42);
+      mockRedisClient.scan.mockResolvedValue({
+        cursor: 0,
+        keys: ['dashboard:stats:1', 'dashboard:stats:2'],
+      });
+
+      await cacheService.get('test:key');
+
+      const status = await cacheService.getStatus();
+
+      expect(status).toEqual({
+        connected: true,
+        total_keys: 42,
+        dashboard_keys: 2,
+        memory_used: '1.5M',
+        memory_peak: '2.0M',
+        uptime_seconds: 3600,
+        redis_version: '7.2.0',
+      });
+
+      expect(mockRedisClient.info).toHaveBeenCalledWith('all');
+      expect(mockRedisClient.dbSize).toHaveBeenCalled();
+    });
+
+    it('should handle multiple SCAN iterations for dashboard keys', async () => {
+      mockRedisClient.get.mockResolvedValue(null);
+      mockRedisClient.info.mockResolvedValue('redis_version:7.2.0\r\n');
+      mockRedisClient.dbSize.mockResolvedValue(100);
+
+      // First SCAN returns cursor != 0 (more keys)
+      mockRedisClient.scan
+        .mockResolvedValueOnce({
+          cursor: 123,
+          keys: ['dashboard:stats:1', 'dashboard:stats:2'],
+        })
+        .mockResolvedValueOnce({
+          cursor: 0,
+          keys: ['dashboard:stats:3'],
+        });
+
+      await cacheService.get('test:key');
+
+      const status = await cacheService.getStatus();
+
+      expect(status.dashboard_keys).toBe(3);
+      expect(mockRedisClient.scan).toHaveBeenCalledTimes(2);
+    });
+
+    it('should return disconnected status when not connected', async () => {
+      const status = await cacheService.getStatus();
+
+      expect(status).toEqual({
+        connected: false,
+        total_keys: 0,
+        dashboard_keys: 0,
+        memory_used: '0B',
+        memory_peak: '0B',
+        uptime_seconds: 0,
+        redis_version: 'unknown',
+      });
+    });
+
+    it('should handle errors gracefully', async () => {
+      mockRedisClient.get.mockResolvedValue(null);
+      mockRedisClient.info.mockRejectedValue(new Error('INFO command failed'));
+
+      await cacheService.get('test:key');
+
+      const status = await cacheService.getStatus();
+
+      expect(status.connected).toBe(false);
+      expect(Logger.error).toHaveBeenCalledWith('Error getting cache status', {
+        error: 'INFO command failed',
+        context: 'CacheService.getStatus',
+      });
     });
   });
 

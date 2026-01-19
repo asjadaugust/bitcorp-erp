@@ -32,6 +32,7 @@ import analyticsRoutes from './api/analytics';
 import testErrorRoutes from './api/test-errors/test-errors.routes';
 import paymentRoutes from './api/payments/payment-record.routes';
 import cronRoutes from './api/cron/cron.routes';
+import cacheRoutes from './routes/cache.route';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import { requestLogger } from './middleware/request-logger.middleware';
 import { setupProcessErrorHandlers } from './middleware/error-handler.middleware';
@@ -95,6 +96,7 @@ app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/accounts-payable', accountsPayableRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/cache', cacheRoutes);
 
 // Cron job management endpoints (development/staging only)
 if (process.env.NODE_ENV !== 'production') {

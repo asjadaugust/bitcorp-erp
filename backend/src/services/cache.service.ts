@@ -419,6 +419,112 @@ export class CacheService {
   }
 
   /**
+   * Get cache status and metrics
+   * Returns connection status, key counts, and memory usage
+   *
+   * @returns Cache status information
+   *
+   * @example
+   * const status = await cacheService.getStatus();
+   * console.log(`Connected: ${status.connected}, Keys: ${status.total_keys}`);
+   */
+  async getStatus(): Promise<{
+    connected: boolean;
+    total_keys: number;
+    dashboard_keys: number;
+    memory_used: string;
+    memory_peak: string;
+    uptime_seconds: number;
+    redis_version: string;
+  }> {
+    try {
+      await this.connect();
+
+      if (!this.client || !this.isConnected) {
+        return {
+          connected: false,
+          total_keys: 0,
+          dashboard_keys: 0,
+          memory_used: '0B',
+          memory_peak: '0B',
+          uptime_seconds: 0,
+          redis_version: 'unknown',
+        };
+      }
+
+      // Get Redis INFO stats
+      const info = await this.client.info('all');
+      const lines = info.split('\r\n');
+
+      // Parse relevant metrics
+      let memoryUsed = '0B';
+      let memoryPeak = '0B';
+      let uptimeSeconds = 0;
+      let redisVersion = 'unknown';
+
+      for (const line of lines) {
+        if (line.startsWith('used_memory_human:')) {
+          memoryUsed = line.split(':')[1];
+        } else if (line.startsWith('used_memory_peak_human:')) {
+          memoryPeak = line.split(':')[1];
+        } else if (line.startsWith('uptime_in_seconds:')) {
+          uptimeSeconds = parseInt(line.split(':')[1]);
+        } else if (line.startsWith('redis_version:')) {
+          redisVersion = line.split(':')[1];
+        }
+      }
+
+      // Get total key count
+      const totalKeys = await this.client.dbSize();
+
+      // Get dashboard-specific key count
+      let dashboardKeys = 0;
+      let cursor = 0;
+      do {
+        const result = await this.client.scan(cursor, {
+          MATCH: 'dashboard:*',
+          COUNT: 100,
+        });
+        cursor = result.cursor;
+        dashboardKeys += result.keys.length;
+      } while (cursor !== 0);
+
+      Logger.debug('Cache status retrieved', {
+        connected: true,
+        total_keys: totalKeys,
+        dashboard_keys: dashboardKeys,
+        memory_used: memoryUsed,
+        context: 'CacheService.getStatus',
+      });
+
+      return {
+        connected: true,
+        total_keys: totalKeys,
+        dashboard_keys: dashboardKeys,
+        memory_used: memoryUsed,
+        memory_peak: memoryPeak,
+        uptime_seconds: uptimeSeconds,
+        redis_version: redisVersion,
+      };
+    } catch (error) {
+      Logger.error('Error getting cache status', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'CacheService.getStatus',
+      });
+
+      return {
+        connected: false,
+        total_keys: 0,
+        dashboard_keys: 0,
+        memory_used: '0B',
+        memory_peak: '0B',
+        uptime_seconds: 0,
+        redis_version: 'unknown',
+      };
+    }
+  }
+
+  /**
    * Disconnect from Redis
    * Call this on application shutdown
    */
