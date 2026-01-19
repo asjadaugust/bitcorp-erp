@@ -31,15 +31,20 @@ import accountsPayableRoutes from './api/accounts-payable/accounts-payable.route
 import analyticsRoutes from './api/analytics';
 import testErrorRoutes from './api/test-errors/test-errors.routes';
 import paymentRoutes from './api/payments/payment-record.routes';
+import cronRoutes from './api/cron/cron.routes';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import { requestLogger } from './middleware/request-logger.middleware';
 import { setupProcessErrorHandlers } from './middleware/error-handler.middleware';
 import Logger from './utils/logger';
 import { performanceMetrics } from './utils/performance-metrics.service';
 import { performanceConfig } from './config/performance.config';
+import { CronService } from './services/cron.service';
 
 // Setup process-level error handlers
 setupProcessErrorHandlers();
+
+// Global cron service instance for graceful shutdown
+let cronService: CronService | null = null;
 
 const app = express();
 const port = process.env.PORT || 3400;
@@ -90,6 +95,11 @@ app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/accounts-payable', accountsPayableRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/payments', paymentRoutes);
+
+// Cron job management endpoints (development/staging only)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/cron', cronRoutes);
+}
 
 // Test error endpoints (development only)
 if (process.env.NODE_ENV !== 'production') {
@@ -146,6 +156,28 @@ const startServer = async () => {
 
     // Note: To seed the database, run: npm run seed:typeorm
 
+    // Initialize cron jobs for automated notifications
+    Logger.info('Initializing cron jobs for automated notifications', {
+      context: 'Server.startup.cron',
+    });
+    try {
+      cronService = new CronService();
+      cronService.startAllJobs();
+      Logger.info('Cron jobs started successfully', {
+        jobs: ['maintenance-check', 'contract-expiration-check', 'certification-expiry-check'],
+        schedule: 'Daily at 8:00 AM (0 8 * * *)',
+        context: 'Server.startup.cron',
+      });
+    } catch (error) {
+      Logger.error('Failed to start cron jobs', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'Server.startup.cron',
+        note: 'Server will continue without automated notifications',
+      });
+      // Don't crash the server if cron jobs fail to start
+    }
+
     // Load routes
     Logger.info('Loading API routes', { context: 'Server.startup' });
     Logger.info('API routes loaded successfully', {
@@ -185,6 +217,20 @@ const shutdownHandler = (signal: string) => {
   Logger.info(`${signal} received, starting graceful shutdown`, {
     context: 'Server.shutdown',
   });
+
+  // Stop cron jobs to prevent new job executions
+  if (cronService) {
+    Logger.info('Stopping cron jobs', { context: 'Server.shutdown.cron' });
+    try {
+      cronService.stopAllJobs();
+      Logger.info('Cron jobs stopped successfully', { context: 'Server.shutdown.cron' });
+    } catch (error) {
+      Logger.error('Failed to stop cron jobs', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'Server.shutdown.cron',
+      });
+    }
+  }
 
   // Log final performance metrics
   performanceMetrics.shutdown();
