@@ -10,7 +10,13 @@ import {
 } from 'typeorm';
 import { User } from './user.model';
 
-export type EstadoValorizacion = 'PENDIENTE' | 'EN_REVISION' | 'APROBADO' | 'RECHAZADO' | 'PAGADO';
+export type EstadoValorizacion =
+  | 'PENDIENTE'
+  | 'EN_REVISION'
+  | 'APROBADO'
+  | 'RECHAZADO'
+  | 'PAGADO'
+  | 'ELIMINADO';
 
 @Entity('valorizacion_equipo', { schema: 'equipo' })
 export class Valorizacion {
