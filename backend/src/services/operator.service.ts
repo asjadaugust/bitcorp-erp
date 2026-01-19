@@ -12,8 +12,15 @@ import {
 } from '../types/dto/operator.dto';
 import Logger from '../utils/logger';
 import { NotFoundError, ConflictError } from '../errors/http.errors';
+import { DashboardService } from './dashboard.service';
 
 export class OperatorService {
+  private dashboardService: DashboardService;
+
+  constructor() {
+    this.dashboardService = new DashboardService();
+  }
+
   private get repository(): Repository<Trabajador> {
     if (!AppDataSource.isInitialized) {
       throw new Error('Database not initialized');
@@ -236,6 +243,14 @@ export class OperatorService {
         context: 'OperatorService.create',
       });
 
+      // Invalidate dashboard cache (operator count changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after operator create', {
+        tenantId,
+        id: saved.id,
+        context: 'OperatorService.create',
+      });
+
       return toOperatorDto(saved);
     } catch (error) {
       Logger.error('Error creating operator', {
@@ -281,6 +296,14 @@ export class OperatorService {
       const saved = await this.repository.save(trabajador);
 
       Logger.info('Operator updated successfully', {
+        tenantId,
+        id,
+        context: 'OperatorService.update',
+      });
+
+      // Invalidate dashboard cache (operator data changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after operator update', {
         tenantId,
         id,
         context: 'OperatorService.update',
@@ -336,6 +359,14 @@ export class OperatorService {
       }
 
       Logger.info('Operator deleted successfully', {
+        tenantId,
+        id,
+        context: 'OperatorService.delete',
+      });
+
+      // Invalidate dashboard cache (operator count changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after operator delete', {
         tenantId,
         id,
         context: 'OperatorService.delete',

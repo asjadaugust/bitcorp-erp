@@ -14,6 +14,7 @@ import {
   fromEquipmentDto,
 } from '../types/dto/equipment.dto';
 import { NotFoundError, ConflictError, DatabaseError, DatabaseErrorType } from '../errors';
+import { DashboardService } from './dashboard.service';
 
 // Input DTOs for create/update operations
 export interface CreateEquipmentDto {
@@ -212,9 +213,11 @@ export interface EquipmentFilter {
  */
 export class EquipmentService {
   private repository: Repository<Equipment>;
+  private dashboardService: DashboardService;
 
   constructor() {
     this.repository = AppDataSource.getRepository(Equipment);
+    this.dashboardService = new DashboardService();
   }
 
   /**
@@ -538,6 +541,13 @@ export class EquipmentService {
         context: 'EquipmentService.create',
       });
 
+      // Invalidate dashboard cache (equipment count changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after equipment create', {
+        id: saved.id,
+        context: 'EquipmentService.create',
+      });
+
       return toEquipmentDetailDto(withRelations);
     } catch (error) {
       if (error instanceof ConflictError || error instanceof NotFoundError) {
@@ -669,6 +679,13 @@ export class EquipmentService {
         context: 'EquipmentService.update',
       });
 
+      // Invalidate dashboard cache (equipment data changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after equipment update', {
+        id,
+        context: 'EquipmentService.update',
+      });
+
       return toEquipmentDetailDto(withRelations);
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ConflictError) {
@@ -713,6 +730,13 @@ export class EquipmentService {
       await this.repository.update(id, { is_active: false });
 
       Logger.info('Equipment soft deleted successfully', {
+        id,
+        context: 'EquipmentService.delete',
+      });
+
+      // Invalidate dashboard cache (equipment count changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after equipment delete', {
         id,
         context: 'EquipmentService.delete',
       });
@@ -774,6 +798,15 @@ export class EquipmentService {
       Logger.info('Equipment status updated successfully', {
         id,
         codigo_equipo: saved.codigo_equipo,
+        old_estado: oldEstado,
+        new_estado: estado,
+        context: 'EquipmentService.updateStatus',
+      });
+
+      // Invalidate dashboard cache (active equipment count may have changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after equipment status update', {
+        id,
         old_estado: oldEstado,
         new_estado: estado,
         context: 'EquipmentService.updateStatus',

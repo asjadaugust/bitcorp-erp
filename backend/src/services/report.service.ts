@@ -14,6 +14,7 @@ import { DailyReportFiltersDto } from '../types/dto/report.dto';
 import Logger from '../utils/logger';
 import { NotFoundError } from '../errors/http.errors';
 import { ValidationError } from '../errors/validation.error';
+import { DashboardService } from './dashboard.service';
 
 /**
  * ReportService
@@ -43,6 +44,12 @@ import { ValidationError } from '../errors/validation.error';
  * TODO: Remove tenant_id TODO comments once schema updated
  */
 export class ReportService {
+  private dashboardService: DashboardService;
+
+  constructor() {
+    this.dashboardService = new DashboardService();
+  }
+
   /**
    * Get all daily reports with optional filters and pagination
    *
@@ -317,6 +324,14 @@ export class ReportService {
         context: 'ReportService.createReport',
       });
 
+      // Invalidate dashboard cache (report count changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after report create', {
+        tenantId,
+        reportId: report.id,
+        context: 'ReportService.createReport',
+      });
+
       return report;
     } catch (error) {
       Logger.error('Error creating daily report', {
@@ -382,6 +397,14 @@ export class ReportService {
       const report = toDailyReportDto(updated);
 
       Logger.info('Daily report updated successfully', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.updateReport',
+      });
+
+      // Invalidate dashboard cache (report data changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after report update', {
         tenantId,
         reportId: id,
         context: 'ReportService.updateReport',
@@ -548,6 +571,14 @@ export class ReportService {
       }
 
       Logger.info('Daily report deleted successfully', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.deleteReport',
+      });
+
+      // Invalidate dashboard cache (report count changed)
+      await this.dashboardService.invalidateDashboardCache();
+      Logger.info('Dashboard cache invalidated after report delete', {
         tenantId,
         reportId: id,
         context: 'ReportService.deleteReport',
