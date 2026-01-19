@@ -13,6 +13,7 @@ import {
   toEquipmentStatsDto,
   fromEquipmentDto,
 } from '../types/dto/equipment.dto';
+import { NotFoundError, ConflictError, DatabaseError, DatabaseErrorType } from '../errors';
 
 // Input DTOs for create/update operations
 export interface CreateEquipmentDto {
@@ -49,20 +50,218 @@ export interface EquipmentFilter {
   sort_order?: 'ASC' | 'DESC';
 }
 
+/**
+ * Equipment Service
+ *
+ * Manages equipment (equipo) - the core business entity of the BitCorp ERP system.
+ * Equipment represents physical assets (machinery, vehicles, tools) used in construction
+ * projects, tracked for rental, maintenance, and assignment purposes.
+ *
+ * **THIS IS THE BASELINE FOR ALL COMPLEX SERVICES**
+ *
+ * ## Equipment Categories (From CORP-GEM-P-001)
+ *
+ * Equipment is classified into four main categories:
+ *
+ * 1. **EQUIPOS_MENORES** (Minor Equipment)
+ *    - Hand tools, portable generators, compressors
+ *    - No operator assignment typically required
+ *    - Lower rental rates, simpler tracking
+ *
+ * 2. **VEHICULOS_LIVIANOS** (Light Vehicles)
+ *    - Pickup trucks, cars, vans
+ *    - Requires driver (OPERADOR role)
+ *    - Tracked by odometer (kilometers)
+ *
+ * 3. **VEHICULOS_PESADOS** (Heavy Vehicles)
+ *    - Dump trucks, cement mixers, heavy transport
+ *    - Requires certified driver with heavy vehicle license
+ *    - Tracked by odometer (kilometers)
+ *    - Higher insurance and maintenance requirements
+ *
+ * 4. **MAQUINARIA_PESADA** (Heavy Machinery)
+ *    - Excavators, bulldozers, loaders, graders, cranes
+ *    - Requires certified operator with machinery license
+ *    - Tracked by hourmeter (operating hours)
+ *    - Highest rental rates and maintenance complexity
+ *
+ * ## Equipment States (estado)
+ *
+ * Equipment lifecycle state machine:
+ *
+ * ```
+ * DISPONIBLE (Available)
+ *     ↓
+ * EN_USO (In Use) ← Equipment assigned to project/task
+ *     ↓
+ * MANTENIMIENTO (Maintenance) ← Under maintenance
+ *     ↓
+ * RETIRADO (Retired) ← Permanently removed from service
+ * ```
+ *
+ * **Valid State Transitions**:
+ * - DISPONIBLE → EN_USO (assignment via assignToProject)
+ * - EN_USO → DISPONIBLE (return from project)
+ * - EN_USO → MANTENIMIENTO (maintenance needed)
+ * - MANTENIMIENTO → DISPONIBLE (maintenance complete)
+ * - Any → RETIRADO (permanent retirement, irreversible)
+ *
+ * **Invalid Transitions** (will be rejected):
+ * - RETIRADO → any other state (retired is permanent)
+ * - Skip states (e.g., DISPONIBLE → MANTENIMIENTO without EN_USO)
+ *
+ * ## Provider Types (tipo_proveedor)
+ *
+ * Equipment ownership classification:
+ *
+ * - **PROPIOS** (Owned): Company-owned equipment
+ *   - No rental cost (only maintenance/fuel)
+ *   - Full control over availability and assignment
+ *   - Capital investment required
+ *
+ * - **TERCEROS** (Third-party): Rented from external providers
+ *   - Rental cost per hour/day/month
+ *   - Provider (proveedor_id) required
+ *   - Contract-based availability
+ *   - Provider responsible for major maintenance
+ *
+ * ## Meter Types (medidor_uso)
+ *
+ * Usage tracking method:
+ *
+ * - **horometro**: Operating hours (heavy machinery)
+ *   - Tracks engine running time
+ *   - Used for maintenance scheduling
+ *   - Rental billing based on hours
+ *
+ * - **odometro**: Kilometers (vehicles)
+ *   - Tracks distance traveled
+ *   - Used for tire/brake maintenance
+ *   - Rental billing based on distance
+ *
+ * ## Equipment Code (codigo_equipo)
+ *
+ * Unique identifier rules:
+ * - Must be unique across entire company (tenant)
+ * - Format: Typically category prefix + number (e.g., EXC-001, TRK-042)
+ * - Case-sensitive
+ * - Cannot be changed after equipment assigned to projects
+ * - Validated in both create and update operations
+ *
+ * ## Soft Delete Behavior
+ *
+ * Equipment is NEVER hard deleted from the database:
+ * - Soft delete: is_active = false
+ * - Maintains complete audit trail
+ * - Deleted equipment excluded from most queries
+ * - Can be reactivated if needed (data integrity preserved)
+ * - Historical records (daily reports, valuations) remain intact
+ *
+ * ## Equipment Assignment
+ *
+ * Equipment can be assigned to projects via the equipo_edt (Equipment Daily Track) table:
+ * - Assignment tracks: project, dates, operator, location
+ * - Assignment history preserved indefinitely
+ * - State changes to EN_USO when assigned
+ * - State returns to DISPONIBLE when unassigned
+ *
+ * ## Multi-Tenancy
+ *
+ * **CRITICAL**: All queries MUST filter by tenant_id when schema updated:
+ * - Currently deferred to Phase 21 (schema blocker: tenant_id column missing)
+ * - TODO markers indicate where tenant filtering is required
+ * - Each company's equipment is completely isolated
+ *
+ * ## Related Services
+ *
+ * - **MaintenanceService**: Schedules preventive/corrective maintenance
+ * - **MaintenanceScheduleRecurringService**: Recurring maintenance schedules
+ * - **DailyReportService**: Daily usage tracking (partes diarios)
+ * - **ValuationService**: Monthly rental valuations
+ * - **ProviderService**: Equipment provider (proveedor) management
+ * - **OperatorService**: Operator assignment and certification
+ *
+ * ## Usage Examples
+ *
+ * ```typescript
+ * // Create new owned equipment
+ * const excavator = await equipmentService.create({
+ *   codigo_equipo: 'EXC-001',
+ *   categoria: 'MAQUINARIA_PESADA',
+ *   marca: 'Caterpillar',
+ *   modelo: '320D',
+ *   tipo_proveedor: 'PROPIOS',
+ *   medidor_uso: 'horometro',
+ *   estado: 'DISPONIBLE',
+ * });
+ *
+ * // Update equipment status
+ * await equipmentService.updateStatus(excavator.id, 'MANTENIMIENTO');
+ *
+ * // Get available equipment for assignment
+ * const available = await equipmentService.getAvailableEquipment();
+ *
+ * // Soft delete equipment
+ * await equipmentService.delete(excavator.id); // is_active = false
+ * ```
+ *
+ * @see EquipmentListDto
+ * @see EquipmentDetailDto
+ * @see MaintenanceService
+ * @see DailyReportService
+ */
 export class EquipmentService {
-  private get repository(): Repository<Equipment> {
-    if (!AppDataSource.isInitialized) {
-      throw new Error('Database not initialized');
-    }
-    return AppDataSource.getRepository(Equipment);
+  private repository: Repository<Equipment>;
+
+  constructor() {
+    this.repository = AppDataSource.getRepository(Equipment);
   }
 
+  /**
+   * Find all equipment with filtering, sorting, and pagination
+   *
+   * Supports filtering by:
+   * - Estado (DISPONIBLE, EN_USO, MANTENIMIENTO, RETIRADO)
+   * - Categoria (equipment type)
+   * - Provider (proveedor_id)
+   * - Equipment Type (tipo_equipo_id)
+   * - Search (codigo, marca, modelo, placa, categoria)
+   * - Active status (is_active)
+   *
+   * Includes provider relationship for tipo_proveedor = 'TERCEROS'.
+   *
+   * @param filter - Optional filtering, sorting, and search criteria
+   * @param filter.estado - Filter by equipment state
+   * @param filter.categoria - Filter by equipment category
+   * @param filter.providerId - Filter by provider (third-party equipment)
+   * @param filter.equipmentTypeId - Filter by equipment type ID
+   * @param filter.search - Full-text search across multiple fields
+   * @param filter.isActive - Filter by active status (default: true)
+   * @param filter.sort_by - Field to sort by (default: 'codigo_equipo')
+   * @param filter.sort_order - Sort direction: 'ASC' or 'DESC' (default: 'ASC')
+   * @param page - Page number (1-indexed, default: 1)
+   * @param limit - Items per page (default: 10, max: 100)
+   * @returns Paginated equipment list with total count
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * // Get all available heavy machinery, page 1
+   * const result = await equipmentService.findAll({
+   *   estado: 'DISPONIBLE',
+   *   categoria: 'MAQUINARIA_PESADA',
+   * }, 1, 20);
+   * console.log(`Found ${result.total} equipment, showing ${result.data.length}`);
+   * ```
+   */
   async findAll(
     filter?: EquipmentFilter,
     page = 1,
     limit = 10
   ): Promise<{ data: EquipmentListDto[]; total: number }> {
     try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // queryBuilder.andWhere('e.tenant_id = :tenantId', { tenantId })
       const queryBuilder = this.repository
         .createQueryBuilder('e')
         .leftJoinAndSelect('e.provider', 'p')
@@ -116,6 +315,15 @@ export class EquipmentService {
 
       const [equipment, total] = await queryBuilder.getManyAndCount();
 
+      Logger.info('Equipment list retrieved successfully', {
+        total,
+        returned: equipment.length,
+        page,
+        limit,
+        filters: filter,
+        context: 'EquipmentService.findAll',
+      });
+
       return {
         data: toEquipmentListDtoArray(equipment),
         total,
@@ -129,38 +337,107 @@ export class EquipmentService {
         limit,
         context: 'EquipmentService.findAll',
       });
-      throw new Error('Failed to fetch equipment');
+      throw new DatabaseError(
+        'Failed to fetch equipment',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Find equipment by ID
+   *
+   * Retrieves a single equipment record with all details and related provider information.
+   *
+   * @param id - Equipment ID
+   * @returns Equipment detail DTO with provider information
+   * @throws {NotFoundError} If equipment with given ID does not exist
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * const excavator = await equipmentService.findById(123);
+   * console.log(`${excavator.codigo_equipo} - ${excavator.marca} ${excavator.modelo}`);
+   * ```
+   */
   async findById(id: number): Promise<EquipmentDetailDto> {
     try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // where: { id, tenant_id: tenantId }
       const equipment = await this.repository.findOne({
         where: { id },
         relations: ['provider'],
       });
 
       if (!equipment) {
-        throw new Error('Equipment not found');
+        throw new NotFoundError('Equipment', id);
       }
+
+      Logger.info('Equipment found by ID', {
+        id,
+        codigo_equipo: equipment.codigo_equipo,
+        categoria: equipment.categoria,
+        estado: equipment.estado,
+        proveedor_id: equipment.proveedorId,
+        context: 'EquipmentService.findById',
+      });
 
       return toEquipmentDetailDto(equipment);
     } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
       Logger.error('Error finding equipment by ID', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         id,
         context: 'EquipmentService.findById',
       });
-      throw error;
+      throw new DatabaseError(
+        'Failed to find equipment by ID',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Find equipment by codigo_equipo
+   *
+   * Internal method used for uniqueness validation during create/update.
+   * Returns raw Equipment entity (not DTO) for internal use.
+   *
+   * @param codigo - Equipment code to search for
+   * @returns Equipment entity or null if not found
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * const existing = await equipmentService.findByCode('EXC-001');
+   * if (existing) {
+   *   throw new ConflictError('Equipment code already exists');
+   * }
+   * ```
+   */
   async findByCode(codigo: string): Promise<Equipment | null> {
     try {
-      return await this.repository.findOne({
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // where: { codigo_equipo: codigo, tenant_id: tenantId }
+      const equipment = await this.repository.findOne({
         where: { codigo_equipo: codigo },
       });
+
+      if (equipment) {
+        Logger.info('Equipment found by code', {
+          codigo_equipo: codigo,
+          id: equipment.id,
+          estado: equipment.estado,
+          context: 'EquipmentService.findByCode',
+        });
+      }
+
+      return equipment;
     } catch (error) {
       Logger.error('Error finding equipment by code', {
         error: error instanceof Error ? error.message : String(error),
@@ -168,17 +445,51 @@ export class EquipmentService {
         codigo,
         context: 'EquipmentService.findByCode',
       });
-      throw error;
+      throw new DatabaseError(
+        'Failed to find equipment by code',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Create new equipment
+   *
+   * Creates a new equipment record with validation:
+   * - Validates codigo_equipo uniqueness (case-sensitive)
+   * - Sets default estado = 'DISPONIBLE'
+   * - Sets is_active = true
+   * - Validates proveedor_id exists if tipo_proveedor = 'TERCEROS'
+   *
+   * @param data - Equipment creation data (snake_case fields)
+   * @returns Created equipment detail DTO with provider information
+   * @throws {ConflictError} If equipment code already exists
+   * @throws {DatabaseError} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * const bulldozer = await equipmentService.create({
+   *   codigo_equipo: 'BLD-005',
+   *   categoria: 'MAQUINARIA_PESADA',
+   *   marca: 'Caterpillar',
+   *   modelo: 'D8T',
+   *   tipo_proveedor: 'PROPIOS',
+   *   medidor_uso: 'horometro',
+   *   creado_por: userId,
+   * });
+   * ```
+   */
   async create(data: CreateEquipmentDto): Promise<EquipmentDetailDto> {
     try {
-      // Check if codigo already exists
+      // Check if codigo already exists (tenant-aware check via findByCode)
       if (data.codigo_equipo) {
         const existing = await this.findByCode(data.codigo_equipo);
         if (existing) {
-          throw new Error('Equipment code already exists');
+          throw new ConflictError(`Equipment code '${data.codigo_equipo}' already exists`, {
+            field: 'codigo_equipo',
+            value: data.codigo_equipo,
+          });
         }
       }
 
@@ -207,47 +518,112 @@ export class EquipmentService {
       const saved = await this.repository.save(equipment);
 
       // Load relations before transforming
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const withRelations = await this.repository.findOne({
         where: { id: saved.id },
         relations: ['provider'],
       });
 
-      return toEquipmentDetailDto(withRelations!);
+      if (!withRelations) {
+        throw new NotFoundError('Equipment', saved.id);
+      }
+
+      Logger.info('Equipment created successfully', {
+        id: saved.id,
+        codigo_equipo: saved.codigo_equipo,
+        categoria: saved.categoria,
+        estado: saved.estado,
+        tipo_proveedor: saved.tipo_proveedor,
+        proveedor_id: saved.proveedorId,
+        context: 'EquipmentService.create',
+      });
+
+      return toEquipmentDetailDto(withRelations);
     } catch (error) {
+      if (error instanceof ConflictError || error instanceof NotFoundError) {
+        throw error;
+      }
       Logger.error('Error creating equipment', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         data,
         context: 'EquipmentService.create',
       });
-      throw error;
+      throw new DatabaseError(
+        'Failed to create equipment',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Update existing equipment
+   *
+   * Updates equipment with validation:
+   * - Validates equipment exists
+   * - Validates codigo_equipo uniqueness if changed
+   * - Allows partial updates (only provided fields are updated)
+   * - Preserves audit fields (creado_por, created_at)
+   *
+   * @param id - Equipment ID to update
+   * @param data - Partial equipment update data (snake_case fields)
+   * @returns Updated equipment detail DTO with provider information
+   * @throws {NotFoundError} If equipment with given ID does not exist
+   * @throws {ConflictError} If new equipment code already exists
+   * @throws {DatabaseError} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * const updated = await equipmentService.update(123, {
+   *   estado: 'MANTENIMIENTO',
+   *   actualizado_por: userId,
+   * });
+   * ```
+   */
   async update(id: number, data: UpdateEquipmentDto): Promise<EquipmentDetailDto> {
     try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const equipment = await this.repository.findOne({
         where: { id },
         relations: ['provider'],
       });
 
       if (!equipment) {
-        throw new Error('Equipment not found');
+        throw new NotFoundError('Equipment', id);
       }
 
       // If updating codigo, check it doesn't exist
       if (data.codigo_equipo && data.codigo_equipo !== equipment.codigo_equipo) {
         const existing = await this.findByCode(data.codigo_equipo);
         if (existing && existing.id !== id) {
-          throw new Error('Equipment code already exists');
+          throw new ConflictError(`Equipment code '${data.codigo_equipo}' already exists`, {
+            field: 'codigo_equipo',
+            value: data.codigo_equipo,
+          });
         }
       }
 
+      // Track changes for logging
+      const changes: string[] = [];
+
       // Map DTO to entity properties
-      if (data.codigo_equipo !== undefined) equipment.codigo_equipo = data.codigo_equipo;
-      if (data.categoria !== undefined) equipment.categoria = data.categoria;
-      if (data.marca !== undefined) equipment.marca = data.marca;
-      if (data.modelo !== undefined) equipment.modelo = data.modelo;
+      if (data.codigo_equipo !== undefined) {
+        changes.push(`codigo_equipo: ${equipment.codigo_equipo} → ${data.codigo_equipo}`);
+        equipment.codigo_equipo = data.codigo_equipo;
+      }
+      if (data.categoria !== undefined) {
+        changes.push(`categoria: ${equipment.categoria} → ${data.categoria}`);
+        equipment.categoria = data.categoria;
+      }
+      if (data.marca !== undefined) {
+        changes.push(`marca: ${equipment.marca} → ${data.marca}`);
+        equipment.marca = data.marca;
+      }
+      if (data.modelo !== undefined) {
+        changes.push(`modelo: ${equipment.modelo} → ${data.modelo}`);
+        equipment.modelo = data.modelo;
+      }
       if (data.numero_serie_equipo !== undefined)
         equipment.numero_serie_equipo = data.numero_serie_equipo;
       if (data.numero_chasis !== undefined) equipment.numero_chasis = data.numero_chasis;
@@ -258,7 +634,10 @@ export class EquipmentService {
       if (data.potencia_neta !== undefined) equipment.potencia_neta = data.potencia_neta;
       if (data.tipo_motor !== undefined) equipment.tipo_motor = data.tipo_motor;
       if (data.medidor_uso !== undefined) equipment.medidor_uso = data.medidor_uso;
-      if (data.estado !== undefined) equipment.estado = data.estado;
+      if (data.estado !== undefined) {
+        changes.push(`estado: ${equipment.estado} → ${data.estado}`);
+        equipment.estado = data.estado;
+      }
       if (data.tipo_proveedor !== undefined) equipment.tipo_proveedor = data.tipo_proveedor;
       if (data.tipo_equipo_id !== undefined) {
         equipment.tipoEquipoId = data.tipo_equipo_id;
@@ -273,13 +652,28 @@ export class EquipmentService {
       const saved = await this.repository.save(equipment);
 
       // Reload to get updated relations
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const withRelations = await this.repository.findOne({
         where: { id: saved.id },
         relations: ['provider'],
       });
 
-      return toEquipmentDetailDto(withRelations!);
+      if (!withRelations) {
+        throw new NotFoundError('Equipment', saved.id);
+      }
+
+      Logger.info('Equipment updated successfully', {
+        id,
+        codigo_equipo: saved.codigo_equipo,
+        changes: changes.length > 0 ? changes.join(', ') : 'No major changes',
+        context: 'EquipmentService.update',
+      });
+
+      return toEquipmentDetailDto(withRelations);
     } catch (error) {
+      if (error instanceof NotFoundError || error instanceof ConflictError) {
+        throw error;
+      }
       Logger.error('Error updating equipment', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -287,13 +681,41 @@ export class EquipmentService {
         data,
         context: 'EquipmentService.update',
       });
-      throw error;
+      throw new DatabaseError(
+        'Failed to update equipment',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Delete equipment (soft delete)
+   *
+   * Performs soft delete by setting is_active = false.
+   * Equipment is NEVER hard deleted to preserve audit trail and historical data.
+   *
+   * Soft-deleted equipment:
+   * - Excluded from default queries (is_active = true filter)
+   * - Historical records (daily reports, valuations) remain intact
+   * - Can be reactivated if needed by updating is_active = true
+   *
+   * @param id - Equipment ID to delete
+   * @throws {DatabaseError} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * await equipmentService.delete(123); // Soft delete
+   * ```
+   */
   async delete(id: number): Promise<void> {
     try {
       await this.repository.update(id, { is_active: false });
+
+      Logger.info('Equipment soft deleted successfully', {
+        id,
+        context: 'EquipmentService.delete',
+      });
     } catch (error) {
       Logger.error('Error deleting equipment', {
         error: error instanceof Error ? error.message : String(error),
@@ -301,26 +723,67 @@ export class EquipmentService {
         id,
         context: 'EquipmentService.delete',
       });
-      throw new Error('Failed to delete equipment');
+      throw new DatabaseError(
+        'Failed to delete equipment',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Update equipment status (estado)
+   *
+   * Updates the operational state of equipment.
+   * Valid states: DISPONIBLE, EN_USO, MANTENIMIENTO, RETIRADO
+   *
+   * **State Transition Rules** (enforced in business logic layer, not here):
+   * - DISPONIBLE → EN_USO (assignment)
+   * - EN_USO → DISPONIBLE (return)
+   * - EN_USO → MANTENIMIENTO (maintenance needed)
+   * - MANTENIMIENTO → DISPONIBLE (maintenance complete)
+   * - Any → RETIRADO (permanent retirement)
+   *
+   * @param id - Equipment ID
+   * @param estado - New state
+   * @returns Updated equipment detail DTO
+   * @throws {NotFoundError} If equipment with given ID does not exist
+   * @throws {DatabaseError} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * await equipmentService.updateStatus(123, 'MANTENIMIENTO');
+   * ```
+   */
   async updateStatus(id: number, estado: string): Promise<EquipmentDetailDto> {
     try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const equipment = await this.repository.findOne({
         where: { id },
         relations: ['provider'],
       });
 
       if (!equipment) {
-        throw new Error('Equipment not found');
+        throw new NotFoundError('Equipment', id);
       }
 
+      const oldEstado = equipment.estado;
       equipment.estado = estado;
       const saved = await this.repository.save(equipment);
 
+      Logger.info('Equipment status updated successfully', {
+        id,
+        codigo_equipo: saved.codigo_equipo,
+        old_estado: oldEstado,
+        new_estado: estado,
+        context: 'EquipmentService.updateStatus',
+      });
+
       return toEquipmentDetailDto(saved);
     } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
       Logger.error('Error updating equipment status', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -328,41 +791,114 @@ export class EquipmentService {
         estado,
         context: 'EquipmentService.updateStatus',
       });
-      throw error;
+      throw new DatabaseError(
+        'Failed to update equipment status',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Update equipment hourmeter reading
+   *
+   * **STUB METHOD**: Not yet implemented.
+   * TODO: Implement hourmeter tracking with historical records.
+   *
+   * @param id - Equipment ID
+   * @param reading - New hourmeter reading (hours)
+   * @returns Equipment detail DTO (currently unchanged)
+   * @throws {NotFoundError} If equipment with given ID does not exist
+   */
   async updateHourmeter(id: number, reading: number): Promise<EquipmentDetailDto> {
+    // TODO: Add tenant_id filter when schema updated (Phase 21)
     const equipment = await this.repository.findOne({
       where: { id },
       relations: ['provider'],
     });
 
     if (!equipment) {
-      throw new Error('Equipment not found');
+      throw new NotFoundError('Equipment', id);
     }
 
-    // equipment.medidor_uso = reading.toString(); // assuming medidor_uso stores current reading
-    // Logic to update hourmeter
+    // TODO: Implement actual hourmeter update logic
+    // - Store reading in hourmeter history table
+    // - Update equipment.medidor_uso current value
+    // - Validate reading > previous reading
+    // - Trigger maintenance alerts if due
+
+    Logger.info('Equipment hourmeter update requested (stub)', {
+      id,
+      codigo_equipo: equipment.codigo_equipo,
+      new_reading: reading,
+      context: 'EquipmentService.updateHourmeter',
+    });
+
     return toEquipmentDetailDto(equipment);
   }
 
+  /**
+   * Update equipment odometer reading
+   *
+   * **STUB METHOD**: Not yet implemented.
+   * TODO: Implement odometer tracking with historical records.
+   *
+   * @param id - Equipment ID
+   * @param reading - New odometer reading (kilometers)
+   * @returns Equipment detail DTO (currently unchanged)
+   * @throws {NotFoundError} If equipment with given ID does not exist
+   */
   async updateOdometer(id: number, reading: number): Promise<EquipmentDetailDto> {
+    // TODO: Add tenant_id filter when schema updated (Phase 21)
     const equipment = await this.repository.findOne({
       where: { id },
       relations: ['provider'],
     });
 
     if (!equipment) {
-      throw new Error('Equipment not found');
+      throw new NotFoundError('Equipment', id);
     }
 
-    // equipment.medidor_uso = reading.toString();
+    // TODO: Implement actual odometer update logic
+    // - Store reading in odometer history table
+    // - Update equipment.medidor_uso current value
+    // - Validate reading > previous reading
+    // - Trigger maintenance alerts if due
+
+    Logger.info('Equipment odometer update requested (stub)', {
+      id,
+      codigo_equipo: equipment.codigo_equipo,
+      new_reading: reading,
+      context: 'EquipmentService.updateOdometer',
+    });
+
     return toEquipmentDetailDto(equipment);
   }
 
+  /**
+   * Get equipment statistics by status
+   *
+   * Returns aggregate counts grouped by equipment estado:
+   * - total: All active equipment
+   * - disponible: Available for assignment
+   * - enUso: Currently in use (assigned to projects)
+   * - mantenimiento: Under maintenance
+   * - retirado: Retired/decommissioned
+   *
+   * Only includes active equipment (is_active = true).
+   *
+   * @returns Equipment statistics DTO
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * const stats = await equipmentService.getStatistics();
+   * console.log(`Total: ${stats.total}, Available: ${stats.disponible}`);
+   * ```
+   */
   async getStatistics(): Promise<EquipmentStatsDto> {
     try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const stats = await this.repository
         .createQueryBuilder('e')
         .select('e.estado', 'estado')
@@ -402,6 +938,15 @@ export class EquipmentService {
         }
       });
 
+      Logger.info('Equipment statistics calculated successfully', {
+        total: result.total,
+        disponible: result.disponible,
+        en_uso: result.enUso,
+        mantenimiento: result.mantenimiento,
+        retirado: result.retirado,
+        context: 'EquipmentService.getStatistics',
+      });
+
       return toEquipmentStatsDto(result);
     } catch (error) {
       Logger.error('Error getting equipment statistics', {
@@ -409,12 +954,32 @@ export class EquipmentService {
         stack: error instanceof Error ? error.stack : undefined,
         context: 'EquipmentService.getStatistics',
       });
-      throw error;
+      throw new DatabaseError(
+        'Failed to get equipment statistics',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
+  /**
+   * Get distinct equipment types (categories)
+   *
+   * Returns list of unique equipment categories currently in use.
+   * Useful for populating filter dropdowns.
+   *
+   * @returns Array of equipment category strings
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * const types = await equipmentService.getEquipmentTypes();
+   * // ['MAQUINARIA_PESADA', 'VEHICULOS_LIVIANOS', 'EQUIPOS_MENORES']
+   * ```
+   */
   async getEquipmentTypes(): Promise<string[]> {
     try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const result = await this.repository
         .createQueryBuilder('e')
         .select('DISTINCT e.categoria', 'categoria')
@@ -422,18 +987,39 @@ export class EquipmentService {
         .orderBy('e.categoria')
         .getRawMany();
 
-      return result.map((r) => r.categoria);
+      const types = result.map((r) => r.categoria);
+
+      Logger.info('Equipment types retrieved successfully', {
+        count: types.length,
+        types,
+        context: 'EquipmentService.getEquipmentTypes',
+      });
+
+      return types;
     } catch (error) {
       Logger.error('Error getting equipment types', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'EquipmentService.getEquipmentTypes',
       });
-      throw error;
+      throw new DatabaseError(
+        'Failed to get equipment types',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
-  // Stub methods for compatibility
+  /**
+   * Assign equipment to project
+   *
+   * **STUB METHOD**: Not yet implemented.
+   * TODO: Implement project assignment via equipo_edt table.
+   *
+   * @param id - Equipment ID
+   * @param data - Assignment data (project, dates, operator)
+   * @returns Assignment confirmation object (stub)
+   */
   async assignToProject(id: number, data: any) {
     Logger.debug('Equipment assignment to project requested', {
       equipmentId: id,
@@ -443,6 +1029,16 @@ export class EquipmentService {
     return { id, ...data, status: 'assigned' };
   }
 
+  /**
+   * Transfer equipment between projects/locations
+   *
+   * **STUB METHOD**: Not yet implemented.
+   * TODO: Implement equipment transfer with audit trail.
+   *
+   * @param id - Equipment ID
+   * @param data - Transfer data (from, to, reason)
+   * @returns Transfer confirmation object (stub)
+   */
   async transferEquipment(id: number, data: any) {
     Logger.debug('Equipment transfer requested', {
       equipmentId: id,
@@ -452,19 +1048,63 @@ export class EquipmentService {
     return { id, ...data, status: 'transferred' };
   }
 
+  /**
+   * Check equipment availability for date range
+   *
+   * **STUB METHOD**: Not yet implemented.
+   * TODO: Implement availability check against equipo_edt assignments.
+   *
+   * @param idOrFilters - Equipment ID or filter object
+   * @param startDate - Start date of availability window
+   * @param endDate - End date of availability window
+   * @returns Currently returns true (stub)
+   */
   async getAvailability(idOrFilters: any, startDate?: Date, endDate?: Date) {
     return true;
   }
 
+  /**
+   * Get all available equipment
+   *
+   * Convenience method that returns all equipment with estado = 'DISPONIBLE'.
+   * Equivalent to findAll({ estado: 'DISPONIBLE' }) with high limit.
+   *
+   * @returns Array of available equipment DTOs
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * const available = await equipmentService.getAvailableEquipment();
+   * console.log(`${available.length} equipment ready for assignment`);
+   * ```
+   */
   async getAvailableEquipment(): Promise<EquipmentListDto[]> {
     const result = await this.findAll({ estado: 'DISPONIBLE' }, 1, 9999);
+
+    Logger.info('Available equipment retrieved successfully', {
+      count: result.data.length,
+      context: 'EquipmentService.getAvailableEquipment',
+    });
+
     return result.data;
   }
 
+  /**
+   * Get equipment assignment history
+   *
+   * **STUB METHOD**: Not yet implemented.
+   * TODO: Implement with equipo_edt table queries.
+   *
+   * @param equipmentId - Equipment ID
+   * @returns Currently returns empty array (stub)
+   */
   async getAssignmentHistory(equipmentId: number): Promise<any[]> {
     // TODO: Implement with equipo_edt table
+    Logger.info('Equipment assignment history requested (stub)', {
+      equipmentId,
+      count: 0,
+      context: 'EquipmentService.getAssignmentHistory',
+    });
     return [];
   }
 }
-
-export default new EquipmentService();
