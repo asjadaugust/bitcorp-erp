@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
-import timesheetService from '../../services/timesheet.service';
+import { TimesheetService } from '../../services/timesheet.service';
 import { AppDataSource } from '../../config/database.config';
 import { Timesheet } from '../../models/timesheet.model';
 import {
@@ -10,6 +10,9 @@ import {
   sendError,
 } from '../../utils/api-response';
 import Logger from '../../utils/logger';
+
+// Instantiate service
+const timesheetService = new TimesheetService();
 
 /**
  * Timesheet Controller
