@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsOptional,
   IsIn,
+  IsNumber,
   MaxLength,
 } from 'class-validator';
 
@@ -12,6 +13,10 @@ import {
  * DTO for creating provider contact
  */
 export class ProviderContactCreateDto {
+  @IsOptional()
+  @IsNumber({}, { message: 'El ID del proveedor debe ser un número' })
+  provider_id?: number;
+
   @IsNotEmpty({ message: 'El nombre del contacto es requerido' })
   @IsString({ message: 'El nombre del contacto debe ser texto' })
   @MaxLength(200, { message: 'El nombre del contacto no debe exceder 200 caracteres' })
@@ -61,6 +66,14 @@ export class ProviderContactCreateDto {
   @IsOptional()
   @IsString({ message: 'Las notas deben ser texto' })
   notes?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El tenant_id debe ser un número' })
+  tenant_id?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El created_by debe ser un número' })
+  created_by?: number;
 }
 
 /**
@@ -116,4 +129,31 @@ export class ProviderContactUpdateDto {
   @IsOptional()
   @IsString({ message: 'Las notas deben ser texto' })
   notes?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El updated_by debe ser un número' })
+  updated_by?: number;
+}
+
+/**
+ * DTO for provider contact response (snake_case for API)
+ */
+export interface ProviderContactDto {
+  id: number;
+  provider_id: number;
+  contact_name: string;
+  position?: string;
+  primary_phone?: string;
+  secondary_phone?: string;
+  email?: string;
+  secondary_email?: string;
+  contact_type: string;
+  is_primary: boolean;
+  status: string;
+  notes?: string;
+  tenant_id: number;
+  created_by?: number;
+  updated_by?: number;
+  created_at: string;
+  updated_at: string;
 }
