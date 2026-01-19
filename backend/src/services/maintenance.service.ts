@@ -392,7 +392,10 @@ export class MaintenanceService {
         equipo_id: withRelations.equipoId,
         tipo_mantenimiento: withRelations.tipoMantenimiento,
         estado: withRelations.estado,
-        fecha_programada: withRelations.fechaProgramada?.toISOString().split('T')[0],
+        fecha_programada:
+          withRelations.fechaProgramada instanceof Date
+            ? withRelations.fechaProgramada.toISOString().split('T')[0]
+            : withRelations.fechaProgramada,
         costo_estimado: withRelations.costoEstimado,
         userId,
         context: 'MaintenanceService.createMaintenance',
@@ -505,7 +508,10 @@ export class MaintenanceService {
         estado_anterior: originalEstado,
         tecnico_responsable: withRelations.tecnicoResponsable,
         tecnico_anterior: originalTecnico,
-        fecha_realizada: withRelations.fechaRealizada?.toISOString().split('T')[0],
+        fecha_realizada:
+          withRelations.fechaRealizada instanceof Date
+            ? withRelations.fechaRealizada.toISOString().split('T')[0]
+            : withRelations.fechaRealizada,
         costo_real: withRelations.costoReal,
         userId,
         context: 'MaintenanceService.updateMaintenance',

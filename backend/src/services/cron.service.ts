@@ -4,6 +4,7 @@ import { AppDataSource } from '../config/database.config';
 import { MaintenanceSchedule, EstadoMantenimiento } from '../models/maintenance-schedule.model';
 import { Contract, EstadoContrato } from '../models/contract.model';
 import { Trabajador } from '../models/trabajador.model';
+import { User } from '../models/user.model';
 import { NotificationService } from './notification.service';
 import logger from '../config/logger.config';
 import { DatabaseError, DatabaseErrorType } from '../errors';
@@ -123,6 +124,7 @@ export class CronService {
   private maintenanceRepository: Repository<MaintenanceSchedule>;
   private contractRepository: Repository<Contract>;
   private trabajadorRepository: Repository<Trabajador>;
+  private userRepository: Repository<User>;
   private notificationService: NotificationService;
   private jobs: ScheduledTask[] = [];
 
@@ -130,6 +132,7 @@ export class CronService {
     this.maintenanceRepository = AppDataSource.getRepository(MaintenanceSchedule);
     this.contractRepository = AppDataSource.getRepository(Contract);
     this.trabajadorRepository = AppDataSource.getRepository(Trabajador);
+    this.userRepository = AppDataSource.getRepository(User);
     this.notificationService = new NotificationService();
   }
 
@@ -207,10 +210,12 @@ export class CronService {
         equipmentMap.get(equipoId)!.push(maintenance);
       }
 
-      const targetUsers = await this.trabajadorRepository
-        .createQueryBuilder('trabajador')
-        .where('trabajador.rol IN (:...roles)', { roles: ['ALMACEN', 'ADMIN'] })
-        .andWhere('trabajador.estado = :estado', { estado: 'ACTIVO' })
+      // Find users with ALMACEN or ADMIN roles
+      const targetUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.rol', 'rol')
+        .where('rol.code IN (:...roles)', { roles: ['ALMACEN', 'ADMIN'] })
+        .andWhere('user.is_active = :isActive', { isActive: true })
         .getMany();
 
       if (targetUsers.length === 0) {
@@ -232,12 +237,18 @@ export class CronService {
           continue;
         }
 
+        // Convert fecha_programada to Date object if it's a string
+        const fechaProgramada =
+          typeof firstRecord.fechaProgramada === 'string'
+            ? new Date(firstRecord.fechaProgramada)
+            : firstRecord.fechaProgramada!;
+
         const daysUntil = Math.ceil(
-          (firstRecord.fechaProgramada!.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+          (fechaProgramada.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
         );
 
         const title = `Mantenimiento Próximo - ${equipo.codigo_equipo}`;
-        const message = `El equipo ${equipo.codigo_equipo} (${equipo.marca} ${equipo.modelo}) requiere mantenimiento ${firstRecord.tipoMantenimiento} el ${firstRecord.fechaProgramada?.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''})`;
+        const message = `El equipo ${equipo.codigo_equipo} (${equipo.marca} ${equipo.modelo}) requiere mantenimiento ${firstRecord.tipoMantenimiento} el ${fechaProgramada.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''})`;
 
         for (const user of targetUsers) {
           try {
@@ -330,10 +341,12 @@ export class CronService {
         return;
       }
 
-      const targetUsers = await this.trabajadorRepository
-        .createQueryBuilder('trabajador')
-        .where('trabajador.rol IN (:...roles)', { roles: ['ADMIN', 'DIRECTOR'] })
-        .andWhere('trabajador.estado = :estado', { estado: 'ACTIVO' })
+      // Find users with ADMIN or DIRECTOR roles
+      const targetUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.rol', 'rol')
+        .where('rol.code IN (:...roles)', { roles: ['ADMIN', 'DIRECTOR'] })
+        .andWhere('user.is_active = :isActive', { isActive: true })
         .getMany();
 
       if (targetUsers.length === 0) {
@@ -345,13 +358,16 @@ export class CronService {
 
       for (const contract of contractsExpiring) {
         const equipo = contract.equipo;
-        const daysUntil = Math.ceil(
-          (contract.fechaFin.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-        );
+
+        // Convert fechaFin to Date object if it's a string
+        const fechaFin =
+          typeof contract.fechaFin === 'string' ? new Date(contract.fechaFin) : contract.fechaFin;
+
+        const daysUntil = Math.ceil((fechaFin.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
         const equipoInfo = equipo ? ` para el equipo ${equipo.codigo_equipo}` : '';
         const title = `Contrato por Vencer - ${contract.numeroContrato}`;
-        const message = `El contrato ${contract.numeroContrato}${equipoInfo} vence el ${contract.fechaFin.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}). Planifique renovación o retorno del equipo.`;
+        const message = `El contrato ${contract.numeroContrato}${equipoInfo} vence el ${fechaFin.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}). Planifique renovación o retorno del equipo.`;
 
         for (const user of targetUsers) {
           try {
@@ -458,10 +474,12 @@ export class CronService {
         return;
       }
 
-      const targetUsers = await this.trabajadorRepository
-        .createQueryBuilder('trabajador')
-        .where('trabajador.rol IN (:...roles)', { roles: ['HR', 'ADMIN'] })
-        .andWhere('trabajador.estado = :estado', { estado: 'ACTIVO' })
+      // Find users with HR or ADMIN roles
+      const targetUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.rol', 'rol')
+        .where('rol.code IN (:...roles)', { roles: ['HR', 'ADMIN'] })
+        .andWhere('user.is_active = :isActive', { isActive: true })
         .getMany();
 
       if (targetUsers.length === 0) {
