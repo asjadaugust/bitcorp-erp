@@ -10,11 +10,11 @@
 ## Progress Overview
 
 **Total Services**: 31  
-**Audited**: 20 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment)  
-**Fixed**: 20 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment) ✅  
-**Remaining**: 11
+**Audited**: 21 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment, accounts-payable)  
+**Fixed**: 21 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment, accounts-payable) ✅  
+**Remaining**: 10
 
-**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 65% (20/31 complete)
+**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 68% (21/31 complete)
 
 ---
 
@@ -54,7 +54,7 @@
 | Service                          | LOC | Complexity | Status      | Effort | Notes                              |
 | -------------------------------- | --- | ---------- | ----------- | ------ | ---------------------------------- |
 | `equipment.service.ts`           | 471 | 🔴 Complex | ✅ Complete | Large  | Session 21 - BASELINE (220+ JSDoc) |
-| `accounts-payable.service.ts`    | 173 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅                       |
+| `accounts-payable.service.ts`    | 174 | 🔴 Complex | ✅ Complete | Large  | Session 22 - Financial entity      |
 | `payment-schedule.service.ts`    | 175 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅ (30 tests)            |
 | `auth.service.ts`                | 216 | 🔴 Complex | 📝 Todo     | Large  | Authentication                     |
 | `reporting.service.ts`           | 211 | 🔴 Complex | 📝 Todo     | Large  | Complex queries                    |
@@ -164,7 +164,7 @@
 ### Week 3: Complex Services (12 services)
 
 - [x] equipment.service.ts (BASELINE - review for all remaining complex)
-- [ ] accounts-payable.service.ts
+- [x] accounts-payable.service.ts (financial, follows equipment pattern)
 - [ ] payment-schedule.service.ts
 - [ ] auth.service.ts
 - [ ] reporting.service.ts
