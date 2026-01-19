@@ -1,41 +1,70 @@
 import { AppDataSource } from '../config/database.config';
 import { Provider, TipoProveedor } from '../models/provider.model';
 import { Repository } from 'typeorm';
-import { toProviderDto, fromProviderDto, ProviderDto } from '../types/dto/provider.dto';
+import {
+  toProviderDto,
+  fromProviderDto,
+  ProviderDto,
+  ProviderCreateDto,
+  ProviderUpdateDto,
+} from '../types/dto/provider.dto';
 import Logger from '../utils/logger';
+import { NotFoundError, ValidationError, ConflictError, DatabaseError } from '../errors';
 
-// DTOs for create/update operations
-// Support both English camelCase (from frontend) and Spanish snake_case (from API)
-export interface CreateProviderDto {
-  // Frontend sends camelCase field names
-  ruc?: string;
-  businessName?: string; // razon_social
-  tradeName?: string; // nombre_comercial
-  providerType?: TipoProveedor; // tipo_proveedor
-  address?: string; // direccion
-  phone?: string; // telefono
-  email?: string;
-
-  // Also support Spanish snake_case
-  razon_social?: string;
-  nombre_comercial?: string;
-  tipo_proveedor?: TipoProveedor;
-  direccion?: string;
-  telefono?: string;
-}
-
-export interface UpdateProviderDto extends Partial<CreateProviderDto> {}
-
+/**
+ * Provider Service
+ *
+ * Manages supplier/vendor data with CRUD operations, filtering, search, and validation.
+ *
+ * Standards Applied:
+ * - Custom error classes (NotFoundError, ValidationError, ConflictError, DatabaseError)
+ * - Return DTOs (not raw entities)
+ * - Comprehensive logging (info + error)
+ * - Business rule documentation
+ * - Tenant context deferred (Phase 21 - Provider model lacks tenant_id field)
+ *
+ * Business Rules:
+ * - RUC must be unique across system (future: unique per tenant)
+ * - RUC must be exactly 11 digits (validated in DTO)
+ * - razon_social is required
+ * - tipo_proveedor must be: EQUIPOS, MATERIALES, SERVICIOS, or MIXTO
+ * - Soft delete only (sets is_active = false)
+ * - Cannot delete provider with active contracts (not enforced yet - future validation)
+ *
+ * @see provider.dto.ts for DTO definitions and transformers
+ * @see provider.model.ts for entity definition
+ */
 export class ProviderService {
   private get providerRepository(): Repository<Provider> {
     if (!AppDataSource.isInitialized) {
-      throw new Error('Database not initialized');
+      throw new DatabaseError('Database connection not established');
     }
     return AppDataSource.getRepository(Provider);
   }
 
   /**
    * Get all providers with optional filters, pagination, and sorting
+   *
+   * Business Rules:
+   * - Defaults to active providers only (is_active = true)
+   * - Search across: razon_social, ruc, email, nombre_comercial (case-insensitive)
+   * - Filters by tipo_proveedor if provided
+   * - Sortable by: razon_social, ruc, nombre_comercial, tipo_proveedor, created_at, updated_at
+   * - Returns paginated results with total count
+   *
+   * TODO: Add tenant_id filter when schema updated (Phase 21)
+   * Current: No tenant isolation (all providers visible)
+   * Should be: WHERE provider.tenant_id = :tenantId
+   *
+   * @param filters - Optional filters (search, is_active, tipo_proveedor, sort_by, sort_order)
+   * @param page - Page number (1-indexed, default: 1)
+   * @param limit - Items per page (default: 10)
+   * @returns Paginated provider list with total count
+   * @throws DatabaseError if query fails
+   *
+   * @example
+   * const result = await service.findAll({ search: 'ACME', tipo_proveedor: 'EQUIPOS' }, 1, 10);
+   * // Returns: { data: [ProviderDto, ...], total: 45 }
    */
   async findAll(
     filters?: {
@@ -50,6 +79,9 @@ export class ProviderService {
   ): Promise<{ data: ProviderDto[]; total: number }> {
     try {
       const queryBuilder = this.providerRepository.createQueryBuilder('provider');
+
+      // TODO: Add tenant_id filter when schema updated
+      // queryBuilder.where('provider.tenant_id = :tenantId', { tenantId });
 
       // Apply is_active filter (default to true)
       queryBuilder.where('provider.is_active = :is_active', {
@@ -97,10 +129,18 @@ export class ProviderService {
       // Get total and data
       const [providers, total] = await queryBuilder.getManyAndCount();
 
-      return {
-        data: providers.map((p) => toProviderDto(p)),
+      const data = providers.map((p) => toProviderDto(p));
+
+      Logger.info('Providers fetched successfully', {
+        count: data.length,
         total,
-      };
+        filters,
+        page,
+        limit,
+        context: 'ProviderService.findAll',
+      });
+
+      return { data, total };
     } catch (error) {
       Logger.error('Error finding providers', {
         error: error instanceof Error ? error.message : String(error),
@@ -110,43 +150,115 @@ export class ProviderService {
         limit,
         context: 'ProviderService.findAll',
       });
-      throw new Error('Failed to fetch providers');
+      throw new DatabaseError('Failed to fetch providers');
     }
   }
 
   /**
    * Get provider by ID
+   *
+   * Business Rules:
+   * - Returns provider regardless of is_active status
+   * - Maps entity to DTO with Spanish field names
+   *
+   * TODO: Add tenant_id validation when schema updated (Phase 21)
+   * Current: No tenant validation
+   * Should be: WHERE provider.id = :id AND provider.tenant_id = :tenantId
+   *
+   * @param id - Provider unique identifier
+   * @returns ProviderDto with Spanish snake_case fields
+   * @throws NotFoundError if provider doesn't exist
+   * @throws DatabaseError if query fails
+   *
+   * @example
+   * const provider = await service.findById(456);
+   * // Returns: { id: 456, ruc: '12345678901', razon_social: 'ACME SAC', ... }
    */
   async findById(id: number): Promise<ProviderDto> {
     try {
+      // TODO: Add tenant_id filter when schema updated
+      // const provider = await this.providerRepository.findOne({
+      //   where: { id, tenant_id: tenantId },
+      // });
+
       const provider = await this.providerRepository.findOne({
         where: { id },
       });
 
       if (!provider) {
-        throw new Error('Provider not found');
+        throw new NotFoundError('Provider', id);
       }
 
-      return toProviderDto(provider);
+      const dto = toProviderDto(provider);
+
+      Logger.info('Provider fetched successfully', {
+        id,
+        ruc: dto.ruc,
+        razon_social: dto.razon_social,
+        context: 'ProviderService.findById',
+      });
+
+      return dto;
     } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
       Logger.error('Error finding provider', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         id,
         context: 'ProviderService.findById',
       });
-      throw error;
+      throw new DatabaseError('Failed to fetch provider');
     }
   }
 
   /**
    * Get provider by RUC
+   *
+   * Business Rules:
+   * - RUC is unique identifier (11 digits)
+   * - Returns provider regardless of is_active status
+   * - Used for duplicate validation during create/update
+   *
+   * TODO: Add tenant_id filter when schema updated (Phase 21)
+   * Current: No tenant isolation (RUC unique globally)
+   * Should be: WHERE provider.ruc = :ruc AND provider.tenant_id = :tenantId
+   *
+   * @param ruc - Provider RUC (11 digits)
+   * @returns ProviderDto if found, null otherwise
+   * @throws DatabaseError if query fails
+   *
+   * @example
+   * const provider = await service.findByRuc('12345678901');
+   * // Returns: ProviderDto or null
    */
-  async findByRuc(ruc: string): Promise<Provider | null> {
+  async findByRuc(ruc: string): Promise<ProviderDto | null> {
     try {
-      return await this.providerRepository.findOne({
+      // TODO: Add tenant_id filter when schema updated
+      // const provider = await this.providerRepository.findOne({
+      //   where: { ruc, tenant_id: tenantId },
+      // });
+
+      const provider = await this.providerRepository.findOne({
         where: { ruc },
       });
+
+      if (!provider) {
+        return null;
+      }
+
+      const dto = toProviderDto(provider);
+
+      Logger.info('Provider found by RUC', {
+        ruc,
+        id: dto.id,
+        razon_social: dto.razon_social,
+        context: 'ProviderService.findByRuc',
+      });
+
+      return dto;
     } catch (error) {
       Logger.error('Error finding provider by RUC', {
         error: error instanceof Error ? error.message : String(error),
@@ -154,140 +266,308 @@ export class ProviderService {
         ruc,
         context: 'ProviderService.findByRuc',
       });
-      throw error;
+      throw new DatabaseError('Failed to fetch provider by RUC');
     }
   }
 
   /**
    * Create new provider
+   *
+   * Business Rules:
+   * - RUC must be exactly 11 digits (validated in DTO)
+   * - razon_social is required
+   * - RUC must be unique (future: unique per tenant)
+   * - tipo_proveedor must be: EQUIPOS, MATERIALES, SERVICIOS, or MIXTO
+   * - New providers default to is_active = true
+   *
+   * Validation:
+   * - DTO validation runs before this method (class-validator)
+   * - Service validates RUC uniqueness
+   * - Service validates required fields (defense in depth)
+   *
+   * TODO: Add tenant_id to provider data when schema updated (Phase 21)
+   * Current: No tenant_id assignment
+   * Should be: providerData.tenant_id = tenantId
+   *
+   * @param data - Provider creation data (ProviderCreateDto)
+   * @returns Created provider as ProviderDto
+   * @throws ValidationError if required fields missing
+   * @throws ConflictError if RUC already exists
+   * @throws DatabaseError if save fails
+   *
+   * @example
+   * const provider = await service.create({
+   *   ruc: '12345678901',
+   *   razon_social: 'ACME SAC',
+   *   tipo_proveedor: 'EQUIPOS',
+   *   correo_electronico: 'contact@acme.com'
+   * });
    */
-  async create(data: CreateProviderDto): Promise<ProviderDto> {
+  async create(data: ProviderCreateDto): Promise<ProviderDto> {
     try {
-      // Map frontend camelCase and Spanish snake_case to DTO format
-      // Support both English camelCase and Spanish snake_case input
-      const providerData = {
-        ruc: data.ruc as string,
-        razon_social: (data.razon_social || data.businessName || '') as string,
-        nombre_comercial: (data.nombre_comercial || data.tradeName || null) as string | null,
-        tipo_proveedor: (data.tipo_proveedor || data.providerType || null) as string | null,
-        direccion: (data.direccion || data.address || null) as string | null,
-        telefono: (data.telefono || data.phone || null) as string | null,
-        correo_electronico: data.email as string,
-        is_active: true,
-      };
-
-      if (!providerData.ruc || !providerData.razon_social) {
-        throw new Error('RUC and razón social are required');
+      // Validate required fields (defense in depth - DTO validation should catch this first)
+      if (!data.ruc || !data.razon_social) {
+        throw new ValidationError('ruc and razon_social are required');
       }
 
       // Check if RUC already exists
-      const existing = await this.findByRuc(providerData.ruc);
+      // TODO: Add tenant_id to uniqueness check when schema updated
+      const existing = await this.findByRuc(data.ruc);
       if (existing) {
-        throw new Error('Provider with this RUC already exists');
+        throw new ConflictError(`Provider with RUC '${data.ruc}' already exists`, {
+          field: 'ruc',
+          value: data.ruc,
+        });
       }
+
+      // Map DTO to entity data
+      const providerData: Partial<ProviderDto> = {
+        ruc: data.ruc,
+        razon_social: data.razon_social,
+        nombre_comercial: data.nombre_comercial || null,
+        tipo_proveedor: data.tipo_proveedor || null,
+        direccion: data.direccion || null,
+        telefono: data.telefono || null,
+        correo_electronico: data.correo_electronico || null,
+        is_active: data.is_active ?? true,
+      };
+
+      // TODO: Add tenant_id when schema updated
+      // providerData.tenant_id = tenantId;
 
       const entity = this.providerRepository.create(fromProviderDto(providerData));
       const saved = await this.providerRepository.save(entity);
+      const dto = toProviderDto(saved);
 
-      return toProviderDto(saved);
+      Logger.info('Provider created successfully', {
+        id: dto.id,
+        ruc: dto.ruc,
+        razon_social: dto.razon_social,
+        tipo_proveedor: dto.tipo_proveedor,
+        context: 'ProviderService.create',
+      });
+
+      return dto;
     } catch (error) {
+      if (error instanceof ValidationError || error instanceof ConflictError) {
+        throw error;
+      }
+
       Logger.error('Error creating provider', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         ruc: data.ruc,
         context: 'ProviderService.create',
       });
-      throw error;
+      throw new DatabaseError('Failed to create provider');
     }
   }
 
   /**
    * Update provider
+   *
+   * Business Rules:
+   * - Can update all fields except id and tenant_id
+   * - If updating RUC, must be unique (future: unique per tenant)
+   * - Must preserve legacy_id if present
+   * - Only fields provided in update data are changed
+   *
+   * TODO: Add tenant_id validation when schema updated (Phase 21)
+   * Current: No tenant validation
+   * Should be: Validate provider belongs to tenant before update
+   *
+   * @param id - Provider unique identifier
+   * @param data - Partial provider update data
+   * @returns Updated provider as ProviderDto
+   * @throws NotFoundError if provider doesn't exist
+   * @throws ConflictError if updated RUC already exists
+   * @throws DatabaseError if update fails
+   *
+   * @example
+   * const updated = await service.update(456, {
+   *   razon_social: 'ACME SAC Updated',
+   *   telefono: '987654321'
+   * });
    */
-  async update(id: number, data: UpdateProviderDto): Promise<ProviderDto> {
+  async update(id: number, data: ProviderUpdateDto): Promise<ProviderDto> {
     try {
+      // TODO: Add tenant_id filter when schema updated
+      // const provider = await this.providerRepository.findOne({
+      //   where: { id, tenant_id: tenantId },
+      // });
+
       const provider = await this.providerRepository.findOne({
         where: { id },
       });
 
       if (!provider) {
-        throw new Error('Provider not found');
+        throw new NotFoundError('Provider', id);
       }
-
-      // Map frontend camelCase and Spanish snake_case to DTO format
-      // Support both English camelCase and Spanish snake_case input
-      const updateData: {
-        ruc?: string;
-        razon_social?: string;
-        nombre_comercial?: string | null;
-        tipo_proveedor?: string | null;
-        direccion?: string | null;
-        telefono?: string | null;
-        correo_electronico?: string;
-      } = {};
-
-      if (data.ruc !== undefined) updateData.ruc = data.ruc as string;
-      if (data.businessName !== undefined || data.razon_social !== undefined)
-        updateData.razon_social = (data.razon_social || data.businessName) as string;
-      if (data.tradeName !== undefined || data.nombre_comercial !== undefined)
-        updateData.nombre_comercial = (data.nombre_comercial || data.tradeName) as string | null;
-      if (data.providerType !== undefined || data.tipo_proveedor !== undefined)
-        updateData.tipo_proveedor = (data.tipo_proveedor || data.providerType) as string | null;
-      if (data.address !== undefined || data.direccion !== undefined)
-        updateData.direccion = (data.direccion || data.address) as string | null;
-      if (data.phone !== undefined || data.telefono !== undefined)
-        updateData.telefono = (data.telefono || data.phone) as string | null;
-      if (data.email !== undefined) updateData.correo_electronico = data.email as string;
 
       // If updating RUC, check it doesn't exist for another provider
-      if (updateData.ruc && updateData.ruc !== provider.ruc) {
-        const existing = await this.findByRuc(updateData.ruc);
+      // TODO: Add tenant_id to uniqueness check when schema updated
+      if (data.ruc && data.ruc !== provider.ruc) {
+        const existing = await this.findByRuc(data.ruc);
         if (existing && existing.id !== id) {
-          throw new Error('Provider with this RUC already exists');
+          throw new ConflictError(`Provider with RUC '${data.ruc}' already exists`, {
+            field: 'ruc',
+            value: data.ruc,
+          });
         }
       }
+
+      // Map update DTO to entity changes
+      const updateData: Partial<ProviderDto> = {};
+      if (data.ruc !== undefined) updateData.ruc = data.ruc;
+      if (data.razon_social !== undefined) updateData.razon_social = data.razon_social;
+      if (data.nombre_comercial !== undefined) updateData.nombre_comercial = data.nombre_comercial;
+      if (data.tipo_proveedor !== undefined) updateData.tipo_proveedor = data.tipo_proveedor;
+      if (data.direccion !== undefined) updateData.direccion = data.direccion;
+      if (data.telefono !== undefined) updateData.telefono = data.telefono;
+      if (data.correo_electronico !== undefined)
+        updateData.correo_electronico = data.correo_electronico;
+      if (data.is_active !== undefined) updateData.is_active = data.is_active;
 
       // Merge changes
       const entityChanges = fromProviderDto(updateData);
       Object.assign(provider, entityChanges);
 
       const saved = await this.providerRepository.save(provider);
-      return toProviderDto(saved);
+      const dto = toProviderDto(saved);
+
+      Logger.info('Provider updated successfully', {
+        id,
+        ruc: dto.ruc,
+        razon_social: dto.razon_social,
+        updated_fields: Object.keys(updateData),
+        context: 'ProviderService.update',
+      });
+
+      return dto;
     } catch (error) {
+      if (error instanceof NotFoundError || error instanceof ConflictError) {
+        throw error;
+      }
+
       Logger.error('Error updating provider', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         id,
         context: 'ProviderService.update',
       });
-      throw error;
+      throw new DatabaseError('Failed to update provider');
     }
   }
 
   /**
    * Soft delete provider
+   *
+   * Business Rules:
+   * - Soft delete only (sets is_active = false)
+   * - No hard deletes allowed (preserve audit trail)
+   * - Should validate no active contracts before deletion (not implemented yet)
+   *
+   * TODO: Add tenant_id validation when schema updated (Phase 21)
+   * Current: No tenant validation
+   * Should be: Validate provider belongs to tenant before delete
+   *
+   * TODO: Add active contracts validation (future enhancement)
+   * Should check: No contracts with estado_contrato IN ('ACTIVO', 'LEGALIZADO')
+   *
+   * @param id - Provider unique identifier
+   * @returns true if deleted successfully
+   * @throws NotFoundError if provider doesn't exist
+   * @throws DatabaseError if delete fails
+   *
+   * @example
+   * const success = await service.delete(456);
+   * // Returns: true
    */
-  async delete(id: number): Promise<void> {
+  async delete(id: number): Promise<boolean> {
     try {
+      // TODO: Add tenant_id filter when schema updated
+      // const provider = await this.providerRepository.findOne({
+      //   where: { id, tenant_id: tenantId },
+      // });
+
+      // Verify provider exists before soft delete
+      const provider = await this.providerRepository.findOne({
+        where: { id },
+      });
+
+      if (!provider) {
+        throw new NotFoundError('Provider', id);
+      }
+
+      // TODO: Validate no active contracts (future enhancement)
+      // const activeContracts = await contractRepository.count({
+      //   where: {
+      //     id_proveedor: id,
+      //     estado_contrato: In(['ACTIVO', 'LEGALIZADO']),
+      //   },
+      // });
+      // if (activeContracts > 0) {
+      //   throw new BusinessRuleError(
+      //     `Cannot delete provider with ${activeContracts} active contracts`
+      //   );
+      // }
+
+      // Soft delete
       await this.providerRepository.update(id, {
         is_active: false,
       });
+
+      Logger.info('Provider deleted successfully', {
+        id,
+        ruc: provider.ruc,
+        razon_social: provider.razon_social,
+        context: 'ProviderService.delete',
+      });
+
+      return true;
     } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
       Logger.error('Error deleting provider', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         id,
         context: 'ProviderService.delete',
       });
-      throw new Error('Failed to delete provider');
+      throw new DatabaseError('Failed to delete provider');
     }
   }
 
   /**
    * Get providers by type
+   *
+   * Business Rules:
+   * - Returns only active providers (is_active = true)
+   * - tipo_proveedor must be: EQUIPOS, MATERIALES, SERVICIOS, or MIXTO
+   * - Results sorted by razon_social ascending
+   *
+   * TODO: Add tenant_id filter when schema updated (Phase 21)
+   * Current: No tenant isolation
+   * Should be: WHERE tipo_proveedor = :tipo AND tenant_id = :tenantId
+   *
+   * @param tipo - Provider type (EQUIPOS, MATERIALES, SERVICIOS, MIXTO)
+   * @returns Array of providers matching type
+   * @throws DatabaseError if query fails
+   *
+   * @example
+   * const equipmentProviders = await service.findByType('EQUIPOS');
+   * // Returns: [ProviderDto, ...]
    */
   async findByType(tipo: TipoProveedor): Promise<ProviderDto[]> {
     try {
+      // TODO: Add tenant_id filter when schema updated
+      // const providers = await this.providerRepository.find({
+      //   where: { tipo_proveedor: tipo, is_active: true, tenant_id: tenantId },
+      //   order: { razon_social: 'ASC' },
+      // });
+
       const providers = await this.providerRepository.find({
         where: {
           tipo_proveedor: tipo,
@@ -295,7 +575,16 @@ export class ProviderService {
         },
         order: { razon_social: 'ASC' },
       });
-      return providers.map((p) => toProviderDto(p));
+
+      const data = providers.map((p) => toProviderDto(p));
+
+      Logger.info('Providers fetched by type', {
+        tipo,
+        count: data.length,
+        context: 'ProviderService.findByType',
+      });
+
+      return data;
     } catch (error) {
       Logger.error('Error finding providers by type', {
         error: error instanceof Error ? error.message : String(error),
@@ -303,25 +592,56 @@ export class ProviderService {
         tipo,
         context: 'ProviderService.findByType',
       });
-      throw error;
+      throw new DatabaseError('Failed to fetch providers by type');
     }
   }
 
   /**
    * Get active providers count
+   *
+   * Business Rules:
+   * - Counts only active providers (is_active = true)
+   * - Used for dashboard statistics
+   *
+   * TODO: Add tenant_id filter when schema updated (Phase 21)
+   * Current: No tenant isolation
+   * Should be: WHERE is_active = true AND tenant_id = :tenantId
+   *
+   * @returns Total count of active providers
+   * @throws DatabaseError if query fails
+   *
+   * @example
+   * const count = await service.getActiveCount();
+   * // Returns: 45
    */
   async getActiveCount(): Promise<number> {
     try {
-      return await this.providerRepository.count({
+      // TODO: Add tenant_id filter when schema updated
+      // const count = await this.providerRepository.count({
+      //   where: { is_active: true, tenant_id: tenantId },
+      // });
+
+      const count = await this.providerRepository.count({
         where: { is_active: true },
       });
+
+      Logger.info('Active providers counted', {
+        count,
+        context: 'ProviderService.getActiveCount',
+      });
+
+      return count;
     } catch (error) {
       Logger.error('Error counting providers', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         context: 'ProviderService.getActiveCount',
       });
-      throw error;
+      throw new DatabaseError('Failed to count active providers');
     }
   }
 }
+
+// NOTE: Removed singleton export to prevent "Database not initialized" errors
+// Controllers should instantiate the service lazily (after database connects)
+// See: Session 12 singleton bug fix (SST, Tender, Operator services)
