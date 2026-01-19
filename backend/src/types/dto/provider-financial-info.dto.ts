@@ -1,9 +1,21 @@
-import { IsNotEmpty, IsString, IsBoolean, IsOptional, IsIn, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsBoolean,
+  IsOptional,
+  IsIn,
+  IsNumber,
+  MaxLength,
+} from 'class-validator';
 
 /**
  * DTO for creating provider financial info
  */
 export class ProviderFinancialInfoCreateDto {
+  @IsOptional()
+  @IsNumber({}, { message: 'El ID del proveedor debe ser un número' })
+  provider_id?: number;
+
   @IsNotEmpty({ message: 'El nombre del banco es requerido' })
   @IsString({ message: 'El nombre del banco debe ser texto' })
   @MaxLength(200, { message: 'El nombre del banco no debe exceder 200 caracteres' })
@@ -44,6 +56,14 @@ export class ProviderFinancialInfoCreateDto {
   @IsString({ message: 'El estado debe ser texto' })
   @IsIn(['active', 'inactive'], { message: 'El estado debe ser: active o inactive' })
   status?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El tenant_id debe ser un número' })
+  tenant_id?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El created_by debe ser un número' })
+  created_by?: number;
 }
 
 /**
@@ -90,4 +110,29 @@ export class ProviderFinancialInfoUpdateDto {
   @IsString({ message: 'El estado debe ser texto' })
   @IsIn(['active', 'inactive'], { message: 'El estado debe ser: active o inactive' })
   status?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El updated_by debe ser un número' })
+  updated_by?: number;
+}
+
+/**
+ * DTO for provider financial info response (snake_case for API)
+ */
+export interface ProviderFinancialInfoDto {
+  id: number;
+  provider_id: number;
+  bank_name: string;
+  account_number: string;
+  cci?: string;
+  account_holder_name?: string;
+  account_type?: string;
+  currency: string;
+  is_primary: boolean;
+  status: string;
+  tenant_id: number;
+  created_by?: number;
+  updated_by?: number;
+  created_at: string;
+  updated_at: string;
 }
