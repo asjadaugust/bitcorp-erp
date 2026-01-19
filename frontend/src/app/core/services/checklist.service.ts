@@ -63,6 +63,29 @@ export class ChecklistService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/checklists`;
 
+  // ============================================================================
+  // MAPPING FUNCTIONS
+  // ============================================================================
+
+  /**
+   * Map backend ChecklistTemplateListDto (Spanish snake_case) to frontend ChecklistTemplate (camelCase)
+   */
+  private mapApiToChecklistTemplate(apiData: any): ChecklistTemplate {
+    return {
+      id: apiData.id,
+      codigo: apiData.codigo,
+      nombre: apiData.nombre,
+      tipoEquipo: apiData.tipo_equipo || apiData.tipoEquipo,
+      descripcion: apiData.descripcion,
+      frecuencia: apiData.frecuencia,
+      activo: apiData.activo,
+      createdBy: apiData.created_by || apiData.createdBy,
+      createdAt: apiData.created_at || apiData.createdAt,
+      updatedAt: apiData.updated_at || apiData.updatedAt,
+      items: apiData.items || [],
+    };
+  }
+
   // ============================================
   // TEMPLATE METHODS
   // ============================================
@@ -79,12 +102,25 @@ export class ChecklistService {
       params = params.set('search', filters.search);
     }
 
-    // Note: apiResponseInterceptor already unwraps {success, data} responses
-    return this.http.get<ChecklistTemplate[]>(`${this.apiUrl}/templates`, { params });
+    // Handle paginated response {success, data, pagination}
+    return this.http.get<any>(`${this.apiUrl}/templates`, { params }).pipe(
+      map((response) => {
+        const dataArray = response?.data || response;
+        if (Array.isArray(dataArray)) {
+          return dataArray.map((item) => this.mapApiToChecklistTemplate(item));
+        }
+        return [];
+      })
+    );
   }
 
   getTemplateById(id: number): Observable<ChecklistTemplate> {
-    return this.http.get<ChecklistTemplate>(`${this.apiUrl}/templates/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/templates/${id}`).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return this.mapApiToChecklistTemplate(data);
+      })
+    );
   }
 
   createTemplate(data: Partial<ChecklistTemplate>): Observable<ChecklistTemplate> {
