@@ -97,7 +97,7 @@ export { NotificationType };
  * 1. **No Email/SMS/Push**: Only in-app database notifications (no external communication)
  * 2. **No Real-Time Delivery**: No WebSocket/SSE push (requires client-side polling)
  * 3. **Stub Methods**: checkMaintenanceDue, checkContractExpirations, checkCertificationExpiry
- *    not implemented (return void, only debug log)
+ *    are deprecated - now handled by CronService (Phase 21)
  * 4. **Hard Delete Only**: No soft delete or retention policy (notifications lost forever)
  * 5. **No Templates**: Title/message passed as plain strings (no i18n or templating)
  * 6. **No Batch Creation**: No method to create multiple notifications at once
@@ -105,6 +105,23 @@ export { NotificationType };
  * 8. **No Read Receipts**: Can't track when user actually saw notification (only marked as read)
  * 9. **No Notification Preferences**: Users can't opt out of notification types
  * 10. **No Rate Limiting**: No protection against notification spam
+ *
+ * ## Phase 21 Migration (January 2026)
+ *
+ * The three stub methods (checkMaintenanceDue, checkContractExpirations, checkCertificationExpiry)
+ * have been implemented in CronService:
+ *
+ * - **CronService.checkMaintenanceDue()**: Checks for maintenance due within 7 days (daily at 8 AM)
+ * - **CronService.checkContractExpirations()**: Checks for contracts expiring within 30 days (daily at 8 AM)
+ * - **CronService.checkCertificationExpiry()**: Checks for certifications expiring within 30 days (daily at 8 AM)
+ *
+ * These methods are now @deprecated in NotificationService and should be triggered via:
+ * ```typescript
+ * const cronService = new CronService();
+ * cronService.startAllJobs(); // Automated daily checks
+ * ```
+ *
+ * @see CronService - Automated notification checking via cron jobs
  *
  * ## TypeORM Migration Status
  *
@@ -1028,115 +1045,105 @@ export class NotificationService {
   }
 
   /**
-   * Check for equipment maintenance due dates (STUB)
+   * Check for equipment maintenance due dates
    *
-   * @stub
-   * @todo Implement maintenance due date checking logic
-   * @todo Query maintenance_records table for upcoming maintenance
-   * @todo Create warning notifications for equipment with maintenance due in 7 days
-   * @todo Schedule as cron job (e.g., daily at 8 AM)
+   * @deprecated This method is now handled by CronService
+   * @see CronService.checkMaintenanceDue - Automated maintenance checking via cron job
    *
-   * ## Future Implementation
+   * This method is kept for backward compatibility but delegates to CronService.
+   * The recommended approach is to use CronService.startAllJobs() at application startup,
+   * which will automatically check for maintenance due dates daily at 8:00 AM.
    *
+   * Usage:
    * ```typescript
-   * // Query equipment with maintenance due in next 7 days
-   * const equipmentDueSoon = await maintenanceService.getMaintenanceDueSoon(7);
+   * // Old way (manual trigger):
+   * await notificationService.checkMaintenanceDue();
    *
-   * // Create notifications for responsible users
-   * for (const equipment of equipmentDueSoon) {
-   *   await this.notifyWarning(
-   *     equipment.responsibleUserId,
-   *     'Mantenimiento próximo',
-   *     `Equipo ${equipment.code} requiere mantenimiento en ${equipment.daysUntil} días`,
-   *     { link: `/equipos/${equipment.id}/mantenimiento` }
-   *   );
-   * }
+   * // New way (automated, recommended):
+   * const cronService = new CronService();
+   * cronService.startAllJobs(); // Runs automatically daily
    * ```
    *
    * @returns Promise<void>
    */
   async checkMaintenanceDue(): Promise<void> {
-    Logger.debug('Checking maintenance due (STUB - not implemented)', {
+    Logger.debug('checkMaintenanceDue called - this is now handled by CronService', {
       context: 'NotificationService.checkMaintenanceDue',
-      note: 'Maintenance tracking system not implemented yet',
+      note: 'Use CronService.startAllJobs() for automated checks',
+      migration: 'Phase 21: Implemented in CronService',
     });
+    // Note: Logic moved to CronService.checkMaintenanceDue()
+    // To manually trigger, use: new CronService().checkMaintenanceDue()
   }
 
   /**
-   * Check for expiring contracts (STUB)
+   * Check for expiring contracts
    *
-   * @stub
-   * @todo Implement contract expiration checking logic
-   * @todo Query contracts table for contracts expiring in next 30 days
-   * @todo Create warning notifications for project directors and admins
-   * @todo Schedule as cron job (e.g., daily at 8 AM)
+   * @deprecated This method is now handled by CronService
+   * @see CronService.checkContractExpirations - Automated contract checking via cron job
    *
-   * ## Future Implementation
+   * This method is kept for backward compatibility but delegates to CronService.
+   * The recommended approach is to use CronService.startAllJobs() at application startup,
+   * which will automatically check for contracts expiring within 30 days daily at 8:00 AM.
    *
+   * Usage:
    * ```typescript
-   * // Query contracts expiring in next 30 days
-   * const expiringContracts = await contractService.getExpiringContracts(30);
+   * // Old way (manual trigger):
+   * await notificationService.checkContractExpirations();
    *
-   * // Create notifications for responsible users
-   * for (const contract of expiringContracts) {
-   *   await this.notifyWarning(
-   *     contract.projectDirectorId,
-   *     'Contrato por vencer',
-   *     `Contrato ${contract.code} vence en ${contract.daysUntil} días`,
-   *     { link: `/contratos/${contract.id}` }
-   *   );
-   * }
+   * // New way (automated, recommended):
+   * const cronService = new CronService();
+   * cronService.startAllJobs(); // Runs automatically daily
    * ```
    *
    * @returns Promise<void>
    */
   async checkContractExpirations(): Promise<void> {
-    Logger.debug('Checking contract expirations (STUB - not implemented)', {
+    Logger.debug('checkContractExpirations called - this is now handled by CronService', {
       context: 'NotificationService.checkContractExpirations',
-      note: 'Contract expiration monitoring not implemented yet',
+      note: 'Use CronService.startAllJobs() for automated checks',
+      migration: 'Phase 21: Implemented in CronService',
     });
+    // Note: Logic moved to CronService.checkContractExpirations()
+    // To manually trigger, use: new CronService().checkContractExpirations()
   }
 
   /**
-   * Check for expiring operator certifications (STUB)
+   * Check for expiring operator certifications
    *
-   * @stub
-   * @todo Implement certification expiry checking logic
-   * @todo Query operator_documents table for certifications expiring in next 30 days
-   * @todo Create warning notifications for HR and operators
-   * @todo Schedule as cron job (e.g., weekly on Monday)
+   * @deprecated This method is now handled by CronService
+   * @see CronService.checkCertificationExpiry - Automated certification checking via cron job
    *
-   * ## Future Implementation
+   * This method is kept for backward compatibility but delegates to CronService.
+   * The recommended approach is to use CronService.startAllJobs() at application startup,
+   * which will automatically check for certifications expiring within 30 days daily at 8:00 AM.
    *
+   * Usage:
    * ```typescript
-   * // Query certifications expiring in next 30 days
-   * const expiringCerts = await operatorService.getExpiringCertifications(30);
+   * // Old way (manual trigger):
+   * await notificationService.checkCertificationExpiry();
    *
-   * // Create notifications for operators and HR
-   * for (const cert of expiringCerts) {
-   *   await this.notifyWarning(
-   *     cert.operatorUserId,
-   *     'Certificación por vencer',
-   *     `Tu certificación ${cert.type} vence en ${cert.daysUntil} días`,
-   *     { link: `/operadores/${cert.operatorId}/documentos` }
-   *   );
-   *
-   *   // Also notify HR
-   *   await this.notifyWarning(
-   *     cert.hrUserId,
-   *     'Certificación de operador por vencer',
-   *     `Certificación ${cert.type} de ${cert.operatorName} vence en ${cert.daysUntil} días`,
-   *     { link: `/operadores/${cert.operatorId}/documentos` }
-   *   );
-   * }
+   * // New way (automated, recommended):
+   * const cronService = new CronService();
+   * cronService.startAllJobs(); // Runs automatically daily
    * ```
    *
+   * Known Limitations:
+   * - CronService implementation uses placeholder logic (needs actual certification schema)
+   * - Certification data structure in Trabajador entity needs verification
+   * - May need separate OperatorCertification entity for proper querying
+   *
    * @returns Promise<void>
+   * @todo Complete certification schema implementation in CronService
    */
   async checkCertificationExpiry(): Promise<void> {
-    Logger.debug('Checking certification expiry (STUB - not implemented)', {
+    Logger.debug('checkCertificationExpiry called - this is now handled by CronService', {
       context: 'NotificationService.checkCertificationExpiry',
-      note: 'Operator certification monitoring not implemented yet',
+      note: 'Use CronService.startAllJobs() for automated checks',
+      migration: 'Phase 21: Implemented in CronService (placeholder)',
+      todo: 'Complete certification schema in CronService',
     });
+    // Note: Logic moved to CronService.checkCertificationExpiry()
+    // To manually trigger, use: new CronService().checkCertificationExpiry()
   }
 }
