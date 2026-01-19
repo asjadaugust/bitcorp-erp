@@ -10,11 +10,11 @@
 ## Progress Overview
 
 **Total Services**: 31  
-**Audited**: 25 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment, accounts-payable, payment-schedule, auth, reporting, scheduling)  
-**Fixed**: 25 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment, accounts-payable, payment-schedule, auth, reporting, scheduling) ✅  
-**Remaining**: 6
+**Audited**: 26 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment, accounts-payable, payment-schedule, auth, reporting, scheduling, contract)  
+**Fixed**: 26 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment, accounts-payable, payment-schedule, auth, reporting, scheduling, contract) ✅  
+**Remaining**: 5
 
-**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 81% (25/31 complete)
+**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 84% (26/31 complete)
 
 ---
 
@@ -51,19 +51,19 @@
 
 ### Priority 3: Complex Services
 
-| Service                          | LOC | Complexity | Status      | Effort | Notes                                    |
-| -------------------------------- | --- | ---------- | ----------- | ------ | ---------------------------------------- |
-| `equipment.service.ts`           | 471 | 🔴 Complex | ✅ Complete | Large  | Session 21 - BASELINE (220+ JSDoc)       |
-| `accounts-payable.service.ts`    | 174 | 🔴 Complex | ✅ Complete | Large  | Session 22 - Financial entity            |
-| `payment-schedule.service.ts`    | 175 | 🔴 Complex | ✅ Complete | Large  | Session 23 - State machine (310+JSDoc)   |
-| `auth.service.ts`                | 217 | 🔴 Complex | ✅ Complete | Large  | Session 24 - Authentication (400+JSDoc)  |
-| `reporting.service.ts`           | 211 | 🔴 Complex | ✅ Complete | Large  | Session 25 - Analytics (500+ JSDoc)      |
-| `scheduling.service.ts`          | 216 | 🔴 Complex | ✅ Complete | Large  | Session 26 - Task scheduling (750+JSDoc) |
-| `contract.service.ts`            | 438 | 🔴 Complex | 📝 Todo     | Large  | Business logic                           |
-| `checklist.service.ts`           | 403 | 🔴 Complex | 📝 Todo     | Large  | Complex domain                           |
-| `project.service.ts`             | 511 | 🔴 Complex | 📝 Todo     | Large  | Core business                            |
-| `valuation.service.ts`           | 688 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅, Financial                  |
-| `equipment-analytics.service.ts` | 382 | 🔴 Complex | 📝 Todo     | Large  | Analytics                                |
+| Service                          | LOC | Complexity | Status      | Effort | Notes                                                      |
+| -------------------------------- | --- | ---------- | ----------- | ------ | ---------------------------------------------------------- |
+| `equipment.service.ts`           | 471 | 🔴 Complex | ✅ Complete | Large  | Session 21 - BASELINE (220+ JSDoc)                         |
+| `accounts-payable.service.ts`    | 174 | 🔴 Complex | ✅ Complete | Large  | Session 22 - Financial entity                              |
+| `payment-schedule.service.ts`    | 175 | 🔴 Complex | ✅ Complete | Large  | Session 23 - State machine (310+JSDoc)                     |
+| `auth.service.ts`                | 217 | 🔴 Complex | ✅ Complete | Large  | Session 24 - Authentication (400+JSDoc)                    |
+| `reporting.service.ts`           | 211 | 🔴 Complex | ✅ Complete | Large  | Session 25 - Analytics (500+ JSDoc)                        |
+| `scheduling.service.ts`          | 216 | 🔴 Complex | ✅ Complete | Large  | Session 26 - Task scheduling (750+JSDoc)                   |
+| `contract.service.ts`            | 438 | 🔴 Complex | ✅ Complete | Large  | Session 27 - Rental contracts (750+JSDoc, transaction fix) |
+| `checklist.service.ts`           | 403 | 🔴 Complex | 📝 Todo     | Large  | Complex domain                                             |
+| `project.service.ts`             | 511 | 🔴 Complex | 📝 Todo     | Large  | Core business                                              |
+| `valuation.service.ts`           | 688 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅, Financial                                    |
+| `equipment-analytics.service.ts` | 382 | 🔴 Complex | 📝 Todo     | Large  | Analytics                                                  |
 
 ### Priority 4: Infrastructure/Utility Services
 
