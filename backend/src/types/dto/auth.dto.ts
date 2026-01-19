@@ -45,12 +45,12 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Los nombres son requeridos' })
   @IsString({ message: 'Los nombres deben ser una cadena de texto' })
   @MaxLength(100, { message: 'Los nombres no deben exceder 100 caracteres' })
-  nombres!: string;
+  first_name!: string;
 
   @IsNotEmpty({ message: 'Los apellidos son requeridos' })
   @IsString({ message: 'Los apellidos deben ser una cadena de texto' })
   @MaxLength(100, { message: 'Los apellidos no deben exceder 100 caracteres' })
-  apellidos!: string;
+  last_name!: string;
 }
 
 /**
@@ -60,4 +60,27 @@ export class RefreshTokenDto {
   @IsNotEmpty({ message: 'El token de actualización es requerido' })
   @IsString({ message: 'El token de actualización debe ser una cadena de texto' })
   refresh_token!: string;
+}
+
+/**
+ * User data in authentication response
+ */
+export interface AuthUserDto {
+  id: string;
+  username: string;
+  email: string;
+  full_name: string;
+  roles: string[];
+  unidad_operativa_id?: number;
+  unidad_operativa_nombre?: string;
+}
+
+/**
+ * Authentication response DTO
+ * Returned after successful login, registration, or token refresh
+ */
+export interface AuthResponseDto {
+  user: AuthUserDto;
+  access_token: string;
+  refresh_token: string;
 }
