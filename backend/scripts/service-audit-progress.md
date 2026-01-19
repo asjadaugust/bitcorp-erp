@@ -10,11 +10,11 @@
 ## Progress Overview
 
 **Total Services**: 31  
-**Audited**: 13 (equipment, fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard)  
-**Fixed**: 12 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard) ✅  
-**Remaining**: 19
+**Audited**: 14 (equipment, fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center)  
+**Fixed**: 13 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center) ✅  
+**Remaining**: 18
 
-**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓░ 39% (12/31 complete)
+**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓▓░ 42% (13/31 complete)
 
 ---
 
@@ -32,22 +32,22 @@
 
 ### Priority 2: Moderate Services
 
-| Service                                     | LOC | Complexity  | Status      | Effort | Notes                  |
-| ------------------------------------------- | --- | ----------- | ----------- | ------ | ---------------------- |
-| `employee.service.ts`                       | 144 | 🟡 Moderate | ✅ Complete | Medium | Session 6 - HR         |
-| `operator.service.ts`                       | 368 | 🟡 Moderate | ✅ Complete | Medium | Session 7 - HR         |
-| `operator-document.service.ts`              | 453 | 🟡 Moderate | ✅ Complete | Medium | Session 8 - Docs       |
-| `operator-availability.service.ts`          | 565 | 🟡 Moderate | ✅ Complete | Medium | Session 9 - Dates      |
-| `sst.service.ts`                            | 315 | 🟡 Moderate | ✅ Complete | Medium | Session 10 - Safety    |
-| `tender.service.ts`                         | 418 | 🟡 Moderate | ✅ Complete | Medium | Session 11 - Tenders   |
-| `dashboard.service.ts`                      | 231 | 🟡 Moderate | ✅ Complete | Medium | Session 13 - Analytics |
-| `cost-center.service.ts`                    | 239 | 🟡 Moderate | 📝 Todo     | Medium | Cost tracking          |
-| `provider.service.ts`                       | 319 | 🟡 Moderate | 📝 Todo     | Medium | Provider CRUD          |
-| `provider-contact.service.ts`               | 197 | 🟡 Moderate | 📝 Todo     | Medium | Related to provider    |
-| `provider-financial-info.service.ts`        | 195 | 🟡 Moderate | 📝 Todo     | Medium | Related to provider    |
-| `timesheet.service.ts`                      | 336 | 🟡 Moderate | 📝 Todo     | Medium | Time tracking          |
-| `maintenance.service.ts`                    | 151 | 🟡 Moderate | 📝 Todo     | Medium | Maintenance logic      |
-| `maintenance-schedule-recurring.service.ts` | 377 | 🟡 Moderate | 📝 Todo     | Medium | Scheduling             |
+| Service                                     | LOC | Complexity  | Status      | Effort | Notes                      |
+| ------------------------------------------- | --- | ----------- | ----------- | ------ | -------------------------- |
+| `employee.service.ts`                       | 144 | 🟡 Moderate | ✅ Complete | Medium | Session 6 - HR             |
+| `operator.service.ts`                       | 368 | 🟡 Moderate | ✅ Complete | Medium | Session 7 - HR             |
+| `operator-document.service.ts`              | 453 | 🟡 Moderate | ✅ Complete | Medium | Session 8 - Docs           |
+| `operator-availability.service.ts`          | 565 | 🟡 Moderate | ✅ Complete | Medium | Session 9 - Dates          |
+| `sst.service.ts`                            | 315 | 🟡 Moderate | ✅ Complete | Medium | Session 10 - Safety        |
+| `tender.service.ts`                         | 418 | 🟡 Moderate | ✅ Complete | Medium | Session 11 - Tenders       |
+| `dashboard.service.ts`                      | 231 | 🟡 Moderate | ✅ Complete | Medium | Session 13 - Analytics     |
+| `cost-center.service.ts`                    | 239 | 🟡 Moderate | ✅ Complete | Medium | Session 14 - Cost tracking |
+| `provider.service.ts`                       | 319 | 🟡 Moderate | 📝 Todo     | Medium | Provider CRUD              |
+| `provider-contact.service.ts`               | 197 | 🟡 Moderate | 📝 Todo     | Medium | Related to provider        |
+| `provider-financial-info.service.ts`        | 195 | 🟡 Moderate | 📝 Todo     | Medium | Related to provider        |
+| `timesheet.service.ts`                      | 336 | 🟡 Moderate | 📝 Todo     | Medium | Time tracking              |
+| `maintenance.service.ts`                    | 151 | 🟡 Moderate | 📝 Todo     | Medium | Maintenance logic          |
+| `maintenance-schedule-recurring.service.ts` | 377 | 🟡 Moderate | 📝 Todo     | Medium | Scheduling                 |
 
 ### Priority 3: Complex Services
 
