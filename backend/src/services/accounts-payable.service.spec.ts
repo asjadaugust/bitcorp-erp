@@ -1,6 +1,7 @@
 import { AccountsPayableService } from './accounts-payable.service';
 import { AccountsPayableRepository } from '../repositories/accounts-payable.repository';
 import { AccountsPayableStatus } from '../models/accounts-payable.model';
+import { NotFoundError } from '../errors';
 
 // Mock the repository
 jest.mock('../repositories/accounts-payable.repository', () => ({
@@ -118,12 +119,13 @@ describe('AccountsPayableService', () => {
       expect(result!.numero_factura).toBe('INV-001');
     });
 
-    it('should return null if record not found', async () => {
+    it('should throw NotFoundError if record not found', async () => {
       mockRepository.findOne.mockResolvedValue(null);
 
-      const result = await service.findOne(999);
-
-      expect(result).toBeNull();
+      await expect(service.findOne(999)).rejects.toThrow(NotFoundError);
+      await expect(service.findOne(999)).rejects.toThrow(
+        "AccountsPayable with identifier '999' not found"
+      );
     });
   });
 
