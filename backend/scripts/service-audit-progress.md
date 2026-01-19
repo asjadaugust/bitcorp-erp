@@ -10,11 +10,11 @@
 ## Progress Overview
 
 **Total Services**: 31  
-**Audited**: 20 (equipment, fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring)  
-**Fixed**: 19 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring) ✅  
-**Remaining**: 12
+**Audited**: 20 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment)  
+**Fixed**: 20 (fuel, sig, inventory, export, report, employee, operator, operator-document, operator-availability, sst, tender, dashboard, cost-center, provider, provider-contact, provider-financial-info, timesheet, maintenance, maintenance-schedule-recurring, equipment) ✅  
+**Remaining**: 11
 
-**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 61% (19/31 complete)
+**Overall Progress**: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 65% (20/31 complete)
 
 ---
 
@@ -51,19 +51,19 @@
 
 ### Priority 3: Complex Services
 
-| Service                          | LOC | Complexity | Status  | Effort | Notes                       |
-| -------------------------------- | --- | ---------- | ------- | ------ | --------------------------- |
-| `equipment.service.ts`           | 471 | 🔴 Complex | 📝 Todo | Large  | **BASELINE** - Review first |
-| `accounts-payable.service.ts`    | 173 | 🔴 Complex | 📝 Todo | Large  | Has tests ✅                |
-| `payment-schedule.service.ts`    | 175 | 🔴 Complex | 📝 Todo | Large  | Has tests ✅ (30 tests)     |
-| `auth.service.ts`                | 216 | 🔴 Complex | 📝 Todo | Large  | Authentication              |
-| `reporting.service.ts`           | 211 | 🔴 Complex | 📝 Todo | Large  | Complex queries             |
-| `scheduling.service.ts`          | 216 | 🔴 Complex | 📝 Todo | Large  | Has tests ✅ (24 tests)     |
-| `contract.service.ts`            | 438 | 🔴 Complex | 📝 Todo | Large  | Business logic              |
-| `checklist.service.ts`           | 403 | 🔴 Complex | 📝 Todo | Large  | Complex domain              |
-| `project.service.ts`             | 511 | 🔴 Complex | 📝 Todo | Large  | Core business               |
-| `valuation.service.ts`           | 688 | 🔴 Complex | 📝 Todo | Large  | Has tests ✅, Financial     |
-| `equipment-analytics.service.ts` | 382 | 🔴 Complex | 📝 Todo | Large  | Analytics                   |
+| Service                          | LOC | Complexity | Status      | Effort | Notes                              |
+| -------------------------------- | --- | ---------- | ----------- | ------ | ---------------------------------- |
+| `equipment.service.ts`           | 471 | 🔴 Complex | ✅ Complete | Large  | Session 21 - BASELINE (220+ JSDoc) |
+| `accounts-payable.service.ts`    | 173 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅                       |
+| `payment-schedule.service.ts`    | 175 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅ (30 tests)            |
+| `auth.service.ts`                | 216 | 🔴 Complex | 📝 Todo     | Large  | Authentication                     |
+| `reporting.service.ts`           | 211 | 🔴 Complex | 📝 Todo     | Large  | Complex queries                    |
+| `scheduling.service.ts`          | 216 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅ (24 tests)            |
+| `contract.service.ts`            | 438 | 🔴 Complex | 📝 Todo     | Large  | Business logic                     |
+| `checklist.service.ts`           | 403 | 🔴 Complex | 📝 Todo     | Large  | Complex domain                     |
+| `project.service.ts`             | 511 | 🔴 Complex | 📝 Todo     | Large  | Core business                      |
+| `valuation.service.ts`           | 688 | 🔴 Complex | 📝 Todo     | Large  | Has tests ✅, Financial            |
+| `equipment-analytics.service.ts` | 382 | 🔴 Complex | 📝 Todo     | Large  | Analytics                          |
 
 ### Priority 4: Infrastructure/Utility Services
 
@@ -163,7 +163,7 @@
 
 ### Week 3: Complex Services (12 services)
 
-- [ ] equipment.service.ts (review baseline first)
+- [x] equipment.service.ts (BASELINE - review for all remaining complex)
 - [ ] accounts-payable.service.ts
 - [ ] payment-schedule.service.ts
 - [ ] auth.service.ts
