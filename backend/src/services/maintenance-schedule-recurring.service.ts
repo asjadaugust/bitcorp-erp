@@ -2,95 +2,147 @@
 import { AppDataSource } from '../config/database.config';
 import { MaintenanceScheduleRecurring } from '../models/maintenance-schedule-recurring.model';
 import { Repository } from 'typeorm';
+import {
+  MaintenanceScheduleRecurringDto,
+  CreateMaintenanceScheduleRecurringDto,
+  UpdateMaintenanceScheduleRecurringDto,
+  MaintenanceScheduleRecurringFilterDto,
+  toMaintenanceScheduleRecurringDto,
+  fromMaintenanceScheduleRecurringDto,
+  mapCreateMaintenanceScheduleRecurringDto,
+  mapUpdateMaintenanceScheduleRecurringDto,
+  mapMaintenanceScheduleRecurringFilterDto,
+} from '../types/dto/maintenance-schedule-recurring.dto';
+import { NotFoundError, DatabaseError, DatabaseErrorType } from '../errors';
+import { Logger } from '../utils/logger';
 
 /**
- * Service for managing recurring maintenance schedules
+ * MaintenanceScheduleRecurringService
  *
- * This service handles RECURRING maintenance schedules (e.g., "change oil every 250 hours").
- * For one-time maintenance work orders, use MaintenanceSchedule (programa_mantenimiento).
+ * Manages recurring maintenance schedules for equipment in BitCorp ERP.
+ * Handles patterns like "change oil every 250 hours" or "inspect every 6 months".
+ *
+ * ## Purpose
+ *
+ * This service handles **RECURRING** maintenance schedules that repeat on a regular interval.
+ * For **one-time** maintenance work orders, use `MaintenanceService` instead.
+ *
+ * ## Maintenance Types
+ *
+ * - **preventive**: Scheduled preventive maintenance (default)
+ * - **corrective**: Corrective maintenance to fix recurring issues
+ * - **predictive**: Predictive maintenance based on condition monitoring
+ * - **calibration**: Equipment calibration schedules
+ * - **inspection**: Regular inspection schedules
+ *
+ * ## Interval Types
+ *
+ * - **hours**: Based on equipment operating hours (e.g., every 250 hours)
+ * - **days**: Calendar days (e.g., every 30 days)
+ * - **weeks**: Calendar weeks (e.g., every 4 weeks)
+ * - **months**: Calendar months (e.g., every 6 months)
+ * - **kilometers**: Based on distance traveled (e.g., every 5000 km)
+ *
+ * ## Status Lifecycle
+ *
+ * ```
+ * active → suspended → active (can be reactivated)
+ *       ↘ completed (schedule finished, no longer recurring)
+ *       ↘ inactive (soft deleted)
+ * ```
+ *
+ * ### Status States:
+ * - `active`: Schedule is active and auto-generating maintenance tasks
+ * - `inactive`: Schedule is inactive (soft deleted, not visible in lists)
+ * - `suspended`: Schedule temporarily suspended (visible but not generating tasks)
+ * - `completed`: Schedule completed (no longer recurring, kept for history)
+ *
+ * ## Auto-Generate Tasks
+ *
+ * When `auto_generate_tasks = true`:
+ * - System automatically creates maintenance tasks when schedule is due
+ * - Tasks are created based on `next_due_date` or `next_due_hours`
+ *
+ * When `auto_generate_tasks = false`:
+ * - Manual task creation required
+ * - Schedule serves as a reminder only
+ *
+ * ## Next Due Date Calculation
+ *
+ * The service automatically calculates the next due date based on interval:
+ *
+ * - **days**: current_date + interval_value days
+ * - **weeks**: current_date + (interval_value × 7) days
+ * - **months**: current_date + interval_value months
+ * - **hours/kilometers**: current_date + 30 days (time-based approximation)
+ *
+ * ## Completion Workflow
+ *
+ * When marking a schedule as complete (`complete` method):
+ * 1. Set `last_completed_date` to current date
+ * 2. Set `last_completed_hours` to equipment hours at completion
+ * 3. Calculate new `next_due_date` based on interval
+ * 4. Calculate new `next_due_hours` = completion_hours + interval_value
+ * 5. Schedule continues to recur automatically
+ *
+ * ## Business Rules
+ *
+ * 1. **Equipment Required**: Every schedule must be associated with equipment
+ * 2. **Project Optional**: Schedule can be assigned to a specific project
+ * 3. **Interval Required**: Must specify both interval type and value
+ * 4. **Interval Minimum**: interval_value must be >= 1
+ * 5. **Soft Delete**: Deleted schedules are marked `status = 'inactive'`
+ * 6. **Active Filter**: By default, only `active` schedules are shown
+ * 7. **Due Soon**: Can query schedules due within N days ahead
+ *
+ * ## Related Services
+ *
+ * - `MaintenanceService`: Handles one-time maintenance work orders
+ * - `EquipmentService`: Manages equipment data
+ * - `ProjectService`: Manages project data
+ *
+ * @example
+ * ```typescript
+ * // Create recurring schedule: change oil every 250 hours
+ * const schedule = await service.create({
+ *   equipment_id: 123,
+ *   maintenance_type: 'preventive',
+ *   interval_type: 'hours',
+ *   interval_value: 250,
+ *   description: 'Cambio de aceite',
+ *   auto_generate_tasks: true
+ * });
+ *
+ * // Find schedules due in next 30 days
+ * const dueSoon = await service.findDueSoon(30);
+ *
+ * // Mark schedule as complete (auto-calculates next due)
+ * const completed = await service.complete(schedule.id, 1250); // at 1250 hours
+ * // Next due will be at 1500 hours (1250 + 250)
+ * ```
+ *
+ * @see MaintenanceScheduleRecurringDto
+ * @see MaintenanceScheduleRecurring
+ * @see MaintenanceService
  */
-
-export interface CreateMaintenanceScheduleDto {
-  equipmentId: number;
-  projectId?: number;
-  maintenanceType?: 'preventive' | 'corrective' | 'predictive' | 'calibration' | 'inspection';
-  intervalType?: 'hours' | 'days' | 'weeks' | 'months' | 'kilometers';
-  intervalValue: number;
-  description?: string;
-  notes?: string;
-  autoGenerateTasks?: boolean;
-  createdById?: number;
-}
-
-export interface UpdateMaintenanceScheduleDto {
-  equipmentId?: number;
-  projectId?: number;
-  maintenanceType?: 'preventive' | 'corrective' | 'predictive' | 'calibration' | 'inspection';
-  intervalType?: 'hours' | 'days' | 'weeks' | 'months' | 'kilometers';
-  intervalValue?: number;
-  description?: string;
-  notes?: string;
-  status?: 'active' | 'inactive' | 'suspended' | 'completed';
-  autoGenerateTasks?: boolean;
-  nextDueDate?: Date;
-  nextDueHours?: number;
-  lastCompletedDate?: Date;
-  lastCompletedHours?: number;
-}
-
-export interface MaintenanceScheduleFilter {
-  equipmentId?: number;
-  projectId?: number;
-  status?: string;
-  maintenanceType?: string;
-  isActive?: boolean;
-  page?: number;
-  limit?: number;
-  sort_by?: string;
-  sort_order?: 'ASC' | 'DESC';
-}
-
-export interface MaintenanceScheduleDto {
-  id: number;
-  equipmentId: number;
-  projectId?: number;
-  maintenanceType: string;
-  intervalType: string;
-  intervalValue: number;
-  description?: string;
-  notes?: string;
-  status: string;
-  autoGenerateTasks: boolean;
-  lastCompletedDate?: Date;
-  lastCompletedHours?: number;
-  nextDueDate?: Date;
-  nextDueHours?: number;
-  createdById?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  // Joined fields
-  equipment?: {
-    id: number;
-    code: string;
-    name: string;
-    brand: string;
-  };
-  project?: {
-    id: number;
-    name: string;
-  };
-}
-
 export class MaintenanceScheduleRecurringService {
-  private get repository(): Repository<MaintenanceScheduleRecurring> {
-    if (!AppDataSource.isInitialized) {
-      throw new Error('Database not initialized');
-    }
-    return AppDataSource.getRepository(MaintenanceScheduleRecurring);
+  private repository: Repository<MaintenanceScheduleRecurring>;
+
+  constructor() {
+    this.repository = AppDataSource.getRepository(MaintenanceScheduleRecurring);
   }
 
   /**
-   * Calculate next due date based on interval
+   * Calculate next due date based on interval type and value
+   *
+   * For time-based intervals (days, weeks, months), calculates the exact date.
+   * For usage-based intervals (hours, kilometers), estimates 30 days ahead.
+   *
+   * @param intervalType - Type of interval (hours, days, weeks, months, kilometers)
+   * @param intervalValue - Numeric value of interval
+   * @returns Calculated next due date
+   *
+   * @private
    */
   private calculateNextDueDate(intervalType: string, intervalValue: number): Date {
     const now = new Date();
@@ -106,8 +158,10 @@ export class MaintenanceScheduleRecurringService {
         now.setMonth(now.getMonth() + intervalValue);
         break;
       case 'hours':
+      case 'kilometers':
       default:
-        // For hours-based schedules, set a default 30 days ahead
+        // For usage-based schedules, estimate 30 days ahead
+        // Actual due time depends on equipment usage tracking
         now.setDate(now.getDate() + 30);
         break;
     }
@@ -116,262 +170,702 @@ export class MaintenanceScheduleRecurringService {
   }
 
   /**
-   * Transform entity to DTO with joined data
-   */
-  private transformToDto(schedule: MaintenanceScheduleRecurring): MaintenanceScheduleDto {
-    const dto: MaintenanceScheduleDto = {
-      id: schedule.id,
-      equipmentId: schedule.equipmentId,
-      projectId: schedule.projectId,
-      maintenanceType: schedule.maintenanceType,
-      intervalType: schedule.intervalType,
-      intervalValue: schedule.intervalValue,
-      description: schedule.description,
-      notes: schedule.notes,
-      status: schedule.status,
-      autoGenerateTasks: schedule.autoGenerateTasks,
-      lastCompletedDate: schedule.lastCompletedDate,
-      lastCompletedHours: schedule.lastCompletedHours,
-      nextDueDate: schedule.nextDueDate,
-      nextDueHours: schedule.nextDueHours,
-      createdById: schedule.createdById,
-      createdAt: schedule.createdAt,
-      updatedAt: schedule.updatedAt,
-    };
-
-    // Add joined equipment data if loaded
-    if (schedule.equipment) {
-      dto.equipment = {
-        id: schedule.equipment.id,
-        code: schedule.equipment.codigo_equipo,
-        name: schedule.equipment.marca + ' ' + schedule.equipment.modelo,
-        brand: schedule.equipment.marca,
-      };
-    }
-
-    // Add joined project data if loaded
-    if (schedule.project) {
-      dto.project = {
-        id: schedule.project.id,
-        name: schedule.project.nombre,
-      };
-    }
-
-    return dto;
-  }
-
-  /**
-   * Find all maintenance schedules with filters, pagination, and sorting
+   * Get all recurring maintenance schedules with filtering, sorting, and pagination
+   *
+   * Retrieves schedules with support for:
+   * - Equipment filtering
+   * - Project filtering
+   * - Status filtering
+   * - Maintenance type filtering
+   * - Pagination with configurable page size
+   * - Sorting by multiple fields
+   *
+   * Includes related equipment and project data in results.
+   *
+   * @param filters - Optional filtering, pagination, and sorting options
+   * @param filters.equipment_id - Filter by equipment ID
+   * @param filters.project_id - Filter by project ID
+   * @param filters.status - Filter by status (active, inactive, suspended, completed)
+   * @param filters.maintenance_type - Filter by maintenance type
+   * @param filters.page - Page number (1-indexed, default: 1)
+   * @param filters.limit - Results per page (default: 20, max: 100)
+   * @param filters.sort_by - Field to sort by (default: created_at)
+   * @param filters.sort_order - Sort direction (ASC or DESC, default: DESC)
+   *
+   * @returns Object containing:
+   *   - data: Array of MaintenanceScheduleRecurringDto objects with snake_case fields
+   *   - total: Total number of matching records (for pagination)
+   *
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * // Get all active schedules for equipment
+   * const result = await service.findAll({
+   *   equipment_id: 123,
+   *   status: 'active',
+   *   page: 1,
+   *   limit: 20
+   * });
+   *
+   * // Get all preventive maintenance schedules
+   * const preventive = await service.findAll({
+   *   maintenance_type: 'preventive'
+   * });
+   * ```
    */
   async findAll(
-    filters: MaintenanceScheduleFilter
-  ): Promise<{ data: MaintenanceScheduleDto[]; total: number }> {
-    const page = filters.page || 1;
-    const limit = filters.limit || 20;
-    const skip = (page - 1) * limit;
+    filters: MaintenanceScheduleRecurringFilterDto
+  ): Promise<{ data: MaintenanceScheduleRecurringDto[]; total: number }> {
+    try {
+      // Map dual format to standard format
+      const mappedFilters = mapMaintenanceScheduleRecurringFilterDto(filters);
 
-    // Define sortable fields (snake_case API → camelCase DB)
-    const sortableFields: Record<string, string> = {
-      equipment_id: 'ms.equipmentId',
-      project_id: 'ms.projectId',
-      maintenance_type: 'ms.maintenanceType',
-      interval_type: 'ms.intervalType',
-      interval_value: 'ms.intervalValue',
-      status: 'ms.status',
-      next_due_date: 'ms.nextDueDate',
-      last_completed_date: 'ms.lastCompletedDate',
-      created_at: 'ms.createdAt',
-      updated_at: 'ms.updatedAt',
-    };
+      const page = mappedFilters.page || 1;
+      const limit = mappedFilters.limit || 20;
+      const skip = (page - 1) * limit;
 
-    const sortBy =
-      filters.sort_by && sortableFields[filters.sort_by]
-        ? sortableFields[filters.sort_by]
-        : 'ms.createdAt';
-    const sortOrder = filters.sort_order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+      // Define sortable fields (snake_case API → camelCase DB)
+      const sortableFields: Record<string, string> = {
+        equipment_id: 'ms.equipmentId',
+        project_id: 'ms.projectId',
+        maintenance_type: 'ms.maintenanceType',
+        interval_type: 'ms.intervalType',
+        interval_value: 'ms.intervalValue',
+        status: 'ms.status',
+        next_due_date: 'ms.nextDueDate',
+        last_completed_date: 'ms.lastCompletedDate',
+        created_at: 'ms.createdAt',
+        updated_at: 'ms.updatedAt',
+      };
 
-    const queryBuilder = this.repository
-      .createQueryBuilder('ms')
-      .leftJoinAndSelect('ms.equipment', 'e')
-      .leftJoinAndSelect('ms.project', 'p');
+      const sortBy =
+        mappedFilters.sort_by && sortableFields[mappedFilters.sort_by]
+          ? sortableFields[mappedFilters.sort_by]
+          : 'ms.createdAt';
+      const sortOrder = mappedFilters.sort_order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    // Apply filters
-    if (filters.equipmentId) {
-      queryBuilder.andWhere('ms.equipmentId = :equipmentId', { equipmentId: filters.equipmentId });
-    }
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: queryBuilder.andWhere('ms.tenant_id = :tenantId', { tenantId })
+      const queryBuilder = this.repository
+        .createQueryBuilder('ms')
+        .leftJoinAndSelect('ms.equipment', 'e')
+        .leftJoinAndSelect('ms.project', 'p');
 
-    if (filters.projectId) {
-      queryBuilder.andWhere('ms.projectId = :projectId', { projectId: filters.projectId });
-    }
+      // Apply filters
+      if (mappedFilters.equipment_id) {
+        queryBuilder.andWhere('ms.equipmentId = :equipmentId', {
+          equipmentId: mappedFilters.equipment_id,
+        });
+      }
 
-    if (filters.status) {
-      queryBuilder.andWhere('ms.status = :status', { status: filters.status });
-    }
+      if (mappedFilters.project_id) {
+        queryBuilder.andWhere('ms.projectId = :projectId', { projectId: mappedFilters.project_id });
+      }
 
-    if (filters.maintenanceType) {
-      queryBuilder.andWhere('ms.maintenanceType = :maintenanceType', {
-        maintenanceType: filters.maintenanceType,
+      if (mappedFilters.status) {
+        queryBuilder.andWhere('ms.status = :status', { status: mappedFilters.status });
+      }
+
+      if (mappedFilters.maintenance_type) {
+        queryBuilder.andWhere('ms.maintenanceType = :maintenanceType', {
+          maintenanceType: mappedFilters.maintenance_type,
+        });
+      }
+
+      // Apply sorting
+      queryBuilder.orderBy(sortBy, sortOrder);
+
+      // Get total count
+      const total = await queryBuilder.getCount();
+
+      // Apply pagination
+      queryBuilder.skip(skip).take(limit);
+
+      // Get results
+      const schedules = await queryBuilder.getMany();
+
+      Logger.info('Recurring maintenance schedules retrieved successfully', {
+        total,
+        returned: schedules.length,
+        page,
+        limit,
+        filters: {
+          equipment_id: mappedFilters.equipment_id,
+          project_id: mappedFilters.project_id,
+          status: mappedFilters.status,
+          maintenance_type: mappedFilters.maintenance_type,
+        },
+        context: 'MaintenanceScheduleRecurringService.findAll',
       });
+
+      return {
+        data: schedules.map((s) => toMaintenanceScheduleRecurringDto(s)),
+        total,
+      };
+    } catch (error) {
+      Logger.error('Failed to retrieve recurring maintenance schedules', {
+        error: error instanceof Error ? error.message : String(error),
+        filters,
+        context: 'MaintenanceScheduleRecurringService.findAll',
+      });
+
+      throw new DatabaseError(
+        'Failed to retrieve recurring maintenance schedules',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined
+      );
     }
-
-    // Apply sorting
-    queryBuilder.orderBy(sortBy, sortOrder);
-
-    // Get total count
-    const total = await queryBuilder.getCount();
-
-    // Apply pagination
-    queryBuilder.skip(skip).take(limit);
-
-    // Get results
-    const schedules = await queryBuilder.getMany();
-
-    return {
-      data: schedules.map((s) => this.transformToDto(s)),
-      total,
-    };
   }
 
   /**
-   * Find schedule by ID
+   * Get recurring maintenance schedule by ID
+   *
+   * Retrieves a single schedule with its related equipment and project data.
+   * Returns null if the schedule does not exist.
+   *
+   * @param id - Recurring maintenance schedule ID
+   *
+   * @returns MaintenanceScheduleRecurringDto with snake_case fields, or null if not found
+   *
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * const schedule = await service.findById(123);
+   * if (schedule) {
+   *   console.log(`Schedule ${schedule.id} for equipment ${schedule.equipment_id}`);
+   * }
+   * ```
    */
-  async findById(id: number): Promise<MaintenanceScheduleDto | null> {
-    const schedule = await this.repository.findOne({
-      where: { id },
-      relations: ['equipment', 'project'],
-    });
+  async findById(id: number): Promise<MaintenanceScheduleRecurringDto | null> {
+    try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: where: { id, tenant_id: tenantId }
+      const schedule = await this.repository.findOne({
+        where: { id },
+        relations: ['equipment', 'project'],
+      });
 
-    if (!schedule) {
-      return null;
+      if (!schedule) {
+        Logger.info('Recurring maintenance schedule not found', {
+          id,
+          context: 'MaintenanceScheduleRecurringService.findById',
+        });
+        return null;
+      }
+
+      Logger.info('Recurring maintenance schedule retrieved successfully', {
+        id: schedule.id,
+        equipment_id: schedule.equipmentId,
+        maintenance_type: schedule.maintenanceType,
+        interval_type: schedule.intervalType,
+        interval_value: schedule.intervalValue,
+        status: schedule.status,
+        context: 'MaintenanceScheduleRecurringService.findById',
+      });
+
+      return toMaintenanceScheduleRecurringDto(schedule);
+    } catch (error) {
+      Logger.error('Failed to retrieve recurring maintenance schedule', {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+        context: 'MaintenanceScheduleRecurringService.findById',
+      });
+
+      throw new DatabaseError(
+        'Failed to retrieve recurring maintenance schedule',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined
+      );
     }
-
-    return this.transformToDto(schedule);
   }
 
   /**
-   * Create new maintenance schedule
+   * Create new recurring maintenance schedule
+   *
+   * Creates a schedule with automatic next due date calculation.
+   * Supports dual input format (English camelCase and Spanish snake_case).
+   *
+   * The schedule is created with:
+   * - Default status: 'active'
+   * - Default maintenance_type: 'preventive' (if not provided)
+   * - Default interval_type: 'hours' (if not provided)
+   * - Default auto_generate_tasks: true (if not provided)
+   * - Calculated next_due_date based on interval
+   *
+   * @param dto - Schedule data (supports dual format)
+   * @param dto.equipment_id - Equipment ID (required)
+   * @param dto.interval_value - Interval numeric value (required)
+   * @param dto.maintenance_type - Type of maintenance (optional, default: 'preventive')
+   * @param dto.interval_type - Type of interval (optional, default: 'hours')
+   * @param dto.description - Description of maintenance (optional)
+   * @param dto.notes - Additional notes (optional)
+   * @param dto.auto_generate_tasks - Auto-generate tasks flag (optional, default: true)
+   *
+   * @returns Created MaintenanceScheduleRecurringDto with snake_case fields
+   *
+   * @throws {DatabaseError} If database operation fails
+   * @throws {NotFoundError} If created record cannot be reloaded (should never happen)
+   *
+   * @example
+   * ```typescript
+   * // Spanish snake_case (preferred)
+   * const schedule = await service.create({
+   *   equipment_id: 123,
+   *   maintenance_type: 'preventive',
+   *   interval_type: 'hours',
+   *   interval_value: 250,
+   *   description: 'Cambio de aceite',
+   *   auto_generate_tasks: true
+   * });
+   *
+   * // English camelCase (backward compatibility)
+   * const schedule = await service.create({
+   *   equipmentId: 123,
+   *   maintenanceType: 'calibration',
+   *   intervalType: 'months',
+   *   intervalValue: 6,
+   *   description: 'Equipment calibration'
+   * });
+   * ```
    */
-  async create(dto: CreateMaintenanceScheduleDto): Promise<MaintenanceScheduleDto> {
-    const nextDueDate = this.calculateNextDueDate(dto.intervalType || 'hours', dto.intervalValue);
+  async create(
+    dto: CreateMaintenanceScheduleRecurringDto
+  ): Promise<MaintenanceScheduleRecurringDto> {
+    try {
+      // Map dual input format to DTO
+      const dtoData = mapCreateMaintenanceScheduleRecurringDto(dto);
 
-    const schedule = this.repository.create({
-      equipmentId: dto.equipmentId,
-      projectId: dto.projectId,
-      maintenanceType: dto.maintenanceType || 'preventive',
-      intervalType: dto.intervalType || 'hours',
-      intervalValue: dto.intervalValue,
-      description: dto.description,
-      notes: dto.notes,
-      autoGenerateTasks: dto.autoGenerateTasks !== false,
-      nextDueDate,
-      status: 'active',
-      createdById: dto.createdById,
-    });
+      // Set defaults
+      const maintenance_type = dtoData.maintenance_type || 'preventive';
+      const interval_type = dtoData.interval_type || 'hours';
+      const auto_generate_tasks = dtoData.auto_generate_tasks !== false;
 
-    const saved = await this.repository.save(schedule);
+      // Calculate next due date
+      const nextDueDate = this.calculateNextDueDate(interval_type, dtoData.interval_value || 0);
 
-    // Reload with relations
-    const reloaded = await this.repository.findOne({
-      where: { id: saved.id },
-      relations: ['equipment', 'project'],
-    });
+      // Create entity
+      const entityData: Partial<MaintenanceScheduleRecurringDto> = {
+        ...dtoData,
+        maintenance_type,
+        interval_type,
+        auto_generate_tasks,
+        next_due_date: nextDueDate.toISOString().split('T')[0],
+        status: 'active',
+      };
 
-    return this.transformToDto(reloaded!);
+      const schedule = this.repository.create(fromMaintenanceScheduleRecurringDto(entityData));
+      const saved = await this.repository.save(schedule);
+
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: where: { id: saved.id, tenant_id: tenantId }
+      // Reload with relations
+      const reloaded = await this.repository.findOne({
+        where: { id: saved.id },
+        relations: ['equipment', 'project'],
+      });
+
+      if (!reloaded) {
+        throw new NotFoundError('MaintenanceScheduleRecurring', saved.id);
+      }
+
+      Logger.info('Recurring maintenance schedule created successfully', {
+        id: reloaded.id,
+        equipment_id: reloaded.equipmentId,
+        maintenance_type: reloaded.maintenanceType,
+        interval_type: reloaded.intervalType,
+        interval_value: reloaded.intervalValue,
+        next_due_date: reloaded.nextDueDate?.toISOString().split('T')[0],
+        auto_generate_tasks: reloaded.autoGenerateTasks,
+        status: reloaded.status,
+        context: 'MaintenanceScheduleRecurringService.create',
+      });
+
+      return toMaintenanceScheduleRecurringDto(reloaded);
+    } catch (error) {
+      // Re-throw custom errors
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      Logger.error('Failed to create recurring maintenance schedule', {
+        error: error instanceof Error ? error.message : String(error),
+        dto,
+        context: 'MaintenanceScheduleRecurringService.create',
+      });
+
+      throw new DatabaseError(
+        'Failed to create recurring maintenance schedule',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
-   * Update maintenance schedule
+   * Update recurring maintenance schedule
+   *
+   * Updates an existing schedule. Supports partial updates (only provided fields).
+   * Supports dual input format (English camelCase and Spanish snake_case).
+   *
+   * Common update scenarios:
+   * - Change interval: Update interval_type or interval_value
+   * - Suspend schedule: Set status to 'suspended'
+   * - Reactivate schedule: Set status to 'active'
+   * - Complete schedule: Set status to 'completed'
+   * - Adjust next due: Update next_due_date or next_due_hours
+   *
+   * @param id - Recurring maintenance schedule ID
+   * @param dto - Partial schedule data (supports dual format)
+   *
+   * @returns Updated MaintenanceScheduleRecurringDto with snake_case fields
+   *
+   * @throws {NotFoundError} If schedule does not exist
+   * @throws {DatabaseError} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * // Suspend schedule
+   * const updated = await service.update(123, {
+   *   status: 'suspended'
+   * });
+   *
+   * // Change interval
+   * const updated = await service.update(123, {
+   *   interval_value: 300,  // from 250 to 300 hours
+   *   description: 'Updated interval'
+   * });
+   *
+   * // Reactivate and update next due
+   * const updated = await service.update(123, {
+   *   status: 'active',
+   *   next_due_date: '2026-03-01'
+   * });
+   * ```
    */
   async update(
     id: number,
-    dto: UpdateMaintenanceScheduleDto
-  ): Promise<MaintenanceScheduleDto | null> {
-    const schedule = await this.repository.findOne({ where: { id } });
+    dto: UpdateMaintenanceScheduleRecurringDto
+  ): Promise<MaintenanceScheduleRecurringDto> {
+    try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: where: { id, tenant_id: tenantId }
+      const schedule = await this.repository.findOne({ where: { id } });
 
-    if (!schedule) {
-      return null;
+      if (!schedule) {
+        throw new NotFoundError('MaintenanceScheduleRecurring', id);
+      }
+
+      // Store original values for logging
+      const originalStatus = schedule.status;
+      const originalIntervalValue = schedule.intervalValue;
+
+      // Map dual input format to DTO
+      const dtoData = mapUpdateMaintenanceScheduleRecurringDto(dto);
+
+      // Apply updates
+      Object.assign(schedule, fromMaintenanceScheduleRecurringDto(dtoData));
+
+      const saved = await this.repository.save(schedule);
+
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: where: { id: saved.id, tenant_id: tenantId }
+      // Reload with relations
+      const reloaded = await this.repository.findOne({
+        where: { id: saved.id },
+        relations: ['equipment', 'project'],
+      });
+
+      if (!reloaded) {
+        throw new NotFoundError('MaintenanceScheduleRecurring', saved.id);
+      }
+
+      Logger.info('Recurring maintenance schedule updated successfully', {
+        id: reloaded.id,
+        equipment_id: reloaded.equipmentId,
+        maintenance_type: reloaded.maintenanceType,
+        interval_type: reloaded.intervalType,
+        interval_value: reloaded.intervalValue,
+        interval_value_changed: originalIntervalValue !== reloaded.intervalValue,
+        status: reloaded.status,
+        status_changed: originalStatus !== reloaded.status,
+        next_due_date: reloaded.nextDueDate?.toISOString().split('T')[0],
+        context: 'MaintenanceScheduleRecurringService.update',
+      });
+
+      return toMaintenanceScheduleRecurringDto(reloaded);
+    } catch (error) {
+      // Re-throw custom errors
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      Logger.error('Failed to update recurring maintenance schedule', {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+        dto,
+        context: 'MaintenanceScheduleRecurringService.update',
+      });
+
+      throw new DatabaseError(
+        'Failed to update recurring maintenance schedule',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined
+      );
     }
-
-    // Apply updates
-    if (dto.equipmentId !== undefined) schedule.equipmentId = dto.equipmentId;
-    if (dto.projectId !== undefined) schedule.projectId = dto.projectId;
-    if (dto.maintenanceType !== undefined) schedule.maintenanceType = dto.maintenanceType;
-    if (dto.intervalType !== undefined) schedule.intervalType = dto.intervalType;
-    if (dto.intervalValue !== undefined) schedule.intervalValue = dto.intervalValue;
-    if (dto.description !== undefined) schedule.description = dto.description;
-    if (dto.notes !== undefined) schedule.notes = dto.notes;
-    if (dto.status !== undefined) schedule.status = dto.status;
-    if (dto.autoGenerateTasks !== undefined) schedule.autoGenerateTasks = dto.autoGenerateTasks;
-    if (dto.nextDueDate !== undefined) schedule.nextDueDate = dto.nextDueDate;
-    if (dto.nextDueHours !== undefined) schedule.nextDueHours = dto.nextDueHours;
-    if (dto.lastCompletedDate !== undefined) schedule.lastCompletedDate = dto.lastCompletedDate;
-    if (dto.lastCompletedHours !== undefined) schedule.lastCompletedHours = dto.lastCompletedHours;
-
-    const saved = await this.repository.save(schedule);
-
-    // Reload with relations
-    const reloaded = await this.repository.findOne({
-      where: { id: saved.id },
-      relations: ['equipment', 'project'],
-    });
-
-    return this.transformToDto(reloaded!);
   }
 
   /**
-   * Delete maintenance schedule
+   * Delete recurring maintenance schedule (soft delete)
+   *
+   * Marks a schedule as deleted by setting status='inactive'.
+   * This is a soft delete - the record remains in the database for audit purposes.
+   *
+   * Hard deletes are not allowed to maintain data integrity and audit trail.
+   *
+   * Note: Soft deleted schedules (status='inactive') are not shown in default queries.
+   *
+   * @param id - Recurring maintenance schedule ID
+   *
+   * @returns true if record was marked as inactive
+   *
+   * @throws {NotFoundError} If schedule does not exist
+   * @throws {DatabaseError} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * const deleted = await service.delete(123);
+   * // Schedule is now status='inactive' and hidden from normal queries
+   * ```
    */
   async delete(id: number): Promise<boolean> {
-    const result = await this.repository.delete(id);
-    return (result.affected ?? 0) > 0;
+    try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: where: { id, tenant_id: tenantId }
+      const schedule = await this.repository.findOne({
+        where: { id },
+      });
+
+      if (!schedule) {
+        throw new NotFoundError('MaintenanceScheduleRecurring', id);
+      }
+
+      // Soft delete: mark as inactive
+      schedule.status = 'inactive';
+      await this.repository.save(schedule);
+
+      Logger.info('Recurring maintenance schedule deleted (soft delete)', {
+        id: schedule.id,
+        equipment_id: schedule.equipmentId,
+        maintenance_type: schedule.maintenanceType,
+        interval_type: schedule.intervalType,
+        interval_value: schedule.intervalValue,
+        context: 'MaintenanceScheduleRecurringService.delete',
+      });
+
+      return true;
+    } catch (error) {
+      // Re-throw custom errors
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      Logger.error('Failed to delete recurring maintenance schedule', {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+        context: 'MaintenanceScheduleRecurringService.delete',
+      });
+
+      throw new DatabaseError(
+        'Failed to delete recurring maintenance schedule',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
    * Find schedules that are due soon
+   *
+   * Retrieves active schedules with auto_generate_tasks enabled that are due
+   * within the specified number of days. Useful for:
+   * - Generating upcoming maintenance tasks
+   * - Sending maintenance reminders
+   * - Dashboard "due soon" widgets
+   *
+   * Only returns schedules with:
+   * - status = 'active'
+   * - auto_generate_tasks = true
+   * - next_due_date <= (current_date + daysAhead)
+   *
+   * Results are sorted by next_due_date ascending (most urgent first).
+   *
+   * @param daysAhead - Number of days to look ahead (default: 30)
+   *
+   * @returns Array of MaintenanceScheduleRecurringDto objects due soon
+   *
+   * @throws {DatabaseError} If database query fails
+   *
+   * @example
+   * ```typescript
+   * // Get schedules due in next 30 days
+   * const dueSoon = await service.findDueSoon(30);
+   *
+   * // Get schedules due in next 7 days
+   * const urgent = await service.findDueSoon(7);
+   *
+   * dueSoon.forEach(schedule => {
+   *   console.log(`${schedule.equipment_code} - ${schedule.description}`);
+   *   console.log(`Due: ${schedule.next_due_date}`);
+   * });
+   * ```
    */
-  async findDueSoon(daysAhead: number = 30): Promise<MaintenanceScheduleDto[]> {
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + daysAhead);
+  async findDueSoon(daysAhead: number = 30): Promise<MaintenanceScheduleRecurringDto[]> {
+    try {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + daysAhead);
 
-    const schedules = await this.repository
-      .createQueryBuilder('ms')
-      .leftJoinAndSelect('ms.equipment', 'e')
-      .leftJoinAndSelect('ms.project', 'p')
-      .where('ms.status = :status', { status: 'active' })
-      .andWhere('ms.autoGenerateTasks = :autoGenerate', { autoGenerate: true })
-      .andWhere('ms.nextDueDate <= :futureDate', { futureDate })
-      .orderBy('ms.nextDueDate', 'ASC')
-      .getMany();
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: .andWhere('ms.tenant_id = :tenantId', { tenantId })
+      const schedules = await this.repository
+        .createQueryBuilder('ms')
+        .leftJoinAndSelect('ms.equipment', 'e')
+        .leftJoinAndSelect('ms.project', 'p')
+        .where('ms.status = :status', { status: 'active' })
+        .andWhere('ms.autoGenerateTasks = :autoGenerate', { autoGenerate: true })
+        .andWhere('ms.nextDueDate <= :futureDate', { futureDate })
+        .orderBy('ms.nextDueDate', 'ASC')
+        .getMany();
 
-    return schedules.map((s) => this.transformToDto(s));
+      Logger.info('Recurring maintenance schedules due soon retrieved successfully', {
+        total: schedules.length,
+        days_ahead: daysAhead,
+        future_date: futureDate.toISOString().split('T')[0],
+        context: 'MaintenanceScheduleRecurringService.findDueSoon',
+      });
+
+      return schedules.map((s) => toMaintenanceScheduleRecurringDto(s));
+    } catch (error) {
+      Logger.error('Failed to retrieve recurring maintenance schedules due soon', {
+        error: error instanceof Error ? error.message : String(error),
+        days_ahead: daysAhead,
+        context: 'MaintenanceScheduleRecurringService.findDueSoon',
+      });
+
+      throw new DatabaseError(
+        'Failed to retrieve recurring maintenance schedules due soon',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined
+      );
+    }
   }
 
   /**
    * Complete a maintenance schedule (mark as done and recalculate next due)
+   *
+   * Marks a schedule as completed for the current cycle and automatically
+   * calculates the next due date/hours based on the schedule's interval.
+   *
+   * This method:
+   * 1. Sets last_completed_date to current date
+   * 2. Sets last_completed_hours to provided equipment hours
+   * 3. Calculates next_due_date by adding interval to current date
+   * 4. Calculates next_due_hours = completion_hours + interval_value (for hour-based schedules)
+   * 5. Schedule continues to recur automatically
+   *
+   * **Important**: This does NOT change the schedule status. The schedule remains
+   * active and will trigger again at the next due date.
+   *
+   * @param id - Recurring maintenance schedule ID
+   * @param completionHours - Equipment hours at completion (optional, for hour-based schedules)
+   *
+   * @returns Updated MaintenanceScheduleRecurringDto with recalculated next due
+   *
+   * @throws {NotFoundError} If schedule does not exist
+   * @throws {DatabaseError} If database operation fails
+   *
+   * @example
+   * ```typescript
+   * // Complete hour-based schedule
+   * const schedule = await service.complete(123, 1250);
+   * // If interval is 250 hours, next_due_hours will be 1500
+   *
+   * // Complete calendar-based schedule
+   * const schedule = await service.complete(456);
+   * // next_due_date will be current_date + interval
+   *
+   * console.log(`Last completed: ${schedule.last_completed_date}`);
+   * console.log(`Next due: ${schedule.next_due_date}`);
+   * ```
    */
-  async complete(id: number, completionHours?: number): Promise<MaintenanceScheduleDto | null> {
-    const schedule = await this.repository.findOne({ where: { id } });
+  async complete(id: number, completionHours?: number): Promise<MaintenanceScheduleRecurringDto> {
+    try {
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: where: { id, tenant_id: tenantId }
+      const schedule = await this.repository.findOne({ where: { id } });
 
-    if (!schedule) {
-      return null;
+      if (!schedule) {
+        throw new NotFoundError('MaintenanceScheduleRecurring', id);
+      }
+
+      // Calculate next due date based on interval
+      const nextDueDate = this.calculateNextDueDate(schedule.intervalType, schedule.intervalValue);
+      const nextDueHours = completionHours ? completionHours + schedule.intervalValue : undefined;
+
+      // Update completion data
+      schedule.lastCompletedDate = new Date();
+      schedule.lastCompletedHours = completionHours;
+      schedule.nextDueDate = nextDueDate;
+      schedule.nextDueHours = nextDueHours;
+
+      const saved = await this.repository.save(schedule);
+
+      // TODO: Add tenant_id filter when schema updated (Phase 21)
+      // Expected: where: { id: saved.id, tenant_id: tenantId }
+      // Reload with relations
+      const reloaded = await this.repository.findOne({
+        where: { id: saved.id },
+        relations: ['equipment', 'project'],
+      });
+
+      if (!reloaded) {
+        throw new NotFoundError('MaintenanceScheduleRecurring', saved.id);
+      }
+
+      Logger.info('Recurring maintenance schedule completed successfully', {
+        id: reloaded.id,
+        equipment_id: reloaded.equipmentId,
+        maintenance_type: reloaded.maintenanceType,
+        interval_type: reloaded.intervalType,
+        interval_value: reloaded.intervalValue,
+        last_completed_date: reloaded.lastCompletedDate?.toISOString().split('T')[0],
+        last_completed_hours: reloaded.lastCompletedHours,
+        next_due_date: reloaded.nextDueDate?.toISOString().split('T')[0],
+        next_due_hours: reloaded.nextDueHours,
+        completion_hours: completionHours,
+        context: 'MaintenanceScheduleRecurringService.complete',
+      });
+
+      return toMaintenanceScheduleRecurringDto(reloaded);
+    } catch (error) {
+      // Re-throw custom errors
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      Logger.error('Failed to complete recurring maintenance schedule', {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+        completion_hours: completionHours,
+        context: 'MaintenanceScheduleRecurringService.complete',
+      });
+
+      throw new DatabaseError(
+        'Failed to complete recurring maintenance schedule',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined
+      );
     }
-
-    const nextDueDate = this.calculateNextDueDate(schedule.intervalType, schedule.intervalValue);
-    const nextDueHours = completionHours ? completionHours + schedule.intervalValue : undefined;
-
-    schedule.lastCompletedDate = new Date();
-    schedule.lastCompletedHours = completionHours;
-    schedule.nextDueDate = nextDueDate;
-    schedule.nextDueHours = nextDueHours;
-
-    const saved = await this.repository.save(schedule);
-
-    // Reload with relations
-    const reloaded = await this.repository.findOne({
-      where: { id: saved.id },
-      relations: ['equipment', 'project'],
-    });
-
-    return this.transformToDto(reloaded!);
   }
 }
