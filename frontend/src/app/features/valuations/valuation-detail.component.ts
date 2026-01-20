@@ -1262,8 +1262,13 @@ export class ValuationDetailComponent implements OnInit {
   // Permission checks based on user role
   private getUserRoles(): string[] {
     const user = this.authService.currentUser;
+    // Return roles array (normalized by AuthService)
     if (user?.roles && Array.isArray(user.roles)) {
       return user.roles;
+    }
+    // Fallback: if single rol exists, return as array
+    if (user?.rol) {
+      return [user.rol];
     }
     return [];
   }

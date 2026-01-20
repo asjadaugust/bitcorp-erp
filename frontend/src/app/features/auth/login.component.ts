@@ -233,8 +233,8 @@ export class LoginComponent {
       next: (response) => {
         console.log('✅ Login successful!', response);
         this.loading = false;
-        // Redirect based on user role
-        const userRole = response.user.roles?.[0]?.toUpperCase();
+        // Redirect based on user role (prefer single 'rol' field, fallback to roles[0])
+        const userRole = (response.user.rol || response.user.roles?.[0])?.toUpperCase();
         console.log('Login successful, user role:', userRole);
 
         // Navigate based on role

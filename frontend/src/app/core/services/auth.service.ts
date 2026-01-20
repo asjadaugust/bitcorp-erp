@@ -73,8 +73,20 @@ export class AuthService {
         }),
         switchMap((response) => {
           console.log('User loaded successfully:', response.user);
-          this.currentUserSubject.next(response.user);
-          this.tenantService.setUserRole(response.user.roles?.[0] || '');
+
+          // Normalize user data to handle both old (roles[]) and new (rol) structure
+          const normalizedUser = this.normalizeUserData(response.user);
+          this.currentUserSubject.next(normalizedUser);
+
+          // Use single rol if available, otherwise fallback to roles[0]
+          const userRole = normalizedUser.rol || normalizedUser.roles?.[0] || '';
+          this.tenantService.setUserRole(userRole);
+
+          // Set tenant context from JWT (id_empresa, codigo_empresa)
+          const tenantId = normalizedUser.id_empresa || normalizedUser.unidad_operativa_id || null;
+          const tenantCode = normalizedUser.codigo_empresa || null;
+          this.tenantService.setTenantContext(tenantId, tenantCode);
+
           // Defer project loading - projects will be initialized when needed
           this.userLoadObservable = null; // Clear cache on success
           return of(true);
@@ -114,24 +126,28 @@ export class AuthService {
           this.setToken(response.access_token);
 
           try {
-            console.log(
-              'User roles type:',
-              typeof response.user.roles,
-              Array.isArray(response.user.roles)
-            );
-            console.log('User roles value:', response.user.roles);
+            // Normalize user data to handle both old (roles[]) and new (rol) structure
+            const normalizedUser = this.normalizeUserData(response.user);
 
-            // Create a clean copy of the user object to avoid any reference issues
-            const cleanUser = {
-              ...response.user,
-              roles: Array.isArray(response.user.roles) ? [...response.user.roles] : [],
-            };
+            console.log('User role type:', typeof normalizedUser.rol);
+            console.log('User role value:', normalizedUser.rol);
+            console.log('User roles array:', normalizedUser.roles);
+            console.log('Tenant ID:', normalizedUser.id_empresa);
+            console.log('Tenant Code:', normalizedUser.codigo_empresa);
 
-            this.currentUserSubject.next(cleanUser);
+            // Set normalized user
+            this.currentUserSubject.next(normalizedUser);
 
-            const role = cleanUser.roles[0] || '';
+            const role = normalizedUser.rol || normalizedUser.roles[0] || '';
             console.log('Setting user role:', role);
             this.tenantService.setUserRole(role);
+
+            // Set tenant context from JWT (id_empresa, codigo_empresa)
+            const tenantId =
+              normalizedUser.id_empresa || normalizedUser.unidad_operativa_id || null;
+            const tenantCode = normalizedUser.codigo_empresa || null;
+            console.log('Setting tenant context:', tenantId, tenantCode);
+            this.tenantService.setTenantContext(tenantId, tenantCode);
           } catch (e) {
             console.error('Error updating user state:', e);
           }
@@ -170,7 +186,8 @@ export class AuthService {
 
   getCurrentUserRole(): string | null {
     const user = this.currentUser;
-    return user?.roles?.[0] || null;
+    // Prefer single 'rol' field (new structure), fallback to roles[0] (old structure)
+    return user?.rol || user?.roles?.[0] || null;
   }
 
   getToken(): string | null {
@@ -179,5 +196,36 @@ export class AuthService {
 
   private setToken(token: string): void {
     localStorage.setItem('access_token', token);
+  }
+
+  /**
+   * Normalize user data to handle both old (roles[]) and new (rol) JWT structure
+   * Backend now returns: { rol: 'ADMIN', id_empresa: 1, codigo_empresa: 'UO-001', ... }
+   */
+  private normalizeUserData(user: User): User {
+    // Create normalized user object
+    const normalized: User = {
+      ...user,
+      // Ensure roles array exists for backward compatibility
+      roles: user.roles || (user.rol ? [user.rol] : []),
+      // Ensure rol exists (primary field going forward)
+      rol: user.rol || user.roles?.[0] || '',
+    };
+
+    return normalized;
+  }
+
+  /**
+   * Get current tenant ID from user context
+   */
+  getTenantId(): number | null {
+    return this.currentUser?.id_empresa || this.currentUser?.unidad_operativa_id || null;
+  }
+
+  /**
+   * Get current tenant code from user context
+   */
+  getTenantCode(): string | null {
+    return this.currentUser?.codigo_empresa || null;
   }
 }
