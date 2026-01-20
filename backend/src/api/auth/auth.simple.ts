@@ -20,20 +20,26 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
       context: 'simpleLogin',
     });
 
-    // Query user with roles (using code for authorization)
+    // Query user with roles and unidad_operativa (tenant context)
     // Support both direct rol_id and many-to-many usuario_rol
     const result = await pool.query(
       `
       SELECT 
-        u.id, u.nombre_usuario as username, u.correo_electronico as email, u.nombres, u.apellidos, u.contrasena as password,
+        u.id, u.nombre_usuario as username, u.correo_electronico as email, 
+        u.nombres, u.apellidos, u.contrasena as password,
+        u.unidad_operativa_id,
+        uo.codigo as unidad_operativa_codigo,
+        uo.nombre as unidad_operativa_nombre,
         array_agg(DISTINCT COALESCE(r_direct.codigo, r_many.codigo, r_direct.nombre, r_many.nombre)) 
           FILTER (WHERE r_direct.nombre IS NOT NULL OR r_many.nombre IS NOT NULL) as roles
       FROM sistema.usuario u
       LEFT JOIN sistema.rol r_direct ON u.rol_id = r_direct.id
       LEFT JOIN sistema.usuario_rol ur ON u.id = ur.usuario_id
       LEFT JOIN sistema.rol r_many ON ur.rol_id = r_many.id
+      LEFT JOIN sistema.unidad_operativa uo ON u.unidad_operativa_id = uo.id
       WHERE u.nombre_usuario = $1 AND u.is_active = true
-      GROUP BY u.id, u.nombre_usuario, u.correo_electronico, u.nombres, u.apellidos, u.contrasena
+      GROUP BY u.id, u.nombre_usuario, u.correo_electronico, u.nombres, u.apellidos, 
+               u.contrasena, u.unidad_operativa_id, uo.codigo, uo.nombre
     `,
       [username]
     );
@@ -78,22 +84,29 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Generate JWT tokens
+    // Generate JWT tokens with multi-tenant structure
     const jwtSecret = process.env.JWT_SECRET || 'dev_jwt_secret_change_in_production';
     const jwtRefreshSecret =
       process.env.JWT_REFRESH_SECRET || 'dev_refresh_secret_change_in_production';
 
+    // NEW JWT Payload Structure (multi-tenant)
+    // Matches JwtPayload interface in security.util.ts
     const tokenPayload = {
-      id: user.id,
+      id_usuario: user.id, // User ID
+      id_empresa: user.unidad_operativa_id || 0, // Tenant ID (0 = no assignment)
+      codigo_empresa: user.unidad_operativa_codigo || 'SISTEMA', // Tenant code
       username: user.username,
       email: user.email,
-      roles: user.roles || [],
+      rol: (user.roles && user.roles[0]) || 'OPERADOR', // Primary role (first in array)
+      nombre_completo: `${user.nombres || ''} ${user.apellidos || ''}`.trim(),
     };
 
     Logger.debug('Generating JWT tokens', {
       userId: user.id,
       username: user.username,
-      roles: tokenPayload.roles,
+      tenantId: tokenPayload.id_empresa,
+      tenantCode: tokenPayload.codigo_empresa,
+      rol: tokenPayload.rol,
       context: 'simpleLogin',
     });
 
@@ -106,7 +119,8 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
     Logger.info('User login successful', {
       userId: user.id,
       username: user.username,
-      roleCount: tokenPayload.roles.length,
+      tenantId: tokenPayload.id_empresa,
+      rol: tokenPayload.rol,
       context: 'simpleLogin',
     });
 
@@ -116,10 +130,12 @@ export async function simpleLogin(req: Request, res: Response): Promise<void> {
         id: user.id,
         username: user.username,
         email: user.email,
-        full_name: `${user.nombres} ${user.apellidos}`,
+        full_name: tokenPayload.nombre_completo,
         nombres: user.nombres,
         apellidos: user.apellidos,
-        roles: user.roles || [],
+        roles: user.roles || [], // Keep for backward compatibility in response
+        unidad_operativa_id: user.unidad_operativa_id,
+        unidad_operativa_nombre: user.unidad_operativa_nombre,
       },
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -160,22 +176,27 @@ export async function simpleMe(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Get fresh user data
+    // Get fresh user data with unidad_operativa (tenant context)
     // Support both direct rol_id and many-to-many usuario_rol
     const result = await pool.query(
       `
       SELECT 
         u.id, u.nombre_usuario as username, u.correo_electronico as email, u.nombres, u.apellidos,
+        u.unidad_operativa_id,
+        uo.codigo as unidad_operativa_codigo,
+        uo.nombre as unidad_operativa_nombre,
         array_agg(DISTINCT COALESCE(r_direct.codigo, r_many.codigo, r_direct.nombre, r_many.nombre)) 
           FILTER (WHERE r_direct.nombre IS NOT NULL OR r_many.nombre IS NOT NULL) as roles
       FROM sistema.usuario u
       LEFT JOIN sistema.rol r_direct ON u.rol_id = r_direct.id
       LEFT JOIN sistema.usuario_rol ur ON u.id = ur.usuario_id
       LEFT JOIN sistema.rol r_many ON ur.rol_id = r_many.id
+      LEFT JOIN sistema.unidad_operativa uo ON u.unidad_operativa_id = uo.id
       WHERE u.id = $1 AND u.is_active = true
-      GROUP BY u.id, u.nombre_usuario, u.correo_electronico, u.nombres, u.apellidos
+      GROUP BY u.id, u.nombre_usuario, u.correo_electronico, u.nombres, u.apellidos,
+               u.unidad_operativa_id, uo.codigo, uo.nombre
     `,
-      [decoded.id]
+      [decoded.id_usuario || decoded.id] // Support both new and old JWT structure during transition
     );
 
     if (result.rows.length === 0) {
@@ -190,10 +211,12 @@ export async function simpleMe(req: Request, res: Response): Promise<void> {
         id: user.id,
         username: user.username,
         email: user.email,
-        full_name: `${user.nombres} ${user.apellidos}`,
+        full_name: `${user.nombres || ''} ${user.apellidos || ''}`.trim(),
         nombres: user.nombres,
         apellidos: user.apellidos,
         roles: user.roles || [],
+        unidad_operativa_id: user.unidad_operativa_id,
+        unidad_operativa_nombre: user.unidad_operativa_nombre,
       },
     });
   } catch (error) {
