@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { FuelService } from '../../services/fuel.service';
 import {
   sendError,
@@ -31,10 +32,10 @@ export class FuelController {
    * Get all fuel records with pagination and filters
    * GET /api/fuel?page=1&limit=20&valorizacionId=123
    */
-  getAll = async (req: Request, res: Response): Promise<void> => {
+  getAll = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Extract tenantId from req.user.tenantId when JWT is updated
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       // Extract and validate pagination parameters
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -68,10 +69,10 @@ export class FuelController {
    * Get single fuel record by ID
    * GET /api/fuel/:id
    */
-  getById = async (req: Request, res: Response): Promise<void> => {
+  getById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Extract tenantId from req.user.tenantId when JWT is updated
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const id = parseInt(req.params.id);
 
@@ -98,10 +99,10 @@ export class FuelController {
    * Create new fuel record
    * POST /api/fuel
    */
-  create = async (req: Request, res: Response): Promise<void> => {
+  create = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Extract tenantId from req.user.tenantId when JWT is updated
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const record = await this.fuelService.createFuelRecord(tenantId, req.body);
       sendCreated(res, record);
@@ -122,10 +123,10 @@ export class FuelController {
    * Update fuel record
    * PUT /api/fuel/:id
    */
-  update = async (req: Request, res: Response): Promise<void> => {
+  update = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Extract tenantId from req.user.tenantId when JWT is updated
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const id = parseInt(req.params.id);
 
@@ -154,10 +155,10 @@ export class FuelController {
    * Delete fuel record
    * DELETE /api/fuel/:id
    */
-  delete = async (req: Request, res: Response): Promise<void> => {
+  delete = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Extract tenantId from req.user.tenantId when JWT is updated
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const id = parseInt(req.params.id);
 

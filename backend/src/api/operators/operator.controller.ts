@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { OperatorService } from '../../services/operator.service';
 import {
   sendSuccess,
@@ -12,9 +13,10 @@ import { NotFoundError, ConflictError } from '../../errors/http.errors';
 const operatorService = new OperatorService();
 
 export class OperatorController {
-  static async getAll(req: Request, res: Response, next: NextFunction) {
+  static async getAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const { status, search, cargo, especialidad, page, limit, sort_by, sort_order } = req.query;
 
       const pageNum = parseInt(page as string) || 1;
@@ -49,9 +51,10 @@ export class OperatorController {
     }
   }
 
-  static async getById(req: Request, res: Response, next: NextFunction) {
+  static async getById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
@@ -69,9 +72,10 @@ export class OperatorController {
     }
   }
 
-  static async create(req: Request, res: Response, next: NextFunction) {
+  static async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const operator = await operatorService.create(tenantId, req.body);
       sendCreated(res, operator);
     } catch (error: any) {
@@ -83,9 +87,10 @@ export class OperatorController {
     }
   }
 
-  static async update(req: Request, res: Response, next: NextFunction) {
+  static async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
@@ -113,9 +118,10 @@ export class OperatorController {
     }
   }
 
-  static async delete(req: Request, res: Response, next: NextFunction) {
+  static async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
@@ -183,9 +189,10 @@ export class OperatorController {
     }
   }
 
-  static async exportExcel(req: Request, res: Response, next: NextFunction) {
+  static async exportExcel(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const { ExportUtil } = await import('../../utils/export.util');
       const { search, cargo, especialidad, status } = req.query;
 
@@ -225,9 +232,10 @@ export class OperatorController {
     }
   }
 
-  static async exportCSV(req: Request, res: Response, next: NextFunction) {
+  static async exportCSV(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const { ExportUtil } = await import('../../utils/export.util');
       const { search, cargo, especialidad, status } = req.query;
 

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { SstService } from '../../services/sst.service';
 import { sendSuccess, sendError, sendCreated } from '../../utils/api-response';
 import Logger from '../../utils/logger';
@@ -11,9 +12,9 @@ export class SstController {
   /**
    * GET /incidents - List all safety incidents with pagination and filters
    */
-  getIncidents = async (req: Request, res: Response): Promise<void> => {
+  getIncidents = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const filters = {
@@ -49,9 +50,9 @@ export class SstController {
   /**
    * GET /incidents/:id - Get single safety incident by ID
    */
-  getIncidentById = async (req: Request, res: Response): Promise<void> => {
+  getIncidentById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
 
       const incident = await this.sstService.findById(tenantId, id);
@@ -73,9 +74,9 @@ export class SstController {
   /**
    * POST /incidents - Create new safety incident
    */
-  createIncident = async (req: Request, res: Response): Promise<void> => {
+  createIncident = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const incidentData = {
         ...req.body,
         reportado_por: (req as any).user?.id,
@@ -106,9 +107,9 @@ export class SstController {
   /**
    * PUT /incidents/:id - Update safety incident
    */
-  updateIncident = async (req: Request, res: Response): Promise<void> => {
+  updateIncident = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
 
       const incident = await this.sstService.update(tenantId, id, req.body);
@@ -134,9 +135,9 @@ export class SstController {
   /**
    * DELETE /incidents/:id - Delete safety incident
    */
-  deleteIncident = async (req: Request, res: Response): Promise<void> => {
+  deleteIncident = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
 
       await this.sstService.delete(tenantId, id);

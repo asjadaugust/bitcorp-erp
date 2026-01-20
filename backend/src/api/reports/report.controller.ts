@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { ReportService } from '../../services/report.service';
 import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
 import {
@@ -15,11 +16,10 @@ import { ValidationError } from '../../errors/validation.error';
 const reportService = new ReportService();
 
 export class ReportController {
-  async getReports(req: Request, res: Response) {
+  async getReports(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      // For now, hardcode to 1 until authentication middleware is in place
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       // Extract and validate pagination parameters
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -53,10 +53,10 @@ export class ReportController {
     }
   }
 
-  async getReportById(req: Request, res: Response) {
+  async getReportById(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { id } = req.params;
 
@@ -85,10 +85,10 @@ export class ReportController {
     }
   }
 
-  async createReport(req: Request, res: Response) {
+  async createReport(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const report = await reportService.createReport(tenantId, req.body);
       sendCreated(res, report);
@@ -107,10 +107,10 @@ export class ReportController {
     }
   }
 
-  async updateReport(req: Request, res: Response) {
+  async updateReport(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { id } = req.params;
 
@@ -142,13 +142,13 @@ export class ReportController {
     }
   }
 
-  async approveReport(req: Request, res: Response) {
+  async approveReport(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { id } = req.params;
-      const userId = (req as any).user?.id;
+      const userId = String(req.user!.id_usuario);
 
       if (!id) {
         return sendError(res, 400, 'INVALID_ID', 'ID de reporte es requerido');
@@ -184,10 +184,10 @@ export class ReportController {
     }
   }
 
-  async rejectReport(req: Request, res: Response) {
+  async rejectReport(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { id } = req.params;
       const { reason } = req.body;
@@ -221,10 +221,10 @@ export class ReportController {
     }
   }
 
-  async deleteReport(req: Request, res: Response) {
+  async deleteReport(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { id } = req.params;
 
@@ -253,10 +253,10 @@ export class ReportController {
     }
   }
 
-  async downloadPdf(req: Request, res: Response) {
+  async downloadPdf(req: AuthRequest, res: Response) {
     try {
-      // TODO: Get tenantId from authenticated user context
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { id } = req.params;
       const reportId = parseInt(id);

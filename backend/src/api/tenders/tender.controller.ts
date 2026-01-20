@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { TenderService } from '../../services/tender.service';
 import { sendSuccess, sendError, sendCreated } from '../../utils/api-response';
 import { NotFoundError, ConflictError } from '../../errors';
@@ -22,10 +23,10 @@ export class TenderController {
    * GET /api/tenders
    * List all tenders with optional filters and pagination
    */
-  getTenders = async (req: Request, res: Response): Promise<void> => {
+  getTenders = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Get tenantId from req.tenantContext when multi-tenancy is fully implemented
-      const tenantId = 1;
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       // Extract pagination parameters
       const page = parseInt(req.query.page as string) || 1;
@@ -62,10 +63,10 @@ export class TenderController {
    * GET /api/tenders/:id
    * Get single tender by ID
    */
-  getTenderById = async (req: Request, res: Response): Promise<void> => {
+  getTenderById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Get tenantId from req.tenantContext
-      const tenantId = 1;
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
 
       const tender = await this.tenderService.findById(tenantId, id);
@@ -88,10 +89,10 @@ export class TenderController {
    * POST /api/tenders
    * Create new tender
    */
-  createTender = async (req: Request, res: Response): Promise<void> => {
+  createTender = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Get tenantId from req.tenantContext
-      const tenantId = 1;
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const tender = await this.tenderService.create(tenantId, req.body);
       sendCreated(res, tender);
@@ -113,10 +114,10 @@ export class TenderController {
    * PUT /api/tenders/:id
    * Update existing tender
    */
-  updateTender = async (req: Request, res: Response): Promise<void> => {
+  updateTender = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Get tenantId from req.tenantContext
-      const tenantId = 1;
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
 
       const tender = await this.tenderService.update(tenantId, id, req.body);
@@ -143,10 +144,10 @@ export class TenderController {
    * DELETE /api/tenders/:id
    * Delete tender
    */
-  deleteTender = async (req: Request, res: Response): Promise<void> => {
+  deleteTender = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Get tenantId from req.tenantContext
-      const tenantId = 1;
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
 
       await this.tenderService.delete(tenantId, id);

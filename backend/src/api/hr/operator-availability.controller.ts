@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { OperatorAvailabilityService } from '../../services/operator-availability.service';
 import {
   sendError,
@@ -12,10 +13,10 @@ import { NotFoundError, ConflictError } from '../../errors/http.errors';
 const availabilityService = new OperatorAvailabilityService();
 
 export class OperatorAvailabilityController {
-  async getAvailabilities(req: Request, res: Response): Promise<void> {
+  async getAvailabilities(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { trabajador_id, disponible, fecha_inicio, fecha_fin, page, limit } = req.query;
 
@@ -50,10 +51,10 @@ export class OperatorAvailabilityController {
     }
   }
 
-  async getAvailabilityById(req: Request, res: Response): Promise<void> {
+  async getAvailabilityById(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -84,10 +85,10 @@ export class OperatorAvailabilityController {
     }
   }
 
-  async getAvailabilityByOperator(req: Request, res: Response): Promise<void> {
+  async getAvailabilityByOperator(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const operatorId = parseInt(req.params.operatorId);
       if (isNaN(operatorId)) {
@@ -125,10 +126,10 @@ export class OperatorAvailabilityController {
     }
   }
 
-  async getAvailableOperators(req: Request, res: Response): Promise<void> {
+  async getAvailableOperators(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { fecha_inicio, fecha_fin, page, limit } = req.query;
       if (!fecha_inicio || !fecha_fin) {
@@ -168,10 +169,10 @@ export class OperatorAvailabilityController {
     }
   }
 
-  async createAvailability(req: Request, res: Response): Promise<void> {
+  async createAvailability(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const availability = await availabilityService.create(tenantId, req.body);
       sendCreated(res, availability);
@@ -191,10 +192,10 @@ export class OperatorAvailabilityController {
     }
   }
 
-  async bulkCreateAvailability(req: Request, res: Response): Promise<void> {
+  async bulkCreateAvailability(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const { availabilities } = req.body;
       if (!Array.isArray(availabilities)) {
@@ -220,10 +221,10 @@ export class OperatorAvailabilityController {
     }
   }
 
-  async updateAvailability(req: Request, res: Response): Promise<void> {
+  async updateAvailability(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -259,10 +260,10 @@ export class OperatorAvailabilityController {
     }
   }
 
-  async deleteAvailability(req: Request, res: Response): Promise<void> {
+  async deleteAvailability(req: AuthRequest, res: Response): Promise<void> {
     try {
-      // TODO: Get from req.tenantContext when auth middleware is implemented
-      const tenantId = 1;
+      // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const id = parseInt(req.params.id);
       if (isNaN(id)) {

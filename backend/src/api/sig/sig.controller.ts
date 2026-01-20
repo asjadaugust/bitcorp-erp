@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { SigService } from '../../services/sig.service';
 import { sendSuccess, sendError, sendCreated } from '../../utils/api-response';
 import { NotFoundError } from '../../errors/http.errors';
@@ -26,10 +27,10 @@ export class SigController {
    * GET /api/sig
    * Get all SIG documents (paginated)
    */
-  getDocuments = async (req: Request, res: Response): Promise<void> => {
+  getDocuments = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = 1; // Hardcoded for now (schema limitation + JWT update needed)
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       // Extract pagination params
       const page = parseInt(req.query.page as string) || 1;
@@ -66,10 +67,10 @@ export class SigController {
    * POST /api/sig
    * Create new SIG document
    */
-  createDocument = async (req: Request, res: Response): Promise<void> => {
+  createDocument = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const document = await this.sigService.createDocument(tenantId, req.body);
 
@@ -96,7 +97,7 @@ export class SigController {
    * GET /api/sig/:id
    * Get SIG document by ID
    */
-  getDocumentById = async (req: Request, res: Response): Promise<void> => {
+  getDocumentById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
@@ -108,7 +109,7 @@ export class SigController {
       }
 
       // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const document = await this.sigService.getDocumentById(tenantId, id);
 
@@ -135,7 +136,7 @@ export class SigController {
    * PUT /api/sig/:id
    * Update SIG document
    */
-  updateDocument = async (req: Request, res: Response): Promise<void> => {
+  updateDocument = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
@@ -147,7 +148,7 @@ export class SigController {
       }
 
       // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       const document = await this.sigService.updateDocument(tenantId, id, req.body);
 
@@ -176,7 +177,7 @@ export class SigController {
    * DELETE /api/sig/:id
    * Delete SIG document
    */
-  deleteDocument = async (req: Request, res: Response): Promise<void> => {
+  deleteDocument = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
@@ -188,7 +189,7 @@ export class SigController {
       }
 
       // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = 1; // Hardcoded for now
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
 
       await this.sigService.deleteDocument(tenantId, id);
 

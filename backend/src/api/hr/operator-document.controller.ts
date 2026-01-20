@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { OperatorDocumentService } from '../../services/operator-document.service';
 import { NotFoundError, ConflictError } from '../../errors/http.errors';
 import {
@@ -12,9 +13,9 @@ import {
 const documentService = new OperatorDocumentService();
 
 export class OperatorDocumentController {
-  async getDocuments(req: Request, res: Response): Promise<void> {
+  async getDocuments(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext when auth middleware is implemented
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const { trabajador_id, tipo_documento, page, limit } = req.query;
 
       const result = await documentService.findAll(
@@ -43,9 +44,9 @@ export class OperatorDocumentController {
     }
   }
 
-  async getDocumentById(req: Request, res: Response): Promise<void> {
+  async getDocumentById(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -69,9 +70,9 @@ export class OperatorDocumentController {
     }
   }
 
-  async getDocumentsByOperator(req: Request, res: Response): Promise<void> {
+  async getDocumentsByOperator(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const operatorId = parseInt(req.params.operatorId);
       if (isNaN(operatorId)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
@@ -91,9 +92,9 @@ export class OperatorDocumentController {
     }
   }
 
-  async getExpiringDocuments(req: Request, res: Response): Promise<void> {
+  async getExpiringDocuments(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const { days, page, limit } = req.query;
 
       const result = await documentService.findExpiring(
@@ -119,9 +120,9 @@ export class OperatorDocumentController {
     }
   }
 
-  async createDocument(req: Request, res: Response): Promise<void> {
+  async createDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const document = await documentService.create(tenantId, req.body);
       sendCreated(res, document);
     } catch (error: any) {
@@ -139,9 +140,9 @@ export class OperatorDocumentController {
     }
   }
 
-  async updateDocument(req: Request, res: Response): Promise<void> {
+  async updateDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -169,9 +170,9 @@ export class OperatorDocumentController {
     }
   }
 
-  async deleteDocument(req: Request, res: Response): Promise<void> {
+  async deleteDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const tenantId = 1; // TODO: Get from req.tenantContext
+      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
