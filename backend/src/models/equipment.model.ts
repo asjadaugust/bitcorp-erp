@@ -114,11 +114,8 @@ export class Equipment {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @Column({ name: 'creado_por', type: 'integer', nullable: true })
-  creadoPor?: number;
-
-  @Column({ name: 'actualizado_por', type: 'integer', nullable: true })
-  actualizadoPor?: number;
+  // creado_por and actualizado_por columns don't exist in equipo.equipo table
+  // These fields are not tracked in the database schema
 
   @CreateDateColumn({
     name: 'created_at',

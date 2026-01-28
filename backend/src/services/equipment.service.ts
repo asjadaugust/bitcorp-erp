@@ -565,7 +565,8 @@ export class EquipmentService {
         tipoProveedor: data.tipo_proveedor,
         tipoEquipoId: data.tipo_equipo_id,
         proveedorId: data.proveedor_id,
-        creadoPor: data.creado_por,
+        // TODO: Add creadoPor property to Equipment model if user tracking is needed
+        // creadoPor: data.creado_por,
         isActive: true,
       });
 
@@ -706,9 +707,10 @@ export class EquipmentService {
       if (data.proveedor_id !== undefined) {
         equipment.proveedorId = data.proveedor_id;
       }
-      if (data.actualizado_por !== undefined) {
-        equipment.actualizadoPor = data.actualizado_por;
-      }
+      // TODO: Add actualizadoPor property to Equipment model if user tracking is needed
+      // if (data.actualizado_por !== undefined) {
+      //   equipment.actualizadoPor = data.actualizado_por;
+      // }
 
       const saved = await this.repository.save(equipment);
 
