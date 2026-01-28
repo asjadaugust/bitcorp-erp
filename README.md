@@ -26,13 +26,44 @@ npm install
 # Start containers
 docker-compose up -d --build
 
-# Run migrations
+# Run migrations (optional - backend auto-runs TypeORM migrations)
 ./scripts/run-migrations-local.sh
 
 # Access application
-# Frontend: http://localhost:4200
+# Frontend: http://localhost:3420
 # Backend API: http://localhost:3400
 ```
+
+### 🪟 **Windows with WSL2**
+
+If running Docker Desktop with WSL2 (Windows Subsystem for Linux):
+
+```bash
+# From WSL2 terminal (Ubuntu, Debian, etc.)
+cd /home/asjad/projects/bitcorp-erp
+
+# Start containers
+docker-compose up -d --build
+
+# Access via localhost (WSL2 automatically forwards ports)
+# Frontend: http://localhost:3420
+# Backend:  http://localhost:3400
+
+# Check container status
+docker-compose ps
+
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+```
+
+**WSL2 Notes:**
+
+- 🔄 Use WSL2 terminal (not PowerShell/CMD) for docker-compose commands
+- 🌐 Access via `localhost:` (not `127.0.0.1` or WSL IP)
+- 🔥 Use `--build` flag to rebuild containers after code changes
+- 🐛 If frontend shows 502 errors, check backend is running: `docker-compose ps backend`
+- 📁 Project files in WSL2 accessible at `\\wsl$\Ubuntu\home\asjad\projects\bitcorp-erp` from Windows Explorer
 
 ### 🖥️ **Production (Synology NAS)**
 
@@ -157,15 +188,19 @@ npm install
 
 # Run development environment
 npm run dev                     # Start all services with Docker
+# OR
+docker-compose up -d --build
 
 # Or run individually:
-cd backend && npm run dev       # Backend only
-cd frontend && npm start        # Frontend only
+cd backend && npm run dev       # Backend only (localhost:3400)
+cd frontend && npm start        # Frontend only (localhost:3420)
 
 # Database operations
-npm run db:migrate              # Run migrations
+npm run db:migrate              # Run TypeORM migrations
 npm run db:seed                 # Seed test data
 npm run db:reset                # Reset database
+# OR manually (SQL files):
+./scripts/run-migrations-local.sh
 
 # Testing
 npm run test:all                # All tests

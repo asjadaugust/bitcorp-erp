@@ -1,0 +1,4 @@
+# Enforce LF line endings for shell scripts (Windows WSL2 compatibility)
+*.sh text eol=lf
+*.sql text eol=lf
+Makefile text eol=lf

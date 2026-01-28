@@ -50,27 +50,34 @@ See [DATABASE_SCRIPTS.md](./DATABASE_SCRIPTS.md) for database management command
 
 ## Monitoring
 
-- Backend API: http://localhost:3000
-- Frontend: http://localhost:4200
-- PostgreSQL: localhost:5432
+- Backend API: http://localhost:3400
+- Frontend: http://localhost:3420
+- PostgreSQL: localhost:3440
 - Logs: `docker-compose logs -f`
 
 ## Troubleshooting
 
 ### Port Conflicts
+
 ```bash
 # Check if ports are in use
-lsof -i :3000
-lsof -i :4200
-lsof -i :5432
+lsof -i :3400  # Backend
+lsof -i :3420  # Frontend
+lsof -i :3440  # PostgreSQL
+
+# On Windows (PowerShell):
+netstat -ano | findstr ":3400"
+netstat -ano | findstr ":3420"
 ```
 
 ### Reset Database
+
 ```bash
 ./deploy/reset-database.sh
 ```
 
 ### View Logs
+
 ```bash
 # All services
 docker-compose -f docker-compose.prod.yml logs -f

@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
-import { connectDatabase } from './database/connection';
 import { initializeDatabase } from './config/database.config';
 import authRoutes from './api/auth/auth.routes';
 import dashboardRoutes from './api/dashboard/dashboard.routes';
@@ -118,17 +117,16 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     Logger.info('Initializing database connections', { context: 'Server.startup' });
-    await connectDatabase(); // Sequelize for legacy tables
     await initializeDatabase(); // TypeORM for new entities
     Logger.info('Database connections established successfully', {
-      databases: ['Sequelize', 'TypeORM'],
+      database: 'TypeORM',
+      context: 'Server.startup',
+    });
       context: 'Server.startup',
     });
 
     // Auto-run migrations (TypeORM)
     if (process.env.NODE_ENV !== 'test') {
-      try {
-        Logger.info('Checking for pending database migrations', {
           context: 'Server.startup.migrations',
         });
         const { AppDataSource } = await import('./config/database.config');

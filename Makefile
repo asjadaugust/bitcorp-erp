@@ -44,9 +44,9 @@ run-docker:
 	@docker-compose up -d --build
 	@echo ""
 	@echo "✅ Containers are running!"
-	@echo "📊 Frontend: http://localhost:4200"
-	@echo "🔧 Backend:  http://localhost:3000"
-	@echo "🗄️  Database: localhost:5432"
+	@echo "📊 Frontend: http://localhost:3420"
+	@echo "🔧 Backend:  http://localhost:3400"
+	@echo "🗄️  Database: localhost:3440"
 	@echo ""
 
 stop:
@@ -93,23 +93,15 @@ db-seed:
 	@docker-compose exec backend npm run seed:typeorm
 	@echo "✅ Database seeded!"
 
-db-fresh: db-clean db-migrate db-seed
-	@echo ""
-	@echo "✨ Database refreshed with TypeORM migrations and seeders!"
-	@echo "🔑 Default Login:"
-	@echo "   Username: admin"
-	@echo "   Password: admin123"
-	@echo ""
-	@echo "📊 Seeded Data:"
-	@echo "   • 4 Roles (Admin, Director, Jefe Equipo, Operador)"
-	@echo "   • 4 Users (admin, director, jefe_equipo, operador1)"
-	@echo "   • 2 Operating Units"
-	@echo "   • 2 Projects"
-	@echo "   • 2 Providers"
-	@echo "   • 3 Equipment"
-	@echo "   • 2 Workers"
-	@echo "   • 3 Products"
-	@echo ""
+db-fresh:
+	@echo "🧹 Cleaning database..."
+	@docker-compose exec postgres psql -U bitcorp -d bitcorp_dev \
+	  -c "DROP SCHEMA IF EXISTS sistema, proyectos, proveedores, administracion, rrhh, logistica, equipo, sst, sig, public CASCADE;"
+	@echo "🔄 Running TypeORM migrations..."
+	@docker-compose exec backend npm run migrate
+	@echo "🌱 Running TypeORM seeders..."
+	@docker-compose exec backend npm run seed:typeorm
+	@echo "✅ Database ready!"
 
 db-status:
 	@echo "📊 Database Status:"

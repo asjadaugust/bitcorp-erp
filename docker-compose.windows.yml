@@ -1,0 +1,38 @@
+# Docker Compose Override for Windows/WSL2
+# Copy this file to docker-compose.override.yml to apply these settings
+#
+# This file provides Windows-specific optimizations:
+# - Better volume performance
+# - DNS resolution fixes
+# - Build cache optimizations
+
+services:
+  # Frontend build optimizations for WSL2
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_angular_cache:/app/.angular
+      # Note: Using named volumes for node_modules prevents Windows filesystem slowness
+
+  # Backend optimizations
+  backend:
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+      # Note: Using named volume for node_modules prevents Windows filesystem slowness
+    environment:
+      # Node options for better performance on Windows
+      NODE_OPTIONS: --max-old-space-size=4096
+
+  # PostgreSQL optimizations for WSL2
+  postgres:
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "fsync=off"  # Faster but less safe (development only!)
+    shm_size: 256mb  # Increase shared memory for WSL2
