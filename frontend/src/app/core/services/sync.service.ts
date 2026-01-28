@@ -14,7 +14,7 @@ export interface SyncStatus {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SyncService {
   private offlineDB = inject(OfflineDBService);
@@ -24,7 +24,7 @@ export class SyncService {
     isSyncing: false,
     isOnline: navigator.onLine,
     pendingCount: 0,
-    failedCount: 0
+    failedCount: 0,
   });
 
   constructor() {
@@ -46,10 +46,7 @@ export class SyncService {
   }
 
   private monitorOnlineStatus(): void {
-    merge(
-      fromEvent(window, 'online'),
-      fromEvent(window, 'offline')
-    ).subscribe(() => {
+    merge(fromEvent(window, 'online'), fromEvent(window, 'offline')).subscribe(() => {
       this.updateOnlineStatus();
       if (navigator.onLine) {
         // Attempt sync when coming online
@@ -59,9 +56,9 @@ export class SyncService {
   }
 
   private updateOnlineStatus(): void {
-    this.syncStatus.update(status => ({
+    this.syncStatus.update((status) => ({
       ...status,
-      isOnline: navigator.onLine
+      isOnline: navigator.onLine,
     }));
   }
 
@@ -70,15 +67,15 @@ export class SyncService {
       return;
     }
 
-    this.syncStatus.update(status => ({
+    this.syncStatus.update((status) => ({
       ...status,
       isSyncing: true,
-      error: undefined
+      error: undefined,
     }));
 
     try {
       const pendingReports = await this.offlineDB.getPendingReports();
-      
+
       for (const report of pendingReports) {
         try {
           await this.syncSingleReport(report);
@@ -91,20 +88,20 @@ export class SyncService {
         }
       }
 
-      this.syncStatus.update(status => ({
+      this.syncStatus.update((status) => ({
         ...status,
-        lastSync: new Date()
+        lastSync: new Date(),
       }));
     } catch (error) {
       console.error('Sync failed:', error);
-      this.syncStatus.update(status => ({
+      this.syncStatus.update((status) => ({
         ...status,
-        error: error instanceof Error ? error.message : 'Sync failed'
+        error: error instanceof Error ? error.message : 'Sync failed',
       }));
     } finally {
-      this.syncStatus.update(status => ({
+      this.syncStatus.update((status) => ({
         ...status,
-        isSyncing: false
+        isSyncing: false,
       }));
       await this.updateSyncStatus();
     }
@@ -112,21 +109,21 @@ export class SyncService {
 
   private async syncSingleReport(report: OfflineDailyReport): Promise<void> {
     const reportData = {
-      report_date: report.report_date,
-      operator_id: report.operator_id,
-      equipment_id: report.equipment_id,
-      project_id: report.project_id,
-      start_time: report.start_time,
-      end_time: report.end_time,
-      hourmeter_start: report.hourmeter_start,
-      hourmeter_end: report.hourmeter_end,
-      odometer_start: report.odometer_start,
-      odometer_end: report.odometer_end,
+      fecha_parte: report.fecha_parte,
+      trabajador_id: report.trabajador_id,
+      equipo_id: report.equipo_id,
+      proyecto_id: report.proyecto_id,
+      hora_inicio: report.hora_inicio,
+      hora_fin: report.hora_fin,
+      horometro_inicial: report.horometro_inicial,
+      horometro_final: report.horometro_final,
+      odometro_inicial: report.odometro_inicial,
+      odometro_final: report.odometro_final,
       diesel_gallons: report.fuel_start || report.diesel_gallons,
       gasoline_gallons: report.fuel_end || report.gasoline_gallons,
       departure_location: report.location || report.departure_location,
       observations: report.work_description || report.observations,
-      status: report.status === 'draft' ? 'draft' : 'submitted'
+      status: report.status === 'draft' ? 'draft' : 'submitted',
     };
 
     return new Promise((resolve, reject) => {
@@ -139,21 +136,26 @@ export class SyncService {
         },
         error: (error) => {
           reject(error);
-        }
+        },
       });
     });
   }
 
-  async saveReportOffline(report: Omit<OfflineDailyReport, 'id' | 'localId' | 'synced' | 'syncAttempts' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async saveReportOffline(
+    report: Omit<
+      OfflineDailyReport,
+      'id' | 'localId' | 'synced' | 'syncAttempts' | 'createdAt' | 'updatedAt'
+    >
+  ): Promise<string> {
     const localId = `local-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    
+
     const offlineReport: Omit<OfflineDailyReport, 'id'> = {
       ...report,
       localId,
       synced: false,
       syncAttempts: 0,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     await this.offlineDB.saveDailyReport(offlineReport);
@@ -172,7 +174,7 @@ export class SyncService {
     if (report && report.id) {
       await this.offlineDB.updateDailyReport(report.id, {
         ...updates,
-        synced: false // Mark as needs sync
+        synced: false, // Mark as needs sync
       });
       await this.updateSyncStatus();
 
@@ -201,11 +203,11 @@ export class SyncService {
 
   private async updateSyncStatus(): Promise<void> {
     const stats = await this.offlineDB.getStatistics();
-    
-    this.syncStatus.update(status => ({
+
+    this.syncStatus.update((status) => ({
       ...status,
       pendingCount: stats.pending,
-      failedCount: 0 // Can enhance to track failed separately
+      failedCount: 0, // Can enhance to track failed separately
     }));
   }
 

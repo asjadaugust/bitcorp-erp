@@ -385,7 +385,7 @@ export class OperatorDetailComponent implements OnInit {
 
   viewReports(): void {
     this.router.navigate(['/daily-reports'], {
-      queryParams: { operator_id: this.operator?.id },
+      queryParams: { trabajador_id: this.operator?.id },
     });
   }
 

@@ -73,17 +73,17 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           <!-- Card Header -->
           <div class="report-card__header">
             <div class="report-card__status-row">
-              <span [class]="'report-card__status report-card__status--' + report.status">
-                <i [class]="getStatusIcon(report.status)"></i>
-                {{ getStatusLabel(report.status) }}
+              <span [class]="'report-card__status report-card__status--' + report.estado">
+                <i [class]="getStatusIcon(report.estado)"></i>
+                {{ getStatusLabel(report.estado) }}
               </span>
               <span class="report-card__date">
                 <i class="fa-regular fa-calendar"></i>
-                {{ report.report_date | date: 'dd/MM/yyyy' }}
+                {{ report.fecha_parte | date: 'dd/MM/yyyy' }}
               </span>
             </div>
             <h3 class="report-card__title">
-              {{ report.equipment_name || report.equipment_code || 'Sin Equipo' }}
+              {{ report.equipo_nombre || report.codigo_equipo || 'Sin Equipo' }}
             </h3>
           </div>
 
@@ -94,21 +94,21 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
                 <i class="fa-solid fa-hard-hat"></i>
                 <span class="report-card__info-label">Operador</span>
                 <span class="report-card__info-value">{{
-                  report.operator_name || 'Sin asignar'
+                  report.trabajador_nombre || 'Sin asignar'
                 }}</span>
               </div>
               <div class="report-card__info-item">
                 <i class="fa-solid fa-clock"></i>
                 <span class="report-card__info-label">Horario</span>
                 <span class="report-card__info-value"
-                  >{{ report.start_time || '--:--' }} - {{ report.end_time || '--:--' }}</span
+                  >{{ report.hora_inicio || '--:--' }} - {{ report.hora_fin || '--:--' }}</span
                 >
               </div>
               <div class="report-card__info-item">
                 <i class="fa-solid fa-gauge-high"></i>
                 <span class="report-card__info-label">Horas</span>
                 <span class="report-card__info-value report-card__info-value--highlight"
-                  >{{ report.worked_hours || report.hourmeter_difference || 0 }}h</span
+                  >{{ report.horas_trabajadas || report.horometro_diferencia || 0 }}h</span
                 >
               </div>
               <div class="report-card__info-item">
@@ -118,10 +118,10 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
               </div>
             </div>
 
-            <div *ngIf="report.observations" class="report-card__observations">
+            <div *ngIf="report.observaciones" class="report-card__observations">
               <p>
-                {{ report.observations | slice: 0 : 100
-                }}{{ report.observations.length > 100 ? '...' : '' }}
+                {{ report.observaciones | slice: 0 : 100
+                }}{{ report.observaciones.length > 100 ? '...' : '' }}
               </p>
             </div>
           </div>
@@ -134,7 +134,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
             </span>
             <div class="report-card__actions">
               <button
-                *ngIf="report.status === 'submitted' || report.status === 'draft'"
+                *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
                 type="button"
                 class="report-card__btn report-card__btn--approve"
                 (click)="approveReport($event, report)"
@@ -144,7 +144,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
                 <i class="fa-solid fa-check"></i>
               </button>
               <button
-                *ngIf="report.status === 'submitted' || report.status === 'draft'"
+                *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
                 type="button"
                 class="report-card__btn report-card__btn--reject"
                 (click)="rejectReport($event, report)"
@@ -538,10 +538,10 @@ export class DailyReportListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Borrador', value: 'draft' },
-        { label: 'Enviado', value: 'submitted' },
-        { label: 'Aprobado', value: 'approved' },
-        { label: 'Rechazado', value: 'rejected' },
+        { label: 'Borrador', value: 'BORRADOR' },
+        { label: 'Pendiente', value: 'PENDIENTE' },
+        { label: 'Aprobado', value: 'APROBADO' },
+        { label: 'Rechazado', value: 'RECHAZADO' },
       ],
     },
     {
@@ -559,32 +559,27 @@ export class DailyReportListComponent implements OnInit {
 
   getStatusIcon(status: string): string {
     const icons: Record<string, string> = {
-      draft: 'fa-solid fa-file',
-      submitted: 'fa-solid fa-paper-plane',
-      approved: 'fa-solid fa-check-circle',
-      rejected: 'fa-solid fa-times-circle',
-      pending_supervisor: 'fa-solid fa-user-clock',
-      pending_cost_engineer: 'fa-solid fa-calculator',
-      pending_finance: 'fa-solid fa-coins',
-      supervisor_approved: 'fa-solid fa-user-check',
-      cost_reviewed: 'fa-solid fa-file-invoice-dollar',
-      finance_approved: 'fa-solid fa-check-double',
+      BORRADOR: 'fa-solid fa-file',
+      PENDIENTE: 'fa-solid fa-paper-plane',
+      APROBADO: 'fa-solid fa-check-circle',
+      RECHAZADO: 'fa-solid fa-times-circle',
+      APROBADO_SUPERVISOR: 'fa-solid fa-user-clock',
+      REVISADO_COSTOS: 'fa-solid fa-calculator',
+      PENDIENTE_FINANZAS: 'fa-solid fa-coins',
+      APROBADO_FINANZAS: 'fa-solid fa-file-invoice-dollar',
     };
     return icons[status] || 'fa-solid fa-file';
   }
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      draft: 'Borrador',
-      submitted: 'Enviado',
-      approved: 'Aprobado',
-      rejected: 'Rechazado',
-      pending_supervisor: 'Pend. Supervisor',
-      pending_cost_engineer: 'Pend. Costos',
-      pending_finance: 'Pend. Finanzas',
-      supervisor_approved: 'Aprob. Supervisor',
-      cost_reviewed: 'Revisado Costos',
-      finance_approved: 'Aprob. Finanzas',
+      BORRADOR: 'Borrador',
+      PENDIENTE: 'Pendiente',
+      APROBADO: 'Aprobado',
+      RECHAZADO: 'Rechazado',
+      APROBADO_SUPERVISOR: 'Aprob. Supervisor',
+      REVISADO_COSTOS: 'Rev. Costos',
+      APROBADO_FINANZAS: 'Aprob. Finanzas',
     };
     return labels[status] || status;
   }
@@ -656,22 +651,22 @@ export class DailyReportListComponent implements OnInit {
     }
 
     const exportData = this.reports.map((report) => {
-      const startTime = new Date(`1970-01-01T${report.start_time}`);
-      const endTime = new Date(`1970-01-01T${report.end_time}`);
+      const startTime = new Date(`1970-01-01T${report.hora_inicio}`);
+      const endTime = new Date(`1970-01-01T${report.hora_fin}`);
       const hoursWorked = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
       return {
         ID: report.id || '',
-        Equipo: report.equipment_code || '',
-        Operador: report.operator_name || '',
-        Fecha: report.report_date ? new Date(report.report_date).toLocaleDateString('es-PE') : '',
-        'Hora Inicio': report.start_time || '',
-        'Hora Fin': report.end_time || '',
+        Equipo: report.codigo_equipo || '',
+        Operador: report.trabajador_nombre || '',
+        Fecha: report.fecha_parte ? new Date(report.fecha_parte).toLocaleDateString('es-PE') : '',
+        'Hora Inicio': report.hora_inicio || '',
+        'Hora Fin': report.hora_fin || '',
         'Horas Trabajadas': hoursWorked.toFixed(2),
-        'Horómetro Inicial': report.hourmeter_start || 0,
-        'Horómetro Final': report.hourmeter_end || 0,
+        'Horómetro Inicial': report.horometro_inicial || 0,
+        'Horómetro Final': report.horometro_final || 0,
         'Combustible (gal)': report.fuel_consumed || 0,
-        Estado: report.status || '',
+        Estado: report.estado || '',
         Observaciones: report.notes || '',
         Creado: report.created_at ? new Date(report.created_at).toLocaleDateString('es-PE') : '',
       };
@@ -690,22 +685,22 @@ export class DailyReportListComponent implements OnInit {
     }
 
     const exportData = this.reports.map((report) => {
-      const startTime = new Date(`1970-01-01T${report.start_time}`);
-      const endTime = new Date(`1970-01-01T${report.end_time}`);
+      const startTime = new Date(`1970-01-01T${report.hora_inicio}`);
+      const endTime = new Date(`1970-01-01T${report.hora_fin}`);
       const hoursWorked = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
       return {
         ID: report.id || '',
-        Equipo: report.equipment_code || '',
-        Operador: report.operator_name || '',
-        Fecha: report.report_date ? new Date(report.report_date).toLocaleDateString('es-PE') : '',
-        'Hora Inicio': report.start_time || '',
-        'Hora Fin': report.end_time || '',
+        Equipo: report.codigo_equipo || '',
+        Operador: report.trabajador_nombre || '',
+        Fecha: report.fecha_parte ? new Date(report.fecha_parte).toLocaleDateString('es-PE') : '',
+        'Hora Inicio': report.hora_inicio || '',
+        'Hora Fin': report.hora_fin || '',
         'Horas Trabajadas': hoursWorked.toFixed(2),
-        'Horómetro Inicial': report.hourmeter_start || 0,
-        'Horómetro Final': report.hourmeter_end || 0,
+        'Horómetro Inicial': report.horometro_inicial || 0,
+        'Horómetro Final': report.horometro_final || 0,
         'Combustible (gal)': report.fuel_consumed || 0,
-        Estado: report.status || '',
+        Estado: report.estado || '',
         Observaciones: report.notes || '',
         Creado: report.created_at ? new Date(report.created_at).toLocaleDateString('es-PE') : '',
       };

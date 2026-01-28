@@ -261,10 +261,10 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
                     </thead>
                     <tbody>
                       <tr *ngFor="let report of dailyReports">
-                        <td>{{ report.report_date | date: 'dd/MM/yyyy' }}</td>
+                        <td>{{ report.fecha_parte | date: 'dd/MM/yyyy' }}</td>
                         <td>{{ report.operator_name }}</td>
                         <td>
-                          {{ report.hourmeter_end - report.hourmeter_start | number: '1.1-1' }}
+                          {{ report.horometro_final - report.horometro_inicial | number: '1.1-1' }}
                         </td>
                         <td>
                           <span class="badge" [class]="'status-' + report.status">
@@ -635,7 +635,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   loadRelatedData(id: number) {
     // Load daily reports for this equipment
     this.dailyReportService
-      .getAll({ equipment_id: id })
+      .getAll({ equipo_id: id })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (reports) => {
@@ -659,7 +659,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
 
     // Load maintenance schedules - FIX: response is array directly, not {data: [...]}
     this.maintenanceService
-      .getAll({ equipment_id: id })
+      .getAll({ equipo_id: id })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (schedules) => {
@@ -699,7 +699,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
 
   goToMaintenance() {
     this.router.navigate(['/equipment/maintenance'], {
-      queryParams: { equipment_id: this.equipment?.id },
+      queryParams: { equipo_id: this.equipment?.id },
     });
   }
 }

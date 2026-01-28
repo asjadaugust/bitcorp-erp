@@ -50,18 +50,18 @@ import { OperatorService } from '../../../core/services/operator.service';
             <div class="section-grid">
               <div class="form-group">
                 <label for="equipment">Equipo *</label>
-                <select id="equipment" formControlName="equipment_id" class="form-select">
+                <select id="equipment" formControlName="equipo_id" class="form-select">
                   <option [ngValue]="null">Seleccionar Equipo</option>
                   <option *ngFor="let eq of equipmentList" [value]="eq.id">
                     {{ eq.code }} - {{ eq.brand }} {{ eq.model }}
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('equipment_id')">Equipo es requerido</div>
+                <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
               </div>
 
               <div class="form-group">
                 <label for="operator">Operador</label>
-                <select id="operator" formControlName="operator_id" class="form-select">
+                <select id="operator" formControlName="trabajador_id" class="form-select">
                   <option [ngValue]="null">Sin Asignar</option>
                   <option *ngFor="let op of operators" [value]="op.id">
                     {{ op.C05000_Nombre }} {{ op.C05000_Apellido }}
@@ -313,8 +313,8 @@ export class ScheduledTaskFormComponent implements OnInit {
   constructor() {
     this.taskForm = this.fb.group({
       title: [''],
-      equipment_id: [null, Validators.required],
-      operator_id: [null],
+      equipo_id: [null, Validators.required],
+      trabajador_id: [null],
       start_date: ['', Validators.required],
       task_type: ['maintenance', Validators.required],
       description: ['', Validators.required],

@@ -4,7 +4,7 @@ export interface Contract {
   numero_contrato: string;
 
   // Equipment references (Spanish snake_case to match API)
-  equipo_id: number; // Changed from equipment_id
+  equipo_id: number; // Changed from equipo_id
   equipo_codigo?: string;
   equipo_marca?: string;
   equipo_modelo?: string;

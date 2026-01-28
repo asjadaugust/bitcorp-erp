@@ -51,18 +51,18 @@ import { ProjectService } from '../../../core/services/project.service';
             <div class="section-grid">
               <div class="form-group">
                 <label for="equipment">Equipo *</label>
-                <select id="equipment" formControlName="equipment_id" class="form-select">
+                <select id="equipment" formControlName="equipo_id" class="form-select">
                   <option [ngValue]="null">Seleccionar Equipo</option>
                   <option *ngFor="let eq of equipmentList" [value]="eq.id">
                     {{ eq.code }} - {{ eq.brand }} {{ eq.model }}
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('equipment_id')">Equipo es requerido</div>
+                <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
               </div>
 
               <div class="form-group">
                 <label for="project">Proyecto</label>
-                <select id="project" formControlName="project_id" class="form-select">
+                <select id="project" formControlName="proyecto_id" class="form-select">
                   <option [ngValue]="null">Sin Proyecto</option>
                   <option *ngFor="let pr of projects" [value]="pr.id">
                     {{ pr.nombre }}

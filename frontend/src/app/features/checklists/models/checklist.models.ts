@@ -52,10 +52,10 @@ export interface ChecklistItem {
 export interface EquipmentChecklist {
   id: string;
   company_id?: string;
-  equipment_id: string;
+  equipo_id: string;
   equipment_code?: string;
   equipment_description?: string;
-  operator_id?: string;
+  trabajador_id?: string;
   operator_name?: string;
   daily_report_id?: string;
   template_id?: string;
@@ -82,10 +82,10 @@ export interface CreateChecklistTemplateDto {
 }
 
 export interface CreateChecklistDto {
-  equipment_id: string;
+  equipo_id: string;
   checklist_type: ChecklistType;
   template_id?: string;
-  operator_id?: string;
+  trabajador_id?: string;
   daily_report_id?: string;
   items: Omit<ChecklistItem, 'id'>[];
   observations?: string;
@@ -95,8 +95,8 @@ export interface CreateChecklistDto {
 }
 
 export interface ChecklistFilters {
-  equipment_id?: string;
-  operator_id?: string;
+  equipo_id?: string;
+  trabajador_id?: string;
   daily_report_id?: string;
   checklist_type?: ChecklistType;
   overall_status?: ChecklistStatus;

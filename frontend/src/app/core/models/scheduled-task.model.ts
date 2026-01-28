@@ -1,9 +1,9 @@
 export interface ScheduledTask {
   id: number;
-  equipment_id: number;
+  equipo_id: number;
   equipment?: any;
   equipment_code?: string; // Denormalized for display
-  operator_id?: number;
+  trabajador_id?: number;
   operator?: any;
   operator_name?: string; // Denormalized for display
   schedule_id?: number;
@@ -14,8 +14,8 @@ export interface ScheduledTask {
   scheduled_date?: string; // Deprecated, use start_date
   start_date?: string;
   end_date?: string;
-  start_time?: string;
-  end_time?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
   all_day?: boolean;
   recurrence?: string;
   estimated_duration?: number; // in hours

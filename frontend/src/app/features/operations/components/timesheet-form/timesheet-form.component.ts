@@ -32,11 +32,7 @@ import { TimesheetService } from '../../../../core/services/timesheet.service';
         </div>
         <div class="header-actions">
           <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="form.invalid || loading"
-          >
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
             <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Parte' }}
           </button>
         </div>
@@ -51,24 +47,24 @@ import { TimesheetService } from '../../../../core/services/timesheet.service';
             <div class="section-grid">
               <div class="form-group">
                 <label for="project">Proyecto *</label>
-                <select id="project" formControlName="project_id" class="form-select">
+                <select id="project" formControlName="proyecto_id" class="form-select">
                   <option [ngValue]="null">Seleccionar Proyecto</option>
                   <option *ngFor="let project of projects" [value]="project.id">
                     {{ project.name }}
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('project_id')">Proyecto es requerido</div>
+                <div class="error-msg" *ngIf="hasError('proyecto_id')">Proyecto es requerido</div>
               </div>
 
               <div class="form-group">
                 <label for="operator">Operador *</label>
-                <select id="operator" formControlName="operator_id" class="form-select">
+                <select id="operator" formControlName="trabajador_id" class="form-select">
                   <option [ngValue]="null">Seleccionar Operador</option>
                   <option *ngFor="let op of operators" [value]="op.id">
                     {{ op.first_name }} {{ op.last_name }}
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('operator_id')">Operador es requerido</div>
+                <div class="error-msg" *ngIf="hasError('trabajador_id')">Operador es requerido</div>
               </div>
 
               <div class="form-group">
@@ -79,7 +75,9 @@ import { TimesheetService } from '../../../../core/services/timesheet.service';
                   formControlName="week_start"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('week_start')">Fecha inicio es requerida</div>
+                <div class="error-msg" *ngIf="hasError('week_start')">
+                  Fecha inicio es requerida
+                </div>
               </div>
 
               <div class="form-group">
@@ -99,7 +97,11 @@ import { TimesheetService } from '../../../../core/services/timesheet.service';
           <div class="form-section full-width">
             <h3>Registro Diario</h3>
             <div class="entries-container" formArrayName="entries">
-              <div *ngFor="let entry of entries.controls; let i = index" [formGroupName]="i" class="entry-row">
+              <div
+                *ngFor="let entry of entries.controls; let i = index"
+                [formGroupName]="i"
+                class="entry-row"
+              >
                 <div class="entry-header">
                   <span class="day-label">Día {{ i + 1 }}</span>
                 </div>
@@ -110,15 +112,32 @@ import { TimesheetService } from '../../../../core/services/timesheet.service';
                   </div>
                   <div class="form-group">
                     <label>Horas Regulares</label>
-                    <input type="number" formControlName="regular_hours" class="form-control" min="0" step="0.5" />
+                    <input
+                      type="number"
+                      formControlName="regular_hours"
+                      class="form-control"
+                      min="0"
+                      step="0.5"
+                    />
                   </div>
                   <div class="form-group">
                     <label>Horas Extra</label>
-                    <input type="number" formControlName="overtime_hours" class="form-control" min="0" step="0.5" />
+                    <input
+                      type="number"
+                      formControlName="overtime_hours"
+                      class="form-control"
+                      min="0"
+                      step="0.5"
+                    />
                   </div>
                   <div class="form-group full-width-mobile">
                     <label>Descripción</label>
-                    <input type="text" formControlName="description" class="form-control" placeholder="Actividad..." />
+                    <input
+                      type="text"
+                      formControlName="description"
+                      class="form-control"
+                      placeholder="Actividad..."
+                    />
                   </div>
                 </div>
               </div>
@@ -370,12 +389,12 @@ export class TimesheetFormComponent implements OnInit {
 
   initForm() {
     this.form = this.fb.group({
-      project_id: [null, Validators.required],
-      operator_id: [null, Validators.required],
+      proyecto_id: [null, Validators.required],
+      trabajador_id: [null, Validators.required],
       week_start: ['', Validators.required],
       status: ['draft', Validators.required],
       notes: [''],
-      entries: this.fb.array([])
+      entries: this.fb.array([]),
     });
 
     // Initialize 7 days
@@ -394,7 +413,7 @@ export class TimesheetFormComponent implements OnInit {
       date: [''],
       regular_hours: [0],
       overtime_hours: [0],
-      description: ['']
+      description: [''],
     });
   }
 
@@ -403,8 +422,8 @@ export class TimesheetFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.projectService.getAll().subscribe((res: any) => this.projects = res);
-    this.operatorService.getAll().subscribe((res: any) => this.operators = res);
+    this.projectService.getAll().subscribe((res: any) => (this.projects = res));
+    this.operatorService.getAll().subscribe((res: any) => (this.operators = res));
   }
 
   loadTimesheet() {
@@ -419,13 +438,13 @@ export class TimesheetFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error loading timesheet');
-      }
+      },
     });
   }
 
   calculateTotalHours(): number {
     let total = 0;
-    this.entries.controls.forEach(control => {
+    this.entries.controls.forEach((control) => {
       const regular = control.get('regular_hours')?.value || 0;
       const overtime = control.get('overtime_hours')?.value || 0;
       total += Number(regular) + Number(overtime);
@@ -439,10 +458,11 @@ export class TimesheetFormComponent implements OnInit {
       return;
     }
     this.loading = true;
-    const req = this.isEditMode && this.timesheetId
-      ? this.timesheetService.update(this.timesheetId, this.form.value)
-      : this.timesheetService.create(this.form.value);
-    
+    const req =
+      this.isEditMode && this.timesheetId
+        ? this.timesheetService.update(this.timesheetId, this.form.value)
+        : this.timesheetService.create(this.form.value);
+
     req.subscribe({
       next: () => {
         this.router.navigate(['/operaciones/timesheets']);
@@ -450,7 +470,7 @@ export class TimesheetFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error saving timesheet');
-      }
+      },
     });
   }
 

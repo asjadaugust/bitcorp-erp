@@ -672,13 +672,13 @@ export class DailyReportListEnhancedComponent implements OnInit {
 
   getStatusLabel(status: string | undefined): string {
     switch (status) {
-      case 'draft':
+      case 'BORRADOR':
         return 'Borrador';
-      case 'submitted':
+      case 'PENDIENTE':
         return 'Enviado';
-      case 'approved':
+      case 'APROBADO':
         return 'Aprobado';
-      case 'rejected':
+      case 'RECHAZADO':
         return 'Rechazado';
       default:
         return status || 'Desconocido';
@@ -705,32 +705,32 @@ export class DailyReportListEnhancedComponent implements OnInit {
 
     const exportData = this.reports.map((report: any) => {
       const hoursDiff =
-        report.hourmeter_end && report.hourmeter_start
-          ? report.hourmeter_end - report.hourmeter_start
+        report.horometro_final && report.horometro_inicial
+          ? report.horometro_final - report.horometro_inicial
           : 0;
       const kmDiff =
-        report.odometer_end && report.odometer_start
-          ? report.odometer_end - report.odometer_start
+        report.odometro_final && report.odometro_inicial
+          ? report.odometro_final - report.odometro_inicial
           : 0;
 
       return {
-        Fecha: report.report_date ? new Date(report.report_date).toLocaleDateString('es-PE') : '',
-        'Equipo Código': report.equipment_code || '',
-        'Equipo Nombre': report.equipment_name || '',
-        Operador: report.operator_name || '',
-        Proyecto: report.project_name || '',
-        'Hora Inicio': report.start_time || '',
-        'Hora Fin': report.end_time || '',
-        'Horómetro Inicial': report.hourmeter_start || 0,
-        'Horómetro Final': report.hourmeter_end || 0,
+        Fecha: report.fecha_parte ? new Date(report.fecha_parte).toLocaleDateString('es-PE') : '',
+        'Equipo Código': report.codigo_equipo || '',
+        'Equipo Nombre': report.equipo_nombre || '',
+        Operador: report.trabajador_nombre || '',
+        Proyecto: report.proyecto_nombre || '',
+        'Hora Inicio': report.hora_inicio || '',
+        'Hora Fin': report.hora_fin || '',
+        'Horómetro Inicial': report.horometro_inicial || 0,
+        'Horómetro Final': report.horometro_final || 0,
         'Horómetro Horas': hoursDiff,
-        'Odómetro Inicial': report.odometer_start || 0,
-        'Odómetro Final': report.odometer_end || 0,
+        'Odómetro Inicial': report.odometro_inicial || 0,
+        'Odómetro Final': report.odometro_final || 0,
         'Odómetro KM': kmDiff,
-        'Combustible (gal)': report.diesel_gallons || 0,
-        Estado: this.getStatusLabel(report.status),
-        Descripción: report.observations || '',
-        Ubicación: report.departure_location || report.arrival_location || '',
+        'Combustible (gal)': report.diesel_gln || 0,
+        Estado: this.getStatusLabel(report.estado),
+        Descripción: report.observaciones || '',
+        Ubicación: report.lugar_salida || report.lugar_llegada || '',
         Creado: report.created_at ? new Date(report.created_at).toLocaleDateString('es-PE') : '',
       };
     });

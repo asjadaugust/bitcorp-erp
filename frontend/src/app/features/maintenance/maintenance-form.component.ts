@@ -54,13 +54,13 @@ import { Provider } from '../../core/models/provider.model';
             <div class="section-grid">
               <div class="form-group">
                 <label for="equipment">Equipo *</label>
-                <select id="equipment" formControlName="equipment_id" class="form-select">
+                <select id="equipment" formControlName="equipo_id" class="form-select">
                   <option [ngValue]="null">Seleccionar Equipo</option>
                   <option *ngFor="let equip of equipmentList" [value]="equip.id">
                     {{ equip.code }} - {{ equip.brand }} {{ equip.model }}
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('equipment_id')">Equipo es requerido</div>
+                <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
               </div>
 
               <div class="form-group">
@@ -329,7 +329,7 @@ export class MaintenanceFormComponent implements OnInit {
 
   constructor() {
     this.maintenanceForm = this.fb.group({
-      equipment_id: [null, Validators.required],
+      equipo_id: [null, Validators.required],
       maintenance_type: ['preventive', Validators.required],
       description: ['', Validators.required],
       start_date: [new Date().toISOString().split('T')[0], Validators.required],

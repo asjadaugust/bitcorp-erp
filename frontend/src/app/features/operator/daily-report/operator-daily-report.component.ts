@@ -1337,18 +1337,18 @@ export class OperatorDailyReportComponent implements OnInit {
     this.dailyReportService.getById(id).subscribe({
       next: (report) => {
         this.reportForm.patchValue({
-          date: report.report_date,
-          projectId: report.project_id,
-          equipmentId: report.equipment_id,
-          horometerStart: report.hourmeter_start,
-          horometerEnd: report.hourmeter_end,
-          startTime: report.start_time,
-          endTime: report.end_time,
-          fuelStart: (report as any).fuel_start || report.diesel_gallons,
-          fuelEnd: (report as any).fuel_end || report.gasoline_gallons,
-          gpsLocation: (report as any).location || report.departure_location,
-          manualLocation: (report as any).location || report.arrival_location,
-          workDescription: (report as any).work_description || report.observations,
+          date: report.fecha_parte,
+          projectId: report.proyecto_id,
+          equipmentId: report.equipo_id,
+          horometerStart: report.horometro_inicial,
+          horometerEnd: report.horometro_final,
+          startTime: report.hora_inicio,
+          endTime: report.hora_fin,
+          fuelStart: (report as any).fuel_start || report.diesel_gln,
+          fuelEnd: (report as any).fuel_end || report.gasolina_gln,
+          gpsLocation: (report as any).location || report.lugar_salida,
+          manualLocation: (report as any).location || report.lugar_llegada,
+          workDescription: (report as any).work_description || report.observaciones,
         });
 
         if (this.isViewMode) {
@@ -1562,19 +1562,19 @@ export class OperatorDailyReportComponent implements OnInit {
       const formValue = this.reportForm.value;
 
       const reportData = {
-        report_date: formValue.date,
-        equipment_id: formValue.equipmentId,
-        operator_id: '1', // Get from auth service
-        project_id: formValue.projectId.toString() || null,
-        hourmeter_start: formValue.horometerStart,
-        hourmeter_end: formValue.horometerEnd,
-        start_time: formValue.startTime,
-        end_time: formValue.endTime,
+        fecha_parte: formValue.date,
+        equipo_id: formValue.equipmentId,
+        trabajador_id: '1', // Get from auth service
+        proyecto_id: formValue.projectId.toString() || null,
+        horometro_inicial: formValue.horometerStart,
+        horometro_final: formValue.horometerEnd,
+        hora_inicio: formValue.startTime,
+        hora_fin: formValue.endTime,
         location: formValue.manualLocation || formValue.gpsLocation,
-        observations: formValue.workDescription,
-        diesel_gallons: formValue.fuelAdded || 0,
+        observaciones: formValue.workDescription,
+        diesel_gln: formValue.fuelAdded || 0,
         worked_hours: parseFloat(this.calculateHours()),
-        status: 'submitted' as const,
+        status: 'PENDIENTE' as const,
 
         // New fields
         turno: formValue.turno,

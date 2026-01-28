@@ -111,12 +111,14 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
             <div class="info-row">
               <i class="fa-solid fa-truck-front"></i>
               <span>{{
-                task.equipment_code || task.equipment?.code || 'Equipo #' + task.equipment_id
+                task.equipment_code || task.equipment?.code || 'Equipo #' + task.equipo_id
               }}</span>
             </div>
             <div class="info-row">
               <i class="fa-solid fa-calendar-day"></i>
-              <span>{{ (task.start_date || (task.start_date || task.scheduled_date)) | date: 'dd/MM/yyyy' }}</span>
+              <span>{{
+                task.start_date || task.start_date || task.scheduled_date | date: 'dd/MM/yyyy'
+              }}</span>
             </div>
             <div class="info-row">
               <i class="fa-solid fa-user"></i>

@@ -529,10 +529,10 @@ export class ChecklistFormComponent implements OnInit {
     if (!this.isValid()) return;
 
     const dto: CreateChecklistDto = {
-      equipment_id: this.equipmentId,
+      equipo_id: this.equipmentId,
       checklist_type: this.checklistType,
       template_id: this.selectedTemplate?.id,
-      operator_id: this.operatorId,
+      trabajador_id: this.operatorId,
       daily_report_id: this.dailyReportId,
       items: this.items.map(
         ({ id, is_required, expected_value, allow_photos, allow_comments, ...item }) => item

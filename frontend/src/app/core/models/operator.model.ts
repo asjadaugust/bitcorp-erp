@@ -33,7 +33,7 @@ export interface PersonalDocument {
 
 export interface OperatorCertification {
   id: number;
-  operator_id: number;
+  trabajador_id: number;
   certification_name: string;
   certification_number: string;
   issue_date: string;
@@ -44,7 +44,7 @@ export interface OperatorCertification {
 
 export interface OperatorSkill {
   id: number;
-  operator_id: number;
+  trabajador_id: number;
   equipment_type: string;
   skill_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   years_experience: number;

@@ -19,8 +19,8 @@ export class TimesheetService {
     return {
       id: apiData.id,
       timesheetCode: apiData.timesheet_code || `TS-${apiData.id}`,
-      operatorId: apiData.trabajador_id || apiData.operator_id,
-      projectId: apiData.project_id,
+      operatorId: apiData.trabajador_id || apiData.trabajador_id,
+      projectId: apiData.proyecto_id,
       periodStart: apiData.period_start || this.parsePeriod(apiData.periodo)?.start,
       periodEnd: apiData.period_end || this.parsePeriod(apiData.periodo)?.end,
       totalHours: parseFloat(apiData.total_horas || apiData.total_hours || 0),
@@ -64,16 +64,16 @@ export class TimesheetService {
    * List all timesheets with optional filters
    */
   listTimesheets(filters?: {
-    operator_id?: number;
-    project_id?: string;
+    trabajador_id?: number;
+    proyecto_id?: string;
     status?: string;
     period_start?: string;
     period_end?: string;
   }): Observable<Timesheet[]> {
     const params: any = {};
     if (filters) {
-      if (filters.operator_id) params.operator_id = filters.operator_id.toString();
-      if (filters.project_id) params.project_id = filters.project_id;
+      if (filters.trabajador_id) params.trabajador_id = filters.trabajador_id.toString();
+      if (filters.proyecto_id) params.proyecto_id = filters.proyecto_id;
       if (filters.status) params.status = filters.status;
       if (filters.period_start) params.period_start = filters.period_start;
       if (filters.period_end) params.period_end = filters.period_end;

@@ -46,12 +46,12 @@ import { Equipment } from '../../core/models/equipment.model';
               <h2>📅 Información Básica</h2>
 
               <div class="form-group">
-                <label for="report_date">Fecha *</label>
+                <label for="fecha_parte">Fecha *</label>
                 <input
                   type="date"
-                  id="report_date"
-                  name="report_date"
-                  [(ngModel)]="report.report_date"
+                  id="fecha_parte"
+                  name="fecha_parte"
+                  [(ngModel)]="report.fecha_parte"
                   required
                   [max]="today"
                   [disabled]="isReadOnly"
@@ -59,11 +59,11 @@ import { Equipment } from '../../core/models/equipment.model';
               </div>
 
               <div class="form-group">
-                <label for="equipment_id">Equipo *</label>
+                <label for="equipo_id">Equipo *</label>
                 <select
-                  id="equipment_id"
-                  name="equipment_id"
-                  [(ngModel)]="report.equipment_id"
+                  id="equipo_id"
+                  name="equipo_id"
+                  [(ngModel)]="report.equipo_id"
                   required
                   (change)="onEquipmentChange()"
                   [disabled]="isReadOnly"
@@ -113,31 +113,31 @@ import { Equipment } from '../../core/models/equipment.model';
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="start_time">Hora Inicio *</label>
+                  <label for="hora_inicio">Hora Inicio *</label>
                   <input
                     type="time"
-                    id="start_time"
-                    name="start_time"
-                    [(ngModel)]="report.start_time"
+                    id="hora_inicio"
+                    name="hora_inicio"
+                    [(ngModel)]="report.hora_inicio"
                     required
                     [disabled]="isReadOnly"
                   />
                 </div>
 
                 <div class="form-group">
-                  <label for="end_time">Hora Fin *</label>
+                  <label for="hora_fin">Hora Fin *</label>
                   <input
                     type="time"
-                    id="end_time"
-                    name="end_time"
-                    [(ngModel)]="report.end_time"
+                    id="hora_fin"
+                    name="hora_fin"
+                    [(ngModel)]="report.hora_fin"
                     required
                     [disabled]="isReadOnly"
                   />
                 </div>
               </div>
 
-              <div class="hours-worked" *ngIf="report.start_time && report.end_time">
+              <div class="hours-worked" *ngIf="report.hora_inicio && report.hora_fin">
                 <span class="label">Horas Trabajadas:</span>
                 <span class="value">{{ calculateHours() }} horas</span>
               </div>
@@ -150,12 +150,12 @@ import { Equipment } from '../../core/models/equipment.model';
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="hourmeter_start">Horómetro Inicio *</label>
+                  <label for="horometro_inicial">Horómetro Inicio *</label>
                   <input
                     type="number"
-                    id="hourmeter_start"
-                    name="hourmeter_start"
-                    [(ngModel)]="report.hourmeter_start"
+                    id="horometro_inicial"
+                    name="horometro_inicial"
+                    [(ngModel)]="report.horometro_inicial"
                     required
                     step="0.1"
                     min="0"
@@ -168,39 +168,39 @@ import { Equipment } from '../../core/models/equipment.model';
                 </div>
 
                 <div class="form-group">
-                  <label for="hourmeter_end">Horómetro Fin *</label>
+                  <label for="horometro_final">Horómetro Fin *</label>
                   <input
                     type="number"
-                    id="hourmeter_end"
-                    name="hourmeter_end"
-                    [(ngModel)]="report.hourmeter_end"
+                    id="horometro_final"
+                    name="horometro_final"
+                    [(ngModel)]="report.horometro_final"
                     required
                     step="0.1"
-                    [min]="report.hourmeter_start"
+                    [min]="report.horometro_inicial"
                     placeholder="0.0"
                     [disabled]="isReadOnly"
                   />
                 </div>
               </div>
 
-              <div class="reading-diff" *ngIf="report.hourmeter_start && report.hourmeter_end">
+              <div class="reading-diff" *ngIf="report.horometro_inicial && report.horometro_final">
                 <span class="label">Diferencia Horómetro:</span>
                 <span class="value"
-                  >{{ (report.hourmeter_end - report.hourmeter_start).toFixed(1) }} hrs</span
+                  >{{ (report.horometro_final - report.horometro_inicial).toFixed(1) }} hrs</span
                 >
               </div>
 
               <div
                 class="form-row"
-                *ngIf="$any(selectedEquipment)?.odometer_reading || report.odometer_start"
+                *ngIf="$any(selectedEquipment)?.odometer_reading || report.odometro_inicial"
               >
                 <div class="form-group">
-                  <label for="odometer_start">Odómetro Inicio</label>
+                  <label for="odometro_inicial">Odómetro Inicio</label>
                   <input
                     type="number"
-                    id="odometer_start"
-                    name="odometer_start"
-                    [(ngModel)]="report.odometer_start"
+                    id="odometro_inicial"
+                    name="odometro_inicial"
+                    [(ngModel)]="report.odometro_inicial"
                     step="0.1"
                     min="0"
                     placeholder="0.0"
@@ -209,14 +209,14 @@ import { Equipment } from '../../core/models/equipment.model';
                 </div>
 
                 <div class="form-group">
-                  <label for="odometer_end">Odómetro Fin</label>
+                  <label for="odometro_final">Odómetro Fin</label>
                   <input
                     type="number"
-                    id="odometer_end"
-                    name="odometer_end"
-                    [(ngModel)]="report.odometer_end"
+                    id="odometro_final"
+                    name="odometro_final"
+                    [(ngModel)]="report.odometro_final"
                     step="0.1"
-                    [min]="report.odometer_start"
+                    [min]="report.odometro_inicial"
                     placeholder="0.0"
                     [disabled]="isReadOnly"
                   />
@@ -718,16 +718,16 @@ export class DailyReportFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   report: CreateDailyReportDto = {
-    report_date: new Date().toISOString().split('T')[0],
-    operator_id: '',
-    equipment_id: '',
-    start_time: '',
-    end_time: '',
-    hourmeter_start: 0,
-    hourmeter_end: 0,
+    fecha_parte: new Date().toISOString().split('T')[0],
+    trabajador_id: '',
+    equipo_id: '',
+    hora_inicio: '',
+    hora_fin: '',
+    horometro_inicial: 0,
+    horometro_final: 0,
     location: '',
     work_description: '',
-    status: 'draft',
+    estado: 'BORRADOR',
   };
 
   equipment: Equipment[] = [];
@@ -776,7 +776,7 @@ export class DailyReportFormComponent implements OnInit {
         this.report = {
           ...data,
           // Ensure date format is YYYY-MM-DD
-          report_date: new Date(data.report_date).toISOString().split('T')[0],
+          fecha_parte: new Date(data.fecha_parte).toISOString().split('T')[0],
         } as unknown as CreateDailyReportDto;
 
         // Load photos if available
@@ -788,7 +788,7 @@ export class DailyReportFormComponent implements OnInit {
         // Trigger equipment selection logic to set initial values if needed
         // But we should be careful not to overwrite report values with current equipment values
         this.selectedEquipment =
-          this.equipment.find((eq) => String(eq.id) === String(this.report.equipment_id)) || null;
+          this.equipment.find((eq) => String(eq.id) === String(this.report.equipo_id)) || null;
       },
       error: (error) => {
         this.errorMessage = 'Error al cargar el parte';
@@ -811,28 +811,26 @@ export class DailyReportFormComponent implements OnInit {
   loadOperatorId(): void {
     const user = this.authService.currentUser;
     if (user) {
-      this.report.operator_id = String(user.id);
+      this.report.trabajador_id = String(user.id);
     }
   }
 
   onEquipmentChange(): void {
-    const selected = this.equipment.find(
-      (eq) => String(eq.id) === String(this.report.equipment_id)
-    );
+    const selected = this.equipment.find((eq) => String(eq.id) === String(this.report.equipo_id));
     if (selected) {
       this.selectedEquipment = selected;
       if (!this.reportId) {
         // Only set hourmeter if creating new
-        this.report.hourmeter_start = Number(selected.meter_type) || 0;
+        this.report.horometro_inicial = Number(selected.meter_type) || 0;
       }
     }
   }
 
   calculateHours(): number {
-    if (!this.report.start_time || !this.report.end_time) return 0;
+    if (!this.report.hora_inicio || !this.report.hora_fin) return 0;
 
-    const start = new Date(`2000-01-01T${this.report.start_time}`);
-    const end = new Date(`2000-01-01T${this.report.end_time}`);
+    const start = new Date(`2000-01-01T${this.report.hora_inicio}`);
+    const end = new Date(`2000-01-01T${this.report.hora_fin}`);
     const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
 
     return Math.max(0, Math.round(diff * 10) / 10);
@@ -880,13 +878,13 @@ export class DailyReportFormComponent implements OnInit {
 
   saveDraft(): void {
     this.saving = true;
-    this.report.status = 'draft';
+    this.report.estado = 'BORRADOR';
     this.submitToServer();
   }
 
   submitReport(): void {
     this.saving = true;
-    this.report.status = 'submitted';
+    this.report.estado = 'PENDIENTE';
     this.submitToServer();
   }
 
@@ -905,7 +903,7 @@ export class DailyReportFormComponent implements OnInit {
             response.message || 'Parte guardado offline. Se sincronizará cuando esté en línea.';
         } else {
           this.successMessage =
-            this.report.status === 'draft'
+            this.report.estado === 'BORRADOR'
               ? '¡Borrador guardado exitosamente!'
               : '¡Parte enviado exitosamente!';
         }

@@ -60,23 +60,23 @@ import { Equipment } from '../../core/models/equipment.model';
             <h2>📅 Información Básica</h2>
 
             <div class="form-group">
-              <label for="report_date">Fecha *</label>
+              <label for="fecha_parte">Fecha *</label>
               <input
                 type="date"
-                id="report_date"
-                name="report_date"
-                [(ngModel)]="report.report_date"
+                id="fecha_parte"
+                name="fecha_parte"
+                [(ngModel)]="report.fecha_parte"
                 required
                 [max]="today"
               />
             </div>
 
             <div class="form-group">
-              <label for="equipment_id">Equipo *</label>
+              <label for="equipo_id">Equipo *</label>
               <select
-                id="equipment_id"
-                name="equipment_id"
-                [(ngModel)]="report.equipment_id"
+                id="equipo_id"
+                name="equipo_id"
+                [(ngModel)]="report.equipo_id"
                 required
                 (change)="onEquipmentChange()"
               >
@@ -109,23 +109,23 @@ import { Equipment } from '../../core/models/equipment.model';
 
             <div class="form-row">
               <div class="form-group">
-                <label for="start_time">Hora Inicio *</label>
+                <label for="hora_inicio">Hora Inicio *</label>
                 <input
                   type="time"
-                  id="start_time"
-                  name="start_time"
-                  [(ngModel)]="report.start_time"
+                  id="hora_inicio"
+                  name="hora_inicio"
+                  [(ngModel)]="report.hora_inicio"
                   required
                 />
               </div>
 
               <div class="form-group">
-                <label for="end_time">Hora Fin *</label>
+                <label for="hora_fin">Hora Fin *</label>
                 <input
                   type="time"
-                  id="end_time"
-                  name="end_time"
-                  [(ngModel)]="report.end_time"
+                  id="hora_fin"
+                  name="hora_fin"
+                  [(ngModel)]="report.hora_fin"
                   required
                 />
               </div>
@@ -143,12 +143,12 @@ import { Equipment } from '../../core/models/equipment.model';
 
             <div class="form-row">
               <div class="form-group">
-                <label for="hourmeter_start">Horómetro Inicio *</label>
+                <label for="horometro_inicial">Horómetro Inicio *</label>
                 <input
                   type="number"
-                  id="hourmeter_start"
-                  name="hourmeter_start"
-                  [(ngModel)]="report.hourmeter_start"
+                  id="horometro_inicial"
+                  name="horometro_inicial"
+                  [(ngModel)]="report.horometro_inicial"
                   required
                   step="0.1"
                   min="0"
@@ -160,15 +160,15 @@ import { Equipment } from '../../core/models/equipment.model';
               </div>
 
               <div class="form-group">
-                <label for="hourmeter_end">Horómetro Fin *</label>
+                <label for="horometro_final">Horómetro Fin *</label>
                 <input
                   type="number"
-                  id="hourmeter_end"
-                  name="hourmeter_end"
-                  [(ngModel)]="report.hourmeter_end"
+                  id="horometro_final"
+                  name="horometro_final"
+                  [(ngModel)]="report.horometro_final"
                   required
                   step="0.1"
-                  [min]="report.hourmeter_start"
+                  [min]="report.horometro_inicial"
                   placeholder="0.0"
                 />
               </div>
@@ -181,12 +181,12 @@ import { Equipment } from '../../core/models/equipment.model';
 
             <div class="form-row" *ngIf="$any(selectedEquipment())?.odometer_reading">
               <div class="form-group">
-                <label for="odometer_start">Odómetro Inicio</label>
+                <label for="odometro_inicial">Odómetro Inicio</label>
                 <input
                   type="number"
-                  id="odometer_start"
-                  name="odometer_start"
-                  [(ngModel)]="report.odometer_start"
+                  id="odometro_inicial"
+                  name="odometro_inicial"
+                  [(ngModel)]="report.odometro_inicial"
                   step="0.1"
                   min="0"
                   placeholder="0.0"
@@ -194,14 +194,14 @@ import { Equipment } from '../../core/models/equipment.model';
               </div>
 
               <div class="form-group">
-                <label for="odometer_end">Odómetro Fin</label>
+                <label for="odometro_final">Odómetro Fin</label>
                 <input
                   type="number"
-                  id="odometer_end"
-                  name="odometer_end"
-                  [(ngModel)]="report.odometer_end"
+                  id="odometro_final"
+                  name="odometro_final"
+                  [(ngModel)]="report.odometro_final"
                   step="0.1"
-                  [min]="report.odometer_start || 0"
+                  [min]="report.odometro_inicial || 0"
                   placeholder="0.0"
                 />
               </div>
@@ -370,7 +370,7 @@ import { Equipment } from '../../core/models/equipment.model';
           <div class="draft-list">
             <div *ngFor="let draft of draftReports()" class="draft-item" (click)="loadDraft(draft)">
               <div class="draft-info">
-                <strong>{{ draft.report_date }}</strong>
+                <strong>{{ draft.fecha_parte }}</strong>
                 <span>{{ draft.location }}</span>
               </div>
               <button class="btn-delete" (click)="deleteDraft(draft.localId, $event)">🗑️</button>
@@ -794,16 +794,16 @@ export class DailyReportFormPWAComponent implements OnInit {
   private http = inject(HttpClient);
 
   report: any = {
-    report_date: new Date().toISOString().split('T')[0],
-    operator_id: 0,
-    equipment_id: 0,
-    start_time: '',
-    end_time: '',
-    hourmeter_start: 0,
-    hourmeter_end: 0,
+    fecha_parte: new Date().toISOString().split('T')[0],
+    trabajador_id: 0,
+    equipo_id: 0,
+    hora_inicio: '',
+    hora_fin: '',
+    horometro_inicial: 0,
+    horometro_final: 0,
     location: '',
     work_description: '',
-    status: 'draft',
+    status: 'BORRADOR',
   };
 
   equipment = signal<Equipment[]>([]);
@@ -818,15 +818,15 @@ export class DailyReportFormPWAComponent implements OnInit {
   currentLocalId?: string;
 
   hoursWorked = computed(() => {
-    if (!this.report.start_time || !this.report.end_time) return 0;
-    const start = new Date(`2000-01-01T${this.report.start_time}`);
-    const end = new Date(`2000-01-01T${this.report.end_time}`);
+    if (!this.report.hora_inicio || !this.report.hora_fin) return 0;
+    const start = new Date(`2000-01-01T${this.report.hora_inicio}`);
+    const end = new Date(`2000-01-01T${this.report.hora_fin}`);
     const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
     return Math.max(0, Math.round(diff * 10) / 10);
   });
 
   hourmeterDiff = computed(() => {
-    return Math.max(0, (this.report.hourmeter_end || 0) - (this.report.hourmeter_start || 0));
+    return Math.max(0, (this.report.horometro_final || 0) - (this.report.horometro_inicial || 0));
   });
 
   fuelConsumed = computed(() => {
@@ -850,7 +850,7 @@ export class DailyReportFormPWAComponent implements OnInit {
   loadOperatorId(): void {
     const user = this.authService.currentUser;
     if (user) {
-      this.report.operator_id = user.id;
+      this.report.trabajador_id = user.id;
     }
   }
 
@@ -860,10 +860,10 @@ export class DailyReportFormPWAComponent implements OnInit {
   }
 
   onEquipmentChange(): void {
-    const selected = this.equipment().find((eq) => eq.id === this.report.equipment_id);
+    const selected = this.equipment().find((eq) => eq.id === this.report.equipo_id);
     if (selected) {
       this.selectedEquipment.set(selected);
-      // hourmeter_start is now entered manually by operator
+      // horometro_inicial is now entered manually by operator
     }
   }
 
@@ -956,7 +956,7 @@ export class DailyReportFormPWAComponent implements OnInit {
 
   async saveDraft(): Promise<void> {
     this.saving.set(true);
-    this.report.status = 'draft';
+    this.report.estado = 'BORRADOR';
     try {
       const localId = await this.syncService.saveReportOffline(this.report);
       this.currentLocalId = localId;
@@ -972,7 +972,7 @@ export class DailyReportFormPWAComponent implements OnInit {
 
   async submitReport(): Promise<void> {
     this.saving.set(true);
-    this.report.status = 'submitted';
+    this.report.estado = 'PENDIENTE';
     try {
       await this.syncService.saveReportOffline(this.report);
       this.successMessage.set('Reporte guardado. Se sincronizará automáticamente.');
@@ -1003,7 +1003,7 @@ export class DailyReportFormPWAComponent implements OnInit {
   }
 
   canExport(): boolean {
-    return this.report.equipment_id > 0 && this.report.work_description.length > 0;
+    return this.report.equipo_id > 0 && this.report.work_description.length > 0;
   }
 
   exportCurrentReportPDF(): void {

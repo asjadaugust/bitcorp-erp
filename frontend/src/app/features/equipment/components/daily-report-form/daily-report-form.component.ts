@@ -11,16 +11,16 @@ import { DailyReportService } from '../../services/daily-report.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 export interface DailyReportFormData {
-  report_date: string;
-  operator_id: number;
-  equipment_id: number;
-  project_id?: string;
-  start_time: string;
-  end_time: string;
-  hourmeter_start: number;
-  hourmeter_end: number;
-  odometer_start?: number;
-  odometer_end?: number;
+  fecha_parte: string;
+  trabajador_id: number;
+  equipo_id: number;
+  proyecto_id?: string;
+  hora_inicio: string;
+  hora_fin: string;
+  horometro_inicial: number;
+  horometro_final: number;
+  odometro_inicial?: number;
+  odometro_final?: number;
   fuel_start?: number;
   fuel_end?: number;
   location: string;
@@ -30,7 +30,7 @@ export interface DailyReportFormData {
   photos?: File[];
   gps_latitude?: number;
   gps_longitude?: number;
-  status: 'draft' | 'submitted';
+  status: 'BORRADOR' | 'PENDIENTE';
 }
 
 @Component({
@@ -97,16 +97,16 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     const today = new Date().toISOString().split('T')[0];
 
     this.reportForm = this.fb.group({
-      report_date: [today, Validators.required],
-      operator_id: ['', Validators.required],
-      equipment_id: ['', Validators.required],
-      project_id: [''],
-      start_time: ['', Validators.required],
-      end_time: ['', Validators.required],
-      hourmeter_start: ['', [Validators.required, Validators.min(0)]],
-      hourmeter_end: ['', [Validators.required, Validators.min(0)]],
-      odometer_start: ['', Validators.min(0)],
-      odometer_end: ['', Validators.min(0)],
+      fecha_parte: [today, Validators.required],
+      trabajador_id: ['', Validators.required],
+      equipo_id: ['', Validators.required],
+      proyecto_id: [''],
+      hora_inicio: ['', Validators.required],
+      hora_fin: ['', Validators.required],
+      horometro_inicial: ['', [Validators.required, Validators.min(0)]],
+      horometro_final: ['', [Validators.required, Validators.min(0)]],
+      odometro_inicial: ['', Validators.min(0)],
+      odometro_final: ['', Validators.min(0)],
       fuel_start: ['', Validators.min(0)],
       fuel_end: ['', Validators.min(0)],
       fuel_consumed: [{ value: '', disabled: true }],
@@ -122,12 +122,12 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   setupFormListeners(): void {
     // Auto-calculate hours worked
     this.reportForm
-      .get('hourmeter_end')
+      .get('horometro_final')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.calculateHoursWorked());
 
     this.reportForm
-      .get('hourmeter_start')
+      .get('horometro_inicial')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.calculateHoursWorked());
 
@@ -144,12 +144,12 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
     // Validate time range
     this.reportForm
-      .get('end_time')
+      .get('hora_fin')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.validateTimeRange());
 
     this.reportForm
-      .get('start_time')
+      .get('hora_inicio')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.validateTimeRange());
   }
@@ -181,7 +181,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         if (currentUser) {
           const currentOperator = this.operators.find((op) => op.user_id === currentUser.id);
           if (currentOperator) {
-            this.reportForm.patchValue({ operator_id: currentOperator.id });
+            this.reportForm.patchValue({ trabajador_id: currentOperator.id });
           }
         }
       },
@@ -197,21 +197,21 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.dailyReportService.getReportById(id).subscribe({
       next: (report: any) => {
         this.reportForm.patchValue({
-          report_date: report.report_date,
-          operator_id: report.operator_id,
-          equipment_id: report.equipment_id,
-          project_id: report.project_id,
-          start_time: report.start_time,
-          end_time: report.end_time,
-          hourmeter_start: report.hourmeter_start,
-          hourmeter_end: report.hourmeter_end,
-          odometer_start: report.odometer_start,
-          odometer_end: report.odometer_end,
+          fecha_parte: report.fecha_parte,
+          trabajador_id: report.trabajador_id,
+          equipo_id: report.equipo_id,
+          proyecto_id: report.proyecto_id,
+          hora_inicio: report.hora_inicio,
+          hora_fin: report.hora_fin,
+          horometro_inicial: report.horometro_inicial,
+          horometro_final: report.horometro_final,
+          odometro_inicial: report.odometro_inicial,
+          odometro_final: report.odometro_final,
           fuel_start: report.fuel_start,
           fuel_end: report.fuel_end,
           // Map API field names to form field names
-          location: report.location || report.departure_location || '',
-          work_description: report.work_description || report.observations || '',
+          location: report.location || report.lugar_salida || '',
+          work_description: report.work_description || report.observaciones || '',
           notes: report.notes,
           weather_conditions: report.weather_conditions,
           gps_latitude: report.gps_latitude,
@@ -228,8 +228,8 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   calculateHoursWorked(): void {
-    const start = this.reportForm.get('hourmeter_start')?.value;
-    const end = this.reportForm.get('hourmeter_end')?.value;
+    const start = this.reportForm.get('horometro_inicial')?.value;
+    const end = this.reportForm.get('horometro_final')?.value;
 
     if (start && end && end >= start) {
       const hours = end - start;
@@ -248,11 +248,11 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   validateTimeRange(): void {
-    const startTime = this.reportForm.get('start_time')?.value;
-    const endTime = this.reportForm.get('end_time')?.value;
+    const startTime = this.reportForm.get('hora_inicio')?.value;
+    const endTime = this.reportForm.get('hora_fin')?.value;
 
     if (startTime && endTime && endTime <= startTime) {
-      this.reportForm.get('end_time')?.setErrors({ invalidTimeRange: true });
+      this.reportForm.get('hora_fin')?.setErrors({ invalidTimeRange: true });
     }
   }
 
@@ -344,7 +344,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.saveReport('draft');
+    this.saveReport('BORRADOR');
   }
 
   submitReport(): void {
@@ -354,10 +354,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.saveReport('submitted');
+    this.saveReport('PENDIENTE');
   }
 
-  private saveReport(status: 'draft' | 'submitted'): void {
+  private saveReport(status: 'BORRADOR' | 'PENDIENTE'): void {
     this.saving = true;
 
     const formValue = this.reportForm.getRawValue();
@@ -380,7 +380,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         }
 
         const message =
-          status === 'draft' ? 'Borrador guardado exitosamente' : 'Reporte enviado exitosamente';
+          status === 'BORRADOR' ? 'Borrador guardado exitosamente' : 'Reporte enviado exitosamente';
         this.showSuccess(message);
 
         // Navigate back to daily reports list
@@ -471,8 +471,8 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   // Getters for template
   get hoursWorked(): number {
-    const start = this.reportForm.get('hourmeter_start')?.value;
-    const end = this.reportForm.get('hourmeter_end')?.value;
+    const start = this.reportForm.get('horometro_inicial')?.value;
+    const end = this.reportForm.get('horometro_final')?.value;
     return start && end && end >= start ? end - start : 0;
   }
 

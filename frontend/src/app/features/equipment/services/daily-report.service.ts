@@ -5,20 +5,20 @@ import { environment } from '../../../../environments/environment';
 
 export interface DailyReport {
   id?: string | number;
-  report_date: string;
-  operator_id: number;
+  fecha_parte: string;
+  trabajador_id: number;
   operator_name?: string;
-  equipment_id: number;
+  equipo_id: number;
   equipment_code?: string;
   equipment_name?: string;
-  project_id?: string;
+  proyecto_id?: string;
   project_name?: string;
-  start_time: string;
-  end_time: string;
-  hourmeter_start: number;
-  hourmeter_end: number;
-  odometer_start?: number;
-  odometer_end?: number;
+  hora_inicio: string;
+  hora_fin: string;
+  horometro_inicial: number;
+  horometro_final: number;
+  odometro_inicial?: number;
+  odometro_final?: number;
   fuel_start?: number;
   fuel_end?: number;
   fuel_consumed?: number;
@@ -39,15 +39,15 @@ export interface DailyReportFilters {
   date?: string;
   startDate?: string;
   endDate?: string;
-  operator_id?: number;
-  equipment_id?: number;
-  project_id?: string;
+  trabajador_id?: number;
+  equipo_id?: number;
+  proyecto_id?: string;
   page?: number;
   limit?: number;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DailyReportService {
   private apiUrl = `${environment.apiUrl}/reports`;
@@ -56,9 +56,9 @@ export class DailyReportService {
 
   getAllReports(filters?: DailyReportFilters): Observable<{ data: DailyReport[]; total: number }> {
     let params = new HttpParams();
-    
+
     if (filters) {
-      Object.keys(filters).forEach(key => {
+      Object.keys(filters).forEach((key) => {
         const value = filters[key as keyof DailyReportFilters];
         if (value !== undefined && value !== null) {
           params = params.set(key, value.toString());
@@ -107,9 +107,9 @@ export class DailyReportService {
 
   exportToExcel(filters?: DailyReportFilters): Observable<Blob> {
     let params = new HttpParams();
-    
+
     if (filters) {
-      Object.keys(filters).forEach(key => {
+      Object.keys(filters).forEach((key) => {
         const value = filters[key as keyof DailyReportFilters];
         if (value !== undefined && value !== null) {
           params = params.set(key, value.toString());
@@ -117,17 +117,17 @@ export class DailyReportService {
       });
     }
 
-    return this.http.get(`${this.apiUrl}/export/excel`, { 
-      params, 
-      responseType: 'blob' 
+    return this.http.get(`${this.apiUrl}/export/excel`, {
+      params,
+      responseType: 'blob',
     });
   }
 
   exportToCSV(filters?: DailyReportFilters): Observable<Blob> {
     let params = new HttpParams();
-    
+
     if (filters) {
-      Object.keys(filters).forEach(key => {
+      Object.keys(filters).forEach((key) => {
         const value = filters[key as keyof DailyReportFilters];
         if (value !== undefined && value !== null) {
           params = params.set(key, value.toString());
@@ -135,9 +135,9 @@ export class DailyReportService {
       });
     }
 
-    return this.http.get(`${this.apiUrl}/export/csv`, { 
-      params, 
-      responseType: 'blob' 
+    return this.http.get(`${this.apiUrl}/export/csv`, {
+      params,
+      responseType: 'blob',
     });
   }
 }

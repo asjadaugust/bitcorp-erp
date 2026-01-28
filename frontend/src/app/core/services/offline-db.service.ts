@@ -4,16 +4,16 @@ import Dexie, { Table } from 'dexie';
 export interface OfflineDailyReport {
   id?: number;
   localId: string;
-  report_date: string;
-  operator_id: string;
-  equipment_id: string;
-  project_id?: string;
-  start_time: string;
-  end_time: string;
-  hourmeter_start: number;
-  hourmeter_end: number;
-  odometer_start?: number;
-  odometer_end?: number;
+  fecha_parte: string;
+  trabajador_id: string;
+  equipo_id: string;
+  proyecto_id?: string;
+  hora_inicio: string;
+  hora_fin: string;
+  horometro_inicial: number;
+  horometro_final: number;
+  odometro_inicial?: number;
+  odometro_final?: number;
   fuel_start?: number;
   fuel_end?: number;
   diesel_gallons?: number;
@@ -47,7 +47,7 @@ export interface SyncQueue {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OfflineDBService extends Dexie {
   dailyReports!: Table<OfflineDailyReport, number>;
@@ -55,10 +55,11 @@ export class OfflineDBService extends Dexie {
 
   constructor() {
     super('BitcorpERPOffline');
-    
+
     this.version(1).stores({
-      dailyReports: '++id, localId, report_date, operator_id, equipment_id, status, synced, createdAt',
-      syncQueue: '++id, reportLocalId, action, createdAt, attempts'
+      dailyReports:
+        '++id, localId, fecha_parte, trabajador_id, equipo_id, status, synced, createdAt',
+      syncQueue: '++id, reportLocalId, action, createdAt, attempts',
     });
   }
 
@@ -76,7 +77,7 @@ export class OfflineDBService extends Dexie {
   }
 
   async getAllDailyReports(): Promise<OfflineDailyReport[]> {
-    return await this.dailyReports.orderBy('report_date').reverse().toArray();
+    return await this.dailyReports.orderBy('fecha_parte').reverse().toArray();
   }
 
   async getPendingReports(): Promise<OfflineDailyReport[]> {
@@ -89,7 +90,7 @@ export class OfflineDBService extends Dexie {
 
   async getReportsByDate(startDate: string, endDate: string): Promise<OfflineDailyReport[]> {
     return await this.dailyReports
-      .where('report_date')
+      .where('fecha_parte')
       .between(startDate, endDate, true, true)
       .toArray();
   }
@@ -97,7 +98,7 @@ export class OfflineDBService extends Dexie {
   async updateDailyReport(id: number, updates: Partial<OfflineDailyReport>): Promise<number> {
     return await this.dailyReports.update(id, {
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
   }
 
@@ -112,7 +113,7 @@ export class OfflineDBService extends Dexie {
         id: serverId,
         synced: true,
         status: 'synced',
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
     }
   }
@@ -125,19 +126,23 @@ export class OfflineDBService extends Dexie {
         syncAttempts: (report.syncAttempts || 0) + 1,
         lastSyncAttempt: new Date(),
         syncError: error,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
     }
   }
 
   // Sync Queue Management
-  async addToSyncQueue(reportLocalId: string, action: 'create' | 'update' | 'delete', data: any): Promise<number> {
+  async addToSyncQueue(
+    reportLocalId: string,
+    action: 'create' | 'update' | 'delete',
+    data: any
+  ): Promise<number> {
     return await this.syncQueue.add({
       reportLocalId,
       action,
       data,
       createdAt: new Date(),
-      attempts: 0
+      attempts: 0,
     });
   }
 
@@ -155,7 +160,7 @@ export class OfflineDBService extends Dexie {
       await this.syncQueue.update(id, {
         attempts: (item.attempts || 0) + 1,
         lastAttempt: new Date(),
-        error
+        error,
       });
     }
   }
@@ -176,7 +181,7 @@ export class OfflineDBService extends Dexie {
       pending,
       drafts,
       synced,
-      queueLength: await this.syncQueue.count()
+      queueLength: await this.syncQueue.count(),
     };
   }
 
@@ -191,8 +196,9 @@ export class OfflineDBService extends Dexie {
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
     return await this.dailyReports
-      .where('synced').equals(1)
-      .and(report => report.updatedAt < cutoffDate)
+      .where('synced')
+      .equals(1)
+      .and((report) => report.updatedAt < cutoffDate)
       .delete();
   }
 }

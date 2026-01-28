@@ -56,7 +56,7 @@ export class ScheduledTaskService {
     date: string,
     excludeTaskId?: number
   ): Observable<{ hasConflicts: boolean; conflicts: any[] }> {
-    let params = new HttpParams().set('operator_id', operatorId.toString()).set('date', date);
+    let params = new HttpParams().set('trabajador_id', operatorId.toString()).set('date', date);
 
     if (excludeTaskId) {
       params = params.set('exclude_task_id', excludeTaskId.toString());

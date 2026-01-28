@@ -24,7 +24,7 @@ interface HistoryReport {
         <h1>Historial de Partes Diarios</h1>
         <p class="subtitle">Registro histórico de trabajos realizados</p>
       </header>
-      
+
       <!-- Filters -->
       <div class="filters-bar">
         <div class="filter-group">
@@ -37,7 +37,7 @@ interface HistoryReport {
             <option value="all">Todos</option>
           </select>
         </div>
-        
+
         <div class="filter-group">
           <label>Estado:</label>
           <select [(ngModel)]="selectedStatus" (change)="filterReports()" class="filter-select">
@@ -49,7 +49,7 @@ interface HistoryReport {
           </select>
         </div>
       </div>
-      
+
       <!-- Summary Stats -->
       <div class="summary-stats">
         <div class="stat-item">
@@ -65,16 +65,20 @@ interface HistoryReport {
           <span class="stat-value">{{ countByStatus('approved') }}</span>
         </div>
       </div>
-      
+
       <!-- Loading State -->
       <div *ngIf="loading" class="loading-state">
         <span class="loading-icon">⏳</span>
         <p>Cargando historial...</p>
       </div>
-      
+
       <!-- Reports List -->
       <div class="reports-list" *ngIf="!loading">
-        <div *ngFor="let report of filteredReports" class="report-card" [class.clickable]="report.status === 'draft'">
+        <div
+          *ngFor="let report of filteredReports"
+          class="report-card"
+          [class.clickable]="report.status === 'draft'"
+        >
           <div class="report-main">
             <div class="report-icon" [class]="'status-' + report.status">
               <span *ngIf="report.status === 'draft'">📝</span>
@@ -82,7 +86,7 @@ interface HistoryReport {
               <span *ngIf="report.status === 'approved'">✅</span>
               <span *ngIf="report.status === 'rejected'">❌</span>
             </div>
-            
+
             <div class="report-info">
               <div class="report-title">{{ report.equipment }}</div>
               <div class="report-meta">
@@ -91,30 +95,34 @@ interface HistoryReport {
                 <span class="meta-item">⏱️ {{ report.hours }}h</span>
               </div>
             </div>
-            
+
             <div class="report-status">
               <span class="status-badge" [class]="'badge-' + report.status">
                 {{ getStatusLabel(report.status) }}
               </span>
             </div>
           </div>
-          
+
           <div class="report-actions">
-            <button *ngIf="report.status === 'draft'" class="action-btn edit" (click)="editReport(report)">
+            <button
+              *ngIf="report.status === 'draft'"
+              class="action-btn edit"
+              (click)="editReport(report)"
+            >
               ✏️ Editar
             </button>
-            <button class="action-btn view" (click)="viewReport(report)">
-              👁️ Ver
-            </button>
-            <button class="action-btn download" (click)="downloadPdf(report)">
-              📥 PDF
-            </button>
-            <button *ngIf="report.status === 'draft'" class="action-btn delete" (click)="deleteReport(report)">
+            <button class="action-btn view" (click)="viewReport(report)">👁️ Ver</button>
+            <button class="action-btn download" (click)="downloadPdf(report)">📥 PDF</button>
+            <button
+              *ngIf="report.status === 'draft'"
+              class="action-btn delete"
+              (click)="deleteReport(report)"
+            >
               🗑️
             </button>
           </div>
         </div>
-        
+
         <div *ngIf="filteredReports.length === 0" class="empty-state">
           <span class="empty-icon">📋</span>
           <p>No se encontraron partes diarios</p>
@@ -123,285 +131,287 @@ interface HistoryReport {
       </div>
     </div>
   `,
-  styles: [`
-    .history-container {
-      padding: 24px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    .history-header {
-      margin-bottom: 24px;
-    }
-    
-    .history-header h1 {
-      font-size: 28px;
-      font-weight: 600;
-      color: #072b45;
-      margin: 0 0 8px 0;
-    }
-    
-    .subtitle {
-      font-size: 16px;
-      color: #6b7280;
-      margin: 0;
-    }
-    
-    .filters-bar {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 16px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .filter-group label {
-      font-size: 14px;
-      font-weight: 500;
-      color: #374151;
-    }
-    
-    .filter-select {
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    
-    .summary-stats {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 16px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .stat-item {
-      flex: 1;
-      display: flex;
-      justify-content: space-between;
-      padding: 12px;
-      background: #f9fafb;
-      border-radius: 6px;
-    }
-    
-    .stat-label {
-      font-size: 14px;
-      color: #6b7280;
-    }
-    
-    .stat-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: #0077cd;
-    }
-    
-    .reports-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    
-    .report-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      transition: all 0.2s;
-    }
-    
-    .report-card.clickable:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .report-main {
-      display: flex;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    
-    .report-icon {
-      font-size: 32px;
-      margin-right: 16px;
-      width: 48px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
-    }
-    
-    .report-icon.status-draft {
-      background: rgba(255, 158, 24, 0.1);
-    }
-    
-    .report-icon.status-submitted {
-      background: rgba(0, 119, 205, 0.1);
-    }
-    
-    .report-icon.status-approved {
-      background: rgba(0, 168, 98, 0.1);
-    }
-    
-    .report-icon.status-rejected {
-      background: rgba(229, 25, 55, 0.1);
-    }
-    
-    .report-info {
-      flex: 1;
-    }
-    
-    .report-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #072b45;
-      margin-bottom: 8px;
-    }
-    
-    .report-meta {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    
-    .meta-item {
-      font-size: 13px;
-      color: #6b7280;
-    }
-    
-    .status-badge {
-      padding: 6px 14px;
-      border-radius: 14px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    
-    .badge-draft {
-      background: #fff4e6;
-      color: #f59e0b;
-    }
-    
-    .badge-submitted {
-      background: #e6f2ff;
-      color: #0077cd;
-    }
-    
-    .badge-approved {
-      background: #d1fae5;
-      color: #059669;
-    }
-    
-    .badge-rejected {
-      background: #fee2e2;
-      color: #dc2626;
-    }
-    
-    .report-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    
-    .action-btn {
-      padding: 8px 16px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      background: white;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .action-btn:hover {
-      background: #f3f4f6;
-    }
-    
-    .action-btn.edit {
-      border-color: #0077cd;
-      color: #0077cd;
-    }
-    
-    .action-btn.edit:hover {
-      background: #e6f2ff;
-    }
-    
-    .action-btn.delete {
-      border-color: #e51937;
-      color: #e51937;
-    }
-    
-    .action-btn.delete:hover {
-      background: #fee2e2;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 64px 24px;
-      background: white;
-      border-radius: 12px;
-    }
-    
-    .empty-icon {
-      font-size: 80px;
-      display: block;
-      margin-bottom: 16px;
-    }
-    
-    .empty-state p {
-      color: #6b7280;
-      margin-bottom: 20px;
-      font-size: 16px;
-    }
-    
-    .btn-link {
-      display: inline-block;
-      padding: 12px 24px;
-      background: #0077cd;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-    
-    .btn-link:hover {
-      background: #005fa3;
-    }
-    
-    @media (max-width: 768px) {
+  styles: [
+    `
       .history-container {
-        padding: 16px;
+        padding: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
       }
-      
+
+      .history-header {
+        margin-bottom: 24px;
+      }
+
+      .history-header h1 {
+        font-size: 28px;
+        font-weight: 600;
+        color: #072b45;
+        margin: 0 0 8px 0;
+      }
+
+      .subtitle {
+        font-size: 16px;
+        color: #6b7280;
+        margin: 0;
+      }
+
       .filters-bar {
-        flex-direction: column;
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
-      
+
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .filter-group label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+      }
+
+      .filter-select {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
       .summary-stats {
-        flex-direction: column;
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
-      
+
+      .stat-item {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 6px;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: #6b7280;
+      }
+
+      .stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0077cd;
+      }
+
+      .reports-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .report-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+      }
+
+      .report-card.clickable:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
       .report-main {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .report-icon {
+        font-size: 32px;
+        margin-right: 16px;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+      }
+
+      .report-icon.status-draft {
+        background: rgba(255, 158, 24, 0.1);
+      }
+
+      .report-icon.status-submitted {
+        background: rgba(0, 119, 205, 0.1);
+      }
+
+      .report-icon.status-approved {
+        background: rgba(0, 168, 98, 0.1);
+      }
+
+      .report-icon.status-rejected {
+        background: rgba(229, 25, 55, 0.1);
+      }
+
+      .report-info {
+        flex: 1;
+      }
+
+      .report-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #072b45;
+        margin-bottom: 8px;
+      }
+
+      .report-meta {
+        display: flex;
+        gap: 16px;
         flex-wrap: wrap;
       }
-      
-      .report-status {
-        width: 100%;
-        margin-top: 12px;
+
+      .meta-item {
+        font-size: 13px;
+        color: #6b7280;
       }
-    }
-  `]
+
+      .status-badge {
+        padding: 6px 14px;
+        border-radius: 14px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .badge-draft {
+        background: #fff4e6;
+        color: #f59e0b;
+      }
+
+      .badge-submitted {
+        background: #e6f2ff;
+        color: #0077cd;
+      }
+
+      .badge-approved {
+        background: #d1fae5;
+        color: #059669;
+      }
+
+      .badge-rejected {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+
+      .report-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .action-btn {
+        padding: 8px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .action-btn:hover {
+        background: #f3f4f6;
+      }
+
+      .action-btn.edit {
+        border-color: #0077cd;
+        color: #0077cd;
+      }
+
+      .action-btn.edit:hover {
+        background: #e6f2ff;
+      }
+
+      .action-btn.delete {
+        border-color: #e51937;
+        color: #e51937;
+      }
+
+      .action-btn.delete:hover {
+        background: #fee2e2;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 64px 24px;
+        background: white;
+        border-radius: 12px;
+      }
+
+      .empty-icon {
+        font-size: 80px;
+        display: block;
+        margin-bottom: 16px;
+      }
+
+      .empty-state p {
+        color: #6b7280;
+        margin-bottom: 20px;
+        font-size: 16px;
+      }
+
+      .btn-link {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #0077cd;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .btn-link:hover {
+        background: #005fa3;
+      }
+
+      @media (max-width: 768px) {
+        .history-container {
+          padding: 16px;
+        }
+
+        .filters-bar {
+          flex-direction: column;
+        }
+
+        .summary-stats {
+          flex-direction: column;
+        }
+
+        .report-main {
+          flex-wrap: wrap;
+        }
+
+        .report-status {
+          width: 100%;
+          margin-top: 12px;
+        }
+      }
+    `,
+  ],
 })
 export class OperatorHistoryComponent implements OnInit {
   private router = inject(Router);
@@ -411,37 +421,39 @@ export class OperatorHistoryComponent implements OnInit {
   selectedPeriod = 'month';
   selectedStatus = 'all';
   loading = true;
-  
+
   allReports: HistoryReport[] = [];
   filteredReports: HistoryReport[] = [];
-  
+
   ngOnInit() {
     this.loadReports();
   }
 
   loadReports() {
     this.loading = true;
-    
+
     // Get current user's operator ID
     const currentUser = this.authService.currentUser;
     if (!currentUser) {
       this.loading = false;
       return;
     }
-    
+
     // Fetch reports from API
     this.dailyReportService.getAll().subscribe({
       next: (reports) => {
         // Map API response to local interface
         this.allReports = reports.map((report: any) => ({
           id: report.id,
-          date: new Date(report.report_date || report.reportDate).toLocaleDateString('es-PE'),
+          date: new Date(report.fecha_parte || report.reportDate).toLocaleDateString('es-PE'),
           project: report.location || 'Sin ubicación',
-          equipment: report.equipment_name || report.equipment_code || `Equipo #${report.equipment_id}`,
-          hours: report.worked_hours || 
-                 ((report.hourmeter_end || 0) - (report.hourmeter_start || 0)) ||
-                 0,
-          status: report.status as 'draft' | 'submitted' | 'approved' | 'rejected'
+          equipment:
+            report.equipment_name || report.equipment_code || `Equipo #${report.equipo_id}`,
+          hours:
+            report.worked_hours ||
+            (report.horometro_final || 0) - (report.horometro_inicial || 0) ||
+            0,
+          status: report.status as 'draft' | 'submitted' | 'approved' | 'rejected',
         }));
         this.filterReports();
         this.loading = false;
@@ -449,37 +461,37 @@ export class OperatorHistoryComponent implements OnInit {
       error: (error) => {
         console.error('Error loading reports:', error);
         this.loading = false;
-      }
+      },
     });
   }
-  
+
   filterReports() {
     let filtered = [...this.allReports];
-    
+
     // Filter by status
     if (this.selectedStatus !== 'all') {
-      filtered = filtered.filter(r => r.status === this.selectedStatus);
+      filtered = filtered.filter((r) => r.status === this.selectedStatus);
     }
-    
+
     // TODO: Filter by period
-    
+
     this.filteredReports = filtered;
   }
-  
+
   calculateTotalHours(): number {
     return this.filteredReports.reduce((sum, report) => Number(sum) + Number(report.hours), 0);
   }
-  
+
   countByStatus(status: string): number {
-    return this.filteredReports.filter(r => r.status === status).length;
+    return this.filteredReports.filter((r) => r.status === status).length;
   }
-  
+
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      'draft': 'Borrador',
-      'submitted': 'Enviado',
-      'approved': 'Aprobado',
-      'rejected': 'Rechazado'
+      draft: 'Borrador',
+      submitted: 'Enviado',
+      approved: 'Aprobado',
+      rejected: 'Rechazado',
     };
     return labels[status] || status;
   }
@@ -487,14 +499,16 @@ export class OperatorHistoryComponent implements OnInit {
   viewReport(report: HistoryReport) {
     // For now, show alert with report details
     // TODO: Create a view-only report detail component
-    alert(`Parte Diario #${report.id}\nFecha: ${report.date}\nEquipo: ${report.equipment}\nHoras: ${report.hours}h\nEstado: ${this.getStatusLabel(report.status)}`);
+    alert(
+      `Parte Diario #${report.id}\nFecha: ${report.date}\nEquipo: ${report.equipment}\nHoras: ${report.hours}h\nEstado: ${this.getStatusLabel(report.status)}`
+    );
   }
 
   editReport(report: HistoryReport) {
     // Only allow editing drafts
     if (report.status === 'draft') {
-      this.router.navigate(['/operator/daily-report'], { 
-        queryParams: { editId: report.id }
+      this.router.navigate(['/operator/daily-report'], {
+        queryParams: { editId: report.id },
       });
     }
   }
@@ -502,7 +516,7 @@ export class OperatorHistoryComponent implements OnInit {
   deleteReport(report: HistoryReport) {
     if (confirm('¿Está seguro de eliminar este borrador?')) {
       // TODO: Call API to delete
-      this.allReports = this.allReports.filter(r => r.id !== report.id);
+      this.allReports = this.allReports.filter((r) => r.id !== report.id);
       this.filterReports();
     }
   }
@@ -520,7 +534,7 @@ export class OperatorHistoryComponent implements OnInit {
       error: (err) => {
         console.error('Error downloading PDF:', err);
         alert('Error al descargar el PDF');
-      }
+      },
     });
   }
 }

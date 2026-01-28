@@ -7,11 +7,9 @@ services:
       POSTGRES_USER: bitcorp
       POSTGRES_PASSWORD: dev_password_change_me
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
-    # Note: Port mapping removed for WSL2 compatibility
-    # PostgreSQL is accessible via Docker network by backend container
-    # Uncomment below line if you need external access from Windows
-    # ports:
-    #   - "3440:5432"
+    # Port mapping enabled for external database access (DBeaver, etc.)
+    ports:
+      - "3440:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     networks:
