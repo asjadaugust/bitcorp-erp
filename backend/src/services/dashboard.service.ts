@@ -367,14 +367,14 @@ export class DashboardService {
       // Note: Project filtering not implemented as equipment table lacks project_id
       // TODO: Add tenant_id filter when Equipment model has tenant_id field
       stats.total_equipment = await this.equipmentRepository.count({
-        where: { is_active: true },
+        where: { isActive: true },
       });
 
       // Active equipment (in use or available) - using TypeORM QueryBuilder
       // TODO: Add tenant_id filter when Equipment model has tenant_id field
       const activeEquipmentQuery = this.equipmentRepository
         .createQueryBuilder('e')
-        .where('e.is_active = :isActive', { isActive: true })
+        .where('e.isActive = :isActive', { isActive: true })
         .andWhere('e.estado IN (:...statuses)', {
           statuses: ['disponible', 'en_uso', 'operativo'],
         });

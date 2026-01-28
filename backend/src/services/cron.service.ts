@@ -247,8 +247,8 @@ export class CronService {
           (fechaProgramada.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        const title = `Mantenimiento Próximo - ${equipo.codigo_equipo}`;
-        const message = `El equipo ${equipo.codigo_equipo} (${equipo.marca} ${equipo.modelo}) requiere mantenimiento ${firstRecord.tipoMantenimiento} el ${fechaProgramada.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''})`;
+        const title = `Mantenimiento Próximo - ${equipo.codigoEquipo}`;
+        const message = `El equipo ${equipo.codigoEquipo} (${equipo.marca} ${equipo.modelo}) requiere mantenimiento ${firstRecord.tipoMantenimiento} el ${fechaProgramada.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''})`;
 
         for (const user of targetUsers) {
           try {
@@ -365,7 +365,7 @@ export class CronService {
 
         const daysUntil = Math.ceil((fechaFin.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-        const equipoInfo = equipo ? ` para el equipo ${equipo.codigo_equipo}` : '';
+        const equipoInfo = equipo ? ` para el equipo ${equipo.codigoEquipo}` : '';
         const title = `Contrato por Vencer - ${contract.numeroContrato}`;
         const message = `El contrato ${contract.numeroContrato}${equipoInfo} vence el ${fechaFin.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}). Planifique renovación o retorno del equipo.`;
 

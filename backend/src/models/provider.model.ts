@@ -14,19 +14,19 @@ export class Provider {
   id!: number;
 
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
+  legacyId?: string;
 
   @Column({ name: 'ruc', type: 'varchar', length: 11, unique: true })
   ruc!: string;
 
   @Column({ name: 'razon_social', type: 'varchar', length: 255 })
-  razon_social!: string;
+  razonSocial!: string;
 
   @Column({ name: 'nombre_comercial', type: 'varchar', length: 255, nullable: true })
-  nombre_comercial?: string;
+  nombreComercial?: string;
 
   @Column({ name: 'tipo_proveedor', type: 'varchar', length: 50, nullable: true })
-  tipo_proveedor?: TipoProveedor;
+  tipoProveedor?: TipoProveedor;
 
   @Column({ name: 'direccion', type: 'text', nullable: true })
   direccion?: string;
@@ -38,19 +38,19 @@ export class Provider {
   email?: string;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  is_active!: boolean;
+  isActive!: boolean;
 
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  created_at!: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({
     name: 'updated_at',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  updated_at!: Date;
+  updatedAt!: Date;
 }

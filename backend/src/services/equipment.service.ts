@@ -264,59 +264,110 @@ export class EquipmentService {
   ): Promise<{ data: EquipmentListDto[]; total: number }> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // queryBuilder.andWhere('e.tenant_id = :tenantId', { tenantId })
-      const queryBuilder = this.repository
-        .createQueryBuilder('e')
-        .leftJoinAndSelect('e.provider', 'p')
-        .where('e.is_active = :isActive', { isActive: filter?.isActive ?? true });
+      // where: { tenant_id: tenantId }
+
+      // For search, use QueryBuilder (ILIKE not supported by findAndCount)
+      if (filter?.search) {
+        const queryBuilder = this.repository
+          .createQueryBuilder('e')
+          .leftJoinAndSelect('e.provider', 'p')
+          .where('e.isActive = :isActive', { isActive: filter?.isActive ?? true })
+          .andWhere(
+            '(e.codigo_equipo ILIKE :search OR e.marca ILIKE :search OR e.modelo ILIKE :search OR e.placa ILIKE :search OR e.categoria ILIKE :search)',
+            { search: `%${filter.search}%` }
+          );
+
+        if (filter?.estado) {
+          queryBuilder.andWhere('e.estado = :estado', { estado: filter.estado });
+        }
+
+        if (filter?.categoria) {
+          queryBuilder.andWhere('e.categoria = :categoria', { categoria: filter.categoria });
+        }
+
+        if (filter?.providerId) {
+          queryBuilder.andWhere('e.proveedor_id = :providerId', { providerId: filter.providerId });
+        }
+
+        if (filter?.equipmentTypeId) {
+          queryBuilder.andWhere('e.tipo_equipo_id = :typeId', { typeId: filter.equipmentTypeId });
+        }
+
+        const sortBy = filter?.sort_by || 'codigo_equipo';
+        const sortOrder = filter?.sort_order || 'ASC';
+        const validSortFields: Record<string, string> = {
+          codigo_equipo: 'e.codigo_equipo',
+          categoria: 'e.categoria',
+          marca: 'e.marca',
+          modelo: 'e.modelo',
+          placa: 'e.placa',
+          estado: 'e.estado',
+          anio_fabricacion: 'e.anio_fabricacion',
+          created_at: 'e.created_at',
+          updated_at: 'e.updated_at',
+        };
+        queryBuilder.orderBy(validSortFields[sortBy] || 'e.codigo_equipo', sortOrder);
+        queryBuilder.skip((page - 1) * limit).take(limit);
+
+        const [equipment, total] = await queryBuilder.getManyAndCount();
+        Logger.info('Equipment list retrieved successfully', {
+          total,
+          returned: equipment.length,
+          page,
+          limit,
+          filters: filter,
+          context: 'EquipmentService.findAll',
+        });
+        return {
+          data: toEquipmentListDtoArray(equipment),
+          total,
+        };
+      }
+
+      // For non-search queries, use simple findAndCount (avoid QueryBuilder databaseName issue)
+      const where: any = {
+        isActive: filter?.isActive ?? true,
+      };
 
       if (filter?.estado) {
-        queryBuilder.andWhere('e.estado = :estado', { estado: filter.estado });
+        where.estado = filter.estado;
       }
 
       if (filter?.categoria) {
-        queryBuilder.andWhere('e.categoria = :categoria', { categoria: filter.categoria });
+        where.categoria = filter.categoria;
       }
 
       if (filter?.providerId) {
-        queryBuilder.andWhere('e.proveedor_id = :providerId', { providerId: filter.providerId });
+        where.proveedorId = filter.providerId;
       }
 
       if (filter?.equipmentTypeId) {
-        queryBuilder.andWhere('e.tipo_equipo_id = :typeId', { typeId: filter.equipmentTypeId });
+        where.tipoEquipoId = filter.equipmentTypeId;
       }
 
-      if (filter?.search) {
-        queryBuilder.andWhere(
-          '(e.codigo_equipo ILIKE :search OR e.marca ILIKE :search OR e.modelo ILIKE :search OR e.placa ILIKE :search OR e.categoria ILIKE :search)',
-          { search: `%${filter.search}%` }
-        );
-      }
-
-      // Apply sorting
       const sortBy = filter?.sort_by || 'codigo_equipo';
       const sortOrder = filter?.sort_order || 'ASC';
 
-      // Valid sortable fields (snake_case API → entity property)
+      // Valid sortable fields (snake_case API → camelCase entity property)
       const validSortFields: Record<string, string> = {
-        codigo_equipo: 'e.codigo_equipo',
-        categoria: 'e.categoria',
-        marca: 'e.marca',
-        modelo: 'e.modelo',
-        placa: 'e.placa',
-        estado: 'e.estado',
-        anio_fabricacion: 'e.anio_fabricacion',
-        created_at: 'e.created_at',
-        updated_at: 'e.updated_at',
+        codigo_equipo: 'codigoEquipo',
+        categoria: 'categoria',
+        marca: 'marca',
+        modelo: 'modelo',
+        placa: 'placa',
+        estado: 'estado',
+        anio_fabricacion: 'anioFabricacion',
+        created_at: 'createdAt',
+        updated_at: 'updatedAt',
       };
 
-      const sortField = validSortFields[sortBy] || 'e.codigo_equipo';
-      queryBuilder.orderBy(sortField, sortOrder);
-
-      // Add pagination
-      queryBuilder.skip((page - 1) * limit).take(limit);
-
-      const [equipment, total] = await queryBuilder.getManyAndCount();
+      const [equipment, total] = await this.repository.findAndCount({
+        where,
+        relations: ['provider'],
+        order: { [validSortFields[sortBy] || 'codigoEquipo']: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
 
       Logger.info('Equipment list retrieved successfully', {
         total,
@@ -379,7 +430,7 @@ export class EquipmentService {
 
       Logger.info('Equipment found by ID', {
         id,
-        codigo_equipo: equipment.codigo_equipo,
+        codigo_equipo: equipment.codigoEquipo,
         categoria: equipment.categoria,
         estado: equipment.estado,
         proveedor_id: equipment.proveedorId,
@@ -428,7 +479,7 @@ export class EquipmentService {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // where: { codigo_equipo: codigo, tenant_id: tenantId }
       const equipment = await this.repository.findOne({
-        where: { codigo_equipo: codigo },
+        where: { codigoEquipo: codigo },
       });
 
       if (equipment) {
@@ -498,24 +549,24 @@ export class EquipmentService {
 
       // Map DTO to entity properties
       const equipment = this.repository.create({
-        codigo_equipo: data.codigo_equipo,
+        codigoEquipo: data.codigo_equipo,
         categoria: data.categoria,
         marca: data.marca,
         modelo: data.modelo,
-        numero_serie_equipo: data.numero_serie_equipo,
-        numero_chasis: data.numero_chasis,
-        numero_serie_motor: data.numero_serie_motor,
+        numeroSerieEquipo: data.numero_serie_equipo,
+        numeroChasis: data.numero_chasis,
+        numeroSerieMotor: data.numero_serie_motor,
         placa: data.placa,
-        anio_fabricacion: data.anio_fabricacion,
-        potencia_neta: data.potencia_neta,
-        tipo_motor: data.tipo_motor,
-        medidor_uso: data.medidor_uso,
+        anioFabricacion: data.anio_fabricacion,
+        potenciaNeta: data.potencia_neta,
+        tipoMotor: data.tipo_motor,
+        medidorUso: data.medidor_uso,
         estado: data.estado || 'DISPONIBLE',
-        tipo_proveedor: data.tipo_proveedor,
+        tipoProveedor: data.tipo_proveedor,
         tipoEquipoId: data.tipo_equipo_id,
         proveedorId: data.proveedor_id,
         creadoPor: data.creado_por,
-        is_active: true,
+        isActive: true,
       });
 
       const saved = await this.repository.save(equipment);
@@ -533,10 +584,10 @@ export class EquipmentService {
 
       Logger.info('Equipment created successfully', {
         id: saved.id,
-        codigo_equipo: saved.codigo_equipo,
+        codigo_equipo: saved.codigoEquipo,
         categoria: saved.categoria,
         estado: saved.estado,
-        tipo_proveedor: saved.tipo_proveedor,
+        tipo_proveedor: saved.tipoProveedor,
         proveedor_id: saved.proveedorId,
         context: 'EquipmentService.create',
       });
@@ -604,7 +655,7 @@ export class EquipmentService {
       }
 
       // If updating codigo, check it doesn't exist
-      if (data.codigo_equipo && data.codigo_equipo !== equipment.codigo_equipo) {
+      if (data.codigo_equipo && data.codigo_equipo !== equipment.codigoEquipo) {
         const existing = await this.findByCode(data.codigo_equipo);
         if (existing && existing.id !== id) {
           throw new ConflictError(`Equipment code '${data.codigo_equipo}' already exists`, {
@@ -619,8 +670,8 @@ export class EquipmentService {
 
       // Map DTO to entity properties
       if (data.codigo_equipo !== undefined) {
-        changes.push(`codigo_equipo: ${equipment.codigo_equipo} → ${data.codigo_equipo}`);
-        equipment.codigo_equipo = data.codigo_equipo;
+        changes.push(`codigo_equipo: ${equipment.codigoEquipo} → ${data.codigo_equipo}`);
+        equipment.codigoEquipo = data.codigo_equipo;
       }
       if (data.categoria !== undefined) {
         changes.push(`categoria: ${equipment.categoria} → ${data.categoria}`);
@@ -635,20 +686,20 @@ export class EquipmentService {
         equipment.modelo = data.modelo;
       }
       if (data.numero_serie_equipo !== undefined)
-        equipment.numero_serie_equipo = data.numero_serie_equipo;
-      if (data.numero_chasis !== undefined) equipment.numero_chasis = data.numero_chasis;
+        equipment.numeroSerieEquipo = data.numero_serie_equipo;
+      if (data.numero_chasis !== undefined) equipment.numeroChasis = data.numero_chasis;
       if (data.numero_serie_motor !== undefined)
-        equipment.numero_serie_motor = data.numero_serie_motor;
+        equipment.numeroSerieMotor = data.numero_serie_motor;
       if (data.placa !== undefined) equipment.placa = data.placa;
-      if (data.anio_fabricacion !== undefined) equipment.anio_fabricacion = data.anio_fabricacion;
-      if (data.potencia_neta !== undefined) equipment.potencia_neta = data.potencia_neta;
-      if (data.tipo_motor !== undefined) equipment.tipo_motor = data.tipo_motor;
-      if (data.medidor_uso !== undefined) equipment.medidor_uso = data.medidor_uso;
+      if (data.anio_fabricacion !== undefined) equipment.anioFabricacion = data.anio_fabricacion;
+      if (data.potencia_neta !== undefined) equipment.potenciaNeta = data.potencia_neta;
+      if (data.tipo_motor !== undefined) equipment.tipoMotor = data.tipo_motor;
+      if (data.medidor_uso !== undefined) equipment.medidorUso = data.medidor_uso;
       if (data.estado !== undefined) {
         changes.push(`estado: ${equipment.estado} → ${data.estado}`);
         equipment.estado = data.estado;
       }
-      if (data.tipo_proveedor !== undefined) equipment.tipo_proveedor = data.tipo_proveedor;
+      if (data.tipo_proveedor !== undefined) equipment.tipoProveedor = data.tipo_proveedor;
       if (data.tipo_equipo_id !== undefined) {
         equipment.tipoEquipoId = data.tipo_equipo_id;
       }
@@ -674,7 +725,7 @@ export class EquipmentService {
 
       Logger.info('Equipment updated successfully', {
         id,
-        codigo_equipo: saved.codigo_equipo,
+        codigo_equipo: saved.codigoEquipo,
         changes: changes.length > 0 ? changes.join(', ') : 'No major changes',
         context: 'EquipmentService.update',
       });
@@ -727,7 +778,7 @@ export class EquipmentService {
    */
   async delete(id: number): Promise<void> {
     try {
-      await this.repository.update(id, { is_active: false });
+      await this.repository.update(id, { isActive: false });
 
       Logger.info('Equipment soft deleted successfully', {
         id,
@@ -797,7 +848,7 @@ export class EquipmentService {
 
       Logger.info('Equipment status updated successfully', {
         id,
-        codigo_equipo: saved.codigo_equipo,
+        codigo_equipo: saved.codigoEquipo,
         old_estado: oldEstado,
         new_estado: estado,
         context: 'EquipmentService.updateStatus',
@@ -862,7 +913,7 @@ export class EquipmentService {
 
     Logger.info('Equipment hourmeter update requested (stub)', {
       id,
-      codigo_equipo: equipment.codigo_equipo,
+      codigo_equipo: equipment.codigoEquipo,
       new_reading: reading,
       context: 'EquipmentService.updateHourmeter',
     });
@@ -900,7 +951,7 @@ export class EquipmentService {
 
     Logger.info('Equipment odometer update requested (stub)', {
       id,
-      codigo_equipo: equipment.codigo_equipo,
+      codigo_equipo: equipment.codigoEquipo,
       new_reading: reading,
       context: 'EquipmentService.updateOdometer',
     });
@@ -936,7 +987,7 @@ export class EquipmentService {
         .createQueryBuilder('e')
         .select('e.estado', 'estado')
         .addSelect('COUNT(*)', 'count')
-        .where('e.is_active = true')
+        .where('e.isActive = true')
         .groupBy('e.estado')
         .getRawMany();
 

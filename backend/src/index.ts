@@ -122,11 +122,11 @@ const startServer = async () => {
       database: 'TypeORM',
       context: 'Server.startup',
     });
-      context: 'Server.startup',
-    });
 
     // Auto-run migrations (TypeORM)
     if (process.env.NODE_ENV !== 'test') {
+      try {
+        Logger.info('Checking for pending migrations', {
           context: 'Server.startup.migrations',
         });
         const { AppDataSource } = await import('./config/database.config');

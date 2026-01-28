@@ -84,14 +84,14 @@ export class ProviderService {
       // queryBuilder.where('provider.tenant_id = :tenantId', { tenantId });
 
       // Apply is_active filter (default to true)
-      queryBuilder.where('provider.is_active = :is_active', {
-        is_active: filters?.is_active ?? true,
+      queryBuilder.where('provider.isActive = :isActive', {
+        isActive: filters?.is_active ?? true,
       });
 
       // Apply tipo_proveedor filter
       if (filters?.tipo_proveedor) {
-        queryBuilder.andWhere('provider.tipo_proveedor = :tipo_proveedor', {
-          tipo_proveedor: filters.tipo_proveedor,
+        queryBuilder.andWhere('provider.tipoProveedor = :tipoProveedor', {
+          tipoProveedor: filters?.tipo_proveedor,
         });
       }
 
@@ -109,14 +109,14 @@ export class ProviderService {
 
       // Valid sortable fields (snake_case API → entity property)
       const validSortFields: Record<string, string> = {
-        razon_social: 'provider.razon_social',
+        razon_social: 'provider.razonSocial',
         ruc: 'provider.ruc',
-        nombre_comercial: 'provider.nombre_comercial',
-        tipo_proveedor: 'provider.tipo_proveedor',
+        nombre_comercial: 'provider.nombreComercial',
+        tipo_proveedor: 'provider.tipoProveedor',
         email: 'provider.email',
         telefono: 'provider.telefono',
-        created_at: 'provider.created_at',
-        updated_at: 'provider.updated_at',
+        created_at: 'provider.createdAt',
+        updated_at: 'provider.updatedAt',
       };
 
       const sortField = validSortFields[sortBy] || 'provider.razon_social';
@@ -514,13 +514,13 @@ export class ProviderService {
 
       // Soft delete
       await this.providerRepository.update(id, {
-        is_active: false,
+        isActive: false,
       });
 
       Logger.info('Provider deleted successfully', {
         id,
         ruc: provider.ruc,
-        razon_social: provider.razon_social,
+        razon_social: provider.razonSocial,
         context: 'ProviderService.delete',
       });
 
@@ -570,10 +570,10 @@ export class ProviderService {
 
       const providers = await this.providerRepository.find({
         where: {
-          tipo_proveedor: tipo,
-          is_active: true,
+          tipoProveedor: tipo,
+          isActive: true,
         },
-        order: { razon_social: 'ASC' },
+        order: { razonSocial: 'ASC' },
       });
 
       const data = providers.map((p) => toProviderDto(p));
@@ -622,7 +622,7 @@ export class ProviderService {
       // });
 
       const count = await this.providerRepository.count({
-        where: { is_active: true },
+        where: { isActive: true },
       });
 
       Logger.info('Active providers counted', {

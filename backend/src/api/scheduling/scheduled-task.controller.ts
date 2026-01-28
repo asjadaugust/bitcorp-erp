@@ -500,7 +500,7 @@ export const getCalendarTasks = async (req: Request, res: Response) => {
         status: task.status,
         priority: task.priority,
         taskType: task.taskType,
-        equipmentCode: task.equipment?.codigo_equipo,
+        equipmentCode: task.equipment?.codigoEquipo,
         operatorId: task.operatorId,
       },
       className: `task-${task.status} priority-${task.priority}`,

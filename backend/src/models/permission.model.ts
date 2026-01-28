@@ -16,6 +16,6 @@ export class Permission extends BaseModel {
   @Column({ type: 'varchar', length: 50, name: 'accion' })
   action!: string;
 
-  @ManyToMany(() => Role, (role) => role.permissions)
+  @ManyToMany(() => Role, (role) => role.permissionEntities)
   roles!: Role[];
 }

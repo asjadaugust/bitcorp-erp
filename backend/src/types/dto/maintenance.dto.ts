@@ -120,7 +120,7 @@ export function toMaintenanceDto(entity: MaintenanceSchedule): MaintenanceDto {
     updated_at: toDateTimeString(entity.updatedAt),
 
     // Relation fields (if loaded)
-    equipo_codigo: entity.equipo?.codigo_equipo || null,
+    equipo_codigo: entity.equipo?.codigoEquipo || null,
     equipo_descripcion:
       entity.equipo?.marca && entity.equipo?.modelo
         ? `${entity.equipo.marca} ${entity.equipo.modelo}`

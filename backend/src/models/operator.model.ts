@@ -250,11 +250,11 @@ export class OperatorModel {
       hire_date: worker.fechaIngreso?.toISOString(),
       address: worker.direccion,
       contract_type: worker.tipoContrato,
-      is_active: worker.isActive,
+      isActive: worker.isActive,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      created_at: worker.createdAt.toISOString() as any,
+      createdAt: worker.createdAt.toISOString() as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      updated_at: worker.updatedAt.toISOString() as any,
+      updatedAt: worker.updatedAt.toISOString() as any,
     };
   }
 }

@@ -74,8 +74,8 @@ export function toAccountsPayableDto(entity: AccountsPayable): AccountsPayableDt
       ? {
           id: entity.provider.id,
           ruc: entity.provider.ruc,
-          razon_social: entity.provider.razon_social,
-          nombre_comercial: entity.provider.nombre_comercial || null,
+          razon_social: entity.provider.razonSocial,
+          nombre_comercial: entity.provider.nombreComercial || null,
         }
       : undefined,
     numero_factura: entity.document_number,

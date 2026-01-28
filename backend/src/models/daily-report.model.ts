@@ -335,7 +335,7 @@ export class DailyReportModel {
       firma_planeamiento_control: entity.firmaPlaneamientoControl || null,
       // Computed fields from joins (if available from rawData)
       trabajador_nombre: rawData?.trabajador_nombre || entity.trabajador?.nombreCompleto,
-      equipo_codigo: rawData?.equipo_codigo || entity.equipo?.codigo_equipo,
+      equipo_codigo: rawData?.equipo_codigo || entity.equipo?.codigoEquipo,
       equipo_nombre:
         rawData?.equipo_nombre ||
         (entity.equipo ? `${entity.equipo.marca} ${entity.equipo.modelo}` : undefined),

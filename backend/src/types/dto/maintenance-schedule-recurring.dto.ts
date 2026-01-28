@@ -76,8 +76,7 @@ export interface CreateMaintenanceScheduleRecurringDto {
 /**
  * Update DTO - partial version of CreateMaintenanceScheduleRecurringDto
  */
-export interface UpdateMaintenanceScheduleRecurringDto
-  extends Partial<CreateMaintenanceScheduleRecurringDto> {
+export interface UpdateMaintenanceScheduleRecurringDto extends Partial<CreateMaintenanceScheduleRecurringDto> {
   // Additional update-only fields
   status?: ScheduleStatus;
   next_due_date?: string;
@@ -155,10 +154,10 @@ export function toMaintenanceScheduleRecurringDto(
     updated_at: toDateTimeString(entity.updatedAt),
 
     // Relation fields (if loaded)
-    equipment_code: entity.equipment?.codigo_equipo,
+    equipment_code: entity.equipment?.codigoEquipo,
     equipment_name:
       entity.equipment?.marca && entity.equipment?.modelo
-        ? `${entity.equipment.marca} ${entity.equipment.modelo}`
+        ? `${entity.equipment?.marca} ${entity.equipment?.modelo}`
         : undefined,
     equipment_brand: entity.equipment?.marca,
     project_name: entity.project?.nombre,

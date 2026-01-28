@@ -64,12 +64,6 @@ export class Contract {
   @Column({ name: 'tarifa', type: 'decimal', precision: 12, scale: 2, nullable: true })
   tarifa?: number;
 
-  @Column({ name: 'modalidad', type: 'varchar', length: 100, nullable: true })
-  modalidad?: string;
-
-  @Column({ name: 'minimo_por', type: 'varchar', length: 20, nullable: true })
-  minimoPor?: string;
-
   @Column({ name: 'incluye_motor', type: 'boolean', default: false })
   incluyeMotor!: boolean;
 

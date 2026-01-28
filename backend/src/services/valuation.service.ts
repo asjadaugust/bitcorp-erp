@@ -1454,7 +1454,8 @@ export class ValuationService {
       }
 
       valorizacion.estado = 'PAGADO';
-      valorizacion.fechaPago = paymentData.fechaPago || new Date();
+      // TODO: Add fechaPago property to Valorizacion model if payment date tracking is needed
+      // valorizacion.fechaPago = paymentData.fechaPago || new Date();
       valorizacion.updatedAt = new Date();
 
       if (paymentData.referenciaPago || paymentData.metodoPago) {
@@ -1477,7 +1478,8 @@ export class ValuationService {
         numero_valorizacion: paid.numeroValorizacion,
         previous_estado: 'APROBADO',
         new_estado: paid.estado,
-        fecha_pago: paid.fechaPago?.toISOString().split('T')[0],
+        // TODO: Add fechaPago property to Valuation model for payment date tracking
+        // fecha_pago: paid.fechaPago?.toISOString().split('T')[0],
         metodo_pago: paymentData.metodoPago || 'No especificado',
         referencia_pago: paymentData.referenciaPago,
         marked_by: userId,
@@ -1485,9 +1487,8 @@ export class ValuationService {
 
       // Send email notification (non-blocking)
       const emailPaymentData = {
-        fecha_pago:
-          paymentData.fechaPago?.toISOString().split('T')[0] ||
-          new Date().toISOString().split('T')[0],
+        // TODO: Add fechaPago property to Valuation model for payment date tracking
+        fecha_pago: new Date().toISOString().split('T')[0],
         metodo_pago: paymentData.metodoPago || 'No especificado',
         referencia_pago: paymentData.referenciaPago,
       };

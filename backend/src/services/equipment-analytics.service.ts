@@ -530,7 +530,7 @@ export class EquipmentAnalyticsService {
 
       const result = {
         equipmentId,
-        equipmentCode: equipment.codigo_equipo,
+        equipmentCode: equipment.codigoEquipo,
         totalHours,
         workingHours,
         idleHours,
@@ -543,7 +543,7 @@ export class EquipmentAnalyticsService {
 
       logger.info('Equipment utilization calculated', {
         equipment_id: equipmentId,
-        equipment_code: equipment.codigo_equipo,
+        equipment_code: equipment.codigoEquipo,
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate.toISOString().split('T')[0],
         utilization_rate: utilizationRate.toFixed(2),
@@ -957,18 +957,13 @@ export class EquipmentAnalyticsService {
 
     try {
       // Get all active equipment
-      interface WhereConditions {
-        is_active: boolean;
-      }
-      const whereConditions: WhereConditions = { is_active: true };
-
       // Note: Equipment table doesn't have project_id field
       // Would need to use equipment_edt (assignments) table for project filtering
       // For now, ignoring projectId parameter
 
       const allEquipment = await this.equipmentRepository.find({
-        where: whereConditions,
-        select: ['id', 'codigo_equipo'],
+        where: { isActive: true },
+        select: ['id', 'codigoEquipo'],
       });
 
       const totalEquipment = allEquipment.length;

@@ -318,7 +318,7 @@ export function toScheduledTaskDto(entity: ScheduledTask): ScheduledTaskDto {
     updated_at: entity.updatedAt.toISOString(),
 
     // Relation fields (if loaded)
-    equipo_codigo: entity.equipment?.codigo_equipo || null,
+    equipo_codigo: entity.equipment?.codigoEquipo || null,
     proyecto_nombre: entity.project?.nombre || null,
   };
 }

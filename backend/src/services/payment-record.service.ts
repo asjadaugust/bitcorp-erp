@@ -451,9 +451,10 @@ export class PaymentRecordService {
       // If fully paid and not already marked as PAGADO
       if (summary.estado_pago === 'PAGO_COMPLETO' && valuation.estado !== 'PAGADO') {
         valuation.estado = 'PAGADO';
-        valuation.fechaPago = summary.fecha_ultimo_pago
-          ? new Date(summary.fecha_ultimo_pago)
-          : new Date();
+        // TODO: Add fechaPago property to Valorizacion model if payment date tracking is needed
+        // valuation.fechaPago = summary.fecha_ultimo_pago
+        //   ? new Date(summary.fecha_ultimo_pago)
+        //   : new Date();
         await this.valuationRepository.save(valuation);
         Logger.info(`Valuation ${valuation.numeroValorizacion} marked as PAGADO (fully paid)`);
       }
@@ -464,10 +465,12 @@ export class PaymentRecordService {
         ['PAGO_PARCIAL', 'SIN_PAGOS'].includes(summary.estado_pago)
       ) {
         valuation.estado = 'APROBADO';
-        valuation.fechaPago = null;
+        // Reset payment date
+        // TODO: Add fechaPago property to Valorizacion model if payment date tracking is needed
+        // delete (valuation as any).fechaPago;
         await this.valuationRepository.save(valuation);
         Logger.info(
-          `Valuation ${valuation.numeroValorizacion} reverted to APROBADO (payment incomplete)`
+          `Valuation ${valuation.numeroValorizacion} reverted to APROBADO (no longer fully paid)`
         );
       }
     } catch (error) {

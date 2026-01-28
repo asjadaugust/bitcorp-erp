@@ -11,124 +11,152 @@ export class SistemaSeeder extends BaseSeeder {
   async run(): Promise<void> {
     console.log('  → Seeding sistema (roles, users, operating units)...');
 
-    // 1. Operating Units
+    // 1. Operating Units (idempotent - check if exists first)
     const unidadesRepo = this.dataSource.getRepository(UnidadOperativa);
-    const unidadLimaNorte = await unidadesRepo.save({
-      legacy_id: 'UO001',
-      codigo: 'UO-001',
-      nombre: 'Unidad Lima Norte',
-      descripcion: 'Oficina Principal Lima Norte',
-      ubicacion: 'Lima',
-      is_active: true,
-    });
 
-    const unidadLimaSur = await unidadesRepo.save({
-      legacy_id: 'UO002',
-      codigo: 'UO-002',
-      nombre: 'Unidad Lima Sur',
-      descripcion: 'Oficina Principal Lima Sur',
-      ubicacion: 'Lima',
-      is_active: true,
-    });
+    let unidadLimaNorte = await unidadesRepo.findOneBy({ legacyId: 'UO001' });
+    if (!unidadLimaNorte) {
+      unidadLimaNorte = await unidadesRepo.save({
+        legacyId: 'UO001',
+        codigo: 'UO-001',
+        nombre: 'Unidad Lima Norte',
+        descripcion: 'Oficina Principal Lima Norte',
+        ubicacion: 'Lima',
+        isActive: true,
+      });
+    }
 
-    // 2. Roles
+    let unidadLimaSur = await unidadesRepo.findOneBy({ legacyId: 'UO002' });
+    if (!unidadLimaSur) {
+      unidadLimaSur = await unidadesRepo.save({
+        legacyId: 'UO002',
+        codigo: 'UO-002',
+        nombre: 'Unidad Lima Sur',
+        descripcion: 'Oficina Principal Lima Sur',
+        ubicacion: 'Lima',
+        isActive: true,
+      });
+    }
+
+    // 2. Roles (idempotent)
     const rolesRepo = this.dataSource.getRepository(Role);
-    const adminRole = await rolesRepo.save({
-      legacy_id: 'ROL001',
-      code: 'ADMIN',
-      name: 'Administrador',
-      description: 'Acceso completo al sistema',
-      is_system: true,
-      is_active: true,
-    });
 
-    const directorRole = await rolesRepo.save({
-      legacy_id: 'ROL002',
-      code: 'DIRECTOR',
-      name: 'Director de Proyecto',
-      description: 'Acceso a proyectos asignados',
-      is_system: false,
-      is_active: true,
-    });
+    let adminRole = await rolesRepo.findOneBy({ legacyId: 'ROL001' });
+    if (!adminRole) {
+      adminRole = await rolesRepo.save({
+        legacyId: 'ROL001',
+        code: 'ADMIN',
+        name: 'Administrador',
+        description: 'Acceso completo al sistema',
+        isActive: true,
+      });
+    }
 
-    const jefeEquipoRole = await rolesRepo.save({
-      legacy_id: 'ROL003',
-      code: 'JEFE_EQUIPO',
-      name: 'Jefe de Equipo',
-      description: 'Acceso a módulos departamentales',
-      is_system: false,
-      is_active: true,
-    });
+    let directorRole = await rolesRepo.findOneBy({ legacyId: 'ROL002' });
+    if (!directorRole) {
+      directorRole = await rolesRepo.save({
+        legacyId: 'ROL002',
+        code: 'DIRECTOR',
+        name: 'Director de Proyecto',
+        description: 'Acceso a proyectos asignados',
+        isActive: true,
+      });
+    }
 
-    const operadorRole = await rolesRepo.save({
-      legacy_id: 'ROL004',
-      code: 'OPERADOR',
-      name: 'Operador',
-      description: 'Acceso solo a app móvil',
-      is_system: false,
-      is_active: true,
-    });
+    let jefeEquipoRole = await rolesRepo.findOneBy({ legacyId: 'ROL003' });
+    if (!jefeEquipoRole) {
+      jefeEquipoRole = await rolesRepo.save({
+        legacyId: 'ROL003',
+        code: 'JEFE_EQUIPO',
+        name: 'Jefe de Equipo',
+        description: 'Acceso a módulos departamentales',
+        isActive: true,
+      });
+    }
 
-    // 3. Users
+    let operadorRole = await rolesRepo.findOneBy({ legacyId: 'ROL004' });
+    if (!operadorRole) {
+      operadorRole = await rolesRepo.save({
+        legacyId: 'ROL004',
+        code: 'OPERADOR',
+        name: 'Operador',
+        description: 'Acceso solo a app móvil',
+        isActive: true,
+      });
+    }
+
+    // 3. Users (idempotent)
     const usersRepo = this.dataSource.getRepository(User);
-    const hashedPassword = await bcrypt.hash('admin123', 10);
 
-    await usersRepo.save({
-      legacy_id: 'USER001',
-      username: 'admin',
-      password_hash: hashedPassword,
-      first_name: 'Administrador',
-      last_name: 'Sistema',
-      email: 'admin@bitcorp.pe',
-      dni: '12345678',
-      phone: '+51 987654321',
-      rol: adminRole,
-      unidadOperativa: unidadLimaNorte,
-      is_active: true,
-    });
+    let adminUser = await usersRepo.findOneBy({ legacyId: 'USER001' });
+    if (!adminUser) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      adminUser = await usersRepo.save({
+        legacyId: 'USER001',
+        username: 'admin',
+        password_hash: hashedPassword,
+        first_name: 'Administrador',
+        last_name: 'Sistema',
+        email: 'admin@bitcorp.pe',
+        dni: '12345678',
+        phone: '+51 987654321',
+        rol: adminRole,
+        unidadOperativa: unidadLimaNorte,
+        isActive: true,
+      });
+    }
 
-    await usersRepo.save({
-      legacy_id: 'USER002',
-      username: 'director',
-      password_hash: await bcrypt.hash('director123', 10),
-      first_name: 'Carlos',
-      last_name: 'Rodríguez',
-      email: 'director@bitcorp.pe',
-      dni: '23456789',
-      phone: '+51 987654322',
-      rol: directorRole,
-      unidadOperativa: unidadLimaNorte,
-      is_active: true,
-    });
+    let directorUser = await usersRepo.findOneBy({ legacyId: 'USER002' });
+    if (!directorUser) {
+      directorUser = await usersRepo.save({
+        legacyId: 'USER002',
+        username: 'director',
+        password_hash: await bcrypt.hash('director123', 10),
+        first_name: 'Carlos',
+        last_name: 'Rodríguez',
+        email: 'director@bitcorp.pe',
+        dni: '23456789',
+        phone: '+51 987654322',
+        rol: directorRole,
+        unidadOperativa: unidadLimaNorte,
+        isActive: true,
+      });
+    }
 
-    await usersRepo.save({
-      legacy_id: 'USER003',
-      username: 'jefe_equipo',
-      password_hash: await bcrypt.hash('jefe123', 10),
-      first_name: 'María',
-      last_name: 'García',
-      email: 'jefe@bitcorp.pe',
-      dni: '34567890',
-      phone: '+51 987654323',
-      rol: jefeEquipoRole,
-      unidadOperativa: unidadLimaSur,
-      is_active: true,
-    });
+    let jefeUser = await usersRepo.findOneBy({ legacyId: 'USER003' });
+    if (!jefeUser) {
+      jefeUser = await usersRepo.save({
+        legacyId: 'USER003',
+        username: 'jefe_equipo',
+        password_hash: await bcrypt.hash('jefe123', 10),
+        first_name: 'María',
+        last_name: 'García',
+        email: 'jefe@bitcorp.pe',
+        dni: '34567890',
+        phone: '+51 987654323',
+        rol: jefeEquipoRole,
+        unidadOperativa: unidadLimaSur,
+        isActive: true,
+      });
+    }
 
-    await usersRepo.save({
-      legacy_id: 'USER004',
-      username: 'operador1',
-      password_hash: await bcrypt.hash('operador123', 10),
-      first_name: 'Juan',
-      last_name: 'Pérez',
-      email: 'operador@bitcorp.pe',
-      dni: '45678901',
-      phone: '+51 987654324',
-      rol: operadorRole,
-      unidadOperativa: unidadLimaNorte,
-      is_active: true,
-    });
+    let operadorUser = await usersRepo.findOneBy({ legacyId: 'USER004' });
+    if (!operadorUser) {
+      operadorUser = await usersRepo.save({
+        legacyId: 'USER004',
+        username: 'operador1',
+        password_hash: await bcrypt.hash('operador123', 10),
+        first_name: 'Juan',
+        last_name: 'Pérez',
+        email: 'operador@bitcorp.pe',
+        dni: '45678901',
+        phone: '+51 987654324',
+        rol: operadorRole,
+        unidadOperativa: unidadLimaNorte,
+        isActive: true,
+      });
+    }
 
-    console.log('     ✓ Created 4 users, 4 roles, 2 operating units');
+    console.log('     ✓ Seeded sistema (roles, users, operating units)');
   }
 }

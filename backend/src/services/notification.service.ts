@@ -415,12 +415,12 @@ export class NotificationService {
 
       // Validate limit
       if (limit < 1 || limit > 1000) {
-        throw ValidationError.invalid('limit', 'Limit must be between 1 and 1000');
+        throw ValidationError.invalid('limit', 'Limit must be between1 and 1000');
       }
 
       const notifications = await this.repository.find({
         where: { userId: parsedUserId },
-        order: { created_at: 'DESC' },
+        order: { createdAt: 'DESC' },
         take: limit,
       });
 

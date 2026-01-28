@@ -113,9 +113,6 @@ export class Valorizacion {
   @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
   approvedAt?: Date;
 
-  @Column({ name: 'fecha_pago', type: 'date', nullable: true })
-  fechaPago?: Date;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

@@ -1,4 +1,12 @@
-import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 // import { BaseModel } from './base.model'; // Unused
 import { Provider } from './provider.model';
 // import { Project } from './project.model'; // Unused
@@ -46,10 +54,10 @@ export class Equipment {
   id!: number;
 
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
+  legacyId?: string;
 
   @Column({ name: 'codigo_equipo', type: 'varchar', length: 50, unique: true })
-  codigo_equipo!: string;
+  codigoEquipo!: string;
 
   @Column({ name: 'tipo_equipo_id', type: 'integer', nullable: true })
   tipoEquipoId?: number;
@@ -62,7 +70,7 @@ export class Equipment {
   provider?: Provider;
 
   @Column({ name: 'tipo_proveedor', type: 'varchar', length: 50, nullable: true })
-  tipo_proveedor?: string;
+  tipoProveedor?: string;
 
   @Column({ name: 'categoria', type: 'varchar', length: 50, nullable: true })
   categoria?: string;
@@ -77,25 +85,25 @@ export class Equipment {
   modelo?: string;
 
   @Column({ name: 'numero_serie_equipo', type: 'varchar', length: 100, nullable: true })
-  numero_serie_equipo?: string;
+  numeroSerieEquipo?: string;
 
   @Column({ name: 'numero_chasis', type: 'varchar', length: 100, nullable: true })
-  numero_chasis?: string;
+  numeroChasis?: string;
 
   @Column({ name: 'numero_serie_motor', type: 'varchar', length: 100, nullable: true })
-  numero_serie_motor?: string;
+  numeroSerieMotor?: string;
 
   @Column({ name: 'anio_fabricacion', type: 'integer', nullable: true })
-  anio_fabricacion?: number;
+  anioFabricacion?: number;
 
   @Column({ name: 'potencia_neta', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  potencia_neta?: number;
+  potenciaNeta?: number;
 
   @Column({ name: 'tipo_motor', type: 'varchar', length: 50, nullable: true })
-  tipo_motor?: string;
+  tipoMotor?: string;
 
   @Column({ name: 'medidor_uso', type: 'varchar', length: 20, nullable: true })
-  medidor_uso?: string;
+  medidorUso?: string;
 
   @Column({ name: 'estado', type: 'varchar', length: 50, default: 'DISPONIBLE' })
   estado!: string;
@@ -104,7 +112,7 @@ export class Equipment {
   // Use EquipmentAssignment (equipo.equipo_edt) for project assignments
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  is_active!: boolean;
+  isActive!: boolean;
 
   @Column({ name: 'creado_por', type: 'integer', nullable: true })
   creadoPor?: number;
@@ -112,11 +120,19 @@ export class Equipment {
   @Column({ name: 'actualizado_por', type: 'integer', nullable: true })
   actualizadoPor?: number;
 
-  @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at!: Date;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt!: Date;
 
-  @Column({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at!: Date;
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt!: Date;
 
   // deleted_at removed as it does not exist in equipo.equipo table
 }

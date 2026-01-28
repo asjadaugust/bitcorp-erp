@@ -50,7 +50,7 @@ export class OperatorService {
 
       const queryBuilder = this.repository
         .createQueryBuilder('t')
-        .where('t.is_active = :isActive', { isActive: filters?.isActive ?? true });
+        .where('t.isActive = :isActive', { isActive: filters?.isActive ?? true });
 
       // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
       // .andWhere('t.tenant_id = :tenantId', { tenantId })
@@ -83,17 +83,17 @@ export class OperatorService {
       // Sorting with whitelist
       const sortableFields: Record<string, string> = {
         nombres: 't.nombres',
-        apellido_paterno: 't.apellido_paterno',
-        apellido_materno: 't.apellido_materno',
+        apellido_paterno: 't.apellidoPaterno',
+        apellido_materno: 't.apellidoMaterno',
         dni: 't.dni',
         email: 't.email',
         telefono: 't.telefono',
         cargo: 't.cargo',
         especialidad: 't.especialidad',
-        fecha_ingreso: 't.fecha_ingreso',
-        fecha_nacimiento: 't.fecha_nacimiento',
-        created_at: 't.created_at',
-        updated_at: 't.updated_at',
+        fecha_ingreso: 't.fechaIngreso',
+        fecha_nacimiento: 't.fechaNacimiento',
+        created_at: 't.createdAt',
+        updated_at: 't.updatedAt',
       };
 
       const sortBy =
@@ -404,7 +404,7 @@ export class OperatorService {
         .createQueryBuilder('t')
         .select('t.cargo', 'cargo')
         .addSelect('COUNT(*)', 'count')
-        .where('t.is_active = true')
+        .where('t.isActive = true')
         // TODO: Add tenant_id filter
         // .andWhere('t.tenant_id = :tenantId', { tenantId })
         .groupBy('t.cargo')
@@ -420,7 +420,7 @@ export class OperatorService {
         .createQueryBuilder('t')
         .select('t.especialidad', 'especialidad')
         .addSelect('COUNT(*)', 'count')
-        .where('t.is_active = true')
+        .where('t.isActive = true')
         // TODO: Add tenant_id filter
         // .andWhere('t.tenant_id = :tenantId', { tenantId })
         .groupBy('t.especialidad')

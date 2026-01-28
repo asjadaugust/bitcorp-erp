@@ -42,13 +42,13 @@ export function transformToValuationPage1Dto(
 ): ValuationPage1Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
-    codigo_equipo: equipment.codigo_equipo || '',
+    codigo_equipo: equipment.codigoEquipo || '',
     nombre: equipment.categoria || '',
     placa: equipment.placa,
     marca: equipment.marca,
     modelo: equipment.modelo,
-    tipo_medidor: equipment.medidor_uso?.toUpperCase() || 'HORÓMETRO',
-    codigo_externo: equipment.legacy_id,
+    tipo_medidor: equipment.medidorUso?.toUpperCase() || 'HORÓMETRO',
+    codigo_externo: equipment.legacyId,
   };
 
   // Provider information
@@ -62,7 +62,7 @@ export function transformToValuationPage1Dto(
   const contratoDto: ValuationContractDto = {
     numero_contrato: contract.numeroContrato || '',
     tipo_documento: contract.tipo || 'CONTRATO',
-    modalidad: contract.modalidad || 'MÁQUINA SECA NO OPERADA',
+    modalidad: 'MÁQUINA SECA NO OPERADA', // Default - field removed from model
     tipo_tarifa: contract.tipoTarifa,
     tarifa: parseFloat(String(contract.tarifa || 0)),
     moneda:
@@ -71,7 +71,7 @@ export function transformToValuationPage1Dto(
         : contract.moneda === 'PEN'
           ? 'SOLES'
           : contract.moneda || 'SOLES',
-    minimo_por: contract.minimoPor || 'MES',
+    minimo_por: 'MES', // Default - field removed from model
     cantidad_minima: contract.horasIncluidas || 0,
   };
 
@@ -183,13 +183,13 @@ export function transformToValuationPage2Dto(
 ): ValuationPage2Dto {
   // Equipment information (reuse from Page 1)
   const equipoDto: ValuationEquipmentDto = {
-    codigo_equipo: equipment.codigo_equipo || '',
+    codigo_equipo: equipment.codigoEquipo || '',
     nombre: equipment.categoria || '',
     placa: equipment.placa,
     marca: equipment.marca,
     modelo: equipment.modelo,
-    tipo_medidor: equipment.medidor_uso?.toUpperCase() || 'HORÓMETRO',
-    codigo_externo: equipment.legacy_id,
+    tipo_medidor: equipment.medidorUso?.toUpperCase() || 'HORÓMETRO',
+    codigo_externo: equipment.legacyId,
   };
 
   // Provider information (reuse from Page 1)
@@ -285,13 +285,13 @@ export function transformToValuationPage3Dto(
 ): ValuationPage3Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
-    codigo_equipo: equipment.codigo_equipo || '',
+    codigo_equipo: equipment.codigoEquipo || '',
     nombre: equipment.categoria || '',
     placa: equipment.placa,
     marca: equipment.marca,
     modelo: equipment.modelo,
-    tipo_medidor: equipment.medidor_uso?.toUpperCase() || 'HORÓMETRO',
-    codigo_externo: equipment.legacy_id,
+    tipo_medidor: equipment.medidorUso?.toUpperCase() || 'HORÓMETRO',
+    codigo_externo: equipment.legacyId,
   };
 
   // Provider information
@@ -347,13 +347,13 @@ export function transformToValuationPage4Dto(
 ): ValuationPage4Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
-    codigo_equipo: equipment.codigo_equipo || '',
+    codigo_equipo: equipment.codigoEquipo || '',
     nombre: equipment.categoria || '',
     placa: equipment.placa,
     marca: equipment.marca,
     modelo: equipment.modelo,
-    tipo_medidor: equipment.medidor_uso?.toUpperCase() || 'HORÓMETRO',
-    codigo_externo: equipment.legacy_id,
+    tipo_medidor: equipment.medidorUso?.toUpperCase() || 'HORÓMETRO',
+    codigo_externo: equipment.legacyId,
   };
 
   // Provider information
@@ -410,13 +410,13 @@ export function transformToValuationPage5Dto(
 ): ValuationPage5Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
-    codigo_equipo: equipment.codigo_equipo || '',
+    codigo_equipo: equipment.codigoEquipo || '',
     nombre: equipment.categoria || '',
     placa: equipment.placa,
     marca: equipment.marca,
     modelo: equipment.modelo,
-    tipo_medidor: equipment.medidor_uso?.toUpperCase() || 'HORÓMETRO',
-    codigo_externo: equipment.legacy_id,
+    tipo_medidor: equipment.medidorUso?.toUpperCase() || 'HORÓMETRO',
+    codigo_externo: equipment.legacyId,
   };
 
   // Provider information
@@ -472,13 +472,13 @@ export function transformToValuationPage6Dto(
 ): ValuationPage6Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
-    codigo_equipo: equipment.codigo_equipo || '',
+    codigo_equipo: equipment.codigoEquipo || '',
     nombre: equipment.categoria || '',
     placa: equipment.placa,
     marca: equipment.marca,
     modelo: equipment.modelo,
-    tipo_medidor: equipment.medidor_uso?.toUpperCase() || 'HORÓMETRO',
-    codigo_externo: equipment.legacy_id,
+    tipo_medidor: equipment.medidorUso?.toUpperCase() || 'HORÓMETRO',
+    codigo_externo: equipment.legacyId,
   };
 
   // Provider information
@@ -540,13 +540,13 @@ export function transformToValuationPage7Dto(
 ): ValuationPage7Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
-    codigo_equipo: equipment.codigo_equipo || '',
+    codigo_equipo: equipment.codigoEquipo || '',
     nombre: equipment.categoria || '',
     placa: equipment.placa,
     marca: equipment.marca,
     modelo: equipment.modelo,
-    tipo_medidor: equipment.medidor_uso?.toUpperCase() || 'HORÓMETRO',
-    codigo_externo: equipment.legacy_id,
+    tipo_medidor: equipment.medidorUso?.toUpperCase() || 'HORÓMETRO',
+    codigo_externo: equipment.legacyId,
   };
 
   // Provider information

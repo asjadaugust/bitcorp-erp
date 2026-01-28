@@ -78,17 +78,17 @@ export function toProviderDto(entity: Provider): ProviderDto {
 
   return {
     id: entity.id,
-    legacy_id: entity.legacy_id || null,
+    legacy_id: entity.legacyId || null,
     ruc: entity.ruc,
-    razon_social: entity.razon_social,
-    nombre_comercial: entity.nombre_comercial || null,
-    tipo_proveedor: normalizeTipoProveedor(entity.tipo_proveedor),
+    razon_social: entity.razonSocial,
+    nombre_comercial: entity.nombreComercial || null,
+    tipo_proveedor: normalizeTipoProveedor(entity.tipoProveedor),
     direccion: entity.direccion || null,
     telefono: entity.telefono || null,
     correo_electronico: entity.email || null, // ✅ Map entity.email → DTO.correo_electronico
-    is_active: entity.is_active,
-    created_at: toDateTimeString(entity.created_at),
-    updated_at: toDateTimeString(entity.updated_at),
+    is_active: entity.isActive,
+    created_at: toDateTimeString(entity.createdAt),
+    updated_at: toDateTimeString(entity.updatedAt),
   };
 }
 
@@ -101,21 +101,21 @@ export function fromProviderDto(dto: Partial<ProviderDto>): Partial<Provider> {
   const entity: Partial<Provider> = {};
 
   if (dto.id !== undefined) entity.id = dto.id;
-  if (dto.legacy_id !== undefined) entity.legacy_id = dto.legacy_id || undefined;
+  if (dto.legacy_id !== undefined) entity.legacyId = dto.legacy_id || undefined;
   if (dto.ruc !== undefined) entity.ruc = dto.ruc;
-  if (dto.razon_social !== undefined) entity.razon_social = dto.razon_social;
+  if (dto.razon_social !== undefined) entity.razonSocial = dto.razon_social;
   if (dto.nombre_comercial !== undefined)
-    entity.nombre_comercial = dto.nombre_comercial || undefined;
+    entity.nombreComercial = dto.nombre_comercial || undefined;
 
   // Map Spanish uppercase to database format (database column accepts varchar, no enum constraint)
   if (dto.tipo_proveedor !== undefined) {
-    entity.tipo_proveedor = dto.tipo_proveedor as unknown as typeof entity.tipo_proveedor;
+    entity.tipoProveedor = dto.tipo_proveedor as unknown as typeof entity.tipoProveedor;
   }
 
   if (dto.direccion !== undefined) entity.direccion = dto.direccion || undefined;
   if (dto.telefono !== undefined) entity.telefono = dto.telefono || undefined;
   if (dto.correo_electronico !== undefined) entity.email = dto.correo_electronico || undefined; // ✅ Map DTO.correo_electronico → entity.email
-  if (dto.is_active !== undefined) entity.is_active = dto.is_active;
+  if (dto.is_active !== undefined) entity.isActive = dto.is_active;
 
   return entity;
 }

@@ -14,12 +14,6 @@ export class Role extends BaseModel {
   @Column({ type: 'text', nullable: true, name: 'descripcion' })
   description?: string;
 
-  @Column({ type: 'boolean', default: false })
-  is_system!: boolean;
-
-  @Column({ type: 'jsonb', nullable: true })
-  permissions?: string[];
-
   @ManyToMany(() => User, (user) => user.roles)
   users!: User[];
 

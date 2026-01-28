@@ -614,11 +614,11 @@ export class AuthService {
         relations: ['roles', 'unidadOperativa'],
       });
 
-      if (!user || !user.is_active) {
+      if (!user || !user.isActive) {
         logger.warn('Token refresh failed - user not found or inactive', {
           user_id: payload.id_usuario,
           user_exists: !!user,
-          is_active: user?.is_active,
+          is_active: user?.isActive,
         });
         throw new UnauthorizedError('User not found or inactive', {
           reason: user ? 'user_inactive' : 'user_not_found',
