@@ -10,7 +10,7 @@ export interface GPSCoordinates {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GPSService {
   private lastKnownPosition: GPSCoordinates | null = null;
@@ -30,7 +30,7 @@ export class GPSService {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               accuracy: position.coords.accuracy,
-              timestamp: new Date()
+              timestamp: new Date(),
             };
             this.lastKnownPosition = coords;
             resolve(coords);
@@ -42,7 +42,7 @@ export class GPSService {
           {
             enableHighAccuracy: highAccuracy,
             timeout: 10000,
-            maximumAge: highAccuracy ? 0 : 30000
+            maximumAge: highAccuracy ? 0 : 30000,
           }
         );
       })
@@ -58,14 +58,14 @@ export class GPSService {
       return of(this.getFallbackPosition());
     }
 
-    return new Observable<GPSCoordinates>(observer => {
+    return new Observable<GPSCoordinates>((observer) => {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
           const coords: GPSCoordinates = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             accuracy: position.coords.accuracy,
-            timestamp: new Date()
+            timestamp: new Date(),
           };
           this.lastKnownPosition = coords;
           observer.next(coords);
@@ -77,7 +77,7 @@ export class GPSService {
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 0
+          maximumAge: 0,
         }
       );
 
@@ -101,7 +101,7 @@ export class GPSService {
       latitude: 0,
       longitude: 0,
       accuracy: 0,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 

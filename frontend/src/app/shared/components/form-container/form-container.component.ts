@@ -22,7 +22,12 @@ import { CommonModule } from '@angular/common';
           <button type="button" class="btn btn-secondary" (click)="handleCancel()">
             <i class="fa-solid fa-times"></i> Cancelar
           </button>
-          <button type="button" class="btn btn-primary" (click)="handleSubmit()" [disabled]="disableSubmit">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="handleSubmit()"
+            [disabled]="disableSubmit"
+          >
             <i *ngIf="!loading" class="fa-solid" [class]="submitIcon"></i>
             <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
             {{ loading ? loadingText : submitLabel }}
@@ -41,7 +46,12 @@ import { CommonModule } from '@angular/common';
           <button type="button" class="btn btn-secondary" (click)="handleCancel()">
             <i class="fa-solid fa-times"></i> Cancelar
           </button>
-          <button type="button" class="btn btn-primary" (click)="handleSubmit()" [disabled]="disableSubmit">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="handleSubmit()"
+            [disabled]="disableSubmit"
+          >
             <i *ngIf="!loading" class="fa-solid" [class]="submitIcon"></i>
             <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
             {{ loading ? loadingText : submitLabel }}
@@ -50,122 +60,124 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styles: [`
-    .form-container {
-      background: var(--grey-100);
-      min-height: calc(100vh - 72px);
-      padding: var(--s-24);
-    }
-
-    /* Header */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--s-24);
-      margin-bottom: var(--s-24);
-      flex-wrap: wrap;
-    }
-
-    .header-content {
-      display: flex;
-      align-items: center;
-      gap: var(--s-16);
-    }
-
-    .icon-wrapper {
-      width: 48px;
-      height: 48px;
-      background: var(--primary-100);
-      color: var(--primary-500);
-      border-radius: var(--s-12);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      box-shadow: var(--shadow-sm);
-      flex-shrink: 0;
-    }
-
-    .title-group {
-      display: flex;
-      flex-direction: column;
-      gap: var(--s-4);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: var(--type-h2-size);
-      font-weight: 700;
-      color: var(--grey-900);
-      font-family: var(--font-family-display);
-      line-height: 1.2;
-    }
-
-    .subtitle {
-      margin: 0;
-      font-size: var(--type-body-size);
-      color: var(--grey-700);
-      line-height: 1.5;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: var(--s-12);
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    /* Card */
-    .form-card {
-      background: white;
-      border-radius: var(--s-12);
-      padding: var(--s-32);
-      box-shadow: var(--shadow-sm);
-    }
-
-    /* Footer */
-    .form-footer {
-      margin-top: var(--s-24);
-      padding-top: var(--s-24);
-      border-top: 1px solid var(--grey-200);
-    }
-
-    .footer-actions {
-      display: flex;
-      gap: var(--s-12);
-      justify-content: flex-end;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
+  styles: [
+    `
       .form-container {
-        padding: var(--s-16);
+        background: var(--grey-100);
+        min-height: calc(100vh - 72px);
+        padding: var(--s-24);
       }
 
+      /* Header */
       .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--s-24);
+        margin-bottom: var(--s-24);
+        flex-wrap: wrap;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        gap: var(--s-16);
+      }
+
+      .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        background: var(--primary-100);
+        color: var(--primary-500);
+        border-radius: var(--s-12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        box-shadow: var(--shadow-sm);
+        flex-shrink: 0;
+      }
+
+      .title-group {
+        display: flex;
         flex-direction: column;
-        align-items: stretch;
+        gap: var(--s-4);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: var(--type-h2-size);
+        font-weight: 700;
+        color: var(--grey-900);
+        font-family: var(--font-family-display);
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: var(--type-body-size);
+        color: var(--grey-700);
+        line-height: 1.5;
       }
 
       .header-actions {
-        justify-content: flex-start;
-        width: 100%;
+        display: flex;
+        gap: var(--s-12);
+        align-items: center;
+        flex-wrap: wrap;
       }
 
+      /* Card */
       .form-card {
-        padding: var(--s-20);
+        background: white;
+        border-radius: var(--s-12);
+        padding: var(--s-32);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* Footer */
+      .form-footer {
+        margin-top: var(--s-24);
+        padding-top: var(--s-24);
+        border-top: 1px solid var(--grey-200);
       }
 
       .footer-actions {
-        flex-direction: column-reverse;
+        display: flex;
+        gap: var(--s-12);
+        justify-content: flex-end;
       }
 
-      .footer-actions app-button {
-        width: 100%;
+      /* Responsive */
+      @media (max-width: 768px) {
+        .form-container {
+          padding: var(--s-16);
+        }
+
+        .page-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .header-actions {
+          justify-content: flex-start;
+          width: 100%;
+        }
+
+        .form-card {
+          padding: var(--s-20);
+        }
+
+        .footer-actions {
+          flex-direction: column-reverse;
+        }
+
+        .footer-actions app-button {
+          width: 100%;
+        }
       }
-    }
-  `]
+    `,
+  ],
 })
 export class FormContainerComponent {
   @Input() title = '';
@@ -178,7 +190,7 @@ export class FormContainerComponent {
   @Input() loading = false;
   @Input() loadingText = 'Guardando...';
   @Input() showFooter = false;
-  
+
   @Output() onSubmit = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 

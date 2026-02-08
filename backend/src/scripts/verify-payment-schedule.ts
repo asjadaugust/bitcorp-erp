@@ -31,10 +31,10 @@ async function verifyPaymentSchedule() {
       document_number: `INV-${Date.now()}`,
       issue_date: new Date().toISOString().split('T')[0],
       due_date: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
-      amount: 5000.00,
+      amount: 5000.0,
       currency: 'PEN',
       description: 'Test Invoice for Payment Schedule',
-      tenant_id: 1
+      tenant_id: 1,
     };
 
     const createApRes = await fetch(`${PAYMENT_SCHEDULE_API_URL}/accounts-payable`, {
@@ -59,7 +59,7 @@ async function verifyPaymentSchedule() {
       schedule_date: new Date().toISOString().split('T')[0],
       payment_date: new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
       description: 'Weekly Payment Schedule',
-      currency: 'PEN'
+      currency: 'PEN',
     };
 
     const createScheduleRes = await fetch(`${PAYMENT_SCHEDULE_API_URL}/payment-schedules`, {
@@ -81,17 +81,20 @@ async function verifyPaymentSchedule() {
 
     // 4. Add Detail to Schedule
     console.log('\n4. Adding detail to schedule...');
-    const addDetailRes = await fetch(`${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}/details`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        accounts_payable_id: createdAp.id,
-        amount_to_pay: 5000.00
-      }),
-    });
+    const addDetailRes = await fetch(
+      `${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}/details`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          accounts_payable_id: createdAp.id,
+          amount_to_pay: 5000.0,
+        }),
+      }
+    );
 
     if (!addDetailRes.ok) {
       throw new Error(`Add detail failed: ${addDetailRes.status}`);
@@ -101,9 +104,12 @@ async function verifyPaymentSchedule() {
 
     // 5. Get Schedule with Details
     console.log('\n5. Fetching schedule with details...');
-    const getScheduleRes = await fetch(`${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const getScheduleRes = await fetch(
+      `${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     const scheduleWithDetails: any = await getScheduleRes.json();
     console.log(`✅ Fetched schedule with ${scheduleWithDetails.details?.length || 0} details`);
@@ -120,17 +126,20 @@ async function verifyPaymentSchedule() {
 
     // 7. Update Schedule
     console.log('\n7. Updating schedule...');
-    const updateRes = await fetch(`${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        description: 'Updated Payment Schedule',
-        status: 'approved'
-      }),
-    });
+    const updateRes = await fetch(
+      `${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          description: 'Updated Payment Schedule',
+          status: 'approved',
+        }),
+      }
+    );
 
     if (!updateRes.ok) {
       throw new Error(`Update failed: ${updateRes.statusText}`);
@@ -139,7 +148,7 @@ async function verifyPaymentSchedule() {
 
     // 8. Clean up - Delete Schedule
     console.log('\n8. Cleaning up...');
-    
+
     // First change status back to draft to allow deletion
     await fetch(`${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}`, {
       method: 'PUT',
@@ -150,10 +159,13 @@ async function verifyPaymentSchedule() {
       body: JSON.stringify({ status: 'draft' }),
     });
 
-    const deleteRes = await fetch(`${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const deleteRes = await fetch(
+      `${PAYMENT_SCHEDULE_API_URL}/payment-schedules/${createdSchedule.id}`,
+      {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     if (deleteRes.status === 204) {
       console.log('✅ Schedule deleted successfully');
@@ -166,7 +178,6 @@ async function verifyPaymentSchedule() {
     });
 
     console.log('\n🎉 Verification Complete!');
-
   } catch (error) {
     console.error('\n❌ Verification Failed:', error);
     process.exit(1);

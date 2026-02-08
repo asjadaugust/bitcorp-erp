@@ -4,14 +4,46 @@ import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } fr
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProviderService } from '../../core/services/provider.service';
 import { Provider } from '../../core/models/provider.model';
-
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-provider-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-container">
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors
+        *ngIf="validationErrors.length > 0"
+        [errors]="validationErrors"
+        [fieldLabels]="fieldLabels"
+      >
+      </app-validation-errors>
+
+      <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" [dismissible]="true">
+      </app-alert>
+
+      <app-alert
+        *ngIf="successMessage"
+        type="success"
+        [message]="successMessage"
+        [dismissible]="true"
+        [autoDismiss]="true"
+        [autoDismissDelay]="1500"
+      >
+      </app-alert>
+
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -31,7 +63,12 @@ import { Provider } from '../../core/models/provider.model';
         </div>
         <div class="header-actions">
           <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="providerForm.invalid || loading">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="onSubmit()"
+            [disabled]="providerForm.invalid || loading"
+          >
             <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
             <i *ngIf="!loading" class="fa-solid fa-save"></i>
             {{ isEditMode ? 'Guardar Cambios' : 'Crear Proveedor' }}
@@ -68,7 +105,9 @@ import { Provider } from '../../core/models/provider.model';
                   class="form-control"
                   placeholder="ej. Servicios Generales S.A.C."
                 />
-                <div class="error-msg" *ngIf="hasError('razon_social')">Razón Social es requerida</div>
+                <div class="error-msg" *ngIf="hasError('razon_social')">
+                  Razón Social es requerida
+                </div>
               </div>
 
               <div class="form-group">
@@ -339,11 +378,27 @@ export class ProviderFormComponent implements OnInit {
   private providerService = inject(ProviderService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   providerForm: FormGroup;
   isEditMode = false;
   loading = false;
   providerId: string | null = null;
+  validationErrors: ValidationError[] = [];
+  errorMessage = '';
+  successMessage = '';
+
+  fieldLabels: Record<string, string> = {
+    ruc: 'RUC',
+    razon_social: 'Razón Social',
+    tipo_proveedor: 'Tipo de Proveedor',
+    isActive: 'Estado',
+    direccion: 'Dirección',
+    correo_electronico: 'Correo Electrónico',
+    telefono: 'Teléfono',
+    nombre_comercial: 'Nombre Comercial',
+    sitio_web: 'Sitio Web',
+  };
 
   constructor() {
     this.providerForm = this.fb.group({
@@ -431,9 +486,16 @@ export class ProviderFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.providerForm.invalid) return;
+    if (this.providerForm.invalid) {
+      this.providerForm.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
+    this.validationErrors = [];
+    this.errorMessage = '';
+    this.successMessage = '';
+
     const providerData = this.providerForm.value;
 
     const request$ =
@@ -443,11 +505,19 @@ export class ProviderFormComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.router.navigate(['/providers']);
+        this.loading = false;
+        this.successMessage = this.isEditMode
+          ? 'Proveedor actualizado exitosamente'
+          : 'Proveedor creado exitosamente';
+
+        setTimeout(() => {
+          this.router.navigate(['/providers']);
+        }, 1500);
       },
       error: (err) => {
-        console.error('Error saving provider', err);
         this.loading = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

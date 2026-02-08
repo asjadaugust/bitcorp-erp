@@ -10,7 +10,7 @@ export interface FilterConfig {
   options?: { label: string; value: any }[];
   value?: any; // For text, select, date
   valueStart?: any; // For dateRange
-  valueEnd?: any;   // For dateRange
+  valueEnd?: any; // For dateRange
 }
 
 @Component({
@@ -33,9 +33,9 @@ export interface FilterConfig {
         </div>
 
         <!-- Toggle Advanced Filters -->
-        <button 
+        <button
           *ngIf="hasAdvancedFilters()"
-          class="btn-filter-toggle" 
+          class="btn-filter-toggle"
           [class.active]="showAdvanced"
           (click)="toggleAdvanced()"
         >
@@ -53,9 +53,9 @@ export interface FilterConfig {
           <ng-container *ngFor="let filter of getAdvancedFilters()">
             <div class="filter-group">
               <label>{{ filter.label }}</label>
-              
+
               <!-- Select -->
-              <select 
+              <select
                 *ngIf="filter.type === 'select'"
                 [(ngModel)]="filter.value"
                 (change)="onFilterChange()"
@@ -68,7 +68,7 @@ export interface FilterConfig {
               </select>
 
               <!-- Date -->
-              <input 
+              <input
                 *ngIf="filter.type === 'date'"
                 type="date"
                 [(ngModel)]="filter.value"
@@ -78,7 +78,7 @@ export interface FilterConfig {
 
               <!-- Date Range -->
               <div *ngIf="filter.type === 'dateRange'" class="date-range-inputs">
-                <input 
+                <input
                   type="date"
                   [(ngModel)]="filter.valueStart"
                   (change)="onFilterChange()"
@@ -86,7 +86,7 @@ export interface FilterConfig {
                   placeholder="Desde"
                 />
                 <span class="date-separator">-</span>
-                <input 
+                <input
                   type="date"
                   [(ngModel)]="filter.valueEnd"
                   (change)="onFilterChange()"
@@ -97,163 +97,163 @@ export interface FilterConfig {
             </div>
           </ng-container>
         </div>
-        
+
         <div class="filter-actions">
-          <button class="btn-clear" (click)="clearFilters()">
-            Limpiar filtros
-          </button>
+          <button class="btn-clear" (click)="clearFilters()">Limpiar filtros</button>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    .filter-bar {
-      background: var(--neutral-0);
-      border-radius: var(--s-12);
-      box-shadow: var(--shadow-sm);
-      margin-bottom: var(--s-24);
-      border: 1px solid var(--grey-200);
-    }
+  styles: [
+    `
+      .filter-bar {
+        background: var(--neutral-0);
+        border-radius: var(--s-12);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--s-24);
+        border: 1px solid var(--grey-200);
+      }
 
-    .filter-main {
-      padding: var(--s-16);
-      display: flex;
-      gap: var(--s-16);
-      align-items: center;
-    }
+      .filter-main {
+        padding: var(--s-16);
+        display: flex;
+        gap: var(--s-16);
+        align-items: center;
+      }
 
-    .search-wrapper {
-      flex: 1;
-      position: relative;
-      max-width: 400px;
-    }
+      .search-wrapper {
+        flex: 1;
+        position: relative;
+        max-width: 400px;
+      }
 
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--grey-400);
-    }
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--grey-400);
+      }
 
-    .search-input {
-      width: 100%;
-      padding: 10px 16px 10px 36px;
-      border: 1px solid var(--grey-300);
-      border-radius: var(--s-8);
-      font-size: 14px;
-      transition: all 0.2s;
-    }
+      .search-input {
+        width: 100%;
+        padding: 10px 16px 10px 36px;
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-8);
+        font-size: 14px;
+        transition: all 0.2s;
+      }
 
-    .filter-input:focus {
-      outline: none;
-      border-color: var(--primary-500);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
+      .filter-input:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
 
-    .date-range-inputs {
-      display: flex;
-      align-items: center;
-      gap: var(--s-8);
-    }
+      .date-range-inputs {
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
 
-    .date-input {
-      flex: 1;
-      min-width: 140px;
-    }
+      .date-input {
+        flex: 1;
+        min-width: 140px;
+      }
 
-    .date-separator {
-      color: var(--grey-400);
-      font-weight: 500;
-    }
-    .btn-filter-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      background: var(--neutral-0);
-      border: 1px solid var(--grey-300);
-      border-radius: var(--s-8);
-      color: var(--grey-700);
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+      .date-separator {
+        color: var(--grey-400);
+        font-weight: 500;
+      }
+      .btn-filter-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: var(--neutral-0);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-8);
+        color: var(--grey-700);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
 
-    .btn-filter-toggle:hover {
-      background: var(--grey-50);
-      border-color: var(--grey-400);
-    }
+      .btn-filter-toggle:hover {
+        background: var(--grey-50);
+        border-color: var(--grey-400);
+      }
 
-    .btn-filter-toggle.active {
-      background: var(--primary-100);
-      border-color: var(--primary-200);
-      color: var(--primary-800);
-    }
+      .btn-filter-toggle.active {
+        background: var(--primary-100);
+        border-color: var(--primary-200);
+        color: var(--primary-800);
+      }
 
-    .badge {
-      background: var(--primary-500);
-      color: white;
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 10px;
-      min-width: 18px;
-      text-align: center;
-    }
+      .badge {
+        background: var(--primary-500);
+        color: white;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        min-width: 18px;
+        text-align: center;
+      }
 
-    /* Advanced Filters */
-    .advanced-filters {
-      padding: var(--s-24);
-      border-top: 1px solid var(--grey-100);
-      background: var(--grey-50);
-      border-bottom-left-radius: var(--s-12);
-      border-bottom-right-radius: var(--s-12);
-    }
+      /* Advanced Filters */
+      .advanced-filters {
+        padding: var(--s-24);
+        border-top: 1px solid var(--grey-100);
+        background: var(--grey-50);
+        border-bottom-left-radius: var(--s-12);
+        border-bottom-right-radius: var(--s-12);
+      }
 
-    .filters-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: var(--s-16);
-      margin-bottom: var(--s-16);
-    }
+      .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: var(--s-16);
+        margin-bottom: var(--s-16);
+      }
 
-    .filter-group label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--grey-700);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-    }
+      .filter-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--grey-700);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
 
-    .form-control {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--grey-300);
-      border-radius: var(--s-6);
-      font-size: 14px;
-      background: white;
-    }
+      .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-6);
+        font-size: 14px;
+        background: white;
+      }
 
-    .filter-actions {
-      display: flex;
-      justify-content: flex-end;
-    }
+      .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
 
-    .btn-clear {
-      background: none;
-      border: none;
-      color: var(--primary-500);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: underline;
-    }
+      .btn-clear {
+        background: none;
+        border: none;
+        color: var(--primary-500);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: underline;
+      }
 
-    .btn-clear:hover {
-      color: var(--primary-800);
-    }
-  `]
+      .btn-clear:hover {
+        color: var(--primary-800);
+      }
+    `,
+  ],
 })
 export class FilterBarComponent {
   @Input() config: FilterConfig[] = [];
@@ -262,19 +262,19 @@ export class FilterBarComponent {
   showAdvanced = false;
 
   getSearchConfig(): FilterConfig | undefined {
-    return this.config.find(c => c.type === 'text');
+    return this.config.find((c) => c.type === 'text');
   }
 
   hasAdvancedFilters(): boolean {
-    return this.config.some(c => c.type !== 'text');
+    return this.config.some((c) => c.type !== 'text');
   }
 
   getAdvancedFilters(): FilterConfig[] {
-    return this.config.filter(c => c.type !== 'text');
+    return this.config.filter((c) => c.type !== 'text');
   }
 
   get activeFiltersCount(): number {
-    return this.getAdvancedFilters().filter(c => {
+    return this.getAdvancedFilters().filter((c) => {
       if (c.type === 'dateRange') {
         return c.valueStart || c.valueEnd;
       }
@@ -288,7 +288,7 @@ export class FilterBarComponent {
 
   onFilterChange() {
     const filters: Record<string, any> = {};
-    this.config.forEach(c => {
+    this.config.forEach((c) => {
       if (c.type === 'dateRange') {
         filters[c.key + '_start'] = c.valueStart;
         filters[c.key + '_end'] = c.valueEnd;
@@ -300,8 +300,9 @@ export class FilterBarComponent {
   }
 
   clearFilters() {
-    this.config.forEach(c => {
-      if (c.type !== 'text') { // Optionally keep search or clear it too
+    this.config.forEach((c) => {
+      if (c.type !== 'text') {
+        // Optionally keep search or clear it too
         c.value = '';
       }
     });

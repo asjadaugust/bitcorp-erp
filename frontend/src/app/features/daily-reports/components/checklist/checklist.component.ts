@@ -92,99 +92,101 @@ export interface ChecklistResponse {
       </div>
     </div>
   `,
-  styles: [`
-    .checklist-container {
-      padding: 1rem;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
-    }
-
-    .checklist-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin: 0 0 0.5rem 0;
-      color: #1a1a1a;
-    }
-
-    .checklist-description {
-      color: #666;
-      margin: 0 0 1rem 0;
-      font-size: 0.875rem;
-    }
-
-    .checklist-items {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .checklist-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .checklist-label {
-      font-weight: 500;
-      color: #333;
-      font-size: 0.9375rem;
-    }
-
-    .required {
-      color: #d32f2f;
-      margin-left: 0.25rem;
-    }
-
-    .checkbox-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .checkbox-input {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
-
-    .checkbox-label {
-      cursor: pointer;
-      margin: 0;
-      font-weight: normal;
-    }
-
-    .text-input,
-    .number-input,
-    .select-input {
-      padding: 0.625rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-      width: 100%;
-      transition: border-color 0.2s;
-    }
-
-    .text-input:focus,
-    .number-input:focus,
-    .select-input:focus {
-      outline: none;
-      border-color: #00A1DE;
-    }
-
-    @media (max-width: 768px) {
+  styles: [
+    `
       .checklist-container {
-        padding: 0.75rem;
+        padding: 1rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+      }
+
+      .checklist-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+        color: #1a1a1a;
+      }
+
+      .checklist-description {
+        color: #666;
+        margin: 0 0 1rem 0;
+        font-size: 0.875rem;
+      }
+
+      .checklist-items {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .checklist-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .checklist-label {
+        font-weight: 500;
+        color: #333;
+        font-size: 0.9375rem;
+      }
+
+      .required {
+        color: #d32f2f;
+        margin-left: 0.25rem;
+      }
+
+      .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .checkbox-input {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+
+      .checkbox-label {
+        cursor: pointer;
+        margin: 0;
+        font-weight: normal;
       }
 
       .text-input,
       .number-input,
       .select-input {
-        font-size: 16px;
+        padding: 0.625rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        width: 100%;
+        transition: border-color 0.2s;
       }
-    }
-  `]
+
+      .text-input:focus,
+      .number-input:focus,
+      .select-input:focus {
+        outline: none;
+        border-color: #00a1de;
+      }
+
+      @media (max-width: 768px) {
+        .checklist-container {
+          padding: 0.75rem;
+        }
+
+        .text-input,
+        .number-input,
+        .select-input {
+          font-size: 16px;
+        }
+      }
+    `,
+  ],
 })
 export class ChecklistComponent implements OnInit {
   @Input() template: ChecklistTemplate | null = null;
@@ -195,7 +197,7 @@ export class ChecklistComponent implements OnInit {
 
   ngOnInit() {
     if (this.initialResponses?.length) {
-      this.initialResponses.forEach(response => {
+      this.initialResponses.forEach((response) => {
         this.responses[response.itemId] = response.value;
       });
     }
@@ -203,19 +205,19 @@ export class ChecklistComponent implements OnInit {
 
   onResponseChange() {
     const responseArray: ChecklistResponse[] = Object.keys(this.responses)
-      .filter(itemId => this.responses[itemId] !== null && this.responses[itemId] !== undefined)
-      .map(itemId => ({
+      .filter((itemId) => this.responses[itemId] !== null && this.responses[itemId] !== undefined)
+      .map((itemId) => ({
         itemId,
-        value: this.responses[itemId]
+        value: this.responses[itemId],
       }));
 
     this.responsesChange.emit(responseArray);
   }
 
   getResponses(): ChecklistResponse[] {
-    return Object.keys(this.responses).map(itemId => ({
+    return Object.keys(this.responses).map((itemId) => ({
       itemId,
-      value: this.responses[itemId]
+      value: this.responses[itemId],
     }));
   }
 }

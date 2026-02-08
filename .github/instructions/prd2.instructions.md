@@ -19,10 +19,13 @@
 ## 1. Executive Summary
 
 ### 1.1 Product Vision
+
 Bitcorp ERP is a comprehensive enterprise resource planning system designed for civil engineering and construction companies. The system manages equipment, operators, contracts, and provides real-time operational insights through integrated management systems aligned with ISO standards.
 
 ### 1.2 Business Context
+
 The application serves construction companies managing multiple projects across different geographical locations, requiring:
+
 - Centralized equipment management and tracking
 - Operator daily report submissions
 - Contract and addendum management
@@ -31,12 +34,12 @@ The application serves construction companies managing multiple projects across 
 
 ### 1.3 Target Users
 
-| User Level | Role | Access Scope | Primary Functions |
-|------------|------|--------------|-------------------|
-| **Level 1** | Company Director | Full System Access | View all modules including SIG, operations across all projects |
-| **Level 2** | Project Director | Project-Specific Access | View operational modules (Licensing, Operations) for assigned projects |
-| **Level 3** | Department Users | Module-Specific Access | Access to specific operational modules (SST, Administration, HR, Logistics, Providers, Equipment) |
-| **Field Level** | Equipment Operators | Mobile App Only | Submit daily reports (Parte Diario) in the field |
+| User Level      | Role                | Access Scope            | Primary Functions                                                                                 |
+| --------------- | ------------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
+| **Level 1**     | Company Director    | Full System Access      | View all modules including SIG, operations across all projects                                    |
+| **Level 2**     | Project Director    | Project-Specific Access | View operational modules (Licensing, Operations) for assigned projects                            |
+| **Level 3**     | Department Users    | Module-Specific Access  | Access to specific operational modules (SST, Administration, HR, Logistics, Providers, Equipment) |
+| **Field Level** | Equipment Operators | Mobile App Only         | Submit daily reports (Parte Diario) in the field                                                  |
 
 ---
 
@@ -65,13 +68,16 @@ control panel (Post-Login)
 ```
 
 ### 2.2 Permission-Based Display
-- **All modules visible** to all users on control panel 
+
+- **All modules visible** to all users on control panel
 - **Active modules**: Full color, clickable
 - **Restricted modules**: Grayed out/shadowed to indicate unavailability
 - **Purpose**: Display full system capabilities while enforcing access control
 
 ### 2.3 User Context Display
-control panel  header must show:
+
+control panel header must show:
+
 - User full name
 - User ID
 - List of assigned projects (users can work on multiple projects)
@@ -94,13 +100,16 @@ Gestión de Equipo Mecánico
 ├── Registrar Parte Diario (Daily Report Registration) - Operator App
 └── KPI (Key Performance Indicators) - Placeholder
 ```
+
 Ref: [Equipment Registry Table](../../docs/images/CONCEPT-002/0003-Gestion_De_Equipo_Mecanico_Registration_Table.jpeg)
 Ref: [Equipment Maintainance Form](../../docs/images/CONCEPT-002/0004-Gestion_De_Equipo_Mecanico_Maintenance_Form.jpeg)
+
 ---
 
 ## 4. Key Business Objectives
 
 ### 4.1 Primary Goals
+
 1. **Centralized Equipment Tracking**: Maintain comprehensive registry of all construction equipment across projects
 2. **Automated Valuation**: Calculate monthly equipment costs based on actual usage data
 3. **Contract Management**: Track rental agreements, extensions, and payment obligations
@@ -108,6 +117,7 @@ Ref: [Equipment Maintainance Form](../../docs/images/CONCEPT-002/0004-Gestion_De
 5. **Financial Transparency**: Generate accurate monthly billing reports per equipment and provider
 
 ### 4.2 Success Metrics
+
 - 100% equipment visibility across all projects
 - 95%+ daily report submission rate from operators
 - Automated monthly valuation reports within 2 days of month-end
@@ -119,15 +129,18 @@ Ref: [Equipment Maintainance Form](../../docs/images/CONCEPT-002/0004-Gestion_De
 ## 5. User Stories
 
 ### 5.1 Company Director (Level 1)
+
 - As a Company Director, I want to see all modules across all projects so I can have complete oversight
 - As a Company Director, I want to view consolidated KPIs from multiple projects so I can make strategic decisions
 
 ### 5.2 Project Director (Level 2)
+
 - As a Project Director, I want to view all equipment in my assigned project(s) so I can manage resources effectively
 - As a Project Director, I want to receive alerts about upcoming contract expirations so I can plan renewals
 - As a Project Director, I want to review monthly equipment valuations so I can control project costs
 
 ### 5.3 Equipment Manager (Level 3)
+
 - As an Equipment Manager, I want to register new equipment with all specifications so the system has complete records
 - As an Equipment Manager, I want to track equipment maintenance schedules so I can prevent breakdowns
 - As an Equipment Manager, I want to manage contracts and addendums so rental terms are always current
@@ -135,11 +148,13 @@ Ref: [Equipment Maintainance Form](../../docs/images/CONCEPT-002/0004-Gestion_De
 - As an Equipment Manager, I want to know who registered/updated equipment data so I can ensure accountability
 
 ### 5.4 Equipment Operator (Field Level)
+
 - As an Operator, I want to submit daily reports from my mobile device so I don't need office access
 - As an Operator, I want a simple form to record equipment usage hours so reporting is quick
 - As an Operator, I want to log fuel consumption so costs are tracked accurately
 
 ### 5.5 Finance/Admin (Level 3)
+
 - As a Finance user, I want to generate monthly equipment valuation reports so I can process provider payments
 - As a Finance user, I want to see breakdowns by provider so I know how much to pay each vendor
 - As a Finance user, I want PDF exports of valuation reports for official documentation
@@ -149,21 +164,25 @@ Ref: [Equipment Maintainance Form](../../docs/images/CONCEPT-002/0004-Gestion_De
 ## 6. Key Features & Requirements
 
 ### 6.1 Authentication & Authorization
+
 - Role-based access control (RBAC) with 4 user levels
 - Multi-project assignment capability per user
 - Session management with security audit logs
 - Password policies aligned with security standards
 
 ### 6.2 Control Panel
+
 - Module display with permission-based styling (active vs. disabled)
 - User context display (name, ID, assigned projects)
 - Project selector for multi-project users
 - Quick navigation to frequently accessed modules
 
 ### 6.3 Equipment Management Module
+
 See Functional Requirements Document for detailed specifications
 
 ### 6.4 Mobile Application for Operators
+
 - Lightweight, responsive web application or native mobile app
 - Daily Report (Parte Diario) submission form
 - Offline capability with sync when connectivity available
@@ -174,6 +193,7 @@ See Functional Requirements Document for detailed specifications
 ## 7. Technical Constraints
 
 ### 7.1 Technology Stack
+
 - **Frontend**: Angular 19+ with responsive/mobile-first design
 - **Backend**: Node.js with TypeScript
 - **Database**: PostgreSQL (migrated from SQL Server BACPAC)
@@ -181,11 +201,13 @@ See Functional Requirements Document for detailed specifications
 - **Testing**: Playwright for E2E, Jest for unit tests
 
 ### 7.2 Data Migration
+
 - Existing SQL Server database (BACPAC format)
 - Must preserve all historical data during migration
 - Data validation required post-migration
 
 ### 7.3 Integration Requirements
+
 - PDF generation for valuation reports
 - Notification system for alerts (contract expiry, maintenance due)
 - Audit logging for all CRUD operations
@@ -206,6 +228,7 @@ See Functional Requirements Document for detailed specifications
 ## 9. Out of Scope (Future Phases)
 
 ### Phase 2 (Not in Initial Release)
+
 - Procedimiento (Process Documentation) module
 - Advanced KPI dashboards with analytics
 - Licitaciones (Bidding/Tenders) module
@@ -219,13 +242,13 @@ See Functional Requirements Document for detailed specifications
 
 ## 10. Risks & Mitigation
 
-| Risk | Impact | Probability | Mitigation Strategy |
-|------|--------|-------------|---------------------|
-| Poor mobile connectivity in field | High | Medium | Implement offline-first mobile app with sync |
-| Operator resistance to digital reporting | High | Medium | Provide extensive training and simplified UX |
-| Complex contract terms not fitting system | Medium | High | Build flexible contract template system |
-| Data loss during migration | Critical | Low | Comprehensive backup and validation procedures |
-| Equipment maintenance tracking complexity | Medium | Medium | Phased approach, start with basic tracking |
+| Risk                                      | Impact   | Probability | Mitigation Strategy                            |
+| ----------------------------------------- | -------- | ----------- | ---------------------------------------------- |
+| Poor mobile connectivity in field         | High     | Medium      | Implement offline-first mobile app with sync   |
+| Operator resistance to digital reporting  | High     | Medium      | Provide extensive training and simplified UX   |
+| Complex contract terms not fitting system | Medium   | High        | Build flexible contract template system        |
+| Data loss during migration                | Critical | Low         | Comprehensive backup and validation procedures |
+| Equipment maintenance tracking complexity | Medium   | Medium      | Phased approach, start with basic tracking     |
 
 ---
 
@@ -243,37 +266,38 @@ See Functional Requirements Document for detailed specifications
 
 #### 1.1.1 Toolbar Functions
 
-| Icon/Button | Function | Description |
-|-------------|----------|-------------|
-| ➕ Add | Create Equipment | Opens equipment registration form |
-| 🗑️ Delete | Remove Equipment | Deletes selected equipment (with confirmation) |
-| 🔍 Search | Search Equipment | Full-text search across equipment fields |
-| 🔽 Filter | Filter Equipment | Filter by status, provider, category, etc. |
-| 📥 Export | Export Data | Export table to Excel/CSV |
-| 🔄 Refresh | Reload Data | Refresh table data from database |
+| Icon/Button | Function         | Description                                    |
+| ----------- | ---------------- | ---------------------------------------------- |
+| ➕ Add      | Create Equipment | Opens equipment registration form              |
+| 🗑️ Delete   | Remove Equipment | Deletes selected equipment (with confirmation) |
+| 🔍 Search   | Search Equipment | Full-text search across equipment fields       |
+| 🔽 Filter   | Filter Equipment | Filter by status, provider, category, etc.     |
+| 📥 Export   | Export Data      | Export table to Excel/CSV                      |
+| 🔄 Refresh  | Reload Data      | Refresh table data from database               |
 
 #### 1.1.2 Table Columns
 
-| Column | Data Type | Description | Sortable | Filterable |
-|--------|-----------|-------------|----------|------------|
-| Código Equipo | String | Equipment unique code | Yes | Yes |
-| RUC Proveedor | String | Provider tax ID | Yes | Yes |
-| Razón Social | String | Company name | Yes | Yes |
-| Tipo de Proveedor | Enum | Provider type | Yes | Yes |
-| Categoría | Enum | Equipment category | Yes | Yes |
-| Placa | String | License plate | Yes | Yes |
-| Marca | String | Make/Brand | Yes | Yes |
-| Modelo | String | Model | Yes | Yes |
-| Estado | Enum | Status (In Project, Available, Maintenance) | Yes | Yes |
-| Tipo Motor | Enum | Fuel type (Diesel, Gasoline, Electric) | Yes | Yes |
-| Fecha Registro | Date | Registration date | Yes | Yes |
-| Registrado Por | String | Registered by (username) | No | Yes |
+| Column            | Data Type | Description                                 | Sortable | Filterable |
+| ----------------- | --------- | ------------------------------------------- | -------- | ---------- |
+| Código Equipo     | String    | Equipment unique code                       | Yes      | Yes        |
+| RUC Proveedor     | String    | Provider tax ID                             | Yes      | Yes        |
+| Razón Social      | String    | Company name                                | Yes      | Yes        |
+| Tipo de Proveedor | Enum      | Provider type                               | Yes      | Yes        |
+| Categoría         | Enum      | Equipment category                          | Yes      | Yes        |
+| Placa             | String    | License plate                               | Yes      | Yes        |
+| Marca             | String    | Make/Brand                                  | Yes      | Yes        |
+| Modelo            | String    | Model                                       | Yes      | Yes        |
+| Estado            | Enum      | Status (In Project, Available, Maintenance) | Yes      | Yes        |
+| Tipo Motor        | Enum      | Fuel type (Diesel, Gasoline, Electric)      | Yes      | Yes        |
+| Fecha Registro    | Date      | Registration date                           | Yes      | Yes        |
+| Registrado Por    | String    | Registered by (username)                    | No       | Yes        |
 
 #### 1.1.3 Row Actions
 
 **Primary Action**: Click on row → Opens Equipment Detail View
 
 **Context Menu** (Right-click or action button):
+
 - View Details
 - Edit Equipment
 - Create Maintenance Report
@@ -283,17 +307,18 @@ See Functional Requirements Document for detailed specifications
 
 #### 1.1.4 Status Visual Indicators
 
-| Status | Color Code | Icon | Meaning |
-|--------|------------|------|---------|
-| In Project | Green | ✓ | Currently assigned and operational |
-| Available | Blue | ○ | Ready for assignment |
-| In Maintenance | Orange | 🔧 | Under maintenance |
-| Maintenance Due Soon | Yellow Background | ⚠️ | Maintenance required within 7 days |
-| Maintenance Overdue | Red Background | ❗ | Maintenance overdue |
+| Status               | Color Code        | Icon | Meaning                            |
+| -------------------- | ----------------- | ---- | ---------------------------------- |
+| In Project           | Green             | ✓    | Currently assigned and operational |
+| Available            | Blue              | ○    | Ready for assignment               |
+| In Maintenance       | Orange            | 🔧   | Under maintenance                  |
+| Maintenance Due Soon | Yellow Background | ⚠️   | Maintenance required within 7 days |
+| Maintenance Overdue  | Red Background    | ❗   | Maintenance overdue                |
 
 #### 1.1.5 Filtering Capabilities
 
 **Quick Filters** (Toggle buttons above table):
+
 - Show All
 - In Project Only
 - Available Only
@@ -301,6 +326,7 @@ See Functional Requirements Document for detailed specifications
 - My Registered Equipment
 
 **Advanced Filters** (Filter panel):
+
 - Status (multi-select)
 - Provider (dropdown)
 - Category (dropdown)
@@ -322,64 +348,65 @@ See Functional Requirements Document for detailed specifications
 
 **Section 1: Basic Information** (Auto-filled if editing)
 
-| Field | Type | Required | Editable | Validation | Notes |
-|-------|------|----------|----------|------------|-------|
-| Código Equipo | Text (Read-only) | No | No | N/A | Auto-generated or from legacy system |
-| RUC Proveedor | Text (Read-only) | Yes | No | Valid RUC format | From provider database |
-| Razón Social | Text (Read-only) | Yes | No | N/A | From provider database |
+| Field         | Type             | Required | Editable | Validation       | Notes                                |
+| ------------- | ---------------- | -------- | -------- | ---------------- | ------------------------------------ |
+| Código Equipo | Text (Read-only) | No       | No       | N/A              | Auto-generated or from legacy system |
+| RUC Proveedor | Text (Read-only) | Yes      | No       | Valid RUC format | From provider database               |
+| Razón Social  | Text (Read-only) | Yes      | No       | N/A              | From provider database               |
 
 **Section 2: Equipment Classification**
 
-| Field | Type | Required | Editable | Validation | Notes |
-|-------|------|----------|----------|------------|-------|
-| Tipo de Proveedor | Dropdown | Yes | Yes | Must select one | Options: Rental, Owned, Leased |
-| Categoría de Equipo | Dropdown | Yes | Yes | Must select one | Heavy Machinery, Vehicles, Tools, etc. |
-| Tipo de Motor | Dropdown | Yes | Yes | Must select one | Diesel, Gasoline, Electric, Hybrid |
+| Field               | Type     | Required | Editable | Validation      | Notes                                  |
+| ------------------- | -------- | -------- | -------- | --------------- | -------------------------------------- |
+| Tipo de Proveedor   | Dropdown | Yes      | Yes      | Must select one | Options: Rental, Owned, Leased         |
+| Categoría de Equipo | Dropdown | Yes      | Yes      | Must select one | Heavy Machinery, Vehicles, Tools, etc. |
+| Tipo de Motor       | Dropdown | Yes      | Yes      | Must select one | Diesel, Gasoline, Electric, Hybrid     |
 
 **Section 3: Identification Details**
 
-| Field | Type | Required | Editable | Validation | Notes |
-|-------|------|----------|----------|------------|-------|
-| Placa | Text | Conditional* | Yes | Valid plate format | *Required if vehicle |
-| Documento de Acreditación | Text | No | Yes | N/A | Registration document number |
-| Fecha de Acreditación | Date Picker | No | Yes | Valid date | Document issuance date |
-| Marca | Text | Yes | Yes | Max 100 chars | Make/Brand |
-| Modelo | Text | Yes | Yes | Max 100 chars | Model name |
-| Número de Serie Equipo | Text | Yes | Yes | Alphanumeric | Equipment serial number |
-| Número de Chasis | Text | Conditional* | Yes | Alphanumeric | *Required if vehicle |
-| Número de Serie Motor | Text | No | Yes | Alphanumeric | Engine serial number |
-| Potencia Neta | Number | No | Yes | Positive number | In HP or kW (specify unit) |
-| Año de Fabricación | Number | Yes | Yes | 1900-current year | Year of manufacture |
-| Código Externo | Text | No | Yes | Max 50 chars | External/alternative code |
+| Field                     | Type        | Required      | Editable | Validation         | Notes                        |
+| ------------------------- | ----------- | ------------- | -------- | ------------------ | ---------------------------- |
+| Placa                     | Text        | Conditional\* | Yes      | Valid plate format | \*Required if vehicle        |
+| Documento de Acreditación | Text        | No            | Yes      | N/A                | Registration document number |
+| Fecha de Acreditación     | Date Picker | No            | Yes      | Valid date         | Document issuance date       |
+| Marca                     | Text        | Yes           | Yes      | Max 100 chars      | Make/Brand                   |
+| Modelo                    | Text        | Yes           | Yes      | Max 100 chars      | Model name                   |
+| Número de Serie Equipo    | Text        | Yes           | Yes      | Alphanumeric       | Equipment serial number      |
+| Número de Chasis          | Text        | Conditional\* | Yes      | Alphanumeric       | \*Required if vehicle        |
+| Número de Serie Motor     | Text        | No            | Yes      | Alphanumeric       | Engine serial number         |
+| Potencia Neta             | Number      | No            | Yes      | Positive number    | In HP or kW (specify unit)   |
+| Año de Fabricación        | Number      | Yes           | Yes      | 1900-current year  | Year of manufacture          |
+| Código Externo            | Text        | No            | Yes      | Max 50 chars       | External/alternative code    |
 
 **Section 4: Operational Parameters**
 
-| Field | Type | Required | Editable | Validation | Notes |
-|-------|------|----------|----------|------------|-------|
-| Medidor de Uso | Dropdown | Yes | Yes | Must select | Options: Horómetro (Hour meter), Odómetro (Odometer), Ninguno (None) |
-| Estado | Dropdown | Yes | Yes | Must select | Options: En Proyecto (In Project), Disponible (Available), En Mantenimiento (In Maintenance) |
+| Field          | Type     | Required | Editable | Validation  | Notes                                                                                        |
+| -------------- | -------- | -------- | -------- | ----------- | -------------------------------------------------------------------------------------------- |
+| Medidor de Uso | Dropdown | Yes      | Yes      | Must select | Options: Horómetro (Hour meter), Odómetro (Odometer), Ninguno (None)                         |
+| Estado         | Dropdown | Yes      | Yes      | Must select | Options: En Proyecto (In Project), Disponible (Available), En Mantenimiento (In Maintenance) |
 
 **Section 5: Compliance & Expiration Dates**
 
-| Field | Type | Required | Editable | Validation | Notes |
-|-------|------|----------|----------|------------|-------|
-| Fecha Venc. Póliza | Date Picker | No | Yes | Future date | Insurance policy expiration |
-| Fecha Venc. SOAT | Date Picker | Conditional* | Yes | Future date | *Required if vehicle (Peruvian mandatory insurance) |
-| Fecha Venc. CITV | Date Picker | Conditional* | Yes | Future date | *Required if vehicle (Technical inspection) |
+| Field              | Type        | Required      | Editable | Validation  | Notes                                                |
+| ------------------ | ----------- | ------------- | -------- | ----------- | ---------------------------------------------------- |
+| Fecha Venc. Póliza | Date Picker | No            | Yes      | Future date | Insurance policy expiration                          |
+| Fecha Venc. SOAT   | Date Picker | Conditional\* | Yes      | Future date | \*Required if vehicle (Peruvian mandatory insurance) |
+| Fecha Venc. CITV   | Date Picker | Conditional\* | Yes      | Future date | \*Required if vehicle (Technical inspection)         |
 
 **Section 6: System Metadata** (Read-only, auto-populated)
 
-| Field | Type | Editable | Notes |
-|-------|------|----------|-------|
-| ID Unidad de Operación | Text | No | Operating unit identifier |
-| Fecha de Registro | Datetime | No | Timestamp of creation |
-| Registrado Por | Text | No | Username who created record |
-| Fecha de Actualización | Datetime | No | Timestamp of last update |
-| Actualizado Por | Text | No | Username who last updated |
+| Field                  | Type     | Editable | Notes                       |
+| ---------------------- | -------- | -------- | --------------------------- |
+| ID Unidad de Operación | Text     | No       | Operating unit identifier   |
+| Fecha de Registro      | Datetime | No       | Timestamp of creation       |
+| Registrado Por         | Text     | No       | Username who created record |
+| Fecha de Actualización | Datetime | No       | Timestamp of last update    |
+| Actualizado Por        | Text     | No       | Username who last updated   |
 
 #### 1.2.2 Form Validations
 
 **Client-Side Validations**:
+
 - All required fields must be filled
 - Date formats must be valid
 - Numeric fields must contain valid numbers
@@ -389,6 +416,7 @@ See Functional Requirements Document for detailed specifications
 - Expiration dates must be in the future (warning if past)
 
 **Server-Side Validations**:
+
 - Equipment code must be unique (if manually entered)
 - Provider RUC must exist in provider database
 - Serial numbers should be unique (warning if duplicate)
@@ -397,21 +425,23 @@ See Functional Requirements Document for detailed specifications
 
 #### 1.2.3 Form Actions
 
-| Button | Action | Behavior |
-|--------|--------|----------|
-| 💾 Guardar (Save) | Submit Form | Validates and saves data, returns to equipment list with success message |
-| 🔄 Guardar y Crear Nuevo (Save & New) | Submit and Reset | Saves current equipment and opens blank form for next entry |
-| ❌ Cancelar (Cancel) | Discard Changes | Returns to equipment list (confirmation if form is dirty) |
-| 🔄 Resetear (Reset) | Clear Form | Clears all fields to default values (confirmation required) |
+| Button                                | Action           | Behavior                                                                 |
+| ------------------------------------- | ---------------- | ------------------------------------------------------------------------ |
+| 💾 Guardar (Save)                     | Submit Form      | Validates and saves data, returns to equipment list with success message |
+| 🔄 Guardar y Crear Nuevo (Save & New) | Submit and Reset | Saves current equipment and opens blank form for next entry              |
+| ❌ Cancelar (Cancel)                  | Discard Changes  | Returns to equipment list (confirmation if form is dirty)                |
+| 🔄 Resetear (Reset)                   | Clear Form       | Clears all fields to default values (confirmation required)              |
 
 #### 1.2.4 Post-Save Actions
 
 **Success Scenario**:
+
 1. Display success toast notification: "Equipo registrado exitosamente"
 2. Return to equipment list with new equipment highlighted
 3. Log activity: "[User] registered equipment [Code]"
 
 **Error Scenario**:
+
 1. Display error message inline with problematic fields
 2. Keep form open with user data preserved
 3. Log error for troubleshooting
@@ -430,12 +460,12 @@ See Functional Requirements Document for detailed specifications
 
 **Visual Indicators** (Background colors on equipment rows):
 
-| Indicator | Color | Condition | Action Required |
-|-----------|-------|-----------|-----------------|
-| Normal | White | No maintenance due in next 30 days | None |
-| Warning | Yellow | Maintenance due within 7-30 days | Plan maintenance |
-| Alert | Orange | Maintenance due within 1-7 days | Schedule maintenance immediately |
-| Critical | Red | Maintenance overdue | Urgent action required |
+| Indicator | Color  | Condition                          | Action Required                  |
+| --------- | ------ | ---------------------------------- | -------------------------------- |
+| Normal    | White  | No maintenance due in next 30 days | None                             |
+| Warning   | Yellow | Maintenance due within 7-30 days   | Plan maintenance                 |
+| Alert     | Orange | Maintenance due within 1-7 days    | Schedule maintenance immediately |
+| Critical  | Red    | Maintenance overdue                | Urgent action required           |
 
 **Filter**: "Maintenance Required" quick filter shows only yellow/orange/red rows
 
@@ -445,18 +475,19 @@ See Functional Requirements Document for detailed specifications
 
 **Form**: Maintenance Report
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Código Equipo | Text (Read-only) | Yes | Pre-filled from selected equipment |
-| Fecha de Mantenimiento | Date Picker | Yes | Scheduled maintenance date |
-| Tipo de Mantenimiento | Dropdown | Yes | Options: Preventivo, Correctivo, Emergencia |
-| Descripción | Textarea | Yes | Maintenance description/reason |
-| Componentes a Revisar | Multi-select | No | List of parts: Filter, Oil, Brakes, etc. |
-| Técnico Responsable | Dropdown | Yes | Technician assigned (from users) |
-| Costo Estimado | Number | No | Estimated maintenance cost |
-| Observaciones | Textarea | No | Additional notes |
+| Field                  | Type             | Required | Notes                                       |
+| ---------------------- | ---------------- | -------- | ------------------------------------------- |
+| Código Equipo          | Text (Read-only) | Yes      | Pre-filled from selected equipment          |
+| Fecha de Mantenimiento | Date Picker      | Yes      | Scheduled maintenance date                  |
+| Tipo de Mantenimiento  | Dropdown         | Yes      | Options: Preventivo, Correctivo, Emergencia |
+| Descripción            | Textarea         | Yes      | Maintenance description/reason              |
+| Componentes a Revisar  | Multi-select     | No       | List of parts: Filter, Oil, Brakes, etc.    |
+| Técnico Responsable    | Dropdown         | Yes      | Technician assigned (from users)            |
+| Costo Estimado         | Number           | No       | Estimated maintenance cost                  |
+| Observaciones          | Textarea         | No       | Additional notes                            |
 
 **Actions**:
+
 - Save → Equipment status changes to "En Mantenimiento"
 - Cancel → Returns to equipment list without changes
 
@@ -466,14 +497,14 @@ See Functional Requirements Document for detailed specifications
 
 **Display**: Table of all past maintenance records for the equipment
 
-| Column | Data |
-|--------|------|
-| Fecha | Maintenance date |
-| Tipo | Maintenance type |
-| Descripción | Brief description |
-| Técnico | Responsible technician |
-| Costo Real | Actual cost incurred |
-| Estado | Status (Completado, En Proceso, Cancelado) |
+| Column      | Data                                       |
+| ----------- | ------------------------------------------ |
+| Fecha       | Maintenance date                           |
+| Tipo        | Maintenance type                           |
+| Descripción | Brief description                          |
+| Técnico     | Responsible technician                     |
+| Costo Real  | Actual cost incurred                       |
+| Estado      | Status (Completado, En Proceso, Cancelado) |
 
 ---
 
@@ -488,6 +519,7 @@ See Functional Requirements Document for detailed specifications
 #### 1.4.1 Header Section
 
 Display key equipment information:
+
 - Equipment Code (large, prominent)
 - Equipment Name/Description
 - Status badge with color indicator
@@ -495,6 +527,7 @@ Display key equipment information:
 - Current location/project
 
 **Quick Actions** (Buttons):
+
 - Edit Equipment
 - Create Maintenance Report
 - View Contract
@@ -504,27 +537,32 @@ Display key equipment information:
 #### 1.4.2 Tabs
 
 **Tab 1: General Information**
+
 - Display all equipment fields in read-only format
 - Organized in sections matching registration form
 - Include system metadata with audit trail
 
 **Tab 2: Maintenance History**
+
 - Table of all maintenance records (see 1.3.3)
 - Filter by date range, maintenance type
 - Export to PDF/Excel
 
 **Tab 3: Contract Information**
+
 - Current active contract details (see Section 2)
 - Contract history
 - Link to contract management module
 
 **Tab 4: Daily Reports**
+
 - Summary of daily usage reports submitted by operators
 - Aggregated hours/kilometers
 - Fuel consumption trends
 - Link to detailed daily reports
 
 **Tab 5: Valuation History**
+
 - Monthly valuation reports for this equipment
 - Cost trends over time
 - Chart visualization
@@ -539,6 +577,7 @@ Display key equipment information:
 **Purpose**: Manage rental agreements, terms, conditions, and extensions for equipment
 
 **Key Concepts**:
+
 - **Contrato (Contract)**: Initial rental agreement with provider
 - **Adenda (Addendum)**: Extension of existing contract without re-entering all data
 
@@ -550,26 +589,26 @@ Display key equipment information:
 
 #### 2.2.1 Table Columns
 
-| Column | Description |
-|--------|-------------|
-| Número de Contrato | Contract unique number |
-| Equipo | Equipment code and name |
-| Proveedor | Provider name |
-| Fecha Inicio | Contract start date |
-| Fecha Fin | Contract end date |
-| Días Restantes | Days remaining (calculated) |
-| Moneda | Currency (PEN or USD) |
-| Monto Total | Total contract amount |
-| Estado | Status (Activo, Próximo a Vencer, Vencido, Extendido) |
+| Column             | Description                                           |
+| ------------------ | ----------------------------------------------------- |
+| Número de Contrato | Contract unique number                                |
+| Equipo             | Equipment code and name                               |
+| Proveedor          | Provider name                                         |
+| Fecha Inicio       | Contract start date                                   |
+| Fecha Fin          | Contract end date                                     |
+| Días Restantes     | Days remaining (calculated)                           |
+| Moneda             | Currency (PEN or USD)                                 |
+| Monto Total        | Total contract amount                                 |
+| Estado             | Status (Activo, Próximo a Vencer, Vencido, Extendido) |
 
 #### 2.2.2 Status Indicators
 
-| Status | Color | Condition |
-|--------|-------|-----------|
-| Activo | Green | End date > 30 days away |
+| Status           | Color  | Condition               |
+| ---------------- | ------ | ----------------------- |
+| Activo           | Green  | End date > 30 days away |
 | Próximo a Vencer | Yellow | End date within 30 days |
-| Vencido | Red | End date passed |
-| Extendido | Blue | Has active addendum |
+| Vencido          | Red    | End date passed         |
+| Extendido        | Blue   | Has active addendum     |
 
 #### 2.2.3 Toolbar Functions
 
@@ -591,40 +630,40 @@ Display key equipment information:
 
 **Section 1: Contract Identification**
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Número de Contrato | Text | Yes | Auto-generated or manual entry |
-| Equipo | Dropdown/Search | Yes | Select from available equipment |
-| Proveedor | Text (Read-only) | Yes | Auto-filled based on equipment |
-| Fecha de Contrato | Date Picker | Yes | Contract signing date |
+| Field              | Type             | Required | Notes                           |
+| ------------------ | ---------------- | -------- | ------------------------------- |
+| Número de Contrato | Text             | Yes      | Auto-generated or manual entry  |
+| Equipo             | Dropdown/Search  | Yes      | Select from available equipment |
+| Proveedor          | Text (Read-only) | Yes      | Auto-filled based on equipment  |
+| Fecha de Contrato  | Date Picker      | Yes      | Contract signing date           |
 
 **Section 2: Contract Period**
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Fecha Inicio | Date Picker | Yes | Contract start date |
-| Fecha Fin | Date Picker | Yes | Contract end date |
-| Duración (días) | Number (Read-only) | Yes | Auto-calculated from dates |
+| Field           | Type               | Required | Notes                      |
+| --------------- | ------------------ | -------- | -------------------------- |
+| Fecha Inicio    | Date Picker        | Yes      | Contract start date        |
+| Fecha Fin       | Date Picker        | Yes      | Contract end date          |
+| Duración (días) | Number (Read-only) | Yes      | Auto-calculated from dates |
 
 **Section 3: Financial Terms**
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Moneda | Radio Button | Yes | Options: Soles (PEN), Dólares (USD) |
-| Tipo de Tarifa | Dropdown | Yes | Hourly, Daily, Monthly, Fixed |
-| Tarifa | Number | Yes | Rate amount |
-| Incluye Motor | Checkbox | No | Whether engine/operator included in rate |
-| Incluye Operador | Checkbox | No | Whether operator included |
-| Costo Adicional Motor | Number | Conditional | Required if "Incluye Motor" = No |
-| Horas Incluidas | Number | Conditional | If hourly rate, how many hours included |
-| Penalidad por Exceso | Number | No | Penalty rate for exceeding included hours |
+| Field                 | Type         | Required    | Notes                                     |
+| --------------------- | ------------ | ----------- | ----------------------------------------- |
+| Moneda                | Radio Button | Yes         | Options: Soles (PEN), Dólares (USD)       |
+| Tipo de Tarifa        | Dropdown     | Yes         | Hourly, Daily, Monthly, Fixed             |
+| Tarifa                | Number       | Yes         | Rate amount                               |
+| Incluye Motor         | Checkbox     | No          | Whether engine/operator included in rate  |
+| Incluye Operador      | Checkbox     | No          | Whether operator included                 |
+| Costo Adicional Motor | Number       | Conditional | Required if "Incluye Motor" = No          |
+| Horas Incluidas       | Number       | Conditional | If hourly rate, how many hours included   |
+| Penalidad por Exceso  | Number       | No          | Penalty rate for exceeding included hours |
 
 **Section 4: Terms & Conditions**
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Condiciones Especiales | Textarea | No | Special terms, limitations, restrictions |
-| Documento de Contrato | File Upload | No | Scanned contract PDF |
+| Field                  | Type        | Required | Notes                                    |
+| ---------------------- | ----------- | -------- | ---------------------------------------- |
+| Condiciones Especiales | Textarea    | No       | Special terms, limitations, restrictions |
+| Documento de Contrato  | File Upload | No       | Scanned contract PDF                     |
 
 **Section 5: System Metadata** (Auto-populated)
 
@@ -650,6 +689,7 @@ Display key equipment information:
 #### 2.4.1 Addendum Form
 
 **Pre-filled Data** (Read-only from parent contract):
+
 - Número de Contrato Original
 - Equipo
 - Proveedor
@@ -657,15 +697,15 @@ Display key equipment information:
 
 **Editable Fields**:
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Número de Adenda | Text | Yes | Auto-generated: [Contract #]-AD-001 |
-| Nueva Fecha Fin | Date Picker | Yes | Must be after current contract end date |
-| Cambios en Tarifa | Checkbox | No | If checked, allow rate modification |
-| Nueva Tarifa | Number | Conditional | If rate changes |
-| Nueva Moneda | Radio Button | Conditional | If currency changes |
-| Justificación | Textarea | Yes | Reason for extension |
-| Documento de Adenda | File Upload | No | Signed addendum document |
+| Field               | Type         | Required    | Notes                                   |
+| ------------------- | ------------ | ----------- | --------------------------------------- |
+| Número de Adenda    | Text         | Yes         | Auto-generated: [Contract #]-AD-001     |
+| Nueva Fecha Fin     | Date Picker  | Yes         | Must be after current contract end date |
+| Cambios en Tarifa   | Checkbox     | No          | If checked, allow rate modification     |
+| Nueva Tarifa        | Number       | Conditional | If rate changes                         |
+| Nueva Moneda        | Radio Button | Conditional | If currency changes                     |
+| Justificación       | Textarea     | Yes         | Reason for extension                    |
+| Documento de Adenda | File Upload  | No          | Signed addendum document                |
 
 #### 2.4.2 Addendum Business Rules
 
@@ -699,6 +739,7 @@ Display key equipment information:
 - Days remaining (countdown)
 
 **Actions**:
+
 - Edit Contract
 - Create Addendum
 - View PDF
@@ -707,6 +748,7 @@ Display key equipment information:
 #### 2.5.2 Timeline View
 
 Visual timeline showing:
+
 - Original contract period (bar)
 - Addendum periods (extended bars with different color)
 - Current date indicator (vertical line)
@@ -715,22 +757,26 @@ Visual timeline showing:
 #### 2.5.3 Tabs
 
 **Tab 1: Contract Details**
+
 - All contract fields in read-only view
 - Financial terms summary
 - Documents (downloadable)
 
 **Tab 2: Addendum History**
+
 - Table of all addendums
 - Each addendum's details, dates, rates
 - Download addendum documents
 
 **Tab 3: Financial Summary**
+
 - Total contract value (original + addendums)
 - Actual costs incurred (based on daily reports)
 - Variance analysis
 - Payment schedule
 
 **Tab 4: Related Daily Reports**
+
 - All operator daily reports linked to this contract/equipment
 - Aggregated usage hours
 - Fuel consumption
@@ -744,10 +790,11 @@ Visual timeline showing:
 **Purpose**: Calculate and report monthly equipment costs based on actual usage from daily operator reports
 
 **Key Formula**:
+
 ```
-Monthly Equipment Cost = (Base Rate × Hours/Days Used) + 
-                         (Excess Hours × Penalty Rate) + 
-                         (Fuel Consumed × Fuel Price) + 
+Monthly Equipment Cost = (Base Rate × Hours/Days Used) +
+                         (Excess Hours × Penalty Rate) +
+                         (Fuel Consumed × Fuel Price) +
                          (Additional Charges)
 ```
 
@@ -761,39 +808,39 @@ Monthly Equipment Cost = (Base Rate × Hours/Days Used) +
 
 #### 3.2.1 Dashboard Filters
 
-| Filter | Type | Default |
-|--------|------|---------|
-| Mes | Month Picker | Current month |
-| Año | Year Picker | Current year |
-| Proyecto | Dropdown | All or specific |
-| Proveedor | Dropdown | All or specific |
-| Estado | Multi-select | All (Pendiente, En Revisión, Aprobado) |
+| Filter    | Type         | Default                                |
+| --------- | ------------ | -------------------------------------- |
+| Mes       | Month Picker | Current month                          |
+| Año       | Year Picker  | Current year                           |
+| Proyecto  | Dropdown     | All or specific                        |
+| Proveedor | Dropdown     | All or specific                        |
+| Estado    | Multi-select | All (Pendiente, En Revisión, Aprobado) |
 
 #### 3.2.2 Summary Cards (Top of screen)
 
-| Card | Value | Calculation |
-|------|-------|-------------|
-| Total a Pagar | $ XX,XXX.XX | Sum of all valuations for selected period |
-| Equipos Valorizados | ## equipos | Count of equipment with valuations |
-| Proveedores Involucrados | ## proveedores | Count of unique providers |
-| Reportes Procesados | ## reportes | Count of daily reports used in calculations |
+| Card                     | Value          | Calculation                                 |
+| ------------------------ | -------------- | ------------------------------------------- |
+| Total a Pagar            | $ XX,XXX.XX    | Sum of all valuations for selected period   |
+| Equipos Valorizados      | ## equipos     | Count of equipment with valuations          |
+| Proveedores Involucrados | ## proveedores | Count of unique providers                   |
+| Reportes Procesados      | ## reportes    | Count of daily reports used in calculations |
 
 #### 3.2.3 Valuation Table
 
-| Column | Description | Format |
-|--------|-------------|--------|
-| Código Equipo | Equipment code | Text |
-| Descripción | Equipment description | Text |
-| Proveedor | Provider name | Text |
-| Días Trabajados | Days worked in month | Number |
-| Horas Trabajadas | Hours worked in month | Number (decimal) |
-| Combustible Consumido | Fuel consumed (gallons) | Number (decimal) |
-| Costo Base | Base rental cost | Currency |
-| Costo Combustible | Fuel cost | Currency |
-| Cargos Adicionales | Additional charges | Currency |
-| Total Valorizado | Total valuation | Currency (bold) |
-| Estado | Status | Badge (color-coded) |
-| Acciones | Actions | Icons (View, Download PDF, Approve) |
+| Column                | Description             | Format                              |
+| --------------------- | ----------------------- | ----------------------------------- |
+| Código Equipo         | Equipment code          | Text                                |
+| Descripción           | Equipment description   | Text                                |
+| Proveedor             | Provider name           | Text                                |
+| Días Trabajados       | Days worked in month    | Number                              |
+| Horas Trabajadas      | Hours worked in month   | Number (decimal)                    |
+| Combustible Consumido | Fuel consumed (gallons) | Number (decimal)                    |
+| Costo Base            | Base rental cost        | Currency                            |
+| Costo Combustible     | Fuel cost               | Currency                            |
+| Cargos Adicionales    | Additional charges      | Currency                            |
+| Total Valorizado      | Total valuation         | Currency (bold)                     |
+| Estado                | Status                  | Badge (color-coded)                 |
+| Acciones              | Actions                 | Icons (View, Download PDF, Approve) |
 
 #### 3.2.4 Toolbar Functions
 
@@ -933,6 +980,7 @@ OBSERVACIONES:
 #### 3.3.2 PDF Generation Requirements
 
 **Technical Specifications**:
+
 - Format: A4, Portrait orientation
 - Font: Arial or similar, 10-12pt body, 14-16pt headers
 - Logo: Company logo in header (top-left)
@@ -941,6 +989,7 @@ OBSERVACIONES:
 - File naming: `VAL_[EquipCode]_[YYYYMM].pdf`
 
 **Business Rules**:
+
 - PDF generation only after month-end (after day 1 of next month)
 - Must have at least 1 daily report for equipment in period
 - All daily reports must be approved before PDF generation
@@ -971,12 +1020,12 @@ Pagado (Paid)
 
 **Actions per Status**:
 
-| Status | Available Actions | Who Can Perform |
-|--------|-------------------|-----------------|
-| Pendiente | - Recalcular<br>- Enviar a Revisión | System / Equipment Manager |
-| En Revisión | - Aprobar<br>- Rechazar<br>- Solicitar Corrección | Finance / Project Manager |
-| Aprobado | - Generar PDF<br>- Marcar como Pagado<br>- Reabrir | Finance |
-| Pagado | - Ver Comprobante<br>- Generar Reporte Final | Finance / Admin |
+| Status      | Available Actions                                  | Who Can Perform            |
+| ----------- | -------------------------------------------------- | -------------------------- |
+| Pendiente   | - Recalcular<br>- Enviar a Revisión                | System / Equipment Manager |
+| En Revisión | - Aprobar<br>- Rechazar<br>- Solicitar Corrección  | Finance / Project Manager  |
+| Aprobado    | - Generar PDF<br>- Marcar como Pagado<br>- Reabrir | Finance                    |
+| Pagado      | - Ver Comprobante<br>- Generar Reporte Final       | Finance / Admin            |
 
 ---
 
@@ -991,6 +1040,7 @@ Pagado (Paid)
 #### 3.5.1 Provider Summary Report
 
 **Header Section**:
+
 - Provider Name & RUC
 - Month/Year
 - Total Equipment Count
@@ -998,13 +1048,14 @@ Pagado (Paid)
 
 **Equipment Table**:
 
-| Equipo | Días | Horas | Costo Base | Combustible | Adicionales | Total |
-|--------|------|-------|------------|-------------|-------------|-------|
-| [Code] | ## | ###.## | S/ X,XXX | S/ XXX | S/ XX | S/ X,XXX |
-| ... | ... | ... | ... | ... | ... | ... |
-| **TOTAL** | | | **S/ XX,XXX** | **S/ X,XXX** | **S/ XXX** | **S/ XX,XXX** |
+| Equipo    | Días | Horas  | Costo Base    | Combustible  | Adicionales | Total         |
+| --------- | ---- | ------ | ------------- | ------------ | ----------- | ------------- |
+| [Code]    | ##   | ###.## | S/ X,XXX      | S/ XXX       | S/ XX       | S/ X,XXX      |
+| ...       | ...  | ...    | ...           | ...          | ...         | ...           |
+| **TOTAL** |      |        | **S/ XX,XXX** | **S/ X,XXX** | **S/ XXX**  | **S/ XX,XXX** |
 
 **Actions**:
+
 - 📥 Exportar a Excel
 - 🖨️ Generar PDF Consolidado (Consolidated PDF for provider)
 - 📧 Enviar por Email al Proveedor
@@ -1015,7 +1066,8 @@ Pagado (Paid)
 
 **Backend Process**: Automated Monthly Valuation Generation
 
-**Trigger**: 
+**Trigger**:
+
 - Manual: User clicks "Generar Valorizaciones"
 - Scheduled: Automatic run on 1st day of each month at 2:00 AM
 
@@ -1023,60 +1075,60 @@ Pagado (Paid)
 
 ```typescript
 FOR each equipment with daily reports in period:
-  
+
   1. Retrieve Contract Terms
      - Base rate & rate type (hourly/daily/monthly)
      - Included hours/days
      - Excess penalty rate
      - Currency
      - Fuel inclusion (yes/no)
-  
+
   2. Aggregate Daily Reports
      - Total days worked
      - Total hours worked (sum of all daily reports)
      - Total fuel consumed
      - List of operators
      - Equipment readings (start/end hour meter or odometer)
-  
+
   3. Calculate Base Cost
      IF rate_type = 'hourly':
        base_hours = MIN(total_hours, included_hours)
        base_cost = base_hours × hourly_rate
-     
+
      ELSE IF rate_type = 'daily':
        base_days = MIN(days_worked, included_days)
        base_cost = base_days × daily_rate
-     
+
      ELSE IF rate_type = 'monthly':
        base_cost = monthly_rate
-  
+
   4. Calculate Excess Cost
      IF total_hours > included_hours:
        excess_hours = total_hours - included_hours
        excess_cost = excess_hours × penalty_rate
      ELSE:
        excess_cost = 0
-  
+
   5. Calculate Fuel Cost
      IF fuel_included_in_contract = false:
        fuel_cost = total_fuel × average_fuel_price
      ELSE:
        fuel_cost = 0
-  
+
   6. Calculate Additional Charges
      - Maintenance charges (if any)
      - Transportation fees
      - Special services
      additional_cost = SUM(all_additional_charges)
-  
+
   7. Calculate Total
      total_valuation = base_cost + excess_cost + fuel_cost + additional_cost
-  
+
   8. Create Valuation Record
      - Save to database
      - Status = 'Pendiente'
      - Link to equipment, contract, daily reports
-  
+
   9. Notify Stakeholders
      - Equipment Manager
      - Project Manager
@@ -1086,6 +1138,7 @@ NEXT equipment
 ```
 
 **Validation Rules**:
+
 - Cannot generate valuation if daily reports incomplete (missing days with equipment usage)
 - Warning if equipment hours/odometer readings show inconsistencies
 - Alert if calculated cost exceeds contract budget threshold
@@ -1104,6 +1157,7 @@ NEXT equipment
 **Access**: Separate login/interface from admin web application
 
 **Design Principles**:
+
 - Mobile-first, touch-optimized
 - Offline-capable with sync
 - Minimal text entry
@@ -1115,6 +1169,7 @@ NEXT equipment
 ### 4.2 Operator Login & Control Panel
 
 **Login Screen**:
+
 - Username/Employee ID
 - Password or PIN (4-6 digits for quick access)
 - "Remember Me" option
@@ -1126,6 +1181,7 @@ Ref: [Login](../../docs/images/CONCEPT-002/0001-Login.jpeg)
 Ref: [Control Panel](../../docs/images/CONCEPT-002/0002-Control_Panel.jpeg)
 
 **Header**:
+
 - Operator name
 - Employee ID
 - Current date/time
@@ -1156,6 +1212,7 @@ Ref: [Control Panel](../../docs/images/CONCEPT-002/0002-Control_Panel.jpeg)
 ```
 
 **Bottom Navigation**:
+
 - 📋 Mis Reportes (My Reports)
 - ➕ Nuevo Reporte (New Report)
 - 👤 Mi Perfil (My Profile)
@@ -1167,7 +1224,8 @@ Ref: [Control Panel](../../docs/images/CONCEPT-002/0002-Control_Panel.jpeg)
 
 **Screen**: New/Edit Daily Report
 
-**Trigger**: 
+**Trigger**:
+
 - Click "Iniciar Parte Diario" from assignment card
 - Click "➕ Nuevo Reporte" from bottom nav
 
@@ -1175,73 +1233,74 @@ Ref: [Control Panel](../../docs/images/CONCEPT-002/0002-Control_Panel.jpeg)
 
 **Section 1: Equipment Selection** (if not from assignment)
 
-| Field | Type | Notes |
-|-------|------|-------|
+| Field              | Type                | Notes                                       |
+| ------------------ | ------------------- | ------------------------------------------- |
 | Seleccionar Equipo | Searchable Dropdown | Filtered by operator's authorized equipment |
 
 **Section 2: Basic Information** (Auto-filled when possible)
 
-| Field | Type | Required | Auto-filled | Notes |
-|-------|------|----------|-------------|-------|
-| Fecha | Date Picker | Yes | Yes (Current date) | Can be changed for delayed reports |
-| Proyecto | Text (Read-only) | Yes | Yes | From equipment assignment |
-| Operador | Text (Read-only) | Yes | Yes | Current logged-in user |
-| Código de Operador | Text (Read-only) | Yes | Yes | Employee ID |
+| Field              | Type             | Required | Auto-filled        | Notes                              |
+| ------------------ | ---------------- | -------- | ------------------ | ---------------------------------- |
+| Fecha              | Date Picker      | Yes      | Yes (Current date) | Can be changed for delayed reports |
+| Proyecto           | Text (Read-only) | Yes      | Yes                | From equipment assignment          |
+| Operador           | Text (Read-only) | Yes      | Yes                | Current logged-in user             |
+| Código de Operador | Text (Read-only) | Yes      | Yes                | Employee ID                        |
 
 **Section 3: Work Shift Information**
 
-| Field | Type | Required | Input Method | Notes |
-|-------|------|----------|--------------|-------|
-| Hora de Inicio | Time Picker | Yes | Clock interface or numeric | Start time of work |
-| Hora de Fin | Time Picker | Yes | Clock interface or numeric | End time of work |
-| Horas Trabajadas | Number (Read-only) | Yes | Auto-calculated | End - Start (with break deduction) |
-| Descanso (minutos) | Number | No | Stepper (+/- buttons) | Lunch/break time to deduct |
+| Field              | Type               | Required | Input Method               | Notes                              |
+| ------------------ | ------------------ | -------- | -------------------------- | ---------------------------------- |
+| Hora de Inicio     | Time Picker        | Yes      | Clock interface or numeric | Start time of work                 |
+| Hora de Fin        | Time Picker        | Yes      | Clock interface or numeric | End time of work                   |
+| Horas Trabajadas   | Number (Read-only) | Yes      | Auto-calculated            | End - Start (with break deduction) |
+| Descanso (minutos) | Number             | No       | Stepper (+/- buttons)      | Lunch/break time to deduct         |
 
 **Section 4: Equipment Readings** (Conditional based on equipment type)
 
 **IF equipment has Horómetro (Hour Meter)**:
 
-| Field | Type | Required | Input Method | Validation |
-|-------|------|----------|--------------|------------|
-| Horómetro Inicial | Number | Yes | Numeric keypad | Must be ≥ last reading |
-| Horómetro Final | Number | Yes | Numeric keypad | Must be > initial |
-| Horas Horómetro | Number (Read-only) | Yes | Auto-calculated | Final - Initial |
+| Field             | Type               | Required | Input Method    | Validation             |
+| ----------------- | ------------------ | -------- | --------------- | ---------------------- |
+| Horómetro Inicial | Number             | Yes      | Numeric keypad  | Must be ≥ last reading |
+| Horómetro Final   | Number             | Yes      | Numeric keypad  | Must be > initial      |
+| Horas Horómetro   | Number (Read-only) | Yes      | Auto-calculated | Final - Initial        |
 
 **IF equipment has Odómetro (Odometer)**:
 
-| Field | Type | Required | Input Method | Validation |
-|-------|------|----------|--------------|------------|
-| Odómetro Inicial (km) | Number | Yes | Numeric keypad | Must be ≥ last reading |
-| Odómetro Final (km) | Number | Yes | Numeric keypad | Must be > initial |
-| Kilómetros Recorridos | Number (Read-only) | Yes | Auto-calculated | Final - Initial |
+| Field                 | Type               | Required | Input Method    | Validation             |
+| --------------------- | ------------------ | -------- | --------------- | ---------------------- |
+| Odómetro Inicial (km) | Number             | Yes      | Numeric keypad  | Must be ≥ last reading |
+| Odómetro Final (km)   | Number             | Yes      | Numeric keypad  | Must be > initial      |
+| Kilómetros Recorridos | Number (Read-only) | Yes      | Auto-calculated | Final - Initial        |
 
 **Section 5: Fuel Consumption**
 
-| Field | Type | Required | Input Method | Notes |
-|-------|------|----------|--------------|-------|
-| Combustible Consumido | Number (decimal) | Yes | Numeric keypad | In gallons or liters (configurable) |
-| Tipo de Combustible | Dropdown | Yes | Tap selection | Diesel, Gasolina 90, 95, 97 |
-| Lugar de Abastecimiento | Text | No | Text input | Gas station name/location |
+| Field                   | Type             | Required | Input Method   | Notes                               |
+| ----------------------- | ---------------- | -------- | -------------- | ----------------------------------- |
+| Combustible Consumido   | Number (decimal) | Yes      | Numeric keypad | In gallons or liters (configurable) |
+| Tipo de Combustible     | Dropdown         | Yes      | Tap selection  | Diesel, Gasolina 90, 95, 97         |
+| Lugar de Abastecimiento | Text             | No       | Text input     | Gas station name/location           |
 
 **Section 6: Work Description**
 
-| Field | Type | Required | Input Method | Notes |
-|-------|------|----------|--------------|-------|
-| Actividad Realizada | Dropdown | Yes | Tap selection | Pre-defined activities: Excavación, Compactación, Transporte, etc. |
-| Ubicación/Progresiva | Text | Yes | Text input or GPS | Work location (e.g., "KM 45+500") |
-| Descripción Adicional | Textarea | No | Text input | Additional notes |
+| Field                 | Type     | Required | Input Method      | Notes                                                              |
+| --------------------- | -------- | -------- | ----------------- | ------------------------------------------------------------------ |
+| Actividad Realizada   | Dropdown | Yes      | Tap selection     | Pre-defined activities: Excavación, Compactación, Transporte, etc. |
+| Ubicación/Progresiva  | Text     | Yes      | Text input or GPS | Work location (e.g., "KM 45+500")                                  |
+| Descripción Adicional | Textarea | No       | Text input        | Additional notes                                                   |
 
 **Section 7: Equipment Condition & Incidents**
 
-| Field | Type | Required | Input Method | Notes |
-|-------|------|----------|--------------|-------|
-| Estado del Equipo | Radio Buttons | Yes | Large tap targets | Operativo, Requiere Revisión, Averiado |
-| Observaciones | Textarea | No | Text input | Any issues, damage, anomalies |
-| Fotos | Image Upload | No | Camera/Gallery | Up to 5 photos |
+| Field             | Type          | Required | Input Method      | Notes                                  |
+| ----------------- | ------------- | -------- | ----------------- | -------------------------------------- |
+| Estado del Equipo | Radio Buttons | Yes      | Large tap targets | Operativo, Requiere Revisión, Averiado |
+| Observaciones     | Textarea      | No       | Text input        | Any issues, damage, anomalies          |
+| Fotos             | Image Upload  | No       | Camera/Gallery    | Up to 5 photos                         |
 
 #### 4.3.2 Form Validations
 
 **Client-Side (Real-time)**:
+
 - Start time < End time
 - Final readings > Initial readings
 - Final readings ≥ Last report's final readings
@@ -1249,6 +1308,7 @@ Ref: [Control Panel](../../docs/images/CONCEPT-002/0002-Control_Panel.jpeg)
 - Required fields highlighted if empty
 
 **Server-Side (On Submit)**:
+
 - Duplicate report check (same operator, equipment, date)
 - Reading consistency check across reports
 - Fuel consumption within expected range (alert if excessive)
@@ -1275,30 +1335,31 @@ Ref: [Control Panel](../../docs/images/CONCEPT-002/0002-Control_Panel.jpeg)
 
 **Action Behaviors**:
 
-| Action | Behavior | Offline Support |
-|--------|----------|-----------------|
-| Guardar Borrador | Saves form data locally, can be resumed later | ✅ Yes |
-| Enviar Reporte | Validates + Submits to server, marks as complete | ❌ No (queues if offline) |
-| Cancelar | Returns to control panel, prompts if unsaved changes | ✅ Yes |
+| Action           | Behavior                                             | Offline Support           |
+| ---------------- | ---------------------------------------------------- | ------------------------- |
+| Guardar Borrador | Saves form data locally, can be resumed later        | ✅ Yes                    |
+| Enviar Reporte   | Validates + Submits to server, marks as complete     | ❌ No (queues if offline) |
+| Cancelar         | Returns to control panel, prompts if unsaved changes | ✅ Yes                    |
 
 ---
 
 ### 4.4 Offline Functionality
 
 **Requirements**:
+
 - Operator can fill out forms without internet
 - Forms saved in local storage (IndexedDB)
 - Visual indicator showing online/offline status
 - Automatic sync when connection restored
-[Parte Diario](../../docs/Formato_Parte_diario_de_equipos.pdf)
-**Sync Indicator** (Top-right corner):
+  [Parte Diario](../../docs/Formato_Parte_diario_de_equipos.pdf)
+  **Sync Indicator** (Top-right corner):
 
-| Status | Icon | Color | Meaning |
-|--------|------|-------|---------|
-| Online | 🟢 WiFi | Green | Connected, live sync |
-| Offline | 🔴 WiFi with X | Red | No connection, local only |
-| Syncing | 🔄 | Blue | Uploading pending reports |
-| Sync Error | ⚠️ | Yellow | Some reports failed to sync |
+| Status     | Icon           | Color  | Meaning                     |
+| ---------- | -------------- | ------ | --------------------------- |
+| Online     | 🟢 WiFi        | Green  | Connected, live sync        |
+| Offline    | 🔴 WiFi with X | Red    | No connection, local only   |
+| Syncing    | 🔄             | Blue   | Uploading pending reports   |
+| Sync Error | ⚠️             | Yellow | Some reports failed to sync |
 
 **Sync Queue** (Background Process):
 
@@ -1321,6 +1382,7 @@ WHEN connection detected:
 ```
 
 **User Notifications**:
+
 - "✓ 3 reportes enviados exitosamente" (3 reports sent successfully)
 - "⚠️ 1 reporte pendiente de envío" (1 report pending submission)
 - "❌ Error al enviar reporte [ID]. Intente nuevamente." (Error sending report)
@@ -1349,17 +1411,20 @@ WHEN connection detected:
 ```
 
 **Report Status**:
+
 - 📝 Borrador (Draft) - Can edit freely
 - 📤 Enviado (Submitted) - Awaiting approval
 - ✅ Aprobado (Approved) - Cannot edit
 - ❌ Rechazado (Rejected) - Can edit and resubmit
 
 **Actions**:
+
 - **Ver Detalle**: Opens read-only view of report
 - **Editar**: Opens form for editing (only if status = Borrador or Rechazado)
 - **Eliminar**: Deletes draft report (only if status = Borrador)
 
 **Filters**:
+
 - Por Fecha (Date range)
 - Por Equipo (Equipment)
 - Por Estado (Status)
@@ -1371,6 +1436,7 @@ WHEN connection detected:
 **Screen**: Mi Perfil (My Profile)
 
 **Display Information** (Read-only for operator):
+
 - Full Name
 - Employee ID
 - Photo
@@ -1382,6 +1448,7 @@ WHEN connection detected:
 - Performance Summary (if applicable)
 
 **Actions**:
+
 - 📷 Actualizar Foto (Update Photo)
 - 📞 Actualizar Teléfono (Update Phone)
 - 🔐 Cambiar Contraseña (Change Password)
@@ -1400,6 +1467,7 @@ WHEN connection detected:
 | 07/11/25 | Juan P. | EXC-001 | 8.5 | 25.3 gal | Pendiente | [Aprobar] [Rechazar] [Ver] |
 
 **Bulk Actions**:
+
 - ✓ Aprobar Seleccionados (Approve Selected)
 - ❌ Rechazar Seleccionados (Reject Selected)
 
@@ -1424,6 +1492,7 @@ En Revisión (Under Review)
 ```
 
 **Rejection Reasons** (Required when rejecting):
+
 - Inconsistent readings
 - Missing information
 - Fuel consumption anomaly
@@ -1433,6 +1502,7 @@ En Revisión (Under Review)
 
 **Notification to Operator**:
 When report rejected:
+
 - Push notification: "Reporte del 07/11 rechazado. Motivo: [Reason]"
 - Email notification (if configured)
 - Report status updated in mobile app
@@ -1453,6 +1523,7 @@ When report rejected:
 ### 5.2 Planned KPI Categories
 
 **Equipment Performance KPIs**:
+
 - Equipment utilization rate (%)
 - Average hours per day per equipment
 - Maintenance frequency
@@ -1460,18 +1531,21 @@ When report rejected:
 - Cost per operating hour
 
 **Operator Performance KPIs**:
+
 - Daily report submission rate (%)
 - Average hours worked per operator
 - Fuel efficiency by operator
 - Equipment handling incidents
 
 **Financial KPIs**:
+
 - Monthly equipment cost trends
 - Cost per project
 - Contract vs. actual costs
 - Provider payment timeline
 
 **Operational KPIs**:
+
 - Project progress (based on equipment usage)
 - Equipment availability by location
 - Contract expiration alerts
@@ -1484,6 +1558,7 @@ When report rejected:
 ### 6.1 Authentication & Authorization
 
 **Login Requirements**:
+
 - Secure login (username/password, 2FA optional)
 - Session timeout after 30 minutes of inactivity
 - "Remember Me" functionality (7-day cookie)
@@ -1493,23 +1568,23 @@ When report rejected:
 
 **Role-Based Access Control (RBAC)**:
 
-| Role | Modules Access | Permissions |
-|------|----------------|-------------|
-| Company Director | All modules | Read all, Write all, Approve all |
-| Project Director | Operational modules (per project) | Read all, Write limited, Approve limited |
-| Equipment Manager | Equipment, Contracts, Valuations | Read all, Write all, Approve valuations |
-| Finance User | Contracts, Valuations, Reports | Read all, Approve valuations, Generate PDFs |
-| Operator | Mobile app only (Daily Reports) | Read own, Write own reports |
-| HR Manager | RRHH module, Operator profiles | Read all, Write all, Manage users |
+| Role              | Modules Access                    | Permissions                                 |
+| ----------------- | --------------------------------- | ------------------------------------------- |
+| Company Director  | All modules                       | Read all, Write all, Approve all            |
+| Project Director  | Operational modules (per project) | Read all, Write limited, Approve limited    |
+| Equipment Manager | Equipment, Contracts, Valuations  | Read all, Write all, Approve valuations     |
+| Finance User      | Contracts, Valuations, Reports    | Read all, Approve valuations, Generate PDFs |
+| Operator          | Mobile app only (Daily Reports)   | Read own, Write own reports                 |
+| HR Manager        | RRHH module, Operator profiles    | Read all, Write all, Manage users           |
 
 **Permission Matrix**:
 
-| Resource | Create | Read | Update | Delete | Approve |
-|----------|--------|------|--------|--------|---------|
-| Equipment | Mgr+ | All | Mgr+ | Dir+ | N/A |
-| Contracts | Mgr+ | All | Mgr+ | Dir+ | Dir+ |
-| Daily Reports | Operator | Mgr+ | Operator | Mgr+ | Mgr+ |
-| Valuations | System | Mgr+ | Mgr+ | Dir+ | Finance+ |
+| Resource      | Create   | Read | Update   | Delete | Approve  |
+| ------------- | -------- | ---- | -------- | ------ | -------- |
+| Equipment     | Mgr+     | All  | Mgr+     | Dir+   | N/A      |
+| Contracts     | Mgr+     | All  | Mgr+     | Dir+   | Dir+     |
+| Daily Reports | Operator | Mgr+ | Operator | Mgr+   | Mgr+     |
+| Valuations    | System   | Mgr+ | Mgr+     | Dir+   | Finance+ |
 
 ---
 
@@ -1517,18 +1592,19 @@ When report rejected:
 
 **Notification Types**:
 
-| Event | Recipients | Channel | Priority |
-|-------|------------|---------|----------|
-| Contract expiring in 30 days | Equipment Mgr, Project Dir | Email, Dashboard | Medium |
-| Contract expiring in 7 days | Equipment Mgr, Project Dir | Email, SMS, Dashboard | High |
-| Maintenance due in 7 days | Equipment Mgr, Assigned Operator | Dashboard, Mobile Push | Medium |
-| Maintenance overdue | Equipment Mgr, Project Dir | Email, SMS, Dashboard | Critical |
-| Daily report rejected | Operator | Mobile Push, Email | Medium |
-| Valuation ready for approval | Finance, Project Dir | Email, Dashboard | Medium |
-| New equipment added | Equipment Mgr team | Dashboard | Low |
-| Equipment status changed | Project Dir, Equipment Mgr | Dashboard | Low |
+| Event                        | Recipients                       | Channel                | Priority |
+| ---------------------------- | -------------------------------- | ---------------------- | -------- |
+| Contract expiring in 30 days | Equipment Mgr, Project Dir       | Email, Dashboard       | Medium   |
+| Contract expiring in 7 days  | Equipment Mgr, Project Dir       | Email, SMS, Dashboard  | High     |
+| Maintenance due in 7 days    | Equipment Mgr, Assigned Operator | Dashboard, Mobile Push | Medium   |
+| Maintenance overdue          | Equipment Mgr, Project Dir       | Email, SMS, Dashboard  | Critical |
+| Daily report rejected        | Operator                         | Mobile Push, Email     | Medium   |
+| Valuation ready for approval | Finance, Project Dir             | Email, Dashboard       | Medium   |
+| New equipment added          | Equipment Mgr team               | Dashboard              | Low      |
+| Equipment status changed     | Project Dir, Equipment Mgr       | Dashboard              | Low      |
 
 **Notification Preferences**:
+
 - Users can configure notification channels per event type
 - "Do Not Disturb" mode (outside work hours)
 - Digest mode (daily summary email)
@@ -1538,6 +1614,7 @@ When report rejected:
 ### 6.3 Audit Trail & Logging
 
 **Requirements**:
+
 - Log all CRUD operations (who, what, when, from where)
 - Track all logins/logouts
 - Record all approval/rejection actions
@@ -1561,6 +1638,7 @@ When report rejected:
 | Error Message | If failure, reason |
 
 **Audit Log Access**:
+
 - Company Directors: Full access
 - Auditors: Read-only access
 - Retention: 7 years minimum (compliance requirement)
@@ -1570,12 +1648,14 @@ When report rejected:
 ### 6.4 Data Export & Reporting
 
 **Export Formats**:
+
 - Excel (.xlsx) - All tables
 - CSV - All tables
 - PDF - Reports, Valuations, Contracts
 - JSON - API data exports
 
 **Standard Reports**:
+
 1. Equipment Inventory Report
 2. Monthly Valuation Summary
 3. Contract Expiration Report
@@ -1585,6 +1665,7 @@ When report rejected:
 7. Daily Reports Compilation
 
 **Report Scheduling**:
+
 - Automated generation (daily, weekly, monthly)
 - Email delivery to distribution list
 - FTP/SFTP upload (if integrated with accounting system)
@@ -1594,12 +1675,14 @@ When report rejected:
 ### 6.5 Multi-Project & Multi-Company Support
 
 **Project Management**:
+
 - Users can be assigned to multiple projects
 - Each project has its own equipment, operators, contracts
 - Data is isolated per project (no cross-project visibility except for directors)
 - Project selector in UI for multi-project users
 
 **Company/Organization Hierarchy**:
+
 ```
 Bitcorp (Parent Company)
 ├── Subsidiary A
@@ -1611,6 +1694,7 @@ Bitcorp (Parent Company)
 ```
 
 **Data Isolation**:
+
 - Company Directors see all subsidiaries
 - Subsidiary Directors see only their subsidiary's projects
 - Project Directors see only their assigned projects
@@ -1620,10 +1704,12 @@ Bitcorp (Parent Company)
 ### 6.6 Language & Localization
 
 **Supported Languages**:
+
 - Spanish (Primary, default)
 - English (Secondary)
 
 **Localization Requirements**:
+
 - UI text, labels, buttons in both languages
 - Date formats: DD/MM/YYYY (Peru standard)
 - Currency: S/ (Soles) and $ (USD)
@@ -1631,6 +1717,7 @@ Bitcorp (Parent Company)
 - Time format: 24-hour (HH:mm)
 
 **Language Switching**:
+
 - User preference saved in profile
 - Language selector in settings
 - Language persists across sessions
@@ -1640,6 +1727,7 @@ Bitcorp (Parent Company)
 ### 6.7 Data Backup & Recovery
 
 **Backup Requirements**:
+
 - Automated daily backups (full database)
 - Incremental backups every 6 hours
 - Backup retention: 30 days online, 1 year archive
@@ -1647,6 +1735,7 @@ Bitcorp (Parent Company)
 - Encrypted backups
 
 **Recovery Procedures**:
+
 - Point-in-time recovery capability
 - Maximum 4-hour data loss acceptable (RPO = 4 hours)
 - Maximum 2-hour downtime acceptable (RTO = 2 hours)
@@ -1668,12 +1757,14 @@ Bitcorp (Parent Company)
 | Daily report submission | 3 seconds |
 
 **Scalability**:
+
 - Support 500+ concurrent users
 - Handle 10,000+ equipment records
 - Process 1,000+ daily reports per day
 - Store 5+ years of historical data
 
 **Availability**:
+
 - 99.5% uptime during business hours (6 AM - 10 PM local time)
 - Planned maintenance windows: Sundays 2 AM - 6 AM
 - Maximum 2 hours unplanned downtime per month
@@ -1683,6 +1774,7 @@ Bitcorp (Parent Company)
 ### 6.9 Security Requirements
 
 **Data Security**:
+
 - Encryption at rest (database, file storage)
 - Encryption in transit (HTTPS/TLS 1.3)
 - Regular security audits (quarterly)
@@ -1690,6 +1782,7 @@ Bitcorp (Parent Company)
 - Penetration testing (annually)
 
 **Application Security**:
+
 - Input validation and sanitization (prevent SQL injection, XSS)
 - CSRF protection
 - Rate limiting on API endpoints
@@ -1697,6 +1790,7 @@ Bitcorp (Parent Company)
 - Content Security Policy (CSP) headers
 
 **Compliance**:
+
 - GDPR compliance (if applicable)
 - Peru data protection laws (Ley de Protección de Datos Personales)
 - SOC 2 Type II (if hosted/cloud)
@@ -1708,30 +1802,35 @@ Bitcorp (Parent Company)
 ### 7.1 Future Integrations (Not in Phase 1)
 
 **Accounting Systems**:
+
 - Export valuations to accounting software (e.g., SAP, Odoo, ContaSOL)
 - Sync contract data for budgeting
 - Payment tracking and reconciliation
 - Automatic invoice generation
 
 **HR/Payroll Systems**:
+
 - Sync operator information
 - Export operator hours for payroll calculation
 - Track certifications and license expirations
 - Performance data integration
 
 **GPS/Fleet Management**:
+
 - Real-time equipment location tracking
 - Geofencing for work zones
 - Route optimization
 - Automatic odometer readings
 
 **IoT/Telematics**:
+
 - Automatic hour meter readings from equipment sensors
 - Real-time fuel consumption monitoring
 - Engine diagnostics and fault codes
 - Predictive maintenance alerts
 
 **Document Management Systems**:
+
 - Store and retrieve contract PDFs
 - Equipment documentation repository
 - Certificate and license storage
@@ -1773,6 +1872,7 @@ Bitcorp (Parent Company)
 ```
 
 **Color Scheme**:
+
 - Primary: Company brand color (to be defined)
 - Secondary: Complementary color
 - Success: Green (#4CAF50)
@@ -1782,12 +1882,14 @@ Bitcorp (Parent Company)
 - Neutral: Gray shades (#757575, #BDBDBD, #E0E0E0)
 
 **Typography**:
+
 - Headings: Roboto Bold, 18-24pt
 - Body: Roboto Regular, 14pt
 - Small text: Roboto Regular, 12pt
 - Monospace (codes): Roboto Mono, 14pt
 
 **Spacing**:
+
 - Consistent 8px grid system
 - Card padding: 16px
 - Section margins: 24px
@@ -1800,6 +1902,7 @@ Bitcorp (Parent Company)
 **Technology**: Progressive Web App (PWA) or React Native
 
 **Design Principles**:
+
 - Mobile-first, touch-optimized
 - Large tap targets (minimum 44x44px)
 - Minimal text entry
@@ -1827,6 +1930,7 @@ Bitcorp (Parent Company)
 ```
 
 **Input Components**:
+
 - **Numbers**: Large numeric keypad
 - **Time**: Clock-style picker or scrollable time selector
 - **Date**: Calendar view picker
@@ -1839,6 +1943,7 @@ Bitcorp (Parent Company)
 ### 8.3 Accessibility Requirements
 
 **WCAG 2.1 Level AA Compliance**:
+
 - Keyboard navigation support (all functions accessible via keyboard)
 - Screen reader compatibility (proper ARIA labels)
 - Color contrast ratio ≥ 4.5:1 for normal text
@@ -1849,6 +1954,7 @@ Bitcorp (Parent Company)
 - Alternative text for all images and icons
 
 **Multi-device Support**:
+
 - Desktop: 1920x1080, 1366x768 (primary resolutions)
 - Tablet: iPad (768x1024), Android tablets
 - Mobile: iPhone (various), Android phones (360x640 minimum)
@@ -1896,7 +2002,7 @@ TABLE equipment (
   proyecto_actual_id UUID,
   ubicacion_actual VARCHAR(255),
   is_active BOOLEAN DEFAULT TRUE,
-  
+
   FOREIGN KEY (proyecto_actual_id) REFERENCES proyectos(id)
 );
 
@@ -1934,7 +2040,7 @@ TABLE contratos (
   fecha_actualizacion TIMESTAMP,
   actualizado_por VARCHAR(100),
   is_active BOOLEAN DEFAULT TRUE,
-  
+
   FOREIGN KEY (equipo_id) REFERENCES equipment(id),
   FOREIGN KEY (proveedor_ruc) REFERENCES proveedores(ruc)
 );
@@ -1961,7 +2067,7 @@ TABLE adendas (
   fecha_creacion TIMESTAMP DEFAULT NOW(),
   creado_por VARCHAR(100),
   is_active BOOLEAN DEFAULT TRUE,
-  
+
   FOREIGN KEY (contrato_id) REFERENCES contratos(id)
 );
 
@@ -1980,7 +2086,7 @@ TABLE daily_reports (
   hora_inicio TIME NOT NULL,
   hora_fin TIME NOT NULL,
   minutos_descanso INT DEFAULT 0,
-  horas_trabajadas DECIMAL(4,2) GENERATED ALWAYS AS 
+  horas_trabajadas DECIMAL(4,2) GENERATED ALWAYS AS
     ((hora_fin - hora_inicio) / 3600.0 - minutos_descanso / 60.0) STORED,
   horometro_inicial DECIMAL(10,2),
   horometro_final DECIMAL(10,2),
@@ -2006,11 +2112,11 @@ TABLE daily_reports (
   fecha_actualizacion TIMESTAMP,
   actualizado_por VARCHAR(100),
   synced BOOLEAN DEFAULT FALSE,
-  
+
   FOREIGN KEY (equipo_id) REFERENCES equipment(id),
   FOREIGN KEY (operador_id) REFERENCES operadores(id),
   FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
-  
+
   CONSTRAINT unique_daily_report UNIQUE (fecha, equipo_id, operador_id)
 );
 
@@ -2048,12 +2154,12 @@ TABLE valorizaciones (
   fecha_aprobacion TIMESTAMP,
   aprobado_por VARCHAR(100),
   observaciones TEXT,
-  
+
   FOREIGN KEY (equipo_id) REFERENCES equipment(id),
   FOREIGN KEY (contrato_id) REFERENCES contratos(id),
   FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
   FOREIGN KEY (proveedor_ruc) REFERENCES proveedores(ruc),
-  
+
   CONSTRAINT unique_valorizacion UNIQUE (periodo_mes, periodo_año, equipo_id)
 );
 
@@ -2090,7 +2196,7 @@ TABLE operadores (
   fecha_actualizacion TIMESTAMP,
   actualizado_por VARCHAR(100),
   is_active BOOLEAN DEFAULT TRUE,
-  
+
   FOREIGN KEY (usuario_id) REFERENCES users(id)
 );
 
@@ -2120,7 +2226,7 @@ TABLE proyectos (
   fecha_creacion TIMESTAMP DEFAULT NOW(),
   creado_por VARCHAR(100),
   is_active BOOLEAN DEFAULT TRUE,
-  
+
   FOREIGN KEY (director_proyecto_id) REFERENCES users(id),
   FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 );
@@ -2209,7 +2315,7 @@ TABLE mantenimientos (
   horometro_actual DECIMAL(10,2),
   fecha_creacion TIMESTAMP DEFAULT NOW(),
   creado_por VARCHAR(100),
-  
+
   FOREIGN KEY (equipo_id) REFERENCES equipment(id),
   FOREIGN KEY (tecnico_responsable_id) REFERENCES users(id)
 );
@@ -2237,7 +2343,7 @@ TABLE audit_logs (
   device VARCHAR(50), -- 'desktop', 'mobile', 'tablet'
   result VARCHAR(50), -- 'success', 'failure'
   error_message TEXT,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -2252,6 +2358,7 @@ CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
 ### 9.2 Database Relationships
 
 **Key Relationships**:
+
 1. Equipment → Contracts (1:Many) - One equipment can have multiple contracts over time
 2. Contracts → Addendums (1:Many) - One contract can have multiple addendums
 3. Equipment → Daily Reports (1:Many) - One equipment has many daily reports
@@ -2270,6 +2377,7 @@ CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
 ### 10.1 API Design Principles
 
 **RESTful API Standards**:
+
 - Base URL: `https://api.bitcorp.com/v1`
 - Use HTTP verbs correctly (GET, POST, PUT, PATCH, DELETE)
 - Use plural nouns for resources (`/equipment`, `/contracts`, `/daily-reports`)
@@ -2281,7 +2389,8 @@ CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
 
 **Authentication**: JWT Bearer Token in Authorization header
 
-**Rate Limiting**: 
+**Rate Limiting**:
+
 - 100 requests per minute per user (standard)
 - 1000 requests per minute per user (admin)
 
@@ -2427,9 +2536,9 @@ POST /v1/valuations/bulk-pdf
 
 GET /v1/valuations/summary
   Query Params: month, year, projectId, providerId
-  Response: { 
-    totalAmount: number, 
-    equipmentCount: number, 
+  Response: {
+    totalAmount: number,
+    equipmentCount: number,
     byProvider: ProviderSummary[],
     byEquipment: EquipmentSummary[]
   }
@@ -2483,6 +2592,7 @@ PUT /v1/operators/me/profile
 ```
 
 **HTTP Status Codes**:
+
 - 200: Success
 - 201: Created
 - 204: No Content (successful deletion)
@@ -2507,6 +2617,7 @@ PUT /v1/operators/me/profile
 **Technologies**: Jest (backend), Jasmine/Karma (frontend)
 
 **What to Test**:
+
 - All business logic functions
 - Data validation functions
 - Calculation algorithms (valuation, hours, etc.)
@@ -2515,6 +2626,7 @@ PUT /v1/operators/me/profile
 - Database repositories (with mocked DB)
 
 **Test Naming Convention**:
+
 ```typescript
 describe('EquipmentService', () => {
   describe('createEquipment', () => {
@@ -2534,6 +2646,7 @@ describe('EquipmentService', () => {
 **Technologies**: Supertest (Node.js), Playwright Test (API Testing)
 
 **What to Test**:
+
 - API endpoint responses
 - Database transactions
 - Authentication/authorization

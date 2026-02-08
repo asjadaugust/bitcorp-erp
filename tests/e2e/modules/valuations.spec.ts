@@ -37,13 +37,13 @@ test.describe('Valuations Module', () => {
     await page.fill('input#period_end', `${randomYear}-01-31`);
     await page.fill('input#amount', '1000');
     await page.selectOption('select#status', 'pending');
-    
+
     // Wait for button to be enabled
     const submitBtn = page.locator('button:has-text("Crear Valorización")');
     await expect(submitBtn).toBeEnabled();
 
     await submitBtn.click();
-    
+
     // Should redirect back to list
     await expect(page).toHaveURL(/\/equipment\/valuations/);
     await expect(page.locator('table')).toBeVisible();

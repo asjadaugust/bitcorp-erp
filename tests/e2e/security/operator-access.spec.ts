@@ -6,7 +6,7 @@ test.describe('Security Access Control', () => {
     await page.fill('input[name="username"]', 'operator1');
     await page.fill('input[name="password"]', 'demo123');
     await page.click('button[type="submit"]');
-    
+
     // Should land on operator dashboard
     await expect(page).toHaveURL('/operator/dashboard');
   });
@@ -21,7 +21,7 @@ test.describe('Security Access Control', () => {
 
     // Try to access admin dashboard
     await page.goto('/dashboard');
-    
+
     // Should be redirected back to operator dashboard
     await expect(page).toHaveURL('/operator/dashboard');
   });
@@ -36,7 +36,7 @@ test.describe('Security Access Control', () => {
 
     // Try to access equipment list
     await page.goto('/equipment');
-    
+
     // Should be redirected back to operator dashboard
     await expect(page).toHaveURL('/operator/dashboard');
   });

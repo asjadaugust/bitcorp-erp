@@ -11,8 +11,8 @@ test.describe('Equipment Module', () => {
   });
 
   test.fixme('should create a new equipment', async ({ page, isMobile }) => {
-    page.on('console', msg => console.log(`BROWSER: ${msg.text()}`));
-    
+    page.on('console', (msg) => console.log(`BROWSER: ${msg.text()}`));
+
     // Navigate to Equipment module
     if (isMobile) {
       await page.goto('/equipment');
@@ -24,7 +24,7 @@ test.describe('Equipment Module', () => {
     // Click "Agregar Equipo" button
     await page.getByRole('button', { name: 'Agregar Equipo' }).click();
     await page.waitForURL('/equipment/new');
-    
+
     // Fill form
     const randomCode = `EQ-${Math.floor(Math.random() * 10000)}`;
     await page.fill('input[formControlName="code"]', randomCode);
@@ -33,14 +33,14 @@ test.describe('Equipment Module', () => {
     await page.fill('input[formControlName="model"]', '320D');
     await page.selectOption('select[formControlName="status"]', 'available');
     await page.selectOption('select[formControlName="categoria_equipo"]', 'Excavadora');
-    
+
     // Optional fields
     await page.fill('input[formControlName="año_fabricacion"]', '2023');
     await page.fill('input[formControlName="placa"]', 'ABC-123');
     await page.fill('input[formControlName="location"]', 'Site A');
     await page.fill('input[formControlName="hourmeter_reading"]', '1500');
     await page.selectOption('select[formControlName="tipo_combustible"]', 'diesel');
-    
+
     // Submit form
     const submitBtn = page.locator('button:has-text("Crear Equipo")');
     await expect(submitBtn).toBeEnabled();

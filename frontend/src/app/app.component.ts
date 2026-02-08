@@ -10,7 +10,7 @@ import { OfflineIndicatorComponent } from './shared/components/offline-indicator
   template: `
     <app-offline-indicator></app-offline-indicator>
     <router-outlet></router-outlet>
-  `
+  `,
 })
 export class AppComponent implements OnInit {
   private swService = inject(ServiceWorkerService);

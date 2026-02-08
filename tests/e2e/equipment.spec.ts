@@ -23,16 +23,19 @@ test.describe('Equipment Management', () => {
   test('should view equipment details', async ({ page }) => {
     // Wait for table to load
     await page.waitForSelector('.equipment-table tbody tr', { timeout: 10000 });
-    
+
     // Click on the "View Details" button in the first row
     // The button has title="View Details"
-    const viewButton = page.locator('.equipment-table tbody tr').first().locator('button[title="View Details"]');
+    const viewButton = page
+      .locator('.equipment-table tbody tr')
+      .first()
+      .locator('button[title="View Details"]');
     await expect(viewButton).toBeVisible();
-    
+
     // Wait for navigation
     await Promise.all([
       page.waitForURL(/\/equipment\/[a-zA-Z0-9-]+/, { timeout: 10000 }),
-      viewButton.click({ force: true })
+      viewButton.click({ force: true }),
     ]);
 
     await expect(page.locator('h1')).toBeVisible();

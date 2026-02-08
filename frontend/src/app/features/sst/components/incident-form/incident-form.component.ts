@@ -29,12 +29,9 @@ import { SstService } from '../../services/sst.service';
         </div>
         <div class="header-actions">
           <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="form.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Reportar Incidente' }}
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
+            <i class="fa-solid fa-save"></i>
+            {{ isEditMode ? 'Guardar Cambios' : 'Reportar Incidente' }}
           </button>
         </div>
       </div>
@@ -48,23 +45,13 @@ import { SstService } from '../../services/sst.service';
             <div class="section-grid">
               <div class="form-group">
                 <label for="date">Fecha *</label>
-                <input
-                  id="date"
-                  type="date"
-                  formControlName="date"
-                  class="form-control"
-                />
+                <input id="date" type="date" formControlName="date" class="form-control" />
                 <div class="error-msg" *ngIf="hasError('date')">Fecha es requerida</div>
               </div>
 
               <div class="form-group">
                 <label for="time">Hora *</label>
-                <input
-                  id="time"
-                  type="time"
-                  formControlName="time"
-                  class="form-control"
-                />
+                <input id="time" type="time" formControlName="time" class="form-control" />
                 <div class="error-msg" *ngIf="hasError('time')">Hora es requerida</div>
               </div>
 
@@ -112,7 +99,9 @@ import { SstService } from '../../services/sst.service';
                   rows="4"
                   placeholder="Describa detalladamente qué sucedió..."
                 ></textarea>
-                <div class="error-msg" *ngIf="hasError('description')">Descripción es requerida</div>
+                <div class="error-msg" *ngIf="hasError('description')">
+                  Descripción es requerida
+                </div>
               </div>
 
               <div class="form-group full-width">
@@ -324,7 +313,7 @@ export class IncidentFormComponent implements OnInit {
       location: ['', Validators.required],
       description: ['', Validators.required],
       involvedPersons: [''],
-      actions: ['']
+      actions: [''],
     });
   }
 
@@ -339,7 +328,7 @@ export class IncidentFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error loading incident');
-      }
+      },
     });
   }
 
@@ -349,10 +338,11 @@ export class IncidentFormComponent implements OnInit {
       return;
     }
     this.loading = true;
-    const req = this.isEditMode && this.incidentId
-      ? this.sstService.updateIncident(this.incidentId, this.form.value)
-      : this.sstService.createIncident(this.form.value);
-    
+    const req =
+      this.isEditMode && this.incidentId
+        ? this.sstService.updateIncident(this.incidentId, this.form.value)
+        : this.sstService.createIncident(this.form.value);
+
     req.subscribe({
       next: () => {
         this.router.navigate(['/sst']);
@@ -360,7 +350,7 @@ export class IncidentFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error saving incident');
-      }
+      },
     });
   }
 

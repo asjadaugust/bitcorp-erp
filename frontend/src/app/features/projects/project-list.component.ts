@@ -22,7 +22,6 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-  
 
 @Component({
   selector: 'app-project-list',
@@ -35,7 +34,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
-    ActionsContainerComponent
+    ActionsContainerComponent,
   ],
   template: `
     <app-page-layout
@@ -330,12 +329,8 @@ export class ProjectListComponent implements OnInit {
       'Fecha Inicio': project.fechaInicio
         ? new Date(project.fechaInicio).toLocaleDateString('es-PE')
         : '',
-      'Fecha Fin': project.fechaFin
-        ? new Date(project.fechaFin).toLocaleDateString('es-PE')
-        : '',
-      'Presupuesto Total': project.presupuesto
-        ? `S/ ${project.presupuesto.toFixed(2)}`
-        : '',
+      'Fecha Fin': project.fechaFin ? new Date(project.fechaFin).toLocaleDateString('es-PE') : '',
+      'Presupuesto Total': project.presupuesto ? `S/ ${project.presupuesto.toFixed(2)}` : '',
       Estado: project.estado || '',
       Descripción: project.descripcion || '',
       Activo: project.isActive ? 'Sí' : 'No',
@@ -363,12 +358,8 @@ export class ProjectListComponent implements OnInit {
       'Fecha Inicio': project.fechaInicio
         ? new Date(project.fechaInicio).toLocaleDateString('es-PE')
         : '',
-      'Fecha Fin': project.fechaFin
-        ? new Date(project.fechaFin).toLocaleDateString('es-PE')
-        : '',
-      'Presupuesto Total': project.presupuesto
-        ? `S/ ${project.presupuesto.toFixed(2)}`
-        : '',
+      'Fecha Fin': project.fechaFin ? new Date(project.fechaFin).toLocaleDateString('es-PE') : '',
+      'Presupuesto Total': project.presupuesto ? `S/ ${project.presupuesto.toFixed(2)}` : '',
       Estado: project.estado || '',
       Descripción: project.descripcion || '',
       Activo: project.isActive ? 'Sí' : 'No',

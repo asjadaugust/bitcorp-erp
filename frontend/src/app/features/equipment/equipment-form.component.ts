@@ -14,13 +14,47 @@ import { OperatorService } from '../../core/services/operator.service';
 import { Equipment } from '../../core/models/equipment.model';
 import { Provider } from '../../core/models/provider.model';
 import { Operator } from '../../core/models/operator.model';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-equipment-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-container">
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors
+        *ngIf="validationErrors.length > 0"
+        [errors]="validationErrors"
+        [fieldLabels]="fieldLabels"
+      >
+      </app-validation-errors>
+
+      <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" [dismissible]="true">
+      </app-alert>
+
+      <app-alert
+        *ngIf="successMessage"
+        type="success"
+        [message]="successMessage"
+        [dismissible]="true"
+        [autoDismiss]="true"
+        [autoDismissDelay]="1500"
+      >
+      </app-alert>
+
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -589,6 +623,7 @@ export class EquipmentFormComponent implements OnInit {
   private operatorService = inject(OperatorService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   equipmentForm: FormGroup;
   isEditMode = false;
@@ -597,6 +632,27 @@ export class EquipmentFormComponent implements OnInit {
   providers: Provider[] = [];
   operators: Operator[] = [];
   equipmentDocuments: any[] = [];
+  validationErrors: ValidationError[] = [];
+  errorMessage = '';
+  successMessage = '';
+
+  fieldLabels: Record<string, string> = {
+    codigo_equipo: 'Código de Equipo',
+    marca: 'Marca',
+    modelo: 'Modelo',
+    placa: 'Placa',
+    categoria: 'Categoría',
+    estado: 'Estado',
+    proveedor_id: 'Proveedor',
+    anio_fabricacion: 'Año de Fabricación',
+    potencia_neta: 'Potencia Neta',
+    tipo_motor: 'Tipo de Motor',
+    medidor_uso: 'Tipo de Medidor',
+    numero_serie_equipo: 'Número de Serie del Equipo',
+    numero_chasis: 'Número de Chasis',
+    numero_serie_motor: 'Número de Serie del Motor',
+    notes: 'Notas',
+  };
 
   constructor() {
     this.equipmentForm = this.fb.group({
@@ -706,11 +762,11 @@ export class EquipmentFormComponent implements OnInit {
           estado: equipment.estado,
           categoria: equipment.categoria,
           proveedor_id: equipment.proveedor_id,
-          anio_fabricacion: equipment.manufacture_year,
+          anio_fabricacion: equipment.anio_fabricacion,
           placa: equipment.placa,
-          medidor_uso: equipment.meter_type,
-          potencia_neta: equipment.net_power,
-          tipo_motor: equipment.engine_type,
+          medidor_uso: equipment.medidor_uso,
+          potencia_neta: equipment.potencia_neta,
+          tipo_motor: equipment.tipo_motor,
           numero_serie_equipo: equipment.serial_number,
           numero_chasis: equipment.chassis_number,
           numero_serie_motor: equipment.engine_serial_number,
@@ -726,9 +782,16 @@ export class EquipmentFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.equipmentForm.invalid) return;
+    if (this.equipmentForm.invalid) {
+      this.equipmentForm.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
+    this.validationErrors = [];
+    this.errorMessage = '';
+    this.successMessage = '';
+
     const equipmentData = this.equipmentForm.value;
 
     const request$ =
@@ -738,11 +801,19 @@ export class EquipmentFormComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.router.navigate(['/equipment']);
+        this.loading = false;
+        this.successMessage = this.isEditMode
+          ? 'Equipo actualizado exitosamente'
+          : 'Equipo creado exitosamente';
+
+        setTimeout(() => {
+          this.router.navigate(['/equipment']);
+        }, 1500);
       },
       error: (err) => {
-        console.error('Error saving equipment', err);
         this.loading = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

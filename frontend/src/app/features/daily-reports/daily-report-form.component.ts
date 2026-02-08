@@ -8,13 +8,40 @@ import { AuthService } from '../../core/services/auth.service';
 import { GpsService, GpsPosition } from '../../core/services/gps.service';
 import { CreateDailyReportDto } from '../../core/models/daily-report.model';
 import { Equipment } from '../../core/models/equipment.model';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-daily-report-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ValidationErrorsComponent, AlertComponent],
   template: `
     <div class="daily-report-form-container">
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors
+        *ngIf="validationErrors.length > 0"
+        [errors]="validationErrors"
+        [fieldLabels]="fieldLabels"
+      >
+      </app-validation-errors>
+
+      <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" [dismissible]="true">
+      </app-alert>
+
+      <app-alert
+        *ngIf="successMessage"
+        type="success"
+        [message]="successMessage"
+        [dismissible]="true"
+        [autoDismiss]="true"
+        [autoDismissDelay]="2000"
+      >
+      </app-alert>
+
       <div class="mobile-header">
         <button class="back-btn" (click)="goBack()">←</button>
         <h1>{{ isReadOnly ? 'Detalles del Parte' : reportId ? 'Editar Parte' : 'Nuevo Parte' }}</h1>
@@ -69,7 +96,7 @@ import { Equipment } from '../../core/models/equipment.model';
                   [disabled]="isReadOnly"
                 >
                   <option value="">Seleccionar Equipo</option>
-                  <option *ngFor="let eq of equipment" [value]="eq.id">
+                  <option *ngFor="let eq of equipment" [ngValue]="eq.id">
                     {{ eq.code }} - {{ eq.name }}
                   </option>
                 </select>
@@ -384,14 +411,6 @@ import { Equipment } from '../../core/models/equipment.model';
                 {{ uploadingPhotos ? 'Subiendo...' : 'Subir Fotos Seleccionadas' }}
               </button>
             </div>
-          </div>
-
-          <div *ngIf="errorMessage" class="alert alert-error">
-            {{ errorMessage }}
-          </div>
-
-          <div *ngIf="successMessage" class="alert alert-success">
-            {{ successMessage }}
           </div>
 
           <div class="form-actions" *ngIf="!isReadOnly">
@@ -716,11 +735,12 @@ export class DailyReportFormComponent implements OnInit {
   private gpsService = inject(GpsService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   report: CreateDailyReportDto = {
     fecha_parte: new Date().toISOString().split('T')[0],
-    trabajador_id: '',
-    equipo_id: '',
+    trabajador_id: 0,
+    equipo_id: 0,
     hora_inicio: '',
     hora_fin: '',
     horometro_inicial: 0,
@@ -730,13 +750,33 @@ export class DailyReportFormComponent implements OnInit {
     estado: 'BORRADOR',
   };
 
+  validationErrors: ValidationError[] = [];
+  errorMessage = '';
+  successMessage = '';
+
+  fieldLabels: Record<string, string> = {
+    fecha_parte: 'Fecha del Parte',
+    trabajador_id: 'Operador',
+    equipo_id: 'Equipo',
+    proyecto_id: 'Proyecto',
+    horometro_inicial: 'Horómetro Inicial',
+    horometro_final: 'Horómetro Final',
+    odometro_inicial: 'Odómetro Inicial',
+    odometro_final: 'Odómetro Final',
+    horas_trabajadas: 'Horas Trabajadas',
+    diesel_gln: 'Diesel (Galones)',
+    gasolina_gln: 'Gasolina (Galones)',
+    lugar_salida: 'Lugar de Salida',
+    lugar_llegada: 'Lugar de Llegada',
+    observaciones: 'Observaciones',
+    estado: 'Estado',
+  };
+
   equipment: Equipment[] = [];
   selectedEquipment: Equipment | null = null;
   loading = false;
   saving = false;
   downloadingPdf = false;
-  errorMessage = '';
-  successMessage = '';
 
   // GPS properties
   gpsPosition: GpsPosition | null = null;
@@ -788,7 +828,7 @@ export class DailyReportFormComponent implements OnInit {
         // Trigger equipment selection logic to set initial values if needed
         // But we should be careful not to overwrite report values with current equipment values
         this.selectedEquipment =
-          this.equipment.find((eq) => String(eq.id) === String(this.report.equipo_id)) || null;
+          this.equipment.find((eq) => eq.id === this.report.equipo_id) || null;
       },
       error: (error) => {
         this.errorMessage = 'Error al cargar el parte';
@@ -811,17 +851,17 @@ export class DailyReportFormComponent implements OnInit {
   loadOperatorId(): void {
     const user = this.authService.currentUser;
     if (user) {
-      this.report.trabajador_id = String(user.id);
+      this.report.trabajador_id = Number(user.id);
     }
   }
 
   onEquipmentChange(): void {
-    const selected = this.equipment.find((eq) => String(eq.id) === String(this.report.equipo_id));
+    const selected = this.equipment.find((eq) => eq.id === this.report.equipo_id);
     if (selected) {
       this.selectedEquipment = selected;
       if (!this.reportId) {
         // Only set hourmeter if creating new
-        this.report.horometro_inicial = Number(selected.meter_type) || 0;
+        this.report.horometro_inicial = Number(selected.medidor_uso) || 0;
       }
     }
   }
@@ -889,6 +929,7 @@ export class DailyReportFormComponent implements OnInit {
   }
 
   private submitToServer(): void {
+    this.validationErrors = [];
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -898,6 +939,7 @@ export class DailyReportFormComponent implements OnInit {
 
     request$.subscribe({
       next: (response: any) => {
+        this.saving = false;
         if (response && response.offline) {
           this.successMessage =
             response.message || 'Parte guardado offline. Se sincronizará cuando esté en línea.';
@@ -907,15 +949,15 @@ export class DailyReportFormComponent implements OnInit {
               ? '¡Borrador guardado exitosamente!'
               : '¡Parte enviado exitosamente!';
         }
-        this.saving = false;
 
         setTimeout(() => {
           this.router.navigate(['/equipment/daily-reports']);
         }, 2000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.error || 'Error al guardar el parte';
         this.saving = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(error);
+        this.errorMessage = this.errorHandler.getErrorMessage(error);
       },
     });
   }

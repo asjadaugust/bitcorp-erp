@@ -22,7 +22,7 @@ test.describe('Operator Module', () => {
     // Click "Nuevo Operador" button
     await page.click('button:has-text("Nuevo Operador")');
     await page.waitForURL('/operators/new');
-    
+
     // Fill form
     const randomId = Math.floor(Math.random() * 10000);
     await page.fill('input[name="first_name"]', `Test${randomId}`);
@@ -32,16 +32,16 @@ test.describe('Operator Module', () => {
     await page.selectOption('select[name="status"]', 'active');
     await page.fill('input[name="employment_start_date"]', '2023-01-01');
     await page.fill('input[name="hourly_rate"]', '25');
-    
+
     // Optional fields
     await page.fill('input[name="license_number"]', `LIC-${randomId}`);
-    
+
     // Submit form
     await page.click('button:has-text("Save Operator")');
 
     // Verify success message
     await expect(page.locator('.alert-success')).toContainText('Operator created successfully!');
-    
+
     // Verify redirection to list
     await page.waitForURL('/operators');
 

@@ -24,7 +24,7 @@ export interface ReportPhoto {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PhotoService {
   private apiUrl = `${environment.apiUrl}/reports`;
@@ -34,23 +34,23 @@ export class PhotoService {
   uploadPhoto(data: PhotoUploadData): Observable<any> {
     const formData = new FormData();
     formData.append('photo', data.file);
-    
+
     if (data.caption) {
       formData.append('caption', data.caption);
     }
-    
+
     if (data.latitude !== undefined) {
       formData.append('latitude', data.latitude.toString());
     }
-    
+
     if (data.longitude !== undefined) {
       formData.append('longitude', data.longitude.toString());
     }
-    
+
     if (data.gpsAccuracy !== undefined) {
       formData.append('gpsAccuracy', data.gpsAccuracy.toString());
     }
-    
+
     if (data.photoTimestamp) {
       formData.append('photoTimestamp', data.photoTimestamp.toISOString());
     }
@@ -77,7 +77,7 @@ export class PhotoService {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               gpsAccuracy: position.coords.accuracy,
-              photoTimestamp: new Date()
+              photoTimestamp: new Date(),
             });
           },
           (error) => {
@@ -86,13 +86,13 @@ export class PhotoService {
             resolve({
               reportId: '',
               file,
-              photoTimestamp: new Date()
+              photoTimestamp: new Date(),
             });
           },
           {
             enableHighAccuracy: true,
             timeout: 10000,
-            maximumAge: 0
+            maximumAge: 0,
           }
         );
       } else {
@@ -100,7 +100,7 @@ export class PhotoService {
         resolve({
           reportId: '',
           file,
-          photoTimestamp: new Date()
+          photoTimestamp: new Date(),
         });
       }
     });
@@ -109,10 +109,10 @@ export class PhotoService {
   compressImage(file: File, maxWidth: number = 1920, quality: number = 0.8): Promise<File> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e: any) => {
         const img = new Image();
-        
+
         img.onload = () => {
           const canvas = document.createElement('canvas');
           let width = img.width;
@@ -134,7 +134,7 @@ export class PhotoService {
               if (blob) {
                 const compressedFile = new File([blob], file.name, {
                   type: 'image/jpeg',
-                  lastModified: Date.now()
+                  lastModified: Date.now(),
                 });
                 resolve(compressedFile);
               } else {

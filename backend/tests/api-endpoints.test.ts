@@ -16,15 +16,13 @@ describe('Bitcorp ERP API Endpoints', () => {
   beforeAll(async () => {
     // Ensure database connection
     await sequelize.authenticate();
-    
+
     // Login to get token
-    const loginResponse = await request(app)
-      .post('/api/auth/login')
-      .send({
-        username: 'admin',
-        password: 'admin123'
-      });
-    
+    const loginResponse = await request(app).post('/api/auth/login').send({
+      username: 'admin',
+      password: 'admin123',
+    });
+
     expect(loginResponse.status).toBe(200);
     authToken = loginResponse.body.token;
     adminUserId = loginResponse.body.user.id;
@@ -40,12 +38,10 @@ describe('Bitcorp ERP API Endpoints', () => {
 
   describe('POST /api/auth/login', () => {
     it('should login successfully with valid credentials', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: 'admin',
-          password: 'admin123'
-        });
+      const response = await request(app).post('/api/auth/login').send({
+        username: 'admin',
+        password: 'admin123',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -54,12 +50,10 @@ describe('Bitcorp ERP API Endpoints', () => {
     });
 
     it('should reject login with invalid credentials', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          username: 'admin',
-          password: 'wrongpassword'
-        });
+      const response = await request(app).post('/api/auth/login').send({
+        username: 'admin',
+        password: 'wrongpassword',
+      });
 
       expect(response.status).toBe(401);
     });
@@ -101,7 +95,7 @@ describe('Bitcorp ERP API Endpoints', () => {
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-      
+
       // Snapshot test
       expect(response.body.data[0]).toMatchSnapshot({
         id: expect.any(Number),
@@ -134,7 +128,7 @@ describe('Bitcorp ERP API Endpoints', () => {
         anio_fabricacion: 2023,
         tipo_motor: 'DIESEL',
         medidor_uso: 'HOROMETRO',
-        estado: 'DISPONIBLE'
+        estado: 'DISPONIBLE',
       };
 
       const response = await request(app)
@@ -175,7 +169,7 @@ describe('Bitcorp ERP API Endpoints', () => {
         cargo: 'Operador de Prueba',
         especialidad: 'Testing',
         tipo_contrato: 'PLAZO_FIJO',
-        fecha_ingreso: '2024-01-01'
+        fecha_ingreso: '2024-01-01',
       };
 
       const response = await request(app)

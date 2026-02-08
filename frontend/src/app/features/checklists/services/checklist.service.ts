@@ -78,7 +78,10 @@ export class ChecklistService {
     return this.http.post<EquipmentChecklist>(this.apiUrl, dto);
   }
 
-  updateChecklist(id: string, updates: Partial<EquipmentChecklist>): Observable<EquipmentChecklist> {
+  updateChecklist(
+    id: string,
+    updates: Partial<EquipmentChecklist>
+  ): Observable<EquipmentChecklist> {
     return this.http.put<EquipmentChecklist>(`${this.apiUrl}/${id}`, updates);
   }
 
@@ -108,9 +111,8 @@ export class ChecklistService {
 
   getEquipmentChecklistHistory(equipmentId: string, limit = 10): Observable<EquipmentChecklist[]> {
     const params = new HttpParams().set('limit', String(limit));
-    return this.http.get<EquipmentChecklist[]>(
-      `${this.apiUrl}/equipment/${equipmentId}/history`,
-      { params }
-    );
+    return this.http.get<EquipmentChecklist[]>(`${this.apiUrl}/equipment/${equipmentId}/history`, {
+      params,
+    });
   }
 }

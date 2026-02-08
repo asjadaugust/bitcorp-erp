@@ -63,7 +63,7 @@ export interface Provider {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdministrationService {
   private http = inject(HttpClient);
@@ -144,12 +144,20 @@ export class AdministrationService {
     return this.http.delete<void>(`${this.psUrl}/${id}`);
   }
 
-  addPaymentScheduleDetail(scheduleId: number, data: { accounts_payable_id: number; amount_to_pay: number }): Observable<PaymentScheduleDetail> {
+  addPaymentScheduleDetail(
+    scheduleId: number,
+    data: { accounts_payable_id: number; amount_to_pay: number }
+  ): Observable<PaymentScheduleDetail> {
     return this.http.post<PaymentScheduleDetail>(`${this.psUrl}/${scheduleId}/details`, data);
   }
 
-  removePaymentScheduleDetail(scheduleId: number, detailId: number): Observable<{success: boolean}> {
-    return this.http.delete<{success: boolean}>(`${this.psUrl}/${scheduleId}/details/${detailId}`);
+  removePaymentScheduleDetail(
+    scheduleId: number,
+    detailId: number
+  ): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.psUrl}/${scheduleId}/details/${detailId}`
+    );
   }
 
   // Workflow actions

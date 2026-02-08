@@ -21,9 +21,11 @@ test.describe('Finance & Admin Modules', () => {
     });
 
     test('should create a new provider', async ({ page }) => {
-      page.on('console', msg => console.log(`BROWSER: ${msg.text()}`));
-      page.on('pageerror', err => console.log(`BROWSER ERROR: ${err}`));
-      page.on('requestfailed', request => console.log(`REQUEST FAILED: ${request.url()} ${request.failure()?.errorText}`));
+      page.on('console', (msg) => console.log(`BROWSER: ${msg.text()}`));
+      page.on('pageerror', (err) => console.log(`BROWSER ERROR: ${err}`));
+      page.on('requestfailed', (request) =>
+        console.log(`REQUEST FAILED: ${request.url()} ${request.failure()?.errorText}`)
+      );
 
       await page.goto('/providers');
       await page.click('button:has-text("Nuevo Proveedor")');
@@ -35,9 +37,9 @@ test.describe('Finance & Admin Modules', () => {
       await page.fill('input#tax_id', ruc);
       await page.selectOption('select#provider_type', 'rental');
       await page.selectOption('select#status', 'active');
-      
+
       await page.click('button:has-text("Crear Proveedor")');
-      
+
       await expect(page).toHaveURL('/providers');
       await expect(page.locator('table')).toContainText(ruc);
     });
@@ -62,7 +64,7 @@ test.describe('Finance & Admin Modules', () => {
       const contractCode = `CTR-${Date.now()}`;
       await page.fill('input#numero_contrato', contractCode);
       await page.fill('input#fecha_contrato', '2025-01-01');
-      
+
       // Select first available equipment and provider
       await page.locator('select#equipment_id').selectOption({ index: 1 });
       await page.locator('select#provider_id').selectOption({ index: 1 });
@@ -73,9 +75,9 @@ test.describe('Finance & Admin Modules', () => {
       await page.selectOption('select#tipo_tarifa', 'hourly');
       await page.fill('input#tarifa', '150');
       await page.selectOption('select#estado', 'active');
-      
+
       await page.click('button:has-text("Crear Contrato")');
-      
+
       await expect(page).toHaveURL('/contracts');
       await expect(page.locator('table')).toContainText(contractCode);
     });

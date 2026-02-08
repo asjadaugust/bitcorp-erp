@@ -19,7 +19,7 @@ test.describe('Daily Reports Approval Flow', () => {
     // Click "Nuevo Parte Diario" card
     await page.click('a[href="/operator/daily-report"]');
     await page.waitForURL('**/operator/daily-report');
-    
+
     // Fill Form
     // Select Project
     await page.waitForSelector('select[formControlName="projectId"]');
@@ -28,17 +28,17 @@ test.describe('Daily Reports Approval Flow', () => {
     // Select Equipment (first one)
     await page.waitForSelector('select[formControlName="equipmentId"]');
     await page.selectOption('select[formControlName="equipmentId"]', { index: 1 });
-    
+
     await page.fill('input[formControlName="startTime"]', '08:00');
     await page.fill('input[formControlName="endTime"]', '17:00');
     await page.fill('input[formControlName="horometerStart"]', '100');
     await page.fill('input[formControlName="horometerEnd"]', '108');
     await page.fill('input[formControlName="manualLocation"]', 'Site A');
     await page.fill('textarea[formControlName="workDescription"]', 'Excavation work');
-    
+
     // Submit
     await page.click('button:has-text("📤 Enviar Parte")');
-    
+
     // Wait for success message or redirection
     await page.waitForURL('**/operator/dashboard');
     console.log('Report submitted.');
@@ -62,34 +62,34 @@ test.describe('Daily Reports Approval Flow', () => {
     console.log('Approving report...');
     await page.goto('/daily-reports');
     await page.waitForURL('**/daily-reports');
-    
+
     // Wait for reports to load
     await page.waitForSelector('.report-card');
-    
+
     // Find the report we just created. It should be "submitted".
     // We can filter by status "submitted" to be sure.
     // Use specific selector for the status filter
-    await page.selectOption('select', 'submitted'); 
-    
+    await page.selectOption('select', 'submitted');
+
     // Wait for filter to apply
     await page.waitForTimeout(1000);
-    
+
     // Click Approve on the first card
     // Use force: true in case it's covered or animating
     await page.click('button:has-text("✓ Approve")', { force: true });
-    
+
     // Verify status changes to Approved
     // We might need to wait for the list to reload
     await page.waitForTimeout(2000);
-    
+
     // Check if the badge says "approved"
     // Since we filtered by "submitted", it might disappear from the list if we keep the filter.
     // Let's clear the filter or select "approved".
     await page.selectOption('select', 'approved');
-    
+
     // Wait for filter to apply
     await page.waitForTimeout(1000);
-    
+
     // Verify we see a report (assuming it's the one we just approved)
     await expect(page.locator('.badge-approved').first()).toBeVisible();
     console.log('Report approved.');

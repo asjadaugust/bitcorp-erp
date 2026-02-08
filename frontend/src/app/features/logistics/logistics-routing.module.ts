@@ -13,28 +13,24 @@ const routes: Routes = [
   { path: 'movements', component: MovementListComponent },
   { path: 'movements/new', component: MovementFormComponent },
   { path: 'movements/:id', component: MovementFormComponent },
-  
+
   // Fuel Routes
   {
     path: 'fuel',
-    loadComponent: () =>
-      import('../fuel/fuel-list.component').then((m) => m.FuelListComponent),
+    loadComponent: () => import('../fuel/fuel-list.component').then((m) => m.FuelListComponent),
   },
   {
     path: 'fuel/new',
-    loadComponent: () =>
-      import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
+    loadComponent: () => import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
   },
   {
     path: 'fuel/:id',
-    loadComponent: () =>
-      import('../fuel/fuel-detail.component').then((m) => m.FuelDetailComponent),
+    loadComponent: () => import('../fuel/fuel-detail.component').then((m) => m.FuelDetailComponent),
   },
   {
     path: 'fuel/:id/edit',
-    loadComponent: () =>
-      import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
-  }
+    loadComponent: () => import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
+  },
 ];
 
 @NgModule({

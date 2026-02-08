@@ -2,7 +2,7 @@ import { Directive, ElementRef, Output, EventEmitter, HostListener, inject } fro
 
 @Directive({
   selector: '[clickOutside]',
-  standalone: true
+  standalone: true,
 })
 export class ClickOutsideDirective {
   private elementRef = inject(ElementRef);

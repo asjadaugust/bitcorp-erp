@@ -4,18 +4,28 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee } from '../../models/employee.model';
-import { AeroTableComponent, TableColumn } from '../../../../core/design-system/table/aero-table.component';
-import { PageLayoutComponent, Breadcrumb, TabItem } from '../../../../shared/components/page-layout/page-layout.component';
-import { FilterBarComponent, FilterConfig } from '../../../../shared/components/filter-bar/filter-bar.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../../../core/design-system/table/aero-table.component';
+import {
+  PageLayoutComponent,
+  Breadcrumb,
+  TabItem,
+} from '../../../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
+    CommonModule,
+    FormsModule,
+    RouterModule,
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
@@ -46,8 +56,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          'dni': dniTemplate,
-          'fullName': fullNameTemplate
+          dni: dniTemplate,
+          fullName: fullNameTemplate,
         }"
       >
       </aero-table>
@@ -74,58 +84,69 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       </ng-template>
     </app-page-layout>
   `,
-  styles: [`
-    .btn {
-      padding: var(--s-8) var(--s-16);
-      border: none;
-      border-radius: var(--s-8);
-      font-size: var(--type-bodySmall-size);
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: var(--s-8);
-      transition: all 0.2s ease;
-    }
-    .btn-primary {
-      background: var(--primary-500);
-      color: var(--neutral-0);
-    }
-    .btn-primary:hover {
-      background: var(--primary-800);
-    }
-    
-    .font-medium { font-weight: 500; }
-    .badge {
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .badge-neutral { background: var(--grey-200); color: var(--grey-700); }
-    
-    .action-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-    .btn-icon {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px 8px;
-      color: var(--grey-500);
-      transition: color 0.2s;
-    }
-    .btn-icon:hover { color: var(--primary-500); }
-    .text-danger:hover { color: var(--semantic-error); }
+  styles: [
+    `
+      .btn {
+        padding: var(--s-8) var(--s-16);
+        border: none;
+        border-radius: var(--s-8);
+        font-size: var(--type-bodySmall-size);
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-8);
+        transition: all 0.2s ease;
+      }
+      .btn-primary {
+        background: var(--primary-500);
+        color: var(--neutral-0);
+      }
+      .btn-primary:hover {
+        background: var(--primary-800);
+      }
 
-    .actions-container {
-      display: flex;
-      gap: var(--s-8);
-      align-items: center;
-    }
-  `]
+      .font-medium {
+        font-weight: 500;
+      }
+      .badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .badge-neutral {
+        background: var(--grey-200);
+        color: var(--grey-700);
+      }
+
+      .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        color: var(--grey-500);
+        transition: color 0.2s;
+      }
+      .btn-icon:hover {
+        color: var(--primary-500);
+      }
+      .text-danger:hover {
+        color: var(--semantic-error);
+      }
+
+      .actions-container {
+        display: flex;
+        gap: var(--s-8);
+        align-items: center;
+      }
+    `,
+  ],
 })
 export class EmployeeListComponent implements OnInit {
   private employeeService = inject(EmployeeService);
@@ -134,16 +155,16 @@ export class EmployeeListComponent implements OnInit {
   employees: Employee[] = [];
   loading = false;
   searchTerm = '';
-  
+
   breadcrumbs: Breadcrumb[] = [
     { label: 'Dashboard', url: '/app' },
     { label: 'RRHH', url: '/rrhh' },
-    { label: 'Personal' }
+    { label: 'Personal' },
   ];
 
   tabs: TabItem[] = [
     { label: 'Dashboard', route: '/rrhh', icon: 'fa-chart-pie' },
-    { label: 'Personal', route: '/rrhh/employees', icon: 'fa-users' }
+    { label: 'Personal', route: '/rrhh/employees', icon: 'fa-users' },
   ];
 
   filterConfig: FilterConfig[] = [
@@ -151,17 +172,16 @@ export class EmployeeListComponent implements OnInit {
       type: 'text',
       key: 'search',
       label: 'Buscar',
-      placeholder: 'Buscar por nombre o DNI...'
-    }
+      placeholder: 'Buscar por nombre o DNI...',
+    },
   ];
-
 
   columns: TableColumn[] = [
     { key: 'dni', label: 'DNI', type: 'template' },
     { key: 'fullName', label: 'Nombre Completo', type: 'template' },
     { key: 'mobile1', label: 'Celular', type: 'text' },
     { key: 'email1', label: 'Email', type: 'text' },
-    { key: 'role', label: 'Cargo/Rol', type: 'text' }
+    { key: 'role', label: 'Cargo/Rol', type: 'text' },
   ];
 
   ngOnInit(): void {
@@ -178,7 +198,7 @@ export class EmployeeListComponent implements OnInit {
       error: (err) => {
         console.error('Error loading employees', err);
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -201,7 +221,7 @@ export class EmployeeListComponent implements OnInit {
         next: () => {
           this.loadEmployees();
         },
-        error: (err) => console.error('Error deleting employee', err)
+        error: (err) => console.error('Error deleting employee', err),
       });
     }
   }

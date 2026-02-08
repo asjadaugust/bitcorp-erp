@@ -1,18 +1,18 @@
 export interface DailyReport {
-  id: string;
+  id: number;
   numero_parte?: string;
   fecha_parte: string;
-  trabajador_id: string;
+  trabajador_id: number;
   trabajador_nombre?: string;
   trabajador_dni?: string;
   trabajador_licencia?: string;
-  equipo_id: string;
+  equipo_id: number;
   codigo_equipo?: string;
   equipo_nombre?: string;
   equipo_marca?: string;
   equipo_modelo?: string;
   equipo_placa?: string;
-  proyecto_id?: string;
+  proyecto_id?: number;
   proyecto_nombre?: string;
   proyecto_codigo?: string;
   contrato_id?: string;
@@ -108,9 +108,9 @@ export interface EventCheckbox {
 
 export interface CreateDailyReportDto {
   fecha_parte: string;
-  trabajador_id: string;
-  equipo_id: string;
-  proyecto_id?: string;
+  trabajador_id: number;
+  equipo_id: number;
+  proyecto_id?: number;
   contrato_id?: string;
   shift?: 'day' | 'night';
   hora_inicio: string;

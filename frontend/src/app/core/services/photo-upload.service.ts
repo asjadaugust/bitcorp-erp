@@ -20,11 +20,11 @@ export interface UploadProgress {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PhotoUploadService {
   private readonly API_URL = environment.apiUrl || 'http://localhost:3400/api';
-  
+
   constructor(private http: HttpClient) {}
 
   /**
@@ -37,16 +37,16 @@ export class PhotoUploadService {
       input.type = 'file';
       input.accept = 'image/*';
       input.setAttribute('capture', 'environment'); // Use rear camera
-      
+
       input.onchange = (event: any) => {
         const file = event.target.files?.[0];
         resolve(file || null);
       };
-      
+
       input.oncancel = () => {
         resolve(null);
       };
-      
+
       input.click();
     });
   }
@@ -61,7 +61,7 @@ export class PhotoUploadService {
       maxWidthOrHeight: 1920, // Full HD max
       useWebWorker: true,
       fileType: 'image/jpeg',
-      initialQuality: 0.8
+      initialQuality: 0.8,
     };
 
     try {
@@ -85,47 +85,43 @@ export class PhotoUploadService {
   ): Observable<PhotoUploadResult | UploadProgress> {
     const formData = new FormData();
     const photoFile = new File([photo], filename || `photo_${Date.now()}.jpg`, {
-      type: 'image/jpeg'
+      type: 'image/jpeg',
     });
     formData.append('photos', photoFile);
 
-    return this.http.post<any>(
-      `${this.API_URL}/daily-reports/${reportId}/photos`,
-      formData,
-      {
+    return this.http
+      .post<any>(`${this.API_URL}/daily-reports/${reportId}/photos`, formData, {
         reportProgress: true,
-        observe: 'events'
-      }
-    ).pipe(
-      map((event: HttpEvent<any>) => {
-        if (event.type === HttpEventType.UploadProgress) {
-          const progress = event.total 
-            ? Math.round(100 * (event.loaded / event.total))
-            : 0;
-          return {
-            progress,
-            status: 'uploading' as const,
-            message: `Uploading: ${progress}%`
-          };
-        } else if (event.type === HttpEventType.Response) {
-          const responseData = event.body;
-          return {
-            url: responseData.photos?.[0] || '',
-            size: photoFile.size,
-            originalSize: photoFile.size,
-            compressionRatio: 1
-          } as PhotoUploadResult;
-        }
-        return {
-          progress: 0,
-          status: 'uploading' as const
-        };
-      }),
-      catchError(error => {
-        console.error('Upload error:', error);
-        return throwError(() => new Error('Failed to upload photo'));
+        observe: 'events',
       })
-    );
+      .pipe(
+        map((event: HttpEvent<any>) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const progress = event.total ? Math.round(100 * (event.loaded / event.total)) : 0;
+            return {
+              progress,
+              status: 'uploading' as const,
+              message: `Uploading: ${progress}%`,
+            };
+          } else if (event.type === HttpEventType.Response) {
+            const responseData = event.body;
+            return {
+              url: responseData.photos?.[0] || '',
+              size: photoFile.size,
+              originalSize: photoFile.size,
+              compressionRatio: 1,
+            } as PhotoUploadResult;
+          }
+          return {
+            progress: 0,
+            status: 'uploading' as const,
+          };
+        }),
+        catchError((error) => {
+          console.error('Upload error:', error);
+          return throwError(() => new Error('Failed to upload photo'));
+        })
+      );
   }
 
   /**
@@ -135,7 +131,7 @@ export class PhotoUploadService {
     const options = {
       maxSizeMB: 0.05, // 50KB
       maxWidthOrHeight: 200,
-      useWebWorker: true
+      useWebWorker: true,
     };
 
     try {

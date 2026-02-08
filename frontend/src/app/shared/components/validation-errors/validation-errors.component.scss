@@ -1,0 +1,69 @@
+.validation-errors {
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.error-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.error-header mat-icon {
+  color: #f44336;
+  width: 20px;
+  height: 20px;
+}
+
+.error-title {
+  color: #c62828;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+  color: #b91c1c;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.error-item::before {
+  content: '•';
+  color: #f44336;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.field-label {
+  font-weight: 600;
+  color: #991b1b;
+  flex-shrink: 0;
+}
+
+.error-messages {
+  display: inline;
+}
+
+.error-message {
+  color: #dc2626;
+}
+
+.error-separator {
+  color: #ef4444;
+}

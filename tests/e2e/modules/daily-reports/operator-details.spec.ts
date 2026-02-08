@@ -14,12 +14,12 @@ test.describe('Operator Daily Report Details', () => {
     // Operator can create reports.
     // But easier to use API with admin token or just use the one created in previous test if we knew ID.
     // Let's create one using operator token.
-    
+
     const token = await page.evaluate(() => localStorage.getItem('access_token'));
-    
+
     const newReport = await request.post('/api/reports', {
       headers: {
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
       data: {
         report_date: '2025-01-02',
@@ -32,19 +32,21 @@ test.describe('Operator Daily Report Details', () => {
         hourmeter_end: 118,
         location: 'Test Location',
         work_description: 'Test Work',
-        status: 'draft'
-      }
+        status: 'draft',
+      },
     });
-    
+
     expect(newReport.ok()).toBeTruthy();
     const reportData = await newReport.json();
     const reportId = reportData.data.id;
 
     // 2. Navigate to details view
     await page.goto(`/operator/daily-report/${reportId}`);
-    
+
     // 3. Verify content
     await expect(page.locator('h1')).toContainText('Parte Diario');
-    await expect(page.locator('textarea[formControlName="workDescription"]')).toHaveValue('Test Work');
+    await expect(page.locator('textarea[formControlName="workDescription"]')).toHaveValue(
+      'Test Work'
+    );
   });
 });

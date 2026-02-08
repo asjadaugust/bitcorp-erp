@@ -7,7 +7,7 @@ test.describe('Security Access Control', () => {
     await page.fill('input[name="email"]', 'operador@bitcorp.com');
     await page.fill('input[name="password"]', 'operador123'); // Assuming default password
     await page.click('button[type="submit"]');
-    
+
     // Verify login success (dashboard access)
     await expect(page).toHaveURL('/dashboard');
 

@@ -9,10 +9,9 @@ export interface CsvExportOptions {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CsvExportService {
-
   /**
    * Export data to CSV file
    * @param data Array of objects to export
@@ -29,12 +28,12 @@ export class CsvExportService {
       delimiter = ',',
       includeTimestamp = true,
       columnHeaders,
-      excludeColumns = []
+      excludeColumns = [],
     } = options;
 
     // Transform data
     const transformedData = this.transformData(data, columnHeaders, excludeColumns);
-    
+
     if (transformedData.length === 0) {
       console.warn('No data to export after transformation');
       return;
@@ -42,17 +41,21 @@ export class CsvExportService {
 
     // Get headers
     const headers = Object.keys(transformedData[0]);
-    
+
     // Create CSV content
     let csvContent = headers.join(delimiter) + '\n';
-    
+
     // Add rows
-    transformedData.forEach(row => {
-      const values = headers.map(header => {
+    transformedData.forEach((row) => {
+      const values = headers.map((header) => {
         const value = row[header];
         // Escape quotes and wrap in quotes if contains delimiter or quotes
         const stringValue = value?.toString() || '';
-        if (stringValue.includes(delimiter) || stringValue.includes('"') || stringValue.includes('\n')) {
+        if (
+          stringValue.includes(delimiter) ||
+          stringValue.includes('"') ||
+          stringValue.includes('\n')
+        ) {
           return `"${stringValue.replace(/"/g, '""')}"`;
         }
         return stringValue;
@@ -61,7 +64,7 @@ export class CsvExportService {
     });
 
     // Generate filename with timestamp
-    const timestamp = includeTimestamp 
+    const timestamp = includeTimestamp
       ? `_${new Date().toISOString().split('T')[0]}_${Date.now()}`
       : '';
     const fullFilename = `${filename}${timestamp}.csv`;
@@ -69,7 +72,7 @@ export class CsvExportService {
     // Create blob and download
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    
+
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
@@ -90,10 +93,10 @@ export class CsvExportService {
     columnHeaders?: Record<string, string>,
     excludeColumns: string[] = []
   ): any[] {
-    return data.map(row => {
+    return data.map((row) => {
       const transformedRow: any = {};
 
-      Object.keys(row).forEach(key => {
+      Object.keys(row).forEach((key) => {
         // Skip excluded columns
         if (excludeColumns.includes(key)) return;
 
@@ -135,7 +138,7 @@ export class CsvExportService {
   private formatHeader(key: string): string {
     return key
       .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, str => str.toUpperCase())
+      .replace(/^./, (str) => str.toUpperCase())
       .trim();
   }
 }

@@ -10,7 +10,13 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
 @Component({
   selector: 'app-main-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NotificationDropdownComponent, ClickOutsideDirective],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    NotificationDropdownComponent,
+    ClickOutsideDirective,
+  ],
   template: `
     <nav class="main-nav">
       <div class="nav-left">
@@ -32,7 +38,7 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
               {{ notificationService.unreadCount() }}
             </span>
           </button>
-          
+
           <app-notification-dropdown *ngIf="showNotifications"></app-notification-dropdown>
         </div>
 
@@ -194,7 +200,10 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
         position: relative;
         transition: background 0.2s;
       }
-      .btn-icon:hover { background: var(--grey-100); color: var(--primary-500); }
+      .btn-icon:hover {
+        background: var(--grey-100);
+        color: var(--primary-500);
+      }
 
       .badge {
         position: absolute;

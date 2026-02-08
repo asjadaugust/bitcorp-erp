@@ -24,12 +24,23 @@ import { InventoryService, Product } from '../../services/inventory.service';
           </div>
           <div class="title-group">
             <h1>{{ isEditMode ? 'Editar Producto' : 'Nuevo Producto' }}</h1>
-            <p class="subtitle">{{ isEditMode ? 'Actualizar información del producto' : 'Registrar un nuevo producto en el inventario' }}</p>
+            <p class="subtitle">
+              {{
+                isEditMode
+                  ? 'Actualizar información del producto'
+                  : 'Registrar un nuevo producto en el inventario'
+              }}
+            </p>
           </div>
         </div>
         <div class="header-actions">
           <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button type="submit" form="productForm" class="btn btn-primary" [disabled]="productForm.invalid || submitting">
+          <button
+            type="submit"
+            form="productForm"
+            class="btn btn-primary"
+            [disabled]="productForm.invalid || submitting"
+          >
             <i class="fa-solid fa-save" *ngIf="!submitting"></i>
             <span class="spinner-sm" *ngIf="submitting"></span>
             {{ submitting ? 'Guardando...' : 'Guardar Producto' }}
@@ -153,8 +164,6 @@ import { InventoryService, Product } from '../../services/inventory.service';
               </div>
             </div>
           </div>
-
-
         </form>
       </div>
     </div>

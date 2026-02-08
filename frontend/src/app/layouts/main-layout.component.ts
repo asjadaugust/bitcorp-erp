@@ -21,12 +21,17 @@ import { ProjectSelectorComponent } from './components/project-selector/project-
       <app-main-nav></app-main-nav>
       <app-project-selector></app-project-selector>
       <div class="layout-body">
-        <app-sidebar 
+        <app-sidebar
           *ngIf="showSidebar"
-          [collapsed]="sidebarCollapsed" 
-          (collapsedChange)="onSidebarCollapsedChange($event)">
+          [collapsed]="sidebarCollapsed"
+          (collapsedChange)="onSidebarCollapsedChange($event)"
+        >
         </app-sidebar>
-        <main class="content" [class.sidebar-collapsed]="sidebarCollapsed" [class.no-sidebar]="!showSidebar">
+        <main
+          class="content"
+          [class.sidebar-collapsed]="sidebarCollapsed"
+          [class.no-sidebar]="!showSidebar"
+        >
           <router-outlet></router-outlet>
         </main>
       </div>
@@ -82,7 +87,7 @@ import { ProjectSelectorComponent } from './components/project-selector/project-
 })
 export class MainLayoutComponent implements OnInit {
   private router = inject(Router);
-  
+
   sidebarCollapsed = true; // Start collapsed by default to match sidebar
   showSidebar = true; // Show/hide sidebar based on route
 
@@ -92,7 +97,7 @@ export class MainLayoutComponent implements OnInit {
       window.addEventListener('sidebar-toggle', (e: any) => {
         this.sidebarCollapsed = e.detail.collapsed;
       });
-      
+
       // Listen for mobile toggle
       window.addEventListener('sidebar-toggle-mobile', () => {
         this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -106,7 +111,7 @@ export class MainLayoutComponent implements OnInit {
 
     // Listen to route changes
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.updateSidebarVisibility(event.urlAfterRedirects);
       });

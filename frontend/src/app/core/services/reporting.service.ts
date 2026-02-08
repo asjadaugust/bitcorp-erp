@@ -10,7 +10,11 @@ export class ReportingService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/reporting`;
 
-  getEquipmentUtilization(startDate: string, endDate: string, format: 'json' | 'excel' = 'json'): Observable<any> {
+  getEquipmentUtilization(
+    startDate: string,
+    endDate: string,
+    format: 'json' | 'excel' = 'json'
+  ): Observable<any> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -26,7 +30,11 @@ export class ReportingService {
     return this.http.get<any>(`${this.apiUrl}/equipment-utilization`, { params });
   }
 
-  getMaintenanceHistory(startDate: string, endDate: string, format: 'json' | 'excel' = 'json'): Observable<any> {
+  getMaintenanceHistory(
+    startDate: string,
+    endDate: string,
+    format: 'json' | 'excel' = 'json'
+  ): Observable<any> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -42,7 +50,11 @@ export class ReportingService {
     return this.http.get<any>(`${this.apiUrl}/maintenance`, { params });
   }
 
-  getInventoryMovements(startDate: string, endDate: string, format: 'json' | 'excel' = 'json'): Observable<any> {
+  getInventoryMovements(
+    startDate: string,
+    endDate: string,
+    format: 'json' | 'excel' = 'json'
+  ): Observable<any> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -58,7 +70,11 @@ export class ReportingService {
     return this.http.get<any>(`${this.apiUrl}/inventory`, { params });
   }
 
-  getOperatorTimesheet(startDate: string, endDate: string, format: 'json' | 'excel' = 'json'): Observable<any> {
+  getOperatorTimesheet(
+    startDate: string,
+    endDate: string,
+    format: 'json' | 'excel' = 'json'
+  ): Observable<any> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)

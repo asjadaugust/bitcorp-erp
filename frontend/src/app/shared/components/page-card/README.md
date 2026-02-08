@@ -22,8 +22,8 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
 ### Card with Title and Subtitle
 
 ```typescript
-<app-page-card 
-  title="User Profile" 
+<app-page-card
+  title="User Profile"
   subtitle="Manage your personal information">
   <div class="form-grid">
     <!-- Form fields -->
@@ -39,7 +39,7 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
     <button class="btn btn-primary">Add New</button>
     <button class="btn btn-secondary">Export</button>
   </div>
-  
+
   <!-- Main content -->
   <table>...</table>
 </app-page-card>
@@ -51,7 +51,7 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
 <app-page-card title="Form">
   <!-- Form fields -->
   <input type="text" />
-  
+
   <div footer>
     <button class="btn btn-secondary">Cancel</button>
     <button class="btn btn-primary">Save</button>
@@ -69,23 +69,24 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | `undefined` | Optional card title |
-| `subtitle` | `string` | `undefined` | Optional card subtitle/description |
-| `noPadding` | `boolean` | `false` | Remove padding from card body (useful for tables) |
+| Prop        | Type      | Default     | Description                                       |
+| ----------- | --------- | ----------- | ------------------------------------------------- |
+| `title`     | `string`  | `undefined` | Optional card title                               |
+| `subtitle`  | `string`  | `undefined` | Optional card subtitle/description                |
+| `noPadding` | `boolean` | `false`     | Remove padding from card body (useful for tables) |
 
 ## Content Projection Slots
 
-| Slot | Description |
-|------|-------------|
-| Default slot | Main card body content |
-| `[header-actions]` | Actions displayed in the header (right side) |
-| `[footer]` | Footer content (displayed with gray background) |
+| Slot               | Description                                     |
+| ------------------ | ----------------------------------------------- |
+| Default slot       | Main card body content                          |
+| `[header-actions]` | Actions displayed in the header (right side)    |
+| `[footer]`         | Footer content (displayed with gray background) |
 
 ## Styling
 
 The component uses CSS variables from the design system:
+
 - `--radius-md`: Card border radius
 - `--s-24`, `--s-16`, `--s-8`: Spacing values
 - `--grey-200`, `--grey-700`: Color values
@@ -106,7 +107,7 @@ The component uses CSS variables from the design system:
       </select>
     </div>
   </div>
-  
+
   <div footer>
     <button class="btn btn-primary">Save Preferences</button>
   </div>
@@ -117,8 +118,8 @@ The component uses CSS variables from the design system:
 
 ```typescript
 <app-page-card [noPadding]="true">
-  <aero-table 
-    [columns]="columns" 
+  <aero-table
+    [columns]="columns"
     [data]="filteredData"
     [actionsTemplate]="actions">
   </aero-table>
@@ -128,15 +129,15 @@ The component uses CSS variables from the design system:
 ### Dashboard Widget
 
 ```typescript
-<app-page-card 
-  title="Recent Activity" 
+<app-page-card
+  title="Recent Activity"
   subtitle="Your latest actions">
   <div header-actions>
     <button class="btn-icon" title="Refresh">
       <i class="fa-solid fa-refresh"></i>
     </button>
   </div>
-  
+
   <ul class="activity-list">
     <li *ngFor="let activity of activities">
       {{ activity.description }}
@@ -164,9 +165,7 @@ The component uses CSS variables from the design system:
 ### After (New Pattern)
 
 ```html
-<app-page-card 
-  title="Profile Settings" 
-  subtitle="Manage your profile information">
+<app-page-card title="Profile Settings" subtitle="Manage your profile information">
   <!-- Content -->
 </app-page-card>
 ```

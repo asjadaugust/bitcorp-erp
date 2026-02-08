@@ -10,7 +10,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (token && !req.url.includes('/auth/login') && !req.url.includes('/auth/register')) {
     console.log('Adding token to request:', req.url);
     req = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
+      setHeaders: { Authorization: `Bearer ${token}` },
     });
   } else {
     console.log('No token added to request:', req.url);

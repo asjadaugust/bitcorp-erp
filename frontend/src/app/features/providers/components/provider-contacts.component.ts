@@ -27,7 +27,12 @@ interface Contact {
     <div class="contacts-section">
       <div class="section-header">
         <h3><i class="fa-solid fa-address-book"></i> Contactos</h3>
-        <button type="button" class="btn btn-primary btn-sm" (click)="showForm = !showForm" *ngIf="!showForm">
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          (click)="showForm = !showForm"
+          *ngIf="!showForm"
+        >
           <i class="fa-solid fa-plus"></i> Agregar Contacto
         </button>
       </div>
@@ -38,22 +43,32 @@ interface Contact {
           <div class="form-grid">
             <div class="form-group">
               <label for="contact_name">Nombre Contacto *</label>
-              <input id="contact_name" type="text" formControlName="contact_name" class="form-control">
+              <input
+                id="contact_name"
+                type="text"
+                formControlName="contact_name"
+                class="form-control"
+              />
             </div>
 
             <div class="form-group">
               <label for="position">Cargo</label>
-              <input id="position" type="text" formControlName="position" class="form-control">
+              <input id="position" type="text" formControlName="position" class="form-control" />
             </div>
 
             <div class="form-group">
               <label for="primary_phone">Teléfono Principal</label>
-              <input id="primary_phone" type="tel" formControlName="primary_phone" class="form-control">
+              <input
+                id="primary_phone"
+                type="tel"
+                formControlName="primary_phone"
+                class="form-control"
+              />
             </div>
 
             <div class="form-group">
               <label for="email">Email</label>
-              <input id="email" type="email" formControlName="email" class="form-control">
+              <input id="email" type="email" formControlName="email" class="form-control" />
             </div>
 
             <div class="form-group">
@@ -69,7 +84,7 @@ interface Contact {
 
             <div class="form-group checkbox-group">
               <label>
-                <input type="checkbox" formControlName="is_primary">
+                <input type="checkbox" formControlName="is_primary" />
                 Contacto Principal
               </label>
             </div>
@@ -124,7 +139,8 @@ interface Contact {
       </div>
     </div>
   `,
-  styles: [`
+  styles: [
+    `
     .contacts-section { margin-top: var(--s-24); }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-16); }
     .section-header h3 { font-size: var(--type-h4-size); color: var(--grey-900); display: flex; align-items: center; gap: var(--s-8); }
@@ -151,7 +167,8 @@ interface Contact {
     .card-actions { display: flex; gap: var(--s-8); justify-content: flex-end; }
     .btn-icon { background: none; border: none; cursor: pointer; padding: var(--s-4); color: var(--grey-500); }
     .empty-state { text-align: center; padding: var(--s-48) var(--s-24); color: var(--grey-500); }
-  `]
+  `,
+  ],
 })
 export class ProviderContactsComponent implements OnInit {
   @Input() providerId!: string;
@@ -180,19 +197,22 @@ export class ProviderContactsComponent implements OnInit {
       secondary_email: [''],
       contact_type: ['general', Validators.required],
       is_primary: [false],
-      notes: ['']
+      notes: [''],
     });
   }
 
   loadContacts(): void {
     this.loading = true;
-    this.http.get<Contact[]>(`${environment.apiUrl}/providers/${this.providerId}/contacts`)
+    this.http
+      .get<Contact[]>(`${environment.apiUrl}/providers/${this.providerId}/contacts`)
       .subscribe({
         next: (data) => {
           this.contactsList = data;
           this.loading = false;
         },
-        error: () => { this.loading = false; }
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
@@ -200,14 +220,20 @@ export class ProviderContactsComponent implements OnInit {
     if (this.contactForm.invalid) return;
 
     const request = this.editingId
-      ? this.http.put(`${environment.apiUrl}/providers/contacts/${this.editingId}`, this.contactForm.value)
-      : this.http.post(`${environment.apiUrl}/providers/${this.providerId}/contacts`, this.contactForm.value);
+      ? this.http.put(
+          `${environment.apiUrl}/providers/contacts/${this.editingId}`,
+          this.contactForm.value
+        )
+      : this.http.post(
+          `${environment.apiUrl}/providers/${this.providerId}/contacts`,
+          this.contactForm.value
+        );
 
     request.subscribe({
       next: () => {
         this.loadContacts();
         this.cancelForm();
-      }
+      },
     });
   }
 
@@ -220,7 +246,8 @@ export class ProviderContactsComponent implements OnInit {
   deleteContact(id: number): void {
     if (!confirm('¿Eliminar este contacto?')) return;
 
-    this.http.delete(`${environment.apiUrl}/providers/contacts/${id}`)
+    this.http
+      .delete(`${environment.apiUrl}/providers/contacts/${id}`)
       .subscribe(() => this.loadContacts());
   }
 
@@ -236,7 +263,7 @@ export class ProviderContactsComponent implements OnInit {
       commercial: 'Comercial',
       administrative: 'Administrativo',
       technical: 'Técnico',
-      financial: 'Financiero'
+      financial: 'Financiero',
     };
     return labels[type] || type;
   }

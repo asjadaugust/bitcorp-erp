@@ -39,7 +39,7 @@ export interface BackendUserInfo {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DashboardService {
   private baseUrl = environment.apiUrl;

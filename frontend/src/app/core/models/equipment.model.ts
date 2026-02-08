@@ -16,10 +16,10 @@ export interface Equipment {
   serial_number?: string | null;
   chassis_number?: string | null;
   engine_serial_number?: string | null;
-  manufacture_year?: number | null;
-  net_power?: number | null;
-  engine_type?: string | null;
-  meter_type?: string | null;
+  anio_fabricacion?: number | null;
+  potencia_neta?: number | null;
+  tipo_motor?: string | null;
+  medidor_uso?: string | null;
   created_by?: number | null;
   updated_by?: number | null;
   created_at?: Date | string;

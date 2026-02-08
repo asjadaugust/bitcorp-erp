@@ -1,6 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee } from '../../models/employee.model';
@@ -19,12 +25,23 @@ import { Employee } from '../../models/employee.model';
           </div>
           <div class="title-group">
             <h1>{{ isEditMode ? 'Editar Personal' : 'Nuevo Personal' }}</h1>
-            <p class="subtitle">{{ isEditMode ? 'Actualizar información del personal' : 'Registrar un nuevo empleado en el sistema' }}</p>
+            <p class="subtitle">
+              {{
+                isEditMode
+                  ? 'Actualizar información del personal'
+                  : 'Registrar un nuevo empleado en el sistema'
+              }}
+            </p>
           </div>
         </div>
         <div class="header-actions">
           <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button type="submit" form="employeeForm" class="btn btn-primary" [disabled]="employeeForm.invalid || submitting">
+          <button
+            type="submit"
+            form="employeeForm"
+            class="btn btn-primary"
+            [disabled]="employeeForm.invalid || submitting"
+          >
             <i class="fa-solid fa-save" *ngIf="!submitting"></i>
             <span class="spinner-sm" *ngIf="submitting"></span>
             {{ submitting ? 'Guardando...' : 'Guardar' }}
@@ -40,22 +57,42 @@ import { Employee } from '../../models/employee.model';
             <div class="form-grid">
               <div class="form-group">
                 <label for="dni">DNI / C.EXT <span class="required">*</span></label>
-                <input id="dni" type="text" formControlName="dni" [class.error]="isFieldInvalid('dni')" maxlength="20">
+                <input
+                  id="dni"
+                  type="text"
+                  formControlName="dni"
+                  [class.error]="isFieldInvalid('dni')"
+                  maxlength="20"
+                />
                 <div class="error-message" *ngIf="isFieldInvalid('dni')">DNI es requerido</div>
               </div>
               <div class="form-group">
                 <label for="firstName">Nombres <span class="required">*</span></label>
-                <input id="firstName" type="text" formControlName="firstName" [class.error]="isFieldInvalid('firstName')">
-                <div class="error-message" *ngIf="isFieldInvalid('firstName')">Nombre es requerido</div>
+                <input
+                  id="firstName"
+                  type="text"
+                  formControlName="firstName"
+                  [class.error]="isFieldInvalid('firstName')"
+                />
+                <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+                  Nombre es requerido
+                </div>
               </div>
               <div class="form-group">
                 <label for="lastName">Apellidos <span class="required">*</span></label>
-                <input id="lastName" type="text" formControlName="lastName" [class.error]="isFieldInvalid('lastName')">
-                <div class="error-message" *ngIf="isFieldInvalid('lastName')">Apellido es requerido</div>
+                <input
+                  id="lastName"
+                  type="text"
+                  formControlName="lastName"
+                  [class.error]="isFieldInvalid('lastName')"
+                />
+                <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+                  Apellido es requerido
+                </div>
               </div>
               <div class="form-group">
                 <label for="birthDate">Fecha Nacimiento</label>
-                <input id="birthDate" type="date" formControlName="birthDate">
+                <input id="birthDate" type="date" formControlName="birthDate" />
               </div>
               <div class="form-group">
                 <label for="gender">Sexo</label>
@@ -88,19 +125,19 @@ import { Employee } from '../../models/employee.model';
             <div class="form-grid">
               <div class="form-group">
                 <label for="mobile1">Celular 1</label>
-                <input id="mobile1" type="text" formControlName="mobile1">
+                <input id="mobile1" type="text" formControlName="mobile1" />
               </div>
               <div class="form-group">
                 <label for="mobile2">Celular 2</label>
-                <input id="mobile2" type="text" formControlName="mobile2">
+                <input id="mobile2" type="text" formControlName="mobile2" />
               </div>
               <div class="form-group">
                 <label for="email1">Email Personal</label>
-                <input id="email1" type="email" formControlName="email1">
+                <input id="email1" type="email" formControlName="email1" />
               </div>
               <div class="form-group">
                 <label for="email2">Email Corporativo</label>
-                <input id="email2" type="email" formControlName="email2">
+                <input id="email2" type="email" formControlName="email2" />
               </div>
             </div>
           </div>
@@ -111,15 +148,15 @@ import { Employee } from '../../models/employee.model';
             <div class="form-grid">
               <div class="form-group">
                 <label for="shoeSize">Talla Zapato</label>
-                <input id="shoeSize" type="text" formControlName="shoeSize">
+                <input id="shoeSize" type="text" formControlName="shoeSize" />
               </div>
               <div class="form-group">
                 <label for="pantsSize">Talla Pantalón</label>
-                <input id="pantsSize" type="text" formControlName="pantsSize">
+                <input id="pantsSize" type="text" formControlName="pantsSize" />
               </div>
               <div class="form-group">
                 <label for="shirtSize">Talla Camisa</label>
-                <input id="shirtSize" type="text" formControlName="shirtSize">
+                <input id="shirtSize" type="text" formControlName="shirtSize" />
               </div>
             </div>
           </div>
@@ -131,75 +168,156 @@ import { Employee } from '../../models/employee.model';
               <textarea id="observation" formControlName="observation" rows="4"></textarea>
             </div>
           </div>
-
-
         </form>
       </div>
     </div>
   `,
-  styles: [`
-    .page-container {
-      padding: var(--s-32);
-      background: var(--grey-100);
-      min-height: 100vh;
-    }
-    .page-header { 
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--s-24); 
-    }
-    .header-content {
-      display: flex;
-      align-items: center;
-      gap: var(--s-16);
-    }
-    .icon-wrapper {
-      width: 48px; height: 48px; background: var(--primary-100); color: var(--primary-800);
-      border-radius: var(--s-12); display: flex; align-items: center; justify-content: center; font-size: 20px;
-    }
-    .title-group h1 { margin: 0; font-size: 24px; color: var(--grey-900); }
-    .subtitle { margin: 0; color: var(--grey-500); font-size: 14px; }
-    .header-actions {
-      display: flex;
-      gap: var(--s-12);
-    }
+  styles: [
+    `
+      .page-container {
+        padding: var(--s-32);
+        background: var(--grey-100);
+        min-height: 100vh;
+      }
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--s-24);
+      }
+      .header-content {
+        display: flex;
+        align-items: center;
+        gap: var(--s-16);
+      }
+      .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        background: var(--primary-100);
+        color: var(--primary-800);
+        border-radius: var(--s-12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .title-group h1 {
+        margin: 0;
+        font-size: 24px;
+        color: var(--grey-900);
+      }
+      .subtitle {
+        margin: 0;
+        color: var(--grey-500);
+        font-size: 14px;
+      }
+      .header-actions {
+        display: flex;
+        gap: var(--s-12);
+      }
 
-    .form-container { max-width: 800px; margin: 0 auto; }
-    .form-section {
-      background: var(--neutral-0); border-radius: var(--s-8); box-shadow: var(--shadow-sm);
-      padding: var(--s-24); margin-bottom: var(--s-24);
-    }
-    .section-title {
-      font-size: var(--type-h4-size); color: var(--primary-900); margin-bottom: var(--s-16);
-      padding-bottom: var(--s-8); border-bottom: 1px solid var(--grey-200);
-    }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s-16); }
-    .full-width { grid-column: 1 / -1; }
-    .form-group { margin-bottom: var(--s-16); }
-    .form-group label { display: block; margin-bottom: var(--s-8); font-weight: 600; color: var(--grey-700); }
-    .required { color: var(--semantic-error); }
-    input, select, textarea {
-      width: 100%; padding: var(--s-12); border: 1px solid var(--grey-300); border-radius: var(--s-4);
-      font-size: var(--type-body-size); transition: border-color 0.2s;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-500); }
-    input.error, select.error { border-color: var(--semantic-error); }
-    .error-message { color: var(--semantic-error); font-size: var(--type-label-size); margin-top: var(--s-4); }
+      .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .form-section {
+        background: var(--neutral-0);
+        border-radius: var(--s-8);
+        box-shadow: var(--shadow-sm);
+        padding: var(--s-24);
+        margin-bottom: var(--s-24);
+      }
+      .section-title {
+        font-size: var(--type-h4-size);
+        color: var(--primary-900);
+        margin-bottom: var(--s-16);
+        padding-bottom: var(--s-8);
+        border-bottom: 1px solid var(--grey-200);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--s-16);
+      }
+      .full-width {
+        grid-column: 1 / -1;
+      }
+      .form-group {
+        margin-bottom: var(--s-16);
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: var(--s-8);
+        font-weight: 600;
+        color: var(--grey-700);
+      }
+      .required {
+        color: var(--semantic-error);
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: var(--s-12);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-4);
+        font-size: var(--type-body-size);
+        transition: border-color 0.2s;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-500);
+      }
+      input.error,
+      select.error {
+        border-color: var(--semantic-error);
+      }
+      .error-message {
+        color: var(--semantic-error);
+        font-size: var(--type-label-size);
+        margin-top: var(--s-4);
+      }
 
-    .btn {
-      padding: var(--s-12) var(--s-24); border: none; border-radius: var(--s-4);
-      font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: var(--s-8);
-    }
-    .btn-primary { background: var(--primary-500); color: var(--neutral-0); }
-    .btn-primary:disabled { background: var(--grey-300); cursor: not-allowed; }
-    .btn-secondary { background: var(--neutral-0); border: 1px solid var(--grey-300); color: var(--grey-700); }
-    .spinner-sm {
-      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  `]
+      .btn {
+        padding: var(--s-12) var(--s-24);
+        border: none;
+        border-radius: var(--s-4);
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+      .btn-primary {
+        background: var(--primary-500);
+        color: var(--neutral-0);
+      }
+      .btn-primary:disabled {
+        background: var(--grey-300);
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: var(--neutral-0);
+        border: 1px solid var(--grey-300);
+        color: var(--grey-700);
+      }
+      .spinner-sm {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    `,
+  ],
 })
 export class EmployeeFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -227,7 +345,7 @@ export class EmployeeFormComponent implements OnInit {
       shoeSize: [''],
       pantsSize: [''],
       shirtSize: [''],
-      observation: ['']
+      observation: [''],
     });
   }
 
@@ -245,7 +363,7 @@ export class EmployeeFormComponent implements OnInit {
       next: (employee) => {
         this.employeeForm.patchValue(employee);
       },
-      error: (err) => console.error('Error loading employee', err)
+      error: (err) => console.error('Error loading employee', err),
     });
   }
 
@@ -263,9 +381,10 @@ export class EmployeeFormComponent implements OnInit {
     this.submitting = true;
     const employeeData = this.employeeForm.getRawValue();
 
-    const request = this.isEditMode && this.employeeDni
-      ? this.employeeService.updateEmployee(this.employeeDni, employeeData)
-      : this.employeeService.createEmployee(employeeData);
+    const request =
+      this.isEditMode && this.employeeDni
+        ? this.employeeService.updateEmployee(this.employeeDni, employeeData)
+        : this.employeeService.createEmployee(employeeData);
 
     request.subscribe({
       next: () => {
@@ -276,7 +395,7 @@ export class EmployeeFormComponent implements OnInit {
         console.error('Error saving employee', err);
         this.submitting = false;
         alert('Error al guardar el personal. Verifique los datos.');
-      }
+      },
     });
   }
 

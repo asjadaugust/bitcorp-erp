@@ -5,7 +5,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProjectService } from '../../core/services/project.service';
 import { Project } from '../../core/models/project.model';
 
-
 @Component({
   selector: 'app-project-form',
   standalone: true,
@@ -30,12 +29,16 @@ import { Project } from '../../core/models/project.model';
           </div>
         </div>
         <div class="header-actions">
-          <button type="button" class="btn btn-secondary" (click)="cancel()"> Cancelar
-        </button>
-          <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="projectForm.invalid || loading">
-          <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
-          <i *ngIf="!loading" class="fa-solid fa-save"></i>
-        </button>
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="onSubmit()"
+            [disabled]="projectForm.invalid || loading"
+          >
+            <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
+            <i *ngIf="!loading" class="fa-solid fa-save"></i>
+          </button>
         </div>
       </div>
 
@@ -137,12 +140,7 @@ import { Project } from '../../core/models/project.model';
 
               <div class="form-group">
                 <label for="fechaFin">Fecha de Fin Estimada</label>
-                <input
-                  id="fechaFin"
-                  type="date"
-                  formControlName="fechaFin"
-                  class="form-control"
-                />
+                <input id="fechaFin" type="date" formControlName="fechaFin" class="form-control" />
               </div>
 
               <div class="form-group">

@@ -1,0 +1,17 @@
+<div *ngIf="hasErrors()" class="validation-errors">
+  <div class="error-header">
+    <mat-icon>error_outline</mat-icon>
+    <span class="error-title">Por favor corrige los siguientes errores:</span>
+  </div>
+  <ul class="error-list">
+    <li *ngFor="let error of errors" class="error-item">
+      <span class="field-label">{{ getFieldLabel(error.field) }}:</span>
+      <span class="error-messages">
+        <ng-container *ngFor="let msg of error.errors; let last = last">
+          <span class="error-message">{{ msg }}</span>
+          <span *ngIf="!last" class="error-separator">, </span>
+        </ng-container>
+      </span>
+    </li>
+  </ul>
+</div>

@@ -28,12 +28,12 @@ async function verifyAccountsPayable() {
     const providersRes = await fetch(`${ACCOUNTS_PAYABLE_API_URL}/providers`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    
+
     if (!providersRes.ok) {
-       // If providers endpoint fails, we might need to rely on known ID or skip
-       console.log('⚠️ Could not fetch providers, using default ID 1');
+      // If providers endpoint fails, we might need to rely on known ID or skip
+      console.log('⚠️ Could not fetch providers, using default ID 1');
     }
-    
+
     const providers: any = providersRes.ok ? await providersRes.json() : [];
     const providerId = providers.length > 0 ? providers[0].id : 1;
     console.log(`ℹ️ Using Provider ID: ${providerId}`);
@@ -46,10 +46,10 @@ async function verifyAccountsPayable() {
       document_number: `INV-${Date.now()}`,
       issue_date: new Date().toISOString().split('T')[0],
       due_date: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0], // +30 days
-      amount: 1500.50,
+      amount: 1500.5,
       currency: 'PEN',
       description: 'Test Invoice from Verification Script',
-      tenant_id: 1
+      tenant_id: 1,
     };
 
     const createRes = await fetch(`${ACCOUNTS_PAYABLE_API_URL}/accounts-payable`, {
@@ -84,9 +84,9 @@ async function verifyAccountsPayable() {
     });
     const oneAp: any = await getOneRes.json();
     if (oneAp.id === createdAp.id) {
-        console.log('✅ Fetched correct record');
+      console.log('✅ Fetched correct record');
     } else {
-        console.error('❌ Fetched incorrect record');
+      console.error('❌ Fetched incorrect record');
     }
 
     // 6. Update
@@ -98,20 +98,20 @@ async function verifyAccountsPayable() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        amount: 2000.00,
-        status: 'paid'
+        amount: 2000.0,
+        status: 'paid',
       }),
     });
-    
+
     if (!updateRes.ok) {
-        throw new Error(`Update failed: ${updateRes.statusText}`);
+      throw new Error(`Update failed: ${updateRes.statusText}`);
     }
-    
+
     const updatedAp: any = await updateRes.json();
     if (updatedAp.amount === '2000.00' || updatedAp.amount === 2000) {
-        console.log('✅ Update successful (Amount updated)');
+      console.log('✅ Update successful (Amount updated)');
     } else {
-        console.error('❌ Update failed verification', updatedAp);
+      console.error('❌ Update failed verification', updatedAp);
     }
 
     // 7. Delete
@@ -129,18 +129,20 @@ async function verifyAccountsPayable() {
 
     // 8. Verify Deletion
     console.log('\n8. Verifying Deletion...');
-    const verifyDelRes = await fetch(`${ACCOUNTS_PAYABLE_API_URL}/accounts-payable/${createdAp.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
+    const verifyDelRes = await fetch(
+      `${ACCOUNTS_PAYABLE_API_URL}/accounts-payable/${createdAp.id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
     if (verifyDelRes.status === 404) {
-        console.log('✅ Record correctly not found');
+      console.log('✅ Record correctly not found');
     } else {
-        console.error('❌ Record still exists or error');
+      console.error('❌ Record still exists or error');
     }
 
     console.log('\n🎉 Verification Complete!');
-
   } catch (error) {
     console.error('\n❌ Verification Failed:', error);
     process.exit(1);

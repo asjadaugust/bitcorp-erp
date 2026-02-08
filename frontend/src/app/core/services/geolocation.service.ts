@@ -29,7 +29,7 @@ export interface LocationError {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GeolocationService {
   private currentPosition$ = new BehaviorSubject<Coordinates | null>(null);
@@ -47,11 +47,11 @@ export class GeolocationService {
    */
   getCurrentPosition(options?: PositionOptions): Observable<LocationResult> {
     if (!this.isAvailable()) {
-      return new Observable(observer => {
+      return new Observable((observer) => {
         observer.error({
           code: 0,
           message: 'Geolocation not available',
-          userMessage: 'Tu dispositivo no soporta GPS'
+          userMessage: 'Tu dispositivo no soporta GPS',
         } as LocationError);
       });
     }
@@ -59,20 +59,17 @@ export class GeolocationService {
     const defaultOptions: PositionOptions = {
       enableHighAccuracy: true,
       timeout: 10000, // 10 seconds
-      maximumAge: 0
+      maximumAge: 0,
     };
 
     return from(
       new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          resolve,
-          reject,
-          { ...defaultOptions, ...options }
-        );
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          ...defaultOptions,
+          ...options,
+        });
       })
-    ).pipe(
-      map(position => this.processPosition(position))
-    );
+    ).pipe(map((position) => this.processPosition(position)));
   }
 
   /**
@@ -83,20 +80,20 @@ export class GeolocationService {
       throw new Error('Geolocation not available');
     }
 
-    return new Observable<LocationResult>(observer => {
+    return new Observable<LocationResult>((observer) => {
       const defaultOptions: PositionOptions = {
         enableHighAccuracy: true,
         timeout: 5000,
-        maximumAge: 0
+        maximumAge: 0,
       };
 
       this.watchId = navigator.geolocation.watchPosition(
-        position => {
+        (position) => {
           const result = this.processPosition(position);
           this.currentPosition$.next(result.coords);
           observer.next(result);
         },
-        error => {
+        (error) => {
           observer.error(this.formatError(error));
         },
         { ...defaultOptions, ...options }
@@ -139,9 +136,7 @@ export class GeolocationService {
     const minutes = Math.floor(minutesDecimal);
     const seconds = ((minutesDecimal - minutes) * 60).toFixed(2);
 
-    const direction = isLatitude
-      ? decimal >= 0 ? 'N' : 'S'
-      : decimal >= 0 ? 'E' : 'W';
+    const direction = isLatitude ? (decimal >= 0 ? 'N' : 'S') : decimal >= 0 ? 'E' : 'W';
 
     return `${degrees}° ${minutes}' ${seconds}" ${direction}`;
   }
@@ -157,12 +152,7 @@ export class GeolocationService {
    * Calculate distance between two points (Haversine formula)
    * Returns distance in meters
    */
-  calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number {
+  calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3; // Earth's radius in meters
     const φ1 = (lat1 * Math.PI) / 180;
     const φ2 = (lat2 * Math.PI) / 180;
@@ -211,15 +201,15 @@ export class GeolocationService {
       altitudeAccuracy: position.coords.altitudeAccuracy ?? undefined,
       heading: position.coords.heading ?? undefined,
       speed: position.coords.speed ?? undefined,
-      timestamp: position.timestamp
+      timestamp: position.timestamp,
     };
 
     return {
       coords,
       dms: {
         latitude: this.convertToDMS(coords.latitude, true),
-        longitude: this.convertToDMS(coords.longitude, false)
-      }
+        longitude: this.convertToDMS(coords.longitude, false),
+      },
     };
   }
 
@@ -231,7 +221,8 @@ export class GeolocationService {
 
     switch (error.code) {
       case error.PERMISSION_DENIED:
-        userMessage = 'Permiso de ubicación denegado. Por favor, habilita el GPS en la configuración.';
+        userMessage =
+          'Permiso de ubicación denegado. Por favor, habilita el GPS en la configuración.';
         break;
       case error.POSITION_UNAVAILABLE:
         userMessage = 'No se pudo obtener tu ubicación. Intenta en un lugar abierto.';
@@ -246,7 +237,7 @@ export class GeolocationService {
     return {
       code: error.code,
       message: error.message,
-      userMessage
+      userMessage,
     };
   }
 }

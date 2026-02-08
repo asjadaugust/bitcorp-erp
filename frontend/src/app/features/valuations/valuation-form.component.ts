@@ -37,7 +37,8 @@ import { Contract } from '../../core/models/contract.model';
             (click)="onSubmit()"
             [disabled]="valuationForm.invalid || loading"
           >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Valorización' }}
+            <i class="fa-solid fa-save"></i>
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Valorización' }}
           </button>
         </div>
       </div>
@@ -84,7 +85,9 @@ import { Contract } from '../../core/models/contract.model';
                   formControlName="period_start"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('period_start')">Fecha de inicio requerida</div>
+                <div class="error-msg" *ngIf="hasError('period_start')">
+                  Fecha de inicio requerida
+                </div>
               </div>
 
               <div class="form-group">
@@ -431,7 +434,9 @@ export class ValuationFormComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error calculating', err);
-        alert('Error al calcular valorización. Verifique que existan partes diarios aprobados para este periodo.');
+        alert(
+          'Error al calcular valorización. Verifique que existan partes diarios aprobados para este periodo.'
+        );
         this.loading = false;
       },
     });

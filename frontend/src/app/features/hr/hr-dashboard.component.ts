@@ -1,7 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { PageLayoutComponent, TabItem } from '../../shared/components/page-layout/page-layout.component';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../shared/components/page-layout/page-layout.component';
 
 @Component({
   selector: 'app-hr-dashboard',
@@ -123,14 +126,11 @@ import { PageLayoutComponent, TabItem } from '../../shared/components/page-layou
 export class HrDashboardComponent {
   private router = inject(Router);
 
-  breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
-    { label: 'RRHH' }
-  ];
+  breadcrumbs = [{ label: 'Dashboard', url: '/app' }, { label: 'RRHH' }];
 
   tabs: TabItem[] = [
     { label: 'Dashboard', route: '/rrhh', icon: 'fa-chart-pie' },
-    { label: 'Personal', route: '/rrhh/employees', icon: 'fa-users' }
+    { label: 'Personal', route: '/rrhh/employees', icon: 'fa-users' },
   ];
 
   navigateTo(path: string): void {

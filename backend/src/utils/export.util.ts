@@ -114,7 +114,11 @@ export class ExportUtil {
   /**
    * Format boolean for export
    */
-  static formatBoolean(value: boolean | null, trueLabel: string = 'Sí', falseLabel: string = 'No'): string {
+  static formatBoolean(
+    value: boolean | null,
+    trueLabel: string = 'Sí',
+    falseLabel: string = 'No'
+  ): string {
     if (value === null || value === undefined) return '';
     return value ? trueLabel : falseLabel;
   }

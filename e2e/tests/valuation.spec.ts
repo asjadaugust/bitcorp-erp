@@ -17,17 +17,19 @@ test.describe('Valuation Flow', () => {
 
     // Click Generate Valuation
     await page.click('button:has-text("Generar Valorización")');
-    
+
     // Fill Form
     // Assuming there's a project and date range
     // Select first project in dropdown
     await page.selectOption('select[name="projectId"]', { index: 1 });
-    
+
     // Set dates
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
-    
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+      .toISOString()
+      .split('T')[0];
+
     await page.fill('input[name="startDate"]', firstDay);
     await page.fill('input[name="endDate"]', lastDay);
 
@@ -38,7 +40,7 @@ test.describe('Valuation Flow', () => {
     // Expect to see the new valuation in the list
     // This might require waiting for the list to reload
     await expect(page.locator('table')).toContainText(firstDay);
-    
+
     // Optional: Verify amount if predictable
     // await expect(page.locator('td.amount').first()).not.toBeEmpty();
   });

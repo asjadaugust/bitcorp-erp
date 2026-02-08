@@ -29,12 +29,9 @@ import { AdministrationService } from '../../services/administration.service';
         </div>
         <div class="header-actions">
           <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="form.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Centro de Costo' }}
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
+            <i class="fa-solid fa-save"></i>
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Centro de Costo' }}
           </button>
         </div>
       </div>
@@ -291,7 +288,7 @@ export class CostCenterFormComponent implements OnInit {
       name: ['', Validators.required],
       type: ['', Validators.required],
       status: ['Activo', Validators.required],
-      description: ['']
+      description: [''],
     });
   }
 
@@ -307,7 +304,7 @@ export class CostCenterFormComponent implements OnInit {
         this.loading = false;
         console.error('Error loading cost center');
         this.router.navigate(['/administracion/cost-centers']);
-      }
+      },
     });
   }
 
@@ -317,10 +314,11 @@ export class CostCenterFormComponent implements OnInit {
       return;
     }
     this.loading = true;
-    const req = this.isEditMode && this.costCenterId
-      ? this.adminService.updateCostCenter(this.costCenterId, this.form.value)
-      : this.adminService.createCostCenter(this.form.value);
-    
+    const req =
+      this.isEditMode && this.costCenterId
+        ? this.adminService.updateCostCenter(this.costCenterId, this.form.value)
+        : this.adminService.createCostCenter(this.form.value);
+
     req.subscribe({
       next: () => {
         this.router.navigate(['/administracion/cost-centers']);
@@ -328,7 +326,7 @@ export class CostCenterFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error saving cost center');
-      }
+      },
     });
   }
 

@@ -34,19 +34,19 @@ test.describe('Fuel Module', () => {
 
     await page.fill('input#gallons', '10');
     await page.fill('input#cost_per_gallon', '15');
-    
+
     // Check if total cost is calculated
     await expect(page.locator('input#total_cost')).toHaveValue('150');
-    
+
     // Wait for button to be enabled
     const submitBtn = page.locator('button:has-text("Crear Registro")');
     await expect(submitBtn).toBeEnabled();
 
     await submitBtn.click();
-    
+
     // Should redirect back to list
     await expect(page).toHaveURL(/\/logistics\/fuel/);
-    // We can't easily check for specific text because it's a list of records, 
+    // We can't easily check for specific text because it's a list of records,
     // but we can check if the table is visible and has rows.
     await expect(page.locator('table')).toBeVisible();
   });

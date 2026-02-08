@@ -31,35 +31,34 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
       <app-document-list></app-document-list>
     </app-page-layout>
   `,
-  styles: [`
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: var(--s-24);
-      margin-bottom: var(--s-32);
-    }
-    .stat-card {
-      background: white;
-      padding: var(--s-24);
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      border-left: 4px solid var(--primary-500);
-    }
-    .stat-card h3 {
-      font-size: var(--type-body-size);
-      color: var(--grey-700);
-      margin-bottom: var(--s-8);
-    }
-    .stat-card .value {
-      font-size: var(--type-h3-size);
-      font-weight: 600;
-      color: var(--grey-900);
-    }
-  `]
+  styles: [
+    `
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--s-24);
+        margin-bottom: var(--s-32);
+      }
+      .stat-card {
+        background: white;
+        padding: var(--s-24);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid var(--primary-500);
+      }
+      .stat-card h3 {
+        font-size: var(--type-body-size);
+        color: var(--grey-700);
+        margin-bottom: var(--s-8);
+      }
+      .stat-card .value {
+        font-size: var(--type-h3-size);
+        font-weight: 600;
+        color: var(--grey-900);
+      }
+    `,
+  ],
 })
 export class SigDashboardComponent {
-  breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
-    { label: 'SIG' }
-  ];
+  breadcrumbs = [{ label: 'Dashboard', url: '/app' }, { label: 'SIG' }];
 }

@@ -7,7 +7,7 @@ test.describe('Daily Reports', () => {
     await page.fill('input[name="username"]', 'admin');
     await page.fill('input[type="password"]', 'admin123');
     await page.click('button[type="submit"]');
-    
+
     // Wait for dashboard
     await page.waitForURL('**/dashboard');
 
@@ -25,13 +25,13 @@ test.describe('Daily Reports', () => {
 
     const createButton = page.locator('button:has-text("Nuevo Parte")');
     await expect(createButton).toBeVisible({ timeout: 10000 });
-    
+
     // Wait for navigation
     await Promise.all([
       page.waitForURL(/\/daily-reports\/new/, { timeout: 20000 }),
-      createButton.click()
+      createButton.click(),
     ]);
-    
+
     // Use last() to avoid strict mode violation (header h1 vs page h1)
     // The title should be "Nuevo Parte" for creation
     await expect(page.locator('h1').last()).toContainText('Nuevo Parte');

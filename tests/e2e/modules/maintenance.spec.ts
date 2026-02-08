@@ -37,13 +37,13 @@ test.describe('Maintenance Module', () => {
     await page.fill('input#start_date', '2025-01-01');
     await page.fill('input#cost', '500');
     await page.selectOption('select#status', 'scheduled');
-    
+
     // Wait for button to be enabled
     const submitBtn = page.locator('button:has-text("Crear Mantenimiento")');
     await expect(submitBtn).toBeEnabled();
 
     await submitBtn.click();
-    
+
     // Should redirect back to list
     await expect(page).toHaveURL(/\/equipment\/maintenance/);
     await expect(page.locator('table')).toContainText('Test Maintenance E2E');

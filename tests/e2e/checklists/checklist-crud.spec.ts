@@ -20,7 +20,10 @@ test.describe('Checklist Management', () => {
     // Fill template form
     await page.fill('input[name="template_name"]', 'Excavator Pre-Op Check');
     await page.selectOption('select[name="checklist_type"]', 'pre_operation');
-    await page.fill('textarea[name="description"]', 'Standard pre-operation checklist for excavators');
+    await page.fill(
+      'textarea[name="description"]',
+      'Standard pre-operation checklist for excavators'
+    );
 
     // Add checklist items
     await page.click('button:has-text("Add Item")');
@@ -57,7 +60,7 @@ test.describe('Checklist Management', () => {
 
     // Complete checklist items
     const checklistItems = await page.locator('.checklist-item').count();
-    
+
     for (let i = 0; i < checklistItems; i++) {
       // Mark first two items as PASS
       if (i < 2) {
@@ -65,13 +68,20 @@ test.describe('Checklist Management', () => {
       }
       // Mark third item as NEEDS_ATTENTION
       else if (i === 2) {
-        await page.locator(`.checklist-item:nth-child(${i + 1}) button:has-text("Needs Attention")`).click();
-        await page.locator(`.checklist-item:nth-child(${i + 1}) textarea[placeholder*="Comments"]`).fill('Minor hydraulic leak detected');
+        await page
+          .locator(`.checklist-item:nth-child(${i + 1}) button:has-text("Needs Attention")`)
+          .click();
+        await page
+          .locator(`.checklist-item:nth-child(${i + 1}) textarea[placeholder*="Comments"]`)
+          .fill('Minor hydraulic leak detected');
       }
     }
 
     // Add general observations
-    await page.fill('textarea[placeholder*="general observations"]', 'Equipment generally in good condition, scheduled maintenance recommended for hydraulic system');
+    await page.fill(
+      'textarea[placeholder*="general observations"]',
+      'Equipment generally in good condition, scheduled maintenance recommended for hydraulic system'
+    );
 
     // Save checklist
     await page.click('button:has-text("Save Checklist")');
@@ -90,7 +100,7 @@ test.describe('Checklist Management', () => {
 
     // Verify checklist history displayed
     await expect(page.locator('.checklist-history-table')).toBeVisible();
-    
+
     // Check for recent checklists
     const rows = await page.locator('.checklist-history-table tbody tr').count();
     expect(rows).toBeGreaterThan(0);
@@ -114,12 +124,12 @@ test.describe('Checklist Management', () => {
 
     // Verify filtered results
     const failedChecklists = await page.locator('.checklist-card').count();
-    
+
     // Verify all displayed checklists have FAIL status
     for (let i = 0; i < failedChecklists; i++) {
-      await expect(
-        page.locator(`.checklist-card:nth-child(${i + 1}) .status-badge`)
-      ).toContainText('Fail');
+      await expect(page.locator(`.checklist-card:nth-child(${i + 1}) .status-badge`)).toContainText(
+        'Fail'
+      );
     }
   });
 
@@ -171,7 +181,7 @@ test.describe('Checklist Management', () => {
 
     // Complete pre-operation checklist
     await page.click('button:has-text("Pre-Operation Checklist")');
-    
+
     // Mark all items as pass
     const itemCount = await page.locator('.checklist-item').count();
     for (let i = 0; i < itemCount; i++) {

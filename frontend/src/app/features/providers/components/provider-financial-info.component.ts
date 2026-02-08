@@ -25,7 +25,12 @@ interface FinancialInfo {
     <div class="financial-info-section">
       <div class="section-header">
         <h3><i class="fa-solid fa-building-columns"></i> Información Financiera</h3>
-        <button type="button" class="btn btn-primary btn-sm" (click)="showForm = !showForm" *ngIf="!showForm">
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          (click)="showForm = !showForm"
+          *ngIf="!showForm"
+        >
           <i class="fa-solid fa-plus"></i> Agregar Cuenta
         </button>
       </div>
@@ -36,23 +41,38 @@ interface FinancialInfo {
           <div class="form-grid">
             <div class="form-group">
               <label for="bank_name">Entidad Financiera *</label>
-              <input id="bank_name" type="text" formControlName="bank_name" class="form-control" 
-                placeholder="ej. Banco de Crédito del Perú">
+              <input
+                id="bank_name"
+                type="text"
+                formControlName="bank_name"
+                class="form-control"
+                placeholder="ej. Banco de Crédito del Perú"
+              />
             </div>
 
             <div class="form-group">
               <label for="account_number">N° Cuenta *</label>
-              <input id="account_number" type="text" formControlName="account_number" class="form-control">
+              <input
+                id="account_number"
+                type="text"
+                formControlName="account_number"
+                class="form-control"
+              />
             </div>
 
             <div class="form-group">
               <label for="cci">CCI</label>
-              <input id="cci" type="text" formControlName="cci" class="form-control">
+              <input id="cci" type="text" formControlName="cci" class="form-control" />
             </div>
 
             <div class="form-group">
               <label for="account_holder_name">Nombre de la Cuenta</label>
-              <input id="account_holder_name" type="text" formControlName="account_holder_name" class="form-control">
+              <input
+                id="account_holder_name"
+                type="text"
+                formControlName="account_holder_name"
+                class="form-control"
+              />
             </div>
 
             <div class="form-group">
@@ -65,7 +85,7 @@ interface FinancialInfo {
 
             <div class="form-group checkbox-group">
               <label>
-                <input type="checkbox" formControlName="is_primary">
+                <input type="checkbox" formControlName="is_primary" />
                 Cuenta Principal
               </label>
             </div>
@@ -73,7 +93,11 @@ interface FinancialInfo {
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" [disabled]="financialForm.invalid || loading">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="financialForm.invalid || loading"
+            >
               {{ editingId ? 'Actualizar' : 'Guardar' }}
             </button>
           </div>
@@ -93,7 +117,11 @@ interface FinancialInfo {
               <button type="button" class="btn-icon" (click)="editFinancialInfo(info)">
                 <i class="fa-solid fa-pen"></i>
               </button>
-              <button type="button" class="btn-icon btn-danger" (click)="deleteFinancialInfo(info.id!)">
+              <button
+                type="button"
+                class="btn-icon btn-danger"
+                (click)="deleteFinancialInfo(info.id!)"
+              >
                 <i class="fa-solid fa-trash"></i>
               </button>
             </div>
@@ -117,30 +145,122 @@ interface FinancialInfo {
       </div>
     </div>
   `,
-  styles: [`
-    .financial-info-section { margin-top: var(--s-24); }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-16); }
-    .section-header h3 { font-size: var(--type-h4-size); color: var(--grey-900); display: flex; align-items: center; gap: var(--s-8); }
-    .financial-form { margin-bottom: var(--s-24); padding: var(--s-24); background: var(--neutral-0); border-radius: var(--s-8); }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s-16); margin-bottom: var(--s-24); }
-    .form-group { display: flex; flex-direction: column; }
-    .form-control, .form-select { padding: var(--s-8) var(--s-12); border: 1px solid var(--grey-300); border-radius: var(--s-4); }
-    .btn { padding: var(--s-8) var(--s-16); border: none; border-radius: var(--s-8); font-weight: 600; cursor: pointer; }
-    .btn-primary { background: var(--primary-500); color: var(--neutral-0); }
-    .btn-secondary { background: var(--grey-300); color: var(--grey-700); }
-    .btn-sm { padding: var(--s-4) var(--s-12); font-size: var(--type-bodySmall-size); }
-    .form-actions { display: flex; gap: var(--s-12); justify-content: flex-end; }
-    .financial-list { display: grid; gap: var(--s-16); }
-    .financial-card { background: var(--neutral-0); border: 1px solid var(--grey-200); border-radius: var(--s-8); }
-    .card-header { display: flex; justify-content: space-between; padding: var(--s-16); background: var(--grey-50); }
-    .bank-info { display: flex; align-items: center; gap: var(--s-12); }
-    .badge { padding: var(--s-4) var(--s-8); border-radius: var(--s-12); font-size: var(--type-label-size); font-weight: 600; }
-    .badge-primary { background: var(--primary-100); color: var(--primary-700); }
-    .btn-icon { background: none; border: none; cursor: pointer; padding: var(--s-4); color: var(--grey-500); }
-    .card-body { padding: var(--s-16); }
-    .info-row { display: flex; justify-content: space-between; padding: var(--s-8) 0; }
-    .empty-state { text-align: center; padding: var(--s-48) var(--s-24); color: var(--grey-500); }
-  `]
+  styles: [
+    `
+      .financial-info-section {
+        margin-top: var(--s-24);
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--s-16);
+      }
+      .section-header h3 {
+        font-size: var(--type-h4-size);
+        color: var(--grey-900);
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+      .financial-form {
+        margin-bottom: var(--s-24);
+        padding: var(--s-24);
+        background: var(--neutral-0);
+        border-radius: var(--s-8);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--s-16);
+        margin-bottom: var(--s-24);
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .form-control,
+      .form-select {
+        padding: var(--s-8) var(--s-12);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-4);
+      }
+      .btn {
+        padding: var(--s-8) var(--s-16);
+        border: none;
+        border-radius: var(--s-8);
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: var(--primary-500);
+        color: var(--neutral-0);
+      }
+      .btn-secondary {
+        background: var(--grey-300);
+        color: var(--grey-700);
+      }
+      .btn-sm {
+        padding: var(--s-4) var(--s-12);
+        font-size: var(--type-bodySmall-size);
+      }
+      .form-actions {
+        display: flex;
+        gap: var(--s-12);
+        justify-content: flex-end;
+      }
+      .financial-list {
+        display: grid;
+        gap: var(--s-16);
+      }
+      .financial-card {
+        background: var(--neutral-0);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--s-8);
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        padding: var(--s-16);
+        background: var(--grey-50);
+      }
+      .bank-info {
+        display: flex;
+        align-items: center;
+        gap: var(--s-12);
+      }
+      .badge {
+        padding: var(--s-4) var(--s-8);
+        border-radius: var(--s-12);
+        font-size: var(--type-label-size);
+        font-weight: 600;
+      }
+      .badge-primary {
+        background: var(--primary-100);
+        color: var(--primary-700);
+      }
+      .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--s-4);
+        color: var(--grey-500);
+      }
+      .card-body {
+        padding: var(--s-16);
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: var(--s-8) 0;
+      }
+      .empty-state {
+        text-align: center;
+        padding: var(--s-48) var(--s-24);
+        color: var(--grey-500);
+      }
+    `,
+  ],
 })
 export class ProviderFinancialInfoComponent implements OnInit {
   @Input() providerId!: string;
@@ -166,19 +286,22 @@ export class ProviderFinancialInfoComponent implements OnInit {
       cci: [''],
       account_holder_name: [''],
       currency: ['PEN', Validators.required],
-      is_primary: [false]
+      is_primary: [false],
     });
   }
 
   loadFinancialInfo(): void {
     this.loading = true;
-    this.http.get<FinancialInfo[]>(`${environment.apiUrl}/providers/${this.providerId}/financial-info`)
+    this.http
+      .get<FinancialInfo[]>(`${environment.apiUrl}/providers/${this.providerId}/financial-info`)
       .subscribe({
         next: (data) => {
           this.financialInfoList = data;
           this.loading = false;
         },
-        error: () => { this.loading = false; }
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
@@ -186,14 +309,20 @@ export class ProviderFinancialInfoComponent implements OnInit {
     if (this.financialForm.invalid) return;
 
     const request = this.editingId
-      ? this.http.put(`${environment.apiUrl}/providers/financial-info/${this.editingId}`, this.financialForm.value)
-      : this.http.post(`${environment.apiUrl}/providers/${this.providerId}/financial-info`, this.financialForm.value);
+      ? this.http.put(
+          `${environment.apiUrl}/providers/financial-info/${this.editingId}`,
+          this.financialForm.value
+        )
+      : this.http.post(
+          `${environment.apiUrl}/providers/${this.providerId}/financial-info`,
+          this.financialForm.value
+        );
 
     request.subscribe({
       next: () => {
         this.loadFinancialInfo();
         this.cancelForm();
-      }
+      },
     });
   }
 
@@ -206,7 +335,8 @@ export class ProviderFinancialInfoComponent implements OnInit {
   deleteFinancialInfo(id: number): void {
     if (!confirm('¿Eliminar esta cuenta?')) return;
 
-    this.http.delete(`${environment.apiUrl}/providers/financial-info/${id}`)
+    this.http
+      .delete(`${environment.apiUrl}/providers/financial-info/${id}`)
       .subscribe(() => this.loadFinancialInfo());
   }
 

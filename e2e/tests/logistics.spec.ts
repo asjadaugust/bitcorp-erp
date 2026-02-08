@@ -12,7 +12,7 @@ test.describe('Logistics Flow', () => {
 
   test('should manage product lifecycle', async ({ page }) => {
     const productName = `Test Product ${Date.now()}`;
-    
+
     // 1. Create Product
     await page.goto('/logistics/products');
     await page.click('button:has-text("Nuevo Producto")');
@@ -20,7 +20,7 @@ test.describe('Logistics Flow', () => {
     await page.fill('input[name="sku"]', `SKU-${Date.now()}`);
     await page.fill('input[name="category"]', 'Filtros');
     await page.click('button:has-text("Guardar")');
-    
+
     // Verify creation
     await expect(page.locator('table')).toContainText(productName);
 
@@ -30,15 +30,15 @@ test.describe('Logistics Flow', () => {
     await page.selectOption('select[name="type"]', 'IN');
     // Select the product we just created - might need search or select by text
     // Simplified: Assuming it's at the top or searchable
-    // await page.click('ng-select'); 
+    // await page.click('ng-select');
     // await page.type('ng-select input', productName);
     // await page.click('.ng-option:first-child');
-    
+
     // For standard select:
-    // await page.selectOption('select[name="productId"]', { label: productName }); 
-    
+    // await page.selectOption('select[name="productId"]', { label: productName });
+
     // NOTE: UI implementation details matter here. Assuming standard inputs for now.
-    
+
     // 3. Register Outbound Movement
     // ... similar steps
   });

@@ -18,7 +18,7 @@ test.describe('Daily Reports PDF Download', () => {
     // 1. Create a report via API to ensure we have one
     const newReport = await request.post('/api/reports', {
       headers: {
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
       data: {
         report_date: '2025-01-01',
@@ -31,12 +31,12 @@ test.describe('Daily Reports PDF Download', () => {
         hourmeter_end: 108,
         location: 'Test Location',
         work_description: 'Test Work',
-        status: 'draft'
-      }
+        status: 'draft',
+      },
     });
-    
+
     if (!newReport.ok()) {
-        console.log(await newReport.text());
+      console.log(await newReport.text());
     }
     expect(newReport.ok()).toBeTruthy();
     const reportData = await newReport.json();
@@ -45,12 +45,12 @@ test.describe('Daily Reports PDF Download', () => {
     // 2. Try to download PDF
     const response = await request.get(`/api/reports/${reportId}/pdf`, {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
     expect(response.status()).toBe(200);
     expect(response.headers()['content-type']).toBe('application/pdf');
-    
+
     // 3. Verify body size > 0
     const body = await response.body();
     expect(body.length).toBeGreaterThan(0);

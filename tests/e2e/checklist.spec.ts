@@ -13,10 +13,10 @@ test.describe('Checklist Management', () => {
     const loginResponse = await request.post(`${API_URL}/api/auth/login`, {
       data: {
         username: 'admin',
-        password: 'admin123'
-      }
+        password: 'admin123',
+      },
     });
-    
+
     expect(loginResponse.ok()).toBeTruthy();
     const loginData = await loginResponse.json();
     authToken = loginData.access_token;
@@ -37,42 +37,42 @@ test.describe('Checklist Management', () => {
             item_id: '1',
             description: 'Check engine oil level',
             category: 'Engine',
-            required: true
+            required: true,
           },
           {
             item_id: '2',
             description: 'Check hydraulic fluid level',
             category: 'Hydraulics',
-            required: true
+            required: true,
           },
           {
             item_id: '3',
             description: 'Inspect tracks for damage',
             category: 'Tracks',
-            required: true
+            required: true,
           },
           {
             item_id: '4',
             description: 'Test all lights',
             category: 'Safety',
-            required: true
+            required: true,
           },
           {
             item_id: '5',
             description: 'Check backup alarm',
             category: 'Safety',
-            required: true
-          }
+            required: true,
+          },
         ],
-        is_active: true
+        is_active: true,
       };
 
       const response = await request.post(`${API_URL}/api/checklists/templates`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
         },
-        data: templateData
+        data: templateData,
       });
 
       expect(response.ok()).toBeTruthy();
@@ -80,15 +80,15 @@ test.describe('Checklist Management', () => {
       expect(template.id).toBeDefined();
       expect(template.template_name).toBe(templateData.template_name);
       expect(template.items).toHaveLength(5);
-      
+
       templateId = template.id;
     });
 
     test('should get all templates', async ({ request }) => {
       const response = await request.get(`${API_URL}/api/checklists/templates`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       expect(response.ok()).toBeTruthy();
@@ -100,8 +100,8 @@ test.describe('Checklist Management', () => {
     test('should get template by id', async ({ request }) => {
       const response = await request.get(`${API_URL}/api/checklists/templates/${templateId}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       expect(response.ok()).toBeTruthy();
@@ -113,12 +113,12 @@ test.describe('Checklist Management', () => {
     test('should update template', async ({ request }) => {
       const response = await request.put(`${API_URL}/api/checklists/templates/${templateId}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
         },
         data: {
-          description: 'Updated description for excavator checklist'
-        }
+          description: 'Updated description for excavator checklist',
+        },
       });
 
       expect(response.ok()).toBeTruthy();
@@ -135,8 +135,8 @@ test.describe('Checklist Management', () => {
       // Get first equipment
       const equipmentResponse = await request.get(`${API_URL}/api/equipment?limit=1`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
       const equipment = await equipmentResponse.json();
       equipmentId = equipment[0]?.id;
@@ -144,8 +144,8 @@ test.describe('Checklist Management', () => {
       // Get first operator
       const operatorResponse = await request.get(`${API_URL}/api/operators?limit=1`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
       const operators = await operatorResponse.json();
       operatorId = operators[0]?.id;
@@ -164,14 +164,14 @@ test.describe('Checklist Management', () => {
             description: 'Check engine oil level',
             category: 'Engine',
             required: true,
-            response: 'ok'
+            response: 'ok',
           },
           {
             item_id: '2',
             description: 'Check hydraulic fluid level',
             category: 'Hydraulics',
             required: true,
-            response: 'ok'
+            response: 'ok',
           },
           {
             item_id: '3',
@@ -179,32 +179,32 @@ test.describe('Checklist Management', () => {
             category: 'Tracks',
             required: true,
             response: 'not_ok',
-            notes: 'Minor wear on left track'
+            notes: 'Minor wear on left track',
           },
           {
             item_id: '4',
             description: 'Test all lights',
             category: 'Safety',
             required: true,
-            response: 'ok'
+            response: 'ok',
           },
           {
             item_id: '5',
             description: 'Check backup alarm',
             category: 'Safety',
             required: true,
-            response: 'ok'
-          }
+            response: 'ok',
+          },
         ],
-        observations: 'Equipment in good condition, minor track wear noted'
+        observations: 'Equipment in good condition, minor track wear noted',
       };
 
       const response = await request.post(`${API_URL}/api/checklists`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
         },
-        data: checklistData
+        data: checklistData,
       });
 
       expect(response.ok()).toBeTruthy();
@@ -212,15 +212,15 @@ test.describe('Checklist Management', () => {
       expect(checklist.id).toBeDefined();
       expect(checklist.equipment_id).toBe(equipmentId);
       expect(checklist.overall_status).toBe('warning'); // Because one item is 'not_ok'
-      
+
       checklistId = checklist.id;
     });
 
     test('should get all checklists', async ({ request }) => {
       const response = await request.get(`${API_URL}/api/checklists`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       expect(response.ok()).toBeTruthy();
@@ -232,8 +232,8 @@ test.describe('Checklist Management', () => {
     test('should filter checklists by equipment', async ({ request }) => {
       const response = await request.get(`${API_URL}/api/checklists?equipment_id=${equipmentId}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       expect(response.ok()).toBeTruthy();
@@ -247,8 +247,8 @@ test.describe('Checklist Management', () => {
     test('should get checklist by id', async ({ request }) => {
       const response = await request.get(`${API_URL}/api/checklists/${checklistId}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       expect(response.ok()).toBeTruthy();
@@ -261,12 +261,12 @@ test.describe('Checklist Management', () => {
     test('should update checklist', async ({ request }) => {
       const response = await request.put(`${API_URL}/api/checklists/${checklistId}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
         },
         data: {
-          observations: 'Updated observations - track replaced'
-        }
+          observations: 'Updated observations - track replaced',
+        },
       });
 
       expect(response.ok()).toBeTruthy();
@@ -275,11 +275,14 @@ test.describe('Checklist Management', () => {
     });
 
     test('should get equipment checklist history', async ({ request }) => {
-      const response = await request.get(`${API_URL}/api/checklists/analytics/equipment/${equipmentId}/history?limit=5`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+      const response = await request.get(
+        `${API_URL}/api/checklists/analytics/equipment/${equipmentId}/history?limit=5`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
         }
-      });
+      );
 
       expect(response.ok()).toBeTruthy();
       const history = await response.json();
@@ -288,11 +291,14 @@ test.describe('Checklist Management', () => {
 
     test('should get checklist summary', async ({ request }) => {
       const today = new Date().toISOString().split('T')[0];
-      const response = await request.get(`${API_URL}/api/checklists/analytics/summary?start_date=${today}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+      const response = await request.get(
+        `${API_URL}/api/checklists/analytics/summary?start_date=${today}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
         }
-      });
+      );
 
       expect(response.ok()).toBeTruthy();
       const summary = await response.json();
@@ -312,17 +318,17 @@ test.describe('Checklist Management', () => {
             item_id: '1',
             description: 'Required check',
             required: true,
-            response: 'ok'
-          }
-        ]
+            response: 'ok',
+          },
+        ],
       };
 
       const response = await request.post(`${API_URL}/api/checklists`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
         },
-        data: checklistData
+        data: checklistData,
       });
 
       expect(response.ok()).toBeTruthy();
@@ -341,17 +347,17 @@ test.describe('Checklist Management', () => {
             item_id: '1',
             description: 'Critical safety check',
             required: true,
-            response: 'not_ok'
-          }
-        ]
+            response: 'not_ok',
+          },
+        ],
       };
 
       const response = await request.post(`${API_URL}/api/checklists`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
         },
-        data: checklistData
+        data: checklistData,
       });
 
       expect(response.ok()).toBeTruthy();
@@ -364,8 +370,8 @@ test.describe('Checklist Management', () => {
     test('should delete checklist', async ({ request }) => {
       const response = await request.delete(`${API_URL}/api/checklists/${checklistId}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       expect(response.status()).toBe(204);
@@ -374,8 +380,8 @@ test.describe('Checklist Management', () => {
     test('should delete template', async ({ request }) => {
       const response = await request.delete(`${API_URL}/api/checklists/templates/${templateId}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       expect(response.status()).toBe(204);

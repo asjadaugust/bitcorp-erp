@@ -5,7 +5,12 @@ import { Observable, tap } from 'rxjs';
 
 export interface Notification {
   id: number;
-  type: 'CONTRACT_EXPIRY' | 'MAINTENANCE_DUE' | 'SCHEDULE_ASSIGNMENT' | 'SYSTEM' | 'CERTIFICATION_EXPIRY';
+  type:
+    | 'CONTRACT_EXPIRY'
+    | 'MAINTENANCE_DUE'
+    | 'SCHEDULE_ASSIGNMENT'
+    | 'SYSTEM'
+    | 'CERTIFICATION_EXPIRY';
   title: string;
   message: string;
   read: boolean;
@@ -14,12 +19,12 @@ export interface Notification {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/notifications`;
-  
+
   // Signals for reactive state
   notifications = signal<Notification[]>([]);
   unreadCount = signal<number>(0);
@@ -37,7 +42,11 @@ export class NotificationService {
   }
 
   fetchNotifications() {
-    this.http.get<{success: boolean, data: {notifications: Notification[], unreadCount: number}}>(this.apiUrl)
+    this.http
+      .get<{
+        success: boolean;
+        data: { notifications: Notification[]; unreadCount: number };
+      }>(this.apiUrl)
       .subscribe({
         next: (res) => {
           if (res && res.data) {
@@ -45,7 +54,7 @@ export class NotificationService {
             this.unreadCount.set(res.data.unreadCount || 0);
           }
         },
-        error: (err) => console.error('Error fetching notifications:', err)
+        error: (err) => console.error('Error fetching notifications:', err),
       });
   }
 
@@ -53,10 +62,10 @@ export class NotificationService {
     return this.http.patch(`${this.apiUrl}/${id}/read`, {}).pipe(
       tap(() => {
         // Optimistic update
-        this.notifications.update(list => 
-          list.map(n => n.id === id ? { ...n, read: true } : n)
+        this.notifications.update((list) =>
+          list.map((n) => (n.id === id ? { ...n, read: true } : n))
         );
-        this.unreadCount.update(count => Math.max(0, count - 1));
+        this.unreadCount.update((count) => Math.max(0, count - 1));
       })
     );
   }
@@ -65,9 +74,7 @@ export class NotificationService {
     return this.http.patch(`${this.apiUrl}/read-all`, {}).pipe(
       tap(() => {
         // Optimistic update
-        this.notifications.update(list => 
-          list.map(n => ({ ...n, read: true }))
-        );
+        this.notifications.update((list) => list.map((n) => ({ ...n, read: true })));
         this.unreadCount.set(0);
       })
     );

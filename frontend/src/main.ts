@@ -22,10 +22,11 @@ bootstrapApplication(AppComponent, {
       ])
     ),
   ],
-}).then(() => {
-  // Service Worker temporarily disabled during development to prevent caching issues
-  // TODO: Re-enable in production
-  /*
+})
+  .then(() => {
+    // Service Worker temporarily disabled during development to prevent caching issues
+    // TODO: Re-enable in production
+    /*
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
@@ -36,5 +37,6 @@ bootstrapApplication(AppComponent, {
       });
   }
   */
-  console.log('Service Worker disabled for development');
-}).catch((err) => console.error(err));
+    console.log('Service Worker disabled for development');
+  })
+  .catch((err) => console.error(err));

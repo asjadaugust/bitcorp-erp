@@ -1564,8 +1564,8 @@ export class OperatorDailyReportComponent implements OnInit {
       const reportData = {
         fecha_parte: formValue.date,
         equipo_id: formValue.equipmentId,
-        trabajador_id: '1', // Get from auth service
-        proyecto_id: formValue.projectId.toString() || null,
+        trabajador_id: 1, // Get from auth service
+        proyecto_id: formValue.projectId || null,
         horometro_inicial: formValue.horometerStart,
         horometro_final: formValue.horometerEnd,
         hora_inicio: formValue.startTime,

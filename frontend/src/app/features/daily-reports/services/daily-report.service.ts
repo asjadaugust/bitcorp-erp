@@ -6,13 +6,13 @@ import { DailyReport, DailyReportFormData } from '../models/daily-report.model';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DailyReportService {
   private apiUrl = `${environment.apiUrl}/daily-reports`;
   private reportsSubject = new BehaviorSubject<DailyReport[]>([]);
   public reports$ = this.reportsSubject.asObservable();
-  
+
   private pendingSyncSubject = new BehaviorSubject<DailyReport[]>([]);
   public pendingSync$ = this.pendingSyncSubject.asObservable();
 
@@ -31,7 +31,7 @@ export class DailyReportService {
     syncStatus?: string;
   }): Observable<DailyReport[]> {
     let params = new HttpParams();
-    
+
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
@@ -40,9 +40,9 @@ export class DailyReportService {
       });
     }
 
-    return this.http.get<DailyReport[]>(this.apiUrl, { params }).pipe(
-      tap(reports => this.reportsSubject.next(reports))
-    );
+    return this.http
+      .get<DailyReport[]>(this.apiUrl, { params })
+      .pipe(tap((reports) => this.reportsSubject.next(reports)));
   }
 
   // Get daily report by ID
@@ -53,12 +53,12 @@ export class DailyReportService {
   // Create new daily report
   createDailyReport(reportData: DailyReportFormData): Observable<DailyReport> {
     const formData = this.prepareFormData(reportData);
-    
+
     // Check if online
     if (navigator.onLine) {
-      return this.http.post<DailyReport>(this.apiUrl, formData).pipe(
-        tap(() => this.getDailyReports().subscribe())
-      );
+      return this.http
+        .post<DailyReport>(this.apiUrl, formData)
+        .pipe(tap(() => this.getDailyReports().subscribe()));
     } else {
       // Store offline
       return this.storeOfflineReport(reportData);
@@ -77,34 +77,42 @@ export class DailyReportService {
 
   // Update daily report
   updateDailyReport(id: number, reportData: Partial<DailyReport>): Observable<DailyReport> {
-    return this.http.put<DailyReport>(`${this.apiUrl}/${id}`, reportData).pipe(
-      tap(() => this.getDailyReports().subscribe())
-    );
+    return this.http
+      .put<DailyReport>(`${this.apiUrl}/${id}`, reportData)
+      .pipe(tap(() => this.getDailyReports().subscribe()));
   }
 
   // Approve/reject daily report
-  validateDailyReport(id: number, status: 'approved' | 'rejected', observations?: string): Observable<DailyReport> {
-    return this.http.put<DailyReport>(`${this.apiUrl}/${id}/validate`, { 
-      status, 
-      observations 
-    }).pipe(
-      tap(() => this.getDailyReports().subscribe())
-    );
+  validateDailyReport(
+    id: number,
+    status: 'approved' | 'rejected',
+    observations?: string
+  ): Observable<DailyReport> {
+    return this.http
+      .put<DailyReport>(`${this.apiUrl}/${id}/validate`, {
+        status,
+        observations,
+      })
+      .pipe(tap(() => this.getDailyReports().subscribe()));
   }
 
   // Delete daily report
   deleteDailyReport(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`).pipe(
-      tap(() => this.getDailyReports().subscribe())
-    );
+    return this.http
+      .delete(`${this.apiUrl}/${id}`)
+      .pipe(tap(() => this.getDailyReports().subscribe()));
   }
 
   // Get reports by operator
-  getOperatorReports(operatorId: number, startDate?: string, endDate?: string): Observable<DailyReport[]> {
+  getOperatorReports(
+    operatorId: number,
+    startDate?: string,
+    endDate?: string
+  ): Observable<DailyReport[]> {
     let params = new HttpParams();
     if (startDate) params = params.append('startDate', startDate);
     if (endDate) params = params.append('endDate', endDate);
-    
+
     return this.http.get<DailyReport[]>(`${this.apiUrl}/operator/${operatorId}`, { params });
   }
 
@@ -121,13 +129,13 @@ export class DailyReportService {
 
   // Offline storage methods
   private storeOfflineReport(reportData: DailyReportFormData): Observable<DailyReport> {
-    return new Observable(observer => {
+    return new Observable((observer) => {
       const report: DailyReport = {
         ...reportData,
         hoursWorked: this.calculateHours(reportData.startTime, reportData.endTime),
         status: 'pending',
         syncStatus: 'pending',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       const pending = this.getPendingReportsFromStorage();
@@ -159,7 +167,7 @@ export class DailyReportService {
   syncPendingReports(): Observable<any> {
     const pending = this.getPendingReportsFromStorage();
     if (pending.length === 0) {
-      return new Observable(observer => {
+      return new Observable((observer) => {
         observer.next({ message: 'No reports to sync' });
         observer.complete();
       });
@@ -172,12 +180,14 @@ export class DailyReportService {
   private prepareFormData(reportData: DailyReportFormData): any {
     return {
       ...reportData,
-      hourmeterDiff: reportData.hourmeterEnd && reportData.hourmeterStart 
-        ? reportData.hourmeterEnd - reportData.hourmeterStart 
-        : undefined,
-      odometerDiff: reportData.odometerEnd && reportData.odometerStart 
-        ? reportData.odometerEnd - reportData.odometerStart 
-        : undefined,
+      hourmeterDiff:
+        reportData.hourmeterEnd && reportData.hourmeterStart
+          ? reportData.hourmeterEnd - reportData.hourmeterStart
+          : undefined,
+      odometerDiff:
+        reportData.odometerEnd && reportData.odometerStart
+          ? reportData.odometerEnd - reportData.odometerStart
+          : undefined,
     };
   }
 

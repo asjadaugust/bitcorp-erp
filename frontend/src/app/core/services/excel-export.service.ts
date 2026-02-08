@@ -10,10 +10,9 @@ export interface ExcelExportOptions {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ExcelExportService {
-
   /**
    * Export data to Excel file
    * @param data Array of objects to export
@@ -30,7 +29,7 @@ export class ExcelExportService {
       sheetName = 'Sheet1',
       columnHeaders,
       excludeColumns = [],
-      includeTimestamp = true
+      includeTimestamp = true,
     } = options;
 
     // Transform data if column headers provided
@@ -49,7 +48,7 @@ export class ExcelExportService {
     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
     // Generate filename with timestamp
-    const timestamp = includeTimestamp 
+    const timestamp = includeTimestamp
       ? `_${new Date().toISOString().split('T')[0]}_${Date.now()}`
       : '';
     const fullFilename = `${filename}${timestamp}.xlsx`;
@@ -69,10 +68,10 @@ export class ExcelExportService {
   ): void {
     const workbook = XLSX.utils.book_new();
 
-    sheets.forEach(sheet => {
+    sheets.forEach((sheet) => {
       const transformedData = this.transformData(sheet.data, sheet.columnHeaders);
       const worksheet = XLSX.utils.json_to_sheet(transformedData);
-      
+
       // Auto-size columns
       const colWidths = this.calculateColumnWidths(transformedData);
       worksheet['!cols'] = colWidths;
@@ -92,10 +91,10 @@ export class ExcelExportService {
     columnHeaders?: Record<string, string>,
     excludeColumns: string[] = []
   ): any[] {
-    return data.map(row => {
+    return data.map((row) => {
       const transformedRow: any = {};
 
-      Object.keys(row).forEach(key => {
+      Object.keys(row).forEach((key) => {
         // Skip excluded columns
         if (excludeColumns.includes(key)) return;
 
@@ -138,7 +137,7 @@ export class ExcelExportService {
   private formatHeader(key: string): string {
     return key
       .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, str => str.toUpperCase())
+      .replace(/^./, (str) => str.toUpperCase())
       .trim();
   }
 
@@ -149,10 +148,10 @@ export class ExcelExportService {
     if (!data || data.length === 0) return [];
 
     const keys = Object.keys(data[0]);
-    return keys.map(key => {
+    return keys.map((key) => {
       const maxLength = Math.max(
         key.length,
-        ...data.map(row => {
+        ...data.map((row) => {
           const value = row[key];
           return value ? value.toString().length : 0;
         })
@@ -197,12 +196,12 @@ export class ExcelExportService {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     const timestamp = `_${new Date().toISOString().split('T')[0]}_${Date.now()}`;
     link.setAttribute('href', url);
     link.setAttribute('download', `${filename}${timestamp}.csv`);
     link.style.visibility = 'hidden';
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

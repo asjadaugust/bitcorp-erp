@@ -30,7 +30,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
-    ActionsContainerComponent
+    ActionsContainerComponent,
   ],
   template: `
     <app-page-layout

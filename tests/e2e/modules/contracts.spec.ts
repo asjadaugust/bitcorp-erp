@@ -33,7 +33,7 @@ test.describe('Contracts Module', () => {
 
     const contractNumber = `CTR-${Date.now()}`;
     await page.fill('input#numero_contrato', contractNumber);
-    
+
     // Select first available equipment and provider
     await page.waitForSelector('select#equipment_id');
     // Wait a bit for options to load
@@ -46,13 +46,13 @@ test.describe('Contracts Module', () => {
     await page.fill('input#fecha_inicio', '2025-01-01');
     await page.fill('input#fecha_fin', '2025-12-31');
     await page.fill('input#tarifa', '100');
-    
+
     // Wait for button to be enabled
     const submitBtn = page.locator('button:has-text("Crear Contrato")');
     await expect(submitBtn).toBeEnabled();
 
     await submitBtn.click();
-    
+
     // Should redirect back to list
     await expect(page).toHaveURL(/\/equipment\/contracts/);
     await expect(page.locator('table')).toContainText(contractNumber);

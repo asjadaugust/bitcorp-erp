@@ -29,11 +29,7 @@ import { ProjectService } from '../../../../core/services/project.service';
         </div>
         <div class="header-actions">
           <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="form.invalid || loading"
-          >
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
             <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Proyecto' }}
           </button>
         </div>
@@ -112,12 +108,7 @@ import { ProjectService } from '../../../../core/services/project.service';
 
               <div class="form-group">
                 <label for="endDate">Fecha Fin Estimada *</label>
-                <input
-                  id="endDate"
-                  type="date"
-                  formControlName="endDate"
-                  class="form-control"
-                />
+                <input id="endDate" type="date" formControlName="endDate" class="form-control" />
                 <div class="error-msg" *ngIf="hasError('endDate')">Fecha fin es requerida</div>
               </div>
 
@@ -360,7 +351,7 @@ export class ProjectFormComponent implements OnInit {
       location: ['', Validators.required],
       budget: ['', Validators.required],
       currency: ['PEN', Validators.required],
-      description: ['']
+      description: [''],
     });
   }
 
@@ -375,7 +366,7 @@ export class ProjectFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error loading project');
-      }
+      },
     });
   }
 
@@ -385,10 +376,11 @@ export class ProjectFormComponent implements OnInit {
       return;
     }
     this.loading = true;
-    const req = this.isEditMode && this.projectId
-      ? this.projectService.update(this.projectId, this.form.value)
-      : this.projectService.create(this.form.value);
-    
+    const req =
+      this.isEditMode && this.projectId
+        ? this.projectService.update(this.projectId, this.form.value)
+        : this.projectService.create(this.form.value);
+
     req.subscribe({
       next: () => {
         this.router.navigate(['/operaciones/projects']);
@@ -396,7 +388,7 @@ export class ProjectFormComponent implements OnInit {
       error: () => {
         this.loading = false;
         console.error('Error saving project');
-      }
+      },
     });
   }
 

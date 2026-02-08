@@ -34,7 +34,7 @@ export interface Tab {
         overflow-x: auto;
         overflow-y: visible;
         min-height: 48px;
-        
+
         /* Hide scrollbar but keep functionality */
         scrollbar-width: none;
         -ms-overflow-style: none;

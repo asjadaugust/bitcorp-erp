@@ -1,4 +1,3 @@
-
 import { test, expect, request } from '@playwright/test';
 
 test.describe('UI Verification', () => {
@@ -7,7 +6,7 @@ test.describe('UI Verification', () => {
   test.beforeAll(async ({ request }) => {
     // 1. Login via API to get token
     const loginRes = await request.post('http://localhost:3400/api/auth/login', {
-      data: { username: 'admin', password: 'admin123' }
+      data: { username: 'admin', password: 'admin123' },
     });
     const loginBody = await loginRes.json();
     authToken = loginBody.access_token || loginBody.token;
@@ -23,43 +22,43 @@ test.describe('UI Verification', () => {
         brand: 'CAT',
         model: '320D',
         status: 'available',
-        hourmeter_reading: 100
-      }
+        hourmeter_reading: 100,
+      },
     });
-    
+
     // We won't block if this fails (maybe it exists), but creating one ensures data
     if (!eqRes.ok()) {
-        console.log('Setup: Equipment creation might have failed or persisted', await eqRes.text());
+      console.log('Setup: Equipment creation might have failed or persisted', await eqRes.text());
     } else {
-        const eqData = await eqRes.json();
-        console.log('Setup: Created equipment', eqData.id);
+      const eqData = await eqRes.json();
+      console.log('Setup: Created equipment', eqData.id);
 
-        // 3. Create a Contract for this equipment
-        await request.post('http://localhost:3400/api/contracts', {
-            headers: { Authorization: `Bearer ${authToken}` },
-            data: {
-                equipment_id: eqData.id,
-                client_name: 'Test Client',
-                project_name: 'Test Project',
-                code: `CTR-${Date.now()}`,
-                start_date: '2025-01-01',
-                end_date: '2025-12-31',
-                status: 'active'
-            }
-        });
+      // 3. Create a Contract for this equipment
+      await request.post('http://localhost:3400/api/contracts', {
+        headers: { Authorization: `Bearer ${authToken}` },
+        data: {
+          equipment_id: eqData.id,
+          client_name: 'Test Client',
+          project_name: 'Test Project',
+          code: `CTR-${Date.now()}`,
+          start_date: '2025-01-01',
+          end_date: '2025-12-31',
+          status: 'active',
+        },
+      });
 
-        // 4. Create a Maintenance Schedule
-        await request.post('http://localhost:3400/api/scheduling/maintenance-schedules', {
-            headers: { Authorization: `Bearer ${authToken}` },
-            data: {
-                equipment_id: eqData.id,
-                maintenance_type: 'preventive',
-                interval_type: 'hours',
-                interval_value: 250,
-                description: 'Initial 250h Service',
-                status: 'active'
-            }
-        });
+      // 4. Create a Maintenance Schedule
+      await request.post('http://localhost:3400/api/scheduling/maintenance-schedules', {
+        headers: { Authorization: `Bearer ${authToken}` },
+        data: {
+          equipment_id: eqData.id,
+          maintenance_type: 'preventive',
+          interval_type: 'hours',
+          interval_value: 250,
+          description: 'Initial 250h Service',
+          status: 'active',
+        },
+      });
     }
   });
 
@@ -74,34 +73,34 @@ test.describe('UI Verification', () => {
 
   test('Maintenance Schedules should display data', async ({ page }) => {
     await page.goto('http://localhost:3420/equipment/maintenance');
-    
+
     // We expect data now because we seeded it
     await expect(page.locator('.schedules-grid')).toBeVisible();
     await expect(page.locator('.schedule-card')).toBeVisible();
-    
+
     // Just verify the grid or empty state loads without error
     const cardCount = await page.locator('.schedule-card').count();
     if (cardCount === 0) {
-        await expect(page.locator('.empty-state')).toBeVisible();
+      await expect(page.locator('.empty-state')).toBeVisible();
     } else {
-        await expect(page.locator('.schedule-card').first()).toBeVisible();
+      await expect(page.locator('.schedule-card').first()).toBeVisible();
     }
   });
 
   test('Contracts links should work', async ({ page }) => {
     await page.goto('http://localhost:3420/equipment/contracts');
     await expect(page.locator('app-contract-list')).toBeVisible();
-    
+
     // We seeded a contract, so we expect rows
     // But filters/pagination might hide it? Assume default view shows it.
     await expect(page.locator('table tbody tr')).not.toHaveCount(0);
-    
+
     const viewBtn = page.locator('table tbody tr').first().locator('button .fa-eye').first();
     // Sometimes the icon is inside the button
     if (await viewBtn.isVisible()) {
-        await viewBtn.click();
-        await expect(page).not.toHaveURL(/.*\/NaN$/);
-        await expect(page).toHaveURL(/.*\/equipment\/contracts\/.+/);
+      await viewBtn.click();
+      await expect(page).not.toHaveURL(/.*\/NaN$/);
+      await expect(page).toHaveURL(/.*\/equipment\/contracts\/.+/);
     }
   });
 
@@ -109,27 +108,26 @@ test.describe('UI Verification', () => {
     // We didn't seed valuation, check assuming empty or standard Nav
     await page.goto('http://localhost:3420/equipment/valuations');
     const rowCount = await page.locator('table tbody tr').count();
-    
+
     if (rowCount > 0) {
-       await page.locator('table tbody tr').first().locator('.fa-eye').click();
-       await page.getByText('Volver a Valorizaciones').click();
-       await expect(page).toHaveURL(/.*\/equipment\/valuations$/);
+      await page.locator('table tbody tr').first().locator('.fa-eye').click();
+      await page.getByText('Volver a Valorizaciones').click();
+      await expect(page).toHaveURL(/.*\/equipment\/valuations$/);
     }
   });
 
   test('Equipment Detail should have new design', async ({ page }) => {
-     await page.goto('http://localhost:3420/equipment');
-     
-     // We seeded an equipment "Test Equipment Redesign"
-     // Search for it or just click first
-     await page.locator('table tbody tr').first().waitFor({ state: 'visible' });
-     await page.locator('table tbody tr').first().click();
-     
-     // Verify new design elements
-     await expect(page.locator('.stats-grid')).toBeVisible();
-     await expect(page.locator('.stat-card .fa-circle-info')).toBeVisible();
-     await expect(page.locator('.tabs-nav')).toBeVisible();
-     await expect(page.locator('button.tab-btn', { hasText: 'General' })).toBeVisible();
-  });
+    await page.goto('http://localhost:3420/equipment');
 
+    // We seeded an equipment "Test Equipment Redesign"
+    // Search for it or just click first
+    await page.locator('table tbody tr').first().waitFor({ state: 'visible' });
+    await page.locator('table tbody tr').first().click();
+
+    // Verify new design elements
+    await expect(page.locator('.stats-grid')).toBeVisible();
+    await expect(page.locator('.stat-card .fa-circle-info')).toBeVisible();
+    await expect(page.locator('.tabs-nav')).toBeVisible();
+    await expect(page.locator('button.tab-btn', { hasText: 'General' })).toBeVisible();
+  });
 });

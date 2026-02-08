@@ -37,7 +37,7 @@ test.describe('Logistics Module Flow', () => {
     await page.selectOption('select[formControlName="unidad_medida"]', 'UND');
     await page.fill('input[formControlName="stock_actual"]', '10');
     await page.fill('input[formControlName="costo_unitario"]', '50');
-    
+
     // Save Product
     await page.click('button[type="submit"]');
     await page.waitForURL('**/logistica/products');
@@ -60,28 +60,28 @@ test.describe('Logistics Module Flow', () => {
     // Fill Movement Form
     // Note: tipo_movimiento is set by query param and displayed as static text
     await expect(page.locator('.badge-status-available')).toContainText('INGRESO');
-    
+
     // Add Item
     // Wait for products to load
-    await page.waitForTimeout(2000); 
-    
+    await page.waitForTimeout(2000);
+
     const productSelect = page.locator('select[formControlName="product_id"]').first();
     // Try to select by label containing the product code
     // We need to find the option value for the product name
     const option = productSelect.locator(`option:has-text("${productCode}")`);
-    
+
     // Check if option exists
     const count = await option.count();
     if (count > 0) {
-        const value = await option.getAttribute('value');
-        if (value) {
-            await productSelect.selectOption(value);
-        }
+      const value = await option.getAttribute('value');
+      if (value) {
+        await productSelect.selectOption(value);
+      }
     } else {
-        console.log('Product not found in select, selecting second option as fallback');
-        await productSelect.selectOption({ index: 1 });
+      console.log('Product not found in select, selecting second option as fallback');
+      await productSelect.selectOption({ index: 1 });
     }
-    
+
     await page.fill('input[formControlName="cantidad"]', '5');
     await page.fill('input[formControlName="costo_unitario"]', '50');
 

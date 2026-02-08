@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Verify All Modules with Data', () => {
   test.beforeEach(async ({ page }) => {
-    page.on('console', msg => console.log(`BROWSER: ${msg.text()}`));
-    
+    page.on('console', (msg) => console.log(`BROWSER: ${msg.text()}`));
+
     // Login as admin
     await page.goto('http://localhost:3420/login');
     await page.fill('input[name="username"]', 'admin');
@@ -35,7 +35,7 @@ test.describe('Verify All Modules with Data', () => {
   test('should display daily reports data', async ({ page }) => {
     await page.click('text=Partes Diarios');
     await page.waitForLoadState('networkidle');
-    
+
     // Wait for either grid or empty state
     await page.waitForSelector('.reports-grid, .empty-state');
 
@@ -80,7 +80,7 @@ test.describe('Verify All Modules with Data', () => {
   test('should display SIG data', async ({ page }) => {
     await page.click('text=SIG');
     await page.waitForLoadState('networkidle');
-    
+
     // Check for SIG dashboard
     await expect(page.locator('main h1')).toContainText('Sistema Integrado de Gestión');
     await page.waitForSelector('table tbody tr');
@@ -91,7 +91,7 @@ test.describe('Verify All Modules with Data', () => {
   test('should display Tenders data', async ({ page }) => {
     await page.click('text=Licitaciones');
     await page.waitForLoadState('networkidle');
-    
+
     // Check for Tenders list
     await expect(page.locator('main h1')).toContainText('Licitaciones');
     const tenderCount = await page.locator('table tbody tr').count();
@@ -101,7 +101,7 @@ test.describe('Verify All Modules with Data', () => {
   test('should display SST data', async ({ page }) => {
     await page.click('text=SST');
     await page.waitForLoadState('networkidle');
-    
+
     // Check for SST list
     await expect(page.locator('main h1')).toContainText('Seguridad y Salud');
     const incidentCount = await page.locator('table tbody tr').count();
@@ -111,7 +111,7 @@ test.describe('Verify All Modules with Data', () => {
   test('should display Administration data', async ({ page }) => {
     await page.click('text=Administración');
     await page.waitForLoadState('networkidle');
-    
+
     // Check for Cost Centers list
     await expect(page.locator('main h1')).toContainText('Centros de Costo');
     const ccCount = await page.locator('table tbody tr').count();

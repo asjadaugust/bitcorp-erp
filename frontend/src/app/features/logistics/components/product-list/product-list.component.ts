@@ -3,10 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InventoryService, Product } from '../../services/inventory.service';
-import { AeroTableComponent, TableColumn } from '../../../../core/design-system/table/aero-table.component';
-import { PageLayoutComponent, TabItem } from '../../../../shared/components/page-layout/page-layout.component';
-import { FilterBarComponent, FilterConfig } from '../../../../shared/components/filter-bar/filter-bar.component';
-import { ExportDropdownComponent, ExportFormat } from '../../../../shared/components/export-dropdown/export-dropdown.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../../../core/design-system/table/aero-table.component';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../../../shared/components/filter-bar/filter-bar.component';
+import {
+  ExportDropdownComponent,
+  ExportFormat,
+} from '../../../../shared/components/export-dropdown/export-dropdown.component';
 import { ExcelExportService } from '../../../../core/services/excel-export.service';
 import { CsvExportService } from '../../../../core/services/csv-export.service';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
@@ -15,10 +27,10 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
   selector: 'app-product-list',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
-    AeroTableComponent, 
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -33,9 +45,10 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       [tabs]="tabs"
     >
       <app-actions-container actions>
-        <app-export-dropdown 
+        <app-export-dropdown
           (export)="handleExport($event)"
-          [disabled]="loading || products.length === 0">
+          [disabled]="loading || products.length === 0"
+        >
         </app-export-dropdown>
         <button class="btn btn-primary" (click)="navigateToCreate()">
           <i class="fa-solid fa-plus"></i> Nuevo Producto
@@ -85,11 +98,11 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          'code': codeTemplate,
-          'category': categoryTemplate,
-          'stock': stockTemplate,
-          'totalValue': totalValueTemplate,
-          'status': statusTemplate
+          code: codeTemplate,
+          category: categoryTemplate,
+          stock: stockTemplate,
+          totalValue: totalValueTemplate,
+          status: statusTemplate,
         }"
       >
       </aero-table>
@@ -117,11 +130,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 
       <ng-template #statusTemplate let-row>
         <span
-          [class]="
-            row.is_active
-              ? 'badge badge-status-available'
-              : 'badge badge-status-retired'
-          "
+          [class]="row.is_active ? 'badge badge-status-available' : 'badge badge-status-retired'"
         >
           {{ row.is_active ? 'Activo' : 'Inactivo' }}
         </span>
@@ -196,10 +205,22 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         font-size: 20px;
       }
 
-      .stat-icon.total { background: var(--primary-100); color: var(--primary-500); }
-      .stat-icon.available { background: var(--semantic-green-50); color: var(--semantic-green-600); }
-      .stat-icon.warning { background: var(--semantic-yellow-50); color: var(--semantic-yellow-600); }
-      .stat-icon.danger { background: var(--semantic-red-50); color: var(--semantic-red-600); }
+      .stat-icon.total {
+        background: var(--primary-100);
+        color: var(--primary-500);
+      }
+      .stat-icon.available {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-600);
+      }
+      .stat-icon.warning {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-600);
+      }
+      .stat-icon.danger {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-600);
+      }
 
       .stat-info {
         display: flex;
@@ -283,7 +304,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         gap: var(--s-8);
         align-items: center;
       }
-    `
+    `,
   ],
 })
 export class ProductListComponent implements OnInit {
@@ -311,17 +332,22 @@ export class ProductListComponent implements OnInit {
   breadcrumbs = [
     { label: 'Dashboard', url: '/app' },
     { label: 'Logística', url: '/logistics' },
-    { label: 'Productos' }
+    { label: 'Productos' },
   ];
 
   tabs: TabItem[] = [
     { label: 'Productos', route: '/logistics/products', icon: 'fa-boxes-stacked' },
     { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-dolly' },
-    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' }
+    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' },
   ];
 
   filterConfig: FilterConfig[] = [
-    { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar por código, nombre, categoría...' },
+    {
+      key: 'search',
+      label: 'Buscar',
+      type: 'text',
+      placeholder: 'Buscar por código, nombre, categoría...',
+    },
     {
       key: 'category',
       label: 'Categoría',
@@ -330,19 +356,19 @@ export class ProductListComponent implements OnInit {
         { label: 'Repuestos', value: 'Repuestos' },
         { label: 'EPP', value: 'EPP' },
         { label: 'Herramientas', value: 'Herramientas' },
-        { label: 'Consumibles', value: 'Consumibles' }
-      ]
+        { label: 'Consumibles', value: 'Consumibles' },
+      ],
     },
-    { 
-      key: 'stockStatus', 
-      label: 'Estado de Stock', 
-      type: 'select', 
+    {
+      key: 'stockStatus',
+      label: 'Estado de Stock',
+      type: 'select',
       options: [
         { label: 'Stock Bajo', value: 'low' },
         { label: 'Sin Stock', value: 'out' },
-        { label: 'Disponible', value: 'available' }
-      ]
-    }
+        { label: 'Disponible', value: 'available' },
+      ],
+    },
   ];
 
   columns: TableColumn[] = [
@@ -354,7 +380,7 @@ export class ProductListComponent implements OnInit {
     { key: 'costo_unitario', label: 'Costo Unit.', type: 'currency', format: 'PEN' },
     { key: 'totalValue', label: 'Valor Total', type: 'template' },
     { key: 'ubicacion', label: 'Ubicación', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'template' }
+    { key: 'status', label: 'Estado', type: 'template' },
   ];
 
   ngOnInit(): void {
@@ -439,29 +465,29 @@ export class ProductListComponent implements OnInit {
       return;
     }
 
-    const exportData = this.products.map(product => ({
-      'ID': product.id || '',
-      'Código': product.codigo || '',
-      'Nombre': product.nombre || '',
-      'Descripción': product.descripcion || '',
-      'Categoría': product.categoria || '',
+    const exportData = this.products.map((product) => ({
+      ID: product.id || '',
+      Código: product.codigo || '',
+      Nombre: product.nombre || '',
+      Descripción: product.descripcion || '',
+      Categoría: product.categoria || '',
       'Unidad Medida': product.unidad_medida || '',
       'Stock Actual': product.stock_actual || 0,
       'Costo Unitario': product.costo_unitario || 0,
-      'Ubicación': product.ubicacion || '',
-      'Activo': product.is_active ? 'Sí' : 'No'
+      Ubicación: product.ubicacion || '',
+      Activo: product.is_active ? 'Sí' : 'No',
     }));
 
     if (format === 'excel') {
       this.excelService.exportToExcel(exportData, {
         filename: 'productos_reporte',
         sheetName: 'Productos',
-        includeTimestamp: true
+        includeTimestamp: true,
       });
     } else {
       this.csvService.exportToCsv(exportData, {
         filename: 'productos_reporte',
-        includeTimestamp: true
+        includeTimestamp: true,
       });
     }
   }

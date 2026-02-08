@@ -70,12 +70,12 @@ import { Equipment } from '../../core/models/equipment.model';
                   <!-- Name removed as not in model -->
 
                   <div class="form-group">
-                    <label for="manufacture_year">Año</label>
+                    <label for="anio_fabricacion">Año</label>
                     <input
                       type="number"
-                      id="manufacture_year"
-                      name="manufacture_year"
-                      [(ngModel)]="equipment.manufacture_year"
+                      id="anio_fabricacion"
+                      name="anio_fabricacion"
+                      [(ngModel)]="equipment.anio_fabricacion"
                       min="1950"
                       [max]="currentYear"
                     />
@@ -99,8 +99,8 @@ import { Equipment } from '../../core/models/equipment.model';
                 <h2>Operational Data</h2>
                 <div class="form-grid">
                   <div class="form-group">
-                    <label for="engine_type">Tipo de Motor</label>
-                    <select id="engine_type" name="engine_type" [(ngModel)]="equipment.engine_type">
+                    <label for="tipo_motor">Tipo de Motor</label>
+                    <select id="tipo_motor" name="tipo_motor" [(ngModel)]="equipment.tipo_motor">
                       <option value="">Seleccionar...</option>
                       <option value="DIESEL">Diesel</option>
                       <option value="GASOLINA">Gasolina</option>
@@ -110,8 +110,8 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
 
                   <div class="form-group">
-                    <label for="meter_type">Tipo de Medidor</label>
-                    <select id="meter_type" name="meter_type" [(ngModel)]="equipment.meter_type">
+                    <label for="medidor_uso">Tipo de Medidor</label>
+                    <select id="medidor_uso" name="medidor_uso" [(ngModel)]="equipment.medidor_uso">
                       <option value="">Seleccionar...</option>
                       <option value="HOROMETRO">Horómetro</option>
                       <option value="ODOMETRO">Odómetro</option>
@@ -271,7 +271,7 @@ export class EquipmentCreateComponent {
 
   equipment: Partial<Equipment> = {
     estado: 'DISPONIBLE',
-    engine_type: 'DIESEL',
+    tipo_motor: 'DIESEL',
   };
 
   saving = false;
