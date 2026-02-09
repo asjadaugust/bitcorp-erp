@@ -3,13 +3,38 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { SigService } from '../../services/sig.service';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-document-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-container">
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors *ngIf="validationErrors.length > 0" [errors]="validationErrors">
+      </app-validation-errors>
+
+      <app-alert
+        *ngIf="errorMessage"
+        type="error"
+        [message]="errorMessage"
+        [dismissible]="true"
+        (dismiss)="errorMessage = null"
+      >
+      </app-alert>
+
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -290,11 +315,14 @@ export class DocumentFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private sigService = inject(SigService);
+  private errorHandler = inject(FormErrorHandlerService);
 
   form!: FormGroup;
   loading = false;
   isEditMode = false;
   documentId?: string;
+  validationErrors: ValidationError[] = [];
+  errorMessage: string | null = null;
 
   ngOnInit() {
     this.documentId = this.route.snapshot.params['id'];
@@ -323,10 +351,10 @@ export class DocumentFormComponent implements OnInit {
         this.form.patchValue(doc);
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        // In a real app, show a toast
-        console.error('Error loading document');
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        console.error('Error loading document', err);
       },
     });
   }
@@ -337,6 +365,9 @@ export class DocumentFormComponent implements OnInit {
       return;
     }
     this.loading = true;
+    this.validationErrors = [];
+    this.errorMessage = null;
+
     const req =
       this.isEditMode && this.documentId
         ? this.sigService.updateDocument(this.documentId, this.form.value)
@@ -346,9 +377,11 @@ export class DocumentFormComponent implements OnInit {
       next: () => {
         this.router.navigate(['/sig']);
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        console.error('Error saving document');
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        console.error('Error saving document', err);
       },
     });
   }

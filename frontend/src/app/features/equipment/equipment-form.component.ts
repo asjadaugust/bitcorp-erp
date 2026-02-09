@@ -755,28 +755,14 @@ export class EquipmentFormComponent implements OnInit {
     this.equipmentService.getById(id).subscribe({
       next: (equipment) => {
         // Map API response (Spanish snake_case) to form fields
-        this.equipmentForm.patchValue({
-          codigo_equipo: equipment.codigo_equipo,
-          marca: equipment.marca,
-          modelo: equipment.modelo,
-          estado: equipment.estado,
-          categoria: equipment.categoria,
-          proveedor_id: equipment.proveedor_id,
-          anio_fabricacion: equipment.anio_fabricacion,
-          placa: equipment.placa,
-          medidor_uso: equipment.medidor_uso,
-          potencia_neta: equipment.potencia_neta,
-          tipo_motor: equipment.tipo_motor,
-          numero_serie_equipo: equipment.serial_number,
-          numero_chasis: equipment.chassis_number,
-          numero_serie_motor: equipment.engine_serial_number,
-        });
+        this.equipmentForm.patchValue(equipment);
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading equipment', err);
         this.loading = false;
-        this.router.navigate(['/equipment']);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        // this.router.navigate(['/equipment']); // Don't redirect immediately on error, show message
       },
     });
   }
@@ -792,7 +778,45 @@ export class EquipmentFormComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const equipmentData = this.equipmentForm.value;
+    const formValue = this.equipmentForm.getRawValue();
+    const equipmentData = { ...formValue };
+
+    // Remove non-DTO fields
+    if ('notes' in equipmentData) {
+      delete equipmentData.notes;
+    }
+
+    // Convert numeric fields
+    if (equipmentData.potencia_neta) {
+      // Remove non-numeric characters if user types "300 HP"
+      const potencia = String(equipmentData.potencia_neta).replace(/[^0-9.]/g, '');
+      equipmentData.potencia_neta = potencia ? Number(potencia) : null;
+    } else {
+      equipmentData.potencia_neta = null;
+    }
+
+    if (equipmentData.anio_fabricacion) {
+      equipmentData.anio_fabricacion = Number(equipmentData.anio_fabricacion);
+    } else {
+      equipmentData.anio_fabricacion = null;
+    }
+
+    // Convert status to uppercase just in case
+    if (equipmentData.estado) {
+      equipmentData.estado = String(equipmentData.estado).toUpperCase();
+    }
+
+    // Ensure nulls for empty strings on optional fields
+    [
+      'placa',
+      'numero_serie_equipo',
+      'numero_chasis',
+      'numero_serie_motor',
+      'tipo_motor',
+      'medidor_uso',
+    ].forEach((field) => {
+      if (!equipmentData[field]) equipmentData[field] = null;
+    });
 
     const request$ =
       this.isEditMode && this.equipmentId
@@ -800,17 +824,17 @@ export class EquipmentFormComponent implements OnInit {
         : this.equipmentService.create(equipmentData);
 
     request$.subscribe({
-      next: () => {
+      next: (response) => {
         this.loading = false;
         this.successMessage = this.isEditMode
-          ? 'Equipo actualizado exitosamente'
-          : 'Equipo creado exitosamente';
-
+          ? 'Equipo actualizado correctamente'
+          : 'Equipo creado correctamente';
         setTimeout(() => {
-          this.router.navigate(['/equipment']);
+          this.router.navigate(['/operations/equipment']);
         }, 1500);
       },
       error: (err) => {
+        console.error('Error saving equipment', err);
         this.loading = false;
         this.validationErrors = this.errorHandler.extractValidationErrors(err);
         this.errorMessage = this.errorHandler.getErrorMessage(err);

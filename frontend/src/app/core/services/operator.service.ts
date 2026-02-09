@@ -16,37 +16,6 @@ export class OperatorService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/operators`;
 
-  /**
-   * Maps API response to frontend Operator model
-   * API returns Spanish snake_case (e.g., apellido_paterno, fecha_ingreso, is_active)
-   * We now directly use the API fields without transformation
-   */
-  private mapOperator(apiOp: any): Operator {
-    return {
-      id: apiOp.id,
-      legacy_id: apiOp.legacy_id,
-      dni: apiOp.dni,
-      nombres: apiOp.nombres,
-      apellido_paterno: apiOp.apellido_paterno,
-      apellido_materno: apiOp.apellido_materno,
-      nombre_completo: apiOp.nombre_completo,
-      fecha_nacimiento: apiOp.fecha_nacimiento,
-      correo_electronico: apiOp.correo_electronico,
-      telefono: apiOp.telefono,
-      direccion: apiOp.direccion,
-      fecha_ingreso: apiOp.fecha_ingreso,
-      fecha_cese: apiOp.fecha_cese,
-      tipo_contrato: apiOp.tipo_contrato,
-      cargo: apiOp.cargo,
-      especialidad: apiOp.especialidad,
-      licencia_conducir: apiOp.licencia_conducir,
-      operating_unit_id: apiOp.operating_unit_id,
-      is_active: apiOp.is_active,
-      created_at: apiOp.created_at,
-      updated_at: apiOp.updated_at,
-    };
-  }
-
   getAll(filters?: any): Observable<Operator[]> {
     let params = new HttpParams();
     if (filters) {
@@ -65,7 +34,7 @@ export class OperatorService {
             : Array.isArray(response)
               ? response
               : [];
-        return data.map((op: any) => this.mapOperator(op));
+        return data;
       })
     );
   }
@@ -73,9 +42,9 @@ export class OperatorService {
   getById(id: number): Observable<Operator> {
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
       map((response) => {
-        const data =
-          response && typeof response === 'object' && 'data' in response ? response.data : response;
-        return this.mapOperator(data);
+        return response && typeof response === 'object' && 'data' in response
+          ? response.data
+          : response;
       })
     );
   }
@@ -101,7 +70,7 @@ export class OperatorService {
             : Array.isArray(response)
               ? response
               : [];
-        return data.map((op: any) => this.mapOperator(op));
+        return data;
       })
     );
   }
@@ -153,7 +122,7 @@ export class OperatorService {
             : Array.isArray(response)
               ? response
               : [];
-        return data.map((op: any) => this.mapOperator(op));
+        return data;
       })
     );
   }

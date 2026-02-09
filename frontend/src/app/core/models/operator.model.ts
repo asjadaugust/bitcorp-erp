@@ -16,6 +16,7 @@ export interface Operator {
   cargo?: string | null;
   especialidad?: string | null;
   licencia_conducir?: string | null;
+  vencimiento_licencia?: string | null;
   operating_unit_id?: number | null;
   is_active: boolean;
   created_at: string;

@@ -68,7 +68,9 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       </ng-template>
 
       <ng-template #fullNameTemplate let-row>
-        <span class="font-medium">{{ row.firstName }} {{ row.lastName }}</span>
+        <span class="font-medium">
+          {{ row.nombre_completo || row.nombres + ' ' + row.apellido_paterno }}
+        </span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -178,10 +180,10 @@ export class EmployeeListComponent implements OnInit {
 
   columns: TableColumn[] = [
     { key: 'dni', label: 'DNI', type: 'template' },
-    { key: 'fullName', label: 'Nombre Completo', type: 'template' },
-    { key: 'mobile1', label: 'Celular', type: 'text' },
-    { key: 'email1', label: 'Email', type: 'text' },
-    { key: 'role', label: 'Cargo/Rol', type: 'text' },
+    { key: 'nombre_completo', label: 'Nombre Completo', type: 'template' },
+    { key: 'telefono', label: 'Teléfono', type: 'text' },
+    { key: 'email', label: 'Email', type: 'text' },
+    { key: 'cargo', label: 'Cargo', type: 'text' },
   ];
 
   ngOnInit(): void {
@@ -216,7 +218,7 @@ export class EmployeeListComponent implements OnInit {
   }
 
   deleteEmployee(employee: Employee): void {
-    if (confirm(`¿Está seguro de eliminar a ${employee.firstName} ${employee.lastName}?`)) {
+    if (confirm(`¿Está seguro de eliminar a ${employee.nombres} ${employee.apellido_paterno}?`)) {
       this.employeeService.deleteEmployee(employee.dni).subscribe({
         next: () => {
           this.loadEmployees();

@@ -12,10 +12,10 @@ export interface Equipment {
   is_active: boolean;
 
   // Additional fields (if present in API)
-  equipment_type_id?: number | null;
-  serial_number?: string | null;
-  chassis_number?: string | null;
-  engine_serial_number?: string | null;
+  tipo_equipo_id?: number | null;
+  numero_serie_equipo?: string | null;
+  numero_chasis?: string | null;
+  numero_serie_motor?: string | null;
   anio_fabricacion?: number | null;
   potencia_neta?: number | null;
   tipo_motor?: string | null;

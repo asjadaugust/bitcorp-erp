@@ -74,14 +74,30 @@ export class ContractService {
   /**
    * Map frontend model to backend DTO for create/update operations
    */
+  /**
+   * Map frontend model to backend DTO for create/update operations
+   */
   private mapFrontendToBackend(frontendData: any): any {
     return {
       ...frontendData,
-      // Ensure Spanish field names are used
-      equipo_id: frontendData.equipo_id,
-      proveedor_id: frontendData.proveedor_id,
+      // Ensure specific fields are mapped correctly
+      equipo_id: frontendData.equipo_id ? Number(frontendData.equipo_id) : null,
+      proveedor_id: frontendData.proveedor_id ? Number(frontendData.proveedor_id) : null,
+      tarifa: frontendData.tarifa ? Number(frontendData.tarifa) : 0,
+      costo_adicional_motor: frontendData.costo_adicional_motor
+        ? Number(frontendData.costo_adicional_motor)
+        : 0,
+      horas_incluidas: frontendData.horas_incluidas ? Number(frontendData.horas_incluidas) : 0,
+      penalidad_exceso: frontendData.penalidad_exceso ? Number(frontendData.penalidad_exceso) : 0,
+
+      // Default required fields if missing
+      tipo: frontendData.tipo || 'CONTRATO',
+      incluye_motor: !!frontendData.incluye_motor,
+      incluye_operador: !!frontendData.incluye_operador,
+
       // Map estado values (keep uppercase for backend)
       estado: this.mapEstadoFrontendToBackend(frontendData.estado),
+
       // Remove computed display fields
       code: undefined,
       provider_name: undefined,

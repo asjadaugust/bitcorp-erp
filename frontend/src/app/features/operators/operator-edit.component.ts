@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OperatorService } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
+import { FormErrorHandlerService } from '../../core/services/form-error-handler.service';
 
 @Component({
   selector: 'app-operator-edit',
@@ -464,19 +465,26 @@ import { Operator } from '../../core/models/operator.model';
     `,
   ],
 })
+@Component({
+  // ... (decorators remain same)
+})
 export class OperatorEditComponent implements OnInit {
   private operatorService = inject(OperatorService);
+  private errorHandler = inject(FormErrorHandlerService); // Inject Error Handler
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   operator: any = {
     nombres: '',
-    apellidoPaterno: '',
-    email: '',
+    apellido_paterno: '',
+    apellido_materno: '',
+    correo_electronico: '',
     telefono: '',
-    estado: 'activo',
-    fechaIngreso: new Date().toISOString().split('T')[0],
+    is_active: true, // Boolean
+    fecha_ingreso: new Date().toISOString().split('T')[0],
     dni: '',
+    licencia_conducir: '',
+    vencimiento_licencia: '',
   };
 
   personalDocuments: any[] = [];
@@ -486,7 +494,9 @@ export class OperatorEditComponent implements OnInit {
   isNew = true;
   errorMessage = '';
   successMessage = '';
+  validationErrors: any[] = []; // Add validationErrors
 
+  // ... (document methods remain same)
   addPersonalDocument(): void {
     this.personalDocuments.push({
       registration_date: new Date().toISOString().split('T')[0],
@@ -528,14 +538,16 @@ export class OperatorEditComponent implements OnInit {
           fecha_ingreso: data.fecha_ingreso
             ? new Date(data.fecha_ingreso).toISOString().split('T')[0]
             : '',
-          dni: data.dni || '',
+          vencimiento_licencia: data.vencimiento_licencia
+            ? new Date(data.vencimiento_licencia).toISOString().split('T')[0]
+            : '',
         };
         // Personal documents removed
         this.personalDocuments = [];
         this.loading = false;
       },
-      error: (error) => {
-        this.errorMessage = 'Failed to load operator';
+      error: (err) => {
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
         this.loading = false;
       },
     });
@@ -545,6 +557,7 @@ export class OperatorEditComponent implements OnInit {
     this.saving = true;
     this.errorMessage = '';
     this.successMessage = '';
+    this.validationErrors = [];
 
     const request$ = this.isNew
       ? this.operatorService.create(this.operator)
@@ -552,20 +565,21 @@ export class OperatorEditComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.successMessage = `Operator ${this.isNew ? 'created' : 'updated'} successfully!`;
+        this.successMessage = `Operador ${this.isNew ? 'creado' : 'actualizado'} correctamente`;
         this.saving = false;
         setTimeout(() => {
-          this.router.navigate(['/operators']);
+          this.router.navigate(['/operations/operators']); // Updated route
         }, 1500);
       },
-      error: (error) => {
-        this.errorMessage = error.error?.error || 'Failed to save operator';
+      error: (err) => {
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
         this.saving = false;
       },
     });
   }
 
   cancel(): void {
-    this.router.navigate(['/operators']);
+    this.router.navigate(['/operations/operators']); // Updated route
   }
 }

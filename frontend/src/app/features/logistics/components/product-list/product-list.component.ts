@@ -124,7 +124,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 
       <ng-template #totalValueTemplate let-row>
         <span class="font-semibold">
-          {{ row.stock_actual * row.costo_unitario | currency: 'PEN' }}
+          {{ row.stock_actual * row.precio_unitario | currency: 'PEN' }}
         </span>
       </ng-template>
 
@@ -377,7 +377,7 @@ export class ProductListComponent implements OnInit {
     { key: 'category', label: 'Categoría', type: 'template' },
     { key: 'unidad_medida', label: 'Unidad', type: 'text' },
     { key: 'stock', label: 'Stock', type: 'template' },
-    { key: 'costo_unitario', label: 'Costo Unit.', type: 'currency', format: 'PEN' },
+    { key: 'precio_unitario', label: 'Precio Unit.', type: 'currency', format: 'PEN' },
     { key: 'totalValue', label: 'Valor Total', type: 'template' },
     { key: 'ubicacion', label: 'Ubicación', type: 'text' },
     { key: 'status', label: 'Estado', type: 'template' },
@@ -406,7 +406,7 @@ export class ProductListComponent implements OnInit {
   calculateStats(): void {
     this.stats.total = this.products.length;
     this.stats.totalValue = this.products.reduce(
-      (acc, p) => acc + Number(p.stock_actual) * Number(p.costo_unitario),
+      (acc, p) => acc + Number(p.stock_actual) * Number(p.precio_unitario),
       0
     );
     this.stats.lowStock = this.products.filter(
@@ -473,7 +473,7 @@ export class ProductListComponent implements OnInit {
       Categoría: product.categoria || '',
       'Unidad Medida': product.unidad_medida || '',
       'Stock Actual': product.stock_actual || 0,
-      'Costo Unitario': product.costo_unitario || 0,
+      'Precio Unitario': product.precio_unitario || 0,
       Ubicación: product.ubicacion || '',
       Activo: product.is_active ? 'Sí' : 'No',
     }));

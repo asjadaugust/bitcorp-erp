@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { OperatorService } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
+import { FormErrorHandlerService } from '../../core/services/form-error-handler.service';
 
 @Component({
   selector: 'app-operator-list-enhanced',
@@ -561,13 +562,18 @@ import { Operator } from '../../core/models/operator.model';
     `,
   ],
 })
+@Component({
+  // ... (decorators remain same)
+})
 export class OperatorListEnhancedComponent implements OnInit {
   operatorService = inject(OperatorService);
+  private errorHandler = inject(FormErrorHandlerService); // Inject Error Handler
   private router = inject(Router);
 
   operators: Operator[] = [];
   loading = false;
   filters = { status: '', search: '' };
+  errorMessage = ''; // Add errorMessage property
 
   ngOnInit(): void {
     this.loadOperators();
@@ -580,11 +586,14 @@ export class OperatorListEnhancedComponent implements OnInit {
         this.operators = data;
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
         this.loading = false;
       },
     });
   }
+
+  // ... (other methods remain same)
 
   applyFilters(): void {
     this.loadOperators();
@@ -601,7 +610,6 @@ export class OperatorListEnhancedComponent implements OnInit {
   }
 
   getOnLeaveCount(): number {
-    // Since we don't have a specific "vacaciones" status, return 0 for now
     return 0;
   }
 
@@ -614,15 +622,15 @@ export class OperatorListEnhancedComponent implements OnInit {
   }
 
   viewOperator(operator: Operator): void {
-    this.router.navigate(['/operators', operator.id]);
+    this.router.navigate(['/operations/operators', operator.id]); // Updated route
   }
 
   editOperator(operator: Operator): void {
-    this.router.navigate(['/operators', operator.id, 'edit']);
+    this.router.navigate(['/operations/operators', operator.id, 'edit']); // Updated route
   }
 
   addOperator(): void {
-    this.router.navigate(['/operators/new']);
+    this.router.navigate(['/operations/operators/new']); // Updated route
   }
 
   deleteOperator(operator: Operator): void {
@@ -638,7 +646,7 @@ export class OperatorListEnhancedComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error deleting operator:', err);
-          alert('Error al desactivar el operador');
+          this.errorMessage = this.errorHandler.getErrorMessage(err);
         },
       });
     }

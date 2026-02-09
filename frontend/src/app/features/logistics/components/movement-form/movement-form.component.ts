@@ -10,11 +10,24 @@ import {
 } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { InventoryService, Product, Movement } from '../../services/inventory.service';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-movement-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-page">
       <!-- Header -->
@@ -45,6 +58,22 @@ import { InventoryService, Product, Movement } from '../../services/inventory.se
       </div>
 
       <div class="form-container">
+        <!-- Error Handling -->
+        <app-validation-errors
+          *ngIf="validationErrors.length > 0"
+          [errors]="validationErrors"
+          class="mb-4"
+        ></app-validation-errors>
+
+        <app-alert
+          *ngIf="errorMessage"
+          type="error"
+          [message]="errorMessage"
+          [dismissible]="true"
+          (dismiss)="errorMessage = null"
+          class="mb-4"
+        ></app-alert>
+
         <form [formGroup]="movementForm" (ngSubmit)="onSubmit()">
           <!-- Actions at Top -->
           <div class="form-actions">
@@ -164,7 +193,7 @@ import { InventoryService, Product, Movement } from '../../services/inventory.se
                     <th style="width: 40%">Producto</th>
                     <th style="width: 15%">Unidad</th>
                     <th style="width: 15%">Cantidad</th>
-                    <th style="width: 15%">Costo Unit.</th>
+                    <th style="width: 15%">Precio Unit.</th>
                     <th style="width: 15%">Total</th>
                     <th style="width: 50px" *ngIf="!isEditMode"></th>
                   </tr>
@@ -199,7 +228,7 @@ import { InventoryService, Product, Movement } from '../../services/inventory.se
                     <td>
                       <input
                         type="number"
-                        formControlName="costo_unitario"
+                        formControlName="precio_unitario"
                         min="0"
                         step="0.01"
                         (input)="calculateTotal(i)"
@@ -491,14 +520,21 @@ import { InventoryService, Product, Movement } from '../../services/inventory.se
           transform: rotate(360deg);
         }
       }
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
     `,
   ],
+})
+@Component({
+  // ... (decorators remain same, add import if needed)
 })
 export class MovementFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private inventoryService = inject(InventoryService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService); // Inject Error Handler
 
   movementForm: FormGroup;
   isEditMode = false;
@@ -506,6 +542,8 @@ export class MovementFormComponent implements OnInit {
   movementType: 'IN' | 'OUT' = 'IN';
   submitting = false;
   products: Product[] = [];
+  validationErrors: ValidationError[] = []; // Add validationErrors
+  errorMessage: string | null = null; // Add errorMessage
 
   constructor() {
     this.movementForm = this.fb.group({
@@ -519,6 +557,8 @@ export class MovementFormComponent implements OnInit {
       details: this.fb.array([]),
     });
   }
+
+  // ... (getters remain same)
 
   get details() {
     return this.movementForm.get('details') as FormArray;
@@ -553,7 +593,10 @@ export class MovementFormComponent implements OnInit {
   loadProducts(): void {
     this.inventoryService.getProducts().subscribe({
       next: (data) => (this.products = data),
-      error: (err) => console.error('Error loading products', err),
+      error: (err) => {
+        console.error('Error loading products', err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+      },
     });
   }
 
@@ -575,25 +618,30 @@ export class MovementFormComponent implements OnInit {
             this.details.push(
               this.fb.group({
                 product_id: [detail.product_id],
-                unidad_medida: [detail.unidad_medida],
+                unidad_medida: [detail.unidad_medida || ''], // Handle missing unit
                 cantidad: [detail.cantidad],
-                costo_unitario: [detail.costo_unitario],
+                precio_unitario: [detail.precio_unitario],
                 total: [detail.total],
               })
             );
           });
         }
       },
-      error: (err: any) => console.error('Error loading movement', err),
+      error: (err: any) => {
+        console.error('Error loading movement', err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+      },
     });
   }
+
+  // ... (methods remain same)
 
   addItem(): void {
     const itemGroup = this.fb.group({
       product_id: ['', Validators.required],
       unidad_medida: [''],
       cantidad: [1, [Validators.required, Validators.min(0.01)]],
-      costo_unitario: [0, [Validators.required, Validators.min(0)]],
+      precio_unitario: [0, [Validators.required, Validators.min(0)]],
       total: [0],
     });
     this.details.push(itemGroup);
@@ -611,7 +659,7 @@ export class MovementFormComponent implements OnInit {
     if (product) {
       control.patchValue({
         unidad_medida: product.unidad_medida,
-        costo_unitario: product.costo_unitario,
+        precio_unitario: product.precio_unitario,
       });
       this.calculateTotal(index);
     }
@@ -620,8 +668,8 @@ export class MovementFormComponent implements OnInit {
   calculateTotal(index: number): void {
     const control = this.details.at(index);
     const cantidad = control.get('cantidad')?.value || 0;
-    const costo = control.get('costo_unitario')?.value || 0;
-    control.patchValue({ total: cantidad * costo }, { emitEvent: false });
+    const precio = control.get('precio_unitario')?.value || 0;
+    control.patchValue({ total: cantidad * precio }, { emitEvent: false });
   }
 
   isFieldInvalid(field: string): boolean {
@@ -636,6 +684,9 @@ export class MovementFormComponent implements OnInit {
     }
 
     this.submitting = true;
+    this.validationErrors = [];
+    this.errorMessage = null;
+
     const movementData = this.movementForm.getRawValue();
 
     this.inventoryService.createMovement(movementData).subscribe({
@@ -646,6 +697,8 @@ export class MovementFormComponent implements OnInit {
       error: (err: any) => {
         console.error('Error saving movement', err);
         this.submitting = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

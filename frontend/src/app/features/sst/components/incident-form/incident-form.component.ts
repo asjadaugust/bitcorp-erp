@@ -3,13 +3,38 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { SstService } from '../../services/sst.service';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-incident-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-container">
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors *ngIf="validationErrors.length > 0" [errors]="validationErrors">
+      </app-validation-errors>
+
+      <app-alert
+        *ngIf="errorMessage"
+        type="error"
+        [message]="errorMessage"
+        [dismissible]="true"
+        (dismiss)="errorMessage = null"
+      >
+      </app-alert>
+
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -44,71 +69,76 @@ import { SstService } from '../../services/sst.service';
             <h3>Información del Incidente</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="date">Fecha *</label>
-                <input id="date" type="date" formControlName="date" class="form-control" />
-                <div class="error-msg" *ngIf="hasError('date')">Fecha es requerida</div>
+                <label for="fecha_incidente">Fecha *</label>
+                <input
+                  id="fecha_incidente"
+                  type="date"
+                  formControlName="fecha_incidente"
+                  class="form-control"
+                />
+                <div class="error-msg" *ngIf="hasError('fecha_incidente')">Fecha es requerida</div>
               </div>
 
               <div class="form-group">
-                <label for="time">Hora *</label>
-                <input id="time" type="time" formControlName="time" class="form-control" />
-                <div class="error-msg" *ngIf="hasError('time')">Hora es requerida</div>
+                <label for="hora">Hora *</label>
+                <input id="hora" type="time" formControlName="hora" class="form-control" />
+                <div class="error-msg" *ngIf="hasError('hora')">Hora es requerida</div>
               </div>
 
               <div class="form-group">
-                <label for="type">Tipo *</label>
-                <select id="type" formControlName="type" class="form-select">
+                <label for="tipo_incidente">Tipo *</label>
+                <select id="tipo_incidente" formControlName="tipo_incidente" class="form-select">
                   <option value="">Seleccione...</option>
                   <option value="Accidente">Accidente</option>
                   <option value="Incidente">Incidente</option>
                   <option value="Casi Accidente">Casi Accidente</option>
                   <option value="Condición Insegura">Condición Insegura</option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('type')">Tipo es requerido</div>
+                <div class="error-msg" *ngIf="hasError('tipo_incidente')">Tipo es requerido</div>
               </div>
 
               <div class="form-group">
-                <label for="severity">Severidad *</label>
-                <select id="severity" formControlName="severity" class="form-select">
-                  <option value="Leve">Leve</option>
-                  <option value="Moderado">Moderado</option>
-                  <option value="Grave">Grave</option>
-                  <option value="Fatal">Fatal</option>
+                <label for="severidad">Severidad *</label>
+                <select id="severidad" formControlName="severidad" class="form-select">
+                  <option value="LEVE">Leve</option>
+                  <option value="MODERADO">Moderado</option>
+                  <option value="GRAVE">Grave</option>
+                  <option value="MUY_GRAVE">Muy Grave / Fatal</option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('severity')">Severidad es requerida</div>
+                <div class="error-msg" *ngIf="hasError('severidad')">Severidad es requerida</div>
               </div>
 
               <div class="form-group full-width">
-                <label for="location">Ubicación *</label>
+                <label for="ubicacion">Ubicación *</label>
                 <input
-                  id="location"
+                  id="ubicacion"
                   type="text"
-                  formControlName="location"
+                  formControlName="ubicacion"
                   class="form-control"
                   placeholder="Lugar exacto del incidente"
                 />
-                <div class="error-msg" *ngIf="hasError('location')">Ubicación es requerida</div>
+                <div class="error-msg" *ngIf="hasError('ubicacion')">Ubicación es requerida</div>
               </div>
 
               <div class="form-group full-width">
-                <label for="description">Descripción *</label>
+                <label for="descripcion">Descripción *</label>
                 <textarea
-                  id="description"
-                  formControlName="description"
+                  id="descripcion"
+                  formControlName="descripcion"
                   class="form-control"
                   rows="4"
                   placeholder="Describa detalladamente qué sucedió..."
                 ></textarea>
-                <div class="error-msg" *ngIf="hasError('description')">
+                <div class="error-msg" *ngIf="hasError('descripcion')">
                   Descripción es requerida
                 </div>
               </div>
 
               <div class="form-group full-width">
-                <label for="involvedPersons">Personas Involucradas</label>
+                <label for="personas_involucradas">Personas Involucradas</label>
                 <textarea
-                  id="involvedPersons"
-                  formControlName="involvedPersons"
+                  id="personas_involucradas"
+                  formControlName="personas_involucradas"
                   class="form-control"
                   rows="2"
                   placeholder="Nombres de las personas involucradas (opcional)"
@@ -116,10 +146,10 @@ import { SstService } from '../../services/sst.service';
               </div>
 
               <div class="form-group full-width">
-                <label for="actions">Acciones Correctivas</label>
+                <label for="acciones_correctivas">Acciones Correctivas</label>
                 <textarea
-                  id="actions"
-                  formControlName="actions"
+                  id="acciones_correctivas"
+                  formControlName="acciones_correctivas"
                   class="form-control"
                   rows="3"
                   placeholder="Acciones tomadas o sugeridas (opcional)"
@@ -291,11 +321,14 @@ export class IncidentFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private sstService = inject(SstService);
+  private errorHandler = inject(FormErrorHandlerService);
 
   form!: FormGroup;
   loading = false;
   isEditMode = false;
   incidentId?: string;
+  validationErrors: ValidationError[] = [];
+  errorMessage: string | null = null;
 
   ngOnInit() {
     this.incidentId = this.route.snapshot.params['id'];
@@ -306,14 +339,14 @@ export class IncidentFormComponent implements OnInit {
 
   initForm() {
     this.form = this.fb.group({
-      date: ['', Validators.required],
-      time: ['', Validators.required],
-      type: ['', Validators.required],
-      severity: ['Leve', Validators.required],
-      location: ['', Validators.required],
-      description: ['', Validators.required],
-      involvedPersons: [''],
-      actions: [''],
+      fecha_incidente: ['', Validators.required],
+      hora: ['', Validators.required],
+      tipo_incidente: ['', Validators.required],
+      severidad: ['LEVE', Validators.required],
+      ubicacion: ['', Validators.required],
+      descripcion: ['', Validators.required],
+      personas_involucradas: [''],
+      acciones_correctivas: [''],
     });
   }
 
@@ -325,9 +358,10 @@ export class IncidentFormComponent implements OnInit {
         this.form.patchValue(incident);
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        console.error('Error loading incident');
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        console.error('Error loading incident', err);
       },
     });
   }
@@ -338,6 +372,9 @@ export class IncidentFormComponent implements OnInit {
       return;
     }
     this.loading = true;
+    this.validationErrors = [];
+    this.errorMessage = null;
+
     const req =
       this.isEditMode && this.incidentId
         ? this.sstService.updateIncident(this.incidentId, this.form.value)
@@ -347,9 +384,11 @@ export class IncidentFormComponent implements OnInit {
       next: () => {
         this.router.navigate(['/sst']);
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        console.error('Error saving incident');
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        console.error('Error saving incident', err);
       },
     });
   }

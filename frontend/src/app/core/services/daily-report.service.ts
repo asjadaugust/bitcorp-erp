@@ -13,7 +13,7 @@ export class DailyReportService {
 
   /**
    * Get all daily reports with optional filters
-   * Backend returns Spanish snake_case fields, pass through as-is
+   * Backend returns Spanish snake_case fields, map to Frontend Interface
    */
   getAll(filters?: any): Observable<DailyReport[]> {
     let params = new HttpParams();
@@ -22,34 +22,31 @@ export class DailyReportService {
         if (filters[key]) params = params.set(key, filters[key]);
       });
     }
-    // Default limit to 100 to avoid pagination issues (like equipment/provider/contract services)
+    // Default limit to 100 to avoid pagination issues
     if (!filters?.limit) {
       params = params.set('limit', '100');
     }
-    // API might return paginated response: {success, data, pagination}
-    // Extract data array if it exists, otherwise return as-is
+
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map((response) => {
         let data = response;
         if (response && typeof response === 'object' && 'data' in response) {
           data = response.data;
         }
-        return Array.isArray(data) ? data : [];
+        return Array.isArray(data) ? data.map((item) => this.mapToFrontend(item)) : [];
       })
     );
   }
 
   /**
    * Get daily report by ID
-   * Backend returns Spanish snake_case fields, pass through as-is
    */
   getById(id: string | number): Observable<DailyReport> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(map((r) => r));
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
    * Create a new daily report
-   * Backend expects Spanish snake_case fields, transform from English DTO
    */
   create(data: CreateDailyReportDto): Observable<DailyReport> {
     // Transform English DTO to Spanish backend format
@@ -118,12 +115,11 @@ export class DailyReportService {
       delete backendData.estado;
     }
 
-    return this.http.post<any>(this.apiUrl, backendData).pipe(map((r) => r));
+    return this.http.post<any>(this.apiUrl, backendData).pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
    * Update an existing daily report
-   * Backend expects Spanish snake_case fields, transform from English DTO
    */
   update(id: string | number, data: Partial<DailyReport>): Observable<DailyReport> {
     // Transform English DTO to Spanish backend format
@@ -192,7 +188,9 @@ export class DailyReportService {
       delete backendData.estado;
     }
 
-    return this.http.put<any>(`${this.apiUrl}/${id}`, backendData).pipe(map((r) => r));
+    return this.http
+      .put<any>(`${this.apiUrl}/${id}`, backendData)
+      .pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
@@ -208,75 +206,78 @@ export class DailyReportService {
   getByOperator(operatorId: string | number): Observable<DailyReport[]> {
     return this.http
       .get<any[]>(`${this.apiUrl}/operator/${operatorId}`)
-      .pipe(map((reports) => reports));
+      .pipe(map((reports) => reports.map((r) => this.mapToFrontend(r))));
   }
 
   /**
    * Approve a daily report
    */
   approve(id: string | number): Observable<DailyReport> {
-    return this.http.put<any>(`${this.apiUrl}/${id}/approve`, {}).pipe(map((r) => r));
+    return this.http
+      .put<any>(`${this.apiUrl}/${id}/approve`, {})
+      .pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
    * Reject a daily report
    */
   reject(id: string | number, reason: string): Observable<DailyReport> {
-    return this.http.put<any>(`${this.apiUrl}/${id}/reject`, { reason }).pipe(map((r) => r));
+    return this.http
+      .put<any>(`${this.apiUrl}/${id}/reject`, { reason })
+      .pipe(map((r) => this.mapToFrontend(r)));
   }
 
-  /**
-   * Download PDF for a daily report
-   */
   downloadPdf(id: string | number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }
 
-  /**
-   * Upload photos for a daily report
-   */
   uploadPhotos(id: string | number, formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/${id}/photos`, formData);
   }
 
-  /**
-   * Delete a photo from a daily report
-   */
   deletePhoto(id: string | number, photoIndex: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}/photos/${photoIndex}`);
   }
 
   /**
-   * Map Spanish estado values to English status values
-   * Backend returns: 'BORRADOR', 'PENDIENTE', 'APROBADO', 'RECHAZADO'
-   * Frontend uses: 'draft', 'submitted', 'approved', 'rejected'
+   * Map status
    */
   private mapEstadoToStatus(
     estado: string
-  ): 'draft' | 'submitted' | 'supervisor_approved' | 'cost_reviewed' | 'approved' | 'rejected' {
-    const statusMap: Record<string, any> = {
-      BORRADOR: 'draft',
-      PENDIENTE: 'submitted',
-      APROBADO_SUPERVISOR: 'supervisor_approved',
-      REVISADO_COSTOS: 'cost_reviewed',
-      APROBADO: 'approved',
-      RECHAZADO: 'rejected',
-    };
-    return statusMap[estado] || estado;
+  ):
+    | 'BORRADOR'
+    | 'PENDIENTE'
+    | 'APROBADO_SUPERVISOR'
+    | 'REVISADO_COSTOS'
+    | 'APROBADO'
+    | 'RECHAZADO' {
+    return estado as any;
+  }
+
+  private mapStatusToEstado(status: string): string {
+    return status;
   }
 
   /**
-   * Map English status values to Spanish estado values
-   * Frontend uses: 'draft', 'submitted', 'approved', 'rejected'
-   * Backend expects: 'BORRADOR', 'PENDIENTE', 'APROBADO', 'RECHAZADO'
+   * Map English properties to Frontend Interface
    */
-  private mapStatusToEstado(status: string): string {
-    const statusMap: Record<string, string> = {
-      draft: 'BORRADOR',
-      submitted: 'PENDIENTE',
-      approved: 'APROBADO',
-      rejected: 'RECHAZADO',
+  private mapToFrontend(data: any): DailyReport {
+    return {
+      ...data,
+      fecha_parte: data.fecha || data.fecha_parte,
+      location: data.lugar_salida || data.location,
+      work_description: data.observaciones || data.work_description,
+      fuel_consumed: data.combustible_consumido || data.fuel_consumed,
+      fuel_start: data.combustible_inicial || data.fuel_start,
+      notes: data.observaciones_correcciones || data.notes,
+      horas_trabajadas: data.horas_trabajadas ?? 0,
+
+      // Ensure relations are populated
+      // Backend returns: equipo_codigo, equipo_nombre, trabajador_nombre
+      codigo_equipo: data.equipo_codigo || data.codigo_equipo,
+      equipo_nombre: data.equipo_nombre,
+      trabajador_nombre: data.trabajador_nombre,
+      proyecto_nombre: data.proyecto_nombre,
     };
-    return statusMap[status] || status;
   }
 }

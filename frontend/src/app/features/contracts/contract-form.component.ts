@@ -201,10 +201,36 @@ import { Provider } from '../../core/models/provider.model';
 
               <div class="form-group">
                 <label for="penalidad_exceso">Penalidad por Exceso</label>
+                <div class="input-group">
+                  <span class="input-prefix">%</span>
+                  <input
+                    id="penalidad_exceso"
+                    type="number"
+                    formControlName="penalidad_exceso"
+                    class="form-control"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <!-- New Fields: Service Inclusions -->
+              <div class="form-group checkbox-group full-width">
+                <label>
+                  <input type="checkbox" formControlName="incluye_motor" />
+                  Incluye Motor
+                </label>
+                <label>
+                  <input type="checkbox" formControlName="incluye_operador" />
+                  Incluye Operador
+                </label>
+              </div>
+
+              <div class="form-group" *ngIf="contractForm.get('incluye_motor')?.value === false">
+                <label for="costo_adicional_motor">Costo Adicional Motor</label>
                 <input
-                  id="penalidad_exceso"
+                  id="costo_adicional_motor"
                   type="number"
-                  formControlName="penalidad_exceso"
+                  formControlName="costo_adicional_motor"
                   class="form-control"
                   placeholder="0.00"
                 />
@@ -507,11 +533,15 @@ export class ContractFormComponent implements OnInit {
         fecha_fin: ['', Validators.required],
         moneda: ['PEN', Validators.required],
         tipo_tarifa: ['POR_HORA', Validators.required],
-        tarifa: ['', [Validators.required]],
-        horas_incluidas: [0],
+        tarifa: ['', [Validators.required, Validators.min(0)]],
+        horas_incluidas: [0, Validators.min(0)],
         penalidad_exceso: [''],
+        incluye_motor: [false],
+        incluye_operador: [false],
+        costo_adicional_motor: [0],
         condiciones_especiales: [''],
         estado: ['ACTIVO', Validators.required],
+        tipo: ['CONTRATO'], // Default to CONTRATO
       },
       { validators: this.dateRangeValidator }
     );

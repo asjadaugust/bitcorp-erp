@@ -4,8 +4,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ValuationService } from '../../core/services/valuation.service';
 import { ContractService } from '../../core/services/contract.service';
+import { EquipmentService } from '../../core/services/equipment.service';
 import { Valuation } from '../../core/models/valuation.model';
 import { Contract } from '../../core/models/contract.model';
+import { Equipment } from '../../core/models/equipment.model';
 
 @Component({
   selector: 'app-valuation-form',
@@ -46,19 +48,30 @@ import { Contract } from '../../core/models/contract.model';
       <!-- Form -->
       <div class="card form-card">
         <form [formGroup]="valuationForm" class="form-grid">
-          <!-- Section 1: Contract Information -->
+          <!-- Section 1: Contract & Equipment Information -->
           <div class="form-section full-width">
-            <h3>Información del Contrato</h3>
+            <h3>Información General</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="contract">Contrato *</label>
+                <label for="contract">Contrato</label>
                 <select id="contract" formControlName="contract_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Contrato</option>
+                  <option [ngValue]="null">Seleccionar Contrato (Opcional)</option>
                   <option *ngFor="let contract of contracts" [value]="contract.id">
                     {{ contract.code }} - {{ contract.project_name }} ({{ contract.client_name }})
                   </option>
                 </select>
-                <div class="error-msg" *ngIf="hasError('contract_id')">Contrato es requerido</div>
+              </div>
+
+              <div class="form-group">
+                <label for="equipment">Equipo *</label>
+                <select id="equipment" formControlName="equipment_id" class="form-select">
+                  <option [ngValue]="null">Seleccionar Equipo</option>
+                  <option *ngFor="let eq of equipments" [ngValue]="eq.id">
+                    {{ eq.codigo_equipo || eq.code }} - {{ eq.marca || eq.brand }}
+                    {{ eq.modelo || eq.model }}
+                  </option>
+                </select>
+                <div class="error-msg" *ngIf="hasError('equipment_id')">Equipo es requerido</div>
               </div>
 
               <div class="form-group">
@@ -307,6 +320,7 @@ export class ValuationFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private valuationService = inject(ValuationService);
   private contractService = inject(ContractService);
+  private equipmentService = inject(EquipmentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -315,10 +329,12 @@ export class ValuationFormComponent implements OnInit {
   loading = false;
   valuationId: string | null = null;
   contracts: Contract[] = [];
+  equipments: Equipment[] = [];
 
   constructor() {
     this.valuationForm = this.fb.group({
-      contract_id: [null, Validators.required],
+      contract_id: [null],
+      equipment_id: [null, Validators.required],
       period_start: ['', Validators.required],
       period_end: ['', Validators.required],
       amount: [0, [Validators.required, Validators.min(0)]],
@@ -329,6 +345,7 @@ export class ValuationFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadContracts();
+    this.loadEquipments();
 
     this.route.params.subscribe((params) => {
       const id = params['id'];
@@ -344,6 +361,19 @@ export class ValuationFormComponent implements OnInit {
 
   loadContracts(): void {
     this.contractService.getAll().subscribe((data) => (this.contracts = data));
+  }
+
+  loadEquipments(): void {
+    this.equipmentService.getAll().subscribe((response) => {
+      // Handle EquipmentListResponse
+      if (response && response.data) {
+        this.equipments = response.data;
+      } else if (Array.isArray(response)) {
+        this.equipments = response; // safe cast if response is array
+      } else {
+        this.equipments = [];
+      }
+    });
   }
 
   loadValuation(id: string | number): void {

@@ -9,11 +9,24 @@ import {
 } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { InventoryService, Product } from '../../services/inventory.service';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-page">
       <!-- Header -->
@@ -49,6 +62,22 @@ import { InventoryService, Product } from '../../services/inventory.service';
       </div>
 
       <div class="form-container">
+        <!-- Error Handling -->
+        <app-validation-errors
+          *ngIf="validationErrors.length > 0"
+          [errors]="validationErrors"
+          class="mb-4"
+        ></app-validation-errors>
+
+        <app-alert
+          *ngIf="errorMessage"
+          type="error"
+          [message]="errorMessage"
+          [dismissible]="true"
+          (dismiss)="errorMessage = null"
+          class="mb-4"
+        ></app-alert>
+
         <form id="productForm" [formGroup]="productForm" (ngSubmit)="onSubmit()">
           <!-- General Info Section -->
           <div class="form-section">
@@ -143,11 +172,11 @@ import { InventoryService, Product } from '../../services/inventory.service';
               </div>
 
               <div class="form-group">
-                <label for="costo_unitario">Costo Unitario (PEN)</label>
+                <label for="precio_unitario">Precio Unitario (PEN)</label>
                 <input
-                  id="costo_unitario"
+                  id="precio_unitario"
                   type="number"
-                  formControlName="costo_unitario"
+                  formControlName="precio_unitario"
                   min="0"
                   step="0.01"
                 />
@@ -350,6 +379,9 @@ import { InventoryService, Product } from '../../services/inventory.service';
           transform: rotate(360deg);
         }
       }
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
     `,
   ],
 })
@@ -358,11 +390,14 @@ export class ProductFormComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   productForm: FormGroup;
   isEditMode = false;
   productId: string | null = null;
   submitting = false;
+  validationErrors: ValidationError[] = [];
+  errorMessage: string | null = null;
 
   constructor() {
     this.productForm = this.fb.group({
@@ -372,7 +407,7 @@ export class ProductFormComponent implements OnInit {
       unidad_medida: ['', Validators.required],
       descripcion: [''],
       stock_actual: [0, [Validators.min(0)]],
-      costo_unitario: [0, [Validators.min(0)]],
+      precio_unitario: [0, [Validators.min(0)]],
       ubicacion: [''],
     });
   }
@@ -392,7 +427,10 @@ export class ProductFormComponent implements OnInit {
       next: (product: Product) => {
         this.productForm.patchValue(product);
       },
-      error: (err: any) => console.error('Error loading product', err),
+      error: (err: any) => {
+        console.error('Error loading product', err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+      },
     });
   }
 
@@ -408,6 +446,9 @@ export class ProductFormComponent implements OnInit {
     }
 
     this.submitting = true;
+    this.validationErrors = [];
+    this.errorMessage = null;
+
     const productData = this.productForm.getRawValue();
 
     const request =
@@ -423,7 +464,8 @@ export class ProductFormComponent implements OnInit {
       error: (err: any) => {
         console.error('Error saving product', err);
         this.submitting = false;
-        // TODO: Show toast notification
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

@@ -9,12 +9,38 @@ import {
   EstadoOption,
 } from '../../../../core/services/estado-state-machine.service';
 
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+
 @Component({
   selector: 'app-tender-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-container">
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors *ngIf="validationErrors.length > 0" [errors]="validationErrors">
+      </app-validation-errors>
+
+      <app-alert
+        *ngIf="errorMessage"
+        type="error"
+        [message]="errorMessage"
+        [dismissible]="true"
+        (dismiss)="errorMessage = null"
+      >
+      </app-alert>
+
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
@@ -73,30 +99,32 @@ import {
               </div>
 
               <div class="form-group">
-                <label for="entidadConvocante">Entidad Convocante *</label>
+                <label for="entidad_convocante">Entidad Convocante *</label>
                 <input
-                  id="entidadConvocante"
+                  id="entidad_convocante"
                   type="text"
-                  formControlName="entidadConvocante"
+                  formControlName="entidad_convocante"
                   class="form-control"
                   placeholder="Entidad contratante"
                 />
-                <div class="error-msg" *ngIf="hasError('entidadConvocante')">
+                <div class="error-msg" *ngIf="hasError('entidad_convocante')">
                   Entidad es requerida
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="montoReferencial">Monto Referencial *</label>
+                <label for="monto_referencial">Monto Referencial *</label>
                 <input
-                  id="montoReferencial"
+                  id="monto_referencial"
                   type="number"
-                  formControlName="montoReferencial"
+                  formControlName="monto_referencial"
                   class="form-control"
                   step="0.01"
                   placeholder="0.00"
                 />
-                <div class="error-msg" *ngIf="hasError('montoReferencial')">Monto es requerido</div>
+                <div class="error-msg" *ngIf="hasError('monto_referencial')">
+                  Monto es requerido
+                </div>
               </div>
             </div>
           </div>
@@ -106,24 +134,24 @@ import {
             <h3>Fechas y Estado</h3>
             <div class="section-grid">
               <div class="form-group">
-                <label for="fechaConvocatoria">Fecha Convocatoria</label>
+                <label for="fecha_convocatoria">Fecha Convocatoria</label>
                 <input
-                  id="fechaConvocatoria"
+                  id="fecha_convocatoria"
                   type="date"
-                  formControlName="fechaConvocatoria"
+                  formControlName="fecha_convocatoria"
                   class="form-control"
                 />
               </div>
 
               <div class="form-group">
-                <label for="fechaPresentacion">Fecha Presentación *</label>
+                <label for="fecha_presentacion">Fecha Presentación *</label>
                 <input
-                  id="fechaPresentacion"
+                  id="fecha_presentacion"
                   type="date"
-                  formControlName="fechaPresentacion"
+                  formControlName="fecha_presentacion"
                   class="form-control"
                 />
-                <div class="error-msg" *ngIf="hasError('fechaPresentacion')">
+                <div class="error-msg" *ngIf="hasError('fecha_presentacion')">
                   Fecha es requerida
                 </div>
               </div>
@@ -348,11 +376,14 @@ export class TenderFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private tenderService = inject(TenderService);
   private estadoStateMachine = inject(EstadoStateMachineService);
+  private errorHandler = inject(FormErrorHandlerService);
 
   form!: FormGroup;
   loading = false;
   isEditMode = false;
   tenderId?: string;
+  validationErrors: ValidationError[] = [];
+  errorMessage: string | null = null;
 
   // Estado state machine properties
   currentEstado?: EstadoLicitacion;
@@ -375,10 +406,10 @@ export class TenderFormComponent implements OnInit {
     this.form = this.fb.group({
       codigo: ['', Validators.required],
       nombre: ['', Validators.required],
-      entidadConvocante: ['', Validators.required],
-      montoReferencial: ['', Validators.required],
-      fechaConvocatoria: [''],
-      fechaPresentacion: ['', Validators.required],
+      entidad_convocante: ['', Validators.required],
+      monto_referencial: ['', Validators.required],
+      fecha_convocatoria: [''],
+      fecha_presentacion: ['', Validators.required],
       estado: ['PUBLICADO', Validators.required],
       observaciones: [''],
     });
@@ -395,10 +426,10 @@ export class TenderFormComponent implements OnInit {
         this.form.patchValue({
           codigo: tender.codigo,
           nombre: tender.nombre,
-          entidadConvocante: tender.entidad_convocante,
-          montoReferencial: tender.monto_referencial,
-          fechaConvocatoria: tender.fecha_convocatoria,
-          fechaPresentacion: tender.fecha_presentacion,
+          entidad_convocante: tender.entidad_convocante,
+          monto_referencial: tender.monto_referencial,
+          fecha_convocatoria: tender.fecha_convocatoria,
+          fecha_presentacion: tender.fecha_presentacion,
           estado: tender.estado,
           observaciones: tender.observaciones,
         });
@@ -408,9 +439,10 @@ export class TenderFormComponent implements OnInit {
 
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        console.error('Error loading tender');
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        console.error('Error loading tender', err);
       },
     });
   }
@@ -421,6 +453,9 @@ export class TenderFormComponent implements OnInit {
       return;
     }
     this.loading = true;
+    this.validationErrors = [];
+    this.errorMessage = null;
+
     const req =
       this.isEditMode && this.tenderId
         ? this.tenderService.updateTender(this.tenderId, this.form.value)
@@ -430,9 +465,11 @@ export class TenderFormComponent implements OnInit {
       next: () => {
         this.router.navigate(['/licitaciones']);
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        console.error('Error saving tender');
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        console.error('Error saving tender', err);
       },
     });
   }

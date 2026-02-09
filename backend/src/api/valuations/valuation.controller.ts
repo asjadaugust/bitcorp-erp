@@ -76,7 +76,7 @@ export class ValuationController {
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user.id;
+      const userId = (req as any).user.id_usuario;
       const record = await this.valuationService.createValuation(req.body, userId);
       sendCreated(res, (record as any).id, 'Valorización creada exitosamente');
     } catch (error) {
@@ -92,7 +92,7 @@ export class ValuationController {
         return;
       }
 
-      const userId = (req as any).user.id;
+      const userId = (req as any).user.id_usuario;
       const record = await this.valuationService.updateValuation(id.toString(), req.body, userId);
       if (!record) {
         sendError(res, 404, 'VALUATION_NOT_FOUND', 'Valorización no encontrada');
@@ -142,7 +142,7 @@ export class ValuationController {
   generate = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { contract_id, month, year } = req.body;
-      const userId = (req as any).user.id;
+      const userId = (req as any).user.id_usuario;
 
       if (!month || !year) {
         sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: month, year');

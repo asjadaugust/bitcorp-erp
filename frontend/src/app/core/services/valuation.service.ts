@@ -15,11 +15,12 @@ export class ValuationService {
   /**
    * Map backend DTO (Spanish snake_case) to frontend model
    * Backend uses: equipo_id, contrato_id, proyecto_id, estado (PENDIENTE/APROBADO/RECHAZADO/PAGADO)
-   * Frontend uses: contract_id, period_start, period_end, amount, status (lowercase)
+   * Frontend uses: equipment_id, contract_id, period_start, period_end, amount, status (lowercase)
    */
   private mapBackendToFrontend(backendData: any): Valuation {
     return {
       id: backendData.id,
+      equipment_id: backendData.equipo_id || backendData.equipment_id,
       contract_id: backendData.contrato_id || backendData.contract_id,
       period_start: backendData.fecha_inicio || backendData.period_start,
       period_end: backendData.fecha_fin || backendData.period_end,
@@ -34,6 +35,7 @@ export class ValuationService {
       created_at: backendData.created_at,
       updated_at: backendData.updated_at,
       contract: backendData.contract,
+      equipment: backendData.equipment,
     };
   }
 
@@ -41,19 +43,45 @@ export class ValuationService {
    * Map frontend model to backend DTO for create/update operations
    */
   private mapFrontendToBackend(frontendData: any): any {
+    const fechaInicio = frontendData.fecha_inicio || frontendData.period_start;
+    // Generate periodo (YYYY-MM) from start date if not provided
+    const periodo = frontendData.periodo || (fechaInicio ? fechaInicio.substring(0, 7) : '');
+
     return {
       ...frontendData,
-      contrato_id: frontendData.contrato_id || frontendData.contract_id,
-      fecha_inicio: frontendData.fecha_inicio || frontendData.period_start,
+      equipo_id:
+        frontendData.equipo_id || frontendData.equipment_id
+          ? Number(frontendData.equipo_id || frontendData.equipment_id)
+          : null,
+      contrato_id:
+        frontendData.contrato_id || frontendData.contract_id
+          ? Number(frontendData.contrato_id || frontendData.contract_id)
+          : null,
+      fecha_inicio: fechaInicio,
       fecha_fin: frontendData.fecha_fin || frontendData.period_end,
-      total_valorizado: frontendData.total_valorizado || frontendData.amount,
-      costo_base: frontendData.costo_base || frontendData.base_amount,
-      cargos_adicionales: frontendData.cargos_adicionales || frontendData.overtime_amount,
-      costo_combustible: frontendData.costo_combustible || frontendData.fuel_amount,
+      total_valorizado:
+        frontendData.total_valorizado || frontendData.amount
+          ? Number(frontendData.total_valorizado || frontendData.amount)
+          : 0,
+      costo_base:
+        frontendData.costo_base || frontendData.base_amount
+          ? Number(frontendData.costo_base || frontendData.base_amount)
+          : 0,
+      cargos_adicionales:
+        frontendData.cargos_adicionales || frontendData.overtime_amount
+          ? Number(frontendData.cargos_adicionales || frontendData.overtime_amount)
+          : 0,
+      costo_combustible:
+        frontendData.costo_combustible || frontendData.fuel_amount
+          ? Number(frontendData.costo_combustible || frontendData.fuel_amount)
+          : 0,
       estado: this.mapEstadoFrontendToBackend(frontendData.estado || frontendData.status),
       numero_valorizacion: frontendData.numero_valorizacion || frontendData.invoice_number,
+      periodo: periodo, // Required by backend
+
       // Remove frontend-only fields
       contract_id: undefined,
+      equipment_id: undefined,
       period_start: undefined,
       period_end: undefined,
       amount: undefined,
@@ -65,6 +93,7 @@ export class ValuationService {
       issue_date: undefined,
       payment_date: undefined,
       contract: undefined,
+      equipment: undefined,
     };
   }
 

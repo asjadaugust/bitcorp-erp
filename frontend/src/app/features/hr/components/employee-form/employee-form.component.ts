@@ -10,11 +10,24 @@ import {
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee } from '../../models/employee.model';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="page-container">
       <!-- Header -->
@@ -50,6 +63,22 @@ import { Employee } from '../../models/employee.model';
       </div>
 
       <div class="form-container">
+        <!-- Error Handling -->
+        <app-validation-errors
+          *ngIf="validationErrors.length > 0"
+          [errors]="validationErrors"
+          class="mb-4"
+        ></app-validation-errors>
+
+        <app-alert
+          *ngIf="errorMessage"
+          type="error"
+          [message]="errorMessage"
+          [dismissible]="true"
+          (dismiss)="errorMessage = null"
+          class="mb-4"
+        ></app-alert>
+
         <form id="employeeForm" [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
           <!-- Personal Info -->
           <div class="form-section">
@@ -62,59 +91,60 @@ import { Employee } from '../../models/employee.model';
                   type="text"
                   formControlName="dni"
                   [class.error]="isFieldInvalid('dni')"
-                  maxlength="20"
+                  maxlength="12"
+                  placeholder="DNI o Carnet de Extranjería"
                 />
                 <div class="error-message" *ngIf="isFieldInvalid('dni')">DNI es requerido</div>
               </div>
               <div class="form-group">
-                <label for="firstName">Nombres <span class="required">*</span></label>
+                <label for="nombres">Nombres <span class="required">*</span></label>
                 <input
-                  id="firstName"
+                  id="nombres"
                   type="text"
-                  formControlName="firstName"
-                  [class.error]="isFieldInvalid('firstName')"
+                  formControlName="nombres"
+                  [class.error]="isFieldInvalid('nombres')"
+                  placeholder="Nombres completos"
                 />
-                <div class="error-message" *ngIf="isFieldInvalid('firstName')">
-                  Nombre es requerido
+                <div class="error-message" *ngIf="isFieldInvalid('nombres')">
+                  Nombres son requeridos
                 </div>
               </div>
               <div class="form-group">
-                <label for="lastName">Apellidos <span class="required">*</span></label>
+                <label for="apellido_paterno"
+                  >Apellido Paterno <span class="required">*</span></label
+                >
                 <input
-                  id="lastName"
+                  id="apellido_paterno"
                   type="text"
-                  formControlName="lastName"
-                  [class.error]="isFieldInvalid('lastName')"
+                  formControlName="apellido_paterno"
+                  [class.error]="isFieldInvalid('apellido_paterno')"
+                  placeholder="Apellido Paterno"
                 />
-                <div class="error-message" *ngIf="isFieldInvalid('lastName')">
-                  Apellido es requerido
+                <div class="error-message" *ngIf="isFieldInvalid('apellido_paterno')">
+                  Apellido Paterno es requerido
                 </div>
               </div>
               <div class="form-group">
-                <label for="birthDate">Fecha Nacimiento</label>
-                <input id="birthDate" type="date" formControlName="birthDate" />
+                <label for="apellido_materno">Apellido Materno</label>
+                <input
+                  id="apellido_materno"
+                  type="text"
+                  formControlName="apellido_materno"
+                  placeholder="Apellido Materno"
+                />
               </div>
               <div class="form-group">
-                <label for="gender">Sexo</label>
-                <select id="gender" formControlName="gender">
-                  <option value="">Seleccionar</option>
-                  <option value="MASCULINO">Masculino</option>
-                  <option value="FEMENINO">Femenino</option>
-                </select>
+                <label for="fecha_nacimiento">Fecha Nacimiento</label>
+                <input id="fecha_nacimiento" type="date" formControlName="fecha_nacimiento" />
               </div>
               <div class="form-group">
-                <label for="bloodType">Tipo de Sangre</label>
-                <select id="bloodType" formControlName="bloodType">
-                  <option value="">Seleccionar</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                </select>
+                <label for="cargo">Cargo</label>
+                <input
+                  id="cargo"
+                  type="text"
+                  formControlName="cargo"
+                  placeholder="Ej. Operario, Supervisor"
+                />
               </div>
             </div>
           </div>
@@ -124,48 +154,70 @@ import { Employee } from '../../models/employee.model';
             <h2 class="section-title">Contacto</h2>
             <div class="form-grid">
               <div class="form-group">
-                <label for="mobile1">Celular 1</label>
-                <input id="mobile1" type="text" formControlName="mobile1" />
+                <label for="telefono">Teléfono / Celular</label>
+                <input
+                  id="telefono"
+                  type="text"
+                  formControlName="telefono"
+                  placeholder="Número de contacto"
+                />
               </div>
               <div class="form-group">
-                <label for="mobile2">Celular 2</label>
-                <input id="mobile2" type="text" formControlName="mobile2" />
+                <label for="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="correo@ejemplo.com"
+                />
               </div>
-              <div class="form-group">
-                <label for="email1">Email Personal</label>
-                <input id="email1" type="email" formControlName="email1" />
-              </div>
-              <div class="form-group">
-                <label for="email2">Email Corporativo</label>
-                <input id="email2" type="email" formControlName="email2" />
+              <div class="form-group full-width">
+                <label for="direccion">Dirección</label>
+                <input
+                  id="direccion"
+                  type="text"
+                  formControlName="direccion"
+                  placeholder="Dirección de domicilio"
+                />
               </div>
             </div>
           </div>
 
-          <!-- Sizes -->
+          <!-- Additional Info (Optional based on DTO) -->
           <div class="form-section">
-            <h2 class="section-title">Tallas y EPP</h2>
+            <h2 class="section-title">Información Laboral</h2>
             <div class="form-grid">
               <div class="form-group">
-                <label for="shoeSize">Talla Zapato</label>
-                <input id="shoeSize" type="text" formControlName="shoeSize" />
+                <label for="fecha_ingreso">Fecha Ingreso</label>
+                <input id="fecha_ingreso" type="date" formControlName="fecha_ingreso" />
               </div>
               <div class="form-group">
-                <label for="pantsSize">Talla Pantalón</label>
-                <input id="pantsSize" type="text" formControlName="pantsSize" />
+                <label for="especialidad">Especialidad</label>
+                <input
+                  id="especialidad"
+                  type="text"
+                  formControlName="especialidad"
+                  placeholder="Especialidad técnica"
+                />
               </div>
               <div class="form-group">
-                <label for="shirtSize">Talla Camisa</label>
-                <input id="shirtSize" type="text" formControlName="shirtSize" />
+                <label for="tipo_contrato">Tipo Contrato</label>
+                <input
+                  id="tipo_contrato"
+                  type="text"
+                  formControlName="tipo_contrato"
+                  placeholder="Ej. Indeterminado, Plazo Fijo"
+                />
               </div>
-            </div>
-          </div>
-
-          <!-- Observations -->
-          <div class="form-section">
-            <h2 class="section-title">Observaciones</h2>
-            <div class="form-group full-width">
-              <textarea id="observation" formControlName="observation" rows="4"></textarea>
+              <div class="form-group">
+                <label for="licencia_conducir">Licencia Conducir</label>
+                <input
+                  id="licencia_conducir"
+                  type="text"
+                  formControlName="licencia_conducir"
+                  placeholder="Clase y Categoría"
+                />
+              </div>
             </div>
           </div>
         </form>
@@ -316,6 +368,9 @@ import { Employee } from '../../models/employee.model';
           transform: rotate(360deg);
         }
       }
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
     `,
   ],
 })
@@ -324,28 +379,30 @@ export class EmployeeFormComponent implements OnInit {
   private employeeService = inject(EmployeeService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   employeeForm: FormGroup;
   isEditMode = false;
   employeeDni: string | null = null;
   submitting = false;
+  validationErrors: ValidationError[] = [];
+  errorMessage: string | null = null;
 
   constructor() {
     this.employeeForm = this.fb.group({
       dni: ['', [Validators.required, Validators.minLength(8)]],
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      birthDate: [''],
-      gender: [''],
-      mobile1: [''],
-      mobile2: [''],
-      email1: ['', Validators.email],
-      email2: ['', Validators.email],
-      bloodType: [''],
-      shoeSize: [''],
-      pantsSize: [''],
-      shirtSize: [''],
-      observation: [''],
+      nombres: ['', Validators.required],
+      apellido_paterno: ['', Validators.required],
+      apellido_materno: [''],
+      fecha_nacimiento: [''],
+      cargo: [''],
+      especialidad: [''],
+      telefono: [''],
+      email: ['', Validators.email],
+      direccion: [''],
+      fecha_ingreso: [''],
+      tipo_contrato: [''],
+      licencia_conducir: [''],
     });
   }
 
@@ -360,10 +417,27 @@ export class EmployeeFormComponent implements OnInit {
 
   loadEmployee(dni: string): void {
     this.employeeService.getEmployeeByDni(dni).subscribe({
-      next: (employee) => {
+      next: (employee: Employee) => {
         this.employeeForm.patchValue(employee);
+        // Handle dates if necessary (e.g. if backend returns ISO, input[type=date] needs YYYY-MM-DD)
+        // Assuming backend DTO returns YYYY-MM-DD or Service doesn't parse it?
+        // Service map was removed, so we get raw string.
+        // If raw string is ISO datetime, it might not work in input date.
+        if (employee.fecha_nacimiento) {
+          this.employeeForm.patchValue({
+            fecha_nacimiento: new Date(employee.fecha_nacimiento).toISOString().split('T')[0],
+          });
+        }
+        if (employee.fecha_ingreso) {
+          this.employeeForm.patchValue({
+            fecha_ingreso: new Date(employee.fecha_ingreso).toISOString().split('T')[0],
+          });
+        }
       },
-      error: (err) => console.error('Error loading employee', err),
+      error: (err) => {
+        console.error('Error loading employee', err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
+      },
     });
   }
 
@@ -379,6 +453,8 @@ export class EmployeeFormComponent implements OnInit {
     }
 
     this.submitting = true;
+    this.validationErrors = [];
+    this.errorMessage = null;
     const employeeData = this.employeeForm.getRawValue();
 
     const request =
@@ -394,7 +470,8 @@ export class EmployeeFormComponent implements OnInit {
       error: (err) => {
         console.error('Error saving employee', err);
         this.submitting = false;
-        alert('Error al guardar el personal. Verifique los datos.');
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

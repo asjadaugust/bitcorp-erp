@@ -196,8 +196,17 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.dailyReportService.getReportById(id).subscribe({
       next: (report: any) => {
+        // Calculate fuel_end from consumed if needed
+        let fuelEnd = report.fuel_end;
+        if (
+          report.combustible_inicial !== undefined &&
+          report.combustible_consumido !== undefined
+        ) {
+          fuelEnd = report.combustible_inicial - report.combustible_consumido;
+        }
+
         this.reportForm.patchValue({
-          fecha_parte: report.fecha_parte,
+          fecha_parte: report.fecha || report.fecha_parte,
           trabajador_id: report.trabajador_id,
           equipo_id: report.equipo_id,
           proyecto_id: report.proyecto_id,
@@ -207,15 +216,15 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
           horometro_final: report.horometro_final,
           odometro_inicial: report.odometro_inicial,
           odometro_final: report.odometro_final,
-          fuel_start: report.fuel_start,
-          fuel_end: report.fuel_end,
+          fuel_start: report.combustible_inicial || report.fuel_start,
+          fuel_end: fuelEnd,
           // Map API field names to form field names
-          location: report.location || report.lugar_salida || '',
-          work_description: report.work_description || report.observaciones || '',
-          notes: report.notes,
-          weather_conditions: report.weather_conditions,
-          gps_latitude: report.gps_latitude,
-          gps_longitude: report.gps_longitude,
+          location: report.lugar_salida || report.location || '',
+          work_description: report.observaciones || report.work_description || '',
+          notes: report.observaciones_correcciones || report.notes,
+          weather_conditions: report.weather_conditions, // Might not exist in backend yet
+          gps_latitude: report.gps_latitude, // Might not exist in backend yet
+          gps_longitude: report.gps_longitude, // Might not exist in backend yet
         });
         this.loading = false;
       },
@@ -347,6 +356,41 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.saveReport('BORRADOR');
   }
 
+  private toCreateDto(status: 'BORRADOR' | 'PENDIENTE'): any {
+    const formValue = this.reportForm.getRawValue();
+
+    // Append extra info to observaciones if not supported by backend
+    let observaciones = formValue.work_description;
+    if (formValue.weather_conditions) {
+      observaciones += `\n[Clima: ${formValue.weather_conditions}]`;
+    }
+    if (formValue.gps_latitude && formValue.gps_longitude) {
+      observaciones += `\n[GPS: ${formValue.gps_latitude}, ${formValue.gps_longitude}]`;
+    }
+
+    return {
+      fecha: formValue.fecha_parte,
+      trabajador_id: Number(formValue.trabajador_id),
+      equipo_id: Number(formValue.equipo_id),
+      proyecto_id: formValue.proyecto_id ? Number(formValue.proyecto_id) : null,
+      hora_inicio: formValue.hora_inicio,
+      hora_fin: formValue.hora_fin,
+      horometro_inicial: Number(formValue.horometro_inicial),
+      horometro_final: Number(formValue.horometro_final),
+      odometro_inicial: formValue.odometro_inicial ? Number(formValue.odometro_inicial) : null,
+      odometro_final: formValue.odometro_final ? Number(formValue.odometro_final) : null,
+      combustible_inicial: formValue.fuel_start ? Number(formValue.fuel_start) : null,
+      combustible_consumido:
+        formValue.fuel_start && formValue.fuel_end
+          ? Number((formValue.fuel_start - formValue.fuel_end).toFixed(2))
+          : null,
+      lugar_salida: formValue.location,
+      observaciones: observaciones,
+      observaciones_correcciones: formValue.notes,
+      estado: status,
+    };
+  }
+
   submitReport(): void {
     if (this.reportForm.invalid) {
       this.markFormGroupTouched(this.reportForm);
@@ -360,11 +404,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   private saveReport(status: 'BORRADOR' | 'PENDIENTE'): void {
     this.saving = true;
 
-    const formValue = this.reportForm.getRawValue();
-    const reportData = {
-      ...formValue,
-      status,
-    };
+    const reportData = this.toCreateDto(status);
 
     const saveOperation = this.reportId
       ? this.dailyReportService.updateReport(this.reportId, reportData)

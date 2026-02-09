@@ -97,7 +97,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 >
                   <option value="">Seleccionar Equipo</option>
                   <option *ngFor="let eq of equipment" [ngValue]="eq.id">
-                    {{ eq.code }} - {{ eq.name }}
+                    {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
                   </option>
                 </select>
               </div>
@@ -190,7 +190,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                     [disabled]="isReadOnly"
                   />
                   <span class="hint" *ngIf="selectedEquipment && !isReadOnly">
-                    Tipo: {{ selectedEquipment.meter_type || 'N/A' }}
+                    Tipo: {{ selectedEquipment.medidor_uso || 'N/A' }}
                   </span>
                 </div>
 

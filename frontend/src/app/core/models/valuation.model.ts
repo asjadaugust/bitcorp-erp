@@ -25,6 +25,13 @@ export interface Valuation {
     project_name: string;
     client_name: string;
   };
+  equipment_id: number;
+  equipment?: {
+    id: number;
+    code: string;
+    name: string;
+    model: string;
+  };
 }
 
 export interface PaymentData {

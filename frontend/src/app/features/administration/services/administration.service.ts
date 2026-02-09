@@ -81,11 +81,11 @@ export class AdministrationService {
     return this.http.get<CostCenter>(`${this.apiUrl}/cost-centers/${id}`);
   }
 
-  createCostCenter(costCenter: Partial<CostCenter>): Observable<CostCenter> {
+  createCostCenter(costCenter: any): Observable<CostCenter> {
     return this.http.post<CostCenter>(`${this.apiUrl}/cost-centers`, costCenter);
   }
 
-  updateCostCenter(id: string, costCenter: Partial<CostCenter>): Observable<CostCenter> {
+  updateCostCenter(id: string, costCenter: any): Observable<CostCenter> {
     return this.http.put<CostCenter>(`${this.apiUrl}/cost-centers/${id}`, costCenter);
   }
 
@@ -93,7 +93,6 @@ export class AdministrationService {
     return this.http.delete<void>(`${this.apiUrl}/cost-centers/${id}`);
   }
 
-  // Providers
   getProviders(): Observable<Provider[]> {
     return this.http.get<Provider[]>(this.providersUrl);
   }

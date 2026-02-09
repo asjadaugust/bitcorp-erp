@@ -917,8 +917,22 @@ export class ValuationService {
         }
       }
 
+      const valuationData = data as any;
       const valorizacion = this.repository.create({
         ...data,
+        equipmentId: valuationData.equipo_id || data.equipmentId,
+        contractId: valuationData.contrato_id || data.contractId,
+        projectId: valuationData.proyecto_id || data.projectId,
+        fechaInicio: valuationData.fecha_inicio || data.fechaInicio,
+        fechaFin: valuationData.fecha_fin || data.fechaFin,
+        diasTrabajados: valuationData.dias_trabajados || data.diasTrabajados,
+        horasTrabajadas: valuationData.horas_trabajadas || data.horasTrabajadas,
+        combustibleConsumido: valuationData.combustible_consumido || data.combustibleConsumido,
+        costoBase: valuationData.costo_base || data.costoBase,
+        costoCombustible: valuationData.costo_combustible || data.costoCombustible,
+        cargosAdicionales: valuationData.cargos_adicionales || data.cargosAdicionales,
+        totalValorizado: valuationData.total_valorizado || data.totalValorizado,
+        numeroValorizacion: valuationData.numero_valorizacion || data.numeroValorizacion,
         estado: data.estado || 'PENDIENTE',
         createdBy: userId,
       });
@@ -1666,7 +1680,7 @@ export class ValuationService {
    * ```
    */
   async createValuation(data: any, userId: string) {
-    return this.create(data, parseInt(userId));
+    return this.create(data, userId ? parseInt(userId) : undefined);
   }
 
   /**

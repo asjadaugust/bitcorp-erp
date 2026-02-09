@@ -152,16 +152,16 @@ export interface EquipmentAvailabilityDto {
 export function toEquipmentListDto(entity: any): EquipmentListDto {
   return {
     id: entity.id,
-    codigo_equipo: entity.codigo_equipo,
+    codigo_equipo: entity.codigoEquipo || entity.codigo_equipo,
     categoria: entity.categoria || null,
     marca: entity.marca || null,
     modelo: entity.modelo || null,
     placa: entity.placa || null,
-    estado: entity.estado?.toUpperCase() || 'DISPONIBLE', // Ensure uppercase
-    tipo_proveedor: entity.tipo_proveedor || null,
+    estado: entity.estado?.toUpperCase() || 'DISPONIBLE',
+    tipo_proveedor: entity.tipoProveedor || entity.tipo_proveedor || null,
     proveedor_id: entity.proveedorId || entity.proveedor_id || null,
     proveedor_nombre: entity.provider?.razon_social || null,
-    is_active: entity.is_active,
+    is_active: entity.isActive !== undefined ? entity.isActive : entity.is_active,
   };
 }
 
@@ -185,25 +185,30 @@ function toDateString(date?: Date | string | null): string | null {
 export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
   return {
     id: entity.id,
-    legacy_id: entity.legacy_id || null,
-    codigo_equipo: entity.codigo_equipo,
+    legacy_id: entity.legacyId || entity.legacy_id || null,
+    codigo_equipo: entity.codigoEquipo || entity.codigo_equipo,
     tipo_equipo_id: entity.tipoEquipoId || entity.tipo_equipo_id || null,
     proveedor_id: entity.proveedorId || entity.proveedor_id || null,
     proveedor_nombre: entity.provider?.razon_social || null,
     proveedor_ruc: entity.provider?.ruc || null,
-    tipo_proveedor: entity.tipo_proveedor || null,
+    tipo_proveedor: entity.tipoProveedor || entity.tipo_proveedor || null,
     categoria: entity.categoria || null,
     placa: entity.placa || null,
     marca: entity.marca || null,
     modelo: entity.modelo || null,
-    numero_serie_equipo: entity.numero_serie_equipo || null,
-    numero_chasis: entity.numero_chasis || null,
-    numero_serie_motor: entity.numero_serie_motor || null,
-    anio_fabricacion: entity.anio_fabricacion || null,
-    potencia_neta: entity.potencia_neta ? Number(entity.potencia_neta) : null,
-    tipo_motor: entity.tipo_motor || null,
-    medidor_uso: entity.medidor_uso || null,
-    estado: entity.estado?.toUpperCase() || 'DISPONIBLE', // Ensure uppercase
+    numero_serie_equipo: entity.numeroSerieEquipo || entity.numero_serie_equipo || null,
+    numero_chasis: entity.numeroChasis || entity.numero_chasis || null,
+    numero_serie_motor: entity.numeroSerieMotor || entity.numero_serie_motor || null,
+    anio_fabricacion: entity.anioFabricacion || entity.anio_fabricacion || null,
+    potencia_neta:
+      entity.potenciaNeta !== undefined
+        ? Number(entity.potenciaNeta)
+        : entity.potencia_neta !== undefined
+          ? Number(entity.potencia_neta)
+          : null,
+    tipo_motor: entity.tipoMotor || entity.tipo_motor || null,
+    medidor_uso: entity.medidorUso || entity.medidor_use || null,
+    estado: entity.estado?.toUpperCase() || 'DISPONIBLE',
 
     // Document and Certification Fields
     documento_acreditacion: entity.documento_acreditacion || null,
@@ -213,11 +218,19 @@ export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
     fecha_venc_soat: toDateString(entity.fecha_venc_soat),
     fecha_venc_citv: toDateString(entity.fecha_venc_citv),
 
-    is_active: entity.is_active,
+    is_active: entity.isActive !== undefined ? entity.isActive : entity.is_active,
     creado_por: entity.creadoPor || entity.creado_por || null,
     actualizado_por: entity.actualizadoPor || entity.actualizado_por || null,
-    created_at: entity.created_at ? new Date(entity.created_at).toISOString() : '',
-    updated_at: entity.updated_at ? new Date(entity.updated_at).toISOString() : '',
+    created_at: entity.createdAt
+      ? new Date(entity.createdAt).toISOString()
+      : entity.created_at
+        ? new Date(entity.created_at).toISOString()
+        : '',
+    updated_at: entity.updatedAt
+      ? new Date(entity.updatedAt).toISOString()
+      : entity.updated_at
+        ? new Date(entity.updated_at).toISOString()
+        : '',
   };
 }
 

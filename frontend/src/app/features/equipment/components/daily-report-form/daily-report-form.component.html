@@ -56,36 +56,36 @@
         <h3>Información Básica</h3>
         <div class="section-grid">
           <div class="form-group">
-            <label for="report_date">Fecha *</label>
+            <label for="fecha_parte">Fecha *</label>
             <input
-              id="report_date"
+              id="fecha_parte"
               type="date"
-              formControlName="report_date"
+              formControlName="fecha_parte"
               class="form-control"
             />
-            <div class="error-msg" *ngIf="hasError('report_date')">La fecha es requerida</div>
+            <div class="error-msg" *ngIf="hasError('fecha_parte')">La fecha es requerida</div>
           </div>
 
           <div class="form-group">
-            <label for="operator_id">Operador *</label>
-            <select id="operator_id" formControlName="operator_id" class="form-select">
+            <label for="trabajador_id">Operador *</label>
+            <select id="trabajador_id" formControlName="trabajador_id" class="form-select">
               <option value="">Seleccione un operador</option>
               <option *ngFor="let operator of operators" [value]="operator.id">
-                {{ operator.first_name }} {{ operator.last_name }}
+                {{ operator.nombres }} {{ operator.apellido_paterno }}
               </option>
             </select>
-            <div class="error-msg" *ngIf="hasError('operator_id')">El operador es requerido</div>
+            <div class="error-msg" *ngIf="hasError('trabajador_id')">El operador es requerido</div>
           </div>
 
           <div class="form-group full-width">
-            <label for="equipment_id">Equipo *</label>
-            <select id="equipment_id" formControlName="equipment_id" class="form-select">
+            <label for="equipo_id">Equipo *</label>
+            <select id="equipo_id" formControlName="equipo_id" class="form-select">
               <option value="">Seleccione un equipo</option>
               <option *ngFor="let eq of filteredEquipment" [value]="eq.id">
-                {{ eq.code }} - {{ eq.name }}
+                {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
               </option>
             </select>
-            <div class="error-msg" *ngIf="hasError('equipment_id')">El equipo es requerido</div>
+            <div class="error-msg" *ngIf="hasError('equipo_id')">El equipo es requerido</div>
           </div>
         </div>
       </div>
@@ -95,52 +95,52 @@
         <h3>Horario y Horas</h3>
         <div class="section-grid">
           <div class="form-group">
-            <label for="start_time">Hora de Inicio *</label>
+            <label for="hora_inicio">Hora de Inicio *</label>
             <input
-              id="start_time"
+              id="hora_inicio"
               type="time"
-              formControlName="start_time"
+              formControlName="hora_inicio"
               class="form-control"
             />
-            <div class="error-msg" *ngIf="hasError('start_time')">Hora de inicio requerida</div>
+            <div class="error-msg" *ngIf="hasError('hora_inicio')">Hora de inicio requerida</div>
           </div>
 
           <div class="form-group">
-            <label for="end_time">Hora de Fin *</label>
+            <label for="hora_fin">Hora de Fin *</label>
             <input
-              id="end_time"
+              id="hora_fin"
               type="time"
-              formControlName="end_time"
+              formControlName="hora_fin"
               class="form-control"
             />
-            <div class="error-msg" *ngIf="hasError('end_time')">Hora de fin requerida</div>
-            <div class="error-msg" *ngIf="reportForm.get('end_time')?.hasError('invalidTimeRange')">
+            <div class="error-msg" *ngIf="hasError('hora_fin')">Hora de fin requerida</div>
+            <div class="error-msg" *ngIf="reportForm.get('hora_fin')?.hasError('invalidTimeRange')">
               La hora de fin debe ser mayor a la hora de inicio
             </div>
           </div>
 
           <div class="form-group">
-            <label for="hourmeter_start">Horómetro Inicial *</label>
+            <label for="horometro_inicial">Horómetro Inicial *</label>
             <input
-              id="hourmeter_start"
+              id="horometro_inicial"
               type="number"
-              formControlName="hourmeter_start"
+              formControlName="horometro_inicial"
               class="form-control"
               min="0"
             />
-            <div class="error-msg" *ngIf="hasError('hourmeter_start')">Requerido</div>
+            <div class="error-msg" *ngIf="hasError('horometro_inicial')">Requerido</div>
           </div>
 
           <div class="form-group">
-            <label for="hourmeter_end">Horómetro Final *</label>
+            <label for="horometro_final">Horómetro Final *</label>
             <input
-              id="hourmeter_end"
+              id="horometro_final"
               type="number"
-              formControlName="hourmeter_end"
+              formControlName="horometro_final"
               class="form-control"
               min="0"
             />
-            <div class="error-msg" *ngIf="hasError('hourmeter_end')">Requerido</div>
+            <div class="error-msg" *ngIf="hasError('horometro_final')">Requerido</div>
           </div>
 
           <div class="full-width calculated-value" *ngIf="hoursWorked > 0">
@@ -155,22 +155,22 @@
         <h3>Odómetro (Opcional - Solo Vehículos)</h3>
         <div class="section-grid">
           <div class="form-group">
-            <label for="odometer_start">Odómetro Inicial (km)</label>
+            <label for="odometro_inicial">Odómetro Inicial (km)</label>
             <input
-              id="odometer_start"
+              id="odometer_inicial"
               type="number"
-              formControlName="odometer_start"
+              formControlName="odometro_inicial"
               class="form-control"
               min="0"
             />
           </div>
 
           <div class="form-group">
-            <label for="odometer_end">Odómetro Final (km)</label>
+            <label for="odometro_final">Odómetro Final (km)</label>
             <input
-              id="odometer_end"
+              id="odometer_final"
               type="number"
-              formControlName="odometer_end"
+              formControlName="odometro_final"
               class="form-control"
               min="0"
             />

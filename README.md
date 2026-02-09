@@ -9,6 +9,7 @@ Modern ERP system for civil engineering equipment management built with Angular 
 | **[docs/SCHEMA_CONVENTIONS.md](./docs/SCHEMA_CONVENTIONS.md)**     | 📘 Database schema & naming conventions |
 | **[deploy/DEPLOYMENT.md](./deploy/DEPLOYMENT.md)**                 | 🚀 Production deployment guide          |
 | **[deploy/DATABASE_SCRIPTS.md](./deploy/DATABASE_SCRIPTS.md)**     | 🗄️ Database management                  |
+| **[docs/DATABASE_MIGRATION.md](./docs/DATABASE_MIGRATION.md)**     | 🔄 Migration strategy & workflow        |
 | **[docs/CLEANUP_SUMMARY.md](./docs/CLEANUP_SUMMARY.md)**           | 🧹 Recent cleanup changes               |
 | **[docs/copilot-instructions.md](./docs/copilot-instructions.md)** | 🤖 AI development guide                 |
 | **[docs/testing/](./docs/testing/)**                               | 🧪 Testing documentation                |
@@ -76,23 +77,6 @@ docker-compose -f deploy/docker-compose.prod.yml up -d
 
 # Initialize database (first time only)
 ./deploy/init-database.sh
-```
-
----
-
-## 📁 Project Structure
-
-```
-bitcorp-erp/
-├── backend/              # Node.js TypeScript API
-├── frontend/             # Angular 19 application
-├── database/             # Database schemas and migrations
-├── deploy/               # Production deployment configs
-├── docs/                 # Documentation
-├── docker/               # Dockerfiles
-├── scripts/              # Development scripts
-├── tests/                # E2E tests (Playwright)
-└── docker-compose.yml    # Development environment
 ```
 
 ---

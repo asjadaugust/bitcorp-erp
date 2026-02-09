@@ -162,6 +162,10 @@ export class ContractCreateDto {
   @IsNumber({}, { message: 'equipo_id debe ser un número' })
   equipo_id!: number;
 
+  @IsOptional()
+  @IsNumber({}, { message: 'proveedor_id debe ser un número' })
+  proveedor_id?: number | null;
+
   @IsString({ message: 'numero_contrato debe ser texto' })
   @MaxLength(50, { message: 'numero_contrato no puede exceder 50 caracteres' })
   numero_contrato!: string;
