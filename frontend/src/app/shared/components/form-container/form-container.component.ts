@@ -38,24 +38,24 @@ import { CommonModule } from '@angular/common';
       <!-- Form Content -->
       <div class="card form-card">
         <ng-content></ng-content>
-      </div>
 
-      <!-- Optional Footer Actions -->
-      <div class="form-footer" *ngIf="showFooter">
-        <div class="footer-actions">
-          <button type="button" class="btn btn-secondary" (click)="handleCancel()">
-            <i class="fa-solid fa-times"></i> Cancelar
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="handleSubmit()"
-            [disabled]="disableSubmit"
-          >
-            <i *ngIf="!loading" class="fa-solid" [class]="submitIcon"></i>
-            <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
-            {{ loading ? loadingText : submitLabel }}
-          </button>
+        <!-- Optional Footer Actions -->
+        <div class="form-footer" *ngIf="showFooter">
+          <div class="footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="handleCancel()">
+              <i class="fa-solid fa-times"></i> Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="handleSubmit()"
+              [disabled]="disableSubmit"
+            >
+              <i *ngIf="!loading" class="fa-solid" [class]="submitIcon"></i>
+              <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
+              {{ loading ? loadingText : submitLabel }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -183,6 +183,12 @@ import { CommonModule } from '@angular/common';
 
         .footer-actions app-button {
           width: 100%;
+        }
+
+        .form-footer {
+          margin-left: -20px;
+          margin-right: -20px;
+          margin-bottom: -20px;
         }
       }
     `,

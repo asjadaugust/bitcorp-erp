@@ -18,11 +18,11 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
           </span>
           <span class="header-date">
             <i class="fa-regular fa-calendar"></i>
-            {{ schedule.fecha_programada | date: 'dd/MM/yyyy' }}
+            {{ schedule.fechaProgramada | date: 'dd/MM/yyyy' }}
           </span>
         </div>
-        <h3 class="equipment-title">{{ schedule.equipo_codigo || 'Equipo Sin Código' }}</h3>
-        <span class="internal-code">Cod: #{{ schedule.equipo_id }}</span>
+        <h3 class="equipment-title">{{ schedule.equipo?.codigo_equipo || 'Equipo Sin Código' }}</h3>
+        <span class="internal-code">Cod: #{{ schedule.equipoId }}</span>
       </div>
 
       <div class="card-body">
@@ -32,7 +32,7 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
               <i class="fa-solid fa-screwdriver-wrench"></i>
               TIPO
             </div>
-            <div class="detail-value">{{ getTipoLabel(schedule.tipo_mantenimiento) }}</div>
+            <div class="detail-value">{{ getTipoLabel(schedule.tipoMantenimiento) }}</div>
           </div>
 
           <div class="detail-item">
@@ -40,16 +40,16 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
               <i class="fa-solid fa-user-gear"></i>
               RESPONSABLE
             </div>
-            <div class="detail-value">{{ schedule.tecnico_responsable || 'No asignado' }}</div>
+            <div class="detail-value">{{ schedule.tecnicoResponsable || 'No asignado' }}</div>
           </div>
 
-          <div class="detail-item" *ngIf="schedule.costo_estimado">
+          <div class="detail-item" *ngIf="schedule.costoEstimado">
             <div class="detail-label">
               <i class="fa-solid fa-coins"></i>
               PRESUPUESTO
             </div>
             <div class="detail-value highlight">
-              {{ schedule.costo_estimado | currency: 'S/ ' }}
+              {{ schedule.costoEstimado | currency: 'S/ ' }}
             </div>
           </div>
 
@@ -58,7 +58,7 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
               <i class="fa-solid fa-clock"></i>
               REGISTRO
             </div>
-            <div class="detail-value">{{ schedule.created_at | date: 'dd/MM/yy' }}</div>
+            <div class="detail-value">{{ schedule.createdAt | date: 'dd/MM/yy' }}</div>
           </div>
         </div>
 
@@ -71,7 +71,7 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
         <div class="meta-info">
           <span
             >Actualizado:
-            {{ schedule.updatedAt || schedule.created_at | date: 'dd/MM/yy HH:mm' }}</span
+            {{ schedule.updatedAt || schedule.createdAt | date: 'dd/MM/yy HH:mm' }}</span
           >
         </div>
         <div class="actions">

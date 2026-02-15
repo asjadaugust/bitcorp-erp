@@ -110,6 +110,14 @@ export class MaintenanceScheduleService {
         ...data.equipo,
         codigo_equipo: data.equipo.codigo_equipo || data.equipo.code,
       };
+    } else if (data.equipo_codigo) {
+      // Backend returns flattened fields in MaintenanceDto
+      schedule.equipo = {
+        id: data.equipo_id,
+        codigo_equipo: data.equipo_codigo,
+        marca: '', // Not returned by flattened DTO
+        modelo: data.equipo_descripcion, // Mapped to description as fallback
+      };
     }
     return schedule;
   }
