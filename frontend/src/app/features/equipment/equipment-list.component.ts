@@ -43,16 +43,22 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     >
       <app-actions-container actions>
         <div class="actions-group">
-          <button 
-            type="button" 
-            class="btn btn-secondary" 
+          <button
+            type="button"
+            class="btn btn-secondary"
             [class.active]="showStatistics"
             (click)="toggleStatistics()"
-            [disabled]="loadingStatistics">
-            <i class="fa-solid" [class.fa-chart-simple]="!loadingStatistics" [class.fa-spinner]="loadingStatistics" [class.fa-spin]="loadingStatistics"></i>
+            [disabled]="loadingStatistics"
+          >
+            <i
+              class="fa-solid"
+              [class.fa-chart-simple]="!loadingStatistics"
+              [class.fa-spinner]="loadingStatistics"
+              [class.fa-spin]="loadingStatistics"
+            ></i>
             {{ showStatistics ? 'Ocultar Estadísticas' : 'Ver Estadísticas' }}
           </button>
-  
+
           <button type="button" class="btn btn-primary" (click)="navigateToCreate()">
             <i class="fa-solid fa-plus"></i> Nuevo Equipo
           </button>
@@ -276,24 +282,38 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         background: white;
         padding: 1.5rem;
         border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
         display: flex;
         align-items: center;
         gap: 1.25rem;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
         border: 1px solid var(--grey-100);
       }
 
       .stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.05),
+          0 4px 6px -2px rgba(0, 0, 0, 0.025);
       }
 
       /* Card variants for subtle bordering/coloring */
-      .stat-card.total-card { border-left: 4px solid var(--primary-500); }
-      .stat-card.available-card { border-left: 4px solid var(--semantic-green-500); }
-      .stat-card.in-use-card { border-left: 4px solid var(--semantic-blue-500); }
-      .stat-card.maintenance-card { border-left: 4px solid var(--semantic-yellow-500); }
+      .stat-card.total-card {
+        border-left: 4px solid var(--primary-500);
+      }
+      .stat-card.available-card {
+        border-left: 4px solid var(--semantic-green-500);
+      }
+      .stat-card.in-use-card {
+        border-left: 4px solid var(--semantic-blue-500);
+      }
+      .stat-card.maintenance-card {
+        border-left: 4px solid var(--semantic-yellow-500);
+      }
 
       .stat-icon {
         width: 56px;
@@ -311,15 +331,27 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         color: var(--primary-600);
       }
       .stat-icon.available {
-        background: linear-gradient(135deg, var(--semantic-green-50) 0%, var(--semantic-green-100) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--semantic-green-50) 0%,
+          var(--semantic-green-100) 100%
+        );
         color: var(--semantic-green-600);
       }
       .stat-icon.in-use {
-        background: linear-gradient(135deg, var(--semantic-blue-50) 0%, var(--semantic-blue-100) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--semantic-blue-50) 0%,
+          var(--semantic-blue-100) 100%
+        );
         color: var(--semantic-blue-600);
       }
       .stat-icon.maintenance {
-        background: linear-gradient(135deg, var(--semantic-yellow-50) 0%, var(--semantic-yellow-100) 100%);
+        background: linear-gradient(
+          135deg,
+          var(--semantic-yellow-50) 0%,
+          var(--semantic-yellow-100) 100%
+        );
         color: var(--semantic-yellow-600);
       }
 
@@ -451,6 +483,8 @@ export class EquipmentListComponent implements OnInit {
   tabs: TabItem[] = [
     { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
+    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
+    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar' },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
     { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
   ];
@@ -461,6 +495,23 @@ export class EquipmentListComponent implements OnInit {
       label: 'Buscar',
       type: 'text',
       placeholder: 'Buscar por nombre, código, marca...',
+    },
+    {
+      key: 'categoria',
+      label: 'Categoría',
+      type: 'select',
+      options: [
+        { label: 'Maquinaria Pesada', value: 'MAQUINARIA_PESADA' },
+        { label: 'Maquinaria Liviana', value: 'MAQUINARIA_LIVIANA' },
+        { label: 'Vehículos', value: 'VEHICULOS' },
+        { label: 'Herramientas', value: 'HERRAMIENTAS' },
+      ],
+    },
+    {
+      key: 'marca',
+      label: 'Marca / Modelo',
+      type: 'text',
+      placeholder: 'Ej. CAT, Toyota...',
     },
     {
       key: 'status',

@@ -214,7 +214,18 @@ export class ProjectListComponent implements OnInit {
       key: 'search',
       label: 'Buscar',
       type: 'text',
-      placeholder: 'Buscar por código, nombre, cliente...',
+      placeholder: 'Buscar por código, nombre...',
+    },
+    {
+      key: 'dateRange',
+      label: 'Duración Proyecto',
+      type: 'dateRange',
+    },
+    {
+      key: 'cliente',
+      label: 'Cliente',
+      type: 'text',
+      placeholder: 'Ej. Minera Yanacocha',
     },
     {
       key: 'status',

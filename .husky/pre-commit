@@ -1,6 +1,26 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+echo "Checking git identity..."
+GIT_NAME=$(git config user.name)
+GIT_EMAIL=$(git config user.email)
+REQUIRED_NAME="Mohammad Asjad"
+REQUIRED_EMAIL="asjad.august@gmail.com"
+
+if [ "$GIT_NAME" != "$REQUIRED_NAME" ]; then
+  echo "❌ Error: Git user.name must be '$REQUIRED_NAME'. Current: '$GIT_NAME'"
+  echo "Run: git config --local user.name \"$REQUIRED_NAME\""
+  exit 1
+fi
+
+if [ "$GIT_EMAIL" != "$REQUIRED_EMAIL" ]; then
+  echo "❌ Error: Git user.email must be '$REQUIRED_EMAIL'. Current: '$GIT_EMAIL'"
+  echo "Run: git config --local user.email \"$REQUIRED_EMAIL\""
+  exit 1
+fi
+
+echo "✅ Identity check passed!"
+
 echo "Running pre-commit checks..."
 
 # Run lint-staged

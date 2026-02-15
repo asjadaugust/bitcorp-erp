@@ -226,7 +226,18 @@ export class ProviderListComponent implements OnInit {
       key: 'search',
       label: 'Buscar',
       type: 'text',
-      placeholder: 'Buscar por razón social o RUC...',
+      placeholder: 'Buscar por razón social, RUC o email...',
+    },
+    {
+      key: 'tipo_proveedor',
+      label: 'Tipo',
+      type: 'select',
+      options: [
+        { label: 'Equipos', value: 'EQUIPOS' },
+        { label: 'Materiales', value: 'MATERIALES' },
+        { label: 'Servicios', value: 'SERVICIOS' },
+        { label: 'Mixto', value: 'MIXTO' },
+      ],
     },
     {
       key: 'status',

@@ -521,6 +521,8 @@ export class DailyReportListComponent implements OnInit {
   tabs: TabItem[] = [
     { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
+    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
+    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar' },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
     { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
   ];

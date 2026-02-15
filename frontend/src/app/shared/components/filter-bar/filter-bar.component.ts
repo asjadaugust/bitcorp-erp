@@ -13,10 +13,12 @@ export interface FilterConfig {
   valueEnd?: any; // For dateRange
 }
 
+import { DropdownComponent } from '../dropdown/dropdown.component';
+
 @Component({
   selector: 'app-filter-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownComponent],
   template: `
     <div class="filter-bar">
       <div class="filter-main">
@@ -54,18 +56,15 @@ export interface FilterConfig {
             <div class="filter-group">
               <label>{{ filter.label }}</label>
 
-              <!-- Select -->
-              <select
+              <!-- Dropdown -->
+              <app-dropdown
                 *ngIf="filter.type === 'select'"
+                [options]="getDropdownOptions(filter)"
                 [(ngModel)]="filter.value"
-                (change)="onFilterChange()"
-                class="form-control"
-              >
-                <option value="">Todos</option>
-                <option *ngFor="let opt of filter.options" [value]="opt.value">
-                  {{ opt.label }}
-                </option>
-              </select>
+                (selectionChange)="onFilterChange()"
+                [placeholder]="'Seleccionar...'"
+                [searchable]="(filter.options && filter.options.length > 5) || false"
+              ></app-dropdown>
 
               <!-- Date -->
               <input
@@ -133,6 +132,7 @@ export interface FilterConfig {
         top: 50%;
         transform: translateY(-50%);
         color: var(--grey-400);
+        pointer-events: none;
       }
 
       .search-input {
@@ -142,52 +142,58 @@ export interface FilterConfig {
         border-radius: var(--s-8);
         font-size: 14px;
         transition: all 0.2s;
+        background: white;
       }
 
-      .filter-input:focus {
+      .search-input:focus,
+      .form-control:focus {
         outline: none;
         border-color: var(--primary-500);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
       }
 
       .date-range-inputs {
         display: flex;
         align-items: center;
         gap: var(--s-8);
+        flex-wrap: wrap;
       }
 
       .date-input {
         flex: 1;
-        min-width: 140px;
+        min-width: 130px;
       }
 
-      .date-separator {
-        color: var(--grey-400);
-        font-weight: 500;
-      }
+      /* Premium Toggle Button */
       .btn-filter-toggle {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
         padding: 10px 16px;
-        background: var(--neutral-0);
+        background: white;
         border: 1px solid var(--grey-300);
         border-radius: var(--s-8);
         color: var(--grey-700);
         font-weight: 500;
+        font-size: 14px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
 
       .btn-filter-toggle:hover {
         background: var(--grey-50);
-        border-color: var(--grey-400);
+        border-color: var(--primary-500);
+        color: var(--primary-700);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       }
 
       .btn-filter-toggle.active {
-        background: var(--primary-100);
-        border-color: var(--primary-200);
-        color: var(--primary-800);
+        background: var(--primary-50);
+        border-color: var(--primary-500);
+        color: var(--primary-700);
+        box-shadow: none;
       }
 
       .badge {
@@ -198,12 +204,13 @@ export interface FilterConfig {
         border-radius: 10px;
         min-width: 18px;
         text-align: center;
+        line-height: 1;
       }
 
-      /* Advanced Filters */
+      /* Advanced Filters Panel */
       .advanced-filters {
         padding: var(--s-24);
-        border-top: 1px solid var(--grey-100);
+        border-top: 1px solid var(--grey-200);
         background: var(--grey-50);
         border-bottom-left-radius: var(--s-12);
         border-bottom-right-radius: var(--s-12);
@@ -211,7 +218,7 @@ export interface FilterConfig {
 
       .filters-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: var(--s-16);
         margin-bottom: var(--s-16);
       }
@@ -220,37 +227,57 @@ export interface FilterConfig {
         display: block;
         font-size: 12px;
         font-weight: 600;
-        color: var(--grey-700);
+        color: var(--grey-600);
         margin-bottom: 6px;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       .form-control {
         width: 100%;
-        padding: 8px 12px;
+        padding: 10px 12px;
         border: 1px solid var(--grey-300);
         border-radius: var(--s-6);
         font-size: 14px;
         background: white;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      /* Select Arrow */
+      select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%23333" d="M6 8L0 2l1.4-1.4L6 5.2 10.6.6 12 2z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 32px;
       }
 
       .filter-actions {
         display: flex;
         justify-content: flex-end;
+        padding-top: var(--s-16);
+        border-top: 1px dashed var(--grey-200);
       }
 
       .btn-clear {
         background: none;
         border: none;
-        color: var(--primary-500);
+        color: var(--primary-600);
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
-        text-decoration: underline;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 4px;
       }
 
       .btn-clear:hover {
         color: var(--primary-800);
+        text-decoration: underline;
       }
     `,
   ],
@@ -271,6 +298,11 @@ export class FilterBarComponent {
 
   getAdvancedFilters(): FilterConfig[] {
     return this.config.filter((c) => c.type !== 'text');
+  }
+
+  getDropdownOptions(filter: FilterConfig): any[] {
+    const opts = filter.options || [];
+    return [{ label: 'Todos', value: '' }, ...opts];
   }
 
   get activeFiltersCount(): number {
