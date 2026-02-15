@@ -73,15 +73,17 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Monto Total</label>
-                    <p class="highlight">{{ valuation.totalValorizado | currency: 'PEN' : 'S/ ' }}</p>
+                    <p class="highlight">
+                      {{ valuation.totalValorizado | currency: 'PEN' : 'S/ ' }}
+                    </p>
                   </div>
                   <div class="info-item">
                     <label>N° Valorización</label>
                     <p>{{ valuation.numeroValorizacion || 'Pendiente' }}</p>
                   </div>
-                  <div class="info-item" *ngIf="valuation.approvedAt">
+                  <div class="info-item" *ngIf="valuation.aprobadoEn">
                     <label>Fecha Aprobación</label>
-                    <p>{{ valuation.approvedAt | date: 'dd/MM/yyyy' }}</p>
+                    <p>{{ valuation.aprobadoEn | date: 'dd/MM/yyyy' }}</p>
                   </div>
                 </div>
               </section>
@@ -334,8 +336,8 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
             <div class="card">
               <h3>Información del Sistema</h3>
               <div class="timeline">
-                <div class="timeline-item" *ngIf="valuation.approvedAt">
-                  <div class="timeline-date">{{ valuation.approvedAt | date: 'short' }}</div>
+                <div class="timeline-item" *ngIf="valuation.aprobadoEn">
+                  <div class="timeline-date">{{ valuation.aprobadoEn | date: 'short' }}</div>
                   <div class="timeline-content">Aprobado</div>
                 </div>
 
@@ -373,7 +375,9 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
           <p>¿Estás seguro de que deseas aprobar esta valorización?</p>
           <div class="approval-summary">
             <p><strong>N° Valorización:</strong> {{ valuation?.numeroValorizacion || 'N/A' }}</p>
-            <p><strong>Total:</strong> {{ valuation?.totalValorizado | currency: 'PEN' : 'S/ ' }}</p>
+            <p>
+              <strong>Total:</strong> {{ valuation?.totalValorizado | currency: 'PEN' : 'S/ ' }}
+            </p>
             <p>
               <strong>Periodo:</strong> {{ valuation?.fechaInicio | date: 'dd/MM/yyyy' }} -
               {{ valuation?.fechaFin | date: 'dd/MM/yyyy' }}

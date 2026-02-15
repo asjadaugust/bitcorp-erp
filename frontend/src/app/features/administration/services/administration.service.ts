@@ -42,7 +42,7 @@ export interface PaymentSchedule {
   payment_date: string;
   total_amount: number;
   currency: string;
-  status: 'draft' | 'approved' | 'processed' | 'cancelled';
+  estado: 'BORRADOR' | 'APROBADO' | 'PROCESADO' | 'CANCELADO';
   description?: string;
   periodo?: string;
   details?: PaymentScheduleDetail[];
@@ -83,9 +83,7 @@ export class AdministrationService {
 
   // Cost Centers
   getCostCenters(): Observable<CostCenter[]> {
-    return this.http
-      .get<any>(`${this.apiUrl}/cost-centers`)
-      .pipe(map((res) => res.data || res));
+    return this.http.get<any>(`${this.apiUrl}/cost-centers`).pipe(map((res) => res.data || res));
   }
 
   getCostCenter(id: string): Observable<CostCenter> {
@@ -107,22 +105,16 @@ export class AdministrationService {
   }
 
   getProviders(): Observable<Provider[]> {
-    return this.http
-      .get<any>(this.providersUrl)
-      .pipe(map((res) => res.data || res));
+    return this.http.get<any>(this.providersUrl).pipe(map((res) => res.data || res));
   }
 
   // Accounts Payable (Spanish snake_case DTOs)
   getAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http
-      .get<any>(this.apUrl)
-      .pipe(map((res) => res.data || res));
+    return this.http.get<any>(this.apUrl).pipe(map((res) => res.data || res));
   }
 
   getAccountsPayableById(id: number): Observable<AccountsPayable> {
-    return this.http
-      .get<any>(`${this.apUrl}/${id}`)
-      .pipe(map((res) => res.data || res));
+    return this.http.get<any>(`${this.apUrl}/${id}`).pipe(map((res) => res.data || res));
   }
 
   createAccountsPayable(data: Partial<AccountsPayable>): Observable<AccountsPayable> {
@@ -138,22 +130,16 @@ export class AdministrationService {
   }
 
   getPendingAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http
-      .get<any>(`${this.apUrl}/pending`)
-      .pipe(map((res) => res.data || res));
+    return this.http.get<any>(`${this.apUrl}/pending`).pipe(map((res) => res.data || res));
   }
 
   // Payment Schedules (English properties from Entity)
   getPaymentSchedules(): Observable<PaymentSchedule[]> {
-    return this.http
-      .get<any>(this.psUrl)
-      .pipe(map((res) => res.data || res));
+    return this.http.get<any>(this.psUrl).pipe(map((res) => res.data || res));
   }
 
   getPaymentScheduleById(id: number): Observable<PaymentSchedule> {
-    return this.http
-      .get<any>(`${this.psUrl}/${id}`)
-      .pipe(map((res) => res.data || res));
+    return this.http.get<any>(`${this.psUrl}/${id}`).pipe(map((res) => res.data || res));
   }
 
   createPaymentSchedule(data: Partial<PaymentSchedule>): Observable<PaymentSchedule> {

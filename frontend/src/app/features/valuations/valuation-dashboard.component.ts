@@ -1,11 +1,15 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ValuationService } from '../../core/services/valuation.service';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-valuation-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, StatsGridComponent],
   template: `
     <div class="dashboard-container">
       <div class="header">
@@ -18,30 +22,8 @@ import { ValuationService } from '../../core/services/valuation.service';
       </div>
 
       <div *ngIf="!loading && data" class="dashboard-grid">
-        <!-- Summary Cards -->
-        <div class="card summary-card total">
-          <div class="icon"><i class="fa-solid fa-sack-dollar"></i></div>
-          <div class="content">
-            <h3>Total Valorizado</h3>
-            <p class="value">{{ getTotalAmount() | currency: 'PEN' : 'S/ ' }}</p>
-          </div>
-        </div>
-
-        <div class="card summary-card pending">
-          <div class="icon"><i class="fa-solid fa-clock"></i></div>
-          <div class="content">
-            <h3>Pendientes</h3>
-            <p class="value">{{ getStatusCount('PENDIENTE') }}</p>
-          </div>
-        </div>
-
-        <div class="card summary-card approved">
-          <div class="icon"><i class="fa-solid fa-check-circle"></i></div>
-          <div class="content">
-            <h3>Aprobadas</h3>
-            <p class="value">{{ getStatusCount('APROBADO') }}</p>
-          </div>
-        </div>
+        <!-- Summary Stats -->
+        <app-stats-grid [items]="statItems" testId="valuation-summary-stats"></app-stats-grid>
 
         <!-- Monthly Trend Chart -->
         <div class="card chart-card full-width">
@@ -123,47 +105,6 @@ import { ValuationService } from '../../core/services/valuation.service';
         padding: 24px;
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--grey-200);
-      }
-
-      /* Summary Cards */
-      .summary-card {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .summary-card .icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-      }
-      .summary-card.total .icon {
-        background: var(--primary-100);
-        color: var(--primary-500);
-      }
-      .summary-card.pending .icon {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-600);
-      }
-      .summary-card.approved .icon {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-600);
-      }
-
-      .summary-card .content h3 {
-        margin: 0;
-        font-size: 14px;
-        color: var(--grey-500);
-        font-weight: 500;
-      }
-      .summary-card .content .value {
-        margin: 4px 0 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--grey-900);
       }
 
       /* Bar Chart */
@@ -290,6 +231,7 @@ export class ValuationDashboardComponent implements OnInit {
   valuationService = inject(ValuationService);
   loading = true;
   data: any = null;
+  statItems: StatItem[] = [];
 
   ngOnInit() {
     this.loadAnalytics();
@@ -299,6 +241,7 @@ export class ValuationDashboardComponent implements OnInit {
     this.valuationService.getAnalytics().subscribe({
       next: (res) => {
         this.data = res;
+        this.calculateStatItems();
         this.loading = false;
       },
       error: (err) => {
@@ -306,6 +249,41 @@ export class ValuationDashboardComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+  calculateStatItems() {
+    if (!this.data) return;
+
+    this.statItems = [
+      {
+        label: 'Total Valorizado',
+        value: this.formatCurrency(this.getTotalAmount()),
+        icon: 'fa-sack-dollar',
+        color: 'primary',
+        testId: 'total-valuation',
+      },
+      {
+        label: 'Pendientes',
+        value: this.getStatusCount('PENDIENTE'),
+        icon: 'fa-clock',
+        color: 'warning',
+        testId: 'pending-valuations',
+      },
+      {
+        label: 'Aprobadas',
+        value: this.getStatusCount('APROBADO'),
+        icon: 'fa-check-circle',
+        color: 'success',
+        testId: 'approved-valuations',
+      },
+    ];
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN',
+      minimumFractionDigits: 2,
+    }).format(value);
   }
 
   getTotalAmount(): number {

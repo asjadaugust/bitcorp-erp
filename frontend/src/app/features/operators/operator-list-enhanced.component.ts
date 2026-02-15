@@ -9,9 +9,7 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
-import {
-  PageLayoutComponent,
-} from '../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -34,7 +32,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     <app-page-layout
       title="Gestión de Operadores"
       icon="fa-users-gear"
-      [breadcrumbs]="[{ label: 'Dashboard', url: '/app' }, { label: 'Operadores' }]"
+      [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Operadores' }]"
       [loading]="loading"
     >
       <app-actions-container actions>
@@ -59,7 +57,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           nombre_completo: userTemplate,
           contacto: contactTemplate,
           licencia: licenseTemplate,
-          estado: statusTemplate
+          estado: statusTemplate,
         }"
         (rowClick)="viewOperator($event)"
       >

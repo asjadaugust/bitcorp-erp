@@ -46,30 +46,30 @@ export class ValuationService {
   }
 
   getById(id: number | string): Observable<Valuation> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-      map((response) => this.toCamelCase(response?.data || response))
-    );
+    return this.http
+      .get<any>(`${this.apiUrl}/${id}`)
+      .pipe(map((response) => this.toCamelCase(response?.data || response)));
   }
 
   create(valuation: Partial<Valuation>): Observable<Valuation> {
     const payload = this.toSnakeCase(valuation);
-    return this.http.post<any>(this.apiUrl, payload).pipe(
-      map((response) => this.toCamelCase(response?.data || response))
-    );
+    return this.http
+      .post<any>(this.apiUrl, payload)
+      .pipe(map((response) => this.toCamelCase(response?.data || response)));
   }
 
   update(id: number | string, valuation: Partial<Valuation>): Observable<Valuation> {
     const payload = this.toSnakeCase(valuation);
     // console.log('Update Payload:', payload);
-    return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
-      map((response) => this.toCamelCase(response?.data || response))
-    );
+    return this.http
+      .put<any>(`${this.apiUrl}/${id}`, payload)
+      .pipe(map((response) => this.toCamelCase(response?.data || response)));
   }
 
   private toSnakeCase(valuation: Partial<Valuation>): any {
     return {
-      contrato_id: valuation.contractId,
-      equipo_id: valuation.equipmentId,
+      contrato_id: valuation.contratoId,
+      equipo_id: valuation.equipoId,
       fecha_inicio: valuation.fechaInicio,
       fecha_fin: valuation.fechaFin,
       total_valorizado: valuation.totalValorizado,
@@ -86,9 +86,9 @@ export class ValuationService {
     return {
       id: data.id,
       legacyId: data.legacy_id,
-      equipmentId: data.equipo_id,
-      contractId: data.contrato_id,
-      projectId: data.proyecto_id,
+      equipoId: data.equipo_id,
+      contratoId: data.contrato_id,
+      proyectoId: data.proyecto_id,
       periodo: data.periodo,
       fechaInicio: data.fecha_inicio,
       fechaFin: data.fecha_fin,
@@ -108,17 +108,19 @@ export class ValuationService {
       totalConIgv: data.total_con_igv,
       estado: data.estado,
       observaciones: data.observaciones,
-      createdBy: data.creado_por,
-      approvedBy: data.aprobado_por,
-      approvedAt: data.aprobado_en,
+      creadoPor: data.creado_por,
+      aprobadoPor: data.aprobado_por,
+      aprobadoEn: data.aprobado_en,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
-      equipo: data.equipo ? {
-        id: data.equipo.id,
-        codigo_equipo: data.equipo.codigo,
-        marca: data.equipo.nombre?.split(' ')[0] || '',
-        modelo: data.equipo.nombre?.split(' ').slice(1).join(' ') || '',
-      } : undefined,
+      equipo: data.equipo
+        ? {
+            id: data.equipo.id,
+            codigo_equipo: data.equipo.codigo_equipo || data.equipo.codigo,
+            marca: data.equipo.marca || '',
+            modelo: data.equipo.modelo || '',
+          }
+        : undefined,
       contrato: data.contrato,
     } as Valuation;
   }

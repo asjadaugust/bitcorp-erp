@@ -109,7 +109,7 @@ export class CostCenterListComponent implements OnInit {
   filters = { search: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Administración', url: '/administracion' },
     { label: 'Centros de Costo' },
   ];

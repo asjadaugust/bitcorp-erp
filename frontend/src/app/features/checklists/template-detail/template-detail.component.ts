@@ -4,11 +4,15 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ChecklistService } from '../../../core/services/checklist.service';
 import { ChecklistTemplate, ChecklistItem } from '../../../core/models/checklist.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-template-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, PageLayoutComponent],
+  imports: [CommonModule, RouterModule, PageLayoutComponent, StatsGridComponent],
   template: `
     <app-page-layout
       [title]="'Plantilla: ' + (template?.nombre || '')"
@@ -74,38 +78,10 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
           </div>
         </div>
 
-        <!-- Statistics Card -->
-        <div class="info-card stats-card">
+        <!-- Statistics Section -->
+        <div class="stats-section" *ngIf="template">
           <h2>Estadísticas</h2>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-icon">
-                <i class="fa-solid fa-list-check"></i>
-              </div>
-              <div class="stat-content">
-                <span class="stat-label">Total Items</span>
-                <span class="stat-value">{{ template.items?.length || 0 }}</span>
-              </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-icon critical">
-                <i class="fa-solid fa-exclamation-triangle"></i>
-              </div>
-              <div class="stat-content">
-                <span class="stat-label">Items Críticos</span>
-                <span class="stat-value">{{ getCriticalCount() }}</span>
-              </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-icon photo">
-                <i class="fa-solid fa-camera"></i>
-              </div>
-              <div class="stat-content">
-                <span class="stat-label">Requieren Foto</span>
-                <span class="stat-value">{{ getPhotoRequiredCount() }}</span>
-              </div>
-            </div>
-          </div>
+          <app-stats-grid [items]="statItems" testId="template-stats"></app-stats-grid>
         </div>
 
         <!-- Items Card -->
@@ -319,55 +295,8 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
         color: var(--success-800);
       }
 
-      .stats-card .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-16);
-      }
-
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: var(--s-12);
-        padding: var(--s-16);
-        background: var(--grey-50);
-        border-radius: var(--s-8);
-      }
-
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: var(--primary-100);
-        color: var(--primary-800);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-
-      .stat-icon.critical {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
-      .stat-icon.photo {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
-      .stat-content {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-4);
-      }
-
-      .stat-label {
-        font-size: var(--type-bodySmall-size);
-        color: var(--grey-600);
-      }
-
-      .stat-value {
+      .stats-section h2 {
+        margin-bottom: var(--s-16);
         font-size: var(--type-h3-size);
         font-weight: 700;
         color: var(--grey-900);
@@ -498,9 +427,10 @@ export class TemplateDetailComponent implements OnInit {
 
   template: ChecklistTemplate | null = null;
   loading = false;
+  statItems: StatItem[] = [];
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Checklists', url: '/checklists' },
     { label: 'Plantillas', url: '/checklists/templates' },
     { label: 'Detalle' },
@@ -518,6 +448,7 @@ export class TemplateDetailComponent implements OnInit {
     this.checklistService.getTemplateById(id).subscribe({
       next: (data) => {
         this.template = data;
+        this.calculateStatItems();
         this.loading = false;
         this.breadcrumbs[this.breadcrumbs.length - 1].label = data.nombre;
       },
@@ -528,6 +459,34 @@ export class TemplateDetailComponent implements OnInit {
         this.goBack();
       },
     });
+  }
+
+  calculateStatItems(): void {
+    if (!this.template) return;
+
+    this.statItems = [
+      {
+        label: 'Total Items',
+        value: this.template.items?.length || 0,
+        icon: 'fa-list-check',
+        color: 'primary',
+        testId: 'total-items',
+      },
+      {
+        label: 'Items Críticos',
+        value: this.getCriticalCount(),
+        icon: 'fa-triangle-exclamation',
+        color: 'danger',
+        testId: 'critical-items',
+      },
+      {
+        label: 'Requieren Foto',
+        value: this.getPhotoRequiredCount(),
+        icon: 'fa-camera',
+        color: 'info',
+        testId: 'photo-items',
+      },
+    ];
   }
 
   getFrecuenciaLabel(frecuencia?: string): string {

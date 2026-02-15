@@ -85,7 +85,7 @@ export class TenderListComponent implements OnInit {
   loading = false;
   filters = { search: '', status: '' };
 
-  breadcrumbs: Breadcrumb[] = [{ label: 'Dashboard', url: '/app' }, { label: 'Licitaciones' }];
+  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'Licitaciones' }];
 
   filterConfig: FilterConfig[] = [
     { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar licitaciones...' },

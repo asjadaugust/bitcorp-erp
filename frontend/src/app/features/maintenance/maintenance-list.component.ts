@@ -209,7 +209,7 @@ export class MaintenanceListComponent implements OnInit {
   equipmentMap: Map<number, any> = new Map();
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Mantenimiento' },
   ];

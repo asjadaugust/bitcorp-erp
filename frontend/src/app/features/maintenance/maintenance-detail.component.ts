@@ -12,7 +12,9 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
     <div class="detail-container">
       <div class="container">
         <div class="breadcrumb">
-          <a routerLink="/maintenance" class="breadcrumb-link">← Volver a Mantenimiento</a>
+          <a routerLink="/equipment/maintenance" class="breadcrumb-link"
+            >← Volver a Mantenimiento</a
+          >
         </div>
 
         <div *ngIf="loading" class="loading">
@@ -24,32 +26,22 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
           <div class="detail-main card">
             <div class="detail-header">
               <div>
-                <h1>Mantenimiento {{ record.maintenance_type | titlecase }}</h1>
-                <p class="code-badge">{{ record.start_date | date: 'dd/MM/yyyy' }}</p>
+                <h1>Mantenimiento {{ record.tipoMantenimiento }}</h1>
+                <p class="code-badge">{{ record.fechaProgramada | date: 'dd/MM/yyyy' }}</p>
               </div>
               <div class="detail-actions">
-                <button class="btn btn-primary" (click)="editRecord()">
+                <button type="button" class="btn btn-primary" (click)="editRecord()">
                   <i class="fa-solid fa-pen"></i> Editar
                 </button>
-                <button class="btn btn-danger" (click)="deleteRecord()">
+                <button type="button" class="btn btn-danger" (click)="deleteRecord()">
                   <i class="fa-solid fa-trash"></i> Eliminar
                 </button>
               </div>
             </div>
 
             <div class="detail-status">
-              <span [class]="'status-badge status-' + record.status">
-                {{
-                  record.status === 'scheduled'
-                    ? 'Programado'
-                    : record.status === 'in_progress'
-                      ? 'En Progreso'
-                      : record.status === 'completed'
-                        ? 'Completado'
-                        : record.status === 'cancelled'
-                          ? 'Cancelado'
-                          : record.status
-                }}
+              <span [class]="'status-badge status-' + getStatusClass(record.estado)">
+                {{ getStatusLabel(record.estado) }}
               </span>
             </div>
 
@@ -59,11 +51,14 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Equipo</label>
-                    <p>{{ record.equipment_name || 'N/A' }}</p>
+                    <p>
+                      {{ record.equipo?.codigo_equipo || 'N/A' }} {{ record.equipo?.marca }}
+                      {{ record.equipo?.modelo }}
+                    </p>
                   </div>
                   <div class="info-item">
-                    <label>Proveedor</label>
-                    <p>{{ record.provider_name || 'N/A' }}</p>
+                    <label>Técnico Responsable</label>
+                    <p>{{ record.tecnicoResponsable || 'N/A' }}</p>
                   </div>
                 </div>
               </section>
@@ -73,16 +68,18 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Tipo</label>
-                    <p>{{ record.maintenance_type | titlecase }}</p>
+                    <p>{{ record.tipoMantenimiento }}</p>
                   </div>
                   <div class="info-item">
                     <label>Costo Total</label>
-                    <p class="highlight">{{ record.cost | currency: 'PEN' : 'S/ ' }}</p>
+                    <p class="highlight">
+                      {{ record.costoReal || record.costoEstimado | currency: 'PEN' : 'S/ ' }}
+                    </p>
                   </div>
                 </div>
-                <div class="info-item full-width" *ngIf="record.description">
+                <div class="info-item full-width" *ngIf="record.descripcion">
                   <label>Descripción</label>
-                  <p class="notes">{{ record.description }}</p>
+                  <p class="notes">{{ record.descripcion }}</p>
                 </div>
               </section>
 
@@ -90,12 +87,12 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
                 <h2>Fechas</h2>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>Fecha de Inicio</label>
-                    <p>{{ record.start_date | date: 'dd/MM/yyyy' }}</p>
+                    <label>Fecha Programada</label>
+                    <p>{{ record.fechaProgramada | date: 'dd/MM/yyyy' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Fecha de Fin</label>
-                    <p>{{ (record.end_date | date: 'dd/MM/yyyy') || '-' }}</p>
+                    <label>Fecha Realizada</label>
+                    <p>{{ (record.fechaRealizada | date: 'dd/MM/yyyy') || '-' }}</p>
                   </div>
                 </div>
               </section>
@@ -122,7 +119,9 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
         <div *ngIf="!loading && !record" class="empty-state card">
           <h3>Registro no encontrado</h3>
           <p>El registro que buscas no existe o ha sido eliminado.</p>
-          <button class="btn btn-primary" routerLink="/maintenance">Volver a la lista</button>
+          <button type="button" class="btn btn-primary" routerLink="/equipment/maintenance">
+            Volver a la lista
+          </button>
         </div>
       </div>
     </div>
@@ -131,15 +130,19 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Confirmar Eliminación</h2>
-          <button class="close" (click)="showDeleteModal = false">&times;</button>
+          <button type="button" class="close" (click)="showDeleteModal = false">&times;</button>
         </div>
         <div class="modal-body">
           <p>¿Estás seguro de que deseas eliminar este registro de mantenimiento?</p>
           <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>
-          <button class="btn btn-danger" (click)="confirmDelete()">Eliminar Registro</button>
+          <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+            Eliminar Registro
+          </button>
         </div>
       </div>
     </div>
@@ -480,8 +483,12 @@ export class MaintenanceDetailComponent implements OnInit {
   showDeleteModal = false;
 
   ngOnInit(): void {
-    const id = this.route.snapshot.params['id'];
-    this.loadRecord(id);
+    this.route.params.subscribe((params) => {
+      const id = params['id'];
+      if (id) {
+        this.loadRecord(+id);
+      }
+    });
   }
 
   loadRecord(id: number): void {
@@ -499,7 +506,7 @@ export class MaintenanceDetailComponent implements OnInit {
 
   editRecord(): void {
     if (this.record) {
-      this.router.navigate(['/maintenance', this.record.id, 'edit']);
+      this.router.navigate(['edit'], { relativeTo: this.route });
     }
   }
 
@@ -507,11 +514,33 @@ export class MaintenanceDetailComponent implements OnInit {
     this.showDeleteModal = true;
   }
 
+  getStatusClass(estado: string): string {
+    const map: Record<string, string> = {
+      PROGRAMADO: 'scheduled',
+      EN_PROCESO: 'in_progress',
+      COMPLETADO: 'completed',
+      CANCELADO: 'cancelled',
+      PENDIENTE: 'pending',
+    };
+    return map[estado] || 'pending';
+  }
+
+  getStatusLabel(estado: string): string {
+    const map: Record<string, string> = {
+      PROGRAMADO: 'Programado',
+      EN_PROCESO: 'En Proceso',
+      COMPLETADO: 'Completado',
+      CANCELADO: 'Cancelado',
+      PENDIENTE: 'Pendiente',
+    };
+    return map[estado] || estado;
+  }
+
   confirmDelete(): void {
     if (this.record) {
       this.maintenanceService.delete(this.record.id).subscribe({
         next: () => {
-          this.router.navigate(['/maintenance']);
+          this.router.navigate(['../../'], { relativeTo: this.route });
         },
         error: (error) => {
           console.error('Failed to delete record:', error);

@@ -95,13 +95,13 @@ import {
 
             <div class="form-group">
               <label for="status">Estado *</label>
-              <select id="status" formControlName="status" class="form-select">
-                <option value="draft">Borrador</option>
-                <option value="submitted">Enviado</option>
-                <option value="approved">Aprobado</option>
-                <option value="rejected">Rechazado</option>
+              <select id="status" formControlName="estado" class="form-select">
+                <option value="BORRADOR">Borrador</option>
+                <option value="ENVIADO">Enviado</option>
+                <option value="APROBADO">Aprobado</option>
+                <option value="RECHAZADO">Rechazado</option>
               </select>
-              <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
+              <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
             </div>
           </div>
         </div>
@@ -399,7 +399,7 @@ export class TimesheetFormComponent implements OnInit {
     proyecto_id: 'Proyecto',
     trabajador_id: 'Operador',
     week_start: 'Inicio de Semana',
-    status: 'Estado',
+    estado: 'Estado',
     notes: 'Notas',
     entries: 'Registros Diarios',
   };
@@ -417,7 +417,7 @@ export class TimesheetFormComponent implements OnInit {
       proyecto_id: [null, Validators.required],
       trabajador_id: [null, Validators.required],
       week_start: ['', Validators.required],
-      status: ['draft', Validators.required],
+      estado: ['BORRADOR', Validators.required],
       notes: [''],
       entries: this.fb.array([]),
     });

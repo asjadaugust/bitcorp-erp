@@ -4,11 +4,15 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ChecklistService } from '../../../core/services/checklist.service';
 import { InspectionWithResults } from '../../../core/models/checklist.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-inspection-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, PageLayoutComponent],
+  imports: [CommonModule, RouterModule, PageLayoutComponent, StatsGridComponent],
   template: `
     <app-page-layout
       [title]="'Inspección ' + (inspection?.codigo || '')"
@@ -93,39 +97,10 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
           </div>
         </div>
 
-        <!-- Statistics Card -->
-        <div class="info-card stats-card">
+        <!-- Statistics Section -->
+        <div class="stats-section" *ngIf="inspection">
           <h2>Estadísticas</h2>
-          <div class="stats-grid">
-            <div class="stat-item stat-total">
-              <div class="stat-icon"><i class="fa-solid fa-list"></i></div>
-              <div class="stat-content">
-                <div class="stat-value">{{ inspection.itemsTotal || 0 }}</div>
-                <div class="stat-label">Total Items</div>
-              </div>
-            </div>
-            <div class="stat-item stat-pass">
-              <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
-              <div class="stat-content">
-                <div class="stat-value">{{ inspection.itemsConforme || 0 }}</div>
-                <div class="stat-label">Conformes</div>
-              </div>
-            </div>
-            <div class="stat-item stat-fail">
-              <div class="stat-icon"><i class="fa-solid fa-times-circle"></i></div>
-              <div class="stat-content">
-                <div class="stat-value">{{ inspection.itemsNoConforme || 0 }}</div>
-                <div class="stat-label">No Conformes</div>
-              </div>
-            </div>
-            <div class="stat-item stat-rate">
-              <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
-              <div class="stat-content">
-                <div class="stat-value">{{ getApprovalRate() }}%</div>
-                <div class="stat-label">Tasa Aprobación</div>
-              </div>
-            </div>
-          </div>
+          <app-stats-grid [items]="statItems" testId="inspection-stats"></app-stats-grid>
         </div>
 
         <!-- Warnings -->
@@ -361,66 +336,11 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
         font-weight: 600;
       }
 
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-16);
-      }
-
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: var(--s-16);
-        padding: var(--s-16);
-        border-radius: var(--s-8);
-      }
-
-      .stat-total {
-        background: var(--primary-50);
-      }
-
-      .stat-pass {
-        background: var(--success-50);
-      }
-
-      .stat-fail {
-        background: var(--error-50);
-      }
-
-      .stat-rate {
-        background: var(--info-50);
-      }
-
-      .stat-icon {
-        font-size: 32px;
-      }
-
-      .stat-total .stat-icon {
-        color: var(--primary-500);
-      }
-
-      .stat-pass .stat-icon {
-        color: var(--success-500);
-      }
-
-      .stat-fail .stat-icon {
-        color: var(--error-500);
-      }
-
-      .stat-rate .stat-icon {
-        color: var(--info-500);
-      }
-
-      .stat-value {
-        font-size: 32px;
+      .stats-section h2 {
+        margin-bottom: var(--s-16);
+        font-size: var(--type-h3-size);
         font-weight: 700;
         color: var(--grey-900);
-      }
-
-      .stat-label {
-        font-size: 14px;
-        color: var(--grey-700);
-        font-weight: 600;
       }
 
       .warning-card {
@@ -523,11 +443,21 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
         border-color: var(--error-200);
       }
 
-      .col-description { width: 30%; }
-      .col-status { width: 15%; }
-      .col-value { width: 15%; }
-      .col-action { width: 15%; }
-      .col-obs { width: 25%; }
+      .col-description {
+        width: 30%;
+      }
+      .col-status {
+        width: 15%;
+      }
+      .col-value {
+        width: 15%;
+      }
+      .col-action {
+        width: 15%;
+      }
+      .col-obs {
+        width: 25%;
+      }
 
       .description-content {
         display: flex;
@@ -659,6 +589,7 @@ export class InspectionDetailComponent implements OnInit {
 
   inspection: InspectionWithResults | null = null;
   loading = false;
+  statItems: StatItem[] = [];
 
   breadcrumbs = [
     { label: 'Inicio', url: '/app' },
@@ -679,6 +610,7 @@ export class InspectionDetailComponent implements OnInit {
     this.checklistService.getInspectionWithResults(id).subscribe({
       next: (data) => {
         this.inspection = data;
+        this.calculateStatItems();
         this.loading = false;
       },
       error: (error) => {
@@ -686,6 +618,40 @@ export class InspectionDetailComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+  calculateStatItems(): void {
+    if (!this.inspection) return;
+
+    this.statItems = [
+      {
+        label: 'Total Items',
+        value: this.inspection.itemsTotal || 0,
+        icon: 'fa-list',
+        color: 'primary',
+        testId: 'total-items',
+      },
+      {
+        label: 'Conformes',
+        value: this.inspection.itemsConforme || 0,
+        icon: 'fa-check-circle',
+        color: 'success',
+        testId: 'conforming-items',
+      },
+      {
+        label: 'No Conformes',
+        value: this.inspection.itemsNoConforme || 0,
+        icon: 'fa-times-circle',
+        color: 'danger',
+        testId: 'non-conforming-items',
+      },
+      {
+        label: 'Tasa Aprobación',
+        value: `${this.getApprovalRate()}%`,
+        icon: 'fa-chart-line',
+        color: 'info',
+        testId: 'approval-rate',
+      },
+    ];
   }
 
   getEstadoLabel(estado: string): string {

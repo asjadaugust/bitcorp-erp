@@ -22,6 +22,10 @@ import {
 import { ExcelExportService } from '../../../../core/services/excel-export.service';
 import { CsvExportService } from '../../../../core/services/csv-export.service';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-movement-list',
@@ -35,6 +39,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    StatsGridComponent,
   ],
   template: `
     <app-page-layout
@@ -44,7 +49,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       [loading]="loading"
       [tabs]="tabs"
     >
-    <app-actions-container actions>
+      <app-actions-container actions>
         <button class="btn btn-primary" (click)="registerMovement('entrada')">
           <i class="fa-solid fa-arrow-right-to-bracket"></i> Registrar Ingreso
         </button>
@@ -58,21 +63,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         </app-export-dropdown>
       </app-actions-container>
 
-      <!-- Statistics Bar -->
-      <div class="stats-bar">
-        <div class="stat-card">
-          <span class="stat-label">Total Movimientos</span>
-          <span class="stat-value">{{ stats.total }}</span>
-        </div>
-        <div class="stat-card stat-in">
-          <span class="stat-label">Ingresos (Mes)</span>
-          <span class="stat-value">{{ stats.inCount }}</span>
-        </div>
-        <div class="stat-card stat-out">
-          <span class="stat-label">Salidas (Mes)</span>
-          <span class="stat-value">{{ stats.outCount }}</span>
-        </div>
-      </div>
+      <app-stats-grid [items]="statItems" testId="movement-stats"></app-stats-grid>
 
       <app-filter-bar
         [config]="filterConfig"
@@ -168,39 +159,6 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         background: var(--grey-300);
       }
 
-      /* Stats */
-      .stats-bar {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: var(--s-16);
-        margin-bottom: var(--s-24);
-      }
-      .stat-card {
-        padding: var(--s-16);
-        background: var(--neutral-0);
-        border-radius: var(--s-8);
-        border-left: 4px solid var(--primary-500);
-        box-shadow: var(--shadow-sm);
-      }
-      .stat-card.stat-in {
-        border-left-color: var(--semantic-success);
-      }
-      .stat-card.stat-out {
-        border-left-color: var(--semantic-error);
-      }
-      .stat-label {
-        display: block;
-        font-size: var(--type-label-size);
-        color: var(--grey-700);
-        margin-bottom: var(--s-4);
-      }
-      .stat-value {
-        display: block;
-        font-size: var(--type-h3-size);
-        font-weight: 700;
-        color: var(--grey-900);
-      }
-
       /* Utilities */
       .equipment-code {
         color: var(--primary-500);
@@ -264,6 +222,7 @@ export class MovementListComponent implements OnInit {
   movements: Movement[] = [];
   filteredMovements: Movement[] = [];
   loading = false;
+  statItems: StatItem[] = [];
 
   filters = {
     search: '',
@@ -278,7 +237,7 @@ export class MovementListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Movimientos' },
   ];
@@ -335,9 +294,33 @@ export class MovementListComponent implements OnInit {
   }
 
   calculateStats(): void {
-    this.stats.total = this.movements.length;
-    this.stats.inCount = this.movements.filter((m) => m.tipo_movimiento === 'entrada').length;
-    this.stats.outCount = this.movements.filter((m) => m.tipo_movimiento === 'salida').length;
+    const total = this.movements.length;
+    const inCount = this.movements.filter((m) => m.tipo_movimiento === 'entrada').length;
+    const outCount = this.movements.filter((m) => m.tipo_movimiento === 'salida').length;
+
+    this.statItems = [
+      {
+        label: 'Total Movimientos',
+        value: total,
+        icon: 'fa-right-left',
+        color: 'primary',
+        testId: 'total-movements',
+      },
+      {
+        label: 'Ingresos (Mes)',
+        value: inCount,
+        icon: 'fa-arrow-down-to-bracket',
+        color: 'success',
+        testId: 'in-movements',
+      },
+      {
+        label: 'Salidas (Mes)',
+        value: outCount,
+        icon: 'fa-arrow-up-from-bracket',
+        color: 'danger',
+        testId: 'out-movements',
+      },
+    ];
   }
 
   onFilterChange(filters: Record<string, any>): void {
@@ -386,7 +369,7 @@ export class MovementListComponent implements OnInit {
       Tipo: movement.tipo_movimiento.toUpperCase(),
       'Número Documento': movement.numero_documento || '',
       Observaciones: movement.observaciones || '',
-      'Proyecto': movement.proyecto_nombre || '',
+      Proyecto: movement.proyecto_nombre || '',
       'Creado Por': movement.creado_por_nombre || '',
       'Total Items': movement.items_count || 0,
       'Monto Total': movement.monto_total || 0,

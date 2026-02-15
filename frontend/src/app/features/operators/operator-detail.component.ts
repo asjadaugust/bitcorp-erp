@@ -1,118 +1,181 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { OperatorService } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
-
-import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 
 @Component({
   selector: 'app-operator-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, PageLayoutComponent],
+  imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <app-page-layout
-      [title]="
-        operator ? operator.nombres + ' ' + operator.apellido_paterno : 'Detalles del Operador'
-      "
-      icon="fa-user"
-      [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
-        { label: 'Operadores', url: '/operators' },
-        {
-          label: operator ? operator.nombres + ' ' + operator.apellido_paterno : 'Detalles',
-        },
-      ]"
-      [loading]="loading"
-    >
-      <div actions class="actions-container" *ngIf="operator">
-        <button class="btn btn-secondary" (click)="editOperator()">
-          <i class="fa-solid fa-pen"></i> Editar
-        </button>
-        <button class="btn btn-primary" (click)="sendNotification()">
-          <i class="fa-solid fa-bell"></i> Notificar
-        </button>
-      </div>
+    <div class="detail-container">
+      <div class="container">
+        <div class="breadcrumb">
+          <a routerLink="/operators" class="breadcrumb-link">← Volver a Operadores</a>
+        </div>
 
-      <div *ngIf="operator" class="detail-grid">
-        <div class="detail-main">
-          <!-- Profile Card -->
-          <div class="card profile-card">
-            <div class="profile-header">
-              <div class="avatar-large">
-                {{ operator.nombres.charAt(0) }}{{ operator.apellido_paterno.charAt(0) }}
+        <div *ngIf="loading" class="loading">
+          <div class="spinner"></div>
+          <p>Cargando detalles del operador...</p>
+        </div>
+
+        <div *ngIf="!loading && operator" class="detail-grid">
+          <div class="detail-main card">
+            <div class="detail-header">
+              <div class="profile-intro">
+                <div class="avatar-large">
+                  {{ operator.nombres.charAt(0) }}{{ operator.apellido_paterno.charAt(0) }}
+                </div>
+                <div>
+                  <h1>{{ operator.nombres }} {{ operator.apellido_paterno }}</h1>
+                  <p class="code-badge">DNI: {{ operator.dni }}</p>
+                </div>
               </div>
-              <div class="profile-info">
-                <h2>{{ operator.nombres }} {{ operator.apellido_paterno }}</h2>
-                <p class="email">
-                  <i class="fa-regular fa-envelope"></i> {{ operator.correo_electronico }}
-                </p>
-                <div class="badges">
-                  <span [class]="'badge status-' + getEstadoClass()">
-                    {{ getEstadoLabel() }}
-                  </span>
-                  <span class="badge role-badge">Operador</span>
+            </div>
+
+            <div class="detail-status">
+              <span [class]="'status-badge status-' + (operator.is_active ? 'active' : 'inactive')">
+                {{ operator.is_active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+
+            <div class="detail-sections">
+              <section class="detail-section">
+                <h2>Información de Contacto</h2>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Email</label>
+                    <p>{{ operator.correo_electronico }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Teléfono</label>
+                    <p>{{ operator.telefono || '-' }}</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="detail-section">
+                <h2>Información Laboral</h2>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Cargo</label>
+                    <p>{{ operator.cargo || 'No especificado' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Fecha Ingreso</label>
+                    <p>
+                      {{
+                        operator.fecha_ingreso ? (operator.fecha_ingreso | date: 'dd/MM/yyyy') : '-'
+                      }}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="detail-section" *ngIf="operator.licencia_conducir">
+                <h2>Licencia de Conducir</h2>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Nro. Licencia</label>
+                    <p>{{ operator.licencia_conducir }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Vencimiento</label>
+                    <p>
+                      {{
+                        operator.vencimiento_licencia
+                          ? (operator.vencimiento_licencia | date: 'dd/MM/yyyy')
+                          : '-'
+                      }}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="detail-sidebar">
+            <!-- Quick Actions -->
+            <div class="card">
+              <h3>Acciones Rápidas</h3>
+              <div class="quick-actions">
+                <button class="btn btn-secondary btn-block" (click)="editOperator()">
+                  <i class="fa-solid fa-pen"></i> Editar
+                </button>
+                <button class="btn btn-primary btn-block" (click)="sendNotification()">
+                  <i class="fa-solid fa-bell"></i> Notificar
+                </button>
+                <button class="btn btn-secondary btn-block" (click)="viewReports()">
+                  <i class="fa-solid fa-clipboard-list"></i> Ver Reportes
+                </button>
+              </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="card">
+              <h3>Información del Sistema</h3>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="timeline-date">{{ operator.created_at | date: 'short' }}</div>
+                  <div class="timeline-content">Registro creado</div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-date">{{ operator.updated_at | date: 'short' }}</div>
+                  <div class="timeline-content">Última actualización</div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Info Sections -->
-          <div class="card">
-            <h3><i class="fa-solid fa-address-card"></i> Información de Contacto</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <label>Teléfono</label>
-                <p>{{ operator.telefono }}</p>
-              </div>
-              <div class="info-item">
-                <label>Email</label>
-                <p>{{ operator.correo_electronico }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3><i class="fa-solid fa-briefcase"></i> Información Laboral</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <label>Fecha de Ingreso</label>
-                <p>{{ operator.fecha_ingreso | date: 'mediumDate' }}</p>
-              </div>
-
-              <!-- Hourly rate removed -->
-
-              <div class="info-item" *ngIf="operator.licencia_conducir">
-                <label>Número de Licencia</label>
-                <p>{{ operator.licencia_conducir }}</p>
-              </div>
-              <div class="info-item" *ngIf="operator.vencimiento_licencia">
-                <label>Vencimiento Licencia</label>
-                <p>{{ operator.vencimiento_licencia | date: 'mediumDate' }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Skills, Notes, Performance removed -->
+        <div *ngIf="!loading && !operator" class="empty-state card">
+          <h3>Operador no encontrado</h3>
+          <p>El operador que buscas no existe o ha sido eliminado.</p>
+          <button class="btn btn-primary" routerLink="/operators">Volver a la lista</button>
         </div>
       </div>
-
-      <div *ngIf="!loading && !operator" class="empty-state">
-        <i class="fa-solid fa-user-slash"></i>
-        <h3>Operador no encontrado</h3>
-        <button class="btn btn-primary" (click)="navigateTo('/operators')">
-          Volver a la lista
-        </button>
-      </div>
-    </app-page-layout>
+    </div>
   `,
   styles: [
     `
+      .detail-container {
+        min-height: 100vh;
+        background: #f5f5f5;
+        padding: var(--s-24) 0;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--s-24);
+      }
+
+      .breadcrumb {
+        margin-bottom: var(--s-24);
+      }
+
+      .breadcrumb-link {
+        color: var(--primary-500);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+
+        &:hover {
+          text-decoration: underline;
+          color: var(--primary-700);
+        }
+      }
+
       .detail-grid {
         display: grid;
         grid-template-columns: 1fr 350px;
         gap: var(--s-24);
-        margin-top: var(--s-24);
+
+        @media (max-width: 968px) {
+          grid-template-columns: 1fr;
+        }
       }
 
       .card {
@@ -121,219 +184,272 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
         border-radius: var(--radius-md);
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--grey-200);
+      }
+
+      .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
         margin-bottom: var(--s-24);
+        padding-bottom: var(--s-24);
+        border-bottom: 2px solid #e0e0e0;
+
+        h1 {
+          font-size: 28px;
+          color: var(--primary-900);
+          margin-bottom: var(--s-4);
+          line-height: 1.2;
+        }
+
+        .code-badge {
+          font-family: monospace;
+          background: var(--grey-100);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 14px;
+          color: var(--grey-700);
+          font-weight: 600;
+          display: inline-block;
+        }
       }
 
-      .card h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--grey-900);
-        margin-bottom: var(--s-16);
-        padding-bottom: var(--s-12);
-        border-bottom: 1px solid var(--grey-100);
+      .profile-intro {
         display: flex;
-        align-items: center;
-        gap: var(--s-8);
-      }
-
-      .card h3 i {
-        color: var(--primary-500);
-      }
-
-      /* Profile Header */
-      .profile-header {
-        display: flex;
-        gap: var(--s-24);
+        gap: var(--s-16);
         align-items: center;
       }
 
       .avatar-large {
-        width: 100px;
-        height: 100px;
+        width: 64px;
+        height: 64px;
         border-radius: 50%;
         background: var(--primary-100);
         color: var(--primary-700);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 36px;
+        font-size: 24px;
         font-weight: 600;
-        border: 4px solid white;
+        border: 2px solid white;
         box-shadow: var(--shadow-sm);
       }
 
-      .profile-info h2 {
-        margin: 0 0 var(--s-8) 0;
-        font-size: 24px;
-        color: var(--grey-900);
+      .detail-status {
+        margin-bottom: var(--s-24);
       }
 
-      .email {
-        color: var(--grey-500);
-        margin-bottom: var(--s-12);
+      .detail-sections {
         display: flex;
-        align-items: center;
-        gap: var(--s-8);
+        flex-direction: column;
+        gap: var(--s-32);
       }
 
-      .badges {
-        display: flex;
-        gap: var(--s-8);
+      .detail-section {
+        h2 {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--s-16);
+        }
       }
 
-      /* Info Grid */
       .info-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-16);
+        gap: var(--s-24);
       }
 
-      .info-item label {
-        display: block;
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--grey-500);
-        margin-bottom: var(--s-4);
-        text-transform: uppercase;
+      .info-item {
+        label {
+          display: block;
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--grey-500);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: var(--s-4);
+        }
+
+        p {
+          font-size: 16px;
+          color: #333;
+          margin: 0;
+          word-break: break-word;
+        }
       }
 
-      .info-item p {
-        font-size: 15px;
-        color: var(--grey-900);
-        font-weight: 500;
+      .detail-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-24);
+
+        h3 {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--s-16);
+        }
       }
 
-      .highlight {
-        color: var(--primary-600) !important;
-        font-size: 18px !important;
-        font-weight: 600 !important;
-      }
-
-      /* Skills */
-      .skills-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: var(--s-16);
-      }
-
-      .skill-card {
-        background: var(--grey-50);
-        padding: var(--s-12);
-        border-radius: var(--radius-sm);
-        border-left: 3px solid var(--primary-400);
-      }
-
-      .skill-card h4 {
-        margin: 0 0 var(--s-4) 0;
-        font-size: 14px;
-        color: var(--grey-900);
-      }
-
-      .skill-level {
-        font-size: 12px;
-        color: var(--primary-600);
-        font-weight: 600;
-        margin-bottom: var(--s-4);
-      }
-
-      .experience {
-        font-size: 11px;
-        color: var(--grey-500);
-      }
-
-      /* Sidebar */
       .quick-actions {
         display: flex;
         flex-direction: column;
         gap: var(--s-12);
       }
 
-      .btn-outline {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-        padding: var(--s-12);
-        border-radius: var(--radius-sm);
-        display: flex;
-        align-items: center;
-        gap: var(--s-12);
-        transition: all 0.2s;
-        cursor: pointer;
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .btn-outline:hover {
-        background: var(--grey-50);
-        border-color: var(--primary-500);
-        color: var(--primary-600);
-      }
-
-      /* Performance */
-      .performance {
-        text-align: center;
-        padding: var(--s-16) 0;
-      }
-
-      .rating-circle {
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        margin-bottom: var(--s-8);
-      }
-
-      .rating-value {
-        font-size: 48px;
-        font-weight: 700;
-        color: var(--primary-600);
-        line-height: 1;
-      }
-
-      .rating-max {
-        font-size: 16px;
-        color: var(--grey-400);
-      }
-
-      .stars {
-        color: var(--grey-300);
-        font-size: 18px;
-      }
-
-      .stars .active {
-        color: var(--semantic-yellow-500);
-      }
-
-      .header-actions {
-        display: flex;
-        gap: var(--s-12);
-      }
-
       .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
+        padding: var(--s-8) var(--s-16);
         border: none;
+        border-radius: var(--s-8);
+        font-size: var(--type-bodySmall-size);
+        font-weight: 600;
+        cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
+        gap: var(--s-8);
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+
+      .btn-block {
+        width: 100%;
+        justify-content: center;
       }
 
       .btn-primary {
         background: var(--primary-500);
-        color: white;
+        color: var(--neutral-0);
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: var(--primary-800);
       }
 
       .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
+        background: var(--grey-200);
         color: var(--grey-700);
       }
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--grey-300);
+      }
 
-      @media (max-width: 1024px) {
-        .detail-grid {
-          grid-template-columns: 1fr;
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-16);
+      }
+
+      .timeline-item {
+        position: relative;
+        padding-left: var(--s-24);
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--primary-500);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 3px;
+          top: 14px;
+          width: 2px;
+          height: calc(100% + var(--s-16));
+          background: #e0e0e0;
+        }
+
+        &:last-child::after {
+          display: none;
+        }
+      }
+
+      .timeline-date {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-bottom: var(--s-4);
+      }
+
+      .timeline-content {
+        font-size: 14px;
+        color: #333;
+      }
+
+      /* Status Badges */
+      .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .status-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .status-active {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .status-active::before {
+        background: var(--semantic-green-500);
+      }
+
+      .status-inactive {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+      .status-inactive::before {
+        background: var(--semantic-red-500);
+      }
+
+      .loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        color: var(--grey-500);
+        gap: 16px;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--grey-200);
+        border-top-color: var(--primary-500);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+
+        h3 {
+          margin-bottom: 8px;
+          color: var(--grey-900);
+        }
+
+        p {
+          color: var(--grey-500);
+          margin-bottom: 24px;
         }
       }
     `,
@@ -365,22 +481,10 @@ export class OperatorDetailComponent implements OnInit {
     });
   }
 
-  getEstadoClass(): string {
-    return this.operator?.is_active ? 'activo' : 'inactivo';
-  }
-
-  getEstadoLabel(): string {
-    return this.operator?.is_active ? 'Activo' : 'Inactivo';
-  }
-
   editOperator(): void {
     if (this.operator) {
       this.router.navigate(['/operators', this.operator.id, 'edit']);
     }
-  }
-
-  viewSchedule(): void {
-    alert('View Schedule - Feature coming soon!');
   }
 
   viewReports(): void {
@@ -401,9 +505,5 @@ export class OperatorDetailComponent implements OnInit {
         },
       });
     }
-  }
-
-  navigateTo(path: string): void {
-    this.router.navigate([path]);
   }
 }

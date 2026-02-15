@@ -198,7 +198,7 @@ export class ProjectListComponent implements OnInit {
   filters = { status: '', search: '' };
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Operaciones', url: '/operaciones' },
     { label: 'Proyectos' },
   ];

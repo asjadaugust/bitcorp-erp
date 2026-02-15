@@ -40,46 +40,70 @@ export const EQUIPMENT_ROUTES: Routes = [
       ),
   },
 
-  // Maintenance has TWO concepts:
-  // 1. Maintenance RECORDS (actual work done) - /equipment/maintenance
-  // 2. Maintenance SCHEDULE (planned maintenance) - /equipment/maintenance/schedule
+  // Maintenance Module
   {
     path: 'maintenance',
-    loadComponent: () =>
-      import('../maintenance/maintenance-list.component').then((m) => m.MaintenanceListComponent),
-  },
-  {
-    path: 'maintenance/new',
-    loadComponent: () =>
-      import('../maintenance/maintenance-form.component').then((m) => m.MaintenanceFormComponent),
-  },
-  {
-    path: 'maintenance/:id/edit',
-    loadComponent: () =>
-      import('../maintenance/maintenance-form.component').then((m) => m.MaintenanceFormComponent),
-  },
-
-  // Maintenance Schedule (Preventive Maintenance Planning)
-  {
-    path: 'maintenance/schedule',
-    loadComponent: () =>
-      import('../scheduling/maintenance-schedule/maintenance-schedule-list.component').then(
-        (m) => m.MaintenanceScheduleListComponent
-      ),
-  },
-  {
-    path: 'maintenance/schedule/new',
-    loadComponent: () =>
-      import('../scheduling/maintenance-schedule/maintenance-schedule-form.component').then(
-        (m) => m.MaintenanceScheduleFormComponent
-      ),
-  },
-  {
-    path: 'maintenance/schedule/:id/edit',
-    loadComponent: () =>
-      import('../scheduling/maintenance-schedule/maintenance-schedule-form.component').then(
-        (m) => m.MaintenanceScheduleFormComponent
-      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('../maintenance/maintenance-list.component').then(
+            (m) => m.MaintenanceListComponent
+          ),
+      },
+      {
+        path: 'new',
+        loadComponent: () =>
+          import('../maintenance/maintenance-form.component').then(
+            (m) => m.MaintenanceFormComponent
+          ),
+      },
+      {
+        path: 'schedule',
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('../scheduling/maintenance-schedule/maintenance-schedule-list.component').then(
+                (m) => m.MaintenanceScheduleListComponent
+              ),
+          },
+          {
+            path: 'new',
+            loadComponent: () =>
+              import('../scheduling/maintenance-schedule/maintenance-schedule-form.component').then(
+                (m) => m.MaintenanceScheduleFormComponent
+              ),
+          },
+          {
+            path: ':id/edit',
+            loadComponent: () =>
+              import('../scheduling/maintenance-schedule/maintenance-schedule-form.component').then(
+                (m) => m.MaintenanceScheduleFormComponent
+              ),
+          },
+        ],
+      },
+      {
+        path: ':id',
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('../maintenance/maintenance-detail.component').then(
+                (m) => m.MaintenanceDetailComponent
+              ),
+          },
+          {
+            path: 'edit',
+            loadComponent: () =>
+              import('../maintenance/maintenance-form.component').then(
+                (m) => m.MaintenanceFormComponent
+              ),
+          },
+        ],
+      },
+    ],
   },
 
   {

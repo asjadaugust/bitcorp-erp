@@ -115,7 +115,7 @@ export class DocumentListComponent implements OnInit {
   filters = { search: '', category: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'SIG', url: '/sig' },
     { label: 'Documentos' },
   ];

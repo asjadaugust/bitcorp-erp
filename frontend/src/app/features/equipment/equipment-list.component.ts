@@ -19,6 +19,10 @@ import {
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-equipment-list',
@@ -27,17 +31,17 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     CommonModule,
     FormsModule,
 
+    ActionsContainerComponent,
+    StatsGridComponent,
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    RouterModule,
-    ActionsContainerComponent,
   ],
   template: `
     <app-page-layout
       title="Equipos"
       icon="fa-tractor"
-      [breadcrumbs]="[{ label: 'Dashboard', url: '/app' }, { label: 'Equipos' }]"
+      [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Equipos' }]"
       [loading]="loading"
       [tabs]="tabs"
     >
@@ -65,37 +69,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         </div>
       </app-actions-container>
 
-      <!-- Statistics -->
-      <div *ngIf="showStatistics && statistics" class="stats-grid fade-in">
-        <div class="stat-card total-card">
-          <div class="stat-icon total"><i class="fa-solid fa-cubes"></i></div>
-          <div class="stat-info">
-            <span class="label">Total Equipos</span>
-            <span class="value">{{ statistics.total }}</span>
-          </div>
-        </div>
-        <div class="stat-card available-card">
-          <div class="stat-icon available"><i class="fa-solid fa-check"></i></div>
-          <div class="stat-info">
-            <span class="label">Disponibles</span>
-            <span class="value">{{ statistics.disponible }}</span>
-          </div>
-        </div>
-        <div class="stat-card in-use-card">
-          <div class="stat-icon in-use"><i class="fa-solid fa-person-digging"></i></div>
-          <div class="stat-info">
-            <span class="label">En Uso</span>
-            <span class="value">{{ statistics.en_uso }}</span>
-          </div>
-        </div>
-        <div class="stat-card maintenance-card">
-          <div class="stat-icon maintenance"><i class="fa-solid fa-wrench"></i></div>
-          <div class="stat-info">
-            <span class="label">Mantenimiento</span>
-            <span class="value">{{ statistics.mantenimiento }}</span>
-          </div>
-        </div>
-      </div>
+      <app-stats-grid
+        *ngIf="showStatistics && statItems.length > 0"
+        [items]="statItems"
+        testId="equipment-stats"
+        class="fade-in"
+      ></app-stats-grid>
 
       <app-filter-bar
         [config]="filterConfig"
@@ -477,6 +456,7 @@ export class EquipmentListComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   statistics: any = null;
+  statItems: StatItem[] = [];
 
   filters = { status: '', search: '' };
 
@@ -579,6 +559,36 @@ export class EquipmentListComponent implements OnInit {
     this.equipmentService.getStatistics().subscribe({
       next: (data) => {
         this.statistics = data;
+        this.statItems = [
+          {
+            label: 'Total Equipos',
+            value: data.total,
+            icon: 'fa-cubes',
+            color: 'primary',
+            testId: 'total-equipment',
+          },
+          {
+            label: 'Disponibles',
+            value: data.disponible,
+            icon: 'fa-check',
+            color: 'success',
+            testId: 'available-equipment',
+          },
+          {
+            label: 'En Uso',
+            value: data.en_uso,
+            icon: 'fa-person-digging',
+            color: 'info',
+            testId: 'in-use-equipment',
+          },
+          {
+            label: 'Mantenimiento',
+            value: data.mantenimiento,
+            icon: 'fa-wrench',
+            color: 'warning',
+            testId: 'maintenance-equipment',
+          },
+        ];
         this.showStatistics = true;
         this.loadingStatistics = false;
       },

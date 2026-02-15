@@ -30,7 +30,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
     FormsModule,
     PageLayoutComponent,
     FilterBarComponent,
-    ExportDropdownComponent,
     ActionsContainerComponent,
     MaintenanceCardComponent,
   ],
@@ -39,7 +38,7 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       title="Programación de Mantenimiento"
       icon="fa-calendar"
       [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
+        { label: 'Inicio', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
         { label: 'Mantenimiento', url: '/equipment/maintenance' },
         { label: 'Programación' },

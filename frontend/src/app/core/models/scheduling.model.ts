@@ -40,24 +40,24 @@ export interface Timesheet {
 
 export interface TimesheetDetail {
   id: number;
-  timesheet_id: number;
-  work_date: string;
-  project_id?: string;
-  equipment_id?: number;
-  start_time?: string;
-  end_time?: string;
-  hours_worked: number;
-  notes?: string;
+  tareoId: number;
+  fechaTrabajo: string;
+  proyectoId?: string;
+  equipoId?: number;
+  horaInicio?: string;
+  horaFin?: string;
+  horasTrabajadas: number;
+  notas?: string;
 
   // Relations
-  project?: {
-    G00007_Codigo: string;
-    G00007_Nombre: string;
+  proyecto?: {
+    codigo: string;
+    nombre: string;
   };
-  equipment?: {
-    C08001_id: number;
-    C08001_Nombre: string;
-    C08001_Codigo: string;
+  equipo?: {
+    id: number;
+    nombre: string;
+    codigo: string;
   };
 }
 

@@ -62,11 +62,11 @@ import { ScheduledTask } from '../../../core/models/scheduled-task.model';
             <div
               *ngFor="let task of getTasksForDate(day.date)"
               class="task-pill"
-              [class]="'priority-' + task.priority"
+              [class]="'priority-' + task.prioridad"
               (click)="editTask(task.id, $event)"
-              [title]="task.description"
+              [title]="task.descripcion"
             >
-              {{ task.equipment?.codigo }} - {{ task.taskType }}
+              {{ task.equipo?.codigo }} - {{ task.tipoTarea }}
             </div>
           </div>
         </div>
@@ -205,19 +205,19 @@ import { ScheduledTask } from '../../../core/models/scheduled-task.model';
         filter: brightness(0.95);
       }
 
-      .priority-low {
+      .priority-BAJA {
         border-left-color: #38b2ac;
         background: #e6fffa;
       }
-      .priority-medium {
+      .priority-MEDIA {
         border-left-color: #dd6b20;
         background: #fffaf0;
       }
-      .priority-high {
+      .priority-ALTA {
         border-left-color: #e53e3e;
         background: #fff5f5;
       }
-      .priority-critical {
+      .priority-URGENTE {
         border-left-color: #822727;
         background: #fed7d7;
         color: #822727;
@@ -344,7 +344,7 @@ export class ScheduledTaskCalendarComponent implements OnInit {
     }
     const dateStr = date.toISOString().split('T')[0];
     return this.tasks.filter((t) => {
-      const taskDate = t.startDate;
+      const taskDate = t.fechaInicio;
       return taskDate && taskDate.startsWith(dateStr);
     });
   }

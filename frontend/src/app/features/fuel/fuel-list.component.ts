@@ -192,7 +192,7 @@ export class FuelListComponent implements OnInit {
   filters = { valorizacionId: '', startDate: '', endDate: '', search: '' };
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Combustible' },
   ];

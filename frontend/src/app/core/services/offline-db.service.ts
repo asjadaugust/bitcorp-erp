@@ -26,7 +26,7 @@ export interface OfflineDailyReport {
   notes?: string;
   weather_conditions?: string;
   photos?: string[];
-  status: 'draft' | 'submitted' | 'synced' | 'failed';
+  status: 'BORRADOR' | 'ENVIADO' | 'SINCRONIZADO' | 'FALLIDO';
   synced: boolean;
   syncAttempts: number;
   lastSyncAttempt?: Date;
@@ -85,7 +85,7 @@ export class OfflineDBService extends Dexie {
   }
 
   async getDraftReports(): Promise<OfflineDailyReport[]> {
-    return await this.dailyReports.where('status').equals('draft').toArray();
+    return await this.dailyReports.where('status').equals('BORRADOR').toArray();
   }
 
   async getReportsByDate(startDate: string, endDate: string): Promise<OfflineDailyReport[]> {
@@ -112,7 +112,7 @@ export class OfflineDBService extends Dexie {
       await this.dailyReports.update(report.id, {
         id: serverId,
         synced: true,
-        status: 'synced',
+        status: 'SINCRONIZADO',
         updatedAt: new Date(),
       });
     }
@@ -122,7 +122,7 @@ export class OfflineDBService extends Dexie {
     const report = await this.getDailyReportByLocalId(localId);
     if (report && report.id) {
       await this.dailyReports.update(report.id, {
-        status: 'failed',
+        status: 'FALLIDO',
         syncAttempts: (report.syncAttempts || 0) + 1,
         lastSyncAttempt: new Date(),
         syncError: error,
@@ -173,7 +173,7 @@ export class OfflineDBService extends Dexie {
   async getStatistics() {
     const all = await this.dailyReports.count();
     const pending = await this.dailyReports.where('synced').equals(0).count();
-    const drafts = await this.dailyReports.where('status').equals('draft').count();
+    const drafts = await this.dailyReports.where('status').equals('BORRADOR').count();
     const synced = await this.dailyReports.where('synced').equals(1).count();
 
     return {

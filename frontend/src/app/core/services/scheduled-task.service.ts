@@ -40,13 +40,13 @@ export class ScheduledTaskService {
     return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${id}`);
   }
 
-  assignOperator(id: number, operatorId: number): Observable<ScheduledTask> {
-    return this.http.post<ScheduledTask>(`${this.apiUrl}/${id}/assign`, { operatorId });
+  assignOperator(id: number, operadorId: number): Observable<ScheduledTask> {
+    return this.http.post<ScheduledTask>(`${this.apiUrl}/${id}/assign`, { operadorId });
   }
 
   complete(
     id: number,
-    data: { completionNotes?: string; maintenanceRecordId?: number }
+    data: { notasCompletado?: string; registroMantenimientoId?: number }
   ): Observable<ScheduledTask> {
     return this.http.post<ScheduledTask>(`${this.apiUrl}/${id}/complete`, data);
   }

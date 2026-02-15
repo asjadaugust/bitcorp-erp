@@ -9,11 +9,15 @@ import { DailyReportService } from '../../../core/services/daily-report.service'
 import { ContractService } from '../../../core/services/contract.service';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-equipment-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, PageLayoutComponent],
+  imports: [CommonModule, RouterModule, PageLayoutComponent, StatsGridComponent],
   template: `
     <app-page-layout
       [title]="
@@ -23,7 +27,7 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
       "
       icon="fa-tractor"
       [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
+        { label: 'Inicio', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
         { label: equipment?.codigo_equipo || 'Detalle' },
       ]"
@@ -37,49 +41,7 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
 
       <div *ngIf="equipment" class="detail-container">
         <!-- Header Stats Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon status-icon">
-              <i class="fa-solid fa-circle-info"></i>
-            </div>
-            <div class="stat-info">
-              <span class="label">Estado Actual</span>
-              <span class="value badge" [class]="'status-' + equipment.estado?.toLowerCase()">
-                {{ equipment.estado }}
-              </span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon hour-icon">
-              <i class="fa-solid fa-clock"></i>
-            </div>
-            <div class="stat-info">
-              <span class="label">Tipo Medidor</span>
-              <span class="value">{{ equipment.medidor_uso || 'N/A' }}</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon project-icon">
-              <i class="fa-solid fa-building"></i>
-            </div>
-            <div class="stat-info">
-              <span class="label">Categoría</span>
-              <span class="value">{{ equipment.categoria || 'No asignado' }}</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon provider-icon">
-              <i class="fa-solid fa-handshake"></i>
-            </div>
-            <div class="stat-info">
-              <span class="label">Proveedor</span>
-              <span class="value">{{ equipment.proveedor_nombre || 'N/A' }}</span>
-            </div>
-          </div>
-        </div>
+        <app-stats-grid [items]="statItems" testId="equipment-detail-stats"></app-stats-grid>
 
         <!-- Main Content Grid -->
         <div class="content-layout">
@@ -315,73 +277,6 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
         animation: fadeIn 0.3s ease-in-out;
       }
 
-      /* Stats Grid */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.5rem;
-      }
-
-      .stat-card {
-        background: var(--card-bg);
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        transition: transform 0.2s;
-      }
-
-      .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-      }
-
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-      }
-
-      .status-icon {
-        background: #e6fffa;
-        color: #38b2ac;
-      }
-      .hour-icon {
-        background: #ebf8ff;
-        color: #4299e1;
-      }
-      .project-icon {
-        background: #faf5ff;
-        color: #9f7aea;
-      }
-      .provider-icon {
-        background: #fffaf0;
-        color: #ed8936;
-      }
-
-      .stat-info {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .stat-info .label {
-        font-size: 0.875rem;
-        color: var(--text-muted);
-        font-weight: 500;
-      }
-
-      .stat-info .value {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--text-main);
-      }
-
       /* Tabs & Content */
       .content-layout {
         background: var(--card-bg);
@@ -601,6 +496,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   maintenanceSchedules: any[] = [];
   loading = true;
   activeTab = 'general';
+  statItems: StatItem[] = [];
 
   ngOnInit() {
     const id = this.route.snapshot.params['id'];
@@ -622,6 +518,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.equipment = data;
+          this.calculateStatItems();
           this.loadRelatedData(id);
         },
         error: (err) => {
@@ -630,6 +527,60 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
       });
+  }
+
+  calculateStatItems() {
+    if (!this.equipment) return;
+
+    const statusMap: Record<
+      string,
+      { color: 'success' | 'warning' | 'danger' | 'info' | 'primary'; icon: string }
+    > = {
+      DISPONIBLE: { color: 'success', icon: 'fa-check-circle' },
+      EN_USO: { color: 'primary', icon: 'fa-person-digging' },
+      MANTENIMIENTO: { color: 'warning', icon: 'fa-wrench' },
+      RETIRADO: { color: 'danger', icon: 'fa-ban' },
+      AVAILABLE: { color: 'success', icon: 'fa-check-circle' }, // Fallback for various case/lang
+      IN_USE: { color: 'primary', icon: 'fa-person-digging' },
+      MAINTENANCE: { color: 'warning', icon: 'fa-wrench' },
+      RETIRED: { color: 'danger', icon: 'fa-ban' },
+    };
+
+    const statusStyle = statusMap[this.equipment.estado?.toUpperCase()] || {
+      color: 'info',
+      icon: 'fa-info-circle',
+    };
+
+    this.statItems = [
+      {
+        label: 'Estado Actual',
+        value: this.equipment.estado || 'Unknown',
+        icon: statusStyle.icon,
+        color: statusStyle.color,
+        testId: 'equipment-status',
+      },
+      {
+        label: 'Tipo Medidor',
+        value: this.equipment.medidor_uso || 'N/A',
+        icon: 'fa-clock',
+        color: 'info',
+        testId: 'meter-type',
+      },
+      {
+        label: 'Categoría',
+        value: this.equipment.categoria || 'No asignado',
+        icon: 'fa-tractor',
+        color: 'primary',
+        testId: 'equipment-category',
+      },
+      {
+        label: 'Proveedor',
+        value: this.equipment.proveedor_nombre || 'N/A',
+        icon: 'fa-handshake',
+        color: 'warning',
+        testId: 'equipment-provider',
+      },
+    ];
   }
 
   loadRelatedData(id: number) {

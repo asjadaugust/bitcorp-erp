@@ -98,7 +98,7 @@ export class IncidentListComponent implements OnInit {
   filters = { search: '', severity: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'SST', url: '/sst' },
     { label: 'Incidentes' },
   ];

@@ -68,7 +68,7 @@ import {
               type="button"
               class="btn btn-secondary"
               (click)="showAddItemModal = true"
-              *ngIf="!isEditMode || formData.status === 'draft'"
+              *ngIf="!isEditMode || formData.estado === 'BORRADOR'"
             >
               <i class="fa-solid fa-plus"></i> Agregar Item
             </button>
@@ -80,7 +80,7 @@ import {
                 <th>Documento</th>
                 <th>Proveedor</th>
                 <th>Monto</th>
-                <th *ngIf="!isEditMode || formData.status === 'draft'">Acciones</th>
+                <th *ngIf="!isEditMode || formData.estado === 'BORRADOR'">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -88,7 +88,7 @@ import {
                 <td>{{ detail.accounts_payable?.numero_factura }}</td>
                 <td>{{ detail.accounts_payable?.provider?.razonSocial || 'N/A' }}</td>
                 <td>{{ detail.amount_to_pay | currency: 'PEN' : 'symbol' }}</td>
-                <td *ngIf="!isEditMode || formData.status === 'draft'">
+                <td *ngIf="!isEditMode || formData.estado === 'BORRADOR'">
                   <button
                     type="button"
                     class="btn-icon btn-danger"
@@ -429,7 +429,7 @@ export class PaymentScheduleFormComponent implements OnInit {
     total_amount: 0,
     currency: 'PEN',
     description: '',
-    status: 'draft',
+    estado: 'BORRADOR',
   };
 
   selectedDetails: PaymentScheduleDetail[] = [];

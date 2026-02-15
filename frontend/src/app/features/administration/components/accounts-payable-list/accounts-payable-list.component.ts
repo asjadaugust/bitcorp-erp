@@ -131,7 +131,7 @@ export class AccountsPayableListComponent implements OnInit {
   records: AccountsPayable[] = [];
   filteredRecords: AccountsPayable[] = [];
   loading = false;
-  filters: Record<string, any> = { search: '', status: '' };
+  filters: Record<string, any> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -147,14 +147,14 @@ export class AccountsPayableListComponent implements OnInit {
       placeholder: 'Buscar por número de documento...',
     },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'select',
       options: [
         { value: '', label: 'Todos' },
-        { value: 'pending', label: 'Pendiente' },
-        { value: 'paid', label: 'Pagado' },
-        { value: 'cancelled', label: 'Cancelado' },
+        { value: 'PENDIENTE', label: 'Pendiente' },
+        { value: 'PAGADO', label: 'Pagado' },
+        { value: 'CANCELADO', label: 'Cancelado' },
       ],
     },
     {
@@ -175,10 +175,10 @@ export class AccountsPayableListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        PENDING: { label: 'Pendiente', class: 'badge badge-warning' },
-        PAID: { label: 'Pagado', class: 'badge badge-success' },
-        CANCELLED: { label: 'Cancelado', class: 'badge badge-error' },
-        PARTIAL: { label: 'Parcial', class: 'badge badge-info' },
+        PENDIENTE: { label: 'Pendiente', class: 'badge badge-warning' },
+        PAGADO: { label: 'Pagado', class: 'badge badge-success' },
+        CANCELADO: { label: 'Cancelado', class: 'badge badge-error' },
+        PARCIAL: { label: 'Parcial', class: 'badge badge-info' },
       },
     },
   ];
@@ -195,9 +195,9 @@ export class AccountsPayableListComponent implements OnInit {
         // AeroTable might not support nested keys like 'provider.razonSocial' directly without configuration.
         // Let's assume we flatten it for display or the table supports it.
         // For now, I'll map it to a new property for safety.
-        this.records = records.map(r => ({
-            ...r,
-            proveedor_razon_social: r.provider?.razonSocial || 'N/A'
+        this.records = records.map((r) => ({
+          ...r,
+          proveedor_razon_social: r.provider?.razonSocial || 'N/A',
         }));
         this.applyFilters();
         this.loading = false;
@@ -210,7 +210,7 @@ export class AccountsPayableListComponent implements OnInit {
 
   onFilterChange(filters: Record<string, any>): void {
     this.filters['search'] = filters['search'] || '';
-    this.filters['status'] = filters['status'] || '';
+    this.filters['estado'] = filters['estado'] || '';
     this.applyFilters();
   }
 
@@ -221,7 +221,7 @@ export class AccountsPayableListComponent implements OnInit {
         record.numero_factura?.toLowerCase().includes(this.filters['search'].toLowerCase()) ||
         record.observaciones?.toLowerCase().includes(this.filters['search'].toLowerCase());
 
-      const matchesStatus = !this.filters['status'] || record.estado === this.filters['status'];
+      const matchesStatus = !this.filters['estado'] || record.estado === this.filters['estado'];
 
       // Date range filter
       const dueDateStart = this.filters['dueDate_start'];
@@ -328,13 +328,13 @@ export class AccountsPayableListComponent implements OnInit {
     this.excelService.exportToCSV(exportData, 'cuentas-por-pagar');
   }
 
-  private getStatusLabel(status: string): string {
+  private getStatusLabel(estado: string): string {
     const statusMap: Record<string, string> = {
-      pending: 'Pendiente',
-      partial: 'Parcial',
-      paid: 'Pagada',
-      overdue: 'Vencida',
+      PENDIENTE: 'Pendiente',
+      PARCIAL: 'Parcial',
+      PAGADO: 'Pagada',
+      VENCIDO: 'Vencida',
     };
-    return statusMap[status] || status;
+    return statusMap[estado] || estado;
   }
 }

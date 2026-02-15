@@ -62,10 +62,10 @@ import { DailyReport } from '../../core/models/daily-report.model';
 
         <select [(ngModel)]="filters.status" (change)="applyFilters()" class="filter-select">
           <option value="">Todos los Estados</option>
-          <option value="draft">Borradores</option>
-          <option value="submitted">Enviados</option>
-          <option value="approved">Aprobados</option>
-          <option value="rejected">Rechazados</option>
+          <option value="BORRADOR">Borradores</option>
+          <option value="ENVIADO">Enviados</option>
+          <option value="APROBADO">Aprobados</option>
+          <option value="RECHAZADO">Rechazados</option>
         </select>
       </div>
 

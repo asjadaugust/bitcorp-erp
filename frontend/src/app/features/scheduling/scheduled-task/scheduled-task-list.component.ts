@@ -31,7 +31,7 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       title="Programación de Tareas"
       icon="fa-calendar-check"
       [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
+        { label: 'Inicio', url: '/app' },
         { label: 'Operaciones', url: '/operaciones' },
         { label: 'Programación' },
       ]"
@@ -55,12 +55,12 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         <div class="filters-grid">
           <div class="filter-group">
             <label>Estado</label>
-            <select [(ngModel)]="filters.status" (change)="loadTasks()" class="form-select">
+            <select [(ngModel)]="filters.estado" (change)="loadTasks()" class="form-select">
               <option value="">Todos</option>
-              <option value="pending">Pendiente</option>
-              <option value="assigned">Asignado</option>
-              <option value="in_progress">En Progreso</option>
-              <option value="completed">Completado</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="ASIGNADO">Asignado</option>
+              <option value="EN_PROCESO">En Proceso</option>
+              <option value="COMPLETADO">Completado</option>
             </select>
           </div>
           <div class="filter-group">
@@ -95,45 +95,39 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         <div
           *ngFor="let task of tasks"
           class="task-card"
-          [class.priority-high]="task.priority === 'high' || task.priority === 'critical'"
+          [class.priority-high]="task.prioridad === 'ALTA' || task.prioridad === 'URGENTE'"
         >
           <div class="card-header">
             <div class="header-top">
-              <span class="task-type">{{ task.taskType | titlecase }}</span>
-              <span class="priority-badge" [class]="'priority-' + task.priority">{{
-                getPriorityLabel(task.priority)
+              <span class="task-type">{{ task.tipoTarea | titlecase }}</span>
+              <span class="priority-badge" [class]="'priority-' + task.prioridad">{{
+                getPriorityLabel(task.prioridad)
               }}</span>
             </div>
-            <h3>{{ task.title || task.description }}</h3>
+            <h3>{{ task.titulo || task.descripcion }}</h3>
           </div>
 
           <div class="card-body">
             <div class="info-row">
               <i class="fa-solid fa-truck-front"></i>
-              <span>{{
-                task.equipment?.codigo || 'Equipo #' + task.equipmentId
-              }}</span>
+              <span>{{ task.equipo?.codigo || 'Equipo #' + task.equipoId }}</span>
             </div>
             <div class="info-row">
               <i class="fa-solid fa-calendar-day"></i>
-              <span>{{
-                task.startDate | date: 'dd/MM/yyyy'
-              }}</span>
+              <span>{{ task.fechaInicio | date: 'dd/MM/yyyy' }}</span>
             </div>
             <div class="info-row">
               <i class="fa-solid fa-user"></i>
-              <span *ngIf="task.operator">{{
-                task.operator?.nombreCompleto || task.operator?.nombres
+              <span *ngIf="task.operador">{{
+                task.operador?.nombreCompleto || task.operador?.nombres
               }}</span>
-              <span *ngIf="!task.operator" class="text-muted"
-                >Sin asignar</span
-              >
+              <span *ngIf="!task.operador" class="text-muted">Sin asignar</span>
             </div>
           </div>
 
           <div class="card-footer">
-            <span class="status-badge" [class]="'status-' + task.status">
-              {{ getStatusLabel(task.status) }}
+            <span class="status-badge" [class]="'status-' + task.estado">
+              {{ getStatusLabel(task.estado) }}
             </span>
             <div class="actions">
               <button class="btn-icon" (click)="editTask(task.id)" title="Editar">
@@ -222,19 +216,19 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         border-radius: 12px;
         font-weight: 600;
       }
-      .priority-low {
+      .priority-BAJA {
         background: #e6fffa;
         color: #2c7a7b;
       }
-      .priority-medium {
+      .priority-MEDIA {
         background: #fffaf0;
         color: #c05621;
       }
-      .priority-high {
+      .priority-ALTA {
         background: #fff5f5;
         color: #c53030;
       }
-      .priority-critical {
+      .priority-URGENTE {
         background: #9b2c2c;
         color: white;
       }
@@ -277,19 +271,19 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         font-size: 0.75rem;
         font-weight: 600;
       }
-      .status-pending {
+      .status-PENDIENTE {
         background: #ebf8ff;
         color: #2b6cb0;
       }
-      .status-assigned {
+      .status-ASIGNADO {
         background: #e6fffa;
         color: #2c7a7b;
       }
-      .status-in_progress {
+      .status-EN_PROCESO {
         background: #fffaf0;
         color: #c05621;
       }
-      .status-completed {
+      .status-COMPLETADO {
         background: #f0fff4;
         color: #2f855a;
       }
@@ -369,8 +363,8 @@ export class ScheduledTaskListComponent implements OnInit {
     { label: 'Planillas', route: '/operaciones/timesheets', icon: 'fa-clipboard-user' },
   ];
 
-  filters = {
-    status: '',
+  filters: { estado: string; date_from: string; date_to: string; [key: string]: string } = {
+    estado: '',
     date_from: '',
     date_to: '',
   };
@@ -433,15 +427,17 @@ export class ScheduledTaskListComponent implements OnInit {
     }
 
     const exportData = this.tasks.map((task) => ({
-      Tipo: task.taskType || '',
-      Título: task.title || task.description || '',
-      Equipo: task.equipment?.codigo || 'N/A',
-      Operador: task.operator?.nombreCompleto || 'Sin asignar',
-      'Fecha Programada': task.startDate ? new Date(task.startDate).toLocaleDateString('es-PE') : '',
-      'Duración (min)': task.durationMinutes || 0,
-      Prioridad: task.priority || '',
-      Estado: task.status || '',
-      'Notas Completación': task.completionNotes || '',
+      Tipo: task.tipoTarea || '',
+      Título: task.titulo || task.descripcion || '',
+      Equipo: task.equipo?.codigo || 'N/A',
+      Operador: task.operador?.nombreCompleto || 'Sin asignar',
+      'Fecha Programada': task.fechaInicio
+        ? new Date(task.fechaInicio).toLocaleDateString('es-PE')
+        : '',
+      'Duración (min)': task.duracionMinutos || 0,
+      Prioridad: task.prioridad || '',
+      Estado: task.estado || '',
+      'Notas Completación': task.notasCompletado || '',
       Creado: task.createdAt ? new Date(task.createdAt).toLocaleDateString('es-PE') : '',
     }));
 
@@ -458,41 +454,42 @@ export class ScheduledTaskListComponent implements OnInit {
     }
 
     const exportData = this.tasks.map((task) => ({
-      Tipo: task.taskType || '',
-      Título: task.title || task.description || '',
-      Equipo: task.equipment?.codigo || 'N/A',
-      Operador: task.operator?.nombreCompleto || 'Sin asignar',
-      'Fecha Programada': task.startDate ? new Date(task.startDate).toLocaleDateString('es-PE') : '',
-      'Duración (min)': task.durationMinutes || 0,
-      Prioridad: task.priority || '',
-      Estado: task.status || '',
-      'Notas Completación': task.completionNotes || '',
+      Tipo: task.tipoTarea || '',
+      Título: task.titulo || task.descripcion || '',
+      Equipo: task.equipo?.codigo || 'N/A',
+      Operador: task.operador?.nombreCompleto || 'Sin asignar',
+      'Fecha Programada': task.fechaInicio
+        ? new Date(task.fechaInicio).toLocaleDateString('es-PE')
+        : '',
+      'Duración (min)': task.duracionMinutos || 0,
+      Prioridad: task.prioridad || '',
+      Estado: task.estado || '',
+      'Notas Completación': task.notasCompletado || '',
       Creado: task.createdAt ? new Date(task.createdAt).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'tareas-programadas');
   }
 
-  getPriorityLabel(priority: string): string {
+  getPriorityLabel(prioridad: string): string {
     const map: Record<string, string> = {
-      low: 'Baja',
-      medium: 'Media',
-      high: 'Alta',
-      critical: 'Crítica',
-      urgent: 'Urgente',
+      BAJA: 'Baja',
+      MEDIA: 'Media',
+      ALTA: 'Alta',
+      URGENTE: 'Urgente',
     };
-    return map[priority] || priority;
+    return map[prioridad] || prioridad;
   }
 
-  getStatusLabel(status: string): string {
+  getStatusLabel(estado: string): string {
     const map: Record<string, string> = {
-      pending: 'Pendiente',
-      assigned: 'Asignada',
-      in_progress: 'En Progreso',
-      completed: 'Completada',
-      cancelled: 'Cancelada',
-      overdue: 'Vencida',
+      PENDIENTE: 'Pendiente',
+      ASIGNADO: 'Asignada',
+      EN_PROCESO: 'En Proceso',
+      COMPLETADO: 'Completada',
+      CANCELADO: 'Cancelada',
+      VENCIDO: 'Vencida',
     };
-    return map[status] || status;
+    return map[estado] || estado;
   }
 }

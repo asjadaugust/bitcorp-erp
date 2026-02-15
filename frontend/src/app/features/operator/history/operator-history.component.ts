@@ -11,7 +11,7 @@ interface HistoryReport {
   project: string;
   equipment: string;
   hours: number;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status: 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO';
 }
 
 @Component({
@@ -42,10 +42,10 @@ interface HistoryReport {
           <label>Estado:</label>
           <select [(ngModel)]="selectedStatus" (change)="filterReports()" class="filter-select">
             <option value="all">Todos</option>
-            <option value="draft">Borradores</option>
-            <option value="submitted">Enviados</option>
-            <option value="approved">Aprobados</option>
-            <option value="rejected">Rechazados</option>
+            <option value="BORRADOR">Borradores</option>
+            <option value="ENVIADO">Enviados</option>
+            <option value="APROBADO">Aprobados</option>
+            <option value="RECHAZADO">Rechazados</option>
           </select>
         </div>
       </div>
@@ -62,7 +62,7 @@ interface HistoryReport {
         </div>
         <div class="stat-item">
           <span class="stat-label">Aprobados:</span>
-          <span class="stat-value">{{ countByStatus('approved') }}</span>
+          <span class="stat-value">{{ countByStatus('APROBADO') }}</span>
         </div>
       </div>
 
@@ -77,14 +77,14 @@ interface HistoryReport {
         <div
           *ngFor="let report of filteredReports"
           class="report-card"
-          [class.clickable]="report.status === 'draft'"
+          [class.clickable]="report.status === 'BORRADOR'"
         >
           <div class="report-main">
             <div class="report-icon" [class]="'status-' + report.status">
-              <span *ngIf="report.status === 'draft'">📝</span>
-              <span *ngIf="report.status === 'submitted'">⏳</span>
-              <span *ngIf="report.status === 'approved'">✅</span>
-              <span *ngIf="report.status === 'rejected'">❌</span>
+              <span *ngIf="report.status === 'BORRADOR'">📝</span>
+              <span *ngIf="report.status === 'ENVIADO'">⏳</span>
+              <span *ngIf="report.status === 'APROBADO'">✅</span>
+              <span *ngIf="report.status === 'RECHAZADO'">❌</span>
             </div>
 
             <div class="report-info">
@@ -105,7 +105,7 @@ interface HistoryReport {
 
           <div class="report-actions">
             <button
-              *ngIf="report.status === 'draft'"
+              *ngIf="report.status === 'BORRADOR'"
               class="action-btn edit"
               (click)="editReport(report)"
             >
@@ -114,7 +114,7 @@ interface HistoryReport {
             <button class="action-btn view" (click)="viewReport(report)">👁️ Ver</button>
             <button class="action-btn download" (click)="downloadPdf(report)">📥 PDF</button>
             <button
-              *ngIf="report.status === 'draft'"
+              *ngIf="report.status === 'BORRADOR'"
               class="action-btn delete"
               (click)="deleteReport(report)"
             >
@@ -251,19 +251,19 @@ interface HistoryReport {
         border-radius: 12px;
       }
 
-      .report-icon.status-draft {
+      .report-icon.status-BORRADOR {
         background: rgba(255, 158, 24, 0.1);
       }
 
-      .report-icon.status-submitted {
+      .report-icon.status-ENVIADO {
         background: rgba(0, 119, 205, 0.1);
       }
 
-      .report-icon.status-approved {
+      .report-icon.status-APROBADO {
         background: rgba(0, 168, 98, 0.1);
       }
 
-      .report-icon.status-rejected {
+      .report-icon.status-RECHAZADO {
         background: rgba(229, 25, 55, 0.1);
       }
 
@@ -296,22 +296,22 @@ interface HistoryReport {
         font-weight: 600;
       }
 
-      .badge-draft {
+      .badge-BORRADOR {
         background: #fff4e6;
         color: #f59e0b;
       }
 
-      .badge-submitted {
+      .badge-ENVIADO {
         background: #e6f2ff;
         color: #0077cd;
       }
 
-      .badge-approved {
+      .badge-APROBADO {
         background: #d1fae5;
         color: #059669;
       }
 
-      .badge-rejected {
+      .badge-RECHAZADO {
         background: #fee2e2;
         color: #dc2626;
       }
@@ -453,7 +453,7 @@ export class OperatorHistoryComponent implements OnInit {
             report.worked_hours ||
             (report.horometro_final || 0) - (report.horometro_inicial || 0) ||
             0,
-          status: report.status as 'draft' | 'submitted' | 'approved' | 'rejected',
+          status: report.estado as 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO',
         }));
         this.filterReports();
         this.loading = false;
@@ -488,10 +488,10 @@ export class OperatorHistoryComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      draft: 'Borrador',
-      submitted: 'Enviado',
-      approved: 'Aprobado',
-      rejected: 'Rechazado',
+      BORRADOR: 'Borrador',
+      ENVIADO: 'Enviado',
+      APROBADO: 'Aprobado',
+      RECHAZADO: 'Rechazado',
     };
     return labels[status] || status;
   }
@@ -506,7 +506,7 @@ export class OperatorHistoryComponent implements OnInit {
 
   editReport(report: HistoryReport) {
     // Only allow editing drafts
-    if (report.status === 'draft') {
+    if (report.status === 'BORRADOR') {
       this.router.navigate(['/operator/daily-report'], {
         queryParams: { editId: report.id },
       });

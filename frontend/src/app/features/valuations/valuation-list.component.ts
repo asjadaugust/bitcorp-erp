@@ -339,7 +339,7 @@ export class ValuationListComponent implements OnInit {
   ];
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Valorizaciones' },
   ];

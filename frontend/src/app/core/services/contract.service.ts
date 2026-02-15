@@ -18,7 +18,7 @@ export class ContractService {
    */
   private mapBackendToFrontend(backendData: any): Contract {
     // Compute display fields
-    const equipmentInfo =
+    const equipoInfo =
       backendData.equipo_marca && backendData.equipo_modelo && backendData.equipo_placa
         ? `${backendData.equipo_marca} ${backendData.equipo_modelo} / ${backendData.equipo_placa}`
         : backendData.equipo_marca && backendData.equipo_modelo
@@ -59,19 +59,11 @@ export class ContractService {
       updated_at: backendData.updated_at,
       creado_por: backendData.creado_por,
 
-      // Translated fields
+      // Computed display fields
       modalidad_display: this.translateModalidad(backendData.modalidad),
       tipo_tarifa_display: this.translateTipoTarifa(backendData.tipo_tarifa),
-
-      // Computed display fields for table compatibility
-      code: backendData.numero_contrato || backendData.equipo_codigo,
-      provider_name: backendData.proveedor_razon_social || '',
-      equipment_info: equipmentInfo,
-      project_name: backendData.project_name,
-      client_name: backendData.client_name,
-      start_date: backendData.fecha_inicio,
-      end_date: backendData.fecha_fin,
-      status: this.mapEstadoBackendToFrontend(backendData.estado),
+      proveedor_razon_social: backendData.proveedor_razon_social || '',
+      equipo_info: equipoInfo,
     } as any;
   }
 
@@ -99,49 +91,15 @@ export class ContractService {
       incluye_motor: !!frontendData.incluye_motor,
       incluye_operador: !!frontendData.incluye_operador,
 
-      // Map estado values (keep uppercase for backend)
-      estado: this.mapEstadoFrontendToBackend(frontendData.estado),
+      // Estado already in uppercase from frontend
+      estado: frontendData.estado || 'ACTIVO',
 
       // Remove computed display fields
-      code: undefined,
-      provider_name: undefined,
-      equipment_info: undefined,
-      project_name: undefined,
-      client_name: undefined,
-      start_date: undefined,
-      end_date: undefined,
-      status: undefined,
+      proveedor_razon_social: undefined,
+      equipo_info: undefined,
       modalidad_display: undefined,
       tipo_tarifa_display: undefined,
     };
-  }
-
-  /**
-   * Map backend estado (UPPERCASE) to frontend estado (lowercase)
-   */
-  private mapEstadoBackendToFrontend(estado: string): string {
-    if (!estado) return 'Activo';
-    const estadoMap: Record<string, string> = {
-      ACTIVO: 'Activo',
-      VENCIDO: 'Vencido',
-      CANCELADO: 'Cancelado',
-      BORRADOR: 'Borrador',
-    };
-    return estadoMap[estado] || estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase();
-  }
-
-  /**
-   * Map frontend estado (lowercase) to backend estado (UPPERCASE)
-   */
-  public mapEstadoFrontendToBackend(estado: string): string {
-    if (!estado) return 'ACTIVO';
-    const estadoMap: Record<string, string> = {
-      Activo: 'ACTIVO',
-      Vencido: 'VENCIDO',
-      Cancelado: 'CANCELADO',
-      Borrador: 'BORRADOR',
-    };
-    return estadoMap[estado] || estado.toUpperCase();
   }
 
   private translateModalidad(modalidad: string): string {

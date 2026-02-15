@@ -228,7 +228,7 @@ export class TemplateListComponent implements OnInit {
   filters = { activo: undefined as boolean | undefined, tipoEquipo: '', search: '' };
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Checklists', url: '/checklists' },
     { label: 'Plantillas' },
   ];

@@ -123,7 +123,7 @@ export class SyncService {
       gasoline_gallons: report.fuel_end || report.gasoline_gallons,
       departure_location: report.location || report.departure_location,
       observations: report.work_description || report.observations,
-      status: report.status === 'draft' ? 'draft' : 'submitted',
+      estado: report.status === 'BORRADOR' ? 'BORRADOR' : 'ENVIADO',
     };
 
     return new Promise((resolve, reject) => {

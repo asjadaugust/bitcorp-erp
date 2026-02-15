@@ -7,7 +7,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { EquipmentService } from '../../../../core/services/equipment.service';
 import { OperatorService } from '../../../../core/services/operator.service';
-import { DailyReportService } from '../../services/daily-report.service';
+import { DailyReportService } from '../../../../core/services/daily-report.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 export interface DailyReportFormData {
@@ -194,7 +194,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   loadReport(id: string | number): void {
     this.loading = true;
-    this.dailyReportService.getReportById(id).subscribe({
+    this.dailyReportService.getById(id).subscribe({
       next: (report: any) => {
         // Calculate fuel_end from consumed if needed
         let fuelEnd = report.fuel_end;
@@ -228,7 +228,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         });
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading report:', error);
         this.showError('Error al cargar el reporte');
         this.loading = false;
@@ -407,11 +407,11 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     const reportData = this.toCreateDto(status);
 
     const saveOperation = this.reportId
-      ? this.dailyReportService.updateReport(this.reportId, reportData)
-      : this.dailyReportService.createReport(reportData);
+      ? this.dailyReportService.update(this.reportId, reportData)
+      : this.dailyReportService.create(reportData);
 
     saveOperation.subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.saving = false;
 
         // Upload photos if any
@@ -428,7 +428,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
           this.router.navigate(['/equipment/daily-reports']);
         }, 1500);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error saving report:', error);
         this.saving = false;
 
@@ -447,13 +447,11 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.uploadedPhotos.forEach((photo, index) => {
       formData.append('photos', photo, photo.name);
     });
-    formData.append('reportId', reportId.toString());
-
-    this.dailyReportService.uploadPhotos(formData).subscribe({
+    this.dailyReportService.uploadPhotos(reportId, formData).subscribe({
       next: () => {
         this.showSuccess('Fotos subidas exitosamente');
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error uploading photos:', error);
         this.showWarning('Error al subir fotos, pero el reporte fue guardado');
       },

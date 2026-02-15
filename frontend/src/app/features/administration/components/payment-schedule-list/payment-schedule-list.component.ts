@@ -72,7 +72,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
             class="btn-icon btn-success"
             (click)="approveSchedule(row)"
             title="Aprobar"
-            *ngIf="row.status === 'draft'"
+            *ngIf="row.estado === 'BORRADOR'"
           >
             <i class="fa-solid fa-check"></i>
           </button>
@@ -80,7 +80,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
             class="btn-icon"
             (click)="editSchedule(row)"
             title="Editar"
-            *ngIf="row.status === 'draft'"
+            *ngIf="row.estado === 'BORRADOR'"
           >
             <i class="fa-solid fa-pen"></i>
           </button>
@@ -88,7 +88,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
             class="btn-icon btn-danger"
             (click)="deleteSchedule(row)"
             title="Eliminar"
-            *ngIf="row.status === 'draft'"
+            *ngIf="row.estado === 'BORRADOR'"
           >
             <i class="fa-solid fa-trash"></i>
           </button>
@@ -98,7 +98,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
             class="btn-icon btn-primary"
             (click)="processSchedule(row)"
             title="Procesar"
-            *ngIf="row.status === 'approved'"
+            *ngIf="row.estado === 'APROBADO'"
           >
             <i class="fa-solid fa-play"></i>
           </button>
@@ -108,7 +108,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
             class="btn-icon btn-warning"
             (click)="cancelSchedule(row)"
             title="Cancelar"
-            *ngIf="row.status === 'draft' || row.status === 'approved'"
+            *ngIf="row.estado === 'BORRADOR' || row.estado === 'APROBADO'"
           >
             <i class="fa-solid fa-ban"></i>
           </button>
@@ -192,7 +192,7 @@ export class PaymentScheduleListComponent implements OnInit {
   loading = false;
   schedules: PaymentSchedule[] = [];
   filteredSchedules: PaymentSchedule[] = [];
-  filters: Record<string, any> = { search: '', status: '' };
+  filters: Record<string, any> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -203,15 +203,15 @@ export class PaymentScheduleListComponent implements OnInit {
   filterConfig: FilterConfig[] = [
     { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar programaciones...' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'select',
       options: [
         { value: '', label: 'Todos' },
-        { value: 'draft', label: 'Borrador' },
-        { value: 'approved', label: 'Aprobado' },
-        { value: 'processed', label: 'Procesado' },
-        { value: 'cancelled', label: 'Cancelado' },
+        { value: 'BORRADOR', label: 'Borrador' },
+        { value: 'APROBADO', label: 'Aprobado' },
+        { value: 'PROCESADO', label: 'Procesado' },
+        { value: 'CANCELADO', label: 'Cancelado' },
       ],
     },
     {
@@ -227,14 +227,14 @@ export class PaymentScheduleListComponent implements OnInit {
     { key: 'description', label: 'Descripción', type: 'text' },
     { key: 'total_amount', label: 'Monto Total', type: 'currency', format: 'PEN' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        draft: { label: 'Borrador', class: 'badge badge-secondary' },
-        approved: { label: 'Aprobado', class: 'badge badge-info' },
-        processed: { label: 'Procesado', class: 'badge badge-success' },
-        cancelled: { label: 'Cancelado', class: 'badge badge-error' },
+        BORRADOR: { label: 'Borrador', class: 'badge badge-secondary' },
+        APROBADO: { label: 'Aprobado', class: 'badge badge-info' },
+        PROCESADO: { label: 'Procesado', class: 'badge badge-success' },
+        CANCELADO: { label: 'Cancelado', class: 'badge badge-error' },
       },
     },
   ];
@@ -259,7 +259,7 @@ export class PaymentScheduleListComponent implements OnInit {
 
   onFilterChange(filters: Record<string, any>): void {
     this.filters['search'] = filters['search'] || '';
-    this.filters['status'] = filters['status'] || '';
+    this.filters['estado'] = filters['estado'] || '';
     this.applyFilters();
   }
 
@@ -269,7 +269,7 @@ export class PaymentScheduleListComponent implements OnInit {
         !this.filters['search'] ||
         schedule.description?.toLowerCase().includes(this.filters['search'].toLowerCase());
 
-      const matchesStatus = !this.filters['status'] || schedule.status === this.filters['status'];
+      const matchesStatus = !this.filters['estado'] || schedule.estado === this.filters['estado'];
 
       // Date range filter
       const scheduleDateStart = this.filters['scheduleDate_start'];
@@ -383,7 +383,7 @@ export class PaymentScheduleListComponent implements OnInit {
         ? `${schedule.currency} ${schedule.total_amount.toFixed(2)}`
         : '',
       Moneda: schedule.currency || '',
-      Estado: this.getStatusLabel(schedule.status),
+      Estado: this.getStatusLabel(schedule.estado),
       Creado: schedule.created_at ? new Date(schedule.created_at).toLocaleDateString('es-PE') : '',
     }));
 
@@ -412,20 +412,20 @@ export class PaymentScheduleListComponent implements OnInit {
         ? `${schedule.currency} ${schedule.total_amount.toFixed(2)}`
         : '',
       Moneda: schedule.currency || '',
-      Estado: this.getStatusLabel(schedule.status),
+      Estado: this.getStatusLabel(schedule.estado),
       Creado: schedule.created_at ? new Date(schedule.created_at).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'programacion-pagos');
   }
 
-  private getStatusLabel(status: string): string {
+  private getStatusLabel(estado: string): string {
     const statusMap: Record<string, string> = {
-      draft: 'Borrador',
-      approved: 'Aprobado',
-      processed: 'Procesado',
-      cancelled: 'Cancelado',
+      BORRADOR: 'Borrador',
+      APROBADO: 'Aprobado',
+      PROCESADO: 'Procesado',
+      CANCELADO: 'Cancelado',
     };
-    return statusMap[status] || status;
+    return statusMap[estado] || estado;
   }
 }

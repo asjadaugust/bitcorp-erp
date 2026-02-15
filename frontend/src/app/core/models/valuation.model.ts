@@ -15,9 +15,9 @@ export type EstadoValorizacion =
 export interface Valuation {
   id: number;
   legacyId?: string;
-  equipmentId: number;
-  contractId?: number;
-  projectId?: number;
+  equipoId: number;
+  contratoId?: number;
+  proyectoId?: number;
   periodo: string; // Format: 'YYYY-MM'
   fechaInicio: string;
   fechaFin: string;
@@ -37,9 +37,9 @@ export interface Valuation {
   totalConIgv?: number;
   estado: EstadoValorizacion;
   observaciones?: string;
-  createdBy?: number;
-  approvedBy?: number;
-  approvedAt?: string;
+  creadoPor?: number;
+  aprobadoPor?: number;
+  aprobadoEn?: string;
   createdAt?: string;
   updatedAt?: string;
 

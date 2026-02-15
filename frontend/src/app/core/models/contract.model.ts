@@ -45,11 +45,9 @@ export interface Contract {
   updated_at?: string;
   creado_por?: number;
 
-  // Display fields (frontend only)
+  // Display fields (frontend computed)
   modalidad_display?: string;
   tipo_tarifa_display?: string;
-  provider_name?: string;
-  equipment_info?: string;
-  status?: string;
-  code?: string;
+  proveedor_razon_social?: string;
+  equipo_info?: string;
 }

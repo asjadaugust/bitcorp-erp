@@ -126,7 +126,7 @@ import {
 export class HrDashboardComponent {
   private router = inject(Router);
 
-  breadcrumbs = [{ label: 'Dashboard', url: '/app' }, { label: 'RRHH' }];
+  breadcrumbs = [{ label: 'Inicio', url: '/app' }, { label: 'RRHH' }];
 
   tabs: TabItem[] = [
     { label: 'Dashboard', route: '/rrhh', icon: 'fa-chart-pie' },

@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../../shared/components/stats-grid/stats-grid.component';
 
 interface DashboardStats {
   todayReports: number;
@@ -14,13 +18,13 @@ interface RecentReport {
   date: string;
   equipment: string;
   hours: number;
-  status: 'draft' | 'submitted' | 'approved';
+  status: 'BORRADOR' | 'ENVIADO' | 'APROBADO';
 }
 
 @Component({
   selector: 'app-operator-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, StatsGridComponent],
   template: `
     <div class="operator-dashboard">
       <header class="dashboard-header">
@@ -47,40 +51,7 @@ interface RecentReport {
         </a>
       </div>
 
-      <!-- Statistics -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">📝</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.todayReports }}</div>
-            <div class="stat-label">Hoy</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">📊</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.weekReports }}</div>
-            <div class="stat-label">Esta Semana</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">📈</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.monthReports }}</div>
-            <div class="stat-label">Este Mes</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">⏱️</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalHours }}h</div>
-            <div class="stat-label">Horas Totales</div>
-          </div>
-        </div>
-      </div>
+      <app-stats-grid [items]="statItems" testId="operator-stats"></app-stats-grid>
 
       <!-- Recent Reports -->
       <div class="recent-section">
@@ -88,9 +59,9 @@ interface RecentReport {
         <div class="reports-list">
           <div *ngFor="let report of recentReports" class="report-item">
             <div class="report-icon" [class]="'status-' + report.status">
-              <span *ngIf="report.status === 'draft'">📝</span>
-              <span *ngIf="report.status === 'submitted'">⏳</span>
-              <span *ngIf="report.status === 'approved'">✅</span>
+              <span *ngIf="report.status === 'BORRADOR'">📝</span>
+              <span *ngIf="report.status === 'ENVIADO'">⏳</span>
+              <span *ngIf="report.status === 'APROBADO'">✅</span>
             </div>
             <div class="report-info">
               <div class="report-title">{{ report.equipment }}</div>
@@ -195,41 +166,6 @@ interface RecentReport {
         color: var(--grey-500);
       }
 
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 32px;
-      }
-
-      .stat-card {
-        background: var(--neutral-0);
-        border-radius: 12px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .stat-icon {
-        font-size: 36px;
-        margin-right: 16px;
-      }
-
-      .stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--primary-500);
-        line-height: 1;
-        margin-bottom: 4px;
-      }
-
-      .stat-label {
-        font-size: 13px;
-        color: var(--grey-500);
-        font-weight: 500;
-      }
-
       .recent-section {
         background: var(--neutral-0);
         border-radius: 12px;
@@ -274,15 +210,15 @@ interface RecentReport {
         border-radius: 8px;
       }
 
-      .report-icon.status-draft {
+      .report-icon.status-BORRADOR {
         background: rgba(255, 158, 24, 0.1);
       }
 
-      .report-icon.status-submitted {
+      .report-icon.status-ENVIADO {
         background: rgba(0, 119, 205, 0.1);
       }
 
-      .report-icon.status-approved {
+      .report-icon.status-APROBADO {
         background: rgba(0, 168, 98, 0.1);
       }
 
@@ -308,17 +244,17 @@ interface RecentReport {
         font-weight: 600;
       }
 
-      .badge-draft {
+      .badge-BORRADOR {
         background: #fff4e6;
         color: #f59e0b;
       }
 
-      .badge-submitted {
+      .badge-ENVIADO {
         background: #e6f2ff;
         color: var(--primary-500);
       }
 
-      .badge-approved {
+      .badge-APROBADO {
         background: #d1fae5;
         color: #059669;
       }
@@ -368,6 +304,7 @@ interface RecentReport {
 })
 export class OperatorDashboardComponent implements OnInit {
   operatorName = 'Juan Pérez';
+  statItems: StatItem[] = [];
 
   stats: DashboardStats = {
     todayReports: 1,
@@ -382,21 +319,21 @@ export class OperatorDashboardComponent implements OnInit {
       date: '08/11/2025',
       equipment: 'Excavadora CAT 320',
       hours: 8,
-      status: 'approved',
+      status: 'APROBADO',
     },
     {
       id: 2,
       date: '07/11/2025',
       equipment: 'Retroexcavadora JCB 3CX',
       hours: 7.5,
-      status: 'submitted',
+      status: 'ENVIADO',
     },
     {
       id: 3,
       date: '06/11/2025',
       equipment: 'Excavadora CAT 320',
       hours: 8,
-      status: 'approved',
+      status: 'APROBADO',
     },
   ];
 
@@ -405,14 +342,43 @@ export class OperatorDashboardComponent implements OnInit {
   }
 
   loadDashboardData() {
-    // TODO: Load from API
+    this.statItems = [
+      {
+        label: 'Hoy',
+        value: this.stats.todayReports,
+        icon: 'fa-file-signature',
+        color: 'primary',
+        testId: 'today-reports',
+      },
+      {
+        label: 'Esta Semana',
+        value: this.stats.weekReports,
+        icon: 'fa-chart-bar',
+        color: 'info',
+        testId: 'week-reports',
+      },
+      {
+        label: 'Este Mes',
+        value: this.stats.monthReports,
+        icon: 'fa-chart-line',
+        color: 'success',
+        testId: 'month-reports',
+      },
+      {
+        label: 'Horas Totales',
+        value: `${this.stats.totalHours}h`,
+        icon: 'fa-clock',
+        color: 'warning',
+        testId: 'total-hours',
+      },
+    ];
   }
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      draft: 'Borrador',
-      submitted: 'Enviado',
-      approved: 'Aprobado',
+      BORRADOR: 'Borrador',
+      ENVIADO: 'Enviado',
+      APROBADO: 'Aprobado',
     };
     return labels[status] || status;
   }

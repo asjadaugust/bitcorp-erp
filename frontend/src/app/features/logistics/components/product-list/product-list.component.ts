@@ -22,6 +22,11 @@ import {
 import { ExcelExportService } from '../../../../core/services/excel-export.service';
 import { CsvExportService } from '../../../../core/services/csv-export.service';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../../../shared/components/stats-grid/stats-grid.component';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-product-list',
@@ -29,13 +34,14 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule,
+    ActionsContainerComponent,
+    StatsGridComponent,
     AeroTableComponent,
     PageLayoutComponent,
-    FilterBarComponent,
     ExportDropdownComponent,
-    ActionsContainerComponent,
+    FilterBarComponent,
   ],
+  providers: [CurrencyPipe],
   template: `
     <app-page-layout
       title="Gestión de Productos"
@@ -55,37 +61,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         </button>
       </app-actions-container>
 
-      <!-- Statistics Bar -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon total"><i class="fa-solid fa-boxes-stacked"></i></div>
-          <div class="stat-info">
-            <span class="label">Total Items</span>
-            <span class="value">{{ stats.total }}</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon available"><i class="fa-solid fa-coins"></i></div>
-          <div class="stat-info">
-            <span class="label">Valor Total</span>
-            <span class="value">{{ stats.totalValue | currency: 'PEN' : 'symbol' : '1.0-0' }}</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
-          <div class="stat-info">
-            <span class="label">Stock Bajo</span>
-            <span class="value">{{ stats.lowStock }}</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon danger"><i class="fa-solid fa-box-open"></i></div>
-          <div class="stat-info">
-            <span class="label">Sin Stock</span>
-            <span class="value">{{ stats.outOfStock }}</span>
-          </div>
-        </div>
-      </div>
+      <app-stats-grid [items]="statItems" testId="product-stats"></app-stats-grid>
 
       <app-filter-bar
         [config]="filterConfig"
@@ -178,67 +154,6 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         background: var(--grey-300);
       }
 
-      /* Stats Grid */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-16);
-      }
-
-      .stat-card {
-        background: white;
-        padding: var(--s-20);
-        border-radius: var(--s-12);
-        box-shadow: var(--shadow-sm);
-        display: flex;
-        align-items: center;
-        gap: var(--s-16);
-      }
-
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-
-      .stat-icon.total {
-        background: var(--primary-100);
-        color: var(--primary-500);
-      }
-      .stat-icon.available {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-600);
-      }
-      .stat-icon.warning {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-600);
-      }
-      .stat-icon.danger {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
-      }
-
-      .stat-info {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .stat-info .label {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-bottom: 2px;
-      }
-
-      .stat-info .value {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--grey-900);
-      }
-
       /* Utilities */
       .equipment-code {
         color: var(--primary-500);
@@ -310,9 +225,11 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 export class ProductListComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private router = inject(Router);
+  private currencyPipe = inject(CurrencyPipe);
 
   products: Product[] = [];
   filteredProducts: Product[] = [];
+  statItems: StatItem[] = [];
   loading = false;
 
   filters = {
@@ -330,7 +247,7 @@ export class ProductListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Productos' },
   ];
@@ -413,6 +330,44 @@ export class ProductListComponent implements OnInit {
       (p) => p.stock_actual > 0 && p.stock_actual <= 5
     ).length;
     this.stats.outOfStock = this.products.filter((p) => p.stock_actual <= 0).length;
+
+    const formattedValue = this.currencyPipe.transform(
+      this.stats.totalValue,
+      'PEN',
+      'symbol',
+      '1.0-0'
+    );
+
+    this.statItems = [
+      {
+        label: 'Total Items',
+        value: this.stats.total,
+        icon: 'fa-boxes-stacked',
+        color: 'primary',
+        testId: 'total-items',
+      },
+      {
+        label: 'Valor Total',
+        value: formattedValue || '0',
+        icon: 'fa-coins',
+        color: 'success',
+        testId: 'total-value',
+      },
+      {
+        label: 'Stock Bajo',
+        value: this.stats.lowStock,
+        icon: 'fa-triangle-exclamation',
+        color: 'warning',
+        testId: 'low-stock',
+      },
+      {
+        label: 'Sin Stock',
+        value: this.stats.outOfStock,
+        icon: 'fa-box-open',
+        color: 'danger',
+        testId: 'out-stock',
+      },
+    ];
   }
 
   onFilterChange(filters: Record<string, any>): void {

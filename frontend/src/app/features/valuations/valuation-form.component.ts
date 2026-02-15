@@ -62,7 +62,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
             <div class="form-group">
               <label for="contract">Contrato</label>
               <app-dropdown
-                formControlName="contractId"
+                formControlName="contratoId"
                 [options]="contractOptions"
                 [placeholder]="'Seleccionar Contrato (Opcional)'"
                 [searchable]="true"
@@ -72,12 +72,12 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
             <div class="form-group">
               <label for="equipment">Equipo *</label>
               <app-dropdown
-                formControlName="equipmentId"
+                formControlName="equipoId"
                 [options]="equipmentOptions"
                 [placeholder]="'Seleccionar Equipo'"
                 [searchable]="true"
               ></app-dropdown>
-              <div class="error-msg" *ngIf="hasError('equipmentId')">Equipo es requerido</div>
+              <div class="error-msg" *ngIf="hasError('equipoId')">Equipo es requerido</div>
             </div>
 
             <div class="form-group">
@@ -291,8 +291,8 @@ export class ValuationFormComponent implements OnInit {
   ];
 
   fieldLabels: Record<string, string> = {
-    contractId: 'Contrato',
-    equipmentId: 'Equipo',
+    contratoId: 'Contrato',
+    equipoId: 'Equipo',
     fechaInicio: 'Fecha Inicio',
     fechaFin: 'Fecha Fin',
     totalValorizado: 'Total Valorizado',
@@ -303,8 +303,8 @@ export class ValuationFormComponent implements OnInit {
 
   constructor() {
     this.valuationForm = this.fb.group({
-      contractId: [null],
-      equipmentId: [null, Validators.required],
+      contratoId: [null],
+      equipoId: [null, Validators.required],
       fechaInicio: ['', Validators.required],
       fechaFin: ['', Validators.required],
       periodo: ['', Validators.required],
@@ -344,7 +344,7 @@ export class ValuationFormComponent implements OnInit {
     this.contractService.getAll().subscribe((data) => {
       this.contracts = data;
       this.contractOptions = this.contracts.map((c) => ({
-        label: `${c.numero_contrato} - ${c.provider_name || 'Sin Proveedor'}`,
+        label: `${c.numero_contrato} - ${c.proveedor_razon_social || 'Sin Proveedor'}`,
         value: c.id,
       }));
     });
@@ -376,8 +376,8 @@ export class ValuationFormComponent implements OnInit {
 
         this.valuationForm.patchValue({
           ...valuation,
-          contractId: valuation.contractId, // Ensure mapping matches
-          equipmentId: valuation.equipmentId,
+          contratoId: valuation.contratoId,
+          equipoId: valuation.equipoId,
           fechaInicio: formatDate(valuation.fechaInicio),
           fechaFin: formatDate(valuation.fechaFin),
           periodo: valuation.periodo,
@@ -405,8 +405,8 @@ export class ValuationFormComponent implements OnInit {
     // Prepare data with correct types
     const valuationData: Partial<Valuation> = {
       ...formValue,
-      contractId: formValue.contractId ? Number(formValue.contractId) : null,
-      equipmentId: Number(formValue.equipmentId),
+      contratoId: formValue.contratoId ? Number(formValue.contratoId) : null,
+      equipoId: Number(formValue.equipoId),
       totalValorizado: Number(formValue.totalValorizado),
       // Ensure periodo is set
       periodo: formValue.periodo || formValue.fechaInicio.substring(0, 7),
@@ -439,7 +439,7 @@ export class ValuationFormComponent implements OnInit {
   }
 
   calculateValuation(): void {
-    const contractId = this.valuationForm.get('contractId')?.value;
+    const contractId = this.valuationForm.get('contratoId')?.value;
     const fechaInicio = this.valuationForm.get('fechaInicio')?.value;
 
     if (!contractId || !fechaInicio) {

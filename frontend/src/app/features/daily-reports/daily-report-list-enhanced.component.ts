@@ -80,10 +80,10 @@ import { ExcelExportService } from '../../core/services/excel-export.service';
         <div class="filter-group">
           <select [(ngModel)]="filters.status" (change)="applyFilters()" class="form-select">
             <option value="">Todos los Estados</option>
-            <option value="draft">Borrador</option>
-            <option value="submitted">Enviado</option>
-            <option value="approved">Aprobado</option>
-            <option value="rejected">Rechazado</option>
+            <option value="BORRADOR">Borrador</option>
+            <option value="ENVIADO">Enviado</option>
+            <option value="APROBADO">Aprobado</option>
+            <option value="RECHAZADO">Rechazado</option>
           </select>
         </div>
       </div>
@@ -630,14 +630,14 @@ export class DailyReportListEnhancedComponent implements OnInit {
     { key: 'meter', label: 'Horómetro', type: 'template' },
     { key: 'fuel', label: 'Combustible', type: 'template' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        draft: { label: 'Borrador', class: 'badge status-draft' },
-        submitted: { label: 'Enviado', class: 'badge status-submitted' },
-        approved: { label: 'Aprobado', class: 'badge status-approved' },
-        rejected: { label: 'Rechazado', class: 'badge status-rejected' },
+        BORRADOR: { label: 'Borrador', class: 'badge status-draft' },
+        ENVIADO: { label: 'Enviado', class: 'badge status-submitted' },
+        APROBADO: { label: 'Aprobado', class: 'badge status-approved' },
+        RECHAZADO: { label: 'Rechazado', class: 'badge status-rejected' },
       },
     },
   ];

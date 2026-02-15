@@ -37,7 +37,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       title="Partes Diarios"
       icon="fa-clipboard-list"
       [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
+        { label: 'Inicio', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
         { label: 'Partes Diarios' },
       ]"

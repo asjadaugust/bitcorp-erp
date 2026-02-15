@@ -15,6 +15,10 @@ import {
   ExportDropdownComponent,
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-equipment-list-enhanced',
@@ -26,6 +30,7 @@ import {
     MainNavComponent,
     AeroTableComponent,
     ExportDropdownComponent,
+    StatsGridComponent,
   ],
   template: `
     <app-main-nav></app-main-nav>
@@ -117,29 +122,11 @@ import {
         </div>
       </div>
 
-      <!-- Statistics Bar -->
-      <div class="stats-bar" *ngIf="stats">
-        <div class="stat-card">
-          <span class="stat-label">Total Equipment</span>
-          <span class="stat-value">{{ stats.total }}</span>
-        </div>
-        <div class="stat-card stat-available">
-          <span class="stat-label">Available</span>
-          <span class="stat-value">{{ stats.available }}</span>
-        </div>
-        <div class="stat-card stat-in-use">
-          <span class="stat-label">In Use</span>
-          <span class="stat-value">{{ stats.in_use }}</span>
-        </div>
-        <div class="stat-card stat-maintenance">
-          <span class="stat-label">Maintenance</span>
-          <span class="stat-value">{{ stats.maintenance }}</span>
-        </div>
-        <div class="stat-card stat-warning">
-          <span class="stat-label">Expiring Soon</span>
-          <span class="stat-value">{{ stats.expiring }}</span>
-        </div>
-      </div>
+      <app-stats-grid
+        *ngIf="statItems.length > 0"
+        [items]="statItems"
+        testId="enhanced-equipment-stats"
+      ></app-stats-grid>
 
       <!-- Equipment Table -->
       <div class="table-container">
@@ -357,45 +344,6 @@ import {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-      }
-
-      /* Stats Bar */
-      .stats-bar {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      }
-      .stat-card {
-        padding: 1rem;
-        background: white;
-        border-radius: 8px;
-        border-left: 4px solid #0077cd;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-      .stat-card.stat-available {
-        border-left-color: #10b981;
-      }
-      .stat-card.stat-in-use {
-        border-left-color: #0077cd;
-      }
-      .stat-card.stat-maintenance {
-        border-left-color: #fcd34d;
-      }
-      .stat-card.stat-warning {
-        border-left-color: #ef4444;
-      }
-      .stat-label {
-        display: block;
-        font-size: 12px;
-        color: #6b7280;
-        margin-bottom: 0.25rem;
-      }
-      .stat-value {
-        display: block;
-        font-size: 24px;
-        font-weight: 700;
-        color: #111827;
       }
 
       /* Table Container */
@@ -627,6 +575,7 @@ export class EquipmentListEnhancedComponent implements OnInit {
   loading = false;
   selectedIds: number[] = [];
   showFilters = false;
+  statItems: StatItem[] = [];
 
   filters = {
     search: '',
@@ -683,6 +632,43 @@ export class EquipmentListEnhancedComponent implements OnInit {
     this.equipmentService.getStatistics().subscribe({
       next: (data: any) => {
         this.stats = data;
+        this.statItems = [
+          {
+            label: 'Total Equipment',
+            value: data.total,
+            icon: 'fa-cubes',
+            color: 'primary',
+            testId: 'total-equipment',
+          },
+          {
+            label: 'Available',
+            value: data.available,
+            icon: 'fa-check',
+            color: 'success',
+            testId: 'available-equipment',
+          },
+          {
+            label: 'In Use',
+            value: data.in_use,
+            icon: 'fa-person-digging',
+            color: 'info',
+            testId: 'in-use-equipment',
+          },
+          {
+            label: 'Maintenance',
+            value: data.maintenance,
+            icon: 'fa-wrench',
+            color: 'warning',
+            testId: 'maintenance-equipment',
+          },
+          {
+            label: 'Expiring Soon',
+            value: data.expiring,
+            icon: 'fa-triangle-exclamation',
+            color: 'danger',
+            testId: 'expiring-equipment',
+          },
+        ];
       },
       error: (err) => console.error('Failed to load stats:', err),
     });

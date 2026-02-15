@@ -43,12 +43,12 @@ export interface DailyReport {
     | 'REVISADO_COSTOS'
     | 'APROBADO'
     | 'RECHAZADO';
-  submitted_at?: string;
-  supervisor_approved_at?: string;
-  cost_reviewed_at?: string;
-  approved_at?: string;
-  rejected_at?: string;
-  rejection_reason?: string;
+  enviado_en?: string;
+  aprobado_supervisor_en?: string;
+  revisado_costos_en?: string;
+  aprobado_en?: string;
+  rechazado_en?: string;
+  motivo_rechazo?: string;
   created_at: string;
   updated_at: string;
 

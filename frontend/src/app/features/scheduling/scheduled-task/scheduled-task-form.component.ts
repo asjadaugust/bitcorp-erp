@@ -67,18 +67,18 @@ import {
           <div class="section-grid">
             <div class="form-group">
               <label for="equipment">Equipo *</label>
-              <select id="equipment" formControlName="equipmentId" class="form-select">
+              <select id="equipment" formControlName="equipoId" class="form-select">
                 <option [ngValue]="null">Seleccionar Equipo</option>
                 <option *ngFor="let eq of equipmentList" [value]="eq.id">
                   {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
                 </option>
               </select>
-              <div class="error-msg" *ngIf="hasError('equipmentId')">Equipo es requerido</div>
+              <div class="error-msg" *ngIf="hasError('equipoId')">Equipo es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="operator">Operador</label>
-              <select id="operator" formControlName="operatorId" class="form-select">
+              <select id="operator" formControlName="operadorId" class="form-select">
                 <option [ngValue]="null">Sin Asignar</option>
                 <option *ngFor="let op of operators" [value]="op.id">
                   {{ op.C05000_Nombre || op.nombres }} {{ op.C05000_Apellido || op.apellidos }}
@@ -94,31 +94,31 @@ import {
           <div class="section-grid">
             <div class="form-group">
               <label for="date">Fecha Programada *</label>
-              <input type="date" id="date" formControlName="startDate" class="form-control" />
-              <div class="error-msg" *ngIf="hasError('startDate')">Fecha es requerida</div>
+              <input type="date" id="date" formControlName="fechaInicio" class="form-control" />
+              <div class="error-msg" *ngIf="hasError('fechaInicio')">Fecha es requerida</div>
             </div>
 
             <div class="form-group">
               <label for="type">Tipo de Tarea *</label>
-              <select id="type" formControlName="taskType" class="form-select">
-                <option value="maintenance">Mantenimiento</option>
-                <option value="inspection">Inspección</option>
-                <option value="repair">Reparación</option>
-                <option value="transport">Transporte</option>
+              <select id="type" formControlName="tipoTarea" class="form-select">
+                <option value="mantenimiento">Mantenimiento</option>
+                <option value="inspeccion">Inspección</option>
+                <option value="reparacion">Reparación</option>
+                <option value="transporte">Transporte</option>
               </select>
-              <div class="error-msg" *ngIf="hasError('taskType')">Tipo es requerido</div>
+              <div class="error-msg" *ngIf="hasError('tipoTarea')">Tipo es requerido</div>
             </div>
 
             <div class="form-group full-width">
               <label for="description">Descripción *</label>
               <textarea
                 id="description"
-                formControlName="description"
+                formControlName="descripcion"
                 class="form-control"
                 rows="3"
                 placeholder="Descripción detallada de la tarea..."
               ></textarea>
-              <div class="error-msg" *ngIf="hasError('description')">Descripción es requerida</div>
+              <div class="error-msg" *ngIf="hasError('descripcion')">Descripción es requerida</div>
             </div>
           </div>
         </div>
@@ -129,25 +129,25 @@ import {
           <div class="section-grid">
             <div class="form-group">
               <label for="priority">Prioridad *</label>
-              <select id="priority" formControlName="priority" class="form-select">
-                <option value="low">Baja</option>
-                <option value="medium">Media</option>
-                <option value="high">Alta</option>
-                <option value="critical">Crítica</option>
+              <select id="priority" formControlName="prioridad" class="form-select">
+                <option value="BAJA">Baja</option>
+                <option value="MEDIA">Media</option>
+                <option value="ALTA">Alta</option>
+                <option value="URGENTE">Urgente</option>
               </select>
-              <div class="error-msg" *ngIf="hasError('priority')">Prioridad es requerida</div>
+              <div class="error-msg" *ngIf="hasError('prioridad')">Prioridad es requerida</div>
             </div>
 
             <div class="form-group">
               <label for="status">Estado *</label>
-              <select id="status" formControlName="status" class="form-select">
-                <option value="pending">Pendiente</option>
-                <option value="assigned">Asignado</option>
-                <option value="in_progress">En Progreso</option>
-                <option value="completed">Completado</option>
-                <option value="cancelled">Cancelado</option>
+              <select id="status" formControlName="estado" class="form-select">
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="ASIGNADO">Asignado</option>
+                <option value="EN_PROCESO">En Proceso</option>
+                <option value="COMPLETADO">Completado</option>
+                <option value="CANCELADO">Cancelado</option>
               </select>
-              <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
+              <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
             </div>
           </div>
         </div>
@@ -329,26 +329,26 @@ export class ScheduledTaskFormComponent implements OnInit {
   successMessage = '';
 
   fieldLabels: Record<string, string> = {
-    equipmentId: 'Equipo',
-    operatorId: 'Operador',
-    startDate: 'Fecha Programada',
-    taskType: 'Tipo de Tarea',
-    description: 'Descripción',
-    priority: 'Prioridad',
-    status: 'Estado',
-    title: 'Título',
+    equipoId: 'Equipo',
+    operadorId: 'Operador',
+    fechaInicio: 'Fecha Programada',
+    tipoTarea: 'Tipo de Tarea',
+    descripcion: 'Descripción',
+    prioridad: 'Prioridad',
+    estado: 'Estado',
+    titulo: 'Título',
   };
 
   constructor() {
     this.taskForm = this.fb.group({
-      title: [''],
-      equipmentId: [null, Validators.required],
-      operatorId: [null],
-      startDate: ['', Validators.required],
-      taskType: ['maintenance', Validators.required],
-      description: ['', Validators.required],
-      priority: ['medium', Validators.required],
-      status: ['pending', Validators.required],
+      titulo: [''],
+      equipoId: [null, Validators.required],
+      operadorId: [null],
+      fechaInicio: ['', Validators.required],
+      tipoTarea: ['mantenimiento', Validators.required],
+      descripcion: ['', Validators.required],
+      prioridad: ['MEDIA', Validators.required],
+      estado: ['PENDIENTE', Validators.required],
     });
   }
 
@@ -357,7 +357,7 @@ export class ScheduledTaskFormComponent implements OnInit {
 
     this.route.queryParams.subscribe((params) => {
       if (params['date']) {
-        this.taskForm.patchValue({ startDate: params['date'] });
+        this.taskForm.patchValue({ fechaInicio: params['date'] });
       }
     });
 
@@ -391,8 +391,8 @@ export class ScheduledTaskFormComponent implements OnInit {
           this.router.navigate(['/operaciones/scheduling/tasks']);
           return;
         }
-        if (data.startDate) {
-          data.startDate = data.startDate.split('T')[0];
+        if (data.fechaInicio) {
+          data.fechaInicio = data.fechaInicio.split('T')[0];
         }
         this.taskForm.patchValue(data);
         this.loading = false;

@@ -8,11 +8,21 @@ import {
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../shared/components/stats-grid/stats-grid.component';
 
 @Component({
   selector: 'app-timesheet-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, AeroTableComponent, PageLayoutComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    AeroTableComponent,
+    PageLayoutComponent,
+    StatsGridComponent,
+  ],
   template: `
     <app-page-layout
       [breadcrumbs]="breadcrumbs"
@@ -50,41 +60,15 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
       </div>
 
       <div *ngIf="timesheet && !loading" class="content-grid">
-        <!-- Summary Card -->
-        <div class="card summary-card">
-          <div class="card-header">
+        <!-- Summary Stats -->
+        <div class="stats-section">
+          <div class="section-header">
             <h2>Resumen</h2>
             <span class="status-badge" [class]="timesheet?.estado || ''">
               {{ timesheet?.estado }}
             </span>
           </div>
-
-          <div class="info-grid">
-            <div class="info-item">
-              <label>ID</label>
-              <span>Tareo #{{ timesheet.id }}</span>
-            </div>
-            <div class="info-item">
-              <label>Trabajador</label>
-              <span>{{ timesheet.trabajador_nombre || timesheet.trabajador?.nombre_completo || 'N/A' }}</span>
-            </div>
-            <div class="info-item">
-              <label>Período</label>
-              <span>{{ timesheet.periodo }}</span>
-            </div>
-            <div class="info-item">
-              <label>Total Horas</label>
-              <span class="highlight">{{ timesheet.totalHoras }} hrs</span>
-            </div>
-            <div class="info-item">
-              <label>Días Trabajados</label>
-              <span>{{ timesheet.totalDiasTrabajados }} días</span>
-            </div>
-            <div class="info-item" *ngIf="timesheet.montoCalculado">
-              <label>Monto Calculado</label>
-              <span class="highlight">S/ {{ timesheet.montoCalculado | number:'1.2-2' }}</span>
-            </div>
-          </div>
+          <app-stats-grid [items]="statItems" testId="timesheet-summary-stats"></app-stats-grid>
         </div>
 
         <!-- Details Table -->
@@ -176,39 +160,19 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         margin-bottom: 1.5rem;
       }
-      .card h2 {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
+      .stats-section {
+        margin-bottom: 2rem;
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      .section-header h2 {
+        margin: 0;
         font-size: 1.25rem;
         color: #4a5568;
-        border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 0.75rem;
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-      }
-      .info-item {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      .info-item label {
-        font-size: 0.875rem;
-        color: #718096;
-        font-weight: 500;
-      }
-      .info-item span {
-        font-size: 1.1rem;
-        color: #2d3748;
-        font-weight: 500;
-      }
-      .info-item .highlight {
-        color: #3182ce;
-        font-weight: 700;
-        font-size: 1.25rem;
       }
 
       .text-center {
@@ -272,6 +236,7 @@ export class TimesheetDetailComponent implements OnInit {
   timesheet: Timesheet | null = null;
   loading = true;
   error = '';
+  statItems: StatItem[] = [];
 
   breadcrumbs = [
     { label: 'Inicio', url: '/app' },
@@ -305,6 +270,7 @@ export class TimesheetDetailComponent implements OnInit {
     this.timesheetService.getTimesheetById(id).subscribe({
       next: (res) => {
         this.timesheet = res;
+        this.calculateStatItems();
         this.loading = false;
       },
       error: (err) => {
@@ -313,6 +279,49 @@ export class TimesheetDetailComponent implements OnInit {
         console.error(err);
       },
     });
+  }
+
+  calculateStatItems() {
+    if (!this.timesheet) return;
+
+    this.statItems = [
+      {
+        label: 'ID Tareo',
+        value: `#${this.timesheet.id}`,
+        icon: 'fa-hashtag',
+        color: 'primary',
+        testId: 'timesheet-id',
+      },
+      {
+        label: 'Total Horas',
+        value: `${this.timesheet.totalHoras} hrs`,
+        icon: 'fa-clock',
+        color: 'info',
+        testId: 'total-hours',
+      },
+      {
+        label: 'Días Trabajados',
+        value: this.timesheet.totalDiasTrabajados,
+        icon: 'fa-calendar-check',
+        color: 'success',
+        testId: 'total-days',
+      },
+      {
+        label: 'Monto Calculado',
+        value: this.formatCurrency(this.timesheet.montoCalculado || 0),
+        icon: 'fa-money-bill-wave',
+        color: 'warning',
+        testId: 'calculated-amount',
+      },
+    ];
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN',
+      minimumFractionDigits: 2,
+    }).format(value);
   }
 
   submitTimesheet() {

@@ -1,30 +1,39 @@
+export type PrioridadTarea = 'BAJA' | 'MEDIA' | 'ALTA' | 'URGENTE';
+export type EstadoTarea =
+  | 'PENDIENTE'
+  | 'ASIGNADO'
+  | 'EN_PROCESO'
+  | 'COMPLETADO'
+  | 'CANCELADO'
+  | 'VENCIDO';
+
 export interface ScheduledTask {
   id: number;
-  scheduleId?: number;
-  schedule?: any;
-  equipmentId: number;
-  equipment?: any;
-  operatorId?: number;
-  operator?: any;
-  taskType: string; // 'maintenance' | 'assignment' | 'inspection'
-  title?: string;
-  description?: string;
-  startDate: string;
-  endDate?: string;
-  startTime?: string;
-  endTime?: string;
-  allDay?: boolean;
-  recurrence?: string;
-  durationMinutes?: number;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled' | 'overdue';
-  completionDate?: string;
-  completionNotes?: string;
-  maintenanceRecordId?: number;
-  createdBy?: number;
-  assignedBy?: number;
-  projectId?: number;
-  project?: any;
+  programaId?: number;
+  programa?: any;
+  equipoId: number;
+  equipo?: any;
+  operadorId?: number;
+  operador?: any;
+  tipoTarea: string; // 'mantenimiento' | 'asignacion' | 'inspeccion'
+  titulo?: string;
+  descripcion?: string;
+  fechaInicio: string;
+  fechaFin?: string;
+  horaInicio?: string;
+  horaFin?: string;
+  todoDia?: boolean;
+  recurrencia?: string;
+  duracionMinutos?: number;
+  prioridad: PrioridadTarea;
+  estado: EstadoTarea;
+  fechaCompletado?: string;
+  notasCompletado?: string;
+  registroMantenimientoId?: number;
+  creadoPor?: number;
+  asignadoPor?: number;
+  proyectoId?: number;
+  proyecto?: any;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -38,18 +38,8 @@ import { Project } from '../../core/models/project.model';
             </div>
 
             <div class="detail-status">
-              <span [class]="'status-badge status-' + project.estado">
-                {{
-                  project.estado === 'active'
-                    ? 'Activo'
-                    : project.estado === 'completed'
-                      ? 'Completado'
-                      : project.estado === 'on-hold'
-                        ? 'En Pausa'
-                        : project.estado === 'cancelled'
-                          ? 'Cancelado'
-                          : project.estado
-                }}
+              <span [class]="'status-badge status-' + getStatusClass(project.estado)">
+                {{ getStatusLabel(project.estado) }}
               </span>
             </div>
 
@@ -568,5 +558,25 @@ export class ProjectDetailComponent implements OnInit {
 
   navigateTo(path: string): void {
     this.router.navigate([path]);
+  }
+
+  getStatusClass(estado: string): string {
+    const map: Record<string, string> = {
+      ACTIVO: 'active',
+      COMPLETADO: 'completed',
+      EN_PAUSA: 'on-hold',
+      CANCELADO: 'cancelled',
+    };
+    return map[estado] || 'active';
+  }
+
+  getStatusLabel(estado: string): string {
+    const map: Record<string, string> = {
+      ACTIVO: 'Activo',
+      COMPLETADO: 'Completado',
+      EN_PAUSA: 'En Pausa',
+      CANCELADO: 'Cancelado',
+    };
+    return map[estado] || estado;
   }
 }

@@ -65,8 +65,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          code: codeTemplate,
-          client_name: clientTemplate,
+          numero_contrato: codeTemplate,
           vigencia: vigenciaTemplate,
         }"
         (rowClick)="viewContract($event)"
@@ -75,21 +74,17 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       <!-- Custom Column Templates -->
       <ng-template #codeTemplate let-row>
-        <span class="code-badge">{{ row.code }}</span>
-      </ng-template>
-
-      <ng-template #clientTemplate let-row>
-        <span class="client-name">{{ row.client_name }}</span>
+        <span class="code-badge">{{ row.numero_contrato }}</span>
       </ng-template>
 
       <ng-template #vigenciaTemplate let-row>
         <div class="date-range">
-          <span>{{ row.start_date | date: 'dd/MM/yyyy' }}</span>
+          <span>{{ row.fecha_inicio | date: 'dd/MM/yyyy' }}</span>
           <i class="fa-solid fa-arrow-right"></i>
-          <span>{{ row.end_date | date: 'dd/MM/yyyy' }}</span>
+          <span>{{ row.fecha_fin | date: 'dd/MM/yyyy' }}</span>
           <i
             class="fa-solid fa-triangle-exclamation text-warning"
-            *ngIf="row.status === 'active' && isExpiring(row.end_date)"
+            *ngIf="row.estado === 'ACTIVO' && isExpiring(row.fecha_fin)"
             title="Expira pronto"
           ></i>
         </div>
@@ -206,7 +201,7 @@ export class ContractListComponent implements OnInit {
   filters = { estado: '', search: '' };
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
+    { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Contratos' },
   ];
@@ -228,33 +223,33 @@ export class ContractListComponent implements OnInit {
       placeholder: 'Buscar por proveedor, equipo, código...',
     },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Activo', value: 'Activo' },
-        { label: 'Vencido', value: 'Vencido' },
-        { label: 'Cancelado', value: 'Cancelado' },
-        { label: 'Borrador', value: 'Borrador' },
+        { label: 'Activo', value: 'ACTIVO' },
+        { label: 'Vencido', value: 'VENCIDO' },
+        { label: 'Cancelado', value: 'CANCELADO' },
+        { label: 'Borrador', value: 'BORRADOR' },
       ],
     },
   ];
 
   columns: TableColumn[] = [
-    { key: 'code', label: 'Código', type: 'template' },
-    { key: 'provider_name', label: 'Proveedor', type: 'text' },
-    { key: 'equipment_info', label: 'Equipo (Modelo / Placa)', type: 'text' },
+    { key: 'numero_contrato', label: 'Código', type: 'template' },
+    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' },
+    { key: 'equipo_info', label: 'Equipo (Modelo / Placa)', type: 'text' },
     { key: 'modalidad_display', label: 'Modalidad', type: 'text' },
     { key: 'vigencia', label: 'Vigencia', type: 'template' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        Activo: { label: 'Activo', class: 'badge status-active' },
-        Vencido: { label: 'Vencido', class: 'badge status-completed' },
-        Borrador: { label: 'Borrador', class: 'badge status-pending' },
-        Cancelado: { label: 'Cancelado', class: 'badge status-cancelled' },
+        ACTIVO: { label: 'Activo', class: 'badge status-active' },
+        VENCIDO: { label: 'Vencido', class: 'badge status-completed' },
+        BORRADOR: { label: 'Borrador', class: 'badge status-pending' },
+        CANCELADO: { label: 'Cancelado', class: 'badge status-cancelled' },
       },
     },
   ];
@@ -278,9 +273,7 @@ export class ContractListComponent implements OnInit {
 
   onFilterChange(filters: Record<string, any>): void {
     this.filters.search = filters['search'] || '';
-    this.filters.estado = filters['status']
-      ? this.contractService.mapEstadoFrontendToBackend(filters['status'])
-      : '';
+    this.filters.estado = filters['estado'] || '';
     this.loadContracts();
   }
 
