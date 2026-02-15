@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { NotificationDropdownComponent } from './notification-dropdown.component';
+import { ProjectSelectorComponent } from '../../layouts/components/project-selector/project-selector.component';
 import { ClickOutsideDirective } from '../directives/click-outside.directive';
 
 @Component({
@@ -15,6 +16,7 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
     RouterModule,
     FormsModule,
     NotificationDropdownComponent,
+    ProjectSelectorComponent,
     ClickOutsideDirective,
   ],
   template: `
@@ -27,6 +29,10 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
           <img src="assets/logo.svg" alt="Bitcorp Logo" class="nav-logo" />
           <h1>Bitcorp ERP</h1>
         </a>
+      </div>
+      
+      <div class="nav-center">
+        <app-project-selector></app-project-selector>
       </div>
 
       <div class="nav-user">

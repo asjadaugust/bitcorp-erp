@@ -561,12 +561,14 @@ export class ContractService {
       const query = this.contractRepository
         .createQueryBuilder('contract')
         .leftJoinAndSelect('contract.equipo', 'equipo')
-        .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('contract.tipo = :tipo', { tipo: 'CONTRATO' })
-        .andWhere('contract.estado != :cancelado', { cancelado: 'CANCELADO' });
+        .leftJoinAndSelect('equipo.provider', 'equipo_provider')
+        .leftJoinAndSelect('contract.provider', 'provider')
+        .where('contract.tipo = :tipo', { tipo: 'CONTRATO' });
 
       if (filters?.estado) {
         query.andWhere('contract.estado = :estado', { estado: filters.estado });
+      } else {
+        query.andWhere('contract.estado != :cancelado', { cancelado: 'CANCELADO' });
       }
 
       if (filters?.equipment_id) {
@@ -583,7 +585,7 @@ export class ContractService {
 
       if (filters?.search) {
         query.andWhere(
-          '(contract.numeroContrato ILIKE :search OR provider.razon_social ILIKE :search OR equipo.modelo ILIKE :search)',
+          '(contract.numeroContrato ILIKE :search OR equipo_provider.razonSocial ILIKE :search OR provider.razonSocial ILIKE :search OR equipo.modelo ILIKE :search)',
           { search: `%${filters.search}%` }
         );
       }
@@ -673,7 +675,7 @@ export class ContractService {
 
       const contract = await this.contractRepository.findOne({
         where: { id },
-        relations: ['adendas', 'equipo', 'equipo.provider'],
+        relations: ['adendas', 'equipo', 'equipo.provider', 'provider'],
       });
 
       if (!contract) {

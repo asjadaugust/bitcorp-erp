@@ -51,7 +51,7 @@ export interface DailyReportDto {
   observaciones_correcciones?: string | null; // Additional notes
 
   // Status and metadata
-  estado: 'BORRADOR' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  estado: 'BORRADOR' | 'PENDIENTE' | 'APROBADO_SUPERVISOR' | 'REVISADO_COSTOS' | 'APROBADO' | 'RECHAZADO';
   created_at: string;
   updated_at: string;
   creado_por?: number | null;
@@ -195,8 +195,8 @@ export class DailyReportCreateDto {
   observaciones_correcciones?: string;
 
   @IsOptional()
-  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO', 'RECHAZADO'], {
-    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO o RECHAZADO',
+  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO_SUPERVISOR', 'REVISADO_COSTOS', 'APROBADO', 'RECHAZADO'], {
+    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO_SUPERVISOR, REVISADO_COSTOS, APROBADO o RECHAZADO',
   })
   estado?: 'BORRADOR' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
 }
@@ -276,8 +276,8 @@ export class DailyReportUpdateDto {
   observaciones_correcciones?: string;
 
   @IsOptional()
-  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO', 'RECHAZADO'], {
-    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO o RECHAZADO',
+  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO_SUPERVISOR', 'REVISADO_COSTOS', 'APROBADO', 'RECHAZADO'], {
+    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO_SUPERVISOR, REVISADO_COSTOS, APROBADO o RECHAZADO',
   })
   estado?: 'BORRADOR' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
 }

@@ -385,7 +385,7 @@ export class MaintenanceScheduleRecurringService {
    * Create new recurring maintenance schedule
    *
    * Creates a schedule with automatic next due date calculation.
-   * Supports dual input format (English camelCase and Spanish snake_case).
+   * Supports Spanish snake_case.
    *
    * The schedule is created with:
    * - Default status: 'active'
@@ -507,7 +507,7 @@ export class MaintenanceScheduleRecurringService {
    * Update recurring maintenance schedule
    *
    * Updates an existing schedule. Supports partial updates (only provided fields).
-   * Supports dual input format (English camelCase and Spanish snake_case).
+   * Supports Spanish snake_case.
    *
    * Common update scenarios:
    * - Change interval: Update interval_type or interval_value

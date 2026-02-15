@@ -8,205 +8,172 @@ import { EquipmentService } from '../../core/services/equipment.service';
 import { Valuation } from '../../core/models/valuation.model';
 import { Contract } from '../../core/models/contract.model';
 import { Equipment } from '../../core/models/equipment.model';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-valuation-form',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FormContainerComponent,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
-    <div class="form-container">
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <div class="icon-wrapper">
-            <i class="fa-solid" [class.fa-plus]="!isEditMode" [class.fa-pen]="isEditMode"></i>
-          </div>
-          <div class="title-group">
-            <h1>{{ isEditMode ? 'Editar Valorización' : 'Nueva Valorización' }}</h1>
-            <p class="subtitle">
-              {{
-                isEditMode
-                  ? 'Actualizar información de la valorización'
-                  : 'Registrar nueva valorización de proyecto'
-              }}
-            </p>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="valuationForm.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i>
-            {{ isEditMode ? 'Guardar Cambios' : 'Crear Valorización' }}
-          </button>
-        </div>
-      </div>
+    <app-form-container
+      [title]="isEditMode ? 'Editar Valorización' : 'Nueva Valorización'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información de la valorización'
+          : 'Registrar nueva valorización de proyecto'
+      "
+      [icon]="isEditMode ? 'fa-pen' : 'fa-calculator'"
+      [loading]="loading"
+      [disableSubmit]="valuationForm.invalid || loading"
+      [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Valorización'"
+      (onSubmit)="onSubmit()"
+      (onCancel)="cancel()"
+    >
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors
+        *ngIf="validationErrors.length > 0"
+        [errors]="validationErrors"
+        [fieldLabels]="fieldLabels"
+      >
+      </app-validation-errors>
 
-      <!-- Form -->
-      <div class="card form-card">
-        <form [formGroup]="valuationForm" class="form-grid">
-          <!-- Section 1: Contract & Equipment Information -->
-          <div class="form-section full-width">
-            <h3>Información General</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="contract">Contrato</label>
-                <select id="contract" formControlName="contract_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Contrato (Opcional)</option>
-                  <option *ngFor="let contract of contracts" [value]="contract.id">
-                    {{ contract.code }} - {{ contract.project_name }} ({{ contract.client_name }})
-                  </option>
-                </select>
-              </div>
+      <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" [dismissible]="true">
+      </app-alert>
 
-              <div class="form-group">
-                <label for="equipment">Equipo *</label>
-                <select id="equipment" formControlName="equipment_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Equipo</option>
-                  <option *ngFor="let eq of equipments" [ngValue]="eq.id">
-                    {{ eq.codigo_equipo || eq.code }} - {{ eq.marca || eq.brand }}
-                    {{ eq.modelo || eq.model }}
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('equipment_id')">Equipo es requerido</div>
-              </div>
+      <form [formGroup]="valuationForm" class="form-grid">
+        <!-- Section 1: Contract & Equipment Information -->
+        <div class="form-section full-width">
+          <h3>Información General</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="contract">Contrato</label>
+              <select id="contract" formControlName="contractId" class="form-select">
+                <option [ngValue]="null">Seleccionar Contrato (Opcional)</option>
+                <option *ngFor="let contract of contracts" [value]="contract.id">
+                  {{ contract.code }} - {{ contract.project_name }} ({{ contract.client_name }})
+                </option>
+              </select>
+            </div>
 
-              <div class="form-group">
-                <label for="status">Estado *</label>
-                <select id="status" formControlName="status" class="form-select">
-                  <option value="pending">Pendiente</option>
-                  <option value="under_review">En Revisión</option>
-                  <option value="approved">Aprobado</option>
-                  <option value="paid">Pagado</option>
-                </select>
-              </div>
+            <div class="form-group">
+              <label for="equipment">Equipo *</label>
+              <select id="equipment" formControlName="equipmentId" class="form-select">
+                <option [ngValue]="null">Seleccionar Equipo</option>
+                <option *ngFor="let eq of equipments" [ngValue]="eq.id">
+                  {{ eq.codigo_equipo || eq.code }} - {{ eq.marca || eq.brand }}
+                  {{ eq.modelo || eq.model }}
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('equipmentId')">Equipo es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="estado">Estado *</label>
+              <select id="estado" formControlName="estado" class="form-select">
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="EN_REVISION">En Revisión</option>
+                <option value="APROBADO">Aprobado</option>
+                <option value="RECHAZADO">Rechazado</option>
+                <option value="PAGADO">Pagado</option>
+                <option value="ELIMINADO">Eliminado</option>
+              </select>
             </div>
           </div>
+        </div>
 
-          <!-- Section 2: Period & Financial Details -->
-          <div class="form-section full-width">
-            <h3>Periodo y Detalles Financieros</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="period_start">Fecha Inicio del Periodo *</label>
-                <input
-                  id="period_start"
-                  type="date"
-                  formControlName="period_start"
-                  class="form-control"
-                />
-                <div class="error-msg" *ngIf="hasError('period_start')">
-                  Fecha de inicio requerida
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="period_end">Fecha Fin del Periodo *</label>
-                <input
-                  id="period_end"
-                  type="date"
-                  formControlName="period_end"
-                  class="form-control"
-                />
-                <div class="error-msg" *ngIf="hasError('period_end')">Fecha de fin requerida</div>
-              </div>
-
-              <div class="form-group">
-                <label for="amount">Monto Total (S/) *</label>
-                <div class="input-group">
-                  <input
-                    id="amount"
-                    type="number"
-                    formControlName="amount"
-                    class="form-control"
-                    placeholder="0.00"
-                  />
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    (click)="calculateValuation()"
-                    [disabled]="loading"
-                    title="Calcular automáticamente"
-                  >
-                    <i class="fa-solid fa-calculator"></i>
-                  </button>
-                </div>
-                <div class="error-msg" *ngIf="hasError('amount')">Monto es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="invoice_number">Número de Factura</label>
-                <input
-                  id="invoice_number"
-                  type="text"
-                  formControlName="invoice_number"
-                  class="form-control"
-                  placeholder="ej. F001-12345"
-                />
+        <!-- Section 2: Period & Financial Details -->
+        <div class="form-section full-width">
+          <h3>Periodo y Detalles Financieros</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="periodo">Periodo *</label>
+              <input
+                id="periodo"
+                type="month"
+                formControlName="periodo"
+                class="form-control"
+              />
+              <div class="error-msg" *ngIf="hasError('periodo')">
+                Periodo es requerido
               </div>
             </div>
+
+            <div class="form-group">
+              <label for="fechaInicio">Fecha Inicio del Periodo *</label>
+              <input
+                id="fechaInicio"
+                type="date"
+                formControlName="fechaInicio"
+                class="form-control"
+              />
+              <div class="error-msg" *ngIf="hasError('fechaInicio')">
+                Fecha de inicio requerida
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="fechaFin">Fecha Fin del Periodo *</label>
+              <input
+                id="fechaFin"
+                type="date"
+                formControlName="fechaFin"
+                class="form-control"
+              />
+              <div class="error-msg" *ngIf="hasError('fechaFin')">Fecha de fin requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="totalValorizado">Total Valorizado (S/) *</label>
+              <div class="input-group">
+                <input
+                  id="totalValorizado"
+                  type="number"
+                  formControlName="totalValorizado"
+                  class="form-control"
+                  placeholder="0.00"
+                />
+                <button
+                  type="button"
+                  class="btn-sm btn-secondary"
+                  (click)="calculateValuation()"
+                  [disabled]="loading"
+                  title="Calcular automáticamente"
+                >
+                  <i class="fa-solid fa-calculator"></i>
+                </button>
+              </div>
+              <div class="error-msg" *ngIf="hasError('totalValorizado')">Monto es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="numeroValorizacion">N° Valorización</label>
+              <input
+                id="numeroValorizacion"
+                type="text"
+                formControlName="numeroValorizacion"
+                class="form-control"
+                placeholder="ej. VAL-001"
+              />
+            </div>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
-      .form-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding-bottom: 2rem;
-      }
-
-      /* Header */
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .icon-wrapper {
-        width: 48px;
-        height: 48px;
-        background: var(--primary-100);
-        color: var(--primary-800);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .title-group h1 {
-        margin: 0;
-        font-size: 24px;
-        color: var(--grey-900);
-      }
-      .subtitle {
-        margin: 0;
-        color: var(--grey-500);
-        font-size: 14px;
-      }
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-      }
-
-      /* Form Card */
-      .form-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
       .form-grid {
         display: flex;
         flex-direction: column;
@@ -262,50 +229,42 @@ import { Equipment } from '../../core/models/equipment.model';
       }
 
       .input-group {
+        position: relative;
         display: flex;
-        gap: 0.5rem;
+        align-items: center;
       }
       .input-group .form-control {
         flex: 1;
+        padding-right: 2.5rem;
+      }
+
+      .input-group button {
+        position: absolute;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        color: var(--grey-500);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem;
+        transition: color 0.2s;
+      }
+
+      .input-group button:hover:not(:disabled) {
+        color: var(--primary-600);
+      }
+
+      .input-group button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
       }
 
       .error-msg {
         color: var(--semantic-red-600);
         font-size: 12px;
-      }
-
-      /* Buttons */
-      .btn {
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
-      }
-
-      .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-50);
+        margin-top: 0.25rem;
       }
 
       @media (max-width: 768px) {
@@ -323,6 +282,7 @@ export class ValuationFormComponent implements OnInit {
   private equipmentService = inject(EquipmentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   valuationForm: FormGroup;
   isEditMode = false;
@@ -330,16 +290,40 @@ export class ValuationFormComponent implements OnInit {
   valuationId: string | null = null;
   contracts: Contract[] = [];
   equipments: Equipment[] = [];
+  validationErrors: ValidationError[] = [];
+  errorMessage = '';
+
+  fieldLabels: Record<string, string> = {
+    contractId: 'Contrato',
+    equipmentId: 'Equipo',
+    fechaInicio: 'Fecha Inicio',
+    fechaFin: 'Fecha Fin',
+    totalValorizado: 'Total Valorizado',
+    estado: 'Estado',
+    numeroValorizacion: 'N° Valorización',
+    periodo: 'Periodo',
+  };
 
   constructor() {
     this.valuationForm = this.fb.group({
-      contract_id: [null],
-      equipment_id: [null, Validators.required],
-      period_start: ['', Validators.required],
-      period_end: ['', Validators.required],
-      amount: [0, [Validators.required, Validators.min(0)]],
-      status: ['pending', Validators.required],
-      invoice_number: [''],
+      contractId: [null],
+      equipmentId: [null, Validators.required],
+      fechaInicio: ['', Validators.required],
+      fechaFin: ['', Validators.required],
+      periodo: ['', Validators.required],
+      totalValorizado: [0, [Validators.required, Validators.min(0)]],
+      estado: ['PENDIENTE', Validators.required],
+      numeroValorizacion: [''],
+    });
+
+    // Auto-set period when start date changes if period is empty
+    this.valuationForm.get('fechaInicio')?.valueChanges.subscribe(date => {
+      const currentPeriod = this.valuationForm.get('periodo')?.value;
+      if (date && !currentPeriod) {
+        // date is typically YYYY-MM-DD
+        const period = date.substring(0, 7); // YYYY-MM
+        this.valuationForm.patchValue({ periodo: period });
+      }
     });
   }
 
@@ -352,7 +336,7 @@ export class ValuationFormComponent implements OnInit {
       if (id && id !== 'undefined' && id !== 'NaN') {
         this.isEditMode = true;
         this.valuationId = id;
-        this.loadValuation(id); // Use id directly instead of valuationId
+        this.loadValuation(id);
       } else if (id === 'undefined' || id === 'NaN') {
         this.router.navigate(['/equipment/valuations']);
       }
@@ -365,11 +349,10 @@ export class ValuationFormComponent implements OnInit {
 
   loadEquipments(): void {
     this.equipmentService.getAll().subscribe((response) => {
-      // Handle EquipmentListResponse
       if (response && response.data) {
         this.equipments = response.data;
       } else if (Array.isArray(response)) {
-        this.equipments = response; // safe cast if response is array
+        this.equipments = response;
       } else {
         this.equipments = [];
       }
@@ -385,8 +368,11 @@ export class ValuationFormComponent implements OnInit {
 
         this.valuationForm.patchValue({
           ...valuation,
-          period_start: formatDate(valuation.period_start),
-          period_end: formatDate(valuation.period_end),
+          contractId: valuation.contractId, // Ensure mapping matches
+          equipmentId: valuation.equipmentId,
+          fechaInicio: formatDate(valuation.fechaInicio),
+          fechaFin: formatDate(valuation.fechaFin),
+          periodo: valuation.periodo,
         });
         this.loading = false;
       },
@@ -399,10 +385,24 @@ export class ValuationFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.valuationForm.invalid) return;
+    if (this.valuationForm.invalid) {
+        console.warn('Form is invalid, but continuing for debug...');
+    }
 
     this.loading = true;
-    const valuationData = this.valuationForm.value;
+    const rawValue = this.valuationForm.getRawValue();
+    // Exclude 'id' from the form value to prevent backend validation errors
+    const { id, ...formValue } = rawValue;
+
+    // Prepare data with correct types
+    const valuationData: Partial<Valuation> = {
+      ...formValue,
+      contractId: formValue.contractId ? Number(formValue.contractId) : null,
+      equipmentId: Number(formValue.equipmentId),
+      totalValorizado: Number(formValue.totalValorizado),
+      // Ensure periodo is set
+      periodo: formValue.periodo || formValue.fechaInicio.substring(0, 7),
+    };
 
     const request$ =
       this.isEditMode && this.valuationId
@@ -414,8 +414,9 @@ export class ValuationFormComponent implements OnInit {
         this.router.navigate(['/equipment/valuations']);
       },
       error: (err) => {
-        console.error('Error saving valuation', err);
         this.loading = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }
@@ -430,26 +431,24 @@ export class ValuationFormComponent implements OnInit {
   }
 
   calculateValuation(): void {
-    const contractId = this.valuationForm.get('contract_id')?.value;
-    const periodStart = this.valuationForm.get('period_start')?.value;
+    const contractId = this.valuationForm.get('contractId')?.value;
+    const fechaInicio = this.valuationForm.get('fechaInicio')?.value;
 
-    if (!contractId || !periodStart) {
+    if (!contractId || !fechaInicio) {
       alert('Seleccione un contrato y fecha de inicio para calcular');
       return;
     }
 
-    const date = new Date(periodStart);
-    // Adjust for timezone if needed, but usually date input returns YYYY-MM-DD
-    // We want the month of the start date
+    const date = new Date(fechaInicio);
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
     this.loading = true;
-    this.valuationService.calculate({ contract_id: contractId, month, year }).subscribe({
+    this.valuationService.calculate({ contrato_id: contractId, month, year }).subscribe({
       next: (response) => {
         if (response.success) {
           this.valuationForm.patchValue({
-            amount: response.data.total_estimated,
+            totalValorizado: response.data.total_estimated,
           });
           alert(
             `Cálculo completado:\n` +

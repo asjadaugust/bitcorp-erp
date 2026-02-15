@@ -211,7 +211,7 @@ See Functional Requirements Document for detailed specifications
 - PDF generation for valuation reports
 - Notification system for alerts (contract expiry, maintenance due)
 - Audit logging for all CRUD operations
-- Multi-language support (Spanish primary, English secondary)
+- Language support (Spanish only)
 
 ---
 

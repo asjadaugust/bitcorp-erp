@@ -62,6 +62,16 @@ export interface ValuationDto {
     username: string;
     full_name: string;
   };
+  contrato?: {
+    id: number;
+    codigo: string;
+    nombre_proyecto?: string;
+  };
+  equipo?: {
+    id: number;
+    codigo: string;
+    nombre?: string;
+  };
 }
 
 /**
@@ -91,9 +101,9 @@ export function toValuationDto(entity: Valorizacion): ValuationDto {
   return {
     id: entity.id,
     legacy_id: entity.legacyId || null,
-    equipo_id: entity.equipmentId,
-    contrato_id: entity.contractId || null,
-    proyecto_id: entity.projectId || null,
+    equipo_id: entity.equipoId,
+    contrato_id: entity.contratoId || null,
+    proyecto_id: entity.proyectoId || null,
     periodo: entity.periodo,
     fecha_inicio: toDateString(entity.fechaInicio),
     fecha_fin: toDateString(entity.fechaFin),
@@ -121,15 +131,27 @@ export function toValuationDto(entity: Valorizacion): ValuationDto {
     total_con_igv: entity.totalConIgv ? parseFloat(entity.totalConIgv.toString()) : null,
     estado: entity.estado,
     observaciones: entity.observaciones || null,
-    creado_por: entity.createdBy || null,
-    aprobado_por: entity.approvedBy || null,
-    aprobado_en: toDateTimeString(entity.approvedAt),
+    creado_por: entity.creadoPor || null,
+    aprobado_por: entity.aprobadoPor || null,
+    aprobado_en: toDateTimeString(entity.aprobadoEn),
     created_at: toDateTimeString(entity.createdAt) || '',
     updated_at: toDateTimeString(entity.updatedAt) || '',
 
     // Include relations if loaded
     creator: entity.creator,
     approver: entity.approver,
+    contrato: entity.contrato ? {
+      id: entity.contrato.id,
+      codigo: entity.contrato.numeroContrato,
+      nombre_proyecto: undefined, // Contract model doesn't have project name
+    } : undefined,
+    equipo: entity.equipo ? {
+      id: entity.equipo.id,
+      codigo: entity.equipo.codigoEquipo,
+      nombre: entity.equipo.marca && entity.equipo.modelo 
+        ? `${entity.equipo.marca} ${entity.equipo.modelo}` 
+        : entity.equipo.codigoEquipo,
+    } : undefined,
   };
 }
 
@@ -142,9 +164,9 @@ export function fromValuationDto(dto: Partial<ValuationDto>): Partial<Valorizaci
   const entity: Partial<Valorizacion> = {};
 
   if (dto.legacy_id !== undefined) entity.legacyId = dto.legacy_id || undefined;
-  if (dto.equipo_id !== undefined) entity.equipmentId = dto.equipo_id;
-  if (dto.contrato_id !== undefined) entity.contractId = dto.contrato_id || undefined;
-  if (dto.proyecto_id !== undefined) entity.projectId = dto.proyecto_id || undefined;
+  if (dto.equipo_id !== undefined) entity.equipoId = dto.equipo_id;
+  if (dto.contrato_id !== undefined) entity.contratoId = dto.contrato_id || undefined;
+  if (dto.proyecto_id !== undefined) entity.proyectoId = dto.proyecto_id || undefined;
   if (dto.periodo !== undefined) entity.periodo = dto.periodo;
   if (dto.fecha_inicio !== undefined) entity.fechaInicio = new Date(dto.fecha_inicio);
   if (dto.fecha_fin !== undefined) entity.fechaFin = new Date(dto.fecha_fin);
@@ -171,10 +193,10 @@ export function fromValuationDto(dto: Partial<ValuationDto>): Partial<Valorizaci
   if (dto.total_con_igv !== undefined) entity.totalConIgv = dto.total_con_igv || undefined;
   if (dto.estado !== undefined) entity.estado = dto.estado as EstadoValorizacion;
   if (dto.observaciones !== undefined) entity.observaciones = dto.observaciones || undefined;
-  if (dto.creado_por !== undefined) entity.createdBy = dto.creado_por || undefined;
-  if (dto.aprobado_por !== undefined) entity.approvedBy = dto.aprobado_por || undefined;
+  if (dto.creado_por !== undefined) entity.creadoPor = dto.creado_por || undefined;
+  if (dto.aprobado_por !== undefined) entity.aprobadoPor = dto.aprobado_por || undefined;
   if (dto.aprobado_en !== undefined)
-    entity.approvedAt = dto.aprobado_en ? new Date(dto.aprobado_en) : undefined;
+    entity.aprobadoEn = dto.aprobado_en ? new Date(dto.aprobado_en) : undefined;
 
   return entity;
 }
@@ -275,8 +297,8 @@ export class ValuationCreateDto {
   total_con_igv?: number;
 
   @IsOptional()
-  @IsIn(['PENDIENTE', 'APROBADO', 'RECHAZADO', 'PAGADO'], {
-    message: 'El estado debe ser PENDIENTE, APROBADO, RECHAZADO o PAGADO',
+  @IsIn(['PENDIENTE', 'EN_REVISION', 'APROBADO', 'RECHAZADO', 'PAGADO'], {
+    message: 'El estado debe ser PENDIENTE, EN_REVISION, APROBADO, RECHAZADO o PAGADO',
   })
   estado?: string;
 
@@ -381,8 +403,8 @@ export class ValuationUpdateDto {
   total_con_igv?: number;
 
   @IsOptional()
-  @IsIn(['PENDIENTE', 'APROBADO', 'RECHAZADO', 'PAGADO'], {
-    message: 'El estado debe ser PENDIENTE, APROBADO, RECHAZADO o PAGADO',
+  @IsIn(['PENDIENTE', 'EN_REVISION', 'APROBADO', 'RECHAZADO', 'PAGADO', 'ELIMINADO'], {
+    message: 'El estado debe ser PENDIENTE, EN_REVISION, APROBADO, RECHAZADO, PAGADO o ELIMINADO',
   })
   estado?: string;
 

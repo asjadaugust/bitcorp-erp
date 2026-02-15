@@ -72,17 +72,42 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
             <div class="form-section">
               <h2>📅 Información Básica</h2>
 
-              <div class="form-group">
-                <label for="fecha_parte">Fecha *</label>
-                <input
-                  type="date"
-                  id="fecha_parte"
-                  name="fecha_parte"
-                  [(ngModel)]="report.fecha_parte"
-                  required
-                  [max]="today"
-                  [disabled]="isReadOnly"
-                />
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fecha_parte">Fecha *</label>
+                  <input
+                    type="date"
+                    id="fecha_parte"
+                    name="fecha_parte"
+                    [(ngModel)]="report.fecha_parte"
+                    #fechaControl="ngModel"
+                    required
+                    [max]="today"
+                    [disabled]="isReadOnly"
+                  />
+                  <div class="error-msg" *ngIf="fechaControl.invalid && fechaControl.touched">
+                    Fecha es obligatoria y no puede ser futura
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="turno">Turno *</label>
+                  <select
+                    id="turno"
+                    name="turno"
+                    [(ngModel)]="report.turno"
+                    #turnoControl="ngModel"
+                    required
+                    [disabled]="isReadOnly"
+                  >
+                    <option [ngValue]="undefined">Seleccionar Turno</option>
+                    <option value="DIA">DIA</option>
+                    <option value="NOCHE">NOCHE</option>
+                  </select>
+                  <div class="error-msg" *ngIf="turnoControl.invalid && turnoControl.touched">
+                    Turno es obligatorio
+                  </div>
+                </div>
               </div>
 
               <div class="form-group">
@@ -91,6 +116,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                   id="equipo_id"
                   name="equipo_id"
                   [(ngModel)]="report.equipo_id"
+                  #equipoControl="ngModel"
                   required
                   (change)="onEquipmentChange()"
                   [disabled]="isReadOnly"
@@ -100,16 +126,20 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                     {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
                   </option>
                 </select>
+                <div class="error-msg" *ngIf="equipoControl.invalid && equipoControl.touched">
+                  Seleccione un equipo
+                </div>
               </div>
 
               <div class="form-group">
-                <label for="location">Ubicación *</label>
+                <label for="lugar_salida">Ubicación *</label>
                 <div class="location-input-group">
                   <input
                     type="text"
-                    id="location"
-                    name="location"
-                    [(ngModel)]="report.location"
+                    id="lugar_salida"
+                    name="lugar_salida"
+                    [(ngModel)]="report.lugar_salida"
+                    #lugarControl="ngModel"
                     required
                     placeholder="ej. Obra A, Sector 3"
                     [disabled]="isReadOnly"
@@ -123,6 +153,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                   >
                     {{ capturingGps ? '📡' : '📍' }}
                   </button>
+                </div>
+                <div class="error-msg" *ngIf="lugarControl.invalid && lugarControl.touched">
+                  Ubicación es requerida
                 </div>
                 <div *ngIf="gpsPosition" class="gps-info">
                   <span class="gps-coords">{{ formatGpsCoords() }}</span>
@@ -146,9 +179,13 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                     id="hora_inicio"
                     name="hora_inicio"
                     [(ngModel)]="report.hora_inicio"
+                    #inicioControl="ngModel"
                     required
                     [disabled]="isReadOnly"
                   />
+                  <div class="error-msg" *ngIf="inicioControl.invalid && inicioControl.touched">
+                    Requerido
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -158,9 +195,13 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                     id="hora_fin"
                     name="hora_fin"
                     [(ngModel)]="report.hora_fin"
+                    #finControl="ngModel"
                     required
                     [disabled]="isReadOnly"
                   />
+                  <div class="error-msg" *ngIf="finControl.invalid && finControl.touched">
+                    Requerido
+                  </div>
                 </div>
               </div>
 
@@ -183,12 +224,16 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                     id="horometro_inicial"
                     name="horometro_inicial"
                     [(ngModel)]="report.horometro_inicial"
+                    #hIniControl="ngModel"
                     required
                     step="0.1"
                     min="0"
                     placeholder="0.0"
                     [disabled]="isReadOnly"
                   />
+                  <div class="error-msg" *ngIf="hIniControl.invalid && hIniControl.touched">
+                    Mínimo 0
+                  </div>
                   <span class="hint" *ngIf="selectedEquipment && !isReadOnly">
                     Tipo: {{ selectedEquipment.medidor_uso || 'N/A' }}
                   </span>
@@ -201,12 +246,16 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                     id="horometro_final"
                     name="horometro_final"
                     [(ngModel)]="report.horometro_final"
+                    #hFinControl="ngModel"
                     required
                     step="0.1"
                     [min]="report.horometro_inicial"
                     placeholder="0.0"
                     [disabled]="isReadOnly"
                   />
+                  <div class="error-msg" *ngIf="hFinControl.invalid && hFinControl.touched">
+                    Debe ser mayor al inicial
+                  </div>
                 </div>
               </div>
 
@@ -258,42 +307,32 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="fuel_start">Combustible Inicio (%)</label>
+                  <label for="diesel_gln">Diesel (Galones)</label>
                   <input
                     type="number"
-                    id="fuel_start"
-                    name="fuel_start"
-                    [(ngModel)]="report.fuel_start"
+                    id="diesel_gln"
+                    name="diesel_gln"
+                    [(ngModel)]="report.diesel_gln"
                     min="0"
-                    max="100"
+                    step="0.1"
                     placeholder="0"
                     [disabled]="isReadOnly"
                   />
                 </div>
 
                 <div class="form-group">
-                  <label for="fuel_end">Combustible Fin (%)</label>
+                  <label for="gasolina_gln">Gasolina (Galones)</label>
                   <input
                     type="number"
-                    id="fuel_end"
-                    name="fuel_end"
-                    [(ngModel)]="report.fuel_end"
+                    id="gasolina_gln"
+                    name="gasolina_gln"
+                    [(ngModel)]="report.gasolina_gln"
                     min="0"
-                    max="100"
+                    step="0.1"
                     placeholder="0"
                     [disabled]="isReadOnly"
                   />
                 </div>
-              </div>
-
-              <div
-                class="reading-diff"
-                *ngIf="report.fuel_start !== undefined && report.fuel_end !== undefined"
-              >
-                <span class="label">Combustible Consumido:</span>
-                <span class="value" [class.warning]="report.fuel_start - report.fuel_end > 50">
-                  {{ report.fuel_start - report.fuel_end }}%
-                </span>
               </div>
             </div>
           </div>
@@ -303,45 +342,32 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
               <h2>📝 Detalles del Trabajo</h2>
 
               <div class="form-group">
-                <label for="work_description">Descripción del Trabajo *</label>
+                <label for="responsable_frente">Responsable de Frente</label>
+                <input
+                  type="text"
+                  id="responsable_frente"
+                  name="responsable_frente"
+                  [(ngModel)]="report.responsable_frente"
+                  placeholder="Nombre del supervisor o responsable"
+                  [disabled]="isReadOnly"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="observaciones">Descripción del Trabajo / Observaciones *</label>
                 <textarea
-                  id="work_description"
-                  name="work_description"
-                  [(ngModel)]="report.work_description"
+                  id="observaciones"
+                  name="observaciones"
+                  [(ngModel)]="report.observaciones"
+                  #obsControl="ngModel"
                   required
                   rows="4"
                   placeholder="Describa el trabajo realizado hoy..."
                   [disabled]="isReadOnly"
                 ></textarea>
-              </div>
-
-              <div class="form-group">
-                <label for="weather_conditions">Condiciones Climáticas</label>
-                <select
-                  id="weather_conditions"
-                  name="weather_conditions"
-                  [(ngModel)]="report.weather_conditions"
-                  [disabled]="isReadOnly"
-                >
-                  <option value="">Seleccionar Clima</option>
-                  <option value="sunny">☀️ Soleado</option>
-                  <option value="cloudy">⛅ Nublado</option>
-                  <option value="rainy">🌧️ Lluvioso</option>
-                  <option value="stormy">⛈️ Tormentoso</option>
-                  <option value="windy">💨 Ventoso</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="notes">Notas Adicionales</label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  [(ngModel)]="report.notes"
-                  rows="3"
-                  placeholder="Observaciones o problemas adicionales..."
-                  [disabled]="isReadOnly"
-                ></textarea>
+                <div class="error-msg" *ngIf="obsControl.invalid && obsControl.touched">
+                  Descripción es obligatoria
+                </div>
               </div>
             </div>
           </div>
@@ -703,6 +729,12 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       color: var(--error);
     }
 
+    .error-msg {
+      color: var(--semantic-red-600);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
     @media (min-width: 769px) {
       .mobile-header {
         position: relative;
@@ -741,12 +773,14 @@ export class DailyReportFormComponent implements OnInit {
     fecha_parte: new Date().toISOString().split('T')[0],
     trabajador_id: 0,
     equipo_id: 0,
+    turno: undefined,
     hora_inicio: '',
     hora_fin: '',
     horometro_inicial: 0,
     horometro_final: 0,
-    location: '',
-    work_description: '',
+    lugar_salida: '',
+    observaciones: '',
+    responsable_frente: '',
     estado: 'BORRADOR',
   };
 
@@ -768,8 +802,10 @@ export class DailyReportFormComponent implements OnInit {
     gasolina_gln: 'Gasolina (Galones)',
     lugar_salida: 'Lugar de Salida',
     lugar_llegada: 'Lugar de Llegada',
+    responsable_frente: 'Responsable de Frente',
     observaciones: 'Observaciones',
     estado: 'Estado',
+    turno: 'Turno',
   };
 
   equipment: Equipment[] = [];

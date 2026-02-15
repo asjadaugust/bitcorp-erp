@@ -10,6 +10,11 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { ProviderLogComponent } from './components/provider-log.component';
+import { ProviderContactsComponent } from './components/provider-contacts.component';
+import { ProviderFinancialInfoComponent } from './components/provider-financial-info.component';
+import { ProviderDocumentsComponent } from './components/provider-documents.component';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 
 @Component({
   selector: 'app-provider-form',
@@ -20,9 +25,27 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     RouterModule,
     ValidationErrorsComponent,
     AlertComponent,
+    ProviderLogComponent,
+    ProviderContactsComponent,
+    ProviderFinancialInfoComponent,
+    ProviderDocumentsComponent,
+    FormContainerComponent,
   ],
   template: `
-    <div class="form-container">
+    <app-form-container
+      [title]="isEditMode ? 'Editar Proveedor' : 'Nuevo Proveedor'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información del proveedor'
+          : 'Registrar un nuevo proveedor en el sistema'
+      "
+      [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
+      [loading]="loading"
+      [disableSubmit]="providerForm.invalid || loading"
+      [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Proveedor'"
+      (onSubmit)="onSubmit()"
+      (onCancel)="cancel()"
+    >
       <!-- Validation Errors and Alerts -->
       <app-validation-errors
         *ngIf="validationErrors.length > 0"
@@ -44,47 +67,14 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       >
       </app-alert>
 
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <div class="icon-wrapper">
-            <i class="fa-solid" [class.fa-plus]="!isEditMode" [class.fa-pen]="isEditMode"></i>
-          </div>
-          <div class="title-group">
-            <h1>{{ isEditMode ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h1>
-            <p class="subtitle">
-              {{
-                isEditMode
-                  ? 'Actualizar información del proveedor'
-                  : 'Registrar un nuevo proveedor en el sistema'
-              }}
-            </p>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="providerForm.invalid || loading"
-          >
-            <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
-            <i *ngIf="!loading" class="fa-solid fa-save"></i>
-            {{ isEditMode ? 'Guardar Cambios' : 'Crear Proveedor' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Form -->
-      <div class="card form-card">
-        <form [formGroup]="providerForm" class="form-grid">
-          <!-- Section 1: Basic Information -->
-          <div class="form-section full-width">
-            <h3>Información Básica</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="ruc">RUC *</label>
+      <form [formGroup]="providerForm" class="form-grid">
+        <!-- Section 1: Basic Information -->
+        <div class="form-section full-width">
+          <h3>Información Básica</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="ruc">RUC *</label>
+              <div class="input-with-button">
                 <input
                   id="ruc"
                   type="text"
@@ -93,67 +83,218 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                   placeholder="ej. 20123456789"
                   maxlength="11"
                 />
-                <div class="error-msg" *ngIf="hasError('ruc')">RUC es requerido (11 dígitos)</div>
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-icon"
+                  (click)="lookupRuc()"
+                  [disabled]="loading || providerForm.get('ruc')?.invalid"
+                  title="Buscar RUC en SUNAT"
+                >
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
               </div>
-
-              <div class="form-group">
-                <label for="razon_social">Razón Social *</label>
-                <input
-                  id="razon_social"
-                  type="text"
-                  formControlName="razon_social"
-                  class="form-control"
-                  placeholder="ej. Servicios Generales S.A.C."
-                />
-                <div class="error-msg" *ngIf="hasError('razon_social')">
-                  Razón Social es requerida
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="tipo_proveedor">Tipo de Proveedor</label>
-                <select id="tipo_proveedor" formControlName="tipo_proveedor" class="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option value="equipment">Equipos</option>
-                  <option value="services">Servicios</option>
-                  <option value="supplies">Suministros</option>
-                  <option value="fuel">Combustible</option>
-                  <option value="other">Otro</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="isActive">Estado</label>
-                <select id="isActive" formControlName="isActive" class="form-select">
-                  <option [ngValue]="true">Activo</option>
-                  <option [ngValue]="false">Inactivo</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="direccion">Dirección</label>
-                <input
-                  id="direccion"
-                  type="text"
-                  formControlName="direccion"
-                  class="form-control"
-                  placeholder="ej. Av. Principal 123, Lima"
-                />
+              <div class="error-msg" *ngIf="hasError('ruc')">
+                <span *ngIf="providerForm.get('ruc')?.hasError('required')">RUC es requerido</span>
+                <span *ngIf="providerForm.get('ruc')?.hasError('minlength') || providerForm.get('ruc')?.hasError('maxlength')">RUC debe tener 11 dígitos</span>
               </div>
             </div>
-          </div>
 
-          <!-- Sections 2 & 3 removed as not supported by backend entity -->
-        </form>
-      </div>
-    </div>
+            <div class="form-group">
+              <label for="razon_social">Razón Social *</label>
+              <input
+                id="razon_social"
+                type="text"
+                formControlName="razon_social"
+                class="form-control"
+                placeholder="ej. Servicios Generales S.A.C."
+              />
+              <div class="error-msg" *ngIf="hasError('razon_social')">
+                Razón Social es requerida
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="tipo_proveedor">Tipo de Proveedor</label>
+              <select id="tipo_proveedor" formControlName="tipo_proveedor" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option value="EQUIPOS">Equipos</option>
+                <option value="SERVICIOS">Servicios</option>
+                <option value="MATERIALES">Suministros / Combustible</option>
+                <option value="MIXTO">Mixto / Otro</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="is_active">Estado</label>
+              <select id="is_active" formControlName="is_active" class="form-select">
+                <option [ngValue]="true">Activo</option>
+                <option [ngValue]="false">Inactivo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="direccion">Dirección</label>
+              <input
+                id="direccion"
+                type="text"
+                formControlName="direccion"
+                class="form-control"
+                placeholder="ej. Av. Principal 123, Lima"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="nombre_comercial">Nombre Comercial</label>
+              <input
+                id="nombre_comercial"
+                type="text"
+                formControlName="nombre_comercial"
+                class="form-control"
+                placeholder="ej. Servicios ACME"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="telefono">Teléfono</label>
+              <input
+                id="telefono"
+                type="text"
+                formControlName="telefono"
+                class="form-control"
+                placeholder="ej. 987654321"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="correo_electronico">Correo Electrónico</label>
+              <input
+                id="correo_electronico"
+                type="email"
+                formControlName="correo_electronico"
+                class="form-control"
+                placeholder="ej. contacto@proveedor.com"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Information Sections (BIT-12, Contacts, Financial) -->
+        <div class="form-section full-width" *ngIf="isEditMode && providerId">
+          <div class="tabs-container">
+            <div class="tabs-header">
+              <button
+                type="button"
+                class="tab-link"
+                [class.active]="activeTab === 'contacts'"
+                (click)="activeTab = 'contacts'"
+              >
+                <i class="fa-solid fa-address-book"></i> Contactos
+              </button>
+              <button
+                type="button"
+                class="tab-link"
+                [class.active]="activeTab === 'financial'"
+                (click)="activeTab = 'financial'"
+              >
+                <i class="fa-solid fa-building-columns"></i> Inf. Financiera
+              </button>
+              <button
+                type="button"
+                class="tab-link"
+                [class.active]="activeTab === 'documents'"
+                (click)="activeTab = 'documents'"
+              >
+                <i class="fa-solid fa-file-invoice"></i> Documentos
+              </button>
+              <button
+                type="button"
+                class="tab-link"
+                [class.active]="activeTab === 'logs'"
+                (click)="activeTab = 'logs'"
+              >
+                <i class="fa-solid fa-history"></i> Historial
+              </button>
+            </div>
+
+            <div class="tab-pane">
+              <app-provider-contacts
+                *ngIf="activeTab === 'contacts'"
+                [providerId]="providerId"
+              ></app-provider-contacts>
+              <app-provider-financial-info
+                *ngIf="activeTab === 'financial'"
+                [providerId]="providerId"
+              ></app-provider-financial-info>
+              <app-provider-documents
+                *ngIf="activeTab === 'documents'"
+                [providerId]="providerId"
+              ></app-provider-documents>
+              <app-provider-log
+                *ngIf="activeTab === 'logs'"
+                [providerId]="providerId"
+              ></app-provider-log>
+            </div>
+          </div>
+        </div>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
       .form-container {
-        max-width: 1000px;
+        max-width: 1100px;
         margin: 0 auto;
         padding-bottom: 2rem;
+      }
+
+      .input-with-button {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .input-with-button .form-control {
+        flex: 1;
+      }
+
+      /* Tabs */
+      .tabs-container {
+        margin-top: 1rem;
+        border: 1px solid var(--grey-200);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .tabs-header {
+        display: flex;
+        background: var(--grey-50);
+        border-bottom: 1px solid var(--grey-200);
+        overflow-x: auto;
+      }
+      .tab-link {
+        padding: 1rem 1.5rem;
+        border: none;
+        background: none;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--grey-600);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+      }
+      .tab-link:hover {
+        background: var(--grey-100);
+        color: var(--primary-600);
+      }
+      .tab-link.active {
+        color: var(--primary-600);
+        border-bottom-color: var(--primary-600);
+        background: white;
+      }
+      .tab-pane {
+        padding: 1.5rem;
+        background: white;
       }
 
       /* Header */
@@ -312,57 +453,14 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         padding: 1.5rem !important;
       }
 
-      /* Buttons */
-      .btn {
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-      }
-
       .btn-sm {
         padding: 0.375rem 0.75rem;
         font-size: 12px;
       }
 
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
-      }
-
-      .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-50);
-      }
-
       .btn-icon {
         padding: 0.5rem;
         min-width: auto;
-      }
-
-      .btn-danger {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
-        border: 1px solid var(--semantic-red-200);
-      }
-      .btn-danger:hover {
-        background: var(--semantic-red-100);
       }
 
       @media (max-width: 768px) {
@@ -387,6 +485,7 @@ export class ProviderFormComponent implements OnInit {
   validationErrors: ValidationError[] = [];
   errorMessage = '';
   successMessage = '';
+  activeTab: 'contacts' | 'financial' | 'documents' | 'logs' = 'contacts';
 
   fieldLabels: Record<string, string> = {
     ruc: 'RUC',
@@ -404,48 +503,13 @@ export class ProviderFormComponent implements OnInit {
     this.providerForm = this.fb.group({
       ruc: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11)]],
       razon_social: ['', Validators.required],
-      tipo_proveedor: [''],
-      isActive: [true, Validators.required],
+      tipo_proveedor: ['', Validators.required],
+      is_active: [true, Validators.required],
       direccion: [''],
-      // bank_accounts: this.fb.array([]),
-      // contacts: this.fb.array([]),
+      nombre_comercial: [''],
+      telefono: [''],
+      correo_electronico: ['', Validators.email],
     });
-  }
-
-  get bankAccountsArray(): FormArray {
-    return this.providerForm.get('bank_accounts') as FormArray;
-  }
-
-  get contactsArray(): FormArray {
-    return this.providerForm.get('contacts') as FormArray;
-  }
-
-  addBankAccount(): void {
-    const accountGroup = this.fb.group({
-      bank_name: [''],
-      account_number: [''],
-      cci: [''],
-      account_name: [''],
-    });
-    this.bankAccountsArray.push(accountGroup);
-  }
-
-  removeBankAccount(index: number): void {
-    this.bankAccountsArray.removeAt(index);
-  }
-
-  addContact(): void {
-    const contactGroup = this.fb.group({
-      name: [''],
-      position: [''],
-      phone: [''],
-      email: [''],
-    });
-    this.contactsArray.push(contactGroup);
-  }
-
-  removeContact(index: number): void {
-    this.contactsArray.removeAt(index);
   }
 
   ngOnInit(): void {
@@ -469,8 +533,11 @@ export class ProviderFormComponent implements OnInit {
           ruc: provider.ruc,
           razon_social: provider.razon_social,
           tipo_proveedor: provider.tipo_proveedor || '',
-          isActive: provider.is_active,
+          is_active: provider.is_active,
           direccion: provider.direccion || '',
+          nombre_comercial: provider.nombre_comercial || '',
+          telefono: provider.telefono || '',
+          correo_electronico: provider.correo_electronico || '',
         });
 
         // Bank accounts and contacts removed from form load as mapped to entity props not supported
@@ -504,12 +571,14 @@ export class ProviderFormComponent implements OnInit {
         : this.providerService.create(providerData);
 
     request$.subscribe({
-      next: () => {
+      next: (response: any) => {
         this.loading = false;
         this.successMessage = this.isEditMode
           ? 'Proveedor actualizado exitosamente'
           : 'Proveedor creado exitosamente';
 
+        // If creating, the response should include the new ID
+        // We could redirect to edit mode with the new ID, but for now just go back
         setTimeout(() => {
           this.router.navigate(['/providers']);
         }, 1500);
@@ -529,5 +598,30 @@ export class ProviderFormComponent implements OnInit {
   hasError(field: string): boolean {
     const control = this.providerForm.get(field);
     return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  lookupRuc(): void {
+    const ruc = this.providerForm.get('ruc')?.value;
+    if (!ruc || ruc.length !== 11) return;
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.providerService.lookupRuc(ruc).subscribe({
+      next: (data) => {
+        this.loading = false;
+        if (data) {
+          this.providerForm.patchValue({
+            razon_social: data.razon_social,
+            nombre_comercial: data.nombre_comercial || '',
+            direccion: data.direccion || '',
+          });
+          this.successMessage = 'Datos del RUC recuperados exitosamente';
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage = 'No se pudo encontrar información para el RUC proporcionado';
+      },
+    });
   }
 }

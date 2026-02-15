@@ -160,7 +160,7 @@ export function toEquipmentListDto(entity: any): EquipmentListDto {
     estado: entity.estado?.toUpperCase() || 'DISPONIBLE',
     tipo_proveedor: entity.tipoProveedor || entity.tipo_proveedor || null,
     proveedor_id: entity.proveedorId || entity.proveedor_id || null,
-    proveedor_nombre: entity.provider?.razon_social || null,
+    proveedor_nombre: entity.provider?.razonSocial || null,
     is_active: entity.isActive !== undefined ? entity.isActive : entity.is_active,
   };
 }
@@ -189,7 +189,7 @@ export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
     codigo_equipo: entity.codigoEquipo || entity.codigo_equipo,
     tipo_equipo_id: entity.tipoEquipoId || entity.tipo_equipo_id || null,
     proveedor_id: entity.proveedorId || entity.proveedor_id || null,
-    proveedor_nombre: entity.provider?.razon_social || null,
+    proveedor_nombre: entity.provider?.razonSocial || null,
     proveedor_ruc: entity.provider?.ruc || null,
     tipo_proveedor: entity.tipoProveedor || entity.tipo_proveedor || null,
     categoria: entity.categoria || null,
@@ -211,12 +211,12 @@ export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
     estado: entity.estado?.toUpperCase() || 'DISPONIBLE',
 
     // Document and Certification Fields
-    documento_acreditacion: entity.documento_acreditacion || null,
-    fecha_acreditacion: toDateString(entity.fecha_acreditacion),
-    codigo_externo: entity.codigo_externo || null,
-    fecha_venc_poliza: toDateString(entity.fecha_venc_poliza),
-    fecha_venc_soat: toDateString(entity.fecha_venc_soat),
-    fecha_venc_citv: toDateString(entity.fecha_venc_citv),
+    documento_acreditacion: entity.documentoAcreditacion || entity.documento_acreditacion || null,
+    fecha_acreditacion: toDateString(entity.fechaAcreditacion || entity.fecha_acreditacion),
+    codigo_externo: entity.codigoExterno || entity.codigo_externo || null,
+    fecha_venc_poliza: toDateString(entity.fechaVencPoliza || entity.fecha_venc_poliza),
+    fecha_venc_soat: toDateString(entity.fechaVencSoat || entity.fecha_venc_soat),
+    fecha_venc_citv: toDateString(entity.fechaVencCitv || entity.fecha_venc_citv),
 
     is_active: entity.isActive !== undefined ? entity.isActive : entity.is_active,
     creado_por: entity.creadoPor || entity.creado_por || null,
@@ -241,37 +241,34 @@ export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
 export function fromEquipmentDto(dto: Partial<EquipmentDetailDto>): any {
   const entity: any = {};
 
-  // Map all fields that might come from API
-  if (dto.legacy_id !== undefined) entity.legacy_id = dto.legacy_id;
-  if (dto.codigo_equipo !== undefined) entity.codigo_equipo = dto.codigo_equipo;
+  // Map all fields from snake_case API to camelCase entity properties
+  if (dto.legacy_id !== undefined) entity.legacyId = dto.legacy_id;
+  if (dto.codigo_equipo !== undefined) entity.codigoEquipo = dto.codigo_equipo;
   if (dto.tipo_equipo_id !== undefined) entity.tipoEquipoId = dto.tipo_equipo_id;
   if (dto.proveedor_id !== undefined) entity.proveedorId = dto.proveedor_id;
-  if (dto.tipo_proveedor !== undefined) entity.tipo_proveedor = dto.tipo_proveedor;
+  if (dto.tipo_proveedor !== undefined) entity.tipoProveedor = dto.tipo_proveedor;
   if (dto.categoria !== undefined) entity.categoria = dto.categoria;
   if (dto.placa !== undefined) entity.placa = dto.placa;
   if (dto.marca !== undefined) entity.marca = dto.marca;
   if (dto.modelo !== undefined) entity.modelo = dto.modelo;
-  if (dto.numero_serie_equipo !== undefined) entity.numero_serie_equipo = dto.numero_serie_equipo;
-  if (dto.numero_chasis !== undefined) entity.numero_chasis = dto.numero_chasis;
-  if (dto.numero_serie_motor !== undefined) entity.numero_serie_motor = dto.numero_serie_motor;
-  if (dto.anio_fabricacion !== undefined) entity.anio_fabricacion = dto.anio_fabricacion;
-  if (dto.potencia_neta !== undefined) entity.potencia_neta = dto.potencia_neta;
-  if (dto.tipo_motor !== undefined) entity.tipo_motor = dto.tipo_motor;
-  if (dto.medidor_uso !== undefined) entity.medidor_uso = dto.medidor_uso;
+  if (dto.numero_serie_equipo !== undefined) entity.numeroSerieEquipo = dto.numero_serie_equipo;
+  if (dto.numero_chasis !== undefined) entity.numeroChasis = dto.numero_chasis;
+  if (dto.numero_serie_motor !== undefined) entity.numeroSerieMotor = dto.numero_serie_motor;
+  if (dto.anio_fabricacion !== undefined) entity.anioFabricacion = dto.anio_fabricacion;
+  if (dto.potencia_neta !== undefined) entity.potenciaNeta = dto.potencia_neta;
+  if (dto.tipo_motor !== undefined) entity.tipoMotor = dto.tipo_motor;
+  if (dto.medidor_uso !== undefined) entity.medidorUso = dto.medidor_uso;
   if (dto.estado !== undefined) entity.estado = dto.estado;
 
   // Document and Certification Fields
-  if (dto.documento_acreditacion !== undefined)
-    entity.documento_acreditacion = dto.documento_acreditacion;
-  if (dto.fecha_acreditacion !== undefined) entity.fecha_acreditacion = dto.fecha_acreditacion;
-  if (dto.codigo_externo !== undefined) entity.codigo_externo = dto.codigo_externo;
-  if (dto.fecha_venc_poliza !== undefined) entity.fecha_venc_poliza = dto.fecha_venc_poliza;
-  if (dto.fecha_venc_soat !== undefined) entity.fecha_venc_soat = dto.fecha_venc_soat;
-  if (dto.fecha_venc_citv !== undefined) entity.fecha_venc_citv = dto.fecha_venc_citv;
+  if (dto.documento_acreditacion !== undefined) entity.documentoAcreditacion = dto.documento_acreditacion;
+  if (dto.fecha_acreditacion !== undefined) entity.fechaAcreditacion = dto.fecha_acreditacion;
+  if (dto.codigo_externo !== undefined) entity.codigoExterno = dto.codigo_externo;
+  if (dto.fecha_venc_poliza !== undefined) entity.fechaVencPoliza = dto.fecha_venc_poliza;
+  if (dto.fecha_venc_soat !== undefined) entity.fechaVencSoat = dto.fecha_venc_soat;
+  if (dto.fecha_venc_citv !== undefined) entity.fechaVencCitv = dto.fecha_venc_citv;
 
-  if (dto.is_active !== undefined) entity.is_active = dto.is_active;
-  if (dto.creado_por !== undefined) entity.creadoPor = dto.creado_por;
-  if (dto.actualizado_por !== undefined) entity.actualizadoPor = dto.actualizado_por;
+  if (dto.is_active !== undefined) entity.isActive = dto.is_active;
 
   return entity;
 }

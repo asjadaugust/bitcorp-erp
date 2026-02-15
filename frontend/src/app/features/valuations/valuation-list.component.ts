@@ -68,7 +68,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          contract: contractTemplate,
+          contrato: contractTemplate,
           period: periodTemplate,
         }"
         (rowClick)="viewValuation($event)"
@@ -78,16 +78,16 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <!-- Custom Column Templates -->
       <ng-template #contractTemplate let-row>
         <div class="contract-info">
-          <span class="contract-code">{{ row.contract?.code || 'N/A' }}</span>
-          <span class="project-name">{{ row.contract?.project_name }}</span>
+          <span class="contract-code">{{ row.contrato?.codigo || 'N/A' }}</span>
+          <span class="project-name">{{ row.contrato?.nombre_proyecto }}</span>
         </div>
       </ng-template>
 
       <ng-template #periodTemplate let-row>
         <div class="date-range">
-          <span>{{ row.period_start | date: 'dd/MM/yyyy' }}</span>
+          <span>{{ row.fechaInicio | date: 'dd/MM/yyyy' }}</span>
           <i class="fa-solid fa-arrow-right"></i>
-          <span>{{ row.period_end | date: 'dd/MM/yyyy' }}</span>
+          <span>{{ row.fechaFin | date: 'dd/MM/yyyy' }}</span>
         </div>
       </ng-template>
 
@@ -105,10 +105,19 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           <button
             type="button"
             class="btn-icon"
+            [disabled]="row.estado === 'ELIMINADO'"
             (click)="editValuation(row); $event.stopPropagation()"
             title="Editar"
           >
             <i class="fa-solid fa-pen"></i>
+          </button>
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="deleteValuation(row); $event.stopPropagation()"
+            title="Eliminar"
+          >
+            <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       </ng-template>
@@ -207,27 +216,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         color: var(--grey-400);
       }
 
-      .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
       /* Modal Styles */
       .modal-overlay {
         position: fixed;
@@ -323,7 +311,7 @@ export class ValuationListComponent implements OnInit {
 
   valuations: Valuation[] = [];
   loading = false;
-  filters = { status: '', search: '' };
+  filters = { estado: '', search: '' };
 
   // Generation Modal State
   showGenerationModal = false;
@@ -366,36 +354,35 @@ export class ValuationListComponent implements OnInit {
       placeholder: 'Buscar por contrato, factura...',
     },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Pendiente', value: 'pending' },
-        { label: 'En Revisión', value: 'under_review' },
-        { label: 'Aprobado', value: 'approved' },
-        { label: 'Rechazado', value: 'rejected' },
-        { label: 'Pagado', value: 'paid' },
+        { label: 'Pendiente', value: 'PENDIENTE' },
+        { label: 'En Revisión', value: 'EN_REVISION' },
+        { label: 'Aprobado', value: 'APROBADO' },
+        { label: 'Rechazado', value: 'RECHAZADO' },
+        { label: 'Pagado', value: 'PAGADO' },
       ],
     },
   ];
 
   columns: TableColumn[] = [
-    { key: 'contract', label: 'Contrato', type: 'template' },
+    { key: 'contrato', label: 'Contrato', type: 'template' },
     { key: 'period', label: 'Periodo', type: 'template' },
-    { key: 'invoice_number', label: 'Factura', type: 'text' },
-    { key: 'amount', label: 'Monto', type: 'currency', format: 'PEN', align: 'right' },
+    { key: 'numeroValorizacion', label: 'N° Valoriz.', type: 'text' },
+    { key: 'totalValorizado', label: 'Total', type: 'currency', format: 'PEN', align: 'right' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        paid: { label: 'Pagado', class: 'badge status-paid' },
-        approved: { label: 'Aprobado', class: 'badge status-approved' },
-        submitted: { label: 'Enviado', class: 'badge status-submitted' },
-        draft: { label: 'Borrador', class: 'badge status-draft' },
-        pending: { label: 'Pendiente', class: 'badge status-pending' },
-        under_review: { label: 'En Revisión', class: 'badge status-under_review' },
-        rejected: { label: 'Rechazado', class: 'badge status-rejected' },
+        PAGADO: { label: 'Pagado', class: 'badge status-paid' },
+        APROBADO: { label: 'Aprobado', class: 'badge status-approved' },
+        EN_REVISION: { label: 'En Revisión', class: 'badge status-under_review' },
+        PENDIENTE: { label: 'Pendiente', class: 'badge status-pending' },
+        RECHAZADO: { label: 'Rechazado', class: 'badge status-rejected' },
+        ELIMINADO: { label: 'Eliminado', class: 'badge status-deleted' },
       },
     },
   ];
@@ -406,12 +393,15 @@ export class ValuationListComponent implements OnInit {
 
   loadValuations(): void {
     this.loading = true;
+    console.log('Loading valuations...');
     this.valuationService.getAll(this.filters).subscribe({
       next: (data) => {
-        this.valuations = data;
+        console.log('Valuations loaded:', data);
+        this.valuations = [...data]; // Force new reference
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading valuations:', err);
         this.loading = false;
       },
     });
@@ -419,7 +409,7 @@ export class ValuationListComponent implements OnInit {
 
   onFilterChange(filters: Record<string, any>): void {
     this.filters.search = filters['search'] || '';
-    this.filters.status = filters['status'] || '';
+    this.filters.estado = filters['estado'] || '';
     this.loadValuations();
   }
 
@@ -429,6 +419,21 @@ export class ValuationListComponent implements OnInit {
 
   editValuation(val: Valuation): void {
     this.router.navigate([val.id, 'edit'], { relativeTo: this.route });
+  }
+
+  deleteValuation(val: Valuation): void {
+    if (confirm('¿Está seguro de eliminar esta valorización?')) {
+      this.loading = true;
+      this.valuationService.delete(val.id).subscribe({
+        next: () => {
+          this.loadValuations();
+        },
+        error: (err) => {
+          this.loading = false;
+          alert('Error al eliminar: ' + err.message);
+        },
+      });
+    }
   }
 
   createValuation(): void {
@@ -479,20 +484,19 @@ export class ValuationListComponent implements OnInit {
     }
 
     const exportData = this.valuations.map((val) => ({
-      Contrato: val.contract?.code || 'N/A',
-      Proyecto: val.contract?.project_name || 'N/A',
-      Factura: val.invoice_number || '',
-      'Periodo Inicio': val.period_start
-        ? new Date(val.period_start).toLocaleDateString('es-PE')
+      Contrato: val.contrato?.codigo || 'N/A',
+      Proyecto: val.contrato?.nombre_proyecto || 'N/A',
+      'N° Valorización': val.numeroValorizacion || '',
+      Periodo: val.periodo || '',
+      'Fecha Inicio': val.fechaInicio
+        ? new Date(val.fechaInicio).toLocaleDateString('es-PE')
         : '',
-      'Periodo Fin': val.period_end ? new Date(val.period_end).toLocaleDateString('es-PE') : '',
-      'Monto Base': val.base_amount || 0,
-      'Horas Extras': val.overtime_amount || 0,
-      Combustible: val.fuel_amount || 0,
-      Total: val.amount || 0,
-      Estado: val.status || '',
-      'Fecha Emisión': val.issue_date ? new Date(val.issue_date).toLocaleDateString('es-PE') : '',
-      'Fecha Pago': val.payment_date ? new Date(val.payment_date).toLocaleDateString('es-PE') : '',
+      'Fecha Fin': val.fechaFin ? new Date(val.fechaFin).toLocaleDateString('es-PE') : '',
+      'Costo Base': val.costoBase || 0,
+      'Costo Combustible': val.costoCombustible || 0,
+      'Cargos Adicionales': val.cargosAdicionales || 0,
+      'Total Valorizado': val.totalValorizado || 0,
+      Estado: val.estado || '',
     }));
 
     this.excelService.exportToExcel(exportData, {
@@ -508,20 +512,19 @@ export class ValuationListComponent implements OnInit {
     }
 
     const exportData = this.valuations.map((val) => ({
-      Contrato: val.contract?.code || 'N/A',
-      Proyecto: val.contract?.project_name || 'N/A',
-      Factura: val.invoice_number || '',
-      'Periodo Inicio': val.period_start
-        ? new Date(val.period_start).toLocaleDateString('es-PE')
+      Contrato: val.contrato?.codigo || 'N/A',
+      Proyecto: val.contrato?.nombre_proyecto || 'N/A',
+      'N° Valorización': val.numeroValorizacion || '',
+      Periodo: val.periodo || '',
+      'Fecha Inicio': val.fechaInicio
+        ? new Date(val.fechaInicio).toLocaleDateString('es-PE')
         : '',
-      'Periodo Fin': val.period_end ? new Date(val.period_end).toLocaleDateString('es-PE') : '',
-      'Monto Base': val.base_amount || 0,
-      'Horas Extras': val.overtime_amount || 0,
-      Combustible: val.fuel_amount || 0,
-      Total: val.amount || 0,
-      Estado: val.status || '',
-      'Fecha Emisión': val.issue_date ? new Date(val.issue_date).toLocaleDateString('es-PE') : '',
-      'Fecha Pago': val.payment_date ? new Date(val.payment_date).toLocaleDateString('es-PE') : '',
+      'Fecha Fin': val.fechaFin ? new Date(val.fechaFin).toLocaleDateString('es-PE') : '',
+      'Costo Base': val.costoBase || 0,
+      'Costo Combustible': val.costoCombustible || 0,
+      'Cargos Adicionales': val.cargosAdicionales || 0,
+      'Total Valorizado': val.totalValorizado || 0,
+      Estado: val.estado || '',
     }));
 
     this.excelService.exportToCSV(exportData, 'valorizaciones');

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Provider } from '../models/provider.model';
+import { ProviderDocument } from '../models/provider-document.model';
 
 /**
  * Provider Service with DTO mapping
@@ -92,6 +93,7 @@ export class ProviderService {
       direccion: provider.direccion,
       telefono: provider.telefono,
       correo_electronico: provider.correo_electronico,
+      is_active: provider.is_active !== undefined ? provider.is_active : true,
     };
     return this.http.post<any>(this.apiUrl, payload).pipe(
       map((response) => {
@@ -104,14 +106,15 @@ export class ProviderService {
 
   update(id: number | string, provider: Partial<Provider>): Observable<Provider> {
     // Send Spanish snake_case to backend
+    // Use !== undefined so empty strings can clear fields
     const payload: any = {};
-    if (provider.ruc) payload.ruc = provider.ruc;
-    if (provider.razon_social) payload.razon_social = provider.razon_social;
-    if (provider.nombre_comercial) payload.nombre_comercial = provider.nombre_comercial;
-    if (provider.tipo_proveedor) payload.tipo_proveedor = provider.tipo_proveedor;
-    if (provider.direccion) payload.direccion = provider.direccion;
-    if (provider.telefono) payload.telefono = provider.telefono;
-    if (provider.correo_electronico) payload.correo_electronico = provider.correo_electronico;
+    if (provider.ruc !== undefined) payload.ruc = provider.ruc;
+    if (provider.razon_social !== undefined) payload.razon_social = provider.razon_social;
+    if (provider.nombre_comercial !== undefined) payload.nombre_comercial = provider.nombre_comercial;
+    if (provider.tipo_proveedor !== undefined) payload.tipo_proveedor = provider.tipo_proveedor;
+    if (provider.direccion !== undefined) payload.direccion = provider.direccion;
+    if (provider.telefono !== undefined) payload.telefono = provider.telefono;
+    if (provider.correo_electronico !== undefined) payload.correo_electronico = provider.correo_electronico;
     if (provider.is_active !== undefined) payload.is_active = provider.is_active;
 
     return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
@@ -125,5 +128,39 @@ export class ProviderService {
 
   delete(id: number | string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getAuditLogs(id: number | string): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/logs`).pipe(
+      map((response) => response.data || response)
+    );
+  }
+
+  lookupRuc(ruc: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/ruc/${ruc}/lookup`).pipe(
+      map((response) => response.data || response)
+    );
+  }
+
+  getDocuments(providerId: number | string): Observable<ProviderDocument[]> {
+    return this.http.get<any>(`${this.apiUrl}/${providerId}/documents`).pipe(
+      map((response) => response.data || response)
+    );
+  }
+
+  createDocument(providerId: number | string, document: Partial<ProviderDocument>): Observable<ProviderDocument> {
+    return this.http.post<any>(`${this.apiUrl}/${providerId}/documents`, document).pipe(
+      map((response) => response.data || response)
+    );
+  }
+
+  updateDocument(id: number | string, document: Partial<ProviderDocument>): Observable<ProviderDocument> {
+    return this.http.put<any>(`${this.apiUrl}/documents/${id}`, document).pipe(
+      map((response) => response.data || response)
+    );
+  }
+
+  deleteDocument(id: number | string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/documents/${id}`);
   }
 }

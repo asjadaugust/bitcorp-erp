@@ -57,6 +57,10 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         [columns]="columns"
         [data]="inspections"
         [loading]="loading"
+        [serverSide]="true"
+        [totalItems]="pagination.total"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           equipo: equipoTemplate,
@@ -68,50 +72,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         (rowClick)="viewInspection($event)"
       >
       </aero-table>
-
-      <!-- Custom Pagination for Server-Side -->
-      <div class="server-pagination" *ngIf="pagination && pagination.total > 0">
-        <div class="pagination-info">
-          <span
-            >Mostrando {{ (pagination.page - 1) * pagination.limit + 1 }} -
-            {{ Math.min(pagination.page * pagination.limit, pagination.total) }} de
-            {{ pagination.total }} resultados</span
-          >
-        </div>
-        <div class="pagination-controls">
-          <button
-            class="btn-pagination"
-            [disabled]="pagination.page === 1"
-            (click)="onPageChange(1)"
-          >
-            <i class="fa-solid fa-angles-left"></i>
-          </button>
-          <button
-            class="btn-pagination"
-            [disabled]="pagination.page === 1"
-            (click)="onPageChange(pagination.page - 1)"
-          >
-            <i class="fa-solid fa-angle-left"></i>
-          </button>
-          <span class="page-indicator"
-            >Página {{ pagination.page }} de {{ pagination.totalPages }}</span
-          >
-          <button
-            class="btn-pagination"
-            [disabled]="pagination.page === pagination.totalPages"
-            (click)="onPageChange(pagination.page + 1)"
-          >
-            <i class="fa-solid fa-angle-right"></i>
-          </button>
-          <button
-            class="btn-pagination"
-            [disabled]="pagination.page === pagination.totalPages"
-            (click)="onPageChange(pagination.totalPages)"
-          >
-            <i class="fa-solid fa-angles-right"></i>
-          </button>
-        </div>
-      </div>
 
       <!-- Custom Templates -->
       <ng-template #equipoTemplate let-row>
@@ -394,7 +354,6 @@ export class InspectionListComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  Math = Math; // Expose Math for template
   inspections: ChecklistInspection[] = [];
   loading = false;
   pagination = {
@@ -416,8 +375,8 @@ export class InspectionListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
-    { label: 'Checklists', url: '/checklists' },
+    { label: 'Inicio', url: '/app' },
+    { label: 'Listas de Verificación', url: '/checklists' },
     { label: 'Inspecciones' },
   ];
 
@@ -502,6 +461,12 @@ export class InspectionListComponent implements OnInit {
 
   onPageChange(page: number): void {
     this.filters.page = page;
+    this.loadInspections();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.filters.limit = size;
+    this.filters.page = 1;
     this.loadInspections();
   }
 

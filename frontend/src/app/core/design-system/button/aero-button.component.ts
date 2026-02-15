@@ -50,26 +50,26 @@ export type ButtonSize = 'small' | 'medium' | 'large';
         }
 
         /* Sizes */
-        &--small {
+        &.aero-btn--small {
           padding: var(--s-4) var(--s-12);
           font-size: var(--type-label-size);
           height: 32px;
         }
 
-        &--medium {
+        &.aero-btn--medium {
           padding: var(--s-8) var(--s-16);
           font-size: var(--type-bodySmall-size);
           height: 40px;
         }
 
-        &--large {
+        &.aero-btn--large {
           padding: var(--s-12) var(--s-24);
           font-size: var(--type-body-size);
           height: 48px;
         }
 
         /* Variants */
-        &--primary {
+        &.aero-btn--primary {
           background-color: var(--primary-500);
           color: var(--neutral-0);
 
@@ -82,7 +82,7 @@ export type ButtonSize = 'small' | 'medium' | 'large';
           }
         }
 
-        &--secondary {
+        &.aero-btn--secondary {
           background-color: transparent;
           border: 1px solid var(--primary-500);
           color: var(--primary-500);
@@ -96,7 +96,7 @@ export type ButtonSize = 'small' | 'medium' | 'large';
           }
         }
 
-        &--tertiary {
+        &.aero-btn--tertiary {
           background-color: transparent;
           color: var(--primary-500);
           padding-left: var(--s-8);
@@ -107,7 +107,7 @@ export type ButtonSize = 'small' | 'medium' | 'large';
           }
         }
 
-        &--danger {
+        &.aero-btn--danger {
           background-color: var(--semantic-red-500);
           color: var(--neutral-0);
 
@@ -116,7 +116,7 @@ export type ButtonSize = 'small' | 'medium' | 'large';
           }
         }
 
-        &--success {
+        &.aero-btn--success {
           background-color: var(--semantic-green-500);
           color: var(--neutral-0);
 

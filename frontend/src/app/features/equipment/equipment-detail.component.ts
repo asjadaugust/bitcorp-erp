@@ -57,7 +57,7 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
                   <div class="info-item">
                     <label>Número de Serie</label>
-                    <p>{{ equipment.serial_number || 'N/A' }}</p>
+                    <p>{{ equipment.numero_serie_equipo || 'N/A' }}</p>
                   </div>
                 </div>
               </section>
@@ -71,15 +71,15 @@ import { Equipment } from '../../core/models/equipment.model';
                   </div>
                   <div class="info-item">
                     <label>Número de Chasis</label>
-                    <p>{{ equipment.chassis_number || 'N/A' }}</p>
+                    <p>{{ equipment.numero_chasis || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Serie Motor</label>
-                    <p>{{ equipment.engine_serial_number || 'N/A' }}</p>
+                    <p>{{ equipment.numero_serie_motor || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Año de Fabricación</label>
-                    <p>{{ equipment.manufacture_year || 'N/A' }}</p>
+                    <p>{{ equipment.anio_fabricacion || 'N/A' }}</p>
                   </div>
                 </div>
               </section>
@@ -89,11 +89,11 @@ import { Equipment } from '../../core/models/equipment.model';
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Tipo de Medidor</label>
-                    <p class="highlight">{{ equipment.meter_type || 'N/A' }}</p>
+                    <p class="highlight">{{ equipment.medidor_uso || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Tipo de Motor</label>
-                    <p>{{ equipment.engine_type || 'N/A' }}</p>
+                    <p>{{ equipment.tipo_motor || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Potencia Neta</label>

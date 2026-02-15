@@ -54,9 +54,9 @@ import { Valuation } from '../../core/models/valuation.model';
                     >
                       <option [ngValue]="null">Seleccione una valorización</option>
                       <option *ngFor="let val of valuations" [value]="val.id">
-                        {{ val.invoice_number || '#' + val.id }} -
-                        {{ paymentService.formatCurrency(val.amount, 'PEN') }}
-                        ({{ val.status | uppercase }})
+                        {{ val.numeroValorizacion || '#' + val.id }} -
+                        {{ paymentService.formatCurrency(val.totalValorizado, 'PEN') }}
+                        ({{ val.estado }})
                       </option>
                     </select>
                     <div *ngIf="isFieldInvalid('valorizacion_id')" class="error-message">
@@ -668,7 +668,7 @@ export class PaymentFormComponent implements OnInit {
     // Load valuations with APROBADO or PAGADO status
     this.valuationService.getAll({ limit: 100 }).subscribe({
       next: (valuations) => {
-        this.valuations = valuations.filter((v) => v.status === 'approved' || v.status === 'paid');
+        this.valuations = valuations.filter((v) => v.estado === 'APROBADO' || v.estado === 'PAGADO');
       },
       error: (error) => {
         console.error('Error loading valuations:', error);

@@ -60,6 +60,8 @@ import { DailyReportOtherEvent } from '../models/daily-report-other-event.model'
 import { DailyReportMechanicalDelay } from '../models/daily-report-mechanical-delay.model';
 import { Company, UserProject } from '../models/company-entity.model';
 import { PaymentRecord } from '../models/payment-record.model';
+import { ProviderAuditLog } from '../models/provider-audit-log.model';
+import { ProviderDocument } from '../models/provider-document.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -129,6 +131,8 @@ export const AppDataSource = new DataSource({
     UserProject,
     // Payment records
     PaymentRecord,
+    ProviderAuditLog,
+    ProviderDocument,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

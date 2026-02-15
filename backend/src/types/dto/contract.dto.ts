@@ -77,12 +77,12 @@ export function toContractDto(entity: any): ContractDto {
     id: entity.id,
     legacy_id: entity.legacyId || entity.legacy_id || null,
     equipo_id: entity.equipoId,
-    equipo_codigo: entity.equipo?.codigo_equipo,
+    equipo_codigo: entity.equipo?.codigoEquipo,
     equipo_marca: entity.equipo?.marca,
     equipo_modelo: entity.equipo?.modelo,
     equipo_placa: entity.equipo?.placa,
-    proveedor_id: entity.equipo?.proveedorId,
-    proveedor_razon_social: entity.equipo?.provider?.razon_social,
+    proveedor_id: entity.proveedorId || entity.equipo?.proveedorId,
+    proveedor_razon_social: entity.provider?.razonSocial || entity.equipo?.provider?.razonSocial,
     numero_contrato: entity.numeroContrato,
     tipo: entity.tipo,
     contrato_padre_id: entity.contratoPadreId,
@@ -143,6 +143,7 @@ export function fromContractDto(dto: Partial<ContractDto>): any {
   if (dto.condiciones_especiales !== undefined)
     entity.condicionesEspeciales = dto.condiciones_especiales;
   if (dto.documento_url !== undefined) entity.documentoUrl = dto.documento_url;
+  if (dto.proveedor_id !== undefined) entity.proveedorId = dto.proveedor_id;
   if (dto.estado !== undefined) entity.estado = dto.estado;
   if (dto.creado_por !== undefined) entity.creadoPor = dto.creado_por;
 
@@ -264,6 +265,10 @@ export class ContractUpdateDto {
   @IsOptional()
   @IsNumber({}, { message: 'equipo_id debe ser un número' })
   equipo_id?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'proveedor_id debe ser un número' })
+  proveedor_id?: number | null;
 
   @IsOptional()
   @IsString({ message: 'numero_contrato debe ser texto' })

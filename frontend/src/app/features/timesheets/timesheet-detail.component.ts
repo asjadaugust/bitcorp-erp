@@ -7,40 +7,40 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
+import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 
 @Component({
   selector: 'app-timesheet-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, AeroTableComponent],
+  imports: [CommonModule, RouterModule, AeroTableComponent, PageLayoutComponent],
   template: `
-    <div class="container-fluid">
-      <div class="page-header">
-        <div class="header-content">
-          <h1>📄 Detalle de Planilla</h1>
-          <span class="status-badge" [class]="timesheet?.status || ''">
-            {{ timesheet?.status | uppercase }}
-          </span>
-        </div>
+    <app-page-layout
+      [breadcrumbs]="breadcrumbs"
+      [loading]="loading"
+      [title]="'Detalle de Planilla'"
+      icon="fa-file-invoice"
+    >
+      <div class="page-header-actions" actions>
         <div class="header-actions">
-          <button class="btn btn-secondary" routerLink="/timesheets">
+          <button class="btn btn-secondary" routerLink="/operaciones/timesheets">
             <i class="fa-solid fa-arrow-left"></i> Volver
           </button>
           <button
-            *ngIf="timesheet?.status === 'draft'"
+            *ngIf="timesheet?.estado === 'BORRADOR'"
             class="btn btn-primary"
             (click)="submitTimesheet()"
           >
             <i class="fa-solid fa-paper-plane"></i> Enviar
           </button>
           <button
-            *ngIf="timesheet?.status === 'submitted'"
+            *ngIf="timesheet?.estado === 'ENVIADO'"
             class="btn btn-success"
             (click)="approveTimesheet()"
           >
             <i class="fa-solid fa-check"></i> Aprobar
           </button>
           <button
-            *ngIf="timesheet?.status === 'submitted'"
+            *ngIf="timesheet?.estado === 'ENVIADO'"
             class="btn btn-danger"
             (click)="rejectTimesheet()"
           >
@@ -49,44 +49,40 @@ import {
         </div>
       </div>
 
-      <div *ngIf="loading" class="loading-spinner">
-        <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
-      </div>
-
-      <div *ngIf="error" class="error-message">
-        {{ error }}
-      </div>
-
       <div *ngIf="timesheet && !loading" class="content-grid">
         <!-- Summary Card -->
         <div class="card summary-card">
-          <h2>Resumen</h2>
+          <div class="card-header">
+            <h2>Resumen</h2>
+            <span class="status-badge" [class]="timesheet?.estado || ''">
+              {{ timesheet?.estado }}
+            </span>
+          </div>
+
           <div class="info-grid">
             <div class="info-item">
-              <label>Código</label>
-              <span>{{ timesheet.timesheet_code }}</span>
+              <label>ID</label>
+              <span>Tareo #{{ timesheet.id }}</span>
             </div>
             <div class="info-item">
-              <label>Operador</label>
-              <span
-                >{{ timesheet.operator?.C05000_Nombre }}
-                {{ timesheet.operator?.C05000_Apellido }}</span
-              >
+              <label>Trabajador</label>
+              <span>{{ timesheet.trabajador_nombre || timesheet.trabajador?.nombre_completo || 'N/A' }}</span>
             </div>
             <div class="info-item">
               <label>Período</label>
-              <span
-                >{{ timesheet.period_start | date: 'dd/MM/yyyy' }} -
-                {{ timesheet.period_end | date: 'dd/MM/yyyy' }}</span
-              >
+              <span>{{ timesheet.periodo }}</span>
             </div>
             <div class="info-item">
               <label>Total Horas</label>
-              <span class="highlight">{{ timesheet.total_hours }} hrs</span>
+              <span class="highlight">{{ timesheet.totalHoras }} hrs</span>
             </div>
             <div class="info-item">
               <label>Días Trabajados</label>
-              <span>{{ timesheet.total_days }} días</span>
+              <span>{{ timesheet.totalDiasTrabajados }} días</span>
+            </div>
+            <div class="info-item" *ngIf="timesheet.montoCalculado">
+              <label>Monto Calculado</label>
+              <span class="highlight">S/ {{ timesheet.montoCalculado | number:'1.2-2' }}</span>
             </div>
           </div>
         </div>
@@ -120,7 +116,7 @@ import {
           </div>
         </div>
       </div>
-    </div>
+    </app-page-layout>
   `,
   styles: [
     `
@@ -156,19 +152,19 @@ import {
         font-size: 0.875rem;
         font-weight: 600;
       }
-      .status-badge.draft {
+      .status-badge.BORRADOR {
         background: #edf2f7;
         color: #4a5568;
       }
-      .status-badge.submitted {
+      .status-badge.ENVIADO {
         background: #feebc8;
         color: #c05621;
       }
-      .status-badge.approved {
+      .status-badge.APROBADO {
         background: #c6f6d5;
         color: #2f855a;
       }
-      .status-badge.rejected {
+      .status-badge.RECHAZADO {
         background: #fed7d7;
         color: #c53030;
       }
@@ -276,6 +272,13 @@ export class TimesheetDetailComponent implements OnInit {
   timesheet: Timesheet | null = null;
   loading = true;
   error = '';
+
+  breadcrumbs = [
+    { label: 'Inicio', url: '/app' },
+    { label: 'Operaciones', url: '/operaciones' },
+    { label: 'Planillas', url: '/operaciones/timesheets' },
+    { label: 'Detalle' },
+  ];
 
   columns: TableColumn[] = [
     { key: 'work_date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },

@@ -31,7 +31,7 @@ import { ValuationService } from '../../core/services/valuation.service';
           <div class="icon"><i class="fa-solid fa-clock"></i></div>
           <div class="content">
             <h3>Pendientes</h3>
-            <p class="value">{{ getStatusCount('draft') + getStatusCount('pending') }}</p>
+            <p class="value">{{ getStatusCount('PENDIENTE') }}</p>
           </div>
         </div>
 
@@ -39,7 +39,7 @@ import { ValuationService } from '../../core/services/valuation.service';
           <div class="icon"><i class="fa-solid fa-check-circle"></i></div>
           <div class="content">
             <h3>Aprobadas</h3>
-            <p class="value">{{ getStatusCount('approved') }}</p>
+            <p class="value">{{ getStatusCount('APROBADO') }}</p>
           </div>
         </div>
 

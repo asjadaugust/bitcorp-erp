@@ -47,7 +47,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     const limit = filters.limit || 10;
     const offset = (page - 1) * limit;
 
-    const conditions: string[] = ['dr.is_active = true'];
+    const conditions: string[] = [];
     const params: any[] = [];
     let paramCount = 1;
 
@@ -145,7 +145,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
   }
 
   async findById(id: number, tenantId?: number): Promise<DailyReport | null> {
-    const conditions: string[] = ['dr.id = $1', 'dr.is_active = true'];
+    const conditions: string[] = ['dr.id = $1'];
     const params: any[] = [id];
     let paramCount = 2;
 
@@ -194,9 +194,9 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
         tenant_id, codigo_reporte, fecha, trabajador_id, equipo_id, proyecto_id,
         hora_inicio, hora_fin, horas_trabajadas, horometro_inicio, horometro_fin,
         odometro_inicio, odometro_fin, combustible_consumido, ubicacion,
-        actividades, observaciones, estado, created_by, is_active
+        actividades, observaciones, estado, created_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
       RETURNING *
     `;
 
@@ -220,7 +220,6 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
       data.observaciones,
       data.estado || 'pendiente',
       userId,
-      true,
     ];
 
     const result = await this.pool.query(query, values);
@@ -286,7 +285,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     operatorId?: number,
     equipmentId?: number
   ): Promise<DailyReport[]> {
-    const conditions: string[] = ['fecha >= $1', 'fecha <= $2', 'is_active = true'];
+    const conditions: string[] = ['fecha >= $1', 'fecha <= $2'];
     const params: any[] = [startDate, endDate];
     let paramCount = 3;
 
@@ -328,7 +327,6 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     const conditions: string[] = [
       'EXTRACT(YEAR FROM fecha) = $1',
       'EXTRACT(MONTH FROM fecha) = $2',
-      'is_active = true',
     ];
     const params: any[] = [year, month];
     let paramCount = 3;

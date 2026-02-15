@@ -16,7 +16,7 @@ export interface Employee {
   especialidad?: string;
   tipo_contrato?: string;
   licencia_conducir?: string;
-  operating_unit_id?: number;
+  unidadOperativaId?: number;
   esta_activo?: boolean;
   created_at?: string;
   updated_at?: string;

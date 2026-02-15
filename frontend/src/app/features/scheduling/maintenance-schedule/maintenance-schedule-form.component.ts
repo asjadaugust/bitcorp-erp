@@ -4,203 +4,172 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
 import { EquipmentService } from '../../../core/services/equipment.service';
-import { ProjectService } from '../../../core/services/project.service';
+import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 
 @Component({
   selector: 'app-maintenance-schedule-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormContainerComponent],
   template: `
-    <div class="form-container">
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <div class="icon-wrapper">
-            <i class="fa-solid" [class.fa-plus]="!isEditMode" [class.fa-pen]="isEditMode"></i>
-          </div>
-          <div class="title-group">
-            <h1>{{ isEditMode ? 'Editar Programación' : 'Nueva Programación' }}</h1>
-            <p class="subtitle">
-              {{
-                isEditMode
-                  ? 'Actualizar información de la programación de mantenimiento'
-                  : 'Registrar una nueva programación de mantenimiento'
-              }}
-            </p>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="scheduleForm.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i>
-            {{ isEditMode ? 'Guardar Cambios' : 'Crear Programación' }}
-          </button>
-        </div>
+    <app-form-container
+      [title]="isEditMode ? 'Editar Programación' : 'Nueva Programación'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información de la programación de mantenimiento'
+          : 'Registrar una nueva programación de mantenimiento'
+      "
+      [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
+      [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Programación'"
+      [disableSubmit]="scheduleForm.invalid || loading"
+      [loading]="loading"
+      [loadingText]="'Guardando...'"
+      [showFooter]="true"
+      (onSubmit)="onSubmit()"
+      (onCancel)="cancel()"
+    >
+      <!-- Success Message -->
+      <div *ngIf="successMessage" class="alert alert-success">
+        <i class="fa-solid fa-check-circle"></i>
+        {{ successMessage }}
       </div>
 
-      <!-- Form -->
-      <div class="card form-card">
-        <form [formGroup]="scheduleForm" class="form-grid">
-          <!-- Section 1: Equipment & Project -->
-          <div class="form-section full-width">
-            <h3>Información General</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="equipment">Equipo *</label>
-                <select id="equipment" formControlName="equipo_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Equipo</option>
-                  <option *ngFor="let eq of equipmentList" [value]="eq.id">
-                    {{ eq.code }} - {{ eq.brand }} {{ eq.model }}
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="project">Proyecto</label>
-                <select id="project" formControlName="proyecto_id" class="form-select">
-                  <option [ngValue]="null">Sin Proyecto</option>
-                  <option *ngFor="let pr of projects" [value]="pr.id">
-                    {{ pr.nombre }}
-                  </option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 2: Maintenance Details -->
-          <div class="form-section full-width">
-            <h3>Detalles del Mantenimiento</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="type">Tipo de Mantenimiento *</label>
-                <select id="type" formControlName="maintenance_type" class="form-select">
-                  <option value="preventive">Preventivo</option>
-                  <option value="corrective">Correctivo</option>
-                  <option value="predictive">Predictivo</option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('maintenance_type')">Tipo es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="status">Estado *</label>
-                <select id="status" formControlName="status" class="form-select">
-                  <option value="active">Activo</option>
-                  <option value="inactive">Inactivo</option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
-              </div>
-
-              <div class="form-group full-width">
-                <label for="description">Descripción *</label>
-                <textarea
-                  id="description"
-                  formControlName="description"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Descripción del mantenimiento..."
-                ></textarea>
-                <div class="error-msg" *ngIf="hasError('description')">
-                  Descripción es requerida
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 3: Interval -->
-          <div class="form-section full-width">
-            <h3>Intervalo de Mantenimiento</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="intervalType">Tipo de Intervalo *</label>
-                <select id="intervalType" formControlName="interval_type" class="form-select">
-                  <option value="hours">Horas (Horómetro)</option>
-                  <option value="days">Días</option>
-                  <option value="date">Fecha Fija</option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('interval_type')">
-                  Tipo de intervalo es requerido
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="intervalValue">Valor del Intervalo *</label>
-                <input
-                  type="number"
-                  id="intervalValue"
-                  formControlName="interval_value"
-                  class="form-control"
-                  placeholder="Ej: 250"
-                />
-                <small class="text-muted" style="font-size: 12px; color: #666; margin-top: 4px;">
-                  Ej: 250 (horas), 30 (días)
-                </small>
-                <div class="error-msg" *ngIf="hasError('interval_value')">Valor es requerido</div>
-              </div>
-            </div>
-          </div>
-        </form>
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <i class="fa-solid fa-exclamation-circle"></i>
+        {{ errorMessage }}
       </div>
-    </div>
+
+      <form [formGroup]="scheduleForm" class="form-grid">
+        <!-- Section 1: Equipment -->
+        <div class="form-section full-width">
+          <h3>Información General</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="equipment">Equipo *</label>
+              <select id="equipment" formControlName="equipoId" class="form-select">
+                <option [ngValue]="null">Seleccionar Equipo</option>
+                <option *ngFor="let eq of equipmentList" [value]="eq.id">
+                  {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('equipoId')">Equipo es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="tecnicoResponsable">Técnico Responsable</label>
+              <input
+                id="tecnicoResponsable"
+                type="text"
+                formControlName="tecnicoResponsable"
+                class="form-control"
+                placeholder="Nombre del técnico..."
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Maintenance Details -->
+        <div class="form-section full-width">
+          <h3>Detalles del Mantenimiento</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="type">Tipo de Mantenimiento *</label>
+              <select id="type" formControlName="tipoMantenimiento" class="form-select">
+                <option value="PREVENTIVO">Preventivo</option>
+                <option value="CORRECTIVO">Correctivo</option>
+                <option value="PREDICTIVO">Predictivo</option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('tipoMantenimiento')">Tipo es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="estado">Estado *</label>
+              <select id="estado" formControlName="estado" class="form-select">
+                <option value="PROGRAMADO">Programado</option>
+                <option value="EN_PROCESO">En Proceso</option>
+                <option value="COMPLETADO">Completado</option>
+                <option value="CANCELADO">Cancelado</option>
+                <option value="PENDIENTE">Pendiente</option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="descripcion">Descripción</label>
+              <textarea
+                id="descripcion"
+                formControlName="descripcion"
+                class="form-control"
+                rows="3"
+                placeholder="Descripción del mantenimiento..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Dates & Costs -->
+        <div class="form-section full-width">
+          <h3>Fechas y Costos</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="fechaProgramada">Fecha Programada</label>
+              <input
+                id="fechaProgramada"
+                type="date"
+                formControlName="fechaProgramada"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="fechaRealizada">Fecha Realizada</label>
+              <input
+                id="fechaRealizada"
+                type="date"
+                formControlName="fechaRealizada"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="costoEstimado">Costo Estimado (S/)</label>
+              <input
+                id="costoEstimado"
+                type="number"
+                formControlName="costoEstimado"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="costoReal">Costo Real (S/)</label>
+              <input
+                id="costoReal"
+                type="number"
+                formControlName="costoReal"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label for="observaciones">Observaciones</label>
+              <textarea
+                id="observaciones"
+                formControlName="observaciones"
+                class="form-control"
+                rows="2"
+                placeholder="Observaciones adicionales..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
-      .form-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding-bottom: 2rem;
-      }
-
-      /* Header */
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .icon-wrapper {
-        width: 48px;
-        height: 48px;
-        background: var(--primary-100);
-        color: var(--primary-800);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .title-group h1 {
-        margin: 0;
-        font-size: 24px;
-        color: var(--grey-900);
-      }
-      .subtitle {
-        margin: 0;
-        color: var(--grey-500);
-        font-size: 14px;
-      }
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-      }
-
-      /* Form Card */
-      .form-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
       .form-grid {
         display: flex;
         flex-direction: column;
@@ -226,7 +195,6 @@ import { ProjectService } from '../../../core/services/project.service';
         grid-column: 1 / -1;
       }
 
-      /* Form Controls */
       .form-group {
         display: flex;
         flex-direction: column;
@@ -260,38 +228,25 @@ import { ProjectService } from '../../../core/services/project.service';
         font-size: 12px;
       }
 
-      /* Buttons */
-      .btn {
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
+      .alert {
+        padding: 1rem;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        transition: all 0.2s;
+        font-size: 14px;
       }
 
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
+      .alert-success {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+        border: 1px solid var(--semantic-green-200);
       }
 
-      .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-50);
+      .alert-error {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        border: 1px solid var(--semantic-red-200);
       }
 
       @media (max-width: 768px) {
@@ -306,7 +261,6 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private scheduleService = inject(MaintenanceScheduleService);
   private equipmentService = inject(EquipmentService);
-  private projectService = inject(ProjectService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -315,22 +269,26 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   scheduleId: string | null = null;
   loading = false;
   equipmentList: any[] = [];
-  projects: any[] = [];
+  successMessage = '';
+  errorMessage = '';
 
   constructor() {
     this.scheduleForm = this.fb.group({
-      equipmentId: [null, Validators.required],
-      projectId: [null],
-      maintenanceType: ['preventive', Validators.required],
-      description: ['', Validators.required],
-      intervalType: ['hours', Validators.required],
-      intervalValue: [null, [Validators.required, Validators.min(1)]],
-      status: ['active', Validators.required],
+      equipoId: [null, Validators.required],
+      tipoMantenimiento: ['PREVENTIVO', Validators.required],
+      descripcion: [''],
+      fechaProgramada: [null],
+      fechaRealizada: [null],
+      costoEstimado: [null],
+      costoReal: [null],
+      tecnicoResponsable: [''],
+      estado: ['PROGRAMADO', Validators.required],
+      observaciones: [''],
     });
   }
 
   ngOnInit() {
-    this.loadDependencies();
+    this.loadEquipment();
     this.route.params.subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
@@ -340,21 +298,26 @@ export class MaintenanceScheduleFormComponent implements OnInit {
     });
   }
 
-  loadDependencies() {
-    this.equipmentService.getAll().subscribe((res: any) => (this.equipmentList = res.data));
-    this.projectService.getAll().subscribe((res: any) => (this.projects = res));
+  loadEquipment() {
+    this.equipmentService.getAll().subscribe({
+      next: (res: any) => {
+        this.equipmentList = Array.isArray(res) ? res : res?.data || [];
+      },
+      error: (err: any) => console.error('Error cargando equipos:', err),
+    });
   }
 
   loadSchedule(id: string) {
     this.loading = true;
     this.scheduleService.getById(id).subscribe({
-      next: (res: any) => {
-        this.scheduleForm.patchValue(res.data);
+      next: (schedule) => {
+        this.scheduleForm.patchValue(schedule);
         this.loading = false;
       },
       error: (err: any) => {
-        console.error(err);
-        this.router.navigate(['/equipment/maintenance']);
+        console.error('Error cargando programación:', err);
+        this.errorMessage = 'Error al cargar la programación';
+        this.loading = false;
       },
     });
   }
@@ -364,7 +327,10 @@ export class MaintenanceScheduleFormComponent implements OnInit {
       this.scheduleForm.markAllAsTouched();
       return;
     }
+
     this.loading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
     const data = this.scheduleForm.value;
 
     const req =
@@ -373,9 +339,14 @@ export class MaintenanceScheduleFormComponent implements OnInit {
         : this.scheduleService.create(data);
 
     req.subscribe({
-      next: () => this.router.navigate(['/equipment/maintenance']),
+      next: () => {
+        this.successMessage = this.isEditMode
+          ? 'Programación actualizada exitosamente'
+          : 'Programación creada exitosamente';
+        setTimeout(() => this.router.navigate(['/equipment/maintenance/schedule']), 1500);
+      },
       error: (err: any) => {
-        alert('Error: ' + (err.error?.error || err.message));
+        this.errorMessage = err.error?.error || err.error?.message || 'Error al guardar la programación';
         this.loading = false;
       },
     });

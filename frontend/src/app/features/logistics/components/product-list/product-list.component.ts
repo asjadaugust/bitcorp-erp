@@ -130,9 +130,9 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 
       <ng-template #statusTemplate let-row>
         <span
-          [class]="row.is_active ? 'badge badge-status-available' : 'badge badge-status-retired'"
+          [class]="row.esta_activo ? 'badge badge-status-available' : 'badge badge-status-retired'"
         >
-          {{ row.is_active ? 'Activo' : 'Inactivo' }}
+          {{ row.esta_activo ? 'Activo' : 'Inactivo' }}
         </span>
       </ng-template>
 
@@ -475,7 +475,7 @@ export class ProductListComponent implements OnInit {
       'Stock Actual': product.stock_actual || 0,
       'Precio Unitario': product.precio_unitario || 0,
       Ubicación: product.ubicacion || '',
-      Activo: product.is_active ? 'Sí' : 'No',
+      Activo: product.esta_activo ? 'Sí' : 'No',
     }));
 
     if (format === 'excel') {

@@ -12,40 +12,39 @@ import { Provider } from './provider.model';
 // import { Project } from './project.model'; // Unused
 
 export enum EquipmentStatus {
-  AVAILABLE = 'available',
-  IN_USE = 'in_use',
-  MAINTENANCE = 'maintenance',
-  RETIRED = 'retired',
+  DISPONIBLE = 'DISPONIBLE',
+  EN_USO = 'EN_USO',
+  MANTENIMIENTO = 'MANTENIMIENTO',
+  RETIRADO = 'RETIRADO',
 }
 
 export enum FuelType {
-  DIESEL = 'diesel',
-  GASOLINE = 'gasoline',
-  ELECTRIC = 'electric',
-  HYBRID = 'hybrid',
+  DIESEL = 'DIESEL',
+  GASOLINA = 'GASOLINA',
+  ELECTRICO = 'ELECTRICO',
+  HIBRIDO = 'HIBRIDO',
 }
 
 export enum EquipmentCategory {
-  EXCAVATOR = 'Excavadora',
-  BULLDOZER = 'Tractor de Oruga',
-  LOADER = 'Cargador Frontal',
-  GRADER = 'Motoniveladora',
-  TRUCK = 'Camión Volquete',
-  MIXER = 'Mezcladora',
-  COMPACTOR = 'Compactadora',
-  CRANE = 'Grúa',
-  FORKLIFT = 'Montacargas',
+  EXCAVADORA = 'Excavadora',
+  TRACTOR_ORUGA = 'Tractor de Oruga',
+  CARGADOR_FRONTAL = 'Cargador Frontal',
+  MOTONIVELADORA = 'Motoniveladora',
+  CAMION_VOLQUETE = 'Camión Volquete',
+  MEZCLADORA = 'Mezcladora',
+  COMPACTADORA = 'Compactadora',
+  GRUA = 'Grúa',
+  MONTACARGAS = 'Montacargas',
 }
 
 export enum MeterType {
-  HOROMETRO = 'horometro',
-  ODOMETRO = 'odometro',
+  HOROMETRO = 'HOROMETRO',
+  ODOMETRO = 'ODOMETRO',
 }
 
 export enum ProviderType {
-  RENTAL = 'rental',
-  OWNED = 'owned',
-  SERVICE = 'service',
+  PROPIO = 'PROPIO',
+  TERCERO = 'TERCERO',
 }
 
 @Entity('equipo', { schema: 'equipo' })
@@ -108,14 +107,27 @@ export class Equipment {
   @Column({ name: 'estado', type: 'varchar', length: 50, default: 'DISPONIBLE' })
   estado!: string;
 
-  // project_id removed as it does not exist in equipo.equipo table
-  // Use EquipmentAssignment (equipo.equipo_edt) for project assignments
+  // Document and Certification Fields (from DB schema)
+  @Column({ name: 'documento_acreditacion', type: 'varchar', length: 100, nullable: true })
+  documentoAcreditacion?: string;
+
+  @Column({ name: 'fecha_acreditacion', type: 'date', nullable: true })
+  fechaAcreditacion?: Date;
+
+  @Column({ name: 'codigo_externo', type: 'varchar', length: 50, nullable: true })
+  codigoExterno?: string;
+
+  @Column({ name: 'fecha_venc_poliza', type: 'date', nullable: true })
+  fechaVencPoliza?: Date;
+
+  @Column({ name: 'fecha_venc_soat', type: 'date', nullable: true })
+  fechaVencSoat?: Date;
+
+  @Column({ name: 'fecha_venc_citv', type: 'date', nullable: true })
+  fechaVencCitv?: Date;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
-
-  // creado_por and actualizado_por columns don't exist in equipo.equipo table
-  // These fields are not tracked in the database schema
 
   @CreateDateColumn({
     name: 'created_at',

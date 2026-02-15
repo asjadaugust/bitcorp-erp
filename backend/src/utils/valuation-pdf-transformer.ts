@@ -38,7 +38,12 @@ import {
 export function transformToValuationPage1Dto(
   valuation: Valorizacion,
   contract: Contract,
-  equipment: Equipment
+  equipment: Equipment,
+  financialTotals?: {
+    importe_gasto_obra?: number;
+    importe_adelanto?: number;
+    importe_exceso_combustible?: number;
+  }
 ): ValuationPage1Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
@@ -85,7 +90,7 @@ export function transformToValuationPage1Dto(
   };
 
   // Financial calculations
-  const financieroDto: ValuationFinancialDto = calculateFinancials(valuation, contract);
+  const financieroDto: ValuationFinancialDto = calculateFinancials(valuation, contract, financialTotals);
 
   return {
     equipo: equipoDto,
@@ -99,7 +104,15 @@ export function transformToValuationPage1Dto(
 /**
  * Calculate financial summary from valuation data
  */
-function calculateFinancials(valuation: Valorizacion, contract: Contract): ValuationFinancialDto {
+function calculateFinancials(
+  valuation: Valorizacion, 
+  contract: Contract,
+  financialTotals?: {
+    importe_gasto_obra?: number;
+    importe_adelanto?: number;
+    importe_exceso_combustible?: number;
+  }
+): ValuationFinancialDto {
   // Parse all numeric values (TypeORM returns decimals as strings)
   const horasTrabajadas = parseFloat(String(valuation.horasTrabajadas || 0));
   const diasTrabajados = valuation.diasTrabajados || 0;
@@ -125,16 +138,13 @@ function calculateFinancials(valuation: Valorizacion, contract: Contract): Valua
   const importeManipuleoCombustible = combustibleConsumido * precioManipuleoCombustible;
 
   // Work expenses
-  // TODO: Sum from tbl_C08008_EquipoGastoObra when migrated
-  const importeGastoObra = 0; // Placeholder until detail tables are migrated
+  const importeGastoObra = financialTotals?.importe_gasto_obra || 0;
 
   // Advances/prepayments
-  // TODO: Sum from tbl_C08002_AdelantoAmortizacion when migrated
-  const importeAdelanto = 0; // Placeholder until detail tables are migrated
+  const importeAdelanto = financialTotals?.importe_adelanto || 0;
 
   // Excess fuel charges
-  // TODO: Calculate from tbl_C08010_ExcesoCombustible when migrated
-  const importeExcesoCombustible = 0; // Placeholder until detail tables are migrated
+  const importeExcesoCombustible = financialTotals?.importe_exceso_combustible || 0;
 
   // Total discounts (negative amounts reduce the valuation)
   const descuentoTotal =
@@ -313,13 +323,14 @@ export function transformToValuationPage3Dto(
   // Transform fuel records
   const combustible_detalle: FuelConsumptionDetailDto[] = fuelRecords.map((f) => ({
     fecha: f.fecha,
-    num_vale_salida: String(f.num_vale_salida || ''),
-    horometro_odometro: f.horometro_odometro || 'HORÓMETRO',
-    inicial: parseFloat(String(f.inicial || 0)),
+    num_vale_salida: String(f.numero_documento || ''),
+    horometro_odometro: f.tipo_combustible || 'DIESEL', // Use tipo_combustible as fallback if horo/odo not in this table
+    inicial: 0, // Not present in this table
     cantidad: parseFloat(String(f.cantidad || 0)),
     precio_unitario_sin_igv: parseFloat(String(f.precio_unitario || 0)),
+    precio_unitario: parseFloat(String(f.precio_unitario || 0)), // Add for template compatibility
     importe: parseFloat(String(f.monto_total || 0)),
-    comentario: f.comentario,
+    comentario: f.observaciones,
   }));
 
   // Calculate totals
@@ -536,7 +547,12 @@ export function transformToValuationPage6Dto(
 export function transformToValuationPage7Dto(
   valuation: Valorizacion,
   contract: Contract,
-  equipment: Equipment
+  equipment: Equipment,
+  financialTotals?: {
+    importe_gasto_obra?: number;
+    importe_adelanto?: number;
+    importe_exceso_combustible?: number;
+  }
 ): ValuationPage7Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
@@ -566,7 +582,7 @@ export function transformToValuationPage7Dto(
   };
 
   // Reuse financial calculation from Page 1
-  const financieroDto: ValuationFinancialDto = calculateFinancials(valuation, contract);
+  const financieroDto: ValuationFinancialDto = calculateFinancials(valuation, contract, financialTotals);
 
   return {
     equipo: equipoDto,

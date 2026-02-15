@@ -56,7 +56,7 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                   </div>
                   <div class="info-item">
                     <label>Modalidad</label>
-                    <p>{{ contract.modalidad || '-' }}</p>
+                    <p>{{ contract.modalidad_display || '-' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Tarifa</label>
@@ -66,7 +66,7 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                   </div>
                   <div class="info-item">
                     <label>Tipo Tarifa</label>
-                    <p>{{ contract.tipo_tarifa || '-' }}</p>
+                    <p>{{ contract.tipo_tarifa_display || '-' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Mínimo Por</label>

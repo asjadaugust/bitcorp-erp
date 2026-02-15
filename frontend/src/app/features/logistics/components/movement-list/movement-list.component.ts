@@ -44,11 +44,11 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       [loading]="loading"
       [tabs]="tabs"
     >
-      <app-actions-container actions>
-        <button class="btn btn-primary" (click)="registerMovement('IN')">
+    <app-actions-container actions>
+        <button class="btn btn-primary" (click)="registerMovement('entrada')">
           <i class="fa-solid fa-arrow-right-to-bracket"></i> Registrar Ingreso
         </button>
-        <button class="btn btn-danger" (click)="registerMovement('OUT')">
+        <button class="btn btn-danger" (click)="registerMovement('salida')">
           <i class="fa-solid fa-arrow-right-from-bracket"></i> Registrar Salida
         </button>
         <app-export-dropdown
@@ -96,16 +96,17 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 
       <!-- Custom Templates -->
       <ng-template #dateTemplate let-row>
-        <strong class="equipment-code">{{ row.fecha | date: 'dd/MM/yyyy HH:mm' }}</strong>
+        <strong class="equipment-code">{{ row.fecha | date: 'dd/MM/yyyy' }}</strong>
       </ng-template>
 
       <ng-template #typeTemplate let-row>
         <span
           [class]="
-            row.tipo_movimiento === 'IN' ? 'badge badge-status-in' : 'badge badge-status-out'
+            row.tipo_movimiento === 'entrada' ? 'badge badge-status-in' : 'badge badge-status-out'
           "
+          [class.badge-primary]="row.tipo_movimiento === 'transferencia'"
         >
-          {{ row.tipo_movimiento === 'IN' ? 'INGRESO' : 'SALIDA' }}
+          {{ row.tipo_movimiento | uppercase }}
         </span>
       </ng-template>
 
@@ -114,17 +115,11 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       </ng-template>
 
       <ng-template #entityTemplate let-row>
-        {{
-          row.project_name && row.project_name !== 'N/A'
-            ? row.project_name
-            : row.provider_id
-              ? 'Proveedor: ' + row.provider_id
-              : '-'
-        }}
+        {{ row.proyecto_nombre || '-' }}
       </ng-template>
 
       <ng-template #itemsTemplate let-row>
-        <span class="badge badge-items">{{ row.items || 0 }} items</span>
+        <span class="badge badge-items">{{ row.items_count || 0 }} items</span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -301,8 +296,10 @@ export class MovementListComponent implements OnInit {
       label: 'Tipo de Movimiento',
       type: 'select',
       options: [
-        { label: 'Ingreso', value: 'IN' },
-        { label: 'Salida', value: 'OUT' },
+        { label: 'Ingreso', value: 'entrada' },
+        { label: 'Salida', value: 'salida' },
+        { label: 'Transferencia', value: 'transferencia' },
+        { label: 'Ajuste', value: 'ajuste' },
       ],
     },
     { key: 'startDate', label: 'Fecha', type: 'date' },
@@ -312,7 +309,7 @@ export class MovementListComponent implements OnInit {
     { key: 'date', label: 'Fecha', type: 'template' },
     { key: 'type', label: 'Tipo', type: 'template' },
     { key: 'document', label: 'Documento', type: 'template' },
-    { key: 'entity', label: 'Proyecto/Proveedor', type: 'template' },
+    { key: 'entity', label: 'Proyecto/Origen', type: 'template' },
     { key: 'items', label: 'Items', type: 'template' },
     { key: 'observaciones', label: 'Observaciones', type: 'text' },
   ];
@@ -339,8 +336,8 @@ export class MovementListComponent implements OnInit {
 
   calculateStats(): void {
     this.stats.total = this.movements.length;
-    this.stats.inCount = this.movements.filter((m) => m.tipo_movimiento === 'IN').length;
-    this.stats.outCount = this.movements.filter((m) => m.tipo_movimiento === 'OUT').length;
+    this.stats.inCount = this.movements.filter((m) => m.tipo_movimiento === 'entrada').length;
+    this.stats.outCount = this.movements.filter((m) => m.tipo_movimiento === 'salida').length;
   }
 
   onFilterChange(filters: Record<string, any>): void {
@@ -369,7 +366,7 @@ export class MovementListComponent implements OnInit {
     });
   }
 
-  registerMovement(type: 'IN' | 'OUT'): void {
+  registerMovement(type: 'entrada' | 'salida'): void {
     this.router.navigate(['/logistics/movements/new'], { queryParams: { type } });
   }
 
@@ -386,12 +383,13 @@ export class MovementListComponent implements OnInit {
     const exportData = this.movements.map((movement) => ({
       ID: movement.id || '',
       Fecha: movement.fecha ? new Date(movement.fecha).toLocaleDateString('es-PE') : '',
-      Tipo: movement.tipo_movimiento === 'IN' ? 'Ingreso' : 'Salida',
-      'Tipo Documento': movement.tipo_documento || '',
+      Tipo: movement.tipo_movimiento.toUpperCase(),
       'Número Documento': movement.numero_documento || '',
       Observaciones: movement.observaciones || '',
-      'Proveedor ID': movement.provider_id || '',
-      'Proyecto ID': movement.project_id || '',
+      'Proyecto': movement.proyecto_nombre || '',
+      'Creado Por': movement.creado_por_nombre || '',
+      'Total Items': movement.items_count || 0,
+      'Monto Total': movement.monto_total || 0,
     }));
 
     if (format === 'excel') {

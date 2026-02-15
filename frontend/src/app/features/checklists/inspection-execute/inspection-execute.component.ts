@@ -848,8 +848,8 @@ export class InspectionExecuteComponent implements OnInit {
   results = new Map<number, Partial<ChecklistResult>>();
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
-    { label: 'Checklists', url: '/checklists' },
+    { label: 'Inicio', url: '/app' },
+    { label: 'Listas de Verificación', url: '/checklists' },
     { label: 'Inspecciones', url: '/checklists/inspections' },
     { label: 'Nueva Inspección' },
   ];

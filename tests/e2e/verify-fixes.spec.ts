@@ -17,12 +17,12 @@ test.describe('UI Verification', () => {
     const eqRes = await request.post('http://localhost:3400/api/equipment', {
       headers: { Authorization: `Bearer ${authToken}` },
       data: {
-        code: uniqueCode,
-        name: 'Test Equipment Redesign',
-        brand: 'CAT',
-        model: '320D',
-        status: 'available',
-        hourmeter_reading: 100,
+        codigo_equipo: uniqueCode,
+        categoria: 'EXCAVADORA',
+        marca: 'CAT',
+        modelo: '320D',
+        estado: 'DISPONIBLE',
+        medidor_uso: 'HOROMETRO',
       },
     });
 
@@ -37,13 +37,15 @@ test.describe('UI Verification', () => {
       await request.post('http://localhost:3400/api/contracts', {
         headers: { Authorization: `Bearer ${authToken}` },
         data: {
-          equipment_id: eqData.id,
-          client_name: 'Test Client',
-          project_name: 'Test Project',
-          code: `CTR-${Date.now()}`,
-          start_date: '2025-01-01',
-          end_date: '2025-12-31',
-          status: 'active',
+          equipo_id: eqData.id,
+          numero_contrato: `CTR-${Date.now()}`,
+          fecha_contrato: '2025-01-01',
+          fecha_inicio: '2025-01-01',
+          fecha_fin: '2025-12-31',
+          estado: 'ACTIVO',
+          moneda: 'PEN',
+          tipo_tarifa: 'POR_HORA',
+          tarifa: 150,
         },
       });
 
@@ -51,12 +53,12 @@ test.describe('UI Verification', () => {
       await request.post('http://localhost:3400/api/scheduling/maintenance-schedules', {
         headers: { Authorization: `Bearer ${authToken}` },
         data: {
-          equipment_id: eqData.id,
-          maintenance_type: 'preventive',
-          interval_type: 'hours',
-          interval_value: 250,
-          description: 'Initial 250h Service',
-          status: 'active',
+          equipo_id: eqData.id,
+          tipo_mantenimiento: 'PREVENTIVO',
+          tipo_intervalo: 'HORAS',
+          intervalo_valor: 250,
+          descripcion: 'Servicio inicial 250h',
+          estado: 'ACTIVO',
         },
       });
     }

@@ -107,10 +107,10 @@ export interface TableColumn {
       </table>
 
       <!-- Pagination Controls -->
-      <div *ngIf="data && data.length > 0" class="pagination-container">
+      <div *ngIf="totalResults > 0" class="pagination-container">
         <div class="pagination-info">
           <span
-            >Mostrando {{ startIndex + 1 }} - {{ endIndex }} de {{ data.length }} resultados</span
+            >Mostrando {{ startIndex + 1 }} - {{ endIndex }} de {{ totalResults }} resultados</span
           >
           <div class="page-size-selector">
             <label>Filas por página:</label>
@@ -408,11 +408,19 @@ export class AeroTableComponent {
   @Input() templates: { [key: string]: TemplateRef<any> } = {};
   @Output() rowClick = new EventEmitter<any>();
 
+  @Input() serverSide = false;
+  @Input() totalItems = 0;
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
+
   // Pagination properties
   pageSize = 10;
   currentPage = 1;
 
   get paginatedData(): any[] {
+    if (this.serverSide) {
+      return this.data || [];
+    }
     if (!this.data || !Array.isArray(this.data)) {
       return [];
     }
@@ -422,6 +430,9 @@ export class AeroTableComponent {
   }
 
   get totalPages(): number {
+    if (this.serverSide) {
+      return Math.ceil(this.totalItems / this.pageSize);
+    }
     if (!this.data || !Array.isArray(this.data)) {
       return 0;
     }
@@ -433,18 +444,32 @@ export class AeroTableComponent {
   }
 
   get endIndex(): number {
+    if (this.serverSide) {
+      return Math.min(this.startIndex + this.pageSize, this.totalItems);
+    }
     const end = this.startIndex + this.pageSize;
     return Math.min(end, this.data.length);
+  }
+
+  get totalResults(): number {
+    return this.serverSide ? this.totalItems : (this.data ? this.data.length : 0);
   }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      if (this.serverSide) {
+        this.pageChange.emit(this.currentPage);
+      }
     }
   }
 
   onPageSizeChange(): void {
     this.currentPage = 1; // Reset to first page when changing page size
+    if (this.serverSide) {
+      this.pageSizeChange.emit(this.pageSize);
+      this.pageChange.emit(1); // Also emit page change to reload data
+    }
   }
 
   onRowClick(row: any) {

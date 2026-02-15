@@ -1,7 +1,8 @@
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { AppDataSource } from '../config/database.config';
 import { Timesheet, EstadoTareo } from '../models/timesheet.model';
 import { TimesheetDetail } from '../models/timesheet-detail.model';
+import { DailyReport } from '../models/daily-report-typeorm.model';
 import { Trabajador } from '../models/trabajador.model';
 import {
   TimesheetListDto,
@@ -148,18 +149,64 @@ export class TimesheetService {
         });
       }
 
-      // Create new timesheet
+      // Calculate start and end dates for the period
+      const [year, month] = dto.periodo.split('-').map(Number);
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0); // Last day of month
+
+      // Fetch daily reports for the worker in the period
+      const dailyReportRepo = AppDataSource.getRepository(DailyReport);
+      const dailyReports = await dailyReportRepo.find({
+        where: {
+          trabajadorId: dto.trabajadorId,
+          fecha: Between(startDate, endDate),
+        },
+        order: { fecha: 'ASC' }
+      });
+
+      // Calculate totals
+      let totalHours = 0;
+      const uniqueDays = new Set<string>();
+      
+      dailyReports.forEach(report => {
+        if (report.horasTrabajadas) {
+          totalHours += Number(report.horasTrabajadas);
+        }
+        if (report.fecha) {
+          const dateStr = report.fecha instanceof Date 
+            ? report.fecha.toISOString().split('T')[0] 
+            : String(report.fecha).split('T')[0];
+          uniqueDays.add(dateStr);
+        }
+      });
+
+      // Create new timesheet header
       const timesheet = this.timesheetRepository.create({
         trabajadorId: dto.trabajadorId,
         periodo: dto.periodo,
-        totalDiasTrabajados: dto.totalDiasTrabajados || 0,
-        totalHoras: dto.totalHoras || 0,
+        totalDiasTrabajados: dto.totalDiasTrabajados || uniqueDays.size,
+        totalHoras: dto.totalHoras || totalHours,
         estado: 'BORRADOR',
         observaciones: dto.observaciones,
         creadoPor: dto.creadoPor,
       });
 
       const saved = await this.timesheetRepository.save(timesheet);
+
+      // Create timesheet details from reports
+      if (dailyReports.length > 0) {
+        const details = dailyReports.map(report => {
+          return this.timesheetDetailRepository.create({
+            tareoId: saved.id,
+            proyectoId: report.proyectoId,
+            fecha: report.fecha,
+            horasTrabajadas: report.horasTrabajadas || 0,
+            observaciones: report.observaciones,
+          });
+        });
+        
+        await this.timesheetDetailRepository.save(details);
+      }
 
       // Load relations for DTO
       const timesheetWithRelations = await this.timesheetRepository.findOne({

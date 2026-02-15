@@ -80,17 +80,17 @@ export class ProjectService {
       description?: string;
     }
   ): Observable<Project> {
-    // Support both Spanish (from Project model) and English (from form) field names
+    // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
     const apiData = {
-      code: (project as any).code || project.codigo,
-      name: (project as any).name || project.nombre,
-      description: (project as any).description || project.descripcion,
-      location: (project as any).location || project.ubicacion,
-      start_date: (project as any).startDate || project.fechaInicio,
-      end_date: (project as any).endDate || project.fechaFin,
-      status: (project as any).status || project.estado,
-      budget: (project as any).budget || project.presupuesto,
-      client: (project as any).client || project.cliente,
+      codigo: (project as any).code || project.codigo,
+      nombre: (project as any).name || project.nombre,
+      descripcion: (project as any).description || project.descripcion,
+      ubicacion: (project as any).location || project.ubicacion,
+      fecha_inicio: (project as any).startDate || project.fechaInicio,
+      fecha_fin: (project as any).endDate || project.fechaFin,
+      estado: (project as any).status || project.estado,
+      presupuesto: (project as any).budget || project.presupuesto,
+      cliente: (project as any).client || project.cliente,
     };
     return this.http
       .post<any>(this.apiUrl, apiData)
@@ -111,7 +111,7 @@ export class ProjectService {
       description?: string;
     }
   ): Observable<Project> {
-    // Support both Spanish (from Project model) and English (from form) field names
+    // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
     const apiData: any = {};
 
     const code = (project as any).code || project.codigo;
@@ -124,15 +124,16 @@ export class ProjectService {
     const budget = (project as any).budget || project.presupuesto;
     const client = (project as any).client || project.cliente;
 
-    if (code) apiData.code = code;
-    if (name) apiData.name = name;
-    if (description) apiData.description = description;
-    if (location) apiData.location = location;
-    if (startDate) apiData.start_date = startDate;
-    if (endDate) apiData.end_date = endDate;
-    if (status) apiData.status = status;
-    if (budget) apiData.budget = budget;
-    if (client) apiData.client = client;
+    // Use !== undefined so empty strings / 0 can clear fields
+    if (code !== undefined) apiData.codigo = code;
+    if (name !== undefined) apiData.nombre = name;
+    if (description !== undefined) apiData.descripcion = description;
+    if (location !== undefined) apiData.ubicacion = location;
+    if (startDate !== undefined) apiData.fecha_inicio = startDate;
+    if (endDate !== undefined) apiData.fecha_fin = endDate;
+    if (status !== undefined) apiData.estado = status;
+    if (budget !== undefined) apiData.presupuesto = budget;
+    if (client !== undefined) apiData.cliente = client;
 
     return this.http
       .put<any>(`${this.apiUrl}/${id}`, apiData)

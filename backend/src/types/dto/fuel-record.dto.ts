@@ -38,7 +38,7 @@ export interface FuelRecordDto {
 
   // Computed relation fields
   valorizacion_periodo?: string | null;
-  valorizacion_equipment_id?: number | null;
+  valorizacion_equipo_id?: number | null;
 }
 
 /**
@@ -109,7 +109,7 @@ export function toFuelRecordDto(entity: RegistroCombustible): FuelRecordDto {
 
     // Relation fields (if loaded)
     valorizacion_periodo: entity.valorizacion?.periodo || null,
-    valorizacion_equipment_id: entity.valorizacion?.equipmentId || null,
+    valorizacion_equipo_id: entity.valorizacion?.equipoId || null,
   };
 }
 

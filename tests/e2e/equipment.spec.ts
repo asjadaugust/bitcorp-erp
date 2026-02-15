@@ -27,9 +27,9 @@ test.describe('Equipment Management', () => {
     // Click on the "View Details" button in the first row
     // The button has title="View Details"
     const viewButton = page
-      .locator('.equipment-table tbody tr')
+      .locator('.equipment-table tbody tr, table tbody tr')
       .first()
-      .locator('button[title="View Details"]');
+      .locator('button[title="Ver"], button[title="View Details"]');
     await expect(viewButton).toBeVisible();
 
     // Wait for navigation
@@ -42,8 +42,8 @@ test.describe('Equipment Management', () => {
   });
 
   test('should navigate to create equipment form', async ({ page }) => {
-    await page.click('button:has-text("Add Equipment")');
+    await page.click('button:has-text("Nuevo Equipo")');
     await expect(page).toHaveURL(/\/equipment\/new/);
-    await expect(page.locator('h1')).toContainText('Add Equipment');
+    await expect(page.locator('h1')).toContainText('Nuevo Equipo');
   });
 });

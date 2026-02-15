@@ -13,31 +13,42 @@ export interface Product {
   unidad_medida: string;
   stock_actual: number;
   precio_unitario: number;
-  valor_total?: number; // Computed: stock_actual * precio_unitario
+  valor_total?: number;
   ubicacion?: string;
-  is_active: boolean; // DTO usually returns is_active or esta_activo, checking backend DTO would be best but assuming is_active based on previous usage
+  esta_activo: boolean; // Updated to match backend DTO
 }
 
 export interface Movement {
-  id: string;
-  project_id?: string;
-  provider_id?: number;
-  fecha: Date;
-  tipo_movimiento: 'IN' | 'OUT';
-  tipo_documento?: string;
+  id: number;
+  proyecto_id?: number;
+  fecha: string; // ISO string
+  tipo_movimiento: 'entrada' | 'salida' | 'transferencia' | 'ajuste';
   numero_documento?: string;
   observaciones?: string;
-  details: MovementDetail[];
+  estado: string;
+  created_at: string;
+  updated_at: string;
+  // Computed/Joined
+  proyecto_nombre?: string;
+  creado_por_nombre?: string;
+  items_count?: number;
+  monto_total?: number;
+  // Details for detail view
+  detalles?: MovementDetail[];
 }
 
 export interface MovementDetail {
-  id: string;
-  movement_id: string;
-  product_id: string;
+  id: number;
+  movimiento_id: number;
+  producto_id: number;
   cantidad: number;
   precio_unitario: number;
-  total: number;
-  product?: Product;
+  monto_total: number;
+  observaciones?: string;
+  // Product info
+  producto_codigo?: string;
+  producto_nombre?: string;
+  unidad_medida?: string;
 }
 
 @Injectable({
@@ -49,21 +60,14 @@ export class InventoryService {
   constructor(private http: HttpClient) {}
 
   getProducts(): Observable<Product[]> {
-    return this.http.get<any>(`${this.apiUrl}/products`).pipe(
-      map((response) => {
-        // Handle response that has success/data structure
-        const dataArray = response?.data || response;
-        return Array.isArray(dataArray) ? dataArray : [];
-      })
+    return this.http.get<{ data: Product[] }>(`${this.apiUrl}/products`).pipe(
+      map((response) => response.data || [])
     );
   }
 
   getProduct(id: string): Observable<Product> {
-    return this.http.get<any>(`${this.apiUrl}/products/${id}`).pipe(
-      map((response) => {
-        // Handle response that has success/data structure
-        return response?.data || response;
-      })
+    return this.http.get<{ data: Product }>(`${this.apiUrl}/products/${id}`).pipe(
+      map((response) => response.data)
     );
   }
 
@@ -73,45 +77,32 @@ export class InventoryService {
 
   createProduct(product: Partial<Product>): Observable<Product> {
     return this.http
-      .post<any>(`${this.apiUrl}/products`, product)
-      .pipe(map((response) => response?.data || response));
+      .post<{ data: Product }>(`${this.apiUrl}/products`, product)
+      .pipe(map((response) => response.data));
   }
 
   updateProduct(id: string, product: Partial<Product>): Observable<Product> {
     return this.http
-      .put<any>(`${this.apiUrl}/products/${id}`, product)
-      .pipe(map((response) => response?.data || response));
+      .put<{ data: Product }>(`${this.apiUrl}/products/${id}`, product)
+      .pipe(map((response) => response.data));
   }
 
   getMovements(): Observable<Movement[]> {
-    return this.http.get<any>(`${this.apiUrl}/movements`).pipe(
-      map((response) => {
-        // Handle response that has success/data structure
-        if (response && typeof response === 'object' && 'data' in response) {
-          return response.data;
-        }
-        // Fallback to direct array
-        return Array.isArray(response) ? response : [];
-      })
+    return this.http.get<{ data: Movement[] }>(`${this.apiUrl}/movements`).pipe(
+      map((response) => response.data || [])
     );
   }
 
-  getMovementById(id: string): Observable<Movement> {
-    return this.http.get<any>(`${this.apiUrl}/movements/${id}`).pipe(
-      map((response) => {
-        // Handle response that has success/data structure
-        if (response && typeof response === 'object' && 'data' in response) {
-          return response.data;
-        }
-        return response;
-      })
+  getMovementById(id: number): Observable<Movement> {
+    return this.http.get<{ data: Movement }>(`${this.apiUrl}/movements/${id}`).pipe(
+      map((response) => response.data)
     );
   }
 
-  createMovement(movement: any): Observable<Movement> {
+  createMovement(movement: Partial<Movement>): Observable<Movement> {
     return this.http
-      .post<any>(`${this.apiUrl}/movements`, movement)
-      .pipe(map((response) => response?.data || response));
+      .post<{ data: Movement }>(`${this.apiUrl}/movements`, movement)
+      .pipe(map((response) => response.data));
   }
 
   getStock(productId: string): Observable<number> {

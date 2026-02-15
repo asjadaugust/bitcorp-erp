@@ -9,6 +9,8 @@ import {
   Index,
 } from 'typeorm';
 import { User } from './user.model';
+import { Contract } from './contract.model';
+import { Equipment } from './equipment.model';
 
 export type EstadoValorizacion =
   | 'PENDIENTE'
@@ -28,15 +30,15 @@ export class Valorizacion {
 
   @Column({ name: 'equipo_id', type: 'integer' })
   @Index('idx_valorizacion_equipo_equipo')
-  equipmentId!: number;
+  equipoId!: number;
 
   @Column({ name: 'contrato_id', type: 'integer', nullable: true })
   @Index('idx_valorizacion_equipo_contrato')
-  contractId?: number;
+  contratoId?: number;
 
   @Column({ name: 'proyecto_id', type: 'integer', nullable: true })
   @Index('idx_valorizacion_equipo_proyecto')
-  projectId?: number;
+  proyectoId?: number;
 
   @Column({ name: 'periodo', type: 'varchar', length: 7 })
   @Index('idx_valorizacion_equipo_periodo')
@@ -105,13 +107,13 @@ export class Valorizacion {
   observaciones?: string;
 
   @Column({ name: 'creado_por', type: 'integer', nullable: true })
-  createdBy?: number;
+  creadoPor?: number;
 
   @Column({ name: 'aprobado_por', type: 'integer', nullable: true })
-  approvedBy?: number;
+  aprobadoPor?: number;
 
   @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
-  approvedAt?: Date;
+  aprobadoEn?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
@@ -127,6 +129,14 @@ export class Valorizacion {
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'aprobado_por' })
   approver?: User;
+
+  @ManyToOne(() => Contract, { nullable: true })
+  @JoinColumn({ name: 'contrato_id' })
+  contrato?: Contract;
+
+  @ManyToOne(() => Equipment, { nullable: true })
+  @JoinColumn({ name: 'equipo_id' })
+  equipo?: Equipment;
 }
 
 // Keep the old class for backward compatibility during migration

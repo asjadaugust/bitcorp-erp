@@ -4,7 +4,6 @@ import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { MainNavComponent } from '../shared/components/main-nav.component';
 import { SidebarComponent } from '../shared/components/sidebar.component';
-import { ProjectSelectorComponent } from './components/project-selector/project-selector.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -14,12 +13,10 @@ import { ProjectSelectorComponent } from './components/project-selector/project-
     RouterOutlet,
     MainNavComponent,
     SidebarComponent,
-    ProjectSelectorComponent,
   ],
   template: `
     <div class="app-layout">
       <app-main-nav></app-main-nav>
-      <app-project-selector></app-project-selector>
       <div class="layout-body">
         <app-sidebar
           *ngIf="showSidebar"

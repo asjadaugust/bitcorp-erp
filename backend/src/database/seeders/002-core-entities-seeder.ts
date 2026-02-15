@@ -14,8 +14,8 @@ export class CoreEntitiesSeeder extends BaseSeeder {
 
     // 1. Projects
     const projectsRepo = this.dataSource.getRepository(Proyecto);
-    await projectsRepo.save([
-      projectsRepo.create({
+    const projectsData = [
+      {
         legacyId: 'PROJ001',
         codigo: 'PRO-2025-001',
         nombre: 'Proyecto Carretera Central',
@@ -24,11 +24,11 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         fechaInicio: new Date('2025-01-01'),
         fechaFin: new Date('2025-12-31'),
         presupuesto: 5000000,
-        estado: 'ACTIVO',
+        estado: 'ACTIVO' as any,
         cliente: 'Ministerio de Transportes',
         isActive: true,
-      }),
-      projectsRepo.create({
+      },
+      {
         legacyId: 'PROJ002',
         codigo: 'PRO-2025-002',
         nombre: 'Proyecto Puente Arequipa',
@@ -37,43 +37,57 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         fechaInicio: new Date('2025-02-01'),
         fechaFin: new Date('2025-11-30'),
         presupuesto: 3000000,
-        estado: 'PLANIFICACION',
+        estado: 'PLANIFICACION' as any,
         cliente: 'Gobierno Regional',
         isActive: true,
-      }),
-    ]);
+      },
+    ];
+
+    for (const data of projectsData) {
+      const existing = await projectsRepo.findOneBy({ legacyId: data.legacyId });
+      if (!existing) {
+        await projectsRepo.save(projectsRepo.create(data));
+      }
+    }
 
     // 2. Providers
     const providersRepo = this.dataSource.getRepository(Provider);
-    await providersRepo.save([
-      providersRepo.create({
+    const providersData = [
+      {
         legacyId: 'PROV001',
         ruc: '20123456789',
         razonSocial: 'MAQUINARIAS DEL PERÚ S.A.C.',
         nombreComercial: 'Maquinarias Perú',
-        tipoProveedor: 'equipment',
+        tipoProveedor: 'EQUIPOS' as any,
         direccion: 'Av. Industrial 123, Lima',
         telefono: '(01) 234-5678',
         email: 'ventas@maquinariasperu.com',
         isActive: true,
-      }),
-      providersRepo.create({
+      },
+      {
         legacyId: 'PROV002',
         ruc: '20987654321',
         razonSocial: 'EQUIPOS PESADOS SAC',
         nombreComercial: 'Equipos Pesados',
-        tipoProveedor: 'equipment',
+        tipoProveedor: 'EQUIPOS' as any,
         direccion: 'Jr. Los Pinos 456, Callao',
         telefono: '(01) 876-5432',
         email: 'info@equipospesados.pe',
         isActive: true,
-      }),
-    ]);
+      },
+    ];
+
+    for (const data of providersData) {
+      const existing = await providersRepo.findOneBy({ legacyId: data.legacyId });
+      if (!existing) {
+        await providersRepo.save(providersRepo.create(data));
+      }
+    }
 
     // 3. Equipment
     const equipmentRepo = this.dataSource.getRepository(Equipment);
-    await equipmentRepo.save([
-      equipmentRepo.create({
+    const equipmentData = [
+      {
         legacyId: 'EQ001',
         codigoEquipo: 'EXC-001',
         categoria: 'EXCAVADORA',
@@ -83,11 +97,11 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         numeroSerieEquipo: 'CAT320D-2025-001',
         anioFabricacion: 2020,
         potenciaNeta: 121.0,
-        estado: 'disponible',
-        medidorUso: 'HOROMETRO',
+        estado: 'DISPONIBLE' as any,
+        medidorUso: 'HOROMETRO' as any,
         isActive: true,
-      }),
-      equipmentRepo.create({
+      },
+      {
         legacyId: 'EQ002',
         codigoEquipo: 'TRA-001',
         categoria: 'TRACTOR',
@@ -97,11 +111,11 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         numeroSerieEquipo: 'KOM-D65-2025-001',
         anioFabricacion: 2021,
         potenciaNeta: 175.0,
-        estado: 'disponible',
-        medidorUso: 'HOROMETRO',
+        estado: 'DISPONIBLE' as any,
+        medidorUso: 'HOROMETRO' as any,
         isActive: true,
-      }),
-      equipmentRepo.create({
+      },
+      {
         legacyId: 'EQ003',
         codigoEquipo: 'VOL-001',
         categoria: 'VOLQUETE',
@@ -110,16 +124,23 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         modelo: 'FM500',
         numeroSerieEquipo: 'VOL-FM500-2025-001',
         anioFabricacion: 2022,
-        estado: 'disponible',
-        medidorUso: 'ODOMETRO',
+        estado: 'DISPONIBLE' as any,
+        medidorUso: 'ODOMETRO' as any,
         isActive: true,
-      }),
-    ]);
+      },
+    ];
+
+    for (const data of equipmentData) {
+      const existing = await equipmentRepo.findOneBy({ legacyId: data.legacyId });
+      if (!existing) {
+        await equipmentRepo.save(equipmentRepo.create(data));
+      }
+    }
 
     // 4. Workers (Trabajadores)
     const trabajadoresRepo = this.dataSource.getRepository(Trabajador);
-    await trabajadoresRepo.save([
-      trabajadoresRepo.create({
+    const trabajadoresData = [
+      {
         legacyId: 'TRAB001',
         dni: '87654321',
         nombres: 'Pedro',
@@ -131,11 +152,11 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         cargo: 'Operador de Excavadora',
         especialidad: 'Operación de maquinaria pesada',
         licenciaConducir: 'A-III-c',
-        tipoContrato: 'PLAZO_FIJO',
+        tipoContrato: 'PLAZO_FIJO' as any,
         fechaIngreso: new Date('2024-01-15'),
         isActive: true,
-      }),
-      trabajadoresRepo.create({
+      },
+      {
         legacyId: 'TRAB002',
         dni: '76543210',
         nombres: 'José',
@@ -147,16 +168,23 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         cargo: 'Operador de Tractor',
         especialidad: 'Operación de equipos de movimiento de tierras',
         licenciaConducir: 'A-III-c',
-        tipoContrato: 'INDEFINIDO',
+        tipoContrato: 'INDEFINIDO' as any,
         fechaIngreso: new Date('2023-06-01'),
         isActive: true,
-      }),
-    ]);
+      },
+    ];
+
+    for (const data of trabajadoresData) {
+      const existing = await trabajadoresRepo.findOneBy({ legacyId: data.legacyId });
+      if (!existing) {
+        await trabajadoresRepo.save(trabajadoresRepo.create(data));
+      }
+    }
 
     // 5. Products (Logística)
     const productsRepo = this.dataSource.getRepository(Producto);
-    await productsRepo.save([
-      productsRepo.create({
+    const productsData = [
+      {
         legacyId: 'PROD001',
         codigo: 'COMB-DIESEL',
         nombre: 'Combustible Diesel B5',
@@ -167,8 +195,8 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         stockMinimo: 500.0,
         precioUnitario: 15.5,
         isActive: true,
-      }),
-      productsRepo.create({
+      },
+      {
         legacyId: 'PROD002',
         codigo: 'LUBR-ENGINE',
         nombre: 'Aceite Lubricante Motor 15W-40',
@@ -179,8 +207,8 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         stockMinimo: 50.0,
         precioUnitario: 25.0,
         isActive: true,
-      }),
-      productsRepo.create({
+      },
+      {
         legacyId: 'PROD003',
         codigo: 'FIL-AIR',
         nombre: 'Filtro de Aire',
@@ -191,9 +219,16 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         stockMinimo: 10.0,
         precioUnitario: 120.0,
         isActive: true,
-      }),
-    ]);
+      },
+    ];
 
-    console.log('     ✓ Created 2 projects, 2 providers, 3 equipment, 2 workers, 3 products');
+    for (const data of productsData) {
+      const existing = await productsRepo.findOneBy({ legacyId: data.legacyId });
+      if (!existing) {
+        await productsRepo.save(productsRepo.create(data));
+      }
+    }
+
+    console.log('     ✓ Core entities seeding processed (skipped if already exist)');
   }
 }

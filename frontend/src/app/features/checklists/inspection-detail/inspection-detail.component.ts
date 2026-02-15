@@ -160,47 +160,49 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
               </span>
             </div>
 
-            <div class="results-table">
-              <div class="result-row header-row">
-                <div class="col-description">Descripción</div>
-                <div class="col-status">Estado</div>
-                <div class="col-value">Valor</div>
-                <div class="col-action">Acción</div>
-                <div class="col-obs">Observaciones</div>
-              </div>
-
-              <div
-                *ngFor="let result of getResultsByCategory(category)"
-                class="result-row"
-                [class.critical-fail]="result.item?.esCritico && result.conforme === false"
-              >
-                <div class="col-description">
-                  <div class="description-content">
-                    {{ result.item?.descripcion }}
-                    <span class="critical-badge" *ngIf="result.item?.esCritico">
-                      <i class="fa-solid fa-exclamation-triangle"></i> CRÍTICO
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th class="col-description">Descripción</th>
+                  <th class="col-status">Estado</th>
+                  <th class="col-value">Valor</th>
+                  <th class="col-action">Acción</th>
+                  <th class="col-obs">Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let result of getResultsByCategory(category)"
+                  [class.critical-fail]="result.item?.esCritico && result.conforme === false"
+                >
+                  <td class="col-description">
+                    <div class="description-content">
+                      {{ result.item?.descripcion }}
+                      <span class="critical-badge" *ngIf="result.item?.esCritico">
+                        <i class="fa-solid fa-exclamation-triangle"></i> CRÍTICO
+                      </span>
+                    </div>
+                  </td>
+                  <td class="col-status">
+                    <span class="status-badge" [ngClass]="getStatusClass(result.conforme)">
+                      <i [class]="getStatusIcon(result.conforme)"></i>
+                      {{ getStatusLabel(result.conforme) }}
                     </span>
-                  </div>
-                </div>
-                <div class="col-status">
-                  <span class="status-badge" [ngClass]="getStatusClass(result.conforme)">
-                    <i [class]="getStatusIcon(result.conforme)"></i>
-                    {{ getStatusLabel(result.conforme) }}
-                  </span>
-                </div>
-                <div class="col-value">
-                  {{ result.valorMedido || '-' }}
-                </div>
-                <div class="col-action">
-                  <span class="action-badge" [ngClass]="getActionClass(result.accionRequerida)">
-                    {{ getActionLabel(result.accionRequerida) }}
-                  </span>
-                </div>
-                <div class="col-obs">
-                  {{ result.observaciones || '-' }}
-                </div>
-              </div>
-            </div>
+                  </td>
+                  <td class="col-value">
+                    {{ result.valorMedido || '-' }}
+                  </td>
+                  <td class="col-action">
+                    <span class="action-badge" [ngClass]="getActionClass(result.accionRequerida)">
+                      {{ getActionLabel(result.accionRequerida) }}
+                    </span>
+                  </td>
+                  <td class="col-obs">
+                    {{ result.observaciones || '-' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -487,42 +489,51 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
       }
 
       .results-table {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-8);
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
       }
 
-      .result-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
-        gap: var(--s-12);
-        padding: var(--s-12);
-        border-radius: var(--s-4);
-        align-items: center;
-      }
-
-      .result-row.header-row {
+      .results-table th {
         background: var(--grey-100);
         font-weight: 700;
         font-size: 12px;
         text-transform: uppercase;
         color: var(--grey-700);
+        padding: var(--s-12);
+        text-align: left;
+        border-bottom: 2px solid var(--grey-200);
       }
 
-      .result-row:not(.header-row) {
-        background: var(--grey-50);
-        border: 1px solid var(--grey-200);
+      .results-table td {
+        padding: var(--s-12);
+        border-bottom: 1px solid var(--grey-200);
+        vertical-align: top;
       }
 
-      .result-row.critical-fail {
-        background: var(--error-50);
-        border-color: var(--error-300);
+      .results-table tr:hover {
+        background-color: var(--grey-50);
       }
+
+      .results-table tr.critical-fail {
+        background-color: var(--error-50);
+      }
+
+      .results-table tr.critical-fail td {
+        border-color: var(--error-200);
+      }
+
+      .col-description { width: 30%; }
+      .col-status { width: 15%; }
+      .col-value { width: 15%; }
+      .col-action { width: 15%; }
+      .col-obs { width: 25%; }
 
       .description-content {
         display: flex;
         flex-direction: column;
         gap: var(--s-4);
+        font-weight: 500;
       }
 
       .critical-badge {
@@ -650,8 +661,8 @@ export class InspectionDetailComponent implements OnInit {
   loading = false;
 
   breadcrumbs = [
-    { label: 'Dashboard', url: '/app' },
-    { label: 'Checklists', url: '/checklists' },
+    { label: 'Inicio', url: '/app' },
+    { label: 'Listas de Verificación', url: '/checklists' },
     { label: 'Inspecciones', url: '/checklists/inspections' },
     { label: 'Detalle' },
   ];

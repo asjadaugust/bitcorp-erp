@@ -203,7 +203,7 @@ export class ContractListComponent implements OnInit {
 
   contracts: Contract[] = [];
   loading = false;
-  filters = { status: '', search: '' };
+  filters = { estado: '', search: '' };
 
   breadcrumbs = [
     { label: 'Dashboard', url: '/app' },
@@ -230,10 +230,10 @@ export class ContractListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Activo', value: 'active' },
-        { label: 'Completado', value: 'completed' },
-        { label: 'Pendiente', value: 'pending' },
-        { label: 'Cancelado', value: 'cancelled' },
+        { label: 'Activo', value: 'Activo' },
+        { label: 'Vencido', value: 'Vencido' },
+        { label: 'Cancelado', value: 'Cancelado' },
+        { label: 'Borrador', value: 'Borrador' },
       ],
     },
   ];
@@ -242,17 +242,17 @@ export class ContractListComponent implements OnInit {
     { key: 'code', label: 'Código', type: 'template' },
     { key: 'provider_name', label: 'Proveedor', type: 'text' },
     { key: 'equipment_info', label: 'Equipo (Modelo / Placa)', type: 'text' },
-    { key: 'modalidad', label: 'Modalidad', type: 'text' },
+    { key: 'modalidad_display', label: 'Modalidad', type: 'text' },
     { key: 'vigencia', label: 'Vigencia', type: 'template' },
     {
       key: 'status',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        active: { label: 'Activo', class: 'badge status-active' },
-        completed: { label: 'Completado', class: 'badge status-completed' },
-        pending: { label: 'Pendiente', class: 'badge status-pending' },
-        cancelled: { label: 'Cancelado', class: 'badge status-cancelled' },
+        Activo: { label: 'Activo', class: 'badge status-active' },
+        Vencido: { label: 'Vencido', class: 'badge status-completed' },
+        Borrador: { label: 'Borrador', class: 'badge status-pending' },
+        Cancelado: { label: 'Cancelado', class: 'badge status-cancelled' },
       },
     },
   ];
@@ -276,7 +276,9 @@ export class ContractListComponent implements OnInit {
 
   onFilterChange(filters: Record<string, any>): void {
     this.filters.search = filters['search'] || '';
-    this.filters.status = filters['status'] || '';
+    this.filters.estado = filters['status'] 
+      ? this.contractService.mapEstadoFrontendToBackend(filters['status']) 
+      : '';
     this.loadContracts();
   }
 

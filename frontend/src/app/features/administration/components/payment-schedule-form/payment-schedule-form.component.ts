@@ -85,8 +85,8 @@ import {
             </thead>
             <tbody>
               <tr *ngFor="let detail of selectedDetails">
-                <td>{{ detail.accounts_payable?.document_number }}</td>
-                <td>{{ detail.accounts_payable?.provider?.C07001_RazonSocial || 'N/A' }}</td>
+                <td>{{ detail.accounts_payable?.numero_factura }}</td>
+                <td>{{ detail.accounts_payable?.provider?.razonSocial || 'N/A' }}</td>
                 <td>{{ detail.amount_to_pay | currency: 'PEN' : 'symbol' }}</td>
                 <td *ngIf="!isEditMode || formData.status === 'draft'">
                   <button
@@ -158,10 +158,10 @@ import {
                       [ngModelOptions]="{ standalone: true }"
                     />
                   </td>
-                  <td>{{ ap.document_number }}</td>
-                  <td>{{ ap.provider?.C07001_RazonSocial || 'N/A' }}</td>
-                  <td>{{ ap.amount | currency: 'PEN' : 'symbol' }}</td>
-                  <td>{{ ap.due_date | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ ap.numero_factura }}</td>
+                  <td>{{ ap.provider?.razonSocial || 'N/A' }}</td>
+                  <td>{{ ap.monto_total | currency: 'PEN' : 'symbol' }}</td>
+                  <td>{{ ap.fecha_vencimiento | date: 'dd/MM/yyyy' }}</td>
                 </tr>
                 <tr *ngIf="availableAP.length === 0">
                   <td colspan="5" class="text-center">No hay cuentas por pagar pendientes</td>
@@ -489,7 +489,7 @@ export class PaymentScheduleFormComponent implements OnInit {
         id: 0,
         payment_schedule_id: this.scheduleId || 0,
         accounts_payable_id: ap.id,
-        amount_to_pay: ap.amount,
+        amount_to_pay: ap.monto_total,
         accounts_payable: ap,
       };
       this.selectedDetails.push(detail);

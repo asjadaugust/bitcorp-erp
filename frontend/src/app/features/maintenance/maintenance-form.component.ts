@@ -8,6 +8,13 @@ import { ProviderService } from '../../core/services/provider.service';
 import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
 import { Equipment } from '../../core/models/equipment.model';
 import { Provider } from '../../core/models/provider.model';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-maintenance-form',
@@ -154,58 +161,6 @@ import { Provider } from '../../core/models/provider.model';
   `,
   styles: [
     `
-      .form-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding-bottom: 2rem;
-      }
-
-      /* Header */
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .icon-wrapper {
-        width: 48px;
-        height: 48px;
-        background: var(--primary-100);
-        color: var(--primary-800);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .title-group h1 {
-        margin: 0;
-        font-size: 24px;
-        color: var(--grey-900);
-      }
-      .subtitle {
-        margin: 0;
-        color: var(--grey-500);
-        font-size: 14px;
-      }
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-      }
-
-      /* Form Card */
-      .form-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
       .form-grid {
         display: flex;
         flex-direction: column;
@@ -270,40 +225,6 @@ import { Provider } from '../../core/models/provider.model';
         font-size: 12px;
       }
 
-      /* Buttons */
-      .btn {
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
-      }
-
-      .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-50);
-      }
-
       @media (max-width: 768px) {
         .section-grid {
           grid-template-columns: 1fr;
@@ -319,6 +240,7 @@ export class MaintenanceFormComponent implements OnInit {
   private providerService = inject(ProviderService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   maintenanceForm: FormGroup;
   isEditMode = false;
@@ -326,17 +248,32 @@ export class MaintenanceFormComponent implements OnInit {
   recordId: number | null = null;
   equipmentList: Equipment[] = [];
   providers: Provider[] = [];
+  validationErrors: ValidationError[] = [];
+  errorMessage = '';
+
+  fieldLabels: Record<string, string> = {
+    equipoId: 'Equipo',
+    tipoMantenimiento: 'Tipo de Mantenimiento',
+    descripcion: 'Descripción',
+    fechaProgramada: 'Fecha Programada',
+    fechaRealizada: 'Fecha Realizada',
+    costoReal: 'Costo Real',
+    tecnicoResponsable: 'Técnico Responsable',
+    estado: 'Estado',
+    observaciones: 'Observaciones',
+  };
 
   constructor() {
     this.maintenanceForm = this.fb.group({
-      equipo_id: [null, Validators.required],
-      maintenance_type: ['preventive', Validators.required],
-      description: ['', Validators.required],
-      start_date: [new Date().toISOString().split('T')[0], Validators.required],
-      end_date: [''],
-      cost: [0, [Validators.required, Validators.min(0)]],
-      provider_id: [null],
-      status: ['scheduled', Validators.required],
+      equipoId: [null, Validators.required],
+      tipoMantenimiento: ['PREVENTIVO', Validators.required],
+      descripcion: ['', Validators.required],
+      fechaProgramada: [new Date().toISOString().split('T')[0], Validators.required],
+      fechaRealizada: [''],
+      costoReal: [0, [Validators.required, Validators.min(0)]],
+      tecnicoResponsable: [''],
+      estado: ['PROGRAMADO', Validators.required],
+      observaciones: [''],
     });
   }
 
@@ -366,9 +303,8 @@ export class MaintenanceFormComponent implements OnInit {
 
         this.maintenanceForm.patchValue({
           ...record,
-          // TODO: Fix property name mismatch - model uses fechaProgramada/fechaRealizada
-          // start_date: formatDate(record.start_date),
-          // end_date: record.end_date ? formatDate(record.end_date) : '',
+          fechaProgramada: formatDate(record.fechaProgramada as string),
+          fechaRealizada: record.fechaRealizada ? formatDate(record.fechaRealizada as string) : '',
         });
         this.loading = false;
       },
@@ -396,8 +332,9 @@ export class MaintenanceFormComponent implements OnInit {
         this.router.navigate(['/equipment/maintenance']);
       },
       error: (err) => {
-        console.error('Error saving maintenance record', err);
         this.loading = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

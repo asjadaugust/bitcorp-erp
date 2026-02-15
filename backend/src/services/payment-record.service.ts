@@ -70,8 +70,8 @@ export class PaymentRecordService {
       // Create payment record
       const payment = this.repository.create({
         valuationId: dto.valorizacion_id,
-        contractId: valuation.contractId || undefined,
-        projectId: valuation.projectId || undefined,
+        contractId: valuation.contratoId || undefined,
+        projectId: valuation.proyectoId || undefined,
         paymentNumber,
         paymentDate: new Date(dto.fecha_pago),
         amountPaid: dto.monto_pagado,

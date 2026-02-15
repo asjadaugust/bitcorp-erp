@@ -79,9 +79,9 @@ export class ValuationEmailNotifier {
   async notifySubmitted(valorizacion: Valorizacion): Promise<void> {
     try {
       const [contract, creator, approvers] = await Promise.all([
-        this.contractRepository.findOne({ where: { id: valorizacion.contractId } }),
-        valorizacion.createdBy
-          ? this.userRepository.findOne({ where: { id: valorizacion.createdBy } })
+        this.contractRepository.findOne({ where: { id: valorizacion.contratoId } }),
+        valorizacion.creadoPor
+          ? this.userRepository.findOne({ where: { id: valorizacion.creadoPor } })
           : null,
         this.getApprovers(),
       ]);
@@ -139,9 +139,9 @@ export class ValuationEmailNotifier {
   async notifyApproved(valorizacion: Valorizacion, approverId: number): Promise<void> {
     try {
       const [contract, creator, approver, paymentRecipients] = await Promise.all([
-        this.contractRepository.findOne({ where: { id: valorizacion.contractId } }),
-        valorizacion.createdBy
-          ? this.userRepository.findOne({ where: { id: valorizacion.createdBy } })
+        this.contractRepository.findOne({ where: { id: valorizacion.contratoId } }),
+        valorizacion.creadoPor
+          ? this.userRepository.findOne({ where: { id: valorizacion.creadoPor } })
           : null,
         this.userRepository.findOne({ where: { id: approverId } }),
         this.getPaymentRecipients(),
@@ -212,9 +212,9 @@ export class ValuationEmailNotifier {
   ): Promise<void> {
     try {
       const [contract, creator, rejecter] = await Promise.all([
-        this.contractRepository.findOne({ where: { id: valorizacion.contractId } }),
-        valorizacion.createdBy
-          ? this.userRepository.findOne({ where: { id: valorizacion.createdBy } })
+        this.contractRepository.findOne({ where: { id: valorizacion.contratoId } }),
+        valorizacion.creadoPor
+          ? this.userRepository.findOne({ where: { id: valorizacion.creadoPor } })
           : null,
         this.userRepository.findOne({ where: { id: rejecterId } }),
       ]);
@@ -281,9 +281,9 @@ export class ValuationEmailNotifier {
   ): Promise<void> {
     try {
       const [contract, creator, paymentRecipients] = await Promise.all([
-        this.contractRepository.findOne({ where: { id: valorizacion.contractId } }),
-        valorizacion.createdBy
-          ? this.userRepository.findOne({ where: { id: valorizacion.createdBy } })
+        this.contractRepository.findOne({ where: { id: valorizacion.contratoId } }),
+        valorizacion.creadoPor
+          ? this.userRepository.findOne({ where: { id: valorizacion.creadoPor } })
           : null,
         this.getPaymentRecipients(),
       ]);

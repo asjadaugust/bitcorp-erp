@@ -52,8 +52,8 @@ test.describe('Equipment Management - Complete CRUD', () => {
     // Find status filter
     const statusFilter = page.locator('select[name="status"], .status-filter, #status-filter');
     if (await statusFilter.isVisible()) {
-      // Select 'available' status
-      await statusFilter.selectOption('available');
+      // Select 'DISPONIBLE' status
+      await statusFilter.selectOption('DISPONIBLE');
       await page.waitForTimeout(1000);
 
       // Verify filtered results
@@ -224,7 +224,8 @@ test.describe('API Health Checks', () => {
       headers: { Authorization: `Bearer ${token}` },
     });
     expect(response.ok()).toBeTruthy();
-    const data = await response.json();
+    const responseData = await response.json();
+    const data = responseData.data || responseData;
     expect(Array.isArray(data)).toBeTruthy();
     expect(data.length).toBeGreaterThan(0);
   });

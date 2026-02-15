@@ -5,7 +5,7 @@ license: Proprietary - BitCorp Internal Use
 compatibility: Designed for BitCorp ERP project (Angular/Node.js/PostgreSQL stack)
 metadata:
   domain: mechanical-equipment-rental-management
-  language: spanish-primary-english-technical
+  language: spanish-only
   version: '1.0.0'
   project: bitcorp-erp
   author: bitcorp-dev-team

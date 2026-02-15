@@ -122,31 +122,21 @@ export class AuthService {
           return wrappedResponse.data;
         }),
         tap((response) => {
-          console.log('✅ AuthService login unwrapped response:', response);
+          console.log('✅ AuthService login success');
           this.setToken(response.access_token);
 
           try {
             // Normalize user data to handle both old (roles[]) and new (rol) structure
             const normalizedUser = this.normalizeUserData(response.user);
-
-            console.log('User role type:', typeof normalizedUser.rol);
-            console.log('User role value:', normalizedUser.rol);
-            console.log('User roles array:', normalizedUser.roles);
-            console.log('Tenant ID:', normalizedUser.id_empresa);
-            console.log('Tenant Code:', normalizedUser.codigo_empresa);
-
-            // Set normalized user
             this.currentUserSubject.next(normalizedUser);
 
-            const role = normalizedUser.rol || normalizedUser.roles[0] || '';
-            console.log('Setting user role:', role);
+            const role = normalizedUser.rol || normalizedUser.roles?.[0] || '';
             this.tenantService.setUserRole(role);
 
             // Set tenant context from JWT (id_empresa, codigo_empresa)
             const tenantId =
               normalizedUser.id_empresa || normalizedUser.unidad_operativa_id || null;
             const tenantCode = normalizedUser.codigo_empresa || null;
-            console.log('Setting tenant context:', tenantId, tenantCode);
             this.tenantService.setTenantContext(tenantId, tenantCode);
           } catch (e) {
             console.error('Error updating user state:', e);

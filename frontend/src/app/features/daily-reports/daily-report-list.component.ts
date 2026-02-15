@@ -114,7 +114,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
               <div class="report-card__info-item">
                 <i class="fa-solid fa-gas-pump"></i>
                 <span class="report-card__info-label">Combustible</span>
-                <span class="report-card__info-value">{{ report.fuel_consumed || 0 }} gal</span>
+                <span class="report-card__info-value">{{ report.diesel_gln || 0 }} gal</span>
               </div>
             </div>
 
@@ -665,9 +665,9 @@ export class DailyReportListComponent implements OnInit {
         'Horas Trabajadas': hoursWorked.toFixed(2),
         'Horómetro Inicial': report.horometro_inicial || 0,
         'Horómetro Final': report.horometro_final || 0,
-        'Combustible (gal)': report.fuel_consumed || 0,
+        'Combustible (gal)': report.diesel_gln || 0,
         Estado: report.estado || '',
-        Observaciones: report.notes || '',
+        Observaciones: report.observaciones || '',
         Creado: report.created_at ? new Date(report.created_at).toLocaleDateString('es-PE') : '',
       };
     });
@@ -699,9 +699,9 @@ export class DailyReportListComponent implements OnInit {
         'Horas Trabajadas': hoursWorked.toFixed(2),
         'Horómetro Inicial': report.horometro_inicial || 0,
         'Horómetro Final': report.horometro_final || 0,
-        'Combustible (gal)': report.fuel_consumed || 0,
+        'Combustible (gal)': report.diesel_gln || 0,
         Estado: report.estado || '',
-        Observaciones: report.notes || '',
+        Observaciones: report.observaciones || '',
         Creado: report.created_at ? new Date(report.created_at).toLocaleDateString('es-PE') : '',
       };
     });

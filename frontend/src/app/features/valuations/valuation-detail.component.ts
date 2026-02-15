@@ -30,25 +30,25 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
           <div class="detail-main card">
             <div class="detail-header">
               <div>
-                <h1>Valorización {{ valuation.invoice_number || '#' + valuation.id }}</h1>
-                <p class="code-badge">{{ valuation.status | uppercase }}</p>
+                <h1>Valorización {{ valuation.numeroValorizacion || '#' + valuation.id }}</h1>
+                <p class="code-badge">{{ valuation.estado }}</p>
               </div>
             </div>
 
             <div class="detail-status">
-              <span [class]="'status-badge status-' + valuation.status">
+              <span [class]="'status-badge status-' + valuation.estado">
                 {{
-                  valuation.status === 'pending'
+                  valuation.estado === 'PENDIENTE'
                     ? 'Pendiente'
-                    : valuation.status === 'under_review'
+                    : valuation.estado === 'EN_REVISION'
                       ? 'En Revisión'
-                      : valuation.status === 'approved'
+                      : valuation.estado === 'APROBADO'
                         ? 'Aprobado'
-                        : valuation.status === 'rejected'
+                        : valuation.estado === 'RECHAZADO'
                           ? 'Rechazado'
-                          : valuation.status === 'paid'
+                          : valuation.estado === 'PAGADO'
                             ? 'Pagado'
-                            : valuation.status
+                            : valuation.estado
                 }}
               </span>
             </div>
@@ -59,15 +59,11 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Contrato</label>
-                    <p>{{ valuation.contract?.code || 'N/A' }}</p>
+                    <p>{{ valuation.contrato?.codigo || 'N/A' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Proyecto</label>
-                    <p>{{ valuation.contract?.project_name || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Cliente</label>
-                    <p>{{ valuation.contract?.client_name || 'N/A' }}</p>
+                    <p>{{ valuation.contrato?.nombre_proyecto || 'N/A' }}</p>
                   </div>
                 </div>
               </section>
@@ -77,15 +73,15 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                 <div class="info-grid">
                   <div class="info-item">
                     <label>Monto Total</label>
-                    <p class="highlight">{{ valuation.amount | currency: 'PEN' : 'S/ ' }}</p>
+                    <p class="highlight">{{ valuation.totalValorizado | currency: 'PEN' : 'S/ ' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Factura</label>
-                    <p>{{ valuation.invoice_number || 'Pendiente' }}</p>
+                    <label>N° Valorización</label>
+                    <p>{{ valuation.numeroValorizacion || 'Pendiente' }}</p>
                   </div>
-                  <div class="info-item" *ngIf="valuation.fecha_pago">
-                    <label>Fecha de Pago</label>
-                    <p>{{ valuation.fecha_pago | date: 'dd/MM/yyyy' }}</p>
+                  <div class="info-item" *ngIf="valuation.approvedAt">
+                    <label>Fecha Aprobación</label>
+                    <p>{{ valuation.approvedAt | date: 'dd/MM/yyyy' }}</p>
                   </div>
                 </div>
               </section>
@@ -94,12 +90,16 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                 <h2>Periodo</h2>
                 <div class="info-grid">
                   <div class="info-item">
+                    <label>Periodo</label>
+                    <p>{{ valuation.periodo }}</p>
+                  </div>
+                  <div class="info-item">
                     <label>Fecha Inicio</label>
-                    <p>{{ valuation.period_start | date: 'dd/MM/yyyy' }}</p>
+                    <p>{{ valuation.fechaInicio | date: 'dd/MM/yyyy' }}</p>
                   </div>
                   <div class="info-item">
                     <label>Fecha Fin</label>
-                    <p>{{ valuation.period_end | date: 'dd/MM/yyyy' }}</p>
+                    <p>{{ valuation.fechaFin | date: 'dd/MM/yyyy' }}</p>
                   </div>
                 </div>
               </section>
@@ -114,7 +114,7 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                 <div class="section-header">
                   <h2>Pagos ({{ paymentCount }})</h2>
                   <button
-                    *ngIf="valuation.status === 'approved' || valuation.status === 'paid'"
+                    *ngIf="valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'"
                     class="btn btn-primary"
                     (click)="navigateToCreatePayment()"
                   >
@@ -250,7 +250,7 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                   <i class="fa-solid fa-money-bill-wave empty-icon"></i>
                   <p class="empty-text">No hay pagos registrados para esta valorización</p>
                   <button
-                    *ngIf="valuation.status === 'approved' || valuation.status === 'paid'"
+                    *ngIf="valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'"
                     class="btn btn-primary"
                     (click)="navigateToCreatePayment()"
                   >
@@ -268,7 +268,7 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
               <div class="workflow-actions">
                 <!-- Submit for Review: Only for PENDING state -->
                 <button
-                  *ngIf="valuation.status === 'pending' && canSubmitForReview()"
+                  *ngIf="valuation.estado === 'PENDIENTE' && canSubmitForReview()"
                   class="btn btn-primary btn-block"
                   (click)="submitForReview()"
                   [disabled]="processingWorkflow"
@@ -279,7 +279,7 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
 
                 <!-- Approve: Only for UNDER_REVIEW state, Admin/Director/JefeEquipo only -->
                 <button
-                  *ngIf="valuation.status === 'under_review' && canApprove()"
+                  *ngIf="valuation.estado === 'EN_REVISION' && canApprove()"
                   class="btn btn-success btn-block"
                   (click)="showApproveModal = true"
                   [disabled]="processingWorkflow"
@@ -289,7 +289,7 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
 
                 <!-- Reject: For any state except PAID, Admin/Director/JefeEquipo only -->
                 <button
-                  *ngIf="valuation.status !== 'paid' && canReject()"
+                  *ngIf="valuation.estado !== 'PAGADO' && canReject()"
                   class="btn btn-danger btn-block"
                   (click)="showRejectModal = true"
                   [disabled]="processingWorkflow"
@@ -299,7 +299,7 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
 
                 <!-- Mark as Paid: Only for APPROVED state, Admin only -->
                 <button
-                  *ngIf="valuation.status === 'approved' && canMarkAsPaid()"
+                  *ngIf="valuation.estado === 'APROBADO' && canMarkAsPaid()"
                   class="btn btn-secondary btn-block"
                   (click)="showMarkPaidModal = true"
                   [disabled]="processingWorkflow"
@@ -323,7 +323,7 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                 <button
                   class="btn btn-secondary btn-block"
                   (click)="editValuation()"
-                  *ngIf="valuation.status === 'pending'"
+                  *ngIf="valuation.estado === 'PENDIENTE'"
                 >
                   <i class="fa-solid fa-pen"></i> Editar
                 </button>
@@ -334,14 +334,11 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
             <div class="card">
               <h3>Información del Sistema</h3>
               <div class="timeline">
-                <div class="timeline-item" *ngIf="valuation.fecha_pago">
-                  <div class="timeline-date">{{ valuation.fecha_pago | date: 'short' }}</div>
-                  <div class="timeline-content">Marcado como pagado</div>
-                </div>
-                <div class="timeline-item" *ngIf="valuation.approved_at">
-                  <div class="timeline-date">{{ valuation.approved_at | date: 'short' }}</div>
+                <div class="timeline-item" *ngIf="valuation.approvedAt">
+                  <div class="timeline-date">{{ valuation.approvedAt | date: 'short' }}</div>
                   <div class="timeline-content">Aprobado</div>
                 </div>
+
                 <div class="timeline-item">
                   <div class="timeline-date">{{ valuation.updated_at | date: 'short' }}</div>
                   <div class="timeline-content">Última actualización</div>
@@ -375,11 +372,11 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
         <div class="modal-body">
           <p>¿Estás seguro de que deseas aprobar esta valorización?</p>
           <div class="approval-summary">
-            <p><strong>Factura:</strong> {{ valuation?.invoice_number || 'N/A' }}</p>
-            <p><strong>Monto:</strong> {{ valuation?.amount | currency: 'PEN' : 'S/ ' }}</p>
+            <p><strong>N° Valorización:</strong> {{ valuation?.numeroValorizacion || 'N/A' }}</p>
+            <p><strong>Total:</strong> {{ valuation?.totalValorizado | currency: 'PEN' : 'S/ ' }}</p>
             <p>
-              <strong>Periodo:</strong> {{ valuation?.period_start | date: 'dd/MM/yyyy' }} -
-              {{ valuation?.period_end | date: 'dd/MM/yyyy' }}
+              <strong>Periodo:</strong> {{ valuation?.fechaInicio | date: 'dd/MM/yyyy' }} -
+              {{ valuation?.fechaFin | date: 'dd/MM/yyyy' }}
             </p>
           </div>
           <p class="alert alert-info">
@@ -1296,21 +1293,21 @@ export class ValuationDetailComponent implements OnInit {
   getWorkflowHint(): string | null {
     if (!this.valuation) return null;
 
-    const status = this.valuation.status;
+    const status = this.valuation.estado;
 
-    if (status === 'pending') {
+    if (status === 'PENDIENTE') {
       return 'Envía esta valorización a revisión para que pueda ser aprobada.';
     }
-    if (status === 'under_review' && this.canApprove()) {
+    if (status === 'EN_REVISION' && this.canApprove()) {
       return 'Esta valorización está en revisión y puede ser aprobada o rechazada.';
     }
-    if (status === 'approved' && this.canMarkAsPaid()) {
+    if (status === 'APROBADO' && this.canMarkAsPaid()) {
       return 'Esta valorización ha sido aprobada y puede ser marcada como pagada.';
     }
-    if (status === 'rejected') {
+    if (status === 'RECHAZADO') {
       return 'Esta valorización ha sido rechazada. Revisa las observaciones.';
     }
-    if (status === 'paid') {
+    if (status === 'PAGADO') {
       return 'Esta valorización ya ha sido pagada.';
     }
 
@@ -1423,7 +1420,7 @@ export class ValuationDetailComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `valorizacion-${this.valuation?.invoice_number || this.valuation?.id}.pdf`;
+        link.download = `valorizacion-${this.valuation?.numeroValorizacion || this.valuation?.id}.pdf`;
         link.click();
         window.URL.revokeObjectURL(url);
       },

@@ -56,7 +56,7 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
             </div>
             <div class="stat-info">
               <span class="label">Tipo Medidor</span>
-              <span class="value">{{ equipment.meter_type || 'N/A' }}</span>
+              <span class="value">{{ equipment.medidor_uso || 'N/A' }}</span>
             </div>
           </div>
 
@@ -134,11 +134,11 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Año</span>
-                      <span class="spec-value">{{ equipment.manufacture_year || '-' }}</span>
+                      <span class="spec-value">{{ equipment.anio_fabricacion || '-' }}</span>
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Serie</span>
-                      <span class="spec-value">{{ equipment.serial_number || '-' }}</span>
+                      <span class="spec-value">{{ equipment.numero_serie_equipo || '-' }}</span>
                     </div>
                     <div class="spec-item">
                       <span class="spec-label">Placa</span>

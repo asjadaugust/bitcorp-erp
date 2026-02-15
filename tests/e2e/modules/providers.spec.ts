@@ -30,21 +30,18 @@ test.describe('Providers Module', () => {
     await page.click('button:has-text("Nuevo Proveedor")');
     await expect(page).toHaveURL('/providers/new');
 
-    const providerCode = `PROV-${Date.now()}`;
     const randomRuc = `20${Math.floor(Math.random() * 1000000000)
       .toString()
       .padStart(9, '0')}`;
-    await page.fill('input#code', providerCode);
-    await page.fill('input#business_name', 'Test Provider E2E');
-    await page.fill('input#tax_id', randomRuc);
-    await page.selectOption('select#provider_type', 'rental');
-    await page.selectOption('select#status', 'active');
+    await page.fill('input#ruc', randomRuc);
+    await page.fill('input#razon_social', 'Test Provider E2E');
+    await page.selectOption('select#tipo_proveedor', 'EQUIPOS');
 
     // Fill optional fields
-    await page.fill('input#contact_name', 'Juan Perez');
-    await page.fill('input#email', 'juan@test.com');
-    await page.fill('input#phone', '987654321');
-    await page.fill('input#address', 'Av. Test 123');
+    await page.fill('input#nombre_comercial', 'Test Provider');
+    await page.fill('input#correo_electronico', 'juan@test.com');
+    await page.fill('input#telefono', '987654321');
+    await page.fill('input#direccion', 'Av. Test 123');
 
     // Wait for button to be enabled
     const submitBtn = page.locator('button:has-text("Crear Proveedor")');

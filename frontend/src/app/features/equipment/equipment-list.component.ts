@@ -42,43 +42,51 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       [tabs]="tabs"
     >
       <app-actions-container actions>
-        <button type="button" class="btn btn-secondary" (click)="loadStatistics()">
-          <i class="fa-solid fa-chart-simple"></i> Estadísticas
-        </button>
-
-        <button type="button" class="btn btn-primary" (click)="navigateToCreate()">
-          <i class="fa-solid fa-plus"></i> Nuevo Equipo
-        </button>
+        <div class="actions-group">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            [class.active]="showStatistics"
+            (click)="toggleStatistics()"
+            [disabled]="loadingStatistics">
+            <i class="fa-solid" [class.fa-chart-simple]="!loadingStatistics" [class.fa-spinner]="loadingStatistics" [class.fa-spin]="loadingStatistics"></i>
+            {{ showStatistics ? 'Ocultar Estadísticas' : 'Ver Estadísticas' }}
+          </button>
+  
+          <button type="button" class="btn btn-primary" (click)="navigateToCreate()">
+            <i class="fa-solid fa-plus"></i> Nuevo Equipo
+          </button>
+        </div>
       </app-actions-container>
 
       <!-- Statistics -->
-      <div *ngIf="statistics" class="stats-grid fade-in">
-        <div class="stat-card">
+      <div *ngIf="showStatistics && statistics" class="stats-grid fade-in">
+        <div class="stat-card total-card">
           <div class="stat-icon total"><i class="fa-solid fa-cubes"></i></div>
           <div class="stat-info">
             <span class="label">Total Equipos</span>
             <span class="value">{{ statistics.total }}</span>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card available-card">
           <div class="stat-icon available"><i class="fa-solid fa-check"></i></div>
           <div class="stat-info">
             <span class="label">Disponibles</span>
-            <span class="value">{{ statistics.available }}</span>
+            <span class="value">{{ statistics.disponible }}</span>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card in-use-card">
           <div class="stat-icon in-use"><i class="fa-solid fa-person-digging"></i></div>
           <div class="stat-info">
             <span class="label">En Uso</span>
-            <span class="value">{{ statistics.in_use }}</span>
+            <span class="value">{{ statistics.en_uso }}</span>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card maintenance-card">
           <div class="stat-icon maintenance"><i class="fa-solid fa-wrench"></i></div>
           <div class="stat-info">
             <span class="label">Mantenimiento</span>
-            <span class="value">{{ statistics.maintenance }}</span>
+            <span class="value">{{ statistics.mantenimiento }}</span>
           </div>
         </div>
       </div>
@@ -123,22 +131,32 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
-        <button
-          type="button"
-          class="btn btn-icon"
-          (click)="editEquipment(row); $event.stopPropagation()"
-          title="Editar"
-        >
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-icon"
-          (click)="viewDetails(row); $event.stopPropagation()"
-          title="Ver"
-        >
-          <i class="fa-solid fa-eye"></i>
-        </button>
+        <div class="action-buttons">
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="editEquipment(row); $event.stopPropagation()"
+            title="Editar"
+          >
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="viewDetails(row); $event.stopPropagation()"
+            title="Ver"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </button>
+          <button
+            type="button"
+            class="btn-icon delete-btn"
+            (click)="deleteEquipment(row); $event.stopPropagation()"
+            title="Eliminar"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
       </ng-template>
     </app-page-layout>
   `,
@@ -235,65 +253,96 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         border-top: 1px solid var(--grey-100);
       }
 
+      .actions-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .btn.active {
+        background-color: var(--grey-200);
+        border-color: var(--grey-300);
+      }
+
       /* Stats Grid */
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 1.5rem;
+        margin-bottom: 2rem;
       }
 
       .stat-card {
         background: white;
-        padding: 1.25rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.25rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid var(--grey-100);
       }
 
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+      }
+
+      /* Card variants for subtle bordering/coloring */
+      .stat-card.total-card { border-left: 4px solid var(--primary-500); }
+      .stat-card.available-card { border-left: 4px solid var(--semantic-green-500); }
+      .stat-card.in-use-card { border-left: 4px solid var(--semantic-blue-500); }
+      .stat-card.maintenance-card { border-left: 4px solid var(--semantic-yellow-500); }
+
       .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 24px;
+        flex-shrink: 0;
       }
 
       .stat-icon.total {
-        background: var(--primary-100);
-        color: var(--primary-500);
+        background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+        color: var(--primary-600);
       }
       .stat-icon.available {
-        background: var(--semantic-green-50);
+        background: linear-gradient(135deg, var(--semantic-green-50) 0%, var(--semantic-green-100) 100%);
         color: var(--semantic-green-600);
       }
       .stat-icon.in-use {
-        background: var(--semantic-blue-50);
+        background: linear-gradient(135deg, var(--semantic-blue-50) 0%, var(--semantic-blue-100) 100%);
         color: var(--semantic-blue-600);
       }
       .stat-icon.maintenance {
-        background: var(--semantic-yellow-50);
+        background: linear-gradient(135deg, var(--semantic-yellow-50) 0%, var(--semantic-yellow-100) 100%);
         color: var(--semantic-yellow-600);
       }
 
       .stat-info {
         display: flex;
         flex-direction: column;
+        justify-content: center;
       }
 
       .stat-info .label {
-        font-size: 12px;
+        font-size: 13px;
+        font-weight: 500;
         color: var(--grey-500);
-        margin-bottom: 2px;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       .stat-info .value {
-        font-size: 20px;
+        font-size: 28px;
         font-weight: 700;
         color: var(--grey-900);
+        line-height: 1.2;
       }
 
       .code-badge {
@@ -391,6 +440,8 @@ export class EquipmentListComponent implements OnInit {
 
   equipment: Equipment[] = [];
   loading = false;
+  loadingStatistics = false;
+  showStatistics = false;
   errorMessage = '';
   successMessage = '';
   statistics: any = null;
@@ -434,6 +485,8 @@ export class EquipmentListComponent implements OnInit {
     { key: 'proveedor_nombre', label: 'Proveedor', type: 'text' },
   ];
 
+  actionsTemplate: any; // Fix for template type issue if needed, but usually inferred
+
   ngOnInit(): void {
     this.loadEquipment();
   }
@@ -446,7 +499,7 @@ export class EquipmentListComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.errorMessage = 'Error al cargar equipos';
+        this.errorMessage = 'Error al cargar la lista de equipos';
         this.loading = false;
       },
     });
@@ -462,10 +515,26 @@ export class EquipmentListComponent implements OnInit {
     this.router.navigate(['/equipment/new']);
   }
 
+  toggleStatistics(): void {
+    if (this.showStatistics) {
+      this.showStatistics = false;
+    } else {
+      this.loadStatistics();
+    }
+  }
+
   loadStatistics(): void {
+    this.loadingStatistics = true;
     this.equipmentService.getStatistics().subscribe({
-      next: (data) => (this.statistics = data),
-      error: () => (this.errorMessage = 'Error al cargar estadísticas'),
+      next: (data) => {
+        this.statistics = data;
+        this.showStatistics = true;
+        this.loadingStatistics = false;
+      },
+      error: () => {
+        this.errorMessage = 'Error al cargar las estadísticas';
+        this.loadingStatistics = false;
+      },
     });
   }
 
@@ -477,21 +546,44 @@ export class EquipmentListComponent implements OnInit {
     this.router.navigate(['/equipment', item.id]);
   }
 
+  deleteEquipment(item: Equipment): void {
+    if (confirm(`¿Está seguro de eliminar el equipo ${item.codigo_equipo}?`)) {
+      this.loading = true;
+      this.equipmentService.delete(item.id).subscribe({
+        next: () => {
+          this.successMessage = 'Equipo eliminado correctamente';
+          this.loadEquipment();
+          if (this.showStatistics) {
+            this.loadStatistics();
+          }
+          // Clear success message after 3 seconds
+          setTimeout(() => (this.successMessage = ''), 3000);
+        },
+        error: () => {
+          this.errorMessage = 'Error al eliminar el equipo';
+          this.loading = false;
+        },
+      });
+    }
+  }
+
   getStatusLabel(status: string): string {
+    const s = (status || '').toLowerCase();
     const labels: Record<string, string> = {
       available: 'Disponible',
       disponible: 'Disponible',
       in_use: 'En Uso',
       en_uso: 'En Uso',
-      maintenance: 'Mantenimiento',
+      maintenance: 'Mantenimiento', // Fixed typo in previous map if any
       mantenimiento: 'Mantenimiento',
       retired: 'Retirado',
       retirado: 'Retirado',
     };
-    return labels[status] || status;
+    return labels[s] || status;
   }
 
   getStatusIcon(status: string): string {
+    const s = (status || '').toLowerCase();
     const icons: Record<string, string> = {
       available: 'fa-check',
       disponible: 'fa-check',
@@ -502,6 +594,6 @@ export class EquipmentListComponent implements OnInit {
       retired: 'fa-ban',
       retirado: 'fa-ban',
     };
-    return icons[status] || 'fa-circle';
+    return icons[s] || 'fa-circle';
   }
 }

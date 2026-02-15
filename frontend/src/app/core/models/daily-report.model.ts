@@ -16,10 +16,9 @@ export interface DailyReport {
   proyecto_nombre?: string;
   proyecto_codigo?: string;
   contrato_id?: string;
-  turno?: 'day' | 'night';
+  turno?: 'DIA' | 'NOCHE';
   hora_inicio: string;
   hora_fin: string;
-  break_minutes?: number;
   horas_trabajadas?: string | number;
   horometro_inicial: string | number;
   horometro_final: string | number;
@@ -34,7 +33,7 @@ export interface DailyReport {
   horometro_kilometraje?: string | number;
   lugar_salida?: string;
   lugar_llegada?: string;
-  site_supervisor?: string;
+  responsable_frente?: string;
   observaciones?: string;
   photos?: string[];
   estado:
@@ -58,15 +57,6 @@ export interface DailyReport {
   gps_longitude?: number;
   gps_accuracy?: number;
   gps_captured_at?: string;
-
-  // Backward compatibility fields (used by legacy form components)
-  location?: string; // Maps to lugar_salida
-  work_description?: string; // Maps to observaciones
-  fuel_start?: number; // Legacy fuel tracking
-  fuel_end?: number; // Legacy fuel tracking
-  notes?: string;
-  weather_conditions?: string;
-  fuel_consumed?: number; // Legacy field
 }
 
 export interface ProductionRow {
@@ -112,10 +102,9 @@ export interface CreateDailyReportDto {
   equipo_id: number;
   proyecto_id?: number;
   contrato_id?: string;
-  shift?: 'day' | 'night';
+  turno?: 'DIA' | 'NOCHE';
   hora_inicio: string;
   hora_fin: string;
-  break_minutes?: number;
   horometro_inicial: number;
   horometro_final: number;
   odometro_inicial?: number;
@@ -127,7 +116,7 @@ export interface CreateDailyReportDto {
   horometro_kilometraje?: number;
   lugar_salida?: string;
   lugar_llegada?: string;
-  site_supervisor?: string;
+  responsable_frente?: string;
   observaciones?: string;
   estado?: 'BORRADOR' | 'PENDIENTE';
 
@@ -136,12 +125,4 @@ export interface CreateDailyReportDto {
   gps_longitude?: number;
   gps_accuracy?: number;
   gps_captured_at?: string;
-
-  // Backward compatibility fields
-  location?: string;
-  work_description?: string;
-  fuel_start?: number;
-  fuel_end?: number;
-  notes?: string;
-  weather_conditions?: string;
 }

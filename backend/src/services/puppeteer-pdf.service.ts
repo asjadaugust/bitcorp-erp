@@ -374,10 +374,11 @@ export class PuppeteerPdfService {
       Logger.error('Error generating PDF page', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        originalError: error,
         templateName,
         context: 'PuppeteerPdfService.generatePage',
       });
-      throw new Error(`Failed to generate ${templateName} PDF`);
+      throw new Error(`Failed to generate ${templateName} PDF: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

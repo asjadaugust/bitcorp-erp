@@ -5,347 +5,134 @@ import { Router, RouterModule } from '@angular/router';
 import { OperatorService } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
 import { FormErrorHandlerService } from '../../core/services/form-error-handler.service';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../core/design-system/table/aero-table.component';
+import {
+  PageLayoutComponent,
+} from '../../shared/components/page-layout/page-layout.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../shared/components/filter-bar/filter-bar.component';
+import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 
 @Component({
   selector: 'app-operator-list-enhanced',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    AeroTableComponent,
+    PageLayoutComponent,
+    FilterBarComponent,
+    ActionsContainerComponent,
+  ],
   template: `
-    <div class="operators-container">
-      <!-- Header Section -->
-      <div class="page-header">
-        <div class="header-content">
-          <h1>👷 Gestión de Operadores</h1>
-          <p class="subtitle">Administración de operadores, habilidades y certificaciones</p>
-        </div>
-        <div class="actions-container">
-          <button class="btn btn-primary" (click)="addOperator()">
+    <app-page-layout
+      title="Gestión de Operadores"
+      icon="fa-users-gear"
+      [breadcrumbs]="[{ label: 'Dashboard', url: '/app' }, { label: 'Operadores' }]"
+      [loading]="loading"
+    >
+      <app-actions-container actions>
+        <div class="action-buttons">
+          <button type="button" class="btn btn-primary" (click)="addOperator()">
             <i class="fa-solid fa-plus"></i> Nuevo Operador
           </button>
         </div>
-      </div>
+      </app-actions-container>
 
-      <!-- Stats Dashboard -->
-      <div class="stats-dashboard">
-        <div class="stat-card">
-          <div class="stat-icon bg-blue">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">{{ operators.length }}</span>
-            <span class="stat-label">Total Operadores</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon bg-green">
-            <i class="fa-solid fa-user-check"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">{{ getActiveCount() }}</span>
-            <span class="stat-label">Activos</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon bg-orange">
-            <i class="fa-solid fa-user-clock"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">{{ getOnLeaveCount() }}</span>
-            <span class="stat-label">De Vacaciones</span>
-          </div>
-        </div>
-      </div>
+      <app-filter-bar
+        [config]="filterConfig"
+        (filterChange)="onFilterChange($event)"
+      ></app-filter-bar>
 
-      <!-- Filters & Actions Bar -->
-      <div class="table-controls">
-        <div class="search-box">
-          <i class="fa-solid fa-search"></i>
-          <input
-            type="text"
-            placeholder="Buscar por nombre, DNI o licencia..."
-            [(ngModel)]="filters.search"
-            (input)="applyFilters()"
-          />
-        </div>
+      <aero-table
+        [columns]="columns"
+        [data]="operators"
+        [loading]="loading"
+        [actionsTemplate]="actionsTemplate"
+        [templates]="{
+          nombre_completo: userTemplate,
+          contacto: contactTemplate,
+          licencia: licenseTemplate,
+          estado: statusTemplate
+        }"
+        (rowClick)="viewOperator($event)"
+      >
+      </aero-table>
 
-        <div class="filter-group">
-          <select [(ngModel)]="filters.status" (change)="applyFilters()" class="form-select">
-            <option value="">Todos los Estados</option>
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-            <option value="vacaciones">De Vacaciones</option>
-          </select>
+      <!-- Custom Templates -->
+      <ng-template #userTemplate let-row>
+        <div class="user-cell">
+          <div class="avatar-circle">{{ getInitials(row) }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ row.nombres }} {{ row.apellido_paterno }}</span>
+            <span class="user-role">{{ row.cargo || 'Operador' }}</span>
+          </div>
         </div>
-      </div>
+      </ng-template>
 
-      <!-- Data Table -->
-      <div class="table-container card">
-        <div class="loading-overlay" *ngIf="loading">
-          <div class="spinner"></div>
+      <ng-template #contactTemplate let-row>
+        <div class="contact-info">
+          <div *ngIf="row.correo_electronico" class="contact-item">
+            <i class="fa-regular fa-envelope"></i> {{ row.correo_electronico }}
+          </div>
+          <div *ngIf="row.telefono" class="contact-item">
+            <i class="fa-solid fa-phone"></i> {{ row.telefono }}
+          </div>
         </div>
+      </ng-template>
 
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Operador</th>
-              <th>Contacto</th>
-              <th>Licencia</th>
-              <th>Tarifa/Hr</th>
-              <th>Inicio Contrato</th>
-              <th>Habilidades</th>
-              <th>Estado</th>
-              <th class="text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let operator of operators" class="hover-row">
-              <td>
-                <div class="user-cell">
-                  <div class="avatar-circle">{{ getInitials(operator) }}</div>
-                  <div class="user-info">
-                    <span class="user-name">{{
-                      operator.nombres + ' ' + operator.apellido_paterno
-                    }}</span>
-                    <span class="user-role">Operador</span>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <div class="contact-info">
-                  <div *ngIf="operator.correo_electronico" class="contact-item">
-                    <i class="fa-regular fa-envelope"></i> {{ operator.correo_electronico }}
-                  </div>
-                  <div *ngIf="operator.telefono" class="contact-item">
-                    <i class="fa-solid fa-phone"></i> {{ operator.telefono }}
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="license-badge" *ngIf="operator.licencia_conducir">
-                  {{ operator.licencia_conducir }}
-                </span>
-                <span class="text-muted" *ngIf="!operator.licencia_conducir">-</span>
-              </td>
-              <!-- Hourly rate removed -->
-              <td>-</td>
-              <td>
-                {{ operator.fecha_ingreso | date: 'mediumDate' }}
-              </td>
-              <!-- Skills removed/placeholder -->
-              <td>-</td>
-              <td>
-                <span [class]="'status-badge status-' + getEstadoClass(operator)">
-                  {{ getEstadoLabel(operator) }}
-                </span>
-              </td>
-              <td class="text-right">
-                <div class="action-buttons">
-                  <button class="btn-icon" (click)="viewOperator(operator)" title="Ver Detalles">
-                    <i class="fa-solid fa-eye"></i>
-                  </button>
-                  <button class="btn-icon" (click)="editOperator(operator)" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
-                  <button
-                    class="btn-icon btn-danger"
-                    (click)="deleteOperator(operator)"
-                    title="Desactivar"
-                  >
-                    <i class="fa-solid fa-user-slash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="operators.length === 0 && !loading">
-              <td colspan="8" class="empty-state">
-                <div class="empty-content">
-                  <i class="fa-solid fa-users-slash"></i>
-                  <h3>No se encontraron operadores</h3>
-                  <p>Intenta ajustar los filtros o agrega un nuevo operador</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <ng-template #licenseTemplate let-row>
+        <span class="license-badge" *ngIf="row.licencia_conducir">
+          {{ row.licencia_conducir }}
+        </span>
+        <span class="text-muted" *ngIf="!row.licencia_conducir">-</span>
+      </ng-template>
+
+      <ng-template #statusTemplate let-row>
+        <span [class]="'status-badge status-' + (row.is_active ? 'active' : 'inactive')">
+          {{ row.is_active ? 'Activo' : 'Inactivo' }}
+        </span>
+      </ng-template>
+
+      <!-- Actions Template -->
+      <ng-template #actionsTemplate let-row>
+        <div class="action-buttons">
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="editOperator(row); $event.stopPropagation()"
+            title="Editar"
+          >
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="viewOperator(row); $event.stopPropagation()"
+            title="Ver Detalles"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </button>
+          <button
+            type="button"
+            class="btn-icon delete-btn"
+            (click)="deleteOperator(row); $event.stopPropagation()"
+            title="Desactivar"
+          >
+            <i class="fa-solid fa-user-slash"></i>
+          </button>
+        </div>
+      </ng-template>
+    </app-page-layout>
   `,
   styles: [
     `
-      .operators-container {
-        padding: 0;
-        max-width: 100%;
-      }
-
-      /* Header Styles */
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-24);
-      }
-
-      .header-content h1 {
-        font-size: var(--type-h3-size);
-        color: var(--primary-900);
-        margin: 0 0 var(--s-4) 0;
-      }
-
-      .subtitle {
-        color: var(--grey-500);
-        margin: 0;
-        font-size: var(--type-body-size);
-      }
-
-      /* Stats Dashboard */
-      .stats-dashboard {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-16);
-        margin-bottom: var(--s-24);
-      }
-
-      .stat-card {
-        background: var(--neutral-0);
-        padding: var(--s-16);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        display: flex;
-        align-items: center;
-        gap: var(--s-16);
-        border: 1px solid var(--grey-200);
-      }
-
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-
-      .bg-blue {
-        background: var(--primary-50);
-        color: var(--primary-600);
-      }
-      .bg-green {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-600);
-      }
-      .bg-orange {
-        background: var(--semantic-orange-50);
-        color: var(--semantic-orange-600);
-      }
-
-      .stat-info {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .stat-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--grey-900);
-        line-height: 1.2;
-      }
-
-      .stat-label {
-        font-size: 12px;
-        color: var(--grey-500);
-        font-weight: 500;
-      }
-
-      /* Controls & Filters */
-      .table-controls {
-        display: flex;
-        gap: var(--s-16);
-        margin-bottom: var(--s-16);
-        flex-wrap: wrap;
-      }
-
-      .search-box {
-        flex: 1;
-        min-width: 300px;
-        position: relative;
-      }
-
-      .search-box i {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--grey-400);
-      }
-
-      .search-box input {
-        width: 100%;
-        padding: 10px 12px 10px 36px;
-        border: 1px solid var(--grey-300);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .search-box input:focus {
-        border-color: var(--primary-500);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--primary-100);
-      }
-
-      .form-select {
-        padding: 10px 32px 10px 12px;
-        border: 1px solid var(--grey-300);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-        color: var(--grey-700);
-        background-color: var(--neutral-0);
-        cursor: pointer;
-        min-width: 180px;
-      }
-
-      /* Data Table */
-      .table-container {
-        background: var(--neutral-0);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        overflow-x: auto;
-        position: relative;
-        border: 1px solid var(--grey-200);
-      }
-
-      .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        white-space: nowrap;
-      }
-
-      .data-table th {
-        background: var(--grey-50);
-        padding: 12px 16px;
-        text-align: left;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--grey-600);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 1px solid var(--grey-200);
-      }
-
-      .data-table td {
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--grey-100);
-        color: var(--grey-700);
-        font-size: 14px;
-        vertical-align: middle;
-      }
-
-      .hover-row:hover td {
-        background-color: var(--primary-50);
-      }
-
-      /* Cell Components */
       .user-cell {
         display: flex;
         align-items: center;
@@ -392,6 +179,10 @@ import { FormErrorHandlerService } from '../../core/services/form-error-handler.
         align-items: center;
         gap: 6px;
         color: var(--grey-600);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
       }
 
       .contact-item i {
@@ -409,36 +200,9 @@ import { FormErrorHandlerService } from '../../core/services/form-error-handler.
         font-weight: 600;
         color: var(--grey-700);
         border: 1px solid var(--grey-300);
+        font-size: 12px;
       }
 
-      .currency {
-        font-weight: 600;
-        color: var(--grey-900);
-      }
-
-      .skills-list {
-        display: flex;
-        gap: 4px;
-      }
-
-      .skill-tag {
-        background: var(--primary-50);
-        color: var(--primary-700);
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 500;
-      }
-
-      .skill-more {
-        background: var(--grey-100);
-        color: var(--grey-600);
-        padding: 2px 6px;
-        border-radius: 12px;
-        font-size: 11px;
-      }
-
-      /* Status Badges */
       .status-badge {
         padding: 4px 10px;
         border-radius: 20px;
@@ -472,108 +236,51 @@ import { FormErrorHandlerService } from '../../core/services/form-error-handler.
         background: var(--grey-400);
       }
 
-      .status-on_leave {
-        background: var(--semantic-orange-50);
-        color: var(--semantic-orange-700);
-      }
-      .status-on_leave::before {
-        background: var(--semantic-orange-500);
-      }
-
-      /* Actions */
-      .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-      }
-
-      .btn-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-        border: 1px solid transparent;
-        background: transparent;
-        color: var(--grey-500);
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .btn-icon:hover {
-        background: var(--grey-100);
-        color: var(--primary-600);
-      }
-
-      .btn-icon.btn-danger:hover {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
-      }
-
-      .text-right {
-        text-align: right;
-      }
       .text-muted {
         color: var(--grey-400);
-      }
-
-      /* Empty State */
-      .empty-state {
-        text-align: center;
-        padding: 48px 0;
-      }
-
-      .empty-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .empty-content i {
-        font-size: 48px;
-        color: var(--grey-300);
-      }
-
-      .empty-content h3 {
-        margin: 0;
-        color: var(--grey-900);
-      }
-
-      .empty-content p {
-        margin: 0;
-        color: var(--grey-500);
-      }
-
-      /* Loading */
-      .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
       }
     `,
   ],
 })
-@Component({
-  // ... (decorators remain same)
-})
 export class OperatorListEnhancedComponent implements OnInit {
   operatorService = inject(OperatorService);
-  private errorHandler = inject(FormErrorHandlerService); // Inject Error Handler
+  private errorHandler = inject(FormErrorHandlerService);
   private router = inject(Router);
 
   operators: Operator[] = [];
   loading = false;
   filters = { status: '', search: '' };
-  errorMessage = ''; // Add errorMessage property
+  errorMessage = '';
+
+  filterConfig: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Buscar',
+      type: 'text',
+      placeholder: 'Buscar por nombre, DNI, email...',
+    },
+    {
+      key: 'status',
+      label: 'Estado',
+      type: 'select',
+      options: [
+        { label: 'Todos', value: '' },
+        { label: 'Activo', value: 'active' },
+        { label: 'Inactivo', value: 'inactive' },
+      ],
+    },
+  ];
+
+  columns: TableColumn[] = [
+    { key: 'dni', label: 'DNI', type: 'text' },
+    { key: 'nombre_completo', label: 'Operador', type: 'template' },
+    { key: 'contacto', label: 'Contacto', type: 'template' },
+    { key: 'licencia', label: 'Licencia', type: 'template' },
+    { key: 'fecha_ingreso', label: 'Ingreso', type: 'date' },
+    { key: 'estado', label: 'Estado', type: 'template' },
+  ];
+
+  actionsTemplate: any;
 
   ngOnInit(): void {
     this.loadOperators();
@@ -593,9 +300,9 @@ export class OperatorListEnhancedComponent implements OnInit {
     });
   }
 
-  // ... (other methods remain same)
-
-  applyFilters(): void {
+  onFilterChange(filters: Record<string, any>): void {
+    this.filters.search = filters['search'] || '';
+    this.filters.status = filters['status'] || '';
     this.loadOperators();
   }
 
@@ -605,32 +312,16 @@ export class OperatorListEnhancedComponent implements OnInit {
     return (first + last).toUpperCase();
   }
 
-  getActiveCount(): number {
-    return this.operators.filter((o) => o.is_active).length;
-  }
-
-  getOnLeaveCount(): number {
-    return 0;
-  }
-
-  getEstadoClass(operator: Operator): string {
-    return operator.is_active ? 'activo' : 'inactivo';
-  }
-
-  getEstadoLabel(operator: Operator): string {
-    return operator.is_active ? 'Activo' : 'Inactivo';
-  }
-
   viewOperator(operator: Operator): void {
-    this.router.navigate(['/operations/operators', operator.id]); // Updated route
+    this.router.navigate(['/operators', operator.id]);
   }
 
   editOperator(operator: Operator): void {
-    this.router.navigate(['/operations/operators', operator.id, 'edit']); // Updated route
+    this.router.navigate(['/operators', operator.id, 'edit']);
   }
 
   addOperator(): void {
-    this.router.navigate(['/operations/operators/new']); // Updated route
+    this.router.navigate(['/operators/new']);
   }
 
   deleteOperator(operator: Operator): void {

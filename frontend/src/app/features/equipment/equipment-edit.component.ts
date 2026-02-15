@@ -285,7 +285,7 @@ import { Equipment } from '../../core/models/equipment.model';
         gap: var(--spacing-sm);
         color: var(--grey-500);
 
-        &-link {
+        &.breadcrumb-link {
           color: var(--primary-500);
           text-decoration: none;
 

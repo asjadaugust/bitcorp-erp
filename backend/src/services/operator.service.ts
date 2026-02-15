@@ -67,9 +67,9 @@ export class OperatorService {
         });
       }
 
-      // Filter by operating unit
-      if (filters?.operatingUnitId) {
-        queryBuilder.andWhere('t.operating_unit_id = :unitId', { unitId: filters.operatingUnitId });
+      // Filter by unidad operativa
+      if (filters?.unidadOperativaId) {
+        queryBuilder.andWhere('t.operating_unit_id = :unitId', { unitId: filters.unidadOperativaId });
       }
 
       // Search across multiple fields

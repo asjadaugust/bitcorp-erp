@@ -34,12 +34,12 @@ import { CommonModule } from '@angular/common';
         flex-direction: column;
         overflow: hidden;
 
-        &--outlined {
+        &.aero-card--outlined {
           box-shadow: none;
           border: 1px solid var(--grey-300);
         }
 
-        &__header {
+        .aero-card__header {
           padding: var(--s-16) var(--s-24);
           border-bottom: 1px solid var(--grey-200);
           display: flex;
@@ -48,7 +48,7 @@ import { CommonModule } from '@angular/common';
           min-height: 64px;
         }
 
-        &__title {
+        .aero-card__title {
           margin: 0;
           font-family: var(--font-family-display);
           font-size: var(--type-h4-size);
@@ -56,12 +56,12 @@ import { CommonModule } from '@angular/common';
           font-weight: 500;
         }
 
-        &__content {
+        .aero-card__content {
           padding: var(--s-24);
           flex: 1;
         }
 
-        &__footer {
+        .aero-card__footer {
           padding: var(--s-16) var(--s-24);
           background-color: var(--grey-100);
           border-top: 1px solid var(--grey-200);

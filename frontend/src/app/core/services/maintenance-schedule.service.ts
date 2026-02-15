@@ -21,8 +21,6 @@ export class MaintenanceScheduleService {
         }
       });
     }
-    // API might return paginated response: {success, data, pagination}
-    // Extract data array if it exists, otherwise return as-is
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map((response) => {
         if (response && typeof response === 'object' && 'data' in response) {
@@ -33,19 +31,25 @@ export class MaintenanceScheduleService {
     );
   }
 
-  getById(id: string): Observable<MaintenanceSchedule> {
-    return this.http.get<MaintenanceSchedule>(`${this.apiUrl}/${id}`);
+  getById(id: string | number): Observable<MaintenanceSchedule> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map((response) => response?.data || response)
+    );
   }
 
   create(schedule: Partial<MaintenanceSchedule>): Observable<MaintenanceSchedule> {
-    return this.http.post<MaintenanceSchedule>(this.apiUrl, schedule);
+    return this.http.post<any>(this.apiUrl, schedule).pipe(
+      map((response) => response?.data || response)
+    );
   }
 
-  update(id: string, schedule: Partial<MaintenanceSchedule>): Observable<MaintenanceSchedule> {
-    return this.http.put<MaintenanceSchedule>(`${this.apiUrl}/${id}`, schedule);
+  update(id: string | number, schedule: Partial<MaintenanceSchedule>): Observable<MaintenanceSchedule> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, schedule).pipe(
+      map((response) => response?.data || response)
+    );
   }
 
-  delete(id: string): Observable<{ success: boolean; message: string }> {
+  delete(id: string | number): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${id}`);
   }
 
@@ -53,9 +57,11 @@ export class MaintenanceScheduleService {
     return this.http.post<any>(`${this.apiUrl}/generate-tasks`, { daysAhead });
   }
 
-  complete(id: string, completionHours?: number): Observable<MaintenanceSchedule> {
-    return this.http.post<MaintenanceSchedule>(`${this.apiUrl}/${id}/complete`, {
+  complete(id: string | number, completionHours?: number): Observable<MaintenanceSchedule> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/complete`, {
       completionHours,
-    });
+    }).pipe(
+      map((response) => response?.data || response)
+    );
   }
 }

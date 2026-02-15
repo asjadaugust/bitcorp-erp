@@ -9,9 +9,8 @@ import { NotFoundError, DatabaseError, ValidationError, DatabaseErrorType } from
 import logger from '../utils/logger';
 
 // DTOs for create/update operations
-// Support both English camelCase (from frontend) and Spanish snake_case (from API)
+// Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
 export interface CreateAccountsPayableDto {
-  // Frontend sends camelCase field names
   providerId?: number; // proveedor_id
   documentNumber?: string; // numero_factura
   issueDate?: string; // fecha_emision
@@ -303,8 +302,7 @@ export class AccountsPayableService {
   /**
    * Create new accounts payable record
    *
-   * Creates a new invoice/bill owed to a provider. Accepts both English camelCase
-   * (from frontend) and Spanish snake_case (from API) field names for backward compatibility.
+   * Creates a new invoice/bill owed to a provider. Accepts both Spanish snake_case (from API) field names for backward compatibility.
    *
    * **Business Rules**:
    * - Provider (proveedor_id) is required
@@ -564,8 +562,8 @@ export class AccountsPayableService {
   /**
    * Update accounts payable record
    *
-   * Updates invoice details including payment amounts and status. Accepts both
-   * English camelCase and Spanish snake_case field names.
+   * Updates invoice details including payment amounts and status. Accepts only
+   * Spanish snake_case field names.
    *
    * **Updatable Fields**:
    * - proveedor_id (provider - rarely changed)

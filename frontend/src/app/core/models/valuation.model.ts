@@ -1,36 +1,59 @@
+/**
+ * Valuation model
+ * Matches backend entity: Valorizacion (table: equipo.valorizacion_equipo)
+ * Backend entity uses camelCase mapped from snake_case DB columns
+ */
+
+export type EstadoValorizacion =
+  | 'PENDIENTE'
+  | 'EN_REVISION'
+  | 'APROBADO'
+  | 'RECHAZADO'
+  | 'PAGADO'
+  | 'ELIMINADO';
+
 export interface Valuation {
   id: number;
-  contract_id: number;
-  period_start: string;
-  period_end: string;
-  amount: number;
-  base_amount?: number;
-  overtime_amount?: number;
-  fuel_amount?: number;
-  status: 'draft' | 'submitted' | 'approved' | 'paid' | 'rejected' | 'pending' | 'under_review';
-  invoice_number?: string;
-  issue_date?: string;
-  payment_date?: string;
-  fecha_pago?: string; // Payment date for PAGADO state
-  approved_by?: number; // User ID who approved
-  approved_at?: string; // Timestamp when approved
-  observaciones?: string; // Rejection reason or payment details
-  created_at?: string;
-  updated_at?: string;
+  legacyId?: string;
+  equipmentId: number;
+  contractId?: number;
+  projectId?: number;
+  periodo: string; // Format: 'YYYY-MM'
+  fechaInicio: string;
+  fechaFin: string;
+  diasTrabajados?: number;
+  horasTrabajadas?: number;
+  combustibleConsumido?: number;
+  costoBase?: number;
+  costoCombustible?: number;
+  cargosAdicionales?: number;
+  totalValorizado?: number;
+  numeroValorizacion?: string;
+  tipoCambio?: number;
+  descuentoPorcentaje?: number;
+  descuentoMonto?: number;
+  igvPorcentaje?: number;
+  igvMonto?: number;
+  totalConIgv?: number;
+  estado: EstadoValorizacion;
+  observaciones?: string;
+  createdBy?: number;
+  approvedBy?: number;
+  approvedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
 
-  // Relations
-  contract?: {
+  // Relations (populated by backend joins)
+  equipo?: {
     id: number;
-    code: string;
-    project_name: string;
-    client_name: string;
+    codigo_equipo: string;
+    marca: string;
+    modelo: string;
   };
-  equipment_id: number;
-  equipment?: {
+  contrato?: {
     id: number;
-    code: string;
-    name: string;
-    model: string;
+    codigo: string;
+    nombre_proyecto: string;
   };
 }
 

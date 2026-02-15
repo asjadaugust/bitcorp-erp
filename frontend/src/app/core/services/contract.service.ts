@@ -59,6 +59,10 @@ export class ContractService {
       updated_at: backendData.updated_at,
       creado_por: backendData.creado_por,
 
+      // Translated fields
+      modalidad_display: this.translateModalidad(backendData.modalidad),
+      tipo_tarifa_display: this.translateTipoTarifa(backendData.tipo_tarifa),
+
       // Computed display fields for table compatibility
       code: backendData.numero_contrato || backendData.equipo_codigo,
       provider_name: backendData.proveedor_razon_social || '',
@@ -107,6 +111,8 @@ export class ContractService {
       start_date: undefined,
       end_date: undefined,
       status: undefined,
+      modalidad_display: undefined,
+      tipo_tarifa_display: undefined,
     };
   }
 
@@ -114,34 +120,55 @@ export class ContractService {
    * Map backend estado (UPPERCASE) to frontend estado (lowercase)
    */
   private mapEstadoBackendToFrontend(estado: string): string {
-    if (!estado) return 'activo';
+    if (!estado) return 'Activo';
     const estadoMap: Record<string, string> = {
-      ACTIVO: 'activo',
-      VENCIDO: 'vencido',
-      CANCELADO: 'vencido', // Treat cancelled as expired
-      BORRADOR: 'activo', // Treat draft as active
+      ACTIVO: 'Activo',
+      VENCIDO: 'Vencido',
+      CANCELADO: 'Cancelado',
+      BORRADOR: 'Borrador',
     };
-    return estadoMap[estado] || estado.toLowerCase();
+    return estadoMap[estado] || estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase();
   }
 
   /**
    * Map frontend estado (lowercase) to backend estado (UPPERCASE)
    */
-  private mapEstadoFrontendToBackend(estado: string): string {
+  public mapEstadoFrontendToBackend(estado: string): string {
     if (!estado) return 'ACTIVO';
     const estadoMap: Record<string, string> = {
-      activo: 'ACTIVO',
-      proximo_vencer: 'ACTIVO', // Near expiry is still active
-      vencido: 'VENCIDO',
-      extendido: 'ACTIVO', // Extended is active
+      Activo: 'ACTIVO',
+      Vencido: 'VENCIDO',
+      Cancelado: 'CANCELADO',
+      Borrador: 'BORRADOR',
     };
     return estadoMap[estado] || estado.toUpperCase();
+  }
+
+  private translateModalidad(modalidad: string): string {
+    if (!modalidad) return '-';
+    const map: Record<string, string> = {
+      alquiler_seco: 'Alquiler Seco',
+      alquiler_con_operador: 'Alquiler con Operador',
+      alquiler_todo_costo: 'Alquiler Todo Costo',
+      servicio: 'Servicio',
+    };
+    return map[modalidad] || modalidad;
+  }
+
+  private translateTipoTarifa(tipo: string): string {
+    if (!tipo) return '-';
+    const map: Record<string, string> = {
+      POR_HORA: 'Por Hora',
+      POR_DIA: 'Por Día',
+      FIJO: 'Fijo',
+    };
+    return map[tipo] || tipo;
   }
 
   getAll(filters: any = {}): Observable<Contract[]> {
     let params = new HttpParams();
     if (filters.search) params = params.set('search', filters.search);
-    if (filters.status) params = params.set('status', filters.status);
+    if (filters.estado) params = params.set('estado', filters.estado);
     if (filters.equipmentId) params = params.set('equipmentId', filters.equipmentId);
 
     // DEFAULT LIMIT: Backend defaults to limit=10, but for dropdowns/lists we want all

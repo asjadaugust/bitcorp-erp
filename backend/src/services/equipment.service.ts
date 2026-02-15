@@ -212,12 +212,17 @@ export interface EquipmentFilter {
  * @see DailyReportService
  */
 export class EquipmentService {
-  private repository: Repository<Equipment>;
-  private dashboardService: DashboardService;
+  private _dashboardService?: DashboardService;
 
-  constructor() {
-    this.repository = AppDataSource.getRepository(Equipment);
-    this.dashboardService = new DashboardService();
+  private get repository(): Repository<Equipment> {
+    return AppDataSource.getRepository(Equipment);
+  }
+
+  private get dashboardService(): DashboardService {
+    if (!this._dashboardService) {
+      this._dashboardService = new DashboardService();
+    }
+    return this._dashboardService;
   }
 
   /**
@@ -273,7 +278,7 @@ export class EquipmentService {
           .leftJoinAndSelect('e.provider', 'p')
           .where('e.isActive = :isActive', { isActive: filter?.isActive ?? true })
           .andWhere(
-            '(e.codigo_equipo ILIKE :search OR e.marca ILIKE :search OR e.modelo ILIKE :search OR e.placa ILIKE :search OR e.categoria ILIKE :search)',
+            '(e.codigoEquipo ILIKE :search OR e.marca ILIKE :search OR e.modelo ILIKE :search OR e.placa ILIKE :search OR e.categoria ILIKE :search)',
             { search: `%${filter.search}%` }
           );
 
@@ -540,7 +545,7 @@ export class EquipmentService {
       if (data.codigo_equipo) {
         const existing = await this.findByCode(data.codigo_equipo);
         if (existing) {
-          throw new ConflictError(`Equipment code '${data.codigo_equipo}' already exists`, {
+          throw new ConflictError(`El código de equipo '${data.codigo_equipo}' ya existe`, {
             field: 'codigo_equipo',
             value: data.codigo_equipo,
           });
@@ -659,7 +664,7 @@ export class EquipmentService {
       if (data.codigo_equipo && data.codigo_equipo !== equipment.codigoEquipo) {
         const existing = await this.findByCode(data.codigo_equipo);
         if (existing && existing.id !== id) {
-          throw new ConflictError(`Equipment code '${data.codigo_equipo}' already exists`, {
+          throw new ConflictError(`El código de equipo '${data.codigo_equipo}' ya existe`, {
             field: 'codigo_equipo',
             value: data.codigo_equipo,
           });

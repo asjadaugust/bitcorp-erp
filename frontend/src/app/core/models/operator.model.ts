@@ -25,31 +25,35 @@ export interface Operator {
 
 export interface PersonalDocument {
   id?: number;
-  registration_date: string;
-  document_type: string;
-  description?: string;
-  file_name?: string;
-  file_url?: string;
+  trabajadorId?: number;
+  tipoDocumento: string; // 'DNI', 'LICENCIA', 'CERTIFICADO', etc.
+  numeroDocumento?: string;
+  fechaEmision?: string;
+  fechaVencimiento?: string;
+  archivoUrl?: string;
+  observaciones?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface OperatorCertification {
   id: number;
-  trabajador_id: number;
-  certification_name: string;
-  certification_number: string;
-  issue_date: string;
-  expiry_date: string;
-  issuing_authority: string;
-  status: 'valid' | 'expired' | 'expiring_soon';
+  trabajadorId: number;
+  nombreCertificacion: string;
+  numeroCertificacion: string;
+  fechaEmision: string;
+  fechaVencimiento: string;
+  entidadEmisora: string;
+  estado: 'vigente' | 'vencido' | 'por_vencer';
 }
 
 export interface OperatorSkill {
   id: number;
-  trabajador_id: number;
-  equipment_type: string;
-  skill_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  years_experience: number;
-  last_verified: string;
+  trabajadorId: number;
+  tipoEquipo: string;
+  nivelHabilidad: 'principiante' | 'intermedio' | 'avanzado' | 'experto';
+  aniosExperiencia: number;
+  ultimaVerificacion?: string;
 }
 
 export interface CreateOperatorDto {

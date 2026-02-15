@@ -9,113 +9,116 @@ import {
   CreateChecklistDto,
 } from '../models/checklist.models';
 import { ChecklistService } from '../services/checklist.service';
+import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 
 @Component({
   selector: 'app-checklist-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FormContainerComponent],
   template: `
-    <div class="checklist-form">
-      <div class="checklist-header">
-        <h3>{{ getTypeLabel(checklistType) }}</h3>
-        <div class="template-selector" *ngIf="!selectedTemplate && templates.length > 0">
-          <label>Use Template:</label>
+    <app-form-container
+      [title]="getTypeLabel(checklistType)"
+      [subtitle]="'Registro de inspección y estado'"
+      [loading]="false"
+      [submitLabel]="'Guardar Checklist'"
+      [disableSubmit]="!isValid()"
+      (onSubmit)="onSave()"
+      (onCancel)="onCancel()"
+    >
+      <div class="checklist-form-content">
+        <div class="template-section" *ngIf="!selectedTemplate && templates.length > 0">
+          <label>Usar Plantilla:</label>
           <select (change)="loadTemplate($event)" class="form-select">
-            <option value="">Select a template</option>
+            <option value="">Seleccionar una plantilla</option>
             <option *ngFor="let t of templates" [value]="t.id">
               {{ t.template_name }}
             </option>
           </select>
         </div>
-      </div>
 
-      <div class="checklist-items">
-        <div
-          *ngFor="let item of items; let i = index"
-          class="checklist-item"
-          [class.required]="item.is_required"
-        >
-          <div class="item-header">
-            <span class="item-number">{{ i + 1 }}</span>
-            <span class="item-description">{{ item.item_description }}</span>
-            <span *ngIf="item.is_required" class="required-badge">Required</span>
-          </div>
-
-          <div class="item-category" *ngIf="item.category">
-            <small>{{ item.category }}</small>
-          </div>
-
-          <div class="item-controls">
-            <div class="status-buttons">
-              <button
-                type="button"
-                *ngFor="let status of statusOptions"
-                [class]="'status-btn status-' + status.value"
-                [class.active]="item.status === status.value"
-                (click)="setItemStatus(i, status.value)"
-              >
-                {{ status.label }}
-              </button>
+        <div class="checklist-items" *ngIf="selectedTemplate">
+          <div
+            *ngFor="let item of items; let i = index"
+            class="checklist-item"
+            [class.required]="item.is_required"
+          >
+            <div class="item-header">
+              <span class="item-number">{{ i + 1 }}</span>
+              <span class="item-description">{{ item.item_description }}</span>
+              <span *ngIf="item.is_required" class="required-badge">Requerido</span>
             </div>
 
-            <div class="item-value" *ngIf="item.expected_value">
-              <label>Expected: {{ item.expected_value }}</label>
-              <input
-                type="text"
-                [(ngModel)]="item.actual_value"
-                placeholder="Actual value"
-                class="form-control"
-              />
+            <div class="item-category" *ngIf="item.category">
+              <small>{{ item.category }}</small>
             </div>
 
-            <div class="item-comments" *ngIf="item.allow_comments">
-              <textarea
-                [(ngModel)]="item.comments"
-                placeholder="Comments (optional)"
-                class="form-control"
-                rows="2"
-              ></textarea>
-            </div>
+            <div class="item-controls">
+              <div class="status-buttons">
+                <button
+                  type="button"
+                  *ngFor="let status of statusOptions"
+                  [class]="'status-btn status-' + status.value"
+                  [class.active]="item.status === status.value"
+                  (click)="setItemStatus(i, status.value)"
+                >
+                  {{ status.label }}
+                </button>
+              </div>
 
-            <div class="item-photos" *ngIf="item.allow_photos">
-              <button type="button" class="btn-photo" (click)="addPhoto(i)">📷 Add Photo</button>
-              <div class="photo-list" *ngIf="item.photos && item.photos.length > 0">
-                <span *ngFor="let photo of item.photos" class="photo-tag">
-                  {{ photo }}
-                  <button type="button" (click)="removePhoto(i, photo)">&times;</button>
-                </span>
+              <div class="item-value" *ngIf="item.expected_value">
+                <label>Esperado: {{ item.expected_value }}</label>
+                <input
+                  type="text"
+                  [(ngModel)]="item.actual_value"
+                  placeholder="Valor actual"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="item-comments" *ngIf="item.allow_comments">
+                <textarea
+                  [(ngModel)]="item.comments"
+                  placeholder="Comentarios (opcional)"
+                  class="form-control"
+                  rows="2"
+                ></textarea>
+              </div>
+
+              <div class="item-photos" *ngIf="item.allow_photos">
+                <button type="button" class="btn-photo" (click)="addPhoto(i)">
+                  <i class="fa-solid fa-camera"></i> Agregar Foto
+                </button>
+                <div class="photo-list" *ngIf="item.photos && item.photos.length > 0">
+                  <span *ngFor="let photo of item.photos" class="photo-tag">
+                    {{ photo }}
+                    <button type="button" (click)="removePhoto(i, photo)">&times;</button>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="checklist-footer">
-        <div class="observations">
-          <label>General Observations</label>
-          <textarea
-            [(ngModel)]="observations"
-            placeholder="Any general observations about this checklist..."
-            class="form-control"
-            rows="3"
-          ></textarea>
-        </div>
+        <div class="checklist-footer-content" *ngIf="selectedTemplate">
+          <div class="observations">
+            <label>Observaciones Generales</label>
+            <textarea
+              [(ngModel)]="observations"
+              placeholder="Cualquier observación general sobre este checklist..."
+              class="form-control"
+              rows="3"
+            ></textarea>
+          </div>
 
-        <div class="overall-status">
-          <strong>Overall Status:</strong>
-          <span [class]="'status-badge status-' + overallStatus">
-            {{ getStatusLabel(overallStatus) }}
-          </span>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>
-          <button type="button" class="btn-primary" (click)="onSave()" [disabled]="!isValid()">
-            Save Checklist
-          </button>
+          <div class="overall-status">
+            <strong>Estado General:</strong>
+            <span [class]="'status-badge status-' + overallStatus">
+              {{ getStatusLabel(overallStatus) }}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </app-form-container>
   `,
   styles: [
     `
@@ -422,9 +425,9 @@ export class ChecklistFormComponent implements OnInit {
   overallStatus: ChecklistStatus = ChecklistStatus.PASS;
 
   statusOptions = [
-    { value: ChecklistStatus.PASS, label: 'Pass' },
-    { value: ChecklistStatus.FAIL, label: 'Fail' },
-    { value: ChecklistStatus.NEEDS_ATTENTION, label: 'Needs Attention' },
+    { value: ChecklistStatus.PASS, label: 'Pase' },
+    { value: ChecklistStatus.FAIL, label: 'Fallo' },
+    { value: ChecklistStatus.NEEDS_ATTENTION, label: 'Requiere Atención' },
     { value: ChecklistStatus.NOT_APPLICABLE, label: 'N/A' },
   ];
 
@@ -549,21 +552,21 @@ export class ChecklistFormComponent implements OnInit {
 
   getTypeLabel(type: ChecklistType): string {
     const labels: Record<ChecklistType, string> = {
-      [ChecklistType.PRE_OPERATION]: 'Pre-Operation Checklist',
-      [ChecklistType.POST_OPERATION]: 'Post-Operation Checklist',
-      [ChecklistType.DAILY_INSPECTION]: 'Daily Inspection',
-      [ChecklistType.WEEKLY_INSPECTION]: 'Weekly Inspection',
-      [ChecklistType.MONTHLY_INSPECTION]: 'Monthly Inspection',
+      [ChecklistType.PRE_OPERATION]: 'Checklist Pre-operacional',
+      [ChecklistType.POST_OPERATION]: 'Checklist Post-operacional',
+      [ChecklistType.DAILY_INSPECTION]: 'Inspección Diaria',
+      [ChecklistType.WEEKLY_INSPECTION]: 'Inspección Semanal',
+      [ChecklistType.MONTHLY_INSPECTION]: 'Inspección Mensual',
     };
     return labels[type];
   }
 
   getStatusLabel(status: ChecklistStatus): string {
     const labels: Record<ChecklistStatus, string> = {
-      [ChecklistStatus.PASS]: 'Pass',
-      [ChecklistStatus.FAIL]: 'Fail',
-      [ChecklistStatus.NEEDS_ATTENTION]: 'Needs Attention',
-      [ChecklistStatus.NOT_APPLICABLE]: 'Not Applicable',
+      [ChecklistStatus.PASS]: 'Pase',
+      [ChecklistStatus.FAIL]: 'Fallo',
+      [ChecklistStatus.NEEDS_ATTENTION]: 'Requiere Atención',
+      [ChecklistStatus.NOT_APPLICABLE]: 'No Aplica',
     };
     return labels[status];
   }

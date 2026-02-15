@@ -81,10 +81,10 @@ import { ProjectService } from '../../../../core/services/project.service';
               <div class="form-group">
                 <label for="status">Estado *</label>
                 <select id="status" formControlName="status" class="form-select">
-                  <option value="Planificación">Planificación</option>
-                  <option value="En Ejecución">En Ejecución</option>
-                  <option value="Suspendido">Suspendido</option>
-                  <option value="Finalizado">Finalizado</option>
+                  <option value="PLANIFICACION">Planificación</option>
+                  <option value="ACTIVO">En Ejecución</option>
+                  <option value="PAUSADO">Suspendido</option>
+                  <option value="COMPLETADO">Finalizado</option>
                 </select>
                 <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
               </div>

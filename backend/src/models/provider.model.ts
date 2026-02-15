@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export type TipoProveedor = 'equipment' | 'services' | 'supplies' | 'fuel' | 'other';
+export type TipoProveedor = 'EQUIPOS' | 'MATERIALES' | 'SERVICIOS' | 'MIXTO';
 
 @Entity('proveedor', { schema: 'proveedores' })
 export class Provider {

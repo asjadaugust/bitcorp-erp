@@ -8,333 +8,286 @@ import { ProviderService } from '../../core/services/provider.service';
 import { Contract } from '../../core/models/contract.model';
 import { Equipment } from '../../core/models/equipment.model';
 import { Provider } from '../../core/models/provider.model';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../core/services/form-error-handler.service';
+import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-contract-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FormContainerComponent,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
-    <div class="form-container">
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <div class="icon-wrapper">
-            <i class="fa-solid" [class.fa-plus]="!isEditMode" [class.fa-pen]="isEditMode"></i>
-          </div>
-          <div class="title-group">
-            <h1>{{ isEditMode ? 'Editar Contrato' : 'Nuevo Contrato' }}</h1>
-            <p class="subtitle">
-              {{
-                isEditMode
-                  ? 'Actualizar información del contrato'
-                  : 'Registrar un nuevo contrato en el sistema'
-              }}
-            </p>
+    <app-form-container
+      [title]="isEditMode ? 'Editar Contrato' : 'Nuevo Contrato'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información del contrato'
+          : 'Registrar un nuevo contrato en el sistema'
+      "
+      [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
+      [loading]="loading"
+      [disableSubmit]="contractForm.invalid || loading"
+      [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Contrato'"
+      (onSubmit)="onSubmit()"
+      (onCancel)="cancel()"
+    >
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors
+        *ngIf="validationErrors.length > 0"
+        [errors]="validationErrors"
+        [fieldLabels]="fieldLabels"
+      >
+      </app-validation-errors>
+      
+      <div class="mb-3"></div>
+
+      <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" [dismissible]="true">
+      </app-alert>
+
+      <form [formGroup]="contractForm" class="form-grid">
+        <!-- Section 1: Basic Information -->
+        <div class="form-section full-width">
+          <h3>Información del Contrato</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="numero_contrato">Número de Contrato *</label>
+              <input
+                id="numero_contrato"
+                type="text"
+                formControlName="numero_contrato"
+                class="form-control"
+                placeholder="ej. CTR-2025-001"
+              />
+              <div class="error-msg" *ngIf="hasError('numero_contrato')">Número es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="fecha_contrato">Fecha de Contrato *</label>
+              <input
+                id="fecha_contrato"
+                type="date"
+                formControlName="fecha_contrato"
+                class="form-control"
+              />
+              <div class="error-msg" *ngIf="hasError('fecha_contrato')">Fecha es requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="proveedor_id">Proveedor *</label>
+              <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
+                <option value="">Seleccione un proveedor</option>
+                <option *ngFor="let prov of providerList" [value]="prov.id">
+                  {{ prov.razon_social }} ({{ prov.ruc }})
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('proveedor_id')">Proveedor es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="equipo_id">Equipo (Marca / Modelo / Placa) *</label>
+              <select id="equipo_id" formControlName="equipo_id" class="form-select">
+                <option value="">Seleccione un equipo</option>
+                <option *ngFor="let eq of equipmentList" [value]="eq.id">
+                  {{ eq.marca }} {{ eq.modelo }} / {{ eq.placa || 'Sin Placa' }} ({{
+                    eq.codigo_equipo
+                  }})
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="modalidad">Modalidad *</label>
+              <select id="modalidad" formControlName="modalidad" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option value="alquiler_seco">Alquiler Seco</option>
+                <option value="alquiler_con_operador">Alquiler con Operador</option>
+                <option value="alquiler_todo_costo">Alquiler Todo Costo</option>
+                <option value="servicio">Servicio</option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('modalidad')">Modalidad es requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="estado">Estado *</label>
+              <select id="estado" formControlName="estado" class="form-select">
+                <option value="ACTIVO">Activo</option>
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="COMPLETADO">Completado</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+            </div>
           </div>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="contractForm.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Contrato' }}
-          </button>
+
+        <!-- Section 2: Financial & Dates -->
+        <div class="form-section full-width">
+          <h3>Detalles Financieros y Fechas</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="fecha_inicio">Fecha de Inicio *</label>
+              <input
+                id="fecha_inicio"
+                type="date"
+                formControlName="fecha_inicio"
+                class="form-control"
+              />
+              <div class="error-msg" *ngIf="hasError('fecha_inicio')">
+                Fecha de inicio requerida
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="fecha_fin">Fecha de Fin *</label>
+              <input
+                id="fecha_fin"
+                type="date"
+                formControlName="fecha_fin"
+                class="form-control"
+              />
+              <div class="error-msg" *ngIf="hasError('fecha_fin')">Fecha de fin requerida</div>
+              <div
+                class="error-msg"
+                *ngIf="
+                  contractForm.hasError('dateRangeInvalid') &&
+                  contractForm.get('fecha_fin')?.touched
+                "
+              >
+                La fecha de fin debe ser posterior a la fecha de inicio
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="moneda">Moneda *</label>
+              <select id="moneda" formControlName="moneda" class="form-select">
+                <option value="PEN">Soles (PEN)</option>
+                <option value="USD">Dólares (USD)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="tipo_tarifa">Tipo de Tarifa *</label>
+              <select id="tipo_tarifa" formControlName="tipo_tarifa" class="form-select">
+                <option value="POR_HORA">Por Hora</option>
+                <option value="POR_DIA">Por Día</option>
+                <option value="FIJO">Fijo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="tarifa">Tarifa *</label>
+              <input
+                id="tarifa"
+                type="number"
+                formControlName="tarifa"
+                class="form-control"
+                placeholder="0.00"
+              />
+              <div class="error-msg" *ngIf="hasError('tarifa')">Tarifa es requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="horas_incluidas">Horas Incluidas</label>
+              <input
+                id="horas_incluidas"
+                type="number"
+                formControlName="horas_incluidas"
+                class="form-control"
+                placeholder="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="penalidad_exceso">Penalidad por Exceso (%)</label>
+              <input
+                id="penalidad_exceso"
+                type="number"
+                formControlName="penalidad_exceso"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <!-- New Fields: Service Inclusions -->
+            <div class="form-group checkbox-group full-width">
+              <label>
+                <input type="checkbox" formControlName="incluye_motor" />
+                Incluye Motor
+              </label>
+              <label>
+                <input type="checkbox" formControlName="incluye_operador" />
+                Incluye Operador
+              </label>
+            </div>
+
+            <div class="form-group" *ngIf="contractForm.get('incluye_motor')?.value === false">
+              <label for="costo_adicional_motor">Costo Adicional Motor</label>
+              <input
+                id="costo_adicional_motor"
+                type="number"
+                formControlName="costo_adicional_motor"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- Form -->
-      <div class="card form-card">
-        <form [formGroup]="contractForm" class="form-grid">
-          <!-- Section 1: Basic Information -->
-          <div class="form-section full-width">
-            <h3>Información del Contrato</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="numero_contrato">Número de Contrato *</label>
+        <!-- Section 3: Document Attachment -->
+        <div class="form-section full-width">
+          <h3>Documento del Contrato</h3>
+          <div class="section-grid">
+            <div class="form-group full-width">
+              <label>Adjuntar Contrato Firmado</label>
+              <div class="file-upload-area">
                 <input
-                  id="numero_contrato"
-                  type="text"
-                  formControlName="numero_contrato"
-                  class="form-control"
-                  placeholder="ej. CTR-2025-001"
+                  type="file"
+                  id="contract_document"
+                  (change)="onContractFileSelected($event)"
+                  accept=".pdf,.doc,.docx"
+                  class="file-input"
                 />
-                <div class="error-msg" *ngIf="hasError('numero_contrato')">Número es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="fecha_contrato">Fecha de Contrato *</label>
-                <input
-                  id="fecha_contrato"
-                  type="date"
-                  formControlName="fecha_contrato"
-                  class="form-control"
-                />
-                <div class="error-msg" *ngIf="hasError('fecha_contrato')">Fecha es requerida</div>
-              </div>
-
-              <div class="form-group">
-                <label for="proveedor_id">Proveedor *</label>
-                <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
-                  <option value="">Seleccione un proveedor</option>
-                  <option *ngFor="let prov of providerList" [value]="prov.id">
-                    {{ prov.razon_social }} ({{ prov.ruc }})
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('proveedor_id')">Proveedor es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="equipo_id">Equipo (Marca / Modelo / Placa) *</label>
-                <select id="equipo_id" formControlName="equipo_id" class="form-select">
-                  <option value="">Seleccione un equipo</option>
-                  <option *ngFor="let eq of equipmentList" [value]="eq.id">
-                    {{ eq.marca }} {{ eq.modelo }} / {{ eq.placa || 'Sin Placa' }} ({{
-                      eq.codigo_equipo
-                    }})
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="modalidad">Modalidad *</label>
-                <select id="modalidad" formControlName="modalidad" class="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option value="alquiler_seco">Alquiler Seco</option>
-                  <option value="alquiler_con_operador">Alquiler con Operador</option>
-                  <option value="alquiler_todo_costo">Alquiler Todo Costo</option>
-                  <option value="servicio">Servicio</option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('modalidad')">Modalidad es requerida</div>
-              </div>
-
-              <div class="form-group">
-                <label for="estado">Estado *</label>
-                <select id="estado" formControlName="estado" class="form-select">
-                  <option value="ACTIVO">Activo</option>
-                  <option value="PENDIENTE">Pendiente</option>
-                  <option value="COMPLETADO">Completado</option>
-                  <option value="CANCELADO">Cancelado</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 2: Financial & Dates -->
-          <div class="form-section full-width">
-            <h3>Detalles Financieros y Fechas</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="fecha_inicio">Fecha de Inicio *</label>
-                <input
-                  id="fecha_inicio"
-                  type="date"
-                  formControlName="fecha_inicio"
-                  class="form-control"
-                />
-                <div class="error-msg" *ngIf="hasError('fecha_inicio')">
-                  Fecha de inicio requerida
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="fecha_fin">Fecha de Fin *</label>
-                <input
-                  id="fecha_fin"
-                  type="date"
-                  formControlName="fecha_fin"
-                  class="form-control"
-                />
-                <div class="error-msg" *ngIf="hasError('fecha_fin')">Fecha de fin requerida</div>
-                <div
-                  class="error-msg"
-                  *ngIf="
-                    contractForm.hasError('dateRangeInvalid') &&
-                    contractForm.get('fecha_fin')?.touched
-                  "
-                >
-                  La fecha de fin debe ser posterior a la fecha de inicio
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="moneda">Moneda *</label>
-                <select id="moneda" formControlName="moneda" class="form-select">
-                  <option value="PEN">Soles (PEN)</option>
-                  <option value="USD">Dólares (USD)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="tipo_tarifa">Tipo de Tarifa *</label>
-                <select id="tipo_tarifa" formControlName="tipo_tarifa" class="form-select">
-                  <option value="POR_HORA">Por Hora</option>
-                  <option value="POR_DIA">Por Día</option>
-                  <option value="FIJO">Fijo</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="tarifa">Tarifa *</label>
-                <input
-                  id="tarifa"
-                  type="number"
-                  formControlName="tarifa"
-                  class="form-control"
-                  placeholder="0.00"
-                />
-                <div class="error-msg" *ngIf="hasError('tarifa')">Tarifa es requerida</div>
-              </div>
-
-              <div class="form-group">
-                <label for="horas_incluidas">Horas Incluidas</label>
-                <input
-                  id="horas_incluidas"
-                  type="number"
-                  formControlName="horas_incluidas"
-                  class="form-input"
-                  placeholder="0"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="penalidad_exceso">Penalidad por Exceso</label>
-                <div class="input-group">
-                  <span class="input-prefix">%</span>
-                  <input
-                    id="penalidad_exceso"
-                    type="number"
-                    formControlName="penalidad_exceso"
-                    class="form-control"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              <!-- New Fields: Service Inclusions -->
-              <div class="form-group checkbox-group full-width">
-                <label>
-                  <input type="checkbox" formControlName="incluye_motor" />
-                  Incluye Motor
+                <label for="contract_document" class="file-upload-label">
+                  <i class="fa-solid fa-cloud-upload"></i>
+                  <span *ngIf="!contractFileName"
+                    >Haga clic para seleccionar archivo o arrastre aquí</span
+                  >
+                  <span *ngIf="contractFileName" class="file-name">
+                    <i class="fa-solid fa-file-pdf"></i> {{ contractFileName }}
+                  </span>
                 </label>
-                <label>
-                  <input type="checkbox" formControlName="incluye_operador" />
-                  Incluye Operador
-                </label>
-              </div>
-
-              <div class="form-group" *ngIf="contractForm.get('incluye_motor')?.value === false">
-                <label for="costo_adicional_motor">Costo Adicional Motor</label>
-                <input
-                  id="costo_adicional_motor"
-                  type="number"
-                  formControlName="costo_adicional_motor"
-                  class="form-control"
-                  placeholder="0.00"
-                />
+                <small class="file-hint">Formatos aceptados: PDF, DOC, DOCX (máx. 10MB)</small>
               </div>
             </div>
-          </div>
 
-          <!-- Section 3: Document Attachment -->
-          <div class="form-section full-width">
-            <h3>Documento del Contrato</h3>
-            <div class="section-grid">
-              <div class="form-group full-width">
-                <label>Adjuntar Contrato Firmado</label>
-                <div class="file-upload-area">
-                  <input
-                    type="file"
-                    id="contract_document"
-                    (change)="onContractFileSelected($event)"
-                    accept=".pdf,.doc,.docx"
-                    class="file-input"
-                  />
-                  <label for="contract_document" class="file-upload-label">
-                    <i class="fa-solid fa-cloud-upload"></i>
-                    <span *ngIf="!contractFileName"
-                      >Haga clic para seleccionar archivo o arrastre aquí</span
-                    >
-                    <span *ngIf="contractFileName" class="file-name">
-                      <i class="fa-solid fa-file-pdf"></i> {{ contractFileName }}
-                    </span>
-                  </label>
-                  <small class="file-hint">Formatos aceptados: PDF, DOC, DOCX (máx. 10MB)</small>
-                </div>
-              </div>
-
-              <div class="form-group full-width">
-                <label for="condiciones_especiales">Condiciones Especiales</label>
-                <textarea
-                  id="condiciones_especiales"
-                  formControlName="condiciones_especiales"
-                  class="form-control"
-                  rows="4"
-                  placeholder="Términos, limitaciones, restricciones especiales del contrato..."
-                ></textarea>
-              </div>
+            <div class="form-group full-width">
+              <label for="condiciones_especiales">Condiciones Especiales</label>
+              <textarea
+                id="condiciones_especiales"
+                formControlName="condiciones_especiales"
+                class="form-control"
+                rows="4"
+                placeholder="Términos, limitaciones, restricciones especiales del contrato..."
+              ></textarea>
             </div>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
-      .form-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding-bottom: 2rem;
-      }
-
-      /* Header */
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .icon-wrapper {
-        width: 48px;
-        height: 48px;
-        background: var(--primary-100);
-        color: var(--primary-800);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .title-group h1 {
-        margin: 0;
-        font-size: 24px;
-        color: var(--grey-900);
-      }
-      .subtitle {
-        margin: 0;
-        color: var(--grey-500);
-        font-size: 14px;
-      }
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-      }
-
-      /* Form Card */
-      .form-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
       .form-grid {
         display: flex;
         flex-direction: column;
@@ -368,9 +321,11 @@ import { Provider } from '../../core/models/provider.model';
       }
 
       .checkbox-group {
+        display: flex;
         flex-direction: row;
         align-items: center;
-        padding-top: 1.5rem;
+        gap: 2rem;
+        padding-top: 0.5rem;
       }
 
       .checkbox-group label {
@@ -378,6 +333,7 @@ import { Provider } from '../../core/models/provider.model';
         align-items: center;
         gap: 0.5rem;
         cursor: pointer;
+        font-size: 14px;
       }
 
       label {
@@ -405,40 +361,6 @@ import { Provider } from '../../core/models/provider.model';
       .error-msg {
         color: var(--semantic-red-600);
         font-size: 12px;
-      }
-
-      /* Buttons */
-      .btn {
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
-      }
-
-      .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-50);
       }
 
       @media (max-width: 768px) {
@@ -511,6 +433,7 @@ export class ContractFormComponent implements OnInit {
   private providerService = inject(ProviderService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private errorHandler = inject(FormErrorHandlerService);
 
   contractForm: FormGroup;
   isEditMode = false;
@@ -520,6 +443,28 @@ export class ContractFormComponent implements OnInit {
   providerList: Provider[] = [];
   contractFileName: string = '';
   contractFile: File | null = null;
+  validationErrors: ValidationError[] = [];
+  errorMessage = '';
+
+  fieldLabels: Record<string, string> = {
+    numero_contrato: 'Número de Contrato',
+    fecha_contrato: 'Fecha de Contrato',
+    equipo_id: 'Equipo',
+    proveedor_id: 'Proveedor',
+    modalidad: 'Modalidad',
+    fecha_inicio: 'Fecha de Inicio',
+    fecha_fin: 'Fecha de Fin',
+    moneda: 'Moneda',
+    tipo_tarifa: 'Tipo de Tarifa',
+    tarifa: 'Tarifa',
+    horas_incluidas: 'Horas Incluidas',
+    penalidad_exceso: 'Penalidad por Exceso',
+    incluye_motor: 'Incluye Motor',
+    incluye_operador: 'Incluye Operador',
+    costo_adicional_motor: 'Costo Adicional Motor',
+    condiciones_especiales: 'Condiciones Especiales',
+    estado: 'Estado',
+  };
 
   constructor() {
     this.contractForm = this.fb.group(
@@ -533,12 +478,12 @@ export class ContractFormComponent implements OnInit {
         fecha_fin: ['', Validators.required],
         moneda: ['PEN', Validators.required],
         tipo_tarifa: ['POR_HORA', Validators.required],
-        tarifa: ['', [Validators.required, Validators.min(0)]],
+        tarifa: [null, [Validators.required, Validators.min(0)]],
         horas_incluidas: [0, Validators.min(0)],
-        penalidad_exceso: [''],
+        penalidad_exceso: [null, Validators.min(0)],
         incluye_motor: [false],
         incluye_operador: [false],
-        costo_adicional_motor: [0],
+        costo_adicional_motor: [0, Validators.min(0)],
         condiciones_especiales: [''],
         estado: ['ACTIVO', Validators.required],
         tipo: ['CONTRATO'], // Default to CONTRATO
@@ -594,6 +539,12 @@ export class ContractFormComponent implements OnInit {
           fecha_contrato: formatDate(contract.fecha_contrato),
           fecha_inicio: formatDate(contract.fecha_inicio),
           fecha_fin: formatDate(contract.fecha_fin),
+          proveedor_id: contract.proveedor_id ? contract.proveedor_id.toString() : '',
+          equipo_id: contract.equipo_id ? contract.equipo_id.toString() : '',
+          tarifa: contract.tarifa,
+          horas_incluidas: contract.horas_incluidas,
+          penalidad_exceso: contract.penalidad_exceso,
+          costo_adicional_motor: contract.costo_adicional_motor,
         });
         this.loading = false;
       },
@@ -621,8 +572,9 @@ export class ContractFormComponent implements OnInit {
         this.router.navigate(['/equipment/contracts']);
       },
       error: (err) => {
-        console.error('Error saving contract', err);
         this.loading = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

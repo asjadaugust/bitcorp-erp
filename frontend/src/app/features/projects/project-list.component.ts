@@ -178,27 +178,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         font-size: 10px;
         color: var(--grey-400);
       }
-
-      .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
     `,
     `
       .actions-container {

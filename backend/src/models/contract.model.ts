@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Equipment } from './equipment.model';
 import { User } from './user.model';
+import { Provider } from './provider.model';
 
 export type TipoContrato = 'CONTRATO' | 'ADENDA';
 export type EstadoContrato = 'ACTIVO' | 'VENCIDO' | 'CANCELADO' | 'BORRADOR';
@@ -28,6 +29,13 @@ export class Contract {
   @ManyToOne(() => Equipment)
   @JoinColumn({ name: 'equipo_id' })
   equipo?: Equipment;
+
+  @Column({ name: 'proveedor_id', type: 'integer', nullable: true })
+  proveedorId?: number;
+
+  @ManyToOne(() => Provider)
+  @JoinColumn({ name: 'proveedor_id' })
+  provider?: Provider;
 
   @Column({ name: 'numero_contrato', type: 'varchar', length: 50, unique: true })
   numeroContrato!: string;
@@ -57,6 +65,9 @@ export class Contract {
 
   @Column({ name: 'moneda', type: 'varchar', length: 3, default: 'PEN' })
   moneda!: string;
+
+  @Column({ name: 'modalidad', type: 'varchar', length: 50, nullable: true })
+  modalidad?: string;
 
   @Column({ name: 'tipo_tarifa', type: 'varchar', length: 50, nullable: true })
   tipoTarifa?: string;

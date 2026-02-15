@@ -129,36 +129,62 @@ export const getTimesheetById = async (req: Request, res: Response) => {
  */
 export const generateTimesheet = async (req: Request, res: Response) => {
   try {
-    const { trabajadorId, periodo, totalDiasTrabajados, totalHoras, observaciones } = req.body;
+    const { 
+      trabajadorId, 
+      trabajador_id, 
+      periodo, 
+      totalDiasTrabajados, 
+      total_dias_trabajados,
+      totalHoras, 
+      total_hours, // Handle potential snake_case from frontend if any
+      observaciones 
+    } = req.body;
+    
+    // Normalize inputs
+    const tId = trabajadorId || trabajador_id;
+    const days = totalDiasTrabajados || total_dias_trabajados;
+    const hours = totalHoras || total_hours;
+
     const creadoPor = (req as any).user?.id || 1;
 
-    if (!trabajadorId || !periodo) {
+    if (!tId || !periodo) {
       return sendError(
         res,
         400,
         'TIMESHEET_MISSING_FIELDS',
-        'trabajadorId y periodo son requeridos'
+        'trabajador_id y periodo son requeridos'
       );
     }
 
     const timesheet = await timesheetService.generateTimesheet({
-      trabajadorId: parseInt(trabajadorId),
+      trabajadorId: parseInt(tId),
       periodo,
-      totalDiasTrabajados: totalDiasTrabajados ? parseInt(totalDiasTrabajados) : 0,
-      totalHoras: totalHoras ? parseFloat(totalHoras) : 0,
+      totalDiasTrabajados: days ? parseInt(days) : 0,
+      totalHoras: hours ? parseFloat(hours) : 0,
       observaciones,
       creadoPor,
     });
 
     return sendCreated(res, timesheet);
   } catch (error: any) {
+
     Logger.error('Error generating timesheet', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
-      trabajadorId: req.body.trabajadorId,
+      trabajadorId: req.body.trabajadorId || req.body.trabajador_id,
       periodo: req.body.periodo,
       context: 'TimesheetController.generateTimesheet',
     });
+    
+    // Handle specific errors
+    if (error.name === 'NotFoundError' || error.message.includes('not found') || error.message.includes('no encontrado')) {
+      return sendError(res, 404, 'RESOURCE_NOT_FOUND', error.message);
+    }
+    
+    if (error.name === 'ConflictError' || error.message.includes('exists') || error.message.includes('existe')) {
+      return sendError(res, 409, 'RESOURCE_CONFLICT', error.message);
+    }
+
     return sendError(
       res,
       500,

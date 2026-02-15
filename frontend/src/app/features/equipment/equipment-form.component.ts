@@ -20,6 +20,7 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 
 @Component({
   selector: 'app-equipment-form',
@@ -31,9 +32,23 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     RouterModule,
     ValidationErrorsComponent,
     AlertComponent,
+    FormContainerComponent,
   ],
   template: `
-    <div class="form-container">
+    <app-form-container
+      [title]="isEditMode ? 'Editar Equipo' : 'Nuevo Equipo'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información del equipo'
+          : 'Registrar un nuevo equipo en el sistema'
+      "
+      [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
+      [loading]="loading"
+      [disableSubmit]="equipmentForm.invalid || loading"
+      [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Equipo'"
+      (onSubmit)="onSubmit()"
+      (onCancel)="cancel()"
+    >
       <!-- Validation Errors and Alerts -->
       <app-validation-errors
         *ngIf="validationErrors.length > 0"
@@ -55,343 +70,259 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       >
       </app-alert>
 
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <div class="icon-wrapper">
-            <i class="fa-solid" [class.fa-plus]="!isEditMode" [class.fa-pen]="isEditMode"></i>
-          </div>
-          <div class="title-group">
-            <h1>{{ isEditMode ? 'Editar Equipo' : 'Nuevo Equipo' }}</h1>
-            <p class="subtitle">
-              {{
-                isEditMode
-                  ? 'Actualizar información del equipo'
-                  : 'Registrar un nuevo equipo en el sistema'
-              }}
-            </p>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="onSubmit()"
-            [disabled]="equipmentForm.invalid || loading"
-          >
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Equipo' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Form -->
-      <div class="card form-card">
-        <form [formGroup]="equipmentForm" class="form-grid">
-          <!-- Section 1: Basic Information -->
-          <div class="form-section full-width">
-            <h3>Información Básica</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="codigo_equipo">Código Interno *</label>
-                <input
-                  id="codigo_equipo"
-                  type="text"
-                  formControlName="codigo_equipo"
-                  class="form-control"
-                  placeholder="ej. EXC-001"
-                />
-                <div class="error-msg" *ngIf="hasError('codigo_equipo')">Código es requerido</div>
-              </div>
-
-              <!-- Name removed -->
-
-              <div class="form-group">
-                <label for="categoria">Categoría *</label>
-                <select id="categoria" formControlName="categoria" class="form-select">
-                  <option value="">Seleccionar Categoría</option>
-                  <option value="Excavadora">Excavadora</option>
-                  <option value="Tractor de Oruga">Tractor de Oruga</option>
-                  <option value="Cargador Frontal">Cargador Frontal</option>
-                  <option value="Camión Volquete">Camión Volquete</option>
-                  <option value="Motoniveladora">Motoniveladora</option>
-                  <option value="Rodillo Compactador">Rodillo Compactador</option>
-                  <option value="Camioneta">Camioneta</option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('categoria')">Categoría es requerida</div>
-              </div>
-
-              <div class="form-group">
-                <label for="marca">Marca *</label>
-                <input
-                  id="marca"
-                  type="text"
-                  formControlName="marca"
-                  class="form-control"
-                  placeholder="ej. Caterpillar"
-                />
-                <div class="error-msg" *ngIf="hasError('marca')">Marca es requerida</div>
-              </div>
-
-              <div class="form-group">
-                <label for="modelo">Modelo *</label>
-                <input
-                  id="modelo"
-                  type="text"
-                  formControlName="modelo"
-                  class="form-control"
-                  placeholder="ej. 336D2 L"
-                />
-                <div class="error-msg" *ngIf="hasError('modelo')">Modelo es requerido</div>
-              </div>
-
-              <!-- equipment_type removed -->
-
-              <div class="form-group">
-                <label for="anio_fabricacion">Año de Fabricación</label>
-                <input
-                  id="anio_fabricacion"
-                  type="number"
-                  formControlName="anio_fabricacion"
-                  class="form-control"
-                  placeholder="ej. 2020"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="placa">Placa / Serie</label>
-                <input
-                  id="placa"
-                  type="text"
-                  formControlName="placa"
-                  class="form-control"
-                  placeholder="ej. ABC-123"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 2: Operational Details -->
-          <div class="form-section full-width">
-            <h3>Detalles Operativos</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="estado">Estado *</label>
-                <select id="estado" formControlName="estado" class="form-select">
-                  <option value="DISPONIBLE">Disponible</option>
-                  <option value="EN_USO">En Uso</option>
-                  <option value="MANTENIMIENTO">Mantenimiento</option>
-                  <option value="RETIRADO">Retirado</option>
-                </select>
-              </div>
-
-              <!-- Location removed -->
-
-              <div class="form-group">
-                <label for="medidor_uso">Tipo de Medidor</label>
-                <select id="medidor_uso" formControlName="medidor_uso" class="form-select">
-                  <option [ngValue]="null">Seleccionar Tipo</option>
-                  <option value="HOROMETRO">Horómetro</option>
-                  <option value="ODOMETRO">Odómetro</option>
-                  <option value="AMBOS">Ambos</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="proveedor_id">Proveedor</label>
-                <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Proveedor</option>
-                  <option *ngFor="let provider of providers" [value]="provider.id">
-                    {{ provider.razon_social }}
-                  </option>
-                </select>
-              </div>
-
-              <!-- Operator Removed -->
-            </div>
-          </div>
-
-          <!-- Section 3: Technical Specs -->
-          <div class="form-section full-width">
-            <h3>Especificaciones Técnicas</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="potencia_neta">Potencia (HP)</label>
-                <input
-                  id="potencia_neta"
-                  type="text"
-                  formControlName="potencia_neta"
-                  class="form-control"
-                  placeholder="ej. 300 HP"
-                />
-              </div>
-
-              <!-- Removed capacity/weight/fuel as not in entity -->
-
-              <div class="form-group">
-                <label for="tipo_motor">Tipo de Motor</label>
-                <input
-                  id="tipo_motor"
-                  type="text"
-                  formControlName="tipo_motor"
-                  class="form-control"
-                  placeholder="ej. Diesel"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 4: Documentation & Dates (Table Format) -->
-          <div class="form-section full-width">
-            <div class="section-header">
-              <h3>Documentación y Fechas</h3>
-              <button type="button" class="btn btn-sm btn-secondary" (click)="addDocument()">
-                <i class="fa-solid fa-plus"></i> Agregar Documento
-              </button>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Documento</th>
-                    <th>Fecha Vencimiento</th>
-                    <th>Estatus</th>
-                    <th>Adjunto</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let doc of equipmentDocuments; let i = index">
-                    <td>
-                      <select
-                        [(ngModel)]="doc.document_type"
-                        [ngModelOptions]="{ standalone: true }"
-                        class="form-select"
-                      >
-                        <option value="">Seleccionar...</option>
-                        <option value="poliza">Póliza de Seguro</option>
-                        <option value="soat">SOAT</option>
-                        <option value="citv">Revisión Técnica (CITV)</option>
-                        <option value="garantia">Garantía</option>
-                        <option value="tarjeta_propiedad">Tarjeta de Propiedad</option>
-                        <option value="otro">Otro</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="date"
-                        [(ngModel)]="doc.expiration_date"
-                        [ngModelOptions]="{ standalone: true }"
-                        class="form-control"
-                      />
-                    </td>
-                    <td>
-                      <span
-                        [class]="'status-badge status-' + getDocumentStatus(doc.expiration_date)"
-                      >
-                        {{ getDocumentStatusLabel(doc.expiration_date) }}
-                      </span>
-                    </td>
-                    <td>
-                      <div class="file-input-wrapper">
-                        <input
-                          type="file"
-                          [id]="'doc_file_' + i"
-                          (change)="onDocFileSelected($event, i)"
-                          class="file-input"
-                        />
-                        <label [for]="'doc_file_' + i" class="btn btn-sm btn-secondary">
-                          <i class="fa-solid fa-upload"></i> {{ doc.file_name || 'Adjuntar' }}
-                        </label>
-                      </div>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        class="btn btn-icon btn-danger"
-                        (click)="removeDocument(i)"
-                      >
-                        <i class="fa-solid fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="equipmentDocuments.length === 0">
-                    <td colspan="5" class="empty-row">No hay documentos registrados</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="form-section full-width">
+      <form [formGroup]="equipmentForm" class="form-grid">
+        <!-- Section 1: Basic Information -->
+        <div class="form-section full-width">
+          <h3>Información Básica</h3>
+          <div class="section-grid">
             <div class="form-group">
-              <label for="notes">Notas Adicionales</label>
-              <textarea
-                id="notes"
-                formControlName="notes"
+              <label for="codigo_equipo">Código Interno *</label>
+              <input
+                id="codigo_equipo"
+                type="text"
+                formControlName="codigo_equipo"
                 class="form-control"
-                rows="3"
-                placeholder="Observaciones o detalles adicionales..."
-              ></textarea>
+                placeholder="ej. EXC-001"
+              />
+              <div class="error-msg" *ngIf="hasError('codigo_equipo')">Código es requerido</div>
+            </div>
+
+            <!-- Name removed -->
+
+            <div class="form-group">
+              <label for="categoria">Categoría *</label>
+              <select id="categoria" formControlName="categoria" class="form-select">
+                <option value="">Seleccionar Categoría</option>
+                <option value="Excavadora">Excavadora</option>
+                <option value="Tractor de Oruga">Tractor de Oruga</option>
+                <option value="Cargador Frontal">Cargador Frontal</option>
+                <option value="Camión Volquete">Camión Volquete</option>
+                <option value="Motoniveladora">Motoniveladora</option>
+                <option value="Rodillo Compactador">Rodillo Compactador</option>
+                <option value="Camioneta">Camioneta</option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('categoria')">Categoría es requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="marca">Marca *</label>
+              <input
+                id="marca"
+                type="text"
+                formControlName="marca"
+                class="form-control"
+                placeholder="ej. Caterpillar"
+              />
+              <div class="error-msg" *ngIf="hasError('marca')">Marca es requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="modelo">Modelo *</label>
+              <input
+                id="modelo"
+                type="text"
+                formControlName="modelo"
+                class="form-control"
+                placeholder="ej. 336D2 L"
+              />
+              <div class="error-msg" *ngIf="hasError('modelo')">Modelo es requerido</div>
+            </div>
+
+            <!-- equipment_type removed -->
+
+            <div class="form-group">
+              <label for="anio_fabricacion">Año de Fabricación</label>
+              <input
+                id="anio_fabricacion"
+                type="number"
+                formControlName="anio_fabricacion"
+                class="form-control"
+                placeholder="ej. 2020"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="placa">Placa / Serie</label>
+              <input
+                id="placa"
+                type="text"
+                formControlName="placa"
+                class="form-control"
+                placeholder="ej. ABC-123"
+              />
             </div>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <!-- Section 2: Operational Details -->
+        <div class="form-section full-width">
+          <h3>Detalles Operativos</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="estado">Estado *</label>
+              <select id="estado" formControlName="estado" class="form-select">
+                <option value="DISPONIBLE">Disponible</option>
+                <option value="EN_USO">En Uso</option>
+                <option value="MANTENIMIENTO">Mantenimiento</option>
+                <option value="RETIRADO">Retirado</option>
+              </select>
+            </div>
+
+            <!-- Location removed -->
+
+            <div class="form-group">
+              <label for="medidor_uso">Tipo de Medidor</label>
+              <select id="medidor_uso" formControlName="medidor_uso" class="form-select">
+                <option [ngValue]="null">Seleccionar Tipo</option>
+                <option value="HOROMETRO">Horómetro</option>
+                <option value="ODOMETRO">Odómetro</option>
+                <option value="AMBOS">Ambos</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="tipo_proveedor">Tipo de Proveedor *</label>
+              <select 
+                id="tipo_proveedor" 
+                formControlName="tipo_proveedor" 
+                class="form-select"
+                (change)="onTipoProveedorChange()">
+                <option value="PROPIO">Propio</option>
+                <option value="TERCERO">Tercero (Alquilado)</option>
+              </select>
+            </div>
+
+            <div class="form-group" *ngIf="showProviderSelect">
+              <label for="proveedor_id">Proveedor *</label>
+              <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
+                <option [ngValue]="null">Seleccionar Proveedor</option>
+                <option *ngFor="let provider of providers" [ngValue]="provider.id">
+                  {{ provider.razon_social }}
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('proveedor_id')">Proveedor es requerido para equipos de terceros</div>
+            </div>
+
+            <!-- Operator Removed -->
+          </div>
+        </div>
+
+        <!-- Section 3: Technical Specs -->
+        <div class="form-section full-width">
+          <h3>Especificaciones Técnicas</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="potencia_neta">Potencia (HP)</label>
+              <input
+                id="potencia_neta"
+                type="text"
+                formControlName="potencia_neta"
+                class="form-control"
+                placeholder="ej. 300 HP"
+              />
+            </div>
+
+            <!-- Removed capacity/weight/fuel as not in entity -->
+
+            <div class="form-group">
+              <label for="tipo_motor">Tipo de Motor</label>
+              <input
+                id="tipo_motor"
+                type="text"
+                formControlName="tipo_motor"
+                class="form-control"
+                placeholder="ej. Diesel"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Documentation & Dates (Table Format) -->
+        <div class="form-section full-width">
+          <div class="section-header">
+            <h3>Documentación y Fechas</h3>
+            <button type="button" class="btn btn-sm btn-secondary" (click)="addDocument()">
+              <i class="fa-solid fa-plus"></i> Agregar Documento
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>Fecha Vencimiento</th>
+                  <th>Estatus</th>
+                  <th>Adjunto</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let doc of equipmentDocuments; let i = index">
+                  <td>
+                    <select
+                      [(ngModel)]="doc.document_type"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="form-select"
+                    >
+                      <option value="">Seleccionar...</option>
+                      <option value="poliza">Póliza de Seguro</option>
+                      <option value="soat">SOAT</option>
+                      <option value="citv">Revisión Técnica (CITV)</option>
+                      <option value="garantia">Garantía</option>
+                      <option value="tarjeta_propiedad">Tarjeta de Propiedad</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="date"
+                      [(ngModel)]="doc.expiration_date"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="form-control"
+                    />
+                  </td>
+                  <td>
+                    <span
+                      [class]="'status-badge status-' + getDocumentStatus(doc.expiration_date)"
+                    >
+                      {{ getDocumentStatusLabel(doc.expiration_date) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="file-input-wrapper">
+                      <input
+                        type="file"
+                        [id]="'doc_file_' + i"
+                        (change)="onDocFileSelected($event, i)"
+                        class="file-input"
+                      />
+                      <label [for]="'doc_file_' + i" class="btn btn-sm btn-secondary">
+                        <i class="fa-solid fa-upload"></i> {{ doc.file_name || 'Adjuntar' }}
+                      </label>
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn btn-icon btn-danger"
+                      (click)="removeDocument(i)"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="equipmentDocuments.length === 0">
+                  <td colspan="5" class="empty-row">No hay documentos registrados</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
-      .form-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding-bottom: 2rem;
-      }
-
-      /* Header */
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .icon-wrapper {
-        width: 48px;
-        height: 48px;
-        background: var(--primary-100);
-        color: var(--primary-800);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .title-group h1 {
-        margin: 0;
-        font-size: 24px;
-        color: var(--grey-900);
-      }
-      .subtitle {
-        margin: 0;
-        color: var(--grey-500);
-        font-size: 14px;
-      }
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-      }
-
-      /* Form Card */
-      .form-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
       .form-grid {
         display: flex;
         flex-direction: column;
@@ -455,138 +386,6 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         font-size: 12px;
       }
 
-      /* Buttons */
-      .btn {
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
-      }
-
-      .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-50);
-      }
-
-      @media (max-width: 768px) {
-        .section-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* Section Header */
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
-
-      .section-header h3 {
-        margin: 0;
-        border: none;
-        padding: 0;
-      }
-
-      .btn-sm {
-        padding: 0.375rem 0.75rem;
-        font-size: 12px;
-      }
-
-      /* Data Table */
-      .table-container {
-        overflow-x: auto;
-      }
-
-      .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-      }
-
-      .data-table th,
-      .data-table td {
-        padding: 0.75rem;
-        text-align: left;
-        border-bottom: 1px solid var(--grey-200);
-      }
-
-      .data-table th {
-        background: var(--grey-50);
-        font-weight: 600;
-        color: var(--grey-700);
-        font-size: 12px;
-        text-transform: uppercase;
-      }
-
-      .data-table td .form-control,
-      .data-table td .form-select {
-        padding: 0.5rem;
-        font-size: 13px;
-      }
-
-      .empty-row {
-        text-align: center;
-        color: var(--grey-500);
-        font-style: italic;
-        padding: 1.5rem !important;
-      }
-
-      .btn-icon {
-        padding: 0.5rem;
-        min-width: auto;
-      }
-
-      .btn-danger {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
-        border: 1px solid var(--semantic-red-200);
-      }
-      .btn-danger:hover {
-        background: var(--semantic-red-100);
-      }
-
-      .file-input-wrapper {
-        position: relative;
-      }
-
-      .file-input {
-        position: absolute;
-        width: 0;
-        height: 0;
-        opacity: 0;
-      }
-
-      .file-input-wrapper label {
-        display: inline-flex;
-        cursor: pointer;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-      }
-
       .status-badge {
         display: inline-flex;
         align-items: center;
@@ -612,6 +411,97 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       .status-sin_fecha {
         background: var(--grey-100);
         color: var(--grey-600);
+      }
+
+      /* Section Header */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--grey-200);
+        padding-bottom: 0.5rem;
+      }
+
+      .section-header h3 {
+        margin: 0;
+        border: none;
+        padding: 0;
+      }
+
+      /* Table Styles */
+      .table-container {
+        border: 1px solid var(--grey-200);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      .data-table th {
+        background: var(--grey-50);
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--grey-700);
+        border-bottom: 1px solid var(--grey-200);
+      }
+
+      .data-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--grey-100);
+        vertical-align: middle;
+      }
+
+      .data-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .data-table tr:hover {
+        background-color: var(--grey-25);
+      }
+
+      .empty-row {
+        text-align: center;
+        color: var(--grey-500);
+        padding: 2rem !important;
+        font-style: italic;
+      }
+
+      /* File Input */
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+      }
+
+      .file-input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .btn-sm {
+        padding: 0.25rem 0.75rem;
+        font-size: 13px;
+      }
+
+      .btn-icon.btn-danger {
+        color: var(--semantic-red-500);
+        background: transparent;
+        border: 1px solid transparent;
+      }
+
+      .btn-icon.btn-danger:hover {
+        background: var(--semantic-red-50);
+        border-color: var(--semantic-red-200);
       }
     `,
   ],
@@ -643,6 +533,7 @@ export class EquipmentFormComponent implements OnInit {
     placa: 'Placa',
     categoria: 'Categoría',
     estado: 'Estado',
+    tipo_proveedor: 'Tipo de Proveedor',
     proveedor_id: 'Proveedor',
     anio_fabricacion: 'Año de Fabricación',
     potencia_neta: 'Potencia Neta',
@@ -654,6 +545,10 @@ export class EquipmentFormComponent implements OnInit {
     notes: 'Notas',
   };
 
+  get showProviderSelect(): boolean {
+    return this.equipmentForm.get('tipo_proveedor')?.value === 'TERCERO';
+  }
+
   constructor() {
     this.equipmentForm = this.fb.group({
       codigo_equipo: ['', Validators.required],
@@ -661,6 +556,7 @@ export class EquipmentFormComponent implements OnInit {
       modelo: ['', Validators.required],
       estado: ['DISPONIBLE', Validators.required],
       categoria: ['', Validators.required],
+      tipo_proveedor: ['PROPIO', Validators.required],
       proveedor_id: [null],
 
       // Optional fields
@@ -726,6 +622,19 @@ export class EquipmentFormComponent implements OnInit {
     }
   }
 
+  onTipoProveedorChange(): void {
+    const tipo = this.equipmentForm.get('tipo_proveedor')?.value;
+    const proveedorControl = this.equipmentForm.get('proveedor_id');
+
+    if (tipo === 'TERCERO') {
+      proveedorControl?.setValidators([Validators.required]);
+    } else {
+      proveedorControl?.clearValidators();
+      proveedorControl?.setValue(null);
+    }
+    proveedorControl?.updateValueAndValidity();
+  }
+
   getDocumentStatus(expirationDate: string): string {
     if (!expirationDate) return 'sin_fecha';
     const expDate = new Date(expirationDate);
@@ -756,6 +665,10 @@ export class EquipmentFormComponent implements OnInit {
       next: (equipment) => {
         // Map API response (Spanish snake_case) to form fields
         this.equipmentForm.patchValue(equipment);
+        
+        // Ensure validation rules are applied based on loaded data
+        this.onTipoProveedorChange();
+        
         this.loading = false;
       },
       error: (err) => {
@@ -830,7 +743,7 @@ export class EquipmentFormComponent implements OnInit {
           ? 'Equipo actualizado correctamente'
           : 'Equipo creado correctamente';
         setTimeout(() => {
-          this.router.navigate(['/operations/equipment']);
+          this.router.navigate(['/equipment']);
         }, 1500);
       },
       error: (err) => {

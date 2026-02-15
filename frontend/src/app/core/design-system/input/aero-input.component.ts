@@ -43,7 +43,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         flex-direction: column;
         margin-bottom: var(--s-16);
 
-        &--error {
+        &.aero-form-field--error {
           .aero-input {
             border-color: var(--semantic-red-500);
 

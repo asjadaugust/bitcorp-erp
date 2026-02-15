@@ -486,3 +486,30 @@ body {
     overflow-x: auto;
   }
 }
+
+// Global Action Buttons
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  color: var(--grey-500);
+  transition: color 0.2s;
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--primary-100);
+    color: var(--primary-500);
+  }
+
+  &.delete-btn:hover {
+    background: var(--semantic-red-50);
+    color: var(--semantic-red-600);
+  }
+}

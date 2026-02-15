@@ -24,32 +24,32 @@ export type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' 
         line-height: 1.5;
         white-space: nowrap;
 
-        &--success {
+        &.aero-badge--success {
           background-color: var(--semantic-green-100);
           color: var(--semantic-green-900);
         }
 
-        &--warning {
+        &.aero-badge--warning {
           background-color: var(--semantic-yellow-100);
           color: var(--semantic-yellow-900);
         }
 
-        &--error {
+        &.aero-badge--error {
           background-color: var(--semantic-red-100);
           color: var(--semantic-red-900);
         }
 
-        &--info {
+        &.aero-badge--info {
           background-color: var(--semantic-blue-100);
           color: var(--semantic-blue-900);
         }
 
-        &--neutral {
+        &.aero-badge--neutral {
           background-color: var(--grey-200);
           color: var(--grey-800);
         }
 
-        &--primary {
+        &.aero-badge--primary {
           background-color: var(--primary-100);
           color: var(--primary-900);
         }

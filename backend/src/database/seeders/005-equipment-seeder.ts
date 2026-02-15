@@ -281,9 +281,9 @@ export class EquipmentSeeder extends BaseSeeder {
       await valuationsRepo.save([
         valuationsRepo.create({
           legacyId: 'VAL001',
-          equipmentId: equipment[0].id,
-          contractId: contracts[0]?.id,
-          projectId: projects[0].id,
+          equipoId: equipment[0].id,
+          contratoId: contracts[0]?.id,
+          proyectoId: projects[0].id,
           periodo: '2025-01',
           fechaInicio: new Date('2025-01-01'),
           fechaFin: new Date('2025-01-31'),
@@ -304,15 +304,15 @@ export class EquipmentSeeder extends BaseSeeder {
           estado: 'APROBADO',
           observaciones:
             'Valorización correspondiente al mes de enero 2025. Trabajo ejecutado según cronograma.',
-          createdBy: admin.id,
-          approvedBy: admin.id,
-          approvedAt: new Date('2025-02-05'),
+          creadoPor: admin.id,
+          aprobadoPor: admin.id,
+          aprobadoEn: new Date('2025-02-05'),
         }),
         valuationsRepo.create({
           legacyId: 'VAL002',
-          equipmentId: equipment[1].id,
-          contractId: contracts[1]?.id,
-          projectId: projects[1].id,
+          equipoId: equipment[1].id,
+          contratoId: contracts[1]?.id,
+          proyectoId: projects[1].id,
           periodo: '2025-02',
           fechaInicio: new Date('2025-02-01'),
           fechaFin: new Date('2025-02-28'),
@@ -333,13 +333,13 @@ export class EquipmentSeeder extends BaseSeeder {
           estado: 'PENDIENTE',
           observaciones:
             'Valorización febrero 2025. Incluye cargo adicional por trabajo en horario nocturno (20 horas).',
-          createdBy: admin.id,
+          creadoPor: admin.id,
         }),
         valuationsRepo.create({
           legacyId: 'VAL003',
-          equipmentId: equipment[2].id,
-          contractId: contracts[2]?.id,
-          projectId: projects[0].id,
+          equipoId: equipment[2].id,
+          contratoId: contracts[2]?.id,
+          proyectoId: projects[0].id,
           periodo: '2025-01',
           fechaInicio: new Date('2025-01-01'),
           fechaFin: new Date('2025-01-31'),
@@ -360,9 +360,9 @@ export class EquipmentSeeder extends BaseSeeder {
           estado: 'APROBADO',
           observaciones:
             'Valorización modalidad todo incluido. Monto en USD convertido a PEN para efectos de IGV. 4,580 km recorridos.',
-          createdBy: admin.id,
-          approvedBy: admin.id,
-          approvedAt: new Date('2025-02-03'),
+          creadoPor: admin.id,
+          aprobadoPor: admin.id,
+          aprobadoEn: new Date('2025-02-03'),
         }),
       ]);
     }

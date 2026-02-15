@@ -13,150 +13,101 @@ export class TimesheetService {
   private apiUrl = `${environment.apiUrl}/scheduling/timesheets`;
 
   /**
-   * Map backend DTO (snake_case) to frontend model (camelCase)
-   */
-  private mapApiToTimesheet(apiData: any): Timesheet {
-    return {
-      id: apiData.id,
-      timesheetCode: apiData.timesheet_code || `TS-${apiData.id}`,
-      operatorId: apiData.trabajador_id || apiData.trabajador_id,
-      projectId: apiData.proyecto_id,
-      periodStart: apiData.period_start || this.parsePeriod(apiData.periodo)?.start,
-      periodEnd: apiData.period_end || this.parsePeriod(apiData.periodo)?.end,
-      totalHours: parseFloat(apiData.total_horas || apiData.total_hours || 0),
-      totalDays: parseInt(apiData.total_dias_trabajados || apiData.total_days || 0),
-      regularHours: apiData.regular_hours,
-      overtimeHours: apiData.overtime_hours,
-      status: apiData.estado || apiData.status,
-      generatedFromReports:
-        apiData.generated_from_reports !== undefined ? apiData.generated_from_reports : true,
-      notes: apiData.notes || apiData.notas,
-      submittedAt: apiData.submitted_at,
-      submittedBy: apiData.submitted_by,
-      approvedAt: apiData.approved_at,
-      approvedBy: apiData.aprobado_por || apiData.approved_by,
-      rejectedAt: apiData.rejected_at,
-      rejectedBy: apiData.rejected_by,
-      rejectionReason: apiData.rejection_reason,
-      createdAt: apiData.created_at,
-      updatedAt: apiData.updated_at,
-      operator:
-        apiData.operator ||
-        (apiData.trabajador_nombre ? { nombre: apiData.trabajador_nombre } : undefined),
-      project: apiData.project,
-      details: apiData.details,
-    };
-  }
-
-  /**
-   * Parse periodo string (e.g., "2025-01") to start/end dates
-   */
-  private parsePeriod(periodo?: string): { start: Date; end: Date } | undefined {
-    if (!periodo) return undefined;
-    const [year, month] = periodo.split('-').map(Number);
-    if (!year || !month) return undefined;
-    const start = new Date(year, month - 1, 1);
-    const end = new Date(year, month, 0); // Last day of month
-    return { start, end };
-  }
-
-  /**
    * List all timesheets with optional filters
    */
   listTimesheets(filters?: {
     trabajador_id?: number;
     proyecto_id?: string;
-    status?: string;
-    period_start?: string;
-    period_end?: string;
+    estado?: string;
+    periodo?: string;
   }): Observable<Timesheet[]> {
     const params: any = {};
     if (filters) {
       if (filters.trabajador_id) params.trabajador_id = filters.trabajador_id.toString();
       if (filters.proyecto_id) params.proyecto_id = filters.proyecto_id;
-      if (filters.status) params.status = filters.status;
-      if (filters.period_start) params.period_start = filters.period_start;
-      if (filters.period_end) params.period_end = filters.period_end;
+      if (filters.estado) params.estado = filters.estado;
+      if (filters.periodo) params.periodo = filters.periodo;
     }
 
-    // Interceptor does NOT unwrap paginated responses {success, data, pagination}
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map((response) => {
         const dataArray = response?.data || response;
-        if (Array.isArray(dataArray)) {
-          return dataArray.map((item) => this.mapApiToTimesheet(item));
-        }
-        return [];
+        return Array.isArray(dataArray) ? dataArray : [];
       })
     );
+  }
+
+  /**
+   * Get timesheet by ID
+   */
+  getById(id: string | number): Observable<Timesheet> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map((response) => response?.data || response)
+    );
+  }
+
+  // Alias for backward compatibility
+  getTimesheetById(id: number): Observable<Timesheet> {
+    return this.getById(id);
   }
 
   /**
    * Create manual timesheet
    */
-  create(data: any): Observable<Timesheet> {
-    return this.http.post<Timesheet>(this.apiUrl, data);
-  }
-
-  /**
-   * Alias for getTimesheetById to match component usage
-   */
-  getById(id: string | number): Observable<Timesheet> {
-    return this.getTimesheetById(Number(id));
-  }
-
-  /**
-   * Alias for updateTimesheet to match component usage
-   */
-  update(id: string | number, data: any): Observable<Timesheet> {
-    return this.updateTimesheet(Number(id), data);
-  }
-
-  /**
-   * Get timesheet by ID with details
-   */
-  getTimesheetById(id: number): Observable<Timesheet> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-      map((response) => {
-        const data = response?.data || response;
-        return this.mapApiToTimesheet(data);
-      })
+  create(data: Partial<Timesheet>): Observable<Timesheet> {
+    return this.http.post<any>(this.apiUrl, data).pipe(
+      map((response) => response?.data || response)
     );
+  }
+
+  /**
+   * Update timesheet (draft only)
+   */
+  update(id: string | number, data: Partial<Timesheet>): Observable<Timesheet> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, data).pipe(
+      map((response) => response?.data || response)
+    );
+  }
+
+  // Alias for backward compatibility
+  updateTimesheet(id: number, data: Partial<Timesheet>): Observable<Timesheet> {
+    return this.update(id, data);
   }
 
   /**
    * Generate timesheet from daily reports
    */
   generateTimesheet(dto: GenerateTimesheetDto): Observable<Timesheet> {
-    return this.http.post<Timesheet>(`${this.apiUrl}/generate`, dto);
+    return this.http.post<any>(`${this.apiUrl}/generate`, dto).pipe(
+      map((response) => response?.data || response)
+    );
   }
 
   /**
-   * Submit timesheet for approval
+   * Submit timesheet for approval (BORRADOR → ENVIADO)
    */
   submitTimesheet(id: number): Observable<Timesheet> {
-    return this.http.post<Timesheet>(`${this.apiUrl}/${id}/submit`, {});
+    return this.http.post<any>(`${this.apiUrl}/${id}/submit`, {}).pipe(
+      map((response) => response?.data || response)
+    );
   }
 
   /**
-   * Approve timesheet
+   * Approve timesheet (ENVIADO → APROBADO)
    */
   approveTimesheet(id: number): Observable<Timesheet> {
-    return this.http.post<Timesheet>(`${this.apiUrl}/${id}/approve`, {});
+    return this.http.post<any>(`${this.apiUrl}/${id}/approve`, {}).pipe(
+      map((response) => response?.data || response)
+    );
   }
 
   /**
-   * Reject timesheet
+   * Reject timesheet (ENVIADO → RECHAZADO)
    */
   rejectTimesheet(id: number, reason: string): Observable<Timesheet> {
-    return this.http.post<Timesheet>(`${this.apiUrl}/${id}/reject`, { reason });
-  }
-
-  /**
-   * Update timesheet (draft only)
-   */
-  updateTimesheet(id: number, data: Partial<Timesheet>): Observable<Timesheet> {
-    return this.http.put<Timesheet>(`${this.apiUrl}/${id}`, data);
+    return this.http.post<any>(`${this.apiUrl}/${id}/reject`, { reason }).pipe(
+      map((response) => response?.data || response)
+    );
   }
 
   /**

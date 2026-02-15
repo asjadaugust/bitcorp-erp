@@ -1,93 +1,67 @@
-export interface MaintenanceSchedule {
-  id: number;
-  equipmentId: number;
-  maintenanceType: string; // 'preventive' | 'corrective' | 'predictive'
-  intervalType: string; // 'hours' | 'days' | 'weeks' | 'months'
-  intervalValue: number;
-  lastCompletedDate?: Date;
-  lastCompletedHours?: number;
-  nextDueDate?: Date;
-  nextDueHours?: number;
-  status: string; // 'active' | 'paused' | 'completed' | 'cancelled'
-  description?: string;
-  notes?: string;
-  autoGenerateTasks: boolean;
-  createdBy?: number;
-  projectId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  equipment?: any; // Reference to Equipment if needed
-}
+/**
+ * Scheduling models — Timesheet & GenerateTimesheetDto
+ *
+ * NOTE: MaintenanceSchedule is defined in maintenance-schedule.model.ts
+ *       ScheduledTask is defined in scheduled-task.model.ts
+ *       Do NOT duplicate those interfaces here.
+ *
+ * Backend entity: Timesheet (table: rrhh.tareo)
+ * Backend uses camelCase Spanish: trabajadorId, periodo, totalDiasTrabajados, totalHoras,
+ *   montoCalculado, estado, observaciones, creadoPor, aprobadoPor, aprobadoEn
+ */
 
-export interface ScheduledTask {
-  id: number;
-  scheduleId?: number;
-  equipmentId: number;
-  operatorId?: number;
-  taskType: string; // 'maintenance' | 'assignment' | 'inspection'
-  title: string;
-  description?: string;
-  scheduledDate: Date;
-  scheduledTime?: string;
-  durationMinutes: number;
-  priority: string; // 'low' | 'medium' | 'high' | 'urgent'
-  status: string; // 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled' | 'overdue'
-  completionDate?: Date;
-  completionNotes?: string;
-  maintenanceRecordId?: number;
-  createdBy?: number;
-  assignedBy?: number;
-  projectId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  equipment?: any;
-  operator?: any;
-  schedule?: MaintenanceSchedule;
-}
+export type EstadoTareo = 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO';
 
 export interface Timesheet {
   id: number;
-  timesheetCode: string;
-  operatorId: number;
-  projectId?: string;
-  periodStart: Date;
-  periodEnd: Date;
-  totalHours: number;
-  totalDays: number;
-  regularHours?: number;
-  overtimeHours?: number;
-  status: string; // 'draft' | 'submitted' | 'approved' | 'rejected' | 'paid'
-  generatedFromReports: boolean;
-  notes?: string;
-  submittedAt?: Date;
-  submittedBy?: number;
-  approvedAt?: Date;
-  approvedBy?: number;
-  rejectedAt?: Date;
-  rejectedBy?: number;
-  rejectionReason?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  operator?: any;
-  project?: any;
+  trabajadorId: number;
+  periodo: string; // Format: 'YYYY-MM'
+  totalDiasTrabajados: number;
+  totalHoras: number;
+  montoCalculado?: number;
+  estado: EstadoTareo;
+  observaciones?: string;
+  creadoPor?: number;
+  aprobadoPor?: number;
+  aprobadoEn?: Date | string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+
+  // Relations
+  trabajador_nombre?: string; // Backend returns this flat property
+  trabajador?: {
+    id: number;
+    nombre_completo: string;
+    nombres?: string;
+    apellido_paterno?: string;
+  };
   details?: TimesheetDetail[];
 }
 
 export interface TimesheetDetail {
   id: number;
-  timesheetId: number;
-  dailyReportId?: number;
-  workDate: Date;
-  hoursWorked: number;
-  equipmentId?: number;
-  description?: string;
-  createdAt?: Date;
-  equipment?: any;
+  timesheet_id: number;
+  work_date: string;
+  project_id?: string;
+  equipment_id?: number;
+  start_time?: string;
+  end_time?: string;
+  hours_worked: number;
+  notes?: string;
+
+  // Relations
+  project?: {
+    G00007_Codigo: string;
+    G00007_Nombre: string;
+  };
+  equipment?: {
+    C08001_id: number;
+    C08001_Nombre: string;
+    C08001_Codigo: string;
+  };
 }
 
 export interface GenerateTimesheetDto {
-  operatorId: number;
-  projectId?: string;
-  periodStart: string; // YYYY-MM-DD
-  periodEnd: string; // YYYY-MM-DD
+  trabajador_id: number;
+  periodo: string; // 'YYYY-MM'
 }

@@ -19,6 +19,10 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../core/design-system/table/aero-table.component';
 
 @Component({
   selector: 'app-timesheet-list',
@@ -31,16 +35,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    AeroTableComponent,
   ],
   template: `
     <app-page-layout
       title="Planillas de Tiempo"
       icon="fa-clock"
-      [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
-        { label: 'Operaciones', url: '/operaciones' },
-        { label: 'Planillas' },
-      ]"
+      [breadcrumbs]="breadcrumbs"
       [loading]="loading"
       [tabs]="tabs"
     >
@@ -57,202 +58,149 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
+      <!-- DEBUG: Remove after fixing -->
+      <!-- DEBUG: Remove after fixing -->
+      <!-- <pre *ngIf="timesheets.length > 0">{{ timesheets[0] | json }}</pre> -->
+
       <!-- Error State -->
       <div *ngIf="error" class="error-message">
         <p>❌ Error: {{ error }}</p>
         <button class="btn btn-secondary" (click)="loadTimesheets()">Reintentar</button>
       </div>
 
-      <!-- Timesheets List -->
-      <div *ngIf="!loading && !error" class="timesheets-grid">
-        <div
-          *ngFor="let timesheet of timesheets"
-          class="timesheet-card"
-          (click)="viewTimesheet(timesheet.id)"
-        >
-          <div class="card-header">
-            <h3>{{ timesheet.timesheetCode }}</h3>
-            <span class="status-badge" [class]="'status-' + timesheet.status">
-              {{ getStatusLabel(timesheet.status) }}
-            </span>
-          </div>
-          <div class="card-body">
-            <div class="info-row">
-              <span class="label">Operador:</span>
-              <span class="value">{{ timesheet.operator?.name || 'N/A' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Período:</span>
-              <span class="value"
-                >{{ formatDate(timesheet.periodStart) }} -
-                {{ formatDate(timesheet.periodEnd) }}</span
-              >
-            </div>
-            <div class="info-row">
-              <span class="label">Total Horas:</span>
-              <span class="value">{{ timesheet.totalHours }} hrs</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Total Días:</span>
-              <span class="value">{{ timesheet.totalDays }} días</span>
-            </div>
-          </div>
-          <div class="card-footer">
-            <small>Creado: {{ formatDate(timesheet.createdAt) }}</small>
-          </div>
-        </div>
+      <!-- Timesheets Table -->
+      <aero-table
+        [columns]="columns"
+        [data]="timesheets"
+        [loading]="loading"
+        [templates]="{
+          id: idTemplate,
+          trabajador: trabajadorTemplate,
+          periodo: periodoTemplate,
+          estado: estadoTemplate,
+          acciones: accionesTemplate
+        }"
+        (rowClick)="viewTimesheet($event.id)"
+      >
+      </aero-table>
 
-        <!-- Empty State -->
-        <div *ngIf="timesheets.length === 0" class="empty-state">
-          <div class="empty-icon">📋</div>
-          <h3>No hay planillas</h3>
-          <p>Genera tu primera planilla de tiempo desde reportes diarios.</p>
-          <button class="btn btn-primary" (click)="navigateToGenerate()">Generar Planilla</button>
+      <!-- Custom Templates -->
+      <ng-template #idTemplate let-row>
+        <strong>#{{ row.id }}</strong>
+      </ng-template>
+
+      <ng-template #trabajadorTemplate let-row>
+        <div class="worker-info">
+          <i class="fa-solid fa-user-circle"></i>
+          <span>{{ row.trabajador_nombre || row.trabajador?.nombre_completo || 'Sin Nombre' }}</span>
         </div>
-      </div>
+      </ng-template>
+
+      <ng-template #periodoTemplate let-row>
+        <div class="period-badge">
+          <i class="fa-regular fa-calendar"></i>
+          {{ row.periodo }}
+        </div>
+      </ng-template>
+
+      <ng-template #estadoTemplate let-row>
+        <span class="status-badge" [class]="'status-' + row.estado">
+          {{ getEstadoLabel(row.estado) }}
+        </span>
+      </ng-template>
+
+      <ng-template #accionesTemplate let-row>
+        <div class="action-buttons">
+          <button
+            class="btn-icon view"
+            (click)="$event.stopPropagation(); viewTimesheet(row.id)"
+            title="Ver Detalle"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </button>
+          <button
+            *ngIf="row.estado === 'BORRADOR'"
+            class="btn-icon delete"
+            (click)="$event.stopPropagation(); deleteTimesheet(row)"
+            title="Eliminar"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .timesheets-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 1.5rem;
-      }
-
-      .timesheet-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border-left: 4px solid #3182ce;
-      }
-
-      .timesheet-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
-
-      .card-header {
+      .worker-info {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e2e8f0;
+        gap: var(--s-8);
+        font-weight: 500;
+        color: var(--grey-800);
+      }
+      
+      .worker-info i {
+        color: var(--grey-500);
       }
 
-      .card-header h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin: 0;
+      .period-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-4);
+        padding: var(--s-4) var(--s-8);
+        background: var(--primary-50);
+        color: var(--primary-700);
+        border-radius: var(--s-4);
+        font-size: 13px;
+        font-weight: 500;
       }
 
       .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
+        padding: var(--s-4) var(--s-12);
+        border-radius: 999px;
+        font-size: 12px;
         font-weight: 600;
         text-transform: uppercase;
+        display: inline-block;
       }
 
-      .status-draft {
-        background: #e2e8f0;
-        color: #4a5568;
+      .status-BORRADOR {
+        background: var(--grey-200);
+        color: var(--grey-700);
       }
 
-      .status-submitted {
-        background: #bee3f8;
-        color: #2c5282;
+      .status-ENVIADO {
+        background: var(--info-100);
+        color: var(--info-800);
       }
 
-      .status-approved {
-        background: #c6f6d5;
-        color: #22543d;
+      .status-APROBADO {
+        background: var(--success-100);
+        color: var(--success-800);
       }
 
-      .status-rejected {
-        background: #fed7d7;
-        color: #742a2a;
-      }
-
-      .status-paid {
-        background: #d6bcfa;
-        color: #44337a;
-      }
-
-      .card-body {
-        margin-bottom: 1rem;
-      }
-
-      .info-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #f7fafc;
-      }
-
-      .info-row .label {
-        font-weight: 500;
-        color: #718096;
-        font-size: 0.875rem;
-      }
-
-      .info-row .value {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 0.875rem;
-      }
-
-      .card-footer {
-        padding-top: 1rem;
-        border-top: 1px solid #e2e8f0;
-      }
-
-      .card-footer small {
-        color: #a0aec0;
-        font-size: 0.75rem;
-      }
-
-      .empty-state {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 4rem 2rem;
-        background: white;
-        border-radius: 12px;
-      }
-
-      .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-      }
-
-      .empty-state h3 {
-        font-size: 1.5rem;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-      }
-
-      .empty-state p {
-        color: #718096;
-        margin-bottom: 1.5rem;
+      .status-RECHAZADO {
+        background: var(--error-100);
+        color: var(--error-800);
       }
 
       .error-message {
-        background: #fed7d7;
-        color: #742a2a;
-        padding: 1.5rem;
-        border-radius: 12px;
+        background: var(--error-100);
+        color: var(--error-800);
+        padding: var(--s-16);
+        border-radius: var(--s-8);
         text-align: center;
-        margin-bottom: 1rem;
-      }
-      .actions-container {
+        margin-bottom: var(--s-16);
         display: flex;
-        gap: var(--s-8);
+        flex-direction: column;
         align-items: center;
+        gap: var(--s-8);
+      }
+
+      .text-muted {
+        color: var(--grey-500);
+        font-style: italic;
       }
     `,
   ],
@@ -266,6 +214,12 @@ export class TimesheetListComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
+  breadcrumbs = [
+    { label: 'Inicio', url: '/app' },
+    { label: 'Operaciones', url: '/operaciones' },
+    { label: 'Planillas' },
+  ];
+
   tabs: TabItem[] = [
     { label: 'Proyectos', route: '/operaciones/projects', icon: 'fa-folder-open' },
     { label: 'Programación', route: '/operaciones/scheduling', icon: 'fa-calendar-days' },
@@ -274,17 +228,33 @@ export class TimesheetListComponent implements OnInit {
 
   filterConfig: FilterConfig[] = [
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Borrador', value: 'draft' },
-        { label: 'Enviado', value: 'submitted' },
-        { label: 'Aprobado', value: 'approved' },
-        { label: 'Rechazado', value: 'rejected' },
-        { label: 'Pagado', value: 'paid' },
+        { label: 'Todos', value: '' },
+        { label: 'Borrador', value: 'BORRADOR' },
+        { label: 'Enviado', value: 'ENVIADO' },
+        { label: 'Aprobado', value: 'APROBADO' },
+        { label: 'Rechazado', value: 'RECHAZADO' },
       ],
     },
+    {
+      key: 'periodo',
+      label: 'Período',
+      type: 'text',
+      placeholder: 'YYYY-MM',
+    }
+  ];
+
+  columns: TableColumn[] = [
+    { key: 'id', label: 'ID', type: 'template' },
+    { key: 'trabajador', label: 'Trabajador', type: 'template' },
+    { key: 'periodo', label: 'Período', type: 'template' },
+    { key: 'totalHoras', label: 'Horas Totales', type: 'text' },
+    { key: 'totalDiasTrabajados', label: 'Días Trab.', type: 'text' },
+    { key: 'estado', label: 'Estado', type: 'template' },
+    { key: 'acciones', label: 'Acciones', type: 'template' },
   ];
 
   currentFilters: any = {};
@@ -303,15 +273,8 @@ export class TimesheetListComponent implements OnInit {
     this.error = null;
 
     this.timesheetService.listTimesheets(this.currentFilters).subscribe({
-      next: (response: any) => {
-        // Handle paginated response { success, data, pagination } or direct array
-        if (response && typeof response === 'object' && 'data' in response) {
-          this.timesheets = Array.isArray(response.data) ? response.data : [];
-        } else if (Array.isArray(response)) {
-          this.timesheets = response;
-        } else {
-          this.timesheets = [];
-        }
+      next: (timesheets: Timesheet[]) => {
+        this.timesheets = timesheets;
         this.loading = false;
       },
       error: (err) => {
@@ -331,20 +294,33 @@ export class TimesheetListComponent implements OnInit {
     this.router.navigate(['/operaciones/timesheets', id]);
   }
 
-  formatDate(date: any): string {
-    if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('es-ES');
+  deleteTimesheet(timesheet: Timesheet) {
+    if (!confirm(`¿Está seguro de eliminar la planilla #${timesheet.id}? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    this.loading = true;
+    this.timesheetService.deleteTimesheet(timesheet.id).subscribe({
+      next: () => {
+        this.timesheets = this.timesheets.filter(t => t.id !== timesheet.id);
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error deleting timesheet:', err);
+        alert('Error al eliminar la planilla');
+        this.loading = false;
+      }
+    });
   }
 
-  getStatusLabel(status: string): string {
+  getEstadoLabel(estado: string): string {
     const labels: Record<string, string> = {
-      draft: 'Borrador',
-      submitted: 'Enviado',
-      approved: 'Aprobado',
-      rejected: 'Rechazado',
-      paid: 'Pagado',
+      BORRADOR: 'Borrador',
+      ENVIADO: 'Enviado',
+      APROBADO: 'Aprobado',
+      RECHAZADO: 'Rechazado',
     };
-    return labels[status] || status;
+    return labels[estado] || estado;
   }
 
   handleExport(format: ExportFormat): void {
@@ -363,21 +339,14 @@ export class TimesheetListComponent implements OnInit {
 
     const exportData = this.timesheets.map((timesheet) => ({
       ID: timesheet.id || '',
-      Código: timesheet.timesheetCode || '',
-      Operador: timesheet.operator?.full_name || 'N/A',
-      Proyecto: timesheet.project?.name || 'N/A',
-      'Fecha Inicio': timesheet.periodStart
-        ? new Date(timesheet.periodStart).toLocaleDateString('es-PE')
-        : '',
-      'Fecha Fin': timesheet.periodEnd
-        ? new Date(timesheet.periodEnd).toLocaleDateString('es-PE')
-        : '',
-      'Total Horas': timesheet.totalHours || 0,
-      'Horas Regulares': timesheet.regularHours || 0,
-      'Horas Extra': timesheet.overtimeHours || 0,
-      'Total Días': timesheet.totalDays || 0,
-      Estado: this.getStatusLabel(timesheet.status || ''),
-      Creado: timesheet.createdAt ? new Date(timesheet.createdAt).toLocaleDateString('es-PE') : '',
+      Trabajador: timesheet.trabajador?.nombre_completo || 'N/A',
+      Período: timesheet.periodo || '',
+      'Total Horas': timesheet.totalHoras || 0,
+      'Total Días': timesheet.totalDiasTrabajados || 0,
+      'Monto Calculado': timesheet.montoCalculado || 0,
+      Estado: this.getEstadoLabel(timesheet.estado || ''),
+      Observaciones: timesheet.observaciones || '',
+      Creado: timesheet.createdAt ? new Date(timesheet.createdAt as string).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToExcel(exportData, {
@@ -394,21 +363,14 @@ export class TimesheetListComponent implements OnInit {
 
     const exportData = this.timesheets.map((timesheet) => ({
       ID: timesheet.id || '',
-      Código: timesheet.timesheetCode || '',
-      Operador: timesheet.operator?.full_name || 'N/A',
-      Proyecto: timesheet.project?.name || 'N/A',
-      'Fecha Inicio': timesheet.periodStart
-        ? new Date(timesheet.periodStart).toLocaleDateString('es-PE')
-        : '',
-      'Fecha Fin': timesheet.periodEnd
-        ? new Date(timesheet.periodEnd).toLocaleDateString('es-PE')
-        : '',
-      'Total Horas': timesheet.totalHours || 0,
-      'Horas Regulares': timesheet.regularHours || 0,
-      'Horas Extra': timesheet.overtimeHours || 0,
-      'Total Días': timesheet.totalDays || 0,
-      Estado: this.getStatusLabel(timesheet.status || ''),
-      Creado: timesheet.createdAt ? new Date(timesheet.createdAt).toLocaleDateString('es-PE') : '',
+      Trabajador: timesheet.trabajador?.nombre_completo || 'N/A',
+      Período: timesheet.periodo || '',
+      'Total Horas': timesheet.totalHoras || 0,
+      'Total Días': timesheet.totalDiasTrabajados || 0,
+      'Monto Calculado': timesheet.montoCalculado || 0,
+      Estado: this.getEstadoLabel(timesheet.estado || ''),
+      Observaciones: timesheet.observaciones || '',
+      Creado: timesheet.createdAt ? new Date(timesheet.createdAt as string).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'planillas');

@@ -75,25 +75,29 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         <div *ngIf="schedules.length > 0" class="schedules-grid">
           <div *ngFor="let schedule of schedules" class="schedule-card">
             <div class="card-header">
-              <h3>{{ schedule.equipment?.code || 'Equipo #' + schedule.equipmentId }}</h3>
-              <span class="status-badge" [class]="'status-' + schedule.status">
-                {{ getStatusLabel(schedule.status) }}
+              <h3>{{ schedule.equipo?.codigo_equipo || 'Equipo #' + schedule.equipoId }}</h3>
+              <span class="status-badge" [class]="'status-' + schedule.estado">
+                {{ getEstadoLabel(schedule.estado) }}
               </span>
             </div>
             <div class="card-body">
               <div class="info-row">
                 <span class="label">Tipo:</span>
-                <span class="value">{{ getTypeLabel(schedule.maintenanceType) }}</span>
+                <span class="value">{{ getTipoLabel(schedule.tipoMantenimiento) }}</span>
               </div>
               <div class="info-row">
-                <span class="label">Intervalo:</span>
-                <span class="value">{{ schedule.intervalValue }} {{ schedule.intervalType }}</span>
+                <span class="label">Fecha Programada:</span>
+                <span class="value">{{ schedule.fechaProgramada ? (schedule.fechaProgramada | date:'dd/MM/yyyy') : 'Sin programar' }}</span>
               </div>
               <div class="info-row">
-                <span class="label">Próximo Vencimiento:</span>
-                <span class="value" [class.text-danger]="isOverdue(schedule)">
-                  {{ getNextDue(schedule) }}
+                <span class="label">Última Realización:</span>
+                <span class="value">
+                  {{ schedule.fechaRealizada ? (schedule.fechaRealizada | date:'dd/MM/yyyy') : 'Pendiente' }}
                 </span>
+              </div>
+              <div class="info-row" *ngIf="schedule.tecnicoResponsable">
+                <span class="label">Técnico:</span>
+                <span class="value">{{ schedule.tecnicoResponsable }}</span>
               </div>
             </div>
             <div class="card-actions">
@@ -172,17 +176,25 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         font-weight: 600;
       }
 
-      .status-active {
+      .status-PROGRAMADO {
+        background: #bee3f8;
+        color: #2c5282;
+      }
+      .status-EN_PROCESO {
+        background: #fefcbf;
+        color: #744210;
+      }
+      .status-COMPLETADO {
         background: #c6f6d5;
         color: #22543d;
       }
-      .status-inactive {
+      .status-CANCELADO {
         background: #e2e8f0;
         color: #4a5568;
       }
-      .status-completed {
-        background: #bee3f8;
-        color: #2c5282;
+      .status-PENDIENTE {
+        background: #fed7d7;
+        color: #742a2a;
       }
 
       .info-row {
@@ -257,13 +269,15 @@ export class MaintenanceScheduleListComponent implements OnInit {
 
   filterConfig: FilterConfig[] = [
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Activo', value: 'active' },
-        { label: 'Inactivo', value: 'inactive' },
-        { label: 'Completado', value: 'completed' },
+        { label: 'Programado', value: 'PROGRAMADO' },
+        { label: 'En Proceso', value: 'EN_PROCESO' },
+        { label: 'Completado', value: 'COMPLETADO' },
+        { label: 'Cancelado', value: 'CANCELADO' },
+        { label: 'Pendiente', value: 'PENDIENTE' },
       ],
     },
   ];
@@ -342,37 +356,24 @@ export class MaintenanceScheduleListComponent implements OnInit {
     });
   }
 
-  getNextDue(schedule: MaintenanceSchedule): string {
-    if (schedule.intervalType === 'hours') {
-      return `${schedule.nextDueHours} hrs`;
-    }
-    return schedule.nextDueDate ? new Date(schedule.nextDueDate).toLocaleDateString() : 'N/A';
-  }
-
-  isOverdue(schedule: MaintenanceSchedule): boolean {
-    // Simple check, ideally compare with current date/hours
-    if (schedule.intervalType === 'date' && schedule.nextDueDate) {
-      return new Date(schedule.nextDueDate) < new Date();
-    }
-    return false;
-  }
-
-  getStatusLabel(status: string): string {
+  getEstadoLabel(estado: string): string {
     const labels: Record<string, string> = {
-      active: 'ACTIVO',
-      inactive: 'INACTIVO',
-      completed: 'COMPLETADO',
+      PROGRAMADO: 'Programado',
+      EN_PROCESO: 'En Proceso',
+      COMPLETADO: 'Completado',
+      CANCELADO: 'Cancelado',
+      PENDIENTE: 'Pendiente',
     };
-    return labels[status] || status.toUpperCase();
+    return labels[estado] || estado;
   }
 
-  getTypeLabel(type: string): string {
+  getTipoLabel(tipo: string): string {
     const labels: Record<string, string> = {
-      preventive: 'Preventivo',
-      corrective: 'Correctivo',
-      predictive: 'Predictivo',
+      PREVENTIVO: 'Preventivo',
+      CORRECTIVO: 'Correctivo',
+      PREDICTIVO: 'Predictivo',
     };
-    return labels[type] || type;
+    return labels[tipo] || tipo;
   }
 
   handleExport(format: ExportFormat): void {
@@ -391,17 +392,19 @@ export class MaintenanceScheduleListComponent implements OnInit {
 
     const exportData = this.schedules.map((schedule) => ({
       ID: schedule.id || '',
-      'Tipo Equipo': schedule.equipment?.name || '',
-      'Tipo Mantenimiento': this.getTypeLabel(schedule.maintenanceType),
-      Descripción: schedule.description || '',
-      Intervalo: `${schedule.intervalValue} ${schedule.intervalType}`,
-      'Último Mantenimiento': schedule.lastCompletedDate
-        ? new Date(schedule.lastCompletedDate).toLocaleDateString('es-PE')
+      Equipo: schedule.equipo?.codigo_equipo || '',
+      'Tipo Mantenimiento': this.getTipoLabel(schedule.tipoMantenimiento),
+      Descripción: schedule.descripcion || '',
+      'Fecha Programada': schedule.fechaProgramada
+        ? new Date(schedule.fechaProgramada).toLocaleDateString('es-PE')
         : '',
-      'Próximo Mantenimiento': schedule.nextDueDate
-        ? new Date(schedule.nextDueDate).toLocaleDateString('es-PE')
+      'Fecha Realizada': schedule.fechaRealizada
+        ? new Date(schedule.fechaRealizada).toLocaleDateString('es-PE')
         : '',
-      Estado: this.getStatusLabel(schedule.status),
+      'Costo Estimado': schedule.costoEstimado || '',
+      'Costo Real': schedule.costoReal || '',
+      Técnico: schedule.tecnicoResponsable || '',
+      Estado: this.getEstadoLabel(schedule.estado),
       Creado: schedule.createdAt ? new Date(schedule.createdAt).toLocaleDateString('es-PE') : '',
     }));
 
@@ -420,17 +423,19 @@ export class MaintenanceScheduleListComponent implements OnInit {
 
     const exportData = this.schedules.map((schedule) => ({
       ID: schedule.id || '',
-      'Tipo Equipo': schedule.equipment?.name || '',
-      'Tipo Mantenimiento': this.getTypeLabel(schedule.maintenanceType),
-      Descripción: schedule.description || '',
-      Intervalo: `${schedule.intervalValue} ${schedule.intervalType}`,
-      'Último Mantenimiento': schedule.lastCompletedDate
-        ? new Date(schedule.lastCompletedDate).toLocaleDateString('es-PE')
+      Equipo: schedule.equipo?.codigo_equipo || '',
+      'Tipo Mantenimiento': this.getTipoLabel(schedule.tipoMantenimiento),
+      Descripción: schedule.descripcion || '',
+      'Fecha Programada': schedule.fechaProgramada
+        ? new Date(schedule.fechaProgramada).toLocaleDateString('es-PE')
         : '',
-      'Próximo Mantenimiento': schedule.nextDueDate
-        ? new Date(schedule.nextDueDate).toLocaleDateString('es-PE')
+      'Fecha Realizada': schedule.fechaRealizada
+        ? new Date(schedule.fechaRealizada).toLocaleDateString('es-PE')
         : '',
-      Estado: this.getStatusLabel(schedule.status),
+      'Costo Estimado': schedule.costoEstimado || '',
+      'Costo Real': schedule.costoReal || '',
+      Técnico: schedule.tecnicoResponsable || '',
+      Estado: this.getEstadoLabel(schedule.estado),
       Creado: schedule.createdAt ? new Date(schedule.createdAt).toLocaleDateString('es-PE') : '',
     }));
 

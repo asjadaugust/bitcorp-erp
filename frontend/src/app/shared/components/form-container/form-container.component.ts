@@ -138,8 +138,17 @@ import { CommonModule } from '@angular/common';
       /* Footer */
       .form-footer {
         margin-top: var(--s-24);
-        padding-top: var(--s-24);
+        padding: var(--s-16) var(--s-24);
         border-top: 1px solid var(--grey-200);
+        position: sticky;
+        bottom: 0;
+        background: white;
+        z-index: 10;
+        margin-left: -32px;
+        margin-right: -32px;
+        margin-bottom: -32px;
+        border-bottom-left-radius: var(--s-12);
+        border-bottom-right-radius: var(--s-12);
       }
 
       .footer-actions {
@@ -189,7 +198,7 @@ export class FormContainerComponent {
   @Input() disableSubmit = false;
   @Input() loading = false;
   @Input() loadingText = 'Guardando...';
-  @Input() showFooter = false;
+  @Input() showFooter = true;
 
   @Output() onSubmit = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();

@@ -274,7 +274,7 @@ Bitcorp ERP serves as the central management system for civil engineering compan
 - **Customer Management:** No customer relationship management features
 - **Inventory Management:** Beyond basic equipment tracking, no detailed parts inventory
 - **Advanced Analytics:** Only basic reports, no AI/ML predictions initially
-- **Multi-Language Support:** Initial version only in Spanish/English
+- **Multi-Language Support:** Initial version only in Spanish
 - **Third-Party Integrations:** Limited integrations with external systems initially
 
 **Future Considerations:**

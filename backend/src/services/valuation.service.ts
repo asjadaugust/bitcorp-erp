@@ -38,600 +38,6 @@ import {
 import logger from '../config/logger.config';
 
 /**
- * # ValuationService
- *
- * ## Purpose
- * Manages equipment rental valuations (valorizaciones_equipo) for the BitCorp ERP system.
- * Handles the complete valuation lifecycle from creation through approval to payment,
- * including multi-page PDF data extraction (7 pages), financial calculations, email
- * notifications, and analytics.
- *
- * ## Scope
- * - Monthly valuation CRUD operations
- * - Estado (status) workflow management with strict state transitions
- * - PDF data extraction for 7-page valuation documents
- * - Financial analytics and reporting
- * - Email notifications for state changes
- * - Bulk valuation generation (planned)
- *
- * ---
- *
- * ## Database Schema
- *
- * ### Primary Table: valorizaciones_equipo
- *
- * ```sql
- * CREATE TABLE valorizaciones_equipo (
- *   id SERIAL PRIMARY KEY,
- *
- *   -- References
- *   contrato_id INTEGER REFERENCES contratos_alquiler(id) ON DELETE SET NULL,
- *   equipo_id INTEGER REFERENCES equipos(id) ON DELETE SET NULL,
- *   proyecto_id INTEGER REFERENCES proyectos(id) ON DELETE SET NULL,
- *
- *   -- Identification
- *   numero_valorizacion VARCHAR(50) UNIQUE NOT NULL,  -- e.g., "VAL-2026-001"
- *   periodo VARCHAR(20) NOT NULL,                     -- e.g., "2026-01" (YYYY-MM)
- *
- *   -- Date range
- *   fecha_inicio DATE NOT NULL,
- *   fecha_fin DATE NOT NULL,
- *
- *   -- Work metrics
- *   dias_trabajados INTEGER,
- *   horas_trabajadas DECIMAL(10,2),
- *   combustible_consumido DECIMAL(10,2),
- *
- *   -- Financial amounts (PEN)
- *   costo_base DECIMAL(12,2),              -- Base cost from contract
- *   total_valorizado DECIMAL(12,2),        -- Base amount (before deductions)
- *   total_descuentos DECIMAL(12,2),        -- Total deductions
- *   total_con_igv DECIMAL(12,2),           -- Final amount with 18% IGV (tax)
- *
- *   -- Estado workflow
- *   estado VARCHAR(20) NOT NULL,           -- PENDIENTE | EN_REVISION | APROBADO | RECHAZADO | PAGADO | ELIMINADO
- *   observaciones TEXT,
- *
- *   -- Payment information
- *   fecha_pago DATE,
- *   referencia_pago VARCHAR(100),
- *   metodo_pago VARCHAR(50),               -- e.g., "TRANSFERENCIA", "CHEQUE"
- *
- *   -- Audit fields
- *   created_by INTEGER REFERENCES usuarios(id),
- *   approved_by INTEGER REFERENCES usuarios(id),
- *   created_at TIMESTAMP DEFAULT NOW(),
- *   updated_at TIMESTAMP DEFAULT NOW(),
- *   approved_at TIMESTAMP,
- *
- *   -- Constraints
- *   CONSTRAINT chk_fecha_range CHECK (fecha_fin >= fecha_inicio),
- *   CONSTRAINT chk_total_valorizado_positive CHECK (total_valorizado >= 0)
- * );
- *
- * CREATE INDEX idx_val_estado ON valorizaciones_equipo(estado);
- * CREATE INDEX idx_val_periodo ON valorizaciones_equipo(periodo);
- * CREATE INDEX idx_val_contrato ON valorizaciones_equipo(contrato_id);
- * CREATE INDEX idx_val_equipo ON valorizaciones_equipo(equipo_id);
- * CREATE INDEX idx_val_proyecto ON valorizaciones_equipo(proyecto_id);
- * CREATE INDEX idx_val_created_at ON valorizaciones_equipo(created_at);
- * ```
- *
- * ### Related Tables
- *
- * **contratos_alquiler** (parent entity)
- * - Rental contract that defines pricing and terms
- * - Links valuation to equipment and provider
- *
- * **equipos** (equipment being valued)
- * - Heavy machinery, vehicles, or minor equipment
- * - Type determines pricing model
- *
- * **proyectos** (project context)
- * - Construction project where equipment is used
- * - Used for cost tracking and reporting
- *
- * **partes_diarios** (daily reports - source data)
- * - Daily work hours, fuel consumption, operator notes
- * - Aggregated into monthly valuation
- *
- * **excess_fuel** (extra fuel charges)
- * - Charges for fuel consumption above contract limit
- * - One record per valuation (optional)
- *
- * **work_expenses** (gastos de obra)
- * - Additional expenses (maintenance, repairs, parts)
- * - Multiple records per valuation
- *
- * **advance_amortizations** (adelantos)
- * - Advance payment deductions
- * - Multiple records per valuation
- *
- * ---
- *
- * ## Estado State Machine
- *
- * ### State Flow Diagram
- *
- * ```
- * ┌────────────────────────────────────────────────────────────────────┐
- * │                   VALUATION LIFECYCLE                               │
- * └────────────────────────────────────────────────────────────────────┘
- *
- *     [CREATE]
- *        │
- *        ▼
- *   ┌────────────┐
- *   │ PENDIENTE  │ ◄──── Initial state (draft)
- *   │  (Draft)   │       Can be edited freely
- *   └────────────┘
- *        │
- *        │ submitForReview(id, userId)
- *        │ ✅ Validates all required data present
- *        ▼
- *   ┌────────────┐
- *   │ EN_REVISION│ ◄──── Submitted for approval
- *   │ (Review)   │       Awaiting DIRECTOR/ADMIN review
- *   └────────────┘
- *        │
- *        ├──────────────┐
- *        │              │
- *        │ approve()    │ reject(reason)
- *        │ (DIRECTOR+)  │ (Any reason)
- *        ▼              ▼
- *   ┌────────────┐  ┌────────────┐
- *   │  APROBADO  │  │ RECHAZADO  │ ◄──── Terminal state
- *   │ (Approved) │  │ (Rejected) │       ❌ Cannot transition out
- *   └────────────┘  └────────────┘       ❌ Cannot be modified
- *        │
- *        │ markAsPaid(paymentData)
- *        │ ✅ Records payment details
- *        ▼
- *   ┌────────────┐
- *   │   PAGADO   │ ◄──── Terminal state
- *   │   (Paid)   │       ❌ Cannot transition out
- *   └────────────┘       ❌ Cannot be modified
- *
- *        │ delete(id)
- *        │ ✅ Soft delete only
- *        ▼
- *   ┌────────────┐
- *   │ ELIMINADO  │ ◄──── Soft deleted
- *   │ (Deleted)  │       ❌ Hidden from normal queries
- *   └────────────┘
- * ```
- *
- * ### Valid State Transitions
- *
- * | Current Estado | Valid Next Estados | Method | Business Rule |
- * |----------------|-------------------|--------|---------------|
- * | PENDIENTE | EN_REVISION | `submitForReview()` | Must have all required data |
- * | EN_REVISION | APROBADO | `approve()` | Only DIRECTOR+ can approve |
- * | EN_REVISION | RECHAZADO | `reject()` | Requires rejection reason |
- * | APROBADO | PAGADO | `markAsPaid()` | Requires payment details |
- * | * (any) | ELIMINADO | `delete()` | Soft delete (audit trail preserved) |
- *
- * ### Invalid Transitions (Will Throw Error)
- *
- * - ❌ PENDIENTE → APROBADO (must go through EN_REVISION)
- * - ❌ APROBADO → PENDIENTE (cannot revert after approval)
- * - ❌ PAGADO → any state (terminal state, immutable)
- * - ❌ RECHAZADO → any state (terminal state, immutable)
- * - ❌ Any modification to PAGADO or RECHAZADO valuations
- *
- * ---
- *
- * ## Business Rules
- *
- * ### Rule 1: Estado State Machine Enforcement
- * **Description**: Valuations must follow strict state transitions
- * **Validation**: In approve(), submitForReview(), reject(), markAsPaid()
- * **Error**: BusinessRuleError if invalid transition attempted
- *
- * **Example**:
- * ```typescript
- * // ❌ WRONG: Cannot approve PENDIENTE
- * await valuationService.approve(1, userId);
- * // Throws: "Cannot approve valuation in state PENDIENTE. Must be EN_REVISION."
- *
- * // ✅ CORRECT: Submit first, then approve
- * await valuationService.submitForReview(1, userId);  // PENDIENTE → EN_REVISION
- * await valuationService.approve(1, userId);          // EN_REVISION → APROBADO
- * ```
- *
- * ### Rule 2: Rejection Reason Required
- * **Description**: Rejecting a valuation requires a non-empty reason
- * **Validation**: In reject() method
- * **Error**: ValidationError if reason is empty or whitespace-only
- *
- * **Example**:
- * ```typescript
- * // ❌ WRONG: Empty reason
- * await valuationService.reject(1, userId, '');
- * // Throws: "Rejection reason is required"
- *
- * // ✅ CORRECT: Provide detailed reason
- * await valuationService.reject(1, userId, 'Horas trabajadas incorrectas en días 5-7');
- * ```
- *
- * ### Rule 3: Terminal States Cannot Be Modified
- * **Description**: PAGADO and RECHAZADO valuations are immutable
- * **Validation**: Check estado before allowing updates
- * **Error**: BusinessRuleError if modification attempted
- *
- * **Example**:
- * ```typescript
- * // ❌ WRONG: Cannot reject paid valuation
- * await valuationService.reject(paidId, userId, 'reason');
- * // Throws: "Cannot reject valuation that has been paid"
- *
- * // ❌ WRONG: Cannot update paid valuation
- * await valuationService.update(paidId, { total_valorizado: 10000 });
- * // Should throw: BusinessRuleError (currently not enforced - TODO)
- * ```
- *
- * ### Rule 4: Payment Requires Approval
- * **Description**: Only APROBADO valuations can be marked as paid
- * **Validation**: In markAsPaid() method
- * **Error**: BusinessRuleError if estado is not APROBADO
- *
- * **Example**:
- * ```typescript
- * // ❌ WRONG: Cannot pay pending valuation
- * await valuationService.markAsPaid(pendingId, userId, { fechaPago: new Date() });
- * // Throws: "Cannot mark as paid valuation in state PENDIENTE. Must be APROBADO."
- *
- * // ✅ CORRECT: Approve first, then mark as paid
- * await valuationService.approve(id, directorId);     // EN_REVISION → APROBADO
- * await valuationService.markAsPaid(id, userId, {     // APROBADO → PAGADO
- *   fechaPago: new Date('2026-01-31'),
- *   metodoPago: 'TRANSFERENCIA',
- *   referenciaPago: 'TRF-2026-001'
- * });
- * ```
- *
- * ### Rule 5: Date Range Validation
- * **Description**: fecha_fin must be >= fecha_inicio
- * **Validation**: In create() and update() methods
- * **Error**: ValidationError if date range is invalid
- *
- * **Example**:
- * ```typescript
- * // ❌ WRONG: End date before start date
- * await valuationService.create({
- *   fecha_inicio: new Date('2026-01-31'),
- *   fecha_fin: new Date('2026-01-01'),  // ❌ Before start
- *   ...
- * });
- * // Throws: ValidationError with field: fecha_fin
- *
- * // ✅ CORRECT: Valid date range
- * await valuationService.create({
- *   fecha_inicio: new Date('2026-01-01'),
- *   fecha_fin: new Date('2026-01-31'),  // ✅ After start
- *   ...
- * });
- * ```
- *
- * ### Rule 6: Numero Valorizacion Uniqueness
- * **Description**: Each valuation must have a unique numero_valorizacion
- * **Validation**: Database constraint + manual check in create()
- * **Error**: ConflictError if duplicate found
- *
- * **Example**:
- * ```typescript
- * // ❌ WRONG: Duplicate numero
- * await valuationService.create({ numero_valorizacion: 'VAL-2026-001', ... });
- * // Throws: ConflictError if VAL-2026-001 already exists
- * ```
- *
- * ### Rule 7: Financial Calculation Integrity
- * **Description**: total_con_igv = (total_valorizado - total_descuentos) * 1.18
- * **Formula**: IGV = 18% tax (Peru)
- * **Validation**: Automatic calculation (should be enforced)
- *
- * **Example**:
- * ```typescript
- * // Calculation flow
- * const base = 10000.00;           // total_valorizado
- * const deductions = 500.00;        // total_descuentos
- * const subtotal = base - deductions;  // 9500.00
- * const igv = subtotal * 0.18;          // 1710.00 (18% tax)
- * const total = subtotal + igv;         // 11210.00 (total_con_igv)
- * ```
- *
- * ---
- *
- * ## PDF Document Structure (7 Pages)
- *
- * ### Page 1: Header and Contract Information
- * - Valuation number, period, dates
- * - Contract details (number, type, pricing model)
- * - Equipment information (code, type, model, plate)
- * - Provider information (name, RUC, contact)
- * - Project information
- * - **Method**: `getValuationPage1Data(id)`
- * - **DTO**: `ValuationPage1Dto`
- *
- * ### Page 2: Historical Accumulation (Resumen Acumulado)
- * - All valuations for the same equipment up to current date
- * - Cumulative totals (hours, days, amounts)
- * - Contract evolution over time
- * - **Method**: `getValuationPage2Data(id)`
- * - **DTO**: `ValuationPage2Dto`
- * - **Complex Query**: JOINs multiple valuations + contracts
- *
- * ### Page 3: Fuel Consumption Detail (Detalle de Combustible)
- * - Daily fuel consumption records
- * - Fuel type, quantity, cost
- * - Source: `equipo.equipo_combustible` table
- * - **Method**: `getValuationPage3Data(id)`
- * - **DTO**: `ValuationPage3Dto`
- *
- * ### Page 4: Excess Fuel Charges (Exceso de Combustible)
- * - Charges for fuel consumption above contract limit
- * - Calculation: (actual - budgeted) * price_per_gallon
- * - Source: `excess_fuel` table (0 or 1 record)
- * - **Method**: `getValuationPage4Data(id)`
- * - **DTO**: `ValuationPage4Dto`
- *
- * ### Page 5: Work Expenses (Gastos de Obra)
- * - Maintenance, repairs, parts, transportation
- * - Multiple line items with descriptions and amounts
- * - Source: `work_expenses` table
- * - **Method**: `getValuationPage5Data(id)`
- * - **DTO**: `ValuationPage5Dto`
- *
- * ### Page 6: Advance Amortizations (Adelantos/Amortizaciones)
- * - Deductions for advance payments
- * - Multiple line items with dates and amounts
- * - Source: `advance_amortizations` table
- * - **Method**: `getValuationPage6Data(id)`
- * - **DTO**: `ValuationPage6Dto`
- *
- * ### Page 7: Financial Summary and Signatures (Resumen y Firmas)
- * - Total valorizado (base amount)
- * - Total descuentos (deductions)
- * - Subtotal
- * - IGV (18%)
- * - Total con IGV (final amount)
- * - Creator and approver signatures
- * - **Method**: `getValuationPage7Data(id)`
- * - **DTO**: `ValuationPage7Dto`
- *
- * ---
- *
- * ## Email Notifications
- *
- * Email notifications are sent for state changes (non-blocking, fire-and-forget):
- *
- * 1. **Submitted** (PENDIENTE → EN_REVISION)
- *    - Notifies DIRECTOR/ADMIN users
- *    - Subject: "Nueva valorización pendiente de aprobación"
- *    - Includes valuation number, period, equipment, amount
- *
- * 2. **Approved** (EN_REVISION → APROBADO)
- *    - Notifies creator and provider contact
- *    - Subject: "Valorización aprobada"
- *    - Includes approval date, approver name
- *
- * 3. **Rejected** (EN_REVISION → RECHAZADO)
- *    - Notifies creator
- *    - Subject: "Valorización rechazada"
- *    - Includes rejection reason
- *
- * 4. **Paid** (APROBADO → PAGADO)
- *    - Notifies provider contact
- *    - Subject: "Pago de valorización registrado"
- *    - Includes payment date, method, reference
- *
- * **Error Handling**: Email failures are logged but do not block the operation.
- *
- * ---
- *
- * ## Related Services
- *
- * - **ContractService**: Parent entity, provides pricing and terms
- * - **EquipmentService**: Equipment details and provider information
- * - **ProjectService**: Project context for cost tracking
- * - **DailyReportService**: Source data (partes diarios) for valuation
- * - **ValuationEmailNotifier**: Email notifications (non-blocking)
- * - **PDFService**: Generates 7-page valuation PDF documents
- *
- * ---
- *
- * ## Usage Examples
- *
- * ### Example 1: Create Monthly Valuation (Manual)
- * ```typescript
- * const valuation = await valuationService.create({
- *   numero_valorizacion: 'VAL-2026-001',
- *   periodo: '2026-01',
- *   fecha_inicio: new Date('2026-01-01'),
- *   fecha_fin: new Date('2026-01-31'),
- *   contrato_id: 123,
- *   equipo_id: 45,
- *   proyecto_id: 10,
- *   dias_trabajados: 26,
- *   horas_trabajadas: 208,
- *   combustible_consumido: 150.5,
- *   costo_base: 8000.00,
- *   total_valorizado: 8000.00,
- *   total_descuentos: 0,
- *   total_con_igv: 9440.00,  // 8000 * 1.18
- *   estado: 'PENDIENTE'
- * }, userId);
- * ```
- *
- * ### Example 2: Full Approval Workflow
- * ```typescript
- * // 1. Create draft
- * const val = await valuationService.create({ ... }, operatorId);
- * // Estado: PENDIENTE
- *
- * // 2. Submit for review
- * await valuationService.submitForReview(val.id, operatorId);
- * // Estado: EN_REVISION
- * // Email sent to DIRECTOR/ADMIN
- *
- * // 3. Approve (DIRECTOR role)
- * await valuationService.approve(val.id, directorId);
- * // Estado: APROBADO
- * // Email sent to creator and provider
- *
- * // 4. Mark as paid (Accounting)
- * await valuationService.markAsPaid(val.id, accountingId, {
- *   fechaPago: new Date('2026-02-15'),
- *   metodoPago: 'TRANSFERENCIA',
- *   referenciaPago: 'TRF-2026-0045'
- * });
- * // Estado: PAGADO
- * // Email sent to provider
- * ```
- *
- * ### Example 3: Rejection Flow
- * ```typescript
- * // Submit for review
- * await valuationService.submitForReview(valId, userId);
- * // Estado: EN_REVISION
- *
- * // Director rejects with reason
- * await valuationService.reject(valId, directorId,
- *   'Las horas trabajadas del día 15 no coinciden con el parte diario. Por favor verificar.'
- * );
- * // Estado: RECHAZADO (terminal)
- * // Email sent to creator with rejection reason
- * // Cannot be modified or re-submitted
- * ```
- *
- * ### Example 4: List Valuations with Filters
- * ```typescript
- * const { data, total } = await valuationService.findAll({
- *   estado: 'APROBADO',
- *   projectId: 10,
- *   page: 1,
- *   limit: 20,
- *   sort_by: 'periodo',
- *   sort_order: 'DESC'
- * });
- * // Returns paginated list of approved valuations for project 10
- * // Sorted by period (newest first)
- * ```
- *
- * ### Example 5: Generate PDF Data
- * ```typescript
- * // Get all 7 pages of data
- * const page1 = await valuationService.getValuationPage1Data(valId);
- * const page2 = await valuationService.getValuationPage2Data(valId);
- * const page3 = await valuationService.getValuationPage3Data(valId);
- * const page4 = await valuationService.getValuationPage4Data(valId);
- * const page5 = await valuationService.getValuationPage5Data(valId);
- * const page6 = await valuationService.getValuationPage6Data(valId);
- * const page7 = await valuationService.getValuationPage7Data(valId);
- *
- * // Pass to PDF generator
- * await pdfService.generateValuationPDF({
- *   page1, page2, page3, page4, page5, page6, page7
- * });
- * ```
- *
- * ### Example 6: Analytics Dashboard
- * ```typescript
- * const analytics = await valuationService.getAnalytics();
- * // Returns:
- * // {
- * //   status_breakdown: [
- * //     { status: 'PENDIENTE', count: 5, total: 45000.00 },
- * //     { status: 'APROBADO', count: 12, total: 120000.00 },
- * //     { status: 'PAGADO', count: 8, total: 85000.00 }
- * //   ],
- * //   monthly_trend: [
- * //     { period: '2025-08', total: 95000.00 },
- * //     { period: '2025-09', total: 102000.00 },
- * //     ...
- * //   ]
- * // }
- * ```
- *
- * ---
- *
- * ## Performance Notes
- *
- * - **PDF Page 2 (Historical)**: Most expensive query
- *   - Fetches all valuations for equipment up to current date
- *   - Multiple JOINs to contracts
- *   - Consider caching for frequently accessed valuations
- *
- * - **FindAll**: Uses query builder with relations
- *   - creator and approver are LEFT JOINed
- *   - Indexed by estado, periodo, contrato_id, equipo_id, proyecto_id
- *   - Default limit: 20 (can be adjusted via filters)
- *
- * - **Email Notifications**: Non-blocking
- *   - Errors caught and logged, do not block operation
- *   - Uses fire-and-forget pattern (Promise.catch())
- *
- * ---
- *
- * ## Security Notes
- *
- * ### TODO: [Phase 21] Add Tenant Context
- * - ⚠️ **CRITICAL**: This service currently uses global AppDataSource
- * - ⚠️ **SECURITY RISK**: No tenant isolation (cross-tenant data leakage possible)
- * - ⚠️ **ACTION REQUIRED**: Convert to request-scoped service with tenant context
- *
- * **Migration Plan**:
- * ```typescript
- * // CURRENT (Phase 20 - Global)
- * export class ValuationService {
- *   private get repository(): Repository<Valorizacion> {
- *     return AppDataSource.getRepository(Valorizacion);
- *   }
- * }
- *
- * // FUTURE (Phase 21 - Tenant-aware)
- * @Injectable({ scope: Scope.REQUEST })
- * export class ValuationService {
- *   private dataSource: DataSource;
- *
- *   constructor(@Inject(REQUEST) private request: Request) {
- *     this.dataSource = this.request.tenantContext.dataSource;
- *   }
- *
- *   private get repository(): Repository<Valorizacion> {
- *     return this.dataSource.getRepository(Valorizacion);
- *   }
- * }
- * ```
- *
- * ---
- *
- * ## Deprecated Methods
- *
- * The following methods are deprecated and should not be used in new code.
- * They exist only for backward compatibility and will be removed in Phase 22.
- *
- * - `getAllValuations()` → Use `findAll()`
- * - `getValuationById()` → Use `findById()`
- * - `createValuation()` → Use `create()`
- * - `updateValuation()` → Use `update()`
- * - `deleteValuation()` → Use `delete()`
- *
- * ---
- *
- * ## Standards Compliance
- *
- * This service follows SERVICE_LAYER_STANDARDS.md:
- * - ✅ Class-level JSDoc (this documentation)
- * - ✅ Method-level JSDoc (all 28 methods)
- * - ✅ Custom error classes (NotFoundError, ConflictError, ValidationError, BusinessRuleError)
- * - ✅ Success logging (logger.info for all operations)
- * - ✅ Error logging (logger.error in all catch blocks)
- * - ✅ Business rule validation (estado state machine, date ranges, uniqueness)
- * - ✅ Soft delete (converted from hard delete)
- * - ⚠️ Tenant context (Phase 21 - TODOs added)
- *
- * ---
  *
  * @see backend/src/models/valuation.model.ts - Entity definition
  * @see backend/src/types/dto/valuation.dto.ts - Response DTOs
@@ -720,8 +126,8 @@ export class ValuationService {
         total_con_igv: 'v.totalConIgv',
         estado: 'v.estado',
         created_at: 'v.createdAt',
-        equipo_id: 'v.equipmentId',
-        contrato_id: 'v.contractId',
+        equipo_id: 'v.equipoId',
+        contrato_id: 'v.contratoId',
       };
 
       const sortBy =
@@ -733,7 +139,9 @@ export class ValuationService {
       const queryBuilder = this.repository
         .createQueryBuilder('v')
         .leftJoinAndSelect('v.creator', 'creator')
-        .leftJoinAndSelect('v.approver', 'approver');
+        .leftJoinAndSelect('v.approver', 'approver')
+        .leftJoinAndSelect('v.contrato', 'contrato')
+        .leftJoinAndSelect('v.equipo', 'equipo');
 
       if (filters?.estado) {
         queryBuilder.andWhere('v.estado = :estado', { estado: filters.estado });
@@ -920,9 +328,9 @@ export class ValuationService {
       const valuationData = data as any;
       const valorizacion = this.repository.create({
         ...data,
-        equipmentId: valuationData.equipo_id || data.equipmentId,
-        contractId: valuationData.contrato_id || data.contractId,
-        projectId: valuationData.proyecto_id || data.projectId,
+        equipoId: valuationData.equipo_id || data.equipoId,
+        contratoId: valuationData.contrato_id || data.contratoId,
+        proyectoId: valuationData.proyecto_id || data.proyectoId,
         fechaInicio: valuationData.fecha_inicio || data.fechaInicio,
         fechaFin: valuationData.fecha_fin || data.fechaFin,
         diasTrabajados: valuationData.dias_trabajados || data.diasTrabajados,
@@ -934,7 +342,7 @@ export class ValuationService {
         totalValorizado: valuationData.total_valorizado || data.totalValorizado,
         numeroValorizacion: valuationData.numero_valorizacion || data.numeroValorizacion,
         estado: data.estado || 'PENDIENTE',
-        createdBy: userId,
+        creadoPor: userId,
       });
 
       const saved = await this.repository.save(valorizacion);
@@ -1022,7 +430,70 @@ export class ValuationService {
         );
       }
 
-      Object.assign(valorizacion, data);
+      // Business rule: Validate uniqueness if numero_valorizacion changed
+      const numVal = data.numeroValorizacion || (data as any).numero_valorizacion;
+      if (numVal && numVal !== valorizacion.numeroValorizacion) {
+        const existing = await this.repository.findOne({
+          where: { numeroValorizacion: numVal },
+        });
+        if (existing) {
+          throw new ConflictError(
+            `Valuation with numero '${numVal}' already exists`,
+            {
+              field: 'numero_valorizacion',
+              value: numVal,
+              existing_id: existing.id,
+            }
+          );
+        }
+      }
+
+      // Business rule: Validate date range if dates changed
+      const newFechaInicio = data.fechaInicio || valorizacion.fechaInicio;
+      const newFechaFin = data.fechaFin || valorizacion.fechaFin;
+
+      if (newFechaInicio && newFechaFin) {
+        if (newFechaFin < newFechaInicio) {
+          throw new ValidationError('End date must be >= start date', [
+            {
+              field: 'fecha_fin',
+              rule: 'dateRange',
+              message: `End date (${newFechaFin.toISOString().split('T')[0]}) must be on or after start date (${newFechaInicio.toISOString().split('T')[0]})`,
+              value: newFechaFin,
+            },
+          ]);
+        }
+      }
+
+      // Apply updates safely (handle both camelCase and snake_case)
+      const mergeIfDefined = (targetKey: string, sourceKeys: string[]) => {
+        for (const key of sourceKeys) {
+          if ((data as any)[key] !== undefined) {
+            (valorizacion as any)[targetKey] = (data as any)[key];
+            break;
+          }
+        }
+      };
+
+      mergeIfDefined('contratoId', ['contratoId', 'contrato_id']);
+      mergeIfDefined('equipoId', ['equipoId', 'equipo_id']);
+      mergeIfDefined('periodo', ['periodo']);
+      mergeIfDefined('fechaInicio', ['fechaInicio', 'fecha_inicio']);
+      mergeIfDefined('fechaFin', ['fechaFin', 'fecha_fin']);
+      mergeIfDefined('totalValorizado', ['totalValorizado', 'total_valorizado']);
+      mergeIfDefined('numeroValorizacion', ['numeroValorizacion', 'numero_valorizacion']);
+      mergeIfDefined('estado', ['estado']);
+      mergeIfDefined('observaciones', ['observaciones']);
+      mergeIfDefined('cargosAdicionales', ['cargosAdicionales', 'cargos_adicionales']);
+      mergeIfDefined('costoBase', ['costoBase', 'costo_base']);
+      mergeIfDefined('costoCombustible', ['costoCombustible', 'costo_combustible']);
+      mergeIfDefined('tipoCambio', ['tipoCambio', 'tipo_cambio']);
+      mergeIfDefined('descuentoPorcentaje', ['descuentoPorcentaje', 'descuento_porcentaje']);
+      mergeIfDefined('descuentoMonto', ['descuentoMonto', 'descuento_monto']);
+      mergeIfDefined('igvPorcentaje', ['igvPorcentaje', 'igv_porcentaje']);
+      mergeIfDefined('igvMonto', ['igvMonto', 'igv_monto']);
+      mergeIfDefined('totalConIgv', ['totalConIgv', 'total_con_igv']);
+
       const updated = await this.repository.save(valorizacion);
 
       logger.info('Valuation updated successfully', {
@@ -1167,10 +638,18 @@ export class ValuationService {
       }
 
       valorizacion.estado = 'APROBADO';
-      valorizacion.approvedBy = userId;
-      valorizacion.approvedAt = new Date();
+      valorizacion.aprobadoPor = userId;
+      valorizacion.aprobadoEn = new Date();
 
       const approved = await this.repository.save(valorizacion);
+
+      logger.info('Valuation approved successfully', {
+        valuation_id: id,
+        numero_valorizacion: approved.numeroValorizacion,
+        approved_by: userId,
+        approved_at: approved.aprobadoEn,
+        new_estado: approved.estado,
+      });
 
       // Send email notification (non-blocking)
       valuationEmailNotifier.notifyApproved(approved, userId).catch((err) => {
@@ -1251,6 +730,13 @@ export class ValuationService {
       valorizacion.updatedAt = new Date();
 
       const updated = await this.repository.save(valorizacion);
+
+      logger.info('Valuation submitted for review successfully', {
+        valuation_id: id,
+        numero_valorizacion: updated.numeroValorizacion,
+        submitted_by: userId,
+        new_estado: updated.estado,
+      });
 
       // Send email notification (non-blocking)
       valuationEmailNotifier.notifySubmitted(updated).catch((err) => {
@@ -1818,7 +1304,7 @@ export class ValuationService {
 
     return this.create(
       {
-        contractId: parseInt(contractId),
+        contratoId: parseInt(contractId),
         periodo,
         fechaInicio,
         fechaFin,
@@ -1936,25 +1422,28 @@ export class ValuationService {
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('c.id = :contractId', { contractId: valuation.contractId })
+        .where('c.id = :contractId', { contractId: valuation.contratoId })
         .getOne();
 
       if (!contract) {
-        throw new NotFoundError('Contract', valuation.contractId);
+        throw new NotFoundError('Contract', valuation.contratoId);
       }
 
       if (!contract.equipo) {
-        throw new NotFoundError('Equipment', `in contract ${valuation.contractId}`);
+        throw new NotFoundError('Equipment', `in contract ${valuation.contratoId}`);
       }
 
+      // Fetch financial totals for Page 1 summary
+      const financialTotals = await this.getFinancialTotals(id);
+
       // Transform entities to DTO using centralized transformer
-      const result = transformToValuationPage1Dto(valuation, contract, contract.equipo);
+      const result = transformToValuationPage1Dto(valuation, contract, contract.equipo, financialTotals);
 
       logger.info('Page 1 data fetched successfully', {
         valuation_id: id,
         numero_valorizacion: valuation.numeroValorizacion,
         page_number: 1,
-        contract_id: valuation.contractId,
+        contract_id: valuation.contratoId,
       });
 
       return result;
@@ -2034,15 +1523,15 @@ export class ValuationService {
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('c.id = :contractId', { contractId: currentValuation.contractId })
+        .where('c.id = :contractId', { contractId: currentValuation.contratoId })
         .getOne();
 
       if (!contract) {
-        throw new NotFoundError('Contract', currentValuation.contractId);
+        throw new NotFoundError('Contract', currentValuation.contratoId);
       }
 
       if (!contract.equipo) {
-        throw new NotFoundError('Equipment', `in contract ${currentValuation.contractId}`);
+        throw new NotFoundError('Equipment', `in contract ${currentValuation.contratoId}`);
       }
 
       // Fetch ALL valuations for the same equipment up to current date (historical)
@@ -2055,7 +1544,7 @@ export class ValuationService {
 
       // Fetch contracts for all historical valuations
       const contractIds = [
-        ...new Set(historicalValuations.map((v) => v.contractId).filter(Boolean)),
+        ...new Set(historicalValuations.map((v) => v.contratoId).filter(Boolean)),
       ];
       const contracts = await this.contractRepository
         .createQueryBuilder('c')
@@ -2068,7 +1557,7 @@ export class ValuationService {
       // Attach contracts to valuations
       const valuationsWithContracts = historicalValuations.map((val) => ({
         ...val,
-        contract: val.contractId ? contractMap.get(val.contractId) : null,
+        contract: val.contratoId ? contractMap.get(val.contratoId) : null,
       }));
 
       // Transform to Page 2 DTO
@@ -2152,15 +1641,15 @@ export class ValuationService {
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('c.id = :contractId', { contractId: valuation.contractId })
+        .where('c.id = :contractId', { contractId: valuation.contratoId })
         .getOne();
 
       if (!contract) {
-        throw new NotFoundError('Contract', valuation.contractId);
+        throw new NotFoundError('Contract', valuation.contratoId);
       }
 
       if (!contract.equipo) {
-        throw new NotFoundError('Equipment', `in contract ${valuation.contractId}`);
+        throw new NotFoundError('Equipment', `in contract ${valuation.contratoId}`);
       }
 
       // Fetch fuel consumption records from equipo_combustible table
@@ -2244,15 +1733,15 @@ export class ValuationService {
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('c.id = :contractId', { contractId: valuation.contractId })
+        .where('c.id = :contractId', { contractId: valuation.contratoId })
         .getOne();
 
       if (!contract) {
-        throw new NotFoundError('Contract', valuation.contractId);
+        throw new NotFoundError('Contract', valuation.contratoId);
       }
 
       if (!contract.equipo) {
-        throw new NotFoundError('Equipment', `in contract ${valuation.contractId}`);
+        throw new NotFoundError('Equipment', `in contract ${valuation.contratoId}`);
       }
 
       // Fetch excess fuel record (should be 0 or 1)
@@ -2334,15 +1823,15 @@ export class ValuationService {
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('c.id = :contractId', { contractId: valuation.contractId })
+        .where('c.id = :contractId', { contractId: valuation.contratoId })
         .getOne();
 
       if (!contract) {
-        throw new NotFoundError('Contract', valuation.contractId);
+        throw new NotFoundError('Contract', valuation.contratoId);
       }
 
       if (!contract.equipo) {
-        throw new NotFoundError('Equipment', `in contract ${valuation.contractId}`);
+        throw new NotFoundError('Equipment', `in contract ${valuation.contratoId}`);
       }
 
       // Fetch work expenses
@@ -2427,15 +1916,15 @@ export class ValuationService {
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('c.id = :contractId', { contractId: valuation.contractId })
+        .where('c.id = :contractId', { contractId: valuation.contratoId })
         .getOne();
 
       if (!contract) {
-        throw new NotFoundError('Contract', valuation.contractId);
+        throw new NotFoundError('Contract', valuation.contratoId);
       }
 
       if (!contract.equipo) {
-        throw new NotFoundError('Equipment', `in contract ${valuation.contractId}`);
+        throw new NotFoundError('Equipment', `in contract ${valuation.contratoId}`);
       }
 
       // Fetch advances/amortizations
@@ -2530,18 +2019,21 @@ export class ValuationService {
         .createQueryBuilder('c')
         .leftJoinAndSelect('c.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'provider')
-        .where('c.id = :contractId', { contractId: valuation.contractId })
+        .where('c.id = :contractId', { contractId: valuation.contratoId })
         .getOne();
 
       if (!contract) {
-        throw new NotFoundError('Contract', valuation.contractId);
+        throw new NotFoundError('Contract', valuation.contratoId);
       }
 
       if (!contract.equipo) {
-        throw new NotFoundError('Equipment', `in contract ${valuation.contractId}`);
+        throw new NotFoundError('Equipment', `in contract ${valuation.contratoId}`);
       }
 
-      const result = transformToValuationPage7Dto(valuation, contract, contract.equipo);
+      // Fetch financial totals for Page 7 summary
+      const financialTotals = await this.getFinancialTotals(id);
+
+      const result = transformToValuationPage7Dto(valuation, contract, contract.equipo, financialTotals);
 
       logger.info('Page 7 data fetched successfully', {
         valuation_id: id,
@@ -2572,6 +2064,47 @@ export class ValuationService {
         { valuation_id: id, page: 7 }
       );
     }
+  }
+
+  /**
+   * Helper: Calculate and fetch financial totals from all detail tables.
+   */
+  private async getFinancialTotals(valuationId: number) {
+    const [workExpenses, advances, excessFuel] = await Promise.all([
+      AppDataSource.getRepository(WorkExpense).find({
+        where: { valorizacionId: valuationId },
+      }),
+      AppDataSource.getRepository(AdvanceAmortization).find({
+        where: { valorizacionId: valuationId },
+      }),
+      AppDataSource.getRepository(ExcessFuel).findOne({
+        where: { valorizacionId: valuationId },
+      }),
+    ]);
+
+    const totalGastoObra = workExpenses.reduce(
+      (sum, item) => sum + Number(item.importeSinIgv || 0),
+      0
+    );
+
+    const totalAdelantos = advances
+      .filter((a) => a.tipoOperacion === 'ADELANTO')
+      .reduce((sum, item) => sum + Number(item.monto || 0), 0);
+
+    const totalAmortizaciones = advances
+      .filter((a) => a.tipoOperacion === 'AMORTIZACION')
+      .reduce((sum, item) => sum + Number(item.monto || 0), 0);
+
+    // net impact of advances
+    const importeAdelanto = totalAdelantos - totalAmortizaciones;
+
+    const importeExcesoCombustible = excessFuel ? Number(excessFuel.importeExcesoCombustible || 0) : 0;
+
+    return {
+      importe_gasto_obra: totalGastoObra,
+      importe_adelanto: importeAdelanto,
+      importe_exceso_combustible: importeExcesoCombustible,
+    };
   }
 }
 

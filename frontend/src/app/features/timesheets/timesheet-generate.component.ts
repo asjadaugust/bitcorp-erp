@@ -14,7 +14,9 @@ import { ProjectService } from '../../core/services/project.service';
     <div class="container">
       <div class="page-header">
         <h1>📊 Generar Planilla de Tiempo</h1>
-        <button class="btn btn-secondary" (click)="goBack()">← Volver</button>
+        <button class="btn btn-secondary" (click)="goBack()">
+          <i class="fa-solid fa-arrow-left"></i> Volver a Planillas
+        </button>
       </div>
 
       <div class="form-card">
@@ -25,13 +27,13 @@ import { ProjectService } from '../../core/services/project.service';
             <select
               id="operator"
               name="operator"
-              [(ngModel)]="formData.operatorId"
+              [(ngModel)]="formData.trabajadorId"
               required
               class="form-control"
             >
               <option value="">Seleccionar operador...</option>
               <option *ngFor="let op of operators" [value]="op.id">
-                {{ op.C05000_Nombre }} {{ op.C05000_Apellido }}
+                {{ op.nombre_completo || op.nombres + ' ' + op.apellido_paterno }}
               </option>
             </select>
           </div>
@@ -53,30 +55,16 @@ import { ProjectService } from '../../core/services/project.service';
           </div>
 
           <!-- Date Range -->
-          <div class="form-row">
-            <div class="form-group">
-              <label for="periodStart">Fecha Inicio *</label>
-              <input
-                type="date"
-                id="periodStart"
-                name="periodStart"
-                [(ngModel)]="formData.periodStart"
-                required
-                class="form-control"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="periodEnd">Fecha Fin *</label>
-              <input
-                type="date"
-                id="periodEnd"
-                name="periodEnd"
-                [(ngModel)]="formData.periodEnd"
-                required
-                class="form-control"
-              />
-            </div>
+          <div class="form-group">
+            <label for="periodo">Período (Mes) *</label>
+            <input
+              type="month"
+              id="periodo"
+              name="periodo"
+              [(ngModel)]="formData.periodo"
+              required
+              class="form-control"
+            />
           </div>
 
           <!-- Info Box -->
@@ -117,7 +105,7 @@ import { ProjectService } from '../../core/services/project.service';
   styles: [
     `
       .container {
-        padding: 2rem;
+        padding: var(--s-24);
         max-width: 800px;
         margin: 0 auto;
       }
@@ -126,118 +114,115 @@ import { ProjectService } from '../../core/services/project.service';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
+        margin-bottom: var(--s-24);
       }
 
       .page-header h1 {
-        font-size: 2rem;
+        font-size: 24px;
         font-weight: 700;
-        color: #1a202c;
+        color: var(--grey-900);
         margin: 0;
       }
 
       .form-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
+        background: var(--neutral-0);
+        border-radius: var(--s-12);
+        padding: var(--s-24);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
 
       .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: var(--s-16);
       }
 
       .form-group label {
         display: block;
         font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
+        color: var(--grey-800);
+        margin-bottom: var(--s-8);
+        font-size: 14px;
       }
 
       .form-control {
         width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        font-size: 1rem;
+        padding: var(--s-12);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-8);
+        font-size: 14px;
         transition: border-color 0.2s;
       }
 
       .form-control:focus {
         outline: none;
-        border-color: #3182ce;
-        box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
-      }
-
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px var(--primary-100);
       }
 
       .info-box {
         display: flex;
-        gap: 1rem;
-        background: #ebf8ff;
-        border: 1px solid #90cdf4;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 1.5rem 0;
+        gap: var(--s-12);
+        background: var(--info-50);
+        border: 1px solid var(--info-200);
+        border-radius: var(--s-8);
+        padding: var(--s-16);
+        margin: var(--s-24) 0;
       }
 
       .info-icon {
-        font-size: 1.5rem;
+        font-size: 24px;
         flex-shrink: 0;
       }
 
       .info-content strong {
         display: block;
-        color: #2c5282;
-        margin-bottom: 0.25rem;
+        color: var(--info-800);
+        margin-bottom: var(--s-4);
       }
 
       .info-content p {
         margin: 0;
-        color: #2d3748;
-        font-size: 0.875rem;
+        color: var(--grey-700);
+        font-size: 14px;
         line-height: 1.5;
       }
 
       .success-message {
-        background: #c6f6d5;
-        color: #22543d;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
+        background: var(--success-100);
+        color: var(--success-800);
+        padding: var(--s-16);
+        border-radius: var(--s-8);
+        margin-bottom: var(--s-16);
         font-weight: 500;
       }
 
       .error-message {
-        background: #fed7d7;
-        color: #742a2a;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
+        background: var(--error-100);
+        color: var(--error-800);
+        padding: var(--s-16);
+        border-radius: var(--s-8);
+        margin-bottom: var(--s-16);
         font-weight: 500;
       }
 
       .form-actions {
         display: flex;
-        gap: 1rem;
+        gap: var(--s-16);
         justify-content: flex-end;
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 1px solid #e2e8f0;
+        margin-top: var(--s-32);
+        padding-top: var(--s-24);
+        border-top: 1px solid var(--grey-200);
       }
 
       .btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
+        padding: var(--s-12) var(--s-24);
+        border-radius: var(--s-8);
         font-weight: 600;
         border: none;
         cursor: pointer;
         transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-8);
       }
 
       .btn:disabled {
@@ -246,35 +231,32 @@ import { ProjectService } from '../../core/services/project.service';
       }
 
       .btn-primary {
-        background: #3182ce;
-        color: white;
+        background: var(--primary-500);
+        color: var(--neutral-0);
       }
 
       .btn-primary:hover:not(:disabled) {
-        background: #2c5282;
+        background: var(--primary-700);
         transform: translateY(-2px);
       }
 
       .btn-secondary {
-        background: #e2e8f0;
-        color: #2d3748;
+        background: var(--grey-200);
+        color: var(--grey-800);
       }
 
       .btn-secondary:hover {
-        background: #cbd5e0;
+        background: var(--grey-300);
       }
-
+      
       @media (max-width: 640px) {
-        .form-row {
-          grid-template-columns: 1fr;
-        }
-
         .form-actions {
           flex-direction: column-reverse;
         }
 
         .btn {
           width: 100%;
+          justify-content: center;
         }
       }
     `,
@@ -287,10 +269,12 @@ export class TimesheetGenerateComponent implements OnInit {
   private router = inject(Router);
 
   formData = {
-    operatorId: null as number | null,
+    trabajadorId: null as number | null,
     projectId: '',
-    periodStart: '',
-    periodEnd: '',
+    periodo: '',
+    totalDiasTrabajados: 0,
+    totalHoras: 0,
+    observaciones: ''
   };
 
   operators: any[] = [];
@@ -307,11 +291,9 @@ export class TimesheetGenerateComponent implements OnInit {
 
   setDefaultDates() {
     const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-    this.formData.periodStart = firstDay.toISOString().split('T')[0];
-    this.formData.periodEnd = lastDay.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    this.formData.periodo = `${year}-${month}`;
   }
 
   loadOperators() {
@@ -319,10 +301,7 @@ export class TimesheetGenerateComponent implements OnInit {
       next: (response: any) => {
         this.operators = response || [];
       },
-      error: (err: any) => {
-        console.error('Error loading operators:', err);
-        this.operators = [];
-      },
+      error: (error) => console.error('Error loading operators:', error),
     });
   }
 
@@ -331,40 +310,70 @@ export class TimesheetGenerateComponent implements OnInit {
       next: (response: any) => {
         this.projects = response || [];
       },
-      error: (err: any) => {
-        console.error('Error loading projects:', err);
-        this.projects = [];
-      },
+      error: (error) => console.error('Error loading projects:', error),
     });
   }
 
   generateTimesheet() {
-    if (!this.formData.operatorId) return;
+    if (!this.formData.trabajadorId || !this.formData.periodo) {
+      this.errorMessage = 'Por favor complete todos los campos obligatorios';
+      return;
+    }
 
     this.loading = true;
-    this.successMessage = '';
     this.errorMessage = '';
 
     const dto = {
-      operatorId: this.formData.operatorId,
-      projectId: this.formData.projectId || undefined,
-      periodStart: this.formData.periodStart,
-      periodEnd: this.formData.periodEnd,
+      trabajador_id: parseInt(this.formData.trabajadorId.toString()),
+      periodo: this.formData.periodo,
+      total_dias_trabajados: this.formData.totalDiasTrabajados ? parseInt(this.formData.totalDiasTrabajados.toString()) : 0,
+      total_horas: this.formData.totalHoras ? parseFloat(this.formData.totalHoras.toString()) : 0,
+      observaciones: this.formData.observaciones
     };
 
-    this.timesheetService.generateTimesheet(dto).subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.successMessage = `Planilla generada exitosamente: ${response.timesheetCode}`;
+    console.log('Sending DTO:', dto);
 
-        setTimeout(() => {
-          this.router.navigate(['/timesheets', response.id]);
-        }, 1500);
+    this.timesheetService.generateTimesheet(dto).subscribe({
+      next: (res) => {
+        this.loading = false;
+        // Navigate to detail
+        this.router.navigate(['/operaciones/timesheets', res.id]);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.error || 'Error al generar la planilla';
         console.error('Error generating timesheet:', err);
+        console.log('FULL ERROR OBJECT:', JSON.stringify(err, null, 2));
+        
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            this.errorMessage = err.error;
+          } else if (typeof err.error === 'object') {
+            if (err.error.message) {
+              this.errorMessage = err.error.message;
+            } else if (err.error.error) {
+              // Handle nested error object from validation middleware
+              if (typeof err.error.error === 'string') {
+                this.errorMessage = err.error.error;
+              } else if (typeof err.error.error === 'object') {
+                 if (err.error.error.message) {
+                   this.errorMessage = err.error.error.message;
+                   if (err.error.error.details && Array.isArray(err.error.error.details)) {
+                     const details = err.error.error.details.map((d: any) => `${d.field}: ${d.errors.join(', ')}`).join('; ');
+                     this.errorMessage += ` (${details})`;
+                   }
+                 } else {
+                   this.errorMessage = JSON.stringify(err.error.error);
+                 }
+              }
+            } else if (Array.isArray(err.error.errors)) {
+              this.errorMessage = err.error.errors.join(', ');
+            } else {
+              this.errorMessage = JSON.stringify(err.error);
+            }
+          }
+        } else {
+          this.errorMessage = err.message || 'Error al generar la planilla';
+        }
       },
     });
   }

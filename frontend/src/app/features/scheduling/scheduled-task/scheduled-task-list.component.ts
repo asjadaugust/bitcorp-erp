@@ -99,9 +99,9 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         >
           <div class="card-header">
             <div class="header-top">
-              <span class="task-type">{{ task.task_type | titlecase }}</span>
+              <span class="task-type">{{ task.taskType | titlecase }}</span>
               <span class="priority-badge" [class]="'priority-' + task.priority">{{
-                task.priority
+                getPriorityLabel(task.priority)
               }}</span>
             </div>
             <h3>{{ task.title || task.description }}</h3>
@@ -111,21 +111,21 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
             <div class="info-row">
               <i class="fa-solid fa-truck-front"></i>
               <span>{{
-                task.equipment_code || task.equipment?.code || 'Equipo #' + task.equipo_id
+                task.equipment?.codigo || 'Equipo #' + task.equipmentId
               }}</span>
             </div>
             <div class="info-row">
               <i class="fa-solid fa-calendar-day"></i>
               <span>{{
-                task.start_date || task.start_date || task.scheduled_date | date: 'dd/MM/yyyy'
+                task.startDate | date: 'dd/MM/yyyy'
               }}</span>
             </div>
             <div class="info-row">
               <i class="fa-solid fa-user"></i>
-              <span *ngIf="task.operator_name || task.operator">{{
-                task.operator_name || task.operator?.name
+              <span *ngIf="task.operator">{{
+                task.operator?.nombreCompleto || task.operator?.nombres
               }}</span>
-              <span *ngIf="!task.operator_name && !task.operator" class="text-muted"
+              <span *ngIf="!task.operator" class="text-muted"
                 >Sin asignar</span
               >
             </div>
@@ -133,7 +133,7 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
 
           <div class="card-footer">
             <span class="status-badge" [class]="'status-' + task.status">
-              {{ task.status | uppercase }}
+              {{ getStatusLabel(task.status) }}
             </span>
             <div class="actions">
               <button class="btn-icon" (click)="editTask(task.id)" title="Editar">
@@ -432,21 +432,18 @@ export class ScheduledTaskListComponent implements OnInit {
       return;
     }
 
-    const exportData = this.tasks.map((task) => {
-      const taskDate = task.start_date || task.scheduled_date;
-      return {
-        Tipo: task.task_type || '',
-        Título: task.title || task.description || '',
-        Equipo: task.equipment_code || task.equipment?.code || 'N/A',
-        Operador: task.operator_name || task.operator?.name || 'Sin asignar',
-        'Fecha Programada': taskDate ? new Date(taskDate).toLocaleDateString('es-PE') : '',
-        'Duración (min)': task.duration_minutes || 0,
-        Prioridad: task.priority || '',
-        Estado: task.status || '',
-        'Notas Completación': task.completion_notes || '',
-        Creado: task.created_at ? new Date(task.created_at).toLocaleDateString('es-PE') : '',
-      };
-    });
+    const exportData = this.tasks.map((task) => ({
+      Tipo: task.taskType || '',
+      Título: task.title || task.description || '',
+      Equipo: task.equipment?.codigo || 'N/A',
+      Operador: task.operator?.nombreCompleto || 'Sin asignar',
+      'Fecha Programada': task.startDate ? new Date(task.startDate).toLocaleDateString('es-PE') : '',
+      'Duración (min)': task.durationMinutes || 0,
+      Prioridad: task.priority || '',
+      Estado: task.status || '',
+      'Notas Completación': task.completionNotes || '',
+      Creado: task.createdAt ? new Date(task.createdAt).toLocaleDateString('es-PE') : '',
+    }));
 
     this.excelService.exportToExcel(exportData, {
       filename: 'tareas-programadas',
@@ -460,22 +457,42 @@ export class ScheduledTaskListComponent implements OnInit {
       return;
     }
 
-    const exportData = this.tasks.map((task) => {
-      const taskDate = task.start_date || task.scheduled_date;
-      return {
-        Tipo: task.task_type || '',
-        Título: task.title || task.description || '',
-        Equipo: task.equipment_code || task.equipment?.code || 'N/A',
-        Operador: task.operator_name || task.operator?.name || 'Sin asignar',
-        'Fecha Programada': taskDate ? new Date(taskDate).toLocaleDateString('es-PE') : '',
-        'Duración (min)': task.duration_minutes || 0,
-        Prioridad: task.priority || '',
-        Estado: task.status || '',
-        'Notas Completación': task.completion_notes || '',
-        Creado: task.created_at ? new Date(task.created_at).toLocaleDateString('es-PE') : '',
-      };
-    });
+    const exportData = this.tasks.map((task) => ({
+      Tipo: task.taskType || '',
+      Título: task.title || task.description || '',
+      Equipo: task.equipment?.codigo || 'N/A',
+      Operador: task.operator?.nombreCompleto || 'Sin asignar',
+      'Fecha Programada': task.startDate ? new Date(task.startDate).toLocaleDateString('es-PE') : '',
+      'Duración (min)': task.durationMinutes || 0,
+      Prioridad: task.priority || '',
+      Estado: task.status || '',
+      'Notas Completación': task.completionNotes || '',
+      Creado: task.createdAt ? new Date(task.createdAt).toLocaleDateString('es-PE') : '',
+    }));
 
     this.excelService.exportToCSV(exportData, 'tareas-programadas');
+  }
+
+  getPriorityLabel(priority: string): string {
+    const map: Record<string, string> = {
+      low: 'Baja',
+      medium: 'Media',
+      high: 'Alta',
+      critical: 'Crítica',
+      urgent: 'Urgente',
+    };
+    return map[priority] || priority;
+  }
+
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'Pendiente',
+      assigned: 'Asignada',
+      in_progress: 'En Progreso',
+      completed: 'Completada',
+      cancelled: 'Cancelada',
+      overdue: 'Vencida',
+    };
+    return map[status] || status;
   }
 }

@@ -165,20 +165,20 @@ export class AccountsPayableListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'document_number', label: 'N° Documento', type: 'text' },
-    { key: 'document_type', label: 'Tipo', type: 'text' },
-    { key: 'provider', label: 'Proveedor', type: 'text' },
-    { key: 'amount', label: 'Monto', type: 'currency', format: 'PEN' },
-    { key: 'due_date', label: 'Vencimiento', type: 'date' },
+    { key: 'numero_factura', label: 'N° Documento', type: 'text' },
+    // { key: 'document_type', label: 'Tipo', type: 'text' }, // Removed as it's not in the new interface
+    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' }, // We'll need to handle this mapping
+    { key: 'monto_total', label: 'Monto', type: 'currency', format: 'PEN' },
+    { key: 'fecha_vencimiento', label: 'Vencimiento', type: 'date' },
     {
-      key: 'status',
+      key: 'estado',
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        pending: { label: 'Pendiente', class: 'badge badge-warning' },
-        paid: { label: 'Pagado', class: 'badge badge-success' },
-        cancelled: { label: 'Cancelado', class: 'badge badge-error' },
-        partial: { label: 'Parcial', class: 'badge badge-info' },
+        PENDING: { label: 'Pendiente', class: 'badge badge-warning' },
+        PAID: { label: 'Pagado', class: 'badge badge-success' },
+        CANCELLED: { label: 'Cancelado', class: 'badge badge-error' },
+        PARTIAL: { label: 'Parcial', class: 'badge badge-info' },
       },
     },
   ];
@@ -191,7 +191,14 @@ export class AccountsPayableListComponent implements OnInit {
     this.loading = true;
     this.adminService.getAccountsPayable().subscribe({
       next: (records) => {
-        this.records = records;
+        // Map provider name for the table if necessary, or let the table handle nested properties if it supports it.
+        // AeroTable might not support nested keys like 'provider.razonSocial' directly without configuration.
+        // Let's assume we flatten it for display or the table supports it.
+        // For now, I'll map it to a new property for safety.
+        this.records = records.map(r => ({
+            ...r,
+            proveedor_razon_social: r.provider?.razonSocial || 'N/A'
+        }));
         this.applyFilters();
         this.loading = false;
       },
@@ -211,10 +218,10 @@ export class AccountsPayableListComponent implements OnInit {
     this.filteredRecords = this.records.filter((record) => {
       const matchesSearch =
         !this.filters['search'] ||
-        record.document_number?.toLowerCase().includes(this.filters['search'].toLowerCase()) ||
-        record.description?.toLowerCase().includes(this.filters['search'].toLowerCase());
+        record.numero_factura?.toLowerCase().includes(this.filters['search'].toLowerCase()) ||
+        record.observaciones?.toLowerCase().includes(this.filters['search'].toLowerCase());
 
-      const matchesStatus = !this.filters['status'] || record.status === this.filters['status'];
+      const matchesStatus = !this.filters['status'] || record.estado === this.filters['status'];
 
       // Date range filter
       const dueDateStart = this.filters['dueDate_start'];
@@ -222,7 +229,7 @@ export class AccountsPayableListComponent implements OnInit {
       let matchesDateRange = true;
 
       if (dueDateStart || dueDateEnd) {
-        const recordDate = record.due_date ? new Date(record.due_date) : null;
+        const recordDate = record.fecha_vencimiento ? new Date(record.fecha_vencimiento) : null;
         if (recordDate) {
           if (dueDateStart) {
             matchesDateRange = matchesDateRange && recordDate >= new Date(dueDateStart);
@@ -248,7 +255,7 @@ export class AccountsPayableListComponent implements OnInit {
   }
 
   deleteRecord(record: AccountsPayable): void {
-    if (confirm(`¿Está seguro de eliminar la cuenta por pagar ${record.document_number}?`)) {
+    if (confirm(`¿Está seguro de eliminar la cuenta por pagar ${record.numero_factura}?`)) {
       this.adminService.deleteAccountsPayable(record.id).subscribe({
         next: () => {
           this.loadRecords();
@@ -272,19 +279,19 @@ export class AccountsPayableListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      'Nro. Documento': record.document_number || '',
-      Proveedor: record.provider?.C07001_RazonSocial || '',
-      Tipo: record.document_type || '',
-      'Fecha Emisión': record.issue_date
-        ? new Date(record.issue_date).toLocaleDateString('es-PE')
+      'Nro. Documento': record.numero_factura || '',
+      Proveedor: record.provider?.razonSocial || '',
+      // Tipo: record.document_type || '', // Removed
+      'Fecha Emisión': record.fecha_emision
+        ? new Date(record.fecha_emision).toLocaleDateString('es-PE')
         : '',
-      'Fecha Vencimiento': record.due_date
-        ? new Date(record.due_date).toLocaleDateString('es-PE')
+      'Fecha Vencimiento': record.fecha_vencimiento
+        ? new Date(record.fecha_vencimiento).toLocaleDateString('es-PE')
         : '',
-      Monto: record.amount ? `${record.currency} ${record.amount.toFixed(2)}` : '',
-      Moneda: record.currency || '',
-      Estado: this.getStatusLabel(record.status),
-      Descripción: record.description || '',
+      Monto: record.monto_total ? `${record.moneda} ${record.monto_total.toFixed(2)}` : '',
+      Moneda: record.moneda || '',
+      Estado: this.getStatusLabel(record.estado),
+      Descripción: record.observaciones || '',
       Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
     }));
 
@@ -302,19 +309,19 @@ export class AccountsPayableListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      'Nro. Documento': record.document_number || '',
-      Proveedor: record.provider?.C07001_RazonSocial || '',
-      Tipo: record.document_type || '',
-      'Fecha Emisión': record.issue_date
-        ? new Date(record.issue_date).toLocaleDateString('es-PE')
+      'Nro. Documento': record.numero_factura || '',
+      Proveedor: record.provider?.razonSocial || '',
+      // Tipo: record.document_type || '',
+      'Fecha Emisión': record.fecha_emision
+        ? new Date(record.fecha_emision).toLocaleDateString('es-PE')
         : '',
-      'Fecha Vencimiento': record.due_date
-        ? new Date(record.due_date).toLocaleDateString('es-PE')
+      'Fecha Vencimiento': record.fecha_vencimiento
+        ? new Date(record.fecha_vencimiento).toLocaleDateString('es-PE')
         : '',
-      Monto: record.amount ? `${record.currency} ${record.amount.toFixed(2)}` : '',
-      Moneda: record.currency || '',
-      Estado: this.getStatusLabel(record.status),
-      Descripción: record.description || '',
+      Monto: record.monto_total ? `${record.moneda} ${record.monto_total.toFixed(2)}` : '',
+      Moneda: record.moneda || '',
+      Estado: this.getStatusLabel(record.estado),
+      Descripción: record.observaciones || '',
       Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
     }));
 

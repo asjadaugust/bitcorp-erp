@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface CostCenter {
   id: string;
@@ -17,18 +18,20 @@ export interface CostCenter {
 
 export interface AccountsPayable {
   id: number;
-  provider_id: number;
-  provider?: any;
+  proveedor_id: number;
+  provider?: Provider; // Use standard Provider
   project_id?: string;
   cost_center_id?: string;
-  document_type: string;
-  document_number: string;
-  issue_date: string;
-  due_date: string;
-  amount: number;
-  currency: string;
-  status: string;
-  description?: string;
+  legacy_id?: string;
+  numero_factura: string;
+  fecha_emision: string;
+  fecha_vencimiento: string;
+  monto_total: number;
+  monto_pagado: number;
+  saldo: number;
+  moneda: string;
+  estado: string;
+  observaciones?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -39,8 +42,9 @@ export interface PaymentSchedule {
   payment_date: string;
   total_amount: number;
   currency: string;
-  status: string;
+  status: 'draft' | 'approved' | 'processed' | 'cancelled';
   description?: string;
+  periodo?: string;
   details?: PaymentScheduleDetail[];
   created_at?: string;
   updated_at?: string;
@@ -49,17 +53,22 @@ export interface PaymentSchedule {
 export interface PaymentScheduleDetail {
   id: number;
   payment_schedule_id: number;
-  accounts_payable_id: number;
+  accounts_payable_id: number; // Linked accounts payable
   accounts_payable?: AccountsPayable;
   amount_to_pay: number;
   created_at?: string;
 }
 
 export interface Provider {
-  C07001_Id: number;
-  C07001_RazonSocial: string;
-  C07001_NombreComercial?: string;
-  C07001_RUC?: string;
+  id: number;
+  razonSocial: string;
+  nombreComercial?: string;
+  ruc: string;
+  tipoProveedor?: string;
+  direccion?: string;
+  telefono?: string;
+  email?: string;
+  isActive: boolean;
 }
 
 @Injectable({
@@ -74,11 +83,15 @@ export class AdministrationService {
 
   // Cost Centers
   getCostCenters(): Observable<CostCenter[]> {
-    return this.http.get<CostCenter[]>(`${this.apiUrl}/cost-centers`);
+    return this.http
+      .get<any>(`${this.apiUrl}/cost-centers`)
+      .pipe(map((res) => res.data || res));
   }
 
   getCostCenter(id: string): Observable<CostCenter> {
-    return this.http.get<CostCenter>(`${this.apiUrl}/cost-centers/${id}`);
+    return this.http
+      .get<any>(`${this.apiUrl}/cost-centers/${id}`)
+      .pipe(map((res) => res.data || res));
   }
 
   createCostCenter(costCenter: any): Observable<CostCenter> {
@@ -94,16 +107,22 @@ export class AdministrationService {
   }
 
   getProviders(): Observable<Provider[]> {
-    return this.http.get<Provider[]>(this.providersUrl);
+    return this.http
+      .get<any>(this.providersUrl)
+      .pipe(map((res) => res.data || res));
   }
 
-  // Accounts Payable
+  // Accounts Payable (Spanish snake_case DTOs)
   getAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http.get<AccountsPayable[]>(this.apUrl);
+    return this.http
+      .get<any>(this.apUrl)
+      .pipe(map((res) => res.data || res));
   }
 
   getAccountsPayableById(id: number): Observable<AccountsPayable> {
-    return this.http.get<AccountsPayable>(`${this.apUrl}/${id}`);
+    return this.http
+      .get<any>(`${this.apUrl}/${id}`)
+      .pipe(map((res) => res.data || res));
   }
 
   createAccountsPayable(data: Partial<AccountsPayable>): Observable<AccountsPayable> {
@@ -119,16 +138,22 @@ export class AdministrationService {
   }
 
   getPendingAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http.get<AccountsPayable[]>(`${this.apUrl}/pending`);
+    return this.http
+      .get<any>(`${this.apUrl}/pending`)
+      .pipe(map((res) => res.data || res));
   }
 
-  // Payment Schedules
+  // Payment Schedules (English properties from Entity)
   getPaymentSchedules(): Observable<PaymentSchedule[]> {
-    return this.http.get<PaymentSchedule[]>(this.psUrl);
+    return this.http
+      .get<any>(this.psUrl)
+      .pipe(map((res) => res.data || res));
   }
 
   getPaymentScheduleById(id: number): Observable<PaymentSchedule> {
-    return this.http.get<PaymentSchedule>(`${this.psUrl}/${id}`);
+    return this.http
+      .get<any>(`${this.psUrl}/${id}`)
+      .pipe(map((res) => res.data || res));
   }
 
   createPaymentSchedule(data: Partial<PaymentSchedule>): Observable<PaymentSchedule> {

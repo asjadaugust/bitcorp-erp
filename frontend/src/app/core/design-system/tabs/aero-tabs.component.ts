@@ -63,7 +63,7 @@ export interface Tab {
           color: var(--primary-500);
         }
 
-        &--active {
+        &.aero-tab--active {
           color: var(--primary-500);
           border-bottom-color: var(--primary-500);
         }

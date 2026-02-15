@@ -4,168 +4,180 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } fr
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ProjectService } from '../../../../core/services/project.service';
 import { OperatorService } from '../../../../core/services/operator.service';
-// Assuming TimesheetService exists, if not I'll use any for now
 import { TimesheetService } from '../../../../core/services/timesheet.service';
+import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
 
 @Component({
   selector: 'app-timesheet-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FormContainerComponent,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
-    <div class="form-container">
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <div class="icon-wrapper">
-            <i class="fa-solid" [class.fa-plus]="!isEditMode" [class.fa-pen]="isEditMode"></i>
-          </div>
-          <div class="title-group">
-            <h1>{{ isEditMode ? 'Editar Parte de Horas' : 'Nuevo Parte de Horas' }}</h1>
-            <p class="subtitle">
-              {{
-                isEditMode
-                  ? 'Actualizar información del parte de horas'
-                  : 'Registrar un nuevo parte de horas semanal'
-              }}
-            </p>
+    <app-form-container
+      [title]="isEditMode ? 'Editar Parte de Horas' : 'Nuevo Parte de Horas'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información del parte de horas'
+          : 'Registrar un nuevo parte de horas semanal'
+      "
+      [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
+      [loading]="loading"
+      [disableSubmit]="form.invalid || loading"
+      [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Parte'"
+      (onSubmit)="onSubmit()"
+      (onCancel)="onCancel()"
+    >
+      <!-- Validation Errors and Alerts -->
+      <app-validation-errors
+        *ngIf="validationErrors.length > 0"
+        [errors]="validationErrors"
+        [fieldLabels]="fieldLabels"
+      >
+      </app-validation-errors>
+
+      <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" [dismissible]="true">
+      </app-alert>
+
+      <app-alert
+        *ngIf="successMessage"
+        type="success"
+        [message]="successMessage"
+        [dismissible]="true"
+        [autoDismiss]="true"
+        [autoDismissDelay]="1500"
+      >
+      </app-alert>
+
+      <form [formGroup]="form" class="form-grid">
+        <!-- Section 1: General Info -->
+        <div class="form-section full-width">
+          <h3>Información General</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="project">Proyecto *</label>
+              <select id="project" formControlName="proyecto_id" class="form-select">
+                <option [ngValue]="null">Seleccionar Proyecto</option>
+                <option *ngFor="let project of projects" [value]="project.id">
+                  {{ project.nombre }}
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('proyecto_id')">Proyecto es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="operator">Operador *</label>
+              <select id="operator" formControlName="trabajador_id" class="form-select">
+                <option [ngValue]="null">Seleccionar Operador</option>
+                <option *ngFor="let op of operators" [value]="op.id">
+                  {{ op.nombres }} {{ op.apellidos }}
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('trabajador_id')">Operador es requerido</div>
+            </div>
+
+            <div class="form-group">
+              <label for="weekStart">Inicio de Semana *</label>
+              <input id="weekStart" type="date" formControlName="week_start" class="form-control" />
+              <div class="error-msg" *ngIf="hasError('week_start')">Fecha inicio es requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="status">Estado *</label>
+              <select id="status" formControlName="status" class="form-select">
+                <option value="draft">Borrador</option>
+                <option value="submitted">Enviado</option>
+                <option value="approved">Aprobado</option>
+                <option value="rejected">Rechazado</option>
+              </select>
+              <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
+            </div>
           </div>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
-          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
-            <i class="fa-solid fa-save"></i> {{ isEditMode ? 'Guardar Cambios' : 'Crear Parte' }}
-          </button>
+
+        <!-- Section 2: Daily Entries -->
+        <div class="form-section full-width">
+          <h3>Registro Diario</h3>
+          <div class="entries-container" formArrayName="entries">
+            <div
+              *ngFor="let entry of entries.controls; let i = index"
+              [formGroupName]="i"
+              class="entry-row"
+            >
+              <div class="entry-header">
+                <span class="day-label">Día {{ i + 1 }}</span>
+              </div>
+              <div class="entry-fields">
+                <div class="form-group">
+                  <label>Fecha</label>
+                  <input type="date" formControlName="date" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>Horas Regulares</label>
+                  <input
+                    type="number"
+                    formControlName="regular_hours"
+                    class="form-control"
+                    min="0"
+                    step="0.5"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Horas Extra</label>
+                  <input
+                    type="number"
+                    formControlName="overtime_hours"
+                    class="form-control"
+                    min="0"
+                    step="0.5"
+                  />
+                </div>
+                <div class="form-group full-width-mobile">
+                  <label>Descripción</label>
+                  <input
+                    type="text"
+                    formControlName="description"
+                    class="form-control"
+                    placeholder="Actividad..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="total-summary">
+            <strong>Total Horas: {{ calculateTotalHours() }}</strong>
+          </div>
         </div>
-      </div>
 
-      <!-- Form -->
-      <div class="card form-card">
-        <form [formGroup]="form" class="form-grid">
-          <!-- Section 1: General Info -->
-          <div class="form-section full-width">
-            <h3>Información General</h3>
-            <div class="section-grid">
-              <div class="form-group">
-                <label for="project">Proyecto *</label>
-                <select id="project" formControlName="proyecto_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Proyecto</option>
-                  <option *ngFor="let project of projects" [value]="project.id">
-                    {{ project.name }}
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('proyecto_id')">Proyecto es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="operator">Operador *</label>
-                <select id="operator" formControlName="trabajador_id" class="form-select">
-                  <option [ngValue]="null">Seleccionar Operador</option>
-                  <option *ngFor="let op of operators" [value]="op.id">
-                    {{ op.first_name }} {{ op.last_name }}
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('trabajador_id')">Operador es requerido</div>
-              </div>
-
-              <div class="form-group">
-                <label for="weekStart">Inicio de Semana *</label>
-                <input
-                  id="weekStart"
-                  type="date"
-                  formControlName="week_start"
-                  class="form-control"
-                />
-                <div class="error-msg" *ngIf="hasError('week_start')">
-                  Fecha inicio es requerida
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="status">Estado *</label>
-                <select id="status" formControlName="status" class="form-select">
-                  <option value="draft">Borrador</option>
-                  <option value="submitted">Enviado</option>
-                  <option value="approved">Aprobado</option>
-                  <option value="rejected">Rechazado</option>
-                </select>
-                <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
-              </div>
+        <!-- Section 3: Notes -->
+        <div class="form-section full-width">
+          <h3>Observaciones</h3>
+          <div class="section-grid">
+            <div class="form-group full-width">
+              <label for="notes">Notas Adicionales</label>
+              <textarea
+                id="notes"
+                formControlName="notes"
+                class="form-control"
+                rows="3"
+                placeholder="Comentarios adicionales..."
+              ></textarea>
             </div>
           </div>
-
-          <!-- Section 2: Daily Entries -->
-          <div class="form-section full-width">
-            <h3>Registro Diario</h3>
-            <div class="entries-container" formArrayName="entries">
-              <div
-                *ngFor="let entry of entries.controls; let i = index"
-                [formGroupName]="i"
-                class="entry-row"
-              >
-                <div class="entry-header">
-                  <span class="day-label">Día {{ i + 1 }}</span>
-                </div>
-                <div class="entry-fields">
-                  <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" formControlName="date" class="form-control" />
-                  </div>
-                  <div class="form-group">
-                    <label>Horas Regulares</label>
-                    <input
-                      type="number"
-                      formControlName="regular_hours"
-                      class="form-control"
-                      min="0"
-                      step="0.5"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>Horas Extra</label>
-                    <input
-                      type="number"
-                      formControlName="overtime_hours"
-                      class="form-control"
-                      min="0"
-                      step="0.5"
-                    />
-                  </div>
-                  <div class="form-group full-width-mobile">
-                    <label>Descripción</label>
-                    <input
-                      type="text"
-                      formControlName="description"
-                      class="form-control"
-                      placeholder="Actividad..."
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="total-summary">
-              <strong>Total Horas: {{ calculateTotalHours() }}</strong>
-            </div>
-          </div>
-
-          <!-- Section 3: Notes -->
-          <div class="form-section full-width">
-            <h3>Observaciones</h3>
-            <div class="section-grid">
-              <div class="form-group full-width">
-                <label for="notes">Notas Adicionales</label>
-                <textarea
-                  id="notes"
-                  formControlName="notes"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Comentarios adicionales..."
-                ></textarea>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
@@ -371,6 +383,7 @@ export class TimesheetFormComponent implements OnInit {
   private projectService = inject(ProjectService);
   private operatorService = inject(OperatorService);
   private timesheetService = inject(TimesheetService);
+  private errorHandler = inject(FormErrorHandlerService);
 
   form!: FormGroup;
   loading = false;
@@ -378,6 +391,18 @@ export class TimesheetFormComponent implements OnInit {
   timesheetId?: string;
   projects: any[] = [];
   operators: any[] = [];
+  validationErrors: ValidationError[] = [];
+  errorMessage = '';
+  successMessage = '';
+
+  fieldLabels: Record<string, string> = {
+    proyecto_id: 'Proyecto',
+    trabajador_id: 'Operador',
+    week_start: 'Inicio de Semana',
+    status: 'Estado',
+    notes: 'Notas',
+    entries: 'Registros Diarios',
+  };
 
   ngOnInit() {
     this.timesheetId = this.route.snapshot.params['id'];
@@ -397,7 +422,6 @@ export class TimesheetFormComponent implements OnInit {
       entries: this.fb.array([]),
     });
 
-    // Initialize 7 days
     this.initDays();
   }
 
@@ -422,22 +446,22 @@ export class TimesheetFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.projectService.getAll().subscribe((res: any) => (this.projects = res));
-    this.operatorService.getAll().subscribe((res: any) => (this.operators = res));
+    this.projectService.getAll().subscribe((res: any) => (this.projects = res.data || res));
+    this.operatorService.getAll().subscribe((res: any) => (this.operators = res.data || res));
   }
 
   loadTimesheet() {
     if (!this.timesheetId) return;
     this.loading = true;
     this.timesheetService.getById(this.timesheetId).subscribe({
-      next: (timesheet: any) => {
-        this.form.patchValue(timesheet);
-        // Handle entries population logic here if needed
+      next: (res: any) => {
+        const data = res.data || res;
+        this.form.patchValue(data);
         this.loading = false;
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
-        console.error('Error loading timesheet');
+        this.errorMessage = 'No se pudo cargar el parte de horas';
       },
     });
   }
@@ -457,7 +481,12 @@ export class TimesheetFormComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
+
     this.loading = true;
+    this.validationErrors = [];
+    this.errorMessage = '';
+    this.successMessage = '';
+
     const req =
       this.isEditMode && this.timesheetId
         ? this.timesheetService.update(this.timesheetId, this.form.value)
@@ -465,11 +494,18 @@ export class TimesheetFormComponent implements OnInit {
 
     req.subscribe({
       next: () => {
-        this.router.navigate(['/operaciones/timesheets']);
-      },
-      error: () => {
         this.loading = false;
-        console.error('Error saving timesheet');
+        this.successMessage = this.isEditMode
+          ? 'Parte de horas actualizado exitosamente'
+          : 'Parte de horas creado exitosamente';
+        setTimeout(() => {
+          this.router.navigate(['/operaciones/timesheets']);
+        }, 1500);
+      },
+      error: (err: any) => {
+        this.loading = false;
+        this.validationErrors = this.errorHandler.extractValidationErrors(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err);
       },
     });
   }

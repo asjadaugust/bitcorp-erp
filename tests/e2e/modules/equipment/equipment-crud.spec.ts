@@ -27,19 +27,16 @@ test.describe('Equipment Module', () => {
 
     // Fill form
     const randomCode = `EQ-${Math.floor(Math.random() * 10000)}`;
-    await page.fill('input[formControlName="code"]', randomCode);
-    await page.fill('input[formControlName="name"]', 'Test Equipment Description');
-    await page.fill('input[formControlName="brand"]', 'Caterpillar');
-    await page.fill('input[formControlName="model"]', '320D');
-    await page.selectOption('select[formControlName="status"]', 'available');
-    await page.selectOption('select[formControlName="categoria_equipo"]', 'Excavadora');
+    await page.fill('input[formControlName="codigo_equipo"]', randomCode);
+    await page.fill('input[formControlName="marca"]', 'Caterpillar');
+    await page.fill('input[formControlName="modelo"]', '320D');
+    await page.selectOption('select[formControlName="estado"]', 'DISPONIBLE');
+    await page.selectOption('select[formControlName="categoria"]', 'Excavadora');
 
     // Optional fields
-    await page.fill('input[formControlName="año_fabricacion"]', '2023');
+    await page.fill('input[formControlName="anio_fabricacion"]', '2023');
     await page.fill('input[formControlName="placa"]', 'ABC-123');
-    await page.fill('input[formControlName="location"]', 'Site A');
-    await page.fill('input[formControlName="hourmeter_reading"]', '1500');
-    await page.selectOption('select[formControlName="tipo_combustible"]', 'diesel');
+    await page.selectOption('select[formControlName="medidor_uso"]', 'HOROMETRO');
 
     // Submit form
     const submitBtn = page.locator('button:has-text("Crear Equipo")');

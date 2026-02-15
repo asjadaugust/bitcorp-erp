@@ -1,5 +1,6 @@
 import { AppDataSource } from '../config/database.config';
 import { Provider, TipoProveedor } from '../models/provider.model';
+import { ProviderAuditLog } from '../models/provider-audit-log.model';
 import { Repository } from 'typeorm';
 import {
   toProviderDto,
@@ -40,6 +41,13 @@ export class ProviderService {
       throw new DatabaseError('Database connection not established');
     }
     return AppDataSource.getRepository(Provider);
+  }
+  
+  private get auditLogRepository(): Repository<ProviderAuditLog> {
+    if (!AppDataSource.isInitialized) {
+      throw new DatabaseError('Database connection not established');
+    }
+    return AppDataSource.getRepository(ProviderAuditLog);
   }
 
   /**
@@ -88,17 +96,17 @@ export class ProviderService {
         isActive: filters?.is_active ?? true,
       });
 
-      // Apply tipo_proveedor filter
+      // Apply tipo_proveedor filter (model now stores Spanish uppercase values directly)
       if (filters?.tipo_proveedor) {
         queryBuilder.andWhere('provider.tipoProveedor = :tipoProveedor', {
-          tipoProveedor: filters?.tipo_proveedor,
+          tipoProveedor: filters.tipo_proveedor,
         });
       }
 
       // Apply search filter
       if (filters?.search) {
         queryBuilder.andWhere(
-          '(provider.razon_social ILIKE :search OR provider.ruc ILIKE :search OR provider.email ILIKE :search OR provider.nombre_comercial ILIKE :search)',
+          '(provider.razonSocial ILIKE :search OR provider.ruc ILIKE :search OR provider.email ILIKE :search OR provider.nombreComercial ILIKE :search)',
           { search: `%${filters.search}%` }
         );
       }
@@ -119,7 +127,7 @@ export class ProviderService {
         updated_at: 'provider.updatedAt',
       };
 
-      const sortField = validSortFields[sortBy] || 'provider.razon_social';
+      const sortField = validSortFields[sortBy] || 'provider.razonSocial';
       queryBuilder.orderBy(sortField, sortOrder);
 
       // Apply pagination
@@ -347,6 +355,18 @@ export class ProviderService {
         context: 'ProviderService.create',
       });
 
+      // Record audit log
+      try {
+        await this.auditLogRepository.save({
+          providerId: dto.id,
+          action: 'CREATE',
+          observations: `Proveedor ${dto.razon_social} creado`,
+          // userId: userId // TODO: Get from context in Phase 2
+        });
+      } catch (logError) {
+        Logger.error('Failed to save provider audit log (CREATE)', { error: String(logError) });
+      }
+
       return dto;
     } catch (error) {
       if (error instanceof ValidationError || error instanceof ConflictError) {
@@ -443,6 +463,36 @@ export class ProviderService {
         context: 'ProviderService.update',
       });
 
+      // Record audit log for each changed field
+      try {
+        const auditLogs: Partial<ProviderAuditLog>[] = [];
+        for (const [field, newValue] of Object.entries(updateData)) {
+          // Simplified audit log for now: one entry for the update
+          if (field === 'is_active') {
+             auditLogs.push({
+               providerId: id,
+               action: newValue ? 'ACTIVATE' : 'DEACTIVATE',
+               field: 'is_active',
+               oldValue: (!newValue).toString(),
+               newValue: newValue.toString(),
+               observations: `Estado cambiado a ${newValue ? 'Activo' : 'Inactivo'}`
+             });
+          }
+        }
+        
+        if (auditLogs.length === 0) {
+          auditLogs.push({
+            providerId: id,
+            action: 'UPDATE',
+            observations: `Datos del proveedor actualizados: ${Object.keys(updateData).join(', ')}`
+          });
+        }
+        
+        await this.auditLogRepository.save(auditLogs);
+      } catch (logError) {
+        Logger.error('Failed to save provider audit log (UPDATE)', { error: String(logError) });
+      }
+
       return dto;
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ConflictError) {
@@ -523,6 +573,20 @@ export class ProviderService {
         razon_social: provider.razonSocial,
         context: 'ProviderService.delete',
       });
+
+      // Record audit log
+      try {
+        await this.auditLogRepository.save({
+          providerId: id,
+          action: 'DEACTIVATE',
+          field: 'is_active',
+          oldValue: 'true',
+          newValue: 'false',
+          observations: 'Proveedor desactivado (soft delete)'
+        });
+      } catch (logError) {
+        Logger.error('Failed to save provider audit log (DELETE)', { error: String(logError) });
+      }
 
       return true;
     } catch (error) {
@@ -638,6 +702,26 @@ export class ProviderService {
         context: 'ProviderService.getActiveCount',
       });
       throw new DatabaseError('Failed to count active providers');
+    }
+  }
+
+  /**
+   * Get audit logs for a provider
+   */
+  async getLogs(providerId: number): Promise<ProviderAuditLog[]> {
+    try {
+      return await this.auditLogRepository.find({
+        where: { providerId },
+        order: { createdAt: 'DESC' },
+        relations: ['user'],
+      });
+    } catch (error) {
+      Logger.error('Error fetching provider logs', {
+        providerId,
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ProviderService.getLogs',
+      });
+      throw new DatabaseError('Failed to fetch provider logs');
     }
   }
 }

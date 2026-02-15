@@ -66,7 +66,7 @@ import { ScheduledTask } from '../../../core/models/scheduled-task.model';
               (click)="editTask(task.id, $event)"
               [title]="task.description"
             >
-              {{ task.equipment?.code }} - {{ task.task_type }}
+              {{ task.equipment?.codigo }} - {{ task.taskType }}
             </div>
           </div>
         </div>
@@ -344,7 +344,7 @@ export class ScheduledTaskCalendarComponent implements OnInit {
     }
     const dateStr = date.toISOString().split('T')[0];
     return this.tasks.filter((t) => {
-      const taskDate = t.start_date || t.scheduled_date;
+      const taskDate = t.startDate;
       return taskDate && taskDate.startsWith(dateStr);
     });
   }

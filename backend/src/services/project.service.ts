@@ -859,7 +859,7 @@ export class ProjectService {
   async create(data: CreateProjectDto): Promise<ProjectDto> {
     try {
       // Map frontend camelCase fields to database snake_case Spanish columns
-      // Support both English camelCase and Spanish snake_case input
+      // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
       const projectData: Partial<ProjectDto> = {
         codigo: (data as any).codigo || data.code,
         nombre: (data as any).nombre || data.name,
@@ -1033,7 +1033,7 @@ export class ProjectService {
       }
 
       // Map frontend camelCase and snake_case DTO fields to Spanish column names
-      // Support both English camelCase and Spanish snake_case input
+      // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
       const updateData: Partial<ProjectDto> = {};
 
       if (data.code !== undefined || (data as any).codigo !== undefined)

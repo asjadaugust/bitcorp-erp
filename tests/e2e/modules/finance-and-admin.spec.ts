@@ -32,11 +32,9 @@ test.describe('Finance & Admin Modules', () => {
       await expect(page).toHaveURL('/providers/new');
 
       const ruc = `20${Date.now()}`;
-      await page.fill('input#code', `PROV-${Date.now()}`);
-      await page.fill('input#business_name', 'Test Provider E2E');
-      await page.fill('input#tax_id', ruc);
-      await page.selectOption('select#provider_type', 'rental');
-      await page.selectOption('select#status', 'active');
+      await page.fill('input#ruc', ruc);
+      await page.fill('input#razon_social', 'Test Provider E2E');
+      await page.selectOption('select#tipo_proveedor', 'EQUIPOS');
 
       await page.click('button:has-text("Crear Proveedor")');
 
@@ -66,15 +64,15 @@ test.describe('Finance & Admin Modules', () => {
       await page.fill('input#fecha_contrato', '2025-01-01');
 
       // Select first available equipment and provider
-      await page.locator('select#equipment_id').selectOption({ index: 1 });
-      await page.locator('select#provider_id').selectOption({ index: 1 });
+      await page.locator('select#equipo_id').selectOption({ index: 1 });
+      await page.locator('select#proveedor_id').selectOption({ index: 1 });
 
       await page.fill('input#fecha_inicio', '2025-01-01');
       await page.fill('input#fecha_fin', '2025-12-31');
       await page.selectOption('select#moneda', 'PEN');
-      await page.selectOption('select#tipo_tarifa', 'hourly');
+      await page.selectOption('select#tipo_tarifa', 'POR_HORA');
       await page.fill('input#tarifa', '150');
-      await page.selectOption('select#estado', 'active');
+      await page.selectOption('select#estado', 'ACTIVO');
 
       await page.click('button:has-text("Crear Contrato")');
 

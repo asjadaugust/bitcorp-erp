@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { ProviderService } from '../../services/provider.service';
 import { TipoProveedor } from '../../models/provider.model';
 import Logger from '../../utils/logger';
+import { RucFetcherService } from '../../services/ruc-fetcher.service';
 import {
   sendSuccess,
   sendPaginatedSuccess,
@@ -11,6 +12,7 @@ import {
 } from '../../utils/api-response';
 
 const providerService = new ProviderService();
+const rucFetcherService = new RucFetcherService();
 
 export class ProviderController {
   /**
@@ -247,6 +249,58 @@ export class ProviderController {
         context: 'ProviderController.getActiveCount',
       });
       sendError(res, 500, 'PROVIDER_COUNT_FAILED', 'Failed to count providers', error.message);
+    }
+  }
+
+  /**
+   * GET /api/providers/:id/logs
+   * Get provider audit logs
+   */
+  static async getLogs(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid provider ID');
+        return;
+      }
+
+      const logs = await providerService.getLogs(id);
+
+      sendSuccess(res, logs);
+    } catch (error: any) {
+      Logger.error('Error in getLogs provider', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        providerId: req.params.id,
+        context: 'ProviderController.getLogs',
+      });
+      sendError(res, 500, 'PROVIDER_LOGS_FAILED', 'Failed to fetch provider logs', error.message);
+    }
+  }
+
+  /**
+   * GET /api/providers/ruc/:ruc/lookup
+   * Lookup RUC data from external API
+   */
+  static async lookupRuc(req: Request, res: Response): Promise<void> {
+    try {
+      const { ruc } = req.params;
+      if (!ruc || ruc.length !== 11) {
+        sendError(res, 400, 'INVALID_RUC', 'RUC debe tener 11 dígitos');
+        return;
+      }
+
+      const data = await rucFetcherService.fetchRuc(ruc);
+      sendSuccess(res, data);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'RUC_LOOKUP_FAILED',
+        'Error al buscar los datos del RUC',
+        error.message
+      );
     }
   }
 }
