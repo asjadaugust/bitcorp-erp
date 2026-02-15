@@ -14,7 +14,7 @@ services:
     networks:
       - bitcorp-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bitcorp -d bitcorp_dev"]
+      test: [ "CMD-SHELL", "pg_isready -U bitcorp -d bitcorp_dev" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,7 +30,7 @@ services:
       - bitcorp-network
     command: redis-server --appendonly yes
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: [ 'CMD', 'redis-cli', 'ping' ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -59,6 +59,7 @@ services:
         condition: service_healthy
     networks:
       - bitcorp-network
+    tty: true
     command: npm run dev
 
   frontend:
@@ -79,7 +80,8 @@ services:
       - /app/node_modules
     networks:
       - bitcorp-network
-    command: ['sh', '-c', 'npm install && npm start']
+    tty: true
+    command: [ 'sh', '-c', 'npm install && npm start' ]
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -124,7 +126,7 @@ volumes:
   frontend_node_modules:
   frontend_angular_cache:
 
+
 networks:
   bitcorp-network:
     driver: bridge
-

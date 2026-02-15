@@ -8,7 +8,7 @@ export class NotificationController {
 
   getUserNotifications = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user.id;
+      const userId = (req as any).user.id_usuario;
       const notifications = await this.notificationService.getUserNotifications(userId);
       const unreadCount = await this.notificationService.getUnreadCount(userId);
 
@@ -29,7 +29,7 @@ export class NotificationController {
 
   markAsRead = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user.id;
+      const userId = (req as any).user.id_usuario;
       const { id } = req.params;
 
       // Validate ID
@@ -55,7 +55,7 @@ export class NotificationController {
 
   markAllAsRead = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user.id;
+      const userId = (req as any).user.id_usuario;
 
       await this.notificationService.markAllAsRead(userId);
 
@@ -73,7 +73,7 @@ export class NotificationController {
 
   deleteNotification = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = (req as any).user.id;
+      const userId = (req as any).user.id_usuario;
       const { id } = req.params;
 
       // Validate ID
