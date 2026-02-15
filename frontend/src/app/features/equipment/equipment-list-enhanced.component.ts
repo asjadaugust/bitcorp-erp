@@ -19,6 +19,11 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-equipment-list-enhanced',
@@ -31,6 +36,8 @@ import {
     AeroTableComponent,
     ExportDropdownComponent,
     StatsGridComponent,
+    DropdownComponent,
+    ButtonComponent,
   ],
   template: `
     <app-main-nav></app-main-nav>
@@ -74,38 +81,35 @@ import {
 
       <!-- Filter Panel -->
       <div class="filter-panel" *ngIf="showFilters">
-        <div class="filter-grid">
+        <div class="filters-grid">
           <div class="filter-group">
-            <label>Quick Search</label>
+            <label>Búsqueda Rápida</label>
             <input
               type="text"
               [(ngModel)]="filters.search"
               (input)="applyFilters()"
-              placeholder="Search by code, name, plate, brand..."
+              placeholder="Código, nombre, placa, marca..."
+              class="form-control"
             />
           </div>
           <div class="filter-group">
-            <label>Status</label>
-            <select [(ngModel)]="filters.status" (change)="applyFilters()">
-              <option value="">All Status</option>
-              <option value="available">Available</option>
-              <option value="in_use">In Use</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="retired">Retired</option>
-            </select>
+            <label>Estado</label>
+            <app-dropdown
+              [(ngModel)]="filters.status"
+              [options]="statusOptions"
+              (ngModelChange)="applyFilters()"
+            ></app-dropdown>
           </div>
           <div class="filter-group">
-            <label>Category</label>
-            <select [(ngModel)]="filters.category" (change)="applyFilters()">
-              <option value="">All Categories</option>
-              <option value="Excavadora">Excavadora</option>
-              <option value="Tractor de Oruga">Tractor de Oruga</option>
-              <option value="Cargador Frontal">Cargador Frontal</option>
-              <option value="Camión Volquete">Camión Volquete</option>
-            </select>
+            <label>Categoría</label>
+            <app-dropdown
+              [(ngModel)]="filters.category"
+              [options]="categoryOptions"
+              (ngModelChange)="applyFilters()"
+            ></app-dropdown>
           </div>
           <div class="filter-group">
-            <label>Expiration Alert</label>
+            <label>Alertas</label>
             <div class="checkbox-wrapper">
               <input
                 type="checkbox"
@@ -113,11 +117,17 @@ import {
                 [(ngModel)]="filters.expiringOnly"
                 (change)="applyFilters()"
               />
-              <label for="expiringOnly">Show only expiring equipment</label>
+              <label for="expiringOnly">Solo por vencer</label>
             </div>
           </div>
-          <div class="filter-group">
-            <button class="btn btn-text" (click)="clearFilters()">Clear Filters</button>
+          <div class="filter-actions">
+            <app-button
+              variant="ghost"
+              size="sm"
+              label="Limpiar Filtros"
+              icon="fa-times"
+              (onClick)="clearFilters()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -141,7 +151,7 @@ import {
           [templates]="{
             select: selectTemplate,
             codigo_equipo: codeTemplate,
-            estado: statusTemplate,
+
             provider: providerTemplate,
             meter_type: readingTemplate,
           }"
@@ -161,12 +171,6 @@ import {
 
         <ng-template #codeTemplate let-row>
           <strong class="equipment-code">{{ row.codigo_equipo }}</strong>
-        </ng-template>
-
-        <ng-template #statusTemplate let-row>
-          <span [class]="'badge badge-status-' + row.estado">
-            {{ row.estado }}
-          </span>
         </ng-template>
 
         <ng-template #providerTemplate let-row>
@@ -319,26 +323,6 @@ import {
         background: white;
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-      .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-      }
-      .filter-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-size: 13px;
-        font-weight: 500;
-        color: #374151;
-      }
-      .filter-group input[type='text'],
-      .filter-group select {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        font-size: 14px;
       }
       .checkbox-wrapper {
         display: flex;
@@ -584,6 +568,22 @@ export class EquipmentListEnhancedComponent implements OnInit {
     expiringOnly: false,
   };
 
+  statusOptions: DropdownOption[] = [
+    { label: 'All Status', value: '' },
+    { label: 'Available', value: 'available' },
+    { label: 'In Use', value: 'in_use' },
+    { label: 'Maintenance', value: 'maintenance' },
+    { label: 'Retired', value: 'retired' },
+  ];
+
+  categoryOptions: DropdownOption[] = [
+    { label: 'All Categories', value: '' },
+    { label: 'Excavadora', value: 'Excavadora' },
+    { label: 'Tractor de Oruga', value: 'Tractor de Oruga' },
+    { label: 'Cargador Frontal', value: 'Cargador Frontal' },
+    { label: 'Camión Volquete', value: 'Camión Volquete' },
+  ];
+
   stats = {
     total: 0,
     available: 0,
@@ -601,7 +601,25 @@ export class EquipmentListEnhancedComponent implements OnInit {
     { key: 'brand', label: 'Marca', type: 'text' },
     { key: 'model', label: 'Modelo', type: 'text' },
     { key: 'category', label: 'Categoría', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'template' },
+    {
+      key: 'status',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        available: {
+          label: 'Disponible',
+          class: 'status-badge status-available',
+          icon: 'fa-check-circle',
+        },
+        in_use: { label: 'En Uso', class: 'status-badge status-in_use', icon: 'fa-person-digging' },
+        maintenance: {
+          label: 'Mantenimiento',
+          class: 'status-badge status-maintenance',
+          icon: 'fa-wrench',
+        },
+        retired: { label: 'Retirado', class: 'status-badge status-retired', icon: 'fa-ban' },
+      },
+    },
     { key: 'provider_name', label: 'Proveedor', type: 'text' },
     { key: 'plate_number', label: 'Placa', type: 'text' },
     { key: 'manufacture_year', label: 'Año', type: 'text', align: 'center' },

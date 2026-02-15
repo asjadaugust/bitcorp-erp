@@ -9,13 +9,13 @@ export type EstadoTarea =
 
 export interface ScheduledTask {
   id: number;
-  programaId?: number;
-  programa?: any;
+  scheduleId?: number;
+  schedule?: any;
   equipoId: number;
   equipo?: any;
   operadorId?: number;
   operador?: any;
-  tipoTarea: string; // 'mantenimiento' | 'asignacion' | 'inspeccion'
+  tipoTarea: string; // 'mantenimiento' | 'inspeccion' | 'reparacion'
   titulo?: string;
   descripcion?: string;
   fechaInicio: string;
@@ -25,15 +25,15 @@ export interface ScheduledTask {
   todoDia?: boolean;
   recurrencia?: string;
   duracionMinutos?: number;
-  prioridad: PrioridadTarea;
-  estado: EstadoTarea;
+  prioridad: string;
+  estado: string;
   fechaCompletado?: string;
   notasCompletado?: string;
   registroMantenimientoId?: number;
   creadoPor?: number;
   asignadoPor?: number;
-  proyectoId?: number;
-  proyecto?: any;
+  projectId?: number;
+  project?: any;
   createdAt?: string;
   updatedAt?: string;
 }

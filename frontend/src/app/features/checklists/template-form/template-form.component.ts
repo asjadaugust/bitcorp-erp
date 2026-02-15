@@ -10,11 +10,21 @@ import {
   TipoVerificacion,
 } from '../../../core/models/checklist.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-template-form',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, PageLayoutComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    PageLayoutComponent,
+    DropdownComponent,
+  ],
   template: `
     <app-page-layout
       [title]="isEditMode ? 'Editar Plantilla' : 'Nueva Plantilla'"
@@ -76,27 +86,20 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
 
             <div class="form-group">
               <label for="tipoEquipo">Tipo de Equipo</label>
-              <select id="tipoEquipo" formControlName="tipoEquipo" class="form-control">
-                <option value="">Seleccione...</option>
-                <option value="EXCAVADORA">Excavadora</option>
-                <option value="CARGADOR_FRONTAL">Cargador Frontal</option>
-                <option value="VOLQUETE">Volquete</option>
-                <option value="RETROEXCAVADORA">Retroexcavadora</option>
-                <option value="MOTONIVELADORA">Motoniveladora</option>
-                <option value="RODILLO">Rodillo</option>
-                <option value="CISTERNA">Cisterna</option>
-              </select>
+              <app-dropdown
+                formControlName="tipoEquipo"
+                [options]="equipmentTypeOptions"
+                [placeholder]="'Seleccione...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
               <label for="frecuencia">Frecuencia</label>
-              <select id="frecuencia" formControlName="frecuencia" class="form-control">
-                <option value="">Seleccione...</option>
-                <option value="DIARIO">Diario</option>
-                <option value="SEMANAL">Semanal</option>
-                <option value="MENSUAL">Mensual</option>
-                <option value="ANTES_USO">Antes de Uso</option>
-              </select>
+              <app-dropdown
+                formControlName="frecuencia"
+                [options]="frequencyOptions"
+                [placeholder]="'Seleccione...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group full-width">
@@ -177,13 +180,11 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
 
                 <div class="form-group">
                   <label>Tipo de Verificación *</label>
-                  <select formControlName="tipoVerificacion" class="form-control">
-                    <option value="">Seleccione...</option>
-                    <option value="VISUAL">Visual</option>
-                    <option value="MEDICION">Medición</option>
-                    <option value="FUNCIONAL">Funcional</option>
-                    <option value="AUDITIVO">Auditivo</option>
-                  </select>
+                  <app-dropdown
+                    formControlName="tipoVerificacion"
+                    [options]="verificationTypeOptions"
+                    [placeholder]="'Seleccione...'"
+                  ></app-dropdown>
                 </div>
 
                 <div class="form-group span-2">
@@ -492,6 +493,30 @@ export class TemplateFormComponent implements OnInit {
   saving = false;
   isEditMode = false;
   templateId?: number;
+
+  equipmentTypeOptions: DropdownOption[] = [
+    { label: 'Excavadora', value: 'EXCAVADORA' },
+    { label: 'Cargador Frontal', value: 'CARGADOR_FRONTAL' },
+    { label: 'Volquete', value: 'VOLQUETE' },
+    { label: 'Retroexcavadora', value: 'RETROEXCAVADORA' },
+    { label: 'Motoniveladora', value: 'MOTONIVELADORA' },
+    { label: 'Rodillo', value: 'RODILLO' },
+    { label: 'Cisterna', value: 'CISTERNA' },
+  ];
+
+  frequencyOptions: DropdownOption[] = [
+    { label: 'Diario', value: 'DIARIO' },
+    { label: 'Semanal', value: 'SEMANAL' },
+    { label: 'Mensual', value: 'MENSUAL' },
+    { label: 'Antes de Uso', value: 'ANTES_USO' },
+  ];
+
+  verificationTypeOptions: DropdownOption[] = [
+    { label: 'Visual', value: 'VISUAL' },
+    { label: 'Medición', value: 'MEDICION' },
+    { label: 'Funcional', value: 'FUNCIONAL' },
+    { label: 'Auditivo', value: 'AUDITIVO' },
+  ];
 
   breadcrumbs = [
     { label: 'Inicio', url: '/app' },

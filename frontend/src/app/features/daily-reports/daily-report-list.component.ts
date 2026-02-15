@@ -11,6 +11,10 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import {
+  AeroCardComponent,
+  CardInfoItem,
+} from '../../shared/components/aero-card/aero-card.component';
+import {
   PageLayoutComponent,
   TabItem,
 } from '../../shared/components/page-layout/page-layout.component';
@@ -31,6 +35,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    AeroCardComponent,
   ],
   template: `
     <app-page-layout
@@ -64,39 +69,21 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       ></app-filter-bar>
 
       <div *ngIf="!loading && reports.length > 0" class="reports-grid" data-testid="reports-grid">
-        <div
+        <app-aero-card
           *ngFor="let report of reports"
-          class="report-card"
-          (click)="viewReport(report)"
+          [title]="report.equipo_nombre || report.codigo_equipo || 'Sin Equipo'"
+          [statusLabel]="getStatusLabel(report.estado)"
+          [statusClass]="report.estado"
+          [statusIcon]="getStatusIcon(report.estado)"
+          [date]="report.fecha_parte"
+          [timestamp]="report.created_at"
+          [infoItems]="getReportInfoItems(report)"
+          [observations]="report.observaciones ? (report.observaciones | slice: 0 : 100) : ''"
+          (cardClick)="viewReport(report)"
           [attr.data-testid]="'report-card-' + report.id"
         >
-          <!-- Card Header -->
-          <div class="report-card__header">
-            <div class="report-card__status-row">
-              <span [class]="'report-card__status report-card__status--' + report.estado">
-                <i [class]="getStatusIcon(report.estado)"></i>
-                {{ getStatusLabel(report.estado) }}
-              </span>
-              <span class="report-card__date">
-                <i class="fa-regular fa-calendar"></i>
-                {{ report.fecha_parte | date: 'dd/MM/yyyy' }}
-              </span>
-            </div>
-            <h3 class="report-card__title">
-              {{ report.equipo_nombre || report.codigo_equipo || 'Sin Equipo' }}
-            </h3>
-          </div>
-
-          <!-- Card Body -->
-          <div class="report-card__body">
+          <div body-extra class="report-card__extra-info">
             <div class="report-card__info-grid">
-              <div class="report-card__info-item">
-                <i class="fa-solid fa-hard-hat"></i>
-                <span class="report-card__info-label">Operador</span>
-                <span class="report-card__info-value">{{
-                  report.trabajador_nombre || 'Sin asignar'
-                }}</span>
-              </div>
               <div class="report-card__info-item">
                 <i class="fa-solid fa-clock"></i>
                 <span class="report-card__info-label">Horario</span>
@@ -105,75 +92,54 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
                 >
               </div>
               <div class="report-card__info-item">
-                <i class="fa-solid fa-gauge-high"></i>
-                <span class="report-card__info-label">Horas</span>
-                <span class="report-card__info-value report-card__info-value--highlight"
-                  >{{ report.horas_trabajadas || report.horometro_diferencia || 0 }}h</span
-                >
-              </div>
-              <div class="report-card__info-item">
                 <i class="fa-solid fa-gas-pump"></i>
                 <span class="report-card__info-label">Combustible</span>
                 <span class="report-card__info-value">{{ report.diesel_gln || 0 }} gal</span>
               </div>
             </div>
-
-            <div *ngIf="report.observaciones" class="report-card__observations">
-              <p>
-                {{ report.observaciones | slice: 0 : 100
-                }}{{ report.observaciones.length > 100 ? '...' : '' }}
-              </p>
-            </div>
           </div>
 
-          <!-- Card Footer -->
-          <div class="report-card__footer">
-            <span class="report-card__timestamp">
-              <i class="fa-regular fa-clock"></i>
-              {{ report.created_at | date: 'dd/MM HH:mm' }}
-            </span>
-            <div class="report-card__actions">
-              <button
-                *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
-                type="button"
-                class="report-card__btn report-card__btn--approve"
-                (click)="approveReport($event, report)"
-                title="Aprobar"
-                data-testid="btn-approve"
-              >
-                <i class="fa-solid fa-check"></i>
-              </button>
-              <button
-                *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
-                type="button"
-                class="report-card__btn report-card__btn--reject"
-                (click)="rejectReport($event, report)"
-                title="Rechazar"
-                data-testid="btn-reject"
-              >
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-              <button
-                type="button"
-                class="report-card__btn report-card__btn--edit"
-                (click)="editReport($event, report)"
-                title="Editar"
-                data-testid="btn-edit"
-              >
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button
-                type="button"
-                class="report-card__btn report-card__btn--view"
-                (click)="viewReport(report)"
-                title="Ver detalles"
-                data-testid="btn-view"
-              >
-                <i class="fa-solid fa-eye"></i>
-              </button>
-            </div>
+          <div actions>
+            <button
+              *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
+              type="button"
+              class="report-card__btn report-card__btn--approve"
+              (click)="approveReport($event, report)"
+              title="Aprobar"
+              data-testid="btn-approve"
+            >
+              <i class="fa-solid fa-check"></i>
+            </button>
+            <button
+              *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
+              type="button"
+              class="report-card__btn report-card__btn--reject"
+              (click)="rejectReport($event, report)"
+              title="Rechazar"
+              data-testid="btn-reject"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+            <button
+              type="button"
+              class="report-card__btn report-card__btn--edit"
+              (click)="editReport($event, report)"
+              title="Editar"
+              data-testid="btn-edit"
+            >
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button
+              type="button"
+              class="report-card__btn report-card__btn--view"
+              (click)="viewReport(report)"
+              title="Ver detalles"
+              data-testid="btn-view"
+            >
+              <i class="fa-solid fa-eye"></i>
+            </button>
           </div>
-        </div>
+        </app-aero-card>
       </div>
 
       <div *ngIf="!loading && reports.length === 0" class="empty-state" data-testid="empty-state">
@@ -589,6 +555,22 @@ export class DailyReportListComponent implements OnInit {
   onFilterChange(filters: any) {
     this.currentFilters = { ...this.currentFilters, ...filters };
     this.loadReports();
+  }
+
+  getReportInfoItems(report: DailyReport): CardInfoItem[] {
+    return [
+      {
+        icon: 'fa-solid fa-hard-hat',
+        label: 'Operador',
+        value: report.trabajador_nombre || 'Sin asignar',
+      },
+      {
+        icon: 'fa-solid fa-gauge-high',
+        label: 'Horas',
+        value: `${report.horas_trabajadas || report.horometro_diferencia || 0}h`,
+        highlight: true,
+      },
+    ];
   }
 
   loadReports(): void {

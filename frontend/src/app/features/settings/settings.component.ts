@@ -6,11 +6,22 @@ import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
 import { MainNavComponent } from '../../shared/components/main-nav.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent, PageCardComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MainNavComponent,
+    PageCardComponent,
+    DropdownComponent,
+  ],
   template: `
     <app-main-nav></app-main-nav>
     <div class="settings-page">
@@ -67,10 +78,11 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
             <div class="form-grid">
               <div class="form-group">
                 <label>Idioma</label>
-                <select class="form-control">
-                  <option value="es">Español (Perú)</option>
-                  <option value="en">English (US)</option>
-                </select>
+                <app-dropdown
+                  [options]="languageOptions"
+                  [ngModel]="'es'"
+                  [ngModelOptions]="{ standalone: true }"
+                ></app-dropdown>
                 <span class="help-text">El idioma se aplicará en toda la aplicación.</span>
               </div>
 
@@ -561,6 +573,11 @@ export class SettingsComponent {
     { id: 'general', label: 'General', icon: 'fa-solid fa-sliders' },
     { id: 'profile', label: 'Perfil', icon: 'fa-solid fa-user' },
     { id: 'security', label: 'Seguridad', icon: 'fa-solid fa-shield-halved' },
+  ];
+
+  languageOptions: DropdownOption[] = [
+    { label: 'Español (Perú)', value: 'es' },
+    { label: 'English (US)', value: 'en' },
   ];
 
   passwordForm: FormGroup = this.fb.group({

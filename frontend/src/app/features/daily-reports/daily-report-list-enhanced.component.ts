@@ -10,11 +10,22 @@ import {
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
 import { ExcelExportService } from '../../core/services/excel-export.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-daily-report-list-enhanced',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MainNavComponent, AeroTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MainNavComponent,
+    AeroTableComponent,
+    DropdownComponent,
+  ],
   template: `
     <app-main-nav></app-main-nav>
     <div class="reports-container">
@@ -78,13 +89,12 @@ import { ExcelExportService } from '../../core/services/excel-export.service';
         </div>
 
         <div class="filter-group">
-          <select [(ngModel)]="filters.status" (change)="applyFilters()" class="form-select">
-            <option value="">Todos los Estados</option>
-            <option value="BORRADOR">Borrador</option>
-            <option value="ENVIADO">Enviado</option>
-            <option value="APROBADO">Aprobado</option>
-            <option value="RECHAZADO">Rechazado</option>
-          </select>
+          <app-dropdown
+            [(ngModel)]="filters.status"
+            [options]="statusOptions"
+            (ngModelChange)="applyFilters()"
+            [placeholder]="'Todos los Estados'"
+          ></app-dropdown>
         </div>
       </div>
 
@@ -622,6 +632,13 @@ export class DailyReportListEnhancedComponent implements OnInit {
     endDate: '',
   };
 
+  statusOptions: DropdownOption[] = [
+    { label: 'Borrador', value: 'BORRADOR' },
+    { label: 'Enviado', value: 'ENVIADO' },
+    { label: 'Aprobado', value: 'APROBADO' },
+    { label: 'Rechazados', value: 'RECHAZADO' },
+  ];
+
   columns: TableColumn[] = [
     { key: 'date', label: 'Fecha', type: 'template' },
     { key: 'code', label: 'Código', type: 'text' },
@@ -634,10 +651,22 @@ export class DailyReportListEnhancedComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        BORRADOR: { label: 'Borrador', class: 'badge status-draft' },
-        ENVIADO: { label: 'Enviado', class: 'badge status-submitted' },
-        APROBADO: { label: 'Aprobado', class: 'badge status-approved' },
-        RECHAZADO: { label: 'Rechazado', class: 'badge status-rejected' },
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-draft', icon: 'fa-file-pen' },
+        ENVIADO: {
+          label: 'Enviado',
+          class: 'status-badge status-submitted',
+          icon: 'fa-paper-plane',
+        },
+        APROBADO: {
+          label: 'Aprobado',
+          class: 'status-badge status-approved',
+          icon: 'fa-check-circle',
+        },
+        RECHAZADO: {
+          label: 'Rechazado',
+          class: 'status-badge status-rejected',
+          icon: 'fa-circle-xmark',
+        },
       },
     },
   ];

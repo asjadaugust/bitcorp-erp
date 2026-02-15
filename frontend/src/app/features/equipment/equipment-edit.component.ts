@@ -4,11 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { Equipment } from '../../core/models/equipment.model';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-equipment-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DropdownComponent],
   template: `
     <div class="equipment-edit-container">
       <div class="container">
@@ -85,23 +89,13 @@ import { Equipment } from '../../core/models/equipment.model';
 
                   <div class="form-group">
                     <label for="equipment_type">Equipment Type *</label>
-                    <select
-                      id="equipment_type"
+                    <app-dropdown
                       name="equipment_type"
                       [(ngModel)]="equipment.equipment_type"
+                      [options]="equipmentTypeOptions"
+                      [placeholder]="'Select Type'"
                       required
-                    >
-                      <option value="">Select Type</option>
-                      <option value="excavator">Excavator</option>
-                      <option value="bulldozer">Bulldozer</option>
-                      <option value="grader">Grader</option>
-                      <option value="roller">Roller</option>
-                      <option value="loader">Loader</option>
-                      <option value="dump_truck">Dump Truck</option>
-                      <option value="crane">Crane</option>
-                      <option value="concrete_mixer">Concrete Mixer</option>
-                      <option value="other">Other</option>
-                    </select>
+                    ></app-dropdown>
                   </div>
 
                   <div class="form-group">
@@ -118,12 +112,13 @@ import { Equipment } from '../../core/models/equipment.model';
 
                   <div class="form-group">
                     <label for="estado">Estado *</label>
-                    <select id="estado" name="estado" [(ngModel)]="equipment.estado" required>
-                      <option value="DISPONIBLE">Available</option>
-                      <option value="EN_USO">In Use</option>
-                      <option value="MANTENIMIENTO">Maintenance</option>
-                      <option value="RETIRADO">Retired</option>
-                    </select>
+                    <app-dropdown
+                      name="estado"
+                      [(ngModel)]="equipment.estado"
+                      [options]="statusOptions"
+                      [placeholder]="'Select Status'"
+                      required
+                    ></app-dropdown>
                   </div>
                 </div>
               </section>
@@ -176,13 +171,12 @@ import { Equipment } from '../../core/models/equipment.model';
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="fuel_type">Fuel Type</label>
-                    <select id="fuel_type" name="fuel_type" [(ngModel)]="equipment.fuel_type">
-                      <option value="">Select Fuel Type</option>
-                      <option value="diesel">Diesel</option>
-                      <option value="gasoline">Gasoline</option>
-                      <option value="electric">Electric</option>
-                      <option value="hybrid">Hybrid</option>
-                    </select>
+                    <app-dropdown
+                      name="fuel_type"
+                      [(ngModel)]="equipment.fuel_type"
+                      [options]="fuelTypeOptions"
+                      [placeholder]="'Select Fuel Type'"
+                    ></app-dropdown>
                   </div>
 
                   <div class="form-group">
@@ -199,12 +193,12 @@ import { Equipment } from '../../core/models/equipment.model';
 
                   <div class="form-group">
                     <label for="meter_type">Tipo de Medidor</label>
-                    <select id="meter_type" name="meter_type" [(ngModel)]="equipment.meter_type">
-                      <option value="">Seleccionar...</option>
-                      <option value="HOROMETRO">Horómetro</option>
-                      <option value="ODOMETRO">Odómetro</option>
-                      <option value="AMBOS">Ambos</option>
-                    </select>
+                    <app-dropdown
+                      name="meter_type"
+                      [(ngModel)]="equipment.meter_type"
+                      [options]="meterTypeOptions"
+                      [placeholder]="'Seleccionar Medidor'"
+                    ></app-dropdown>
                   </div>
 
                   <div class="form-group">
@@ -379,6 +373,38 @@ export class EquipmentEditComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   currentYear = new Date().getFullYear();
+
+  equipmentTypeOptions: DropdownOption[] = [
+    { label: 'Excavator', value: 'excavator' },
+    { label: 'Bulldozer', value: 'bulldozer' },
+    { label: 'Grader', value: 'grader' },
+    { label: 'Roller', value: 'roller' },
+    { label: 'Loader', value: 'loader' },
+    { label: 'Dump Truck', value: 'dump_truck' },
+    { label: 'Crane', value: 'crane' },
+    { label: 'Concrete Mixer', value: 'concrete_mixer' },
+    { label: 'Other', value: 'other' },
+  ];
+
+  statusOptions: DropdownOption[] = [
+    { label: 'Available', value: 'DISPONIBLE' },
+    { label: 'In Use', value: 'EN_USO' },
+    { label: 'Maintenance', value: 'MANTENIMIENTO' },
+    { label: 'Retired', value: 'RETIRADO' },
+  ];
+
+  fuelTypeOptions: DropdownOption[] = [
+    { label: 'Diesel', value: 'diesel' },
+    { label: 'Gasoline', value: 'gasoline' },
+    { label: 'Electric', value: 'electric' },
+    { label: 'Hybrid', value: 'hybrid' },
+  ];
+
+  meterTypeOptions: DropdownOption[] = [
+    { label: 'Horómetro', value: 'HOROMETRO' },
+    { label: 'Odómetro', value: 'ODOMETRO' },
+    { label: 'Ambos', value: 'AMBOS' },
+  ];
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];

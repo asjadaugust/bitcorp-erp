@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProviderService } from '../../../core/services/provider.service';
 import { ProviderDocument } from '../../../core/models/provider-document.model';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-provider-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, DropdownComponent],
   template: `
     <div class="documents-section">
       <div class="section-header">
@@ -28,14 +32,11 @@ import { ProviderDocument } from '../../../core/models/provider-document.model';
           <div class="form-grid">
             <div class="form-group">
               <label for="tipo_documento" class="form-label">Tipo de Documento *</label>
-              <select id="tipo_documento" formControlName="tipo_documento" class="form-select">
-                <option value="RUC">Ficha RUC</option>
-                <option value="VIGENCIA_PODER">Vigencia de Poder</option>
-                <option value="DNI_REPRESENTANTE">DNI Representante Legal</option>
-                <option value="CERTIFICADO_BANCARIO">Certificado Bancario</option>
-                <option value="BROCHURE">Brochure/Presentación</option>
-                <option value="OTRO">Otro</option>
-              </select>
+              <app-dropdown
+                formControlName="tipo_documento"
+                [options]="documentTypeOptions"
+                [placeholder]="'Seleccionar...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
@@ -105,7 +106,9 @@ import { ProviderDocument } from '../../../core/models/provider-document.model';
           <div class="card-header">
             <div class="doc-info">
               <h4>{{ getDocumentTypeLabel(doc.tipo_documento) }}</h4>
-              <span class="doc-number" *ngIf="doc.numero_documento"># {{ doc.numero_documento }}</span>
+              <span class="doc-number" *ngIf="doc.numero_documento"
+                ># {{ doc.numero_documento }}</span
+              >
             </div>
             <div class="badges">
               <span class="badge" [ngClass]="getExpirationBadgeClass(doc.fecha_vencimiento)">
@@ -116,24 +119,35 @@ import { ProviderDocument } from '../../../core/models/provider-document.model';
           <div class="card-body">
             <div class="doc-detail" *ngIf="doc.fecha_emision">
               <span class="label">Emisión:</span>
-              <span>{{ doc.fecha_emision | date : 'dd/MM/yyyy' }}</span>
+              <span>{{ doc.fecha_emision | date: 'dd/MM/yyyy' }}</span>
             </div>
             <div class="doc-detail" *ngIf="doc.fecha_vencimiento">
               <span class="label">Vencimiento:</span>
-              <span>{{ doc.fecha_vencimiento | date : 'dd/MM/yyyy' }}</span>
+              <span>{{ doc.fecha_vencimiento | date: 'dd/MM/yyyy' }}</span>
             </div>
             <div class="doc-notes" *ngIf="doc.observaciones">
               <p>{{ doc.observaciones }}</p>
             </div>
           </div>
           <div class="card-actions">
-            <a [href]="doc.archivo_url" target="_blank" class="btn-icon" *ngIf="doc.archivo_url" title="Ver documento">
+            <a
+              [href]="doc.archivo_url"
+              target="_blank"
+              class="btn-icon"
+              *ngIf="doc.archivo_url"
+              title="Ver documento"
+            >
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
             <button type="button" class="btn-icon" (click)="editDocument(doc)" title="Editar">
               <i class="fa-solid fa-pen"></i>
             </button>
-            <button type="button" class="btn-icon btn-danger" (click)="deleteDocument(doc.id)" title="Eliminar">
+            <button
+              type="button"
+              class="btn-icon btn-danger"
+              (click)="deleteDocument(doc.id)"
+              title="Eliminar"
+            >
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
@@ -148,41 +162,201 @@ import { ProviderDocument } from '../../../core/models/provider-document.model';
   `,
   styles: [
     `
-    .documents-section { margin-top: var(--s-24); }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-16); }
-    .section-header h3 { font-size: var(--type-h4-size); color: var(--grey-900); display: flex; align-items: center; gap: var(--s-8); margin: 0; }
-    .document-form { margin-bottom: var(--s-24); padding: var(--s-24); background: var(--neutral-0); border-radius: var(--s-8); border: 1px solid var(--grey-200); }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s-16); margin-bottom: var(--s-24); }
-    .form-group { display: flex; flex-direction: column; }
-    .full-width { grid-column: 1 / -1; }
-    .form-label { font-size: var(--type-label-size); font-weight: 600; color: var(--grey-700); margin-bottom: var(--s-4); }
-    .form-control, .form-select { padding: var(--s-8) var(--s-12); border: 1px solid var(--grey-300); border-radius: var(--s-4); font-family: inherit; }
-    .btn { padding: var(--s-8) var(--s-16); border: none; border-radius: var(--s-8); font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-primary { background: var(--primary-500); color: var(--neutral-0); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-secondary { background: var(--grey-200); color: var(--grey-700); }
-    .btn-sm { padding: var(--s-4) var(--s-12); font-size: var(--type-bodySmall-size); }
-    .form-actions { display: flex; gap: var(--s-12); justify-content: flex-end; }
-    .documents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--s-16); }
-    .document-card { background: var(--neutral-0); border: 1px solid var(--grey-200); border-radius: var(--s-8); padding: var(--s-16); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
-    .document-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .card-header { margin-bottom: var(--s-12); display: flex; justify-content: space-between; align-items: flex-start; }
-    .doc-info h4 { font-size: var(--type-body-size); font-weight: 600; margin: 0 0 var(--s-4) 0; color: var(--grey-900); }
-    .doc-number { color: var(--grey-600); font-size: var(--type-bodySmall-size); }
-    .badge { padding: var(--s-4) var(--s-8); border-radius: var(--s-12); font-size: var(--type-label-size); font-weight: 600; text-transform: uppercase; }
-    .badge-ok { background: var(--success-100); color: var(--success-700); }
-    .badge-warning { background: var(--warning-100); color: var(--warning-700); }
-    .badge-danger { background: var(--danger-100); color: var(--danger-700); }
-    .card-body { flex: 1; margin-bottom: var(--s-12); border-top: 1px solid var(--grey-100); padding-top: var(--s-12); }
-    .doc-detail { display: flex; gap: var(--s-8); font-size: var(--type-bodySmall-size); margin-bottom: var(--s-4); color: var(--grey-700); }
-    .label { font-weight: 600; color: var(--grey-600); min-width: 80px; }
-    .doc-notes { margin-top: var(--s-12); font-size: var(--type-bodySmall-size); color: var(--grey-600); font-style: italic; background: var(--grey-50); padding: var(--s-8); border-radius: var(--s-4); }
-    .card-actions { display: flex; gap: var(--s-8); justify-content: flex-end; border-top: 1px solid var(--grey-100); padding-top: var(--s-12); }
-    .btn-icon { background: none; border: none; cursor: pointer; padding: var(--s-6); color: var(--grey-500); font-size: 1rem; transition: color 0.2s; }
-    .btn-icon:hover { color: var(--primary-500); }
-    .btn-icon.btn-danger:hover { color: var(--danger-500); }
-    .empty-state { text-align: center; padding: var(--s-48) var(--s-24); color: var(--grey-400); background: var(--grey-50); border-radius: var(--s-8); border: 2px dashed var(--grey-200); }
-    .empty-state i { font-size: 3rem; margin-bottom: var(--s-16); }
+      .documents-section {
+        margin-top: var(--s-24);
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--s-16);
+      }
+      .section-header h3 {
+        font-size: var(--type-h4-size);
+        color: var(--grey-900);
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+        margin: 0;
+      }
+      .document-form {
+        margin-bottom: var(--s-24);
+        padding: var(--s-24);
+        background: var(--neutral-0);
+        border-radius: var(--s-8);
+        border: 1px solid var(--grey-200);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--s-16);
+        margin-bottom: var(--s-24);
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .full-width {
+        grid-column: 1 / -1;
+      }
+      .form-label {
+        font-size: var(--type-label-size);
+        font-weight: 600;
+        color: var(--grey-700);
+        margin-bottom: var(--s-4);
+      }
+      .form-control,
+      .form-select {
+        padding: var(--s-8) var(--s-12);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-4);
+        font-family: inherit;
+      }
+      .btn {
+        padding: var(--s-8) var(--s-16);
+        border: none;
+        border-radius: var(--s-8);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: var(--primary-500);
+        color: var(--neutral-0);
+      }
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: var(--grey-200);
+        color: var(--grey-700);
+      }
+      .btn-sm {
+        padding: var(--s-4) var(--s-12);
+        font-size: var(--type-bodySmall-size);
+      }
+      .form-actions {
+        display: flex;
+        gap: var(--s-12);
+        justify-content: flex-end;
+      }
+      .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--s-16);
+      }
+      .document-card {
+        background: var(--neutral-0);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--s-8);
+        padding: var(--s-16);
+        display: flex;
+        flex-direction: column;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .card-header {
+        margin-bottom: var(--s-12);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .doc-info h4 {
+        font-size: var(--type-body-size);
+        font-weight: 600;
+        margin: 0 0 var(--s-4) 0;
+        color: var(--grey-900);
+      }
+      .doc-number {
+        color: var(--grey-600);
+        font-size: var(--type-bodySmall-size);
+      }
+      .badge {
+        padding: var(--s-4) var(--s-8);
+        border-radius: var(--s-12);
+        font-size: var(--type-label-size);
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .badge-ok {
+        background: var(--success-100);
+        color: var(--success-700);
+      }
+      .badge-warning {
+        background: var(--warning-100);
+        color: var(--warning-700);
+      }
+      .badge-danger {
+        background: var(--danger-100);
+        color: var(--danger-700);
+      }
+      .card-body {
+        flex: 1;
+        margin-bottom: var(--s-12);
+        border-top: 1px solid var(--grey-100);
+        padding-top: var(--s-12);
+      }
+      .doc-detail {
+        display: flex;
+        gap: var(--s-8);
+        font-size: var(--type-bodySmall-size);
+        margin-bottom: var(--s-4);
+        color: var(--grey-700);
+      }
+      .label {
+        font-weight: 600;
+        color: var(--grey-600);
+        min-width: 80px;
+      }
+      .doc-notes {
+        margin-top: var(--s-12);
+        font-size: var(--type-bodySmall-size);
+        color: var(--grey-600);
+        font-style: italic;
+        background: var(--grey-50);
+        padding: var(--s-8);
+        border-radius: var(--s-4);
+      }
+      .card-actions {
+        display: flex;
+        gap: var(--s-8);
+        justify-content: flex-end;
+        border-top: 1px solid var(--grey-100);
+        padding-top: var(--s-12);
+      }
+      .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--s-6);
+        color: var(--grey-500);
+        font-size: 1rem;
+        transition: color 0.2s;
+      }
+      .btn-icon:hover {
+        color: var(--primary-500);
+      }
+      .btn-icon.btn-danger:hover {
+        color: var(--danger-500);
+      }
+      .empty-state {
+        text-align: center;
+        padding: var(--s-48) var(--s-24);
+        color: var(--grey-400);
+        background: var(--grey-50);
+        border-radius: var(--s-8);
+        border: 2px dashed var(--grey-200);
+      }
+      .empty-state i {
+        font-size: 3rem;
+        margin-bottom: var(--s-16);
+      }
     `,
   ],
 })
@@ -197,6 +371,15 @@ export class ProviderDocumentsComponent implements OnInit {
   showForm = false;
   loading = false;
   editingId: number | null = null;
+
+  documentTypeOptions: DropdownOption[] = [
+    { label: 'Ficha RUC', value: 'RUC' },
+    { label: 'Vigencia de Poder', value: 'VIGENCIA_PODER' },
+    { label: 'DNI Representante Legal', value: 'DNI_REPRESENTANTE' },
+    { label: 'Certificado Bancario', value: 'CERTIFICADO_BANCARIO' },
+    { label: 'Brochure/Presentación', value: 'BROCHURE' },
+    { label: 'Otro', value: 'OTRO' },
+  ];
 
   ngOnInit(): void {
     this.initForm();
@@ -249,8 +432,12 @@ export class ProviderDocumentsComponent implements OnInit {
     this.documentForm.patchValue({
       tipo_documento: doc.tipo_documento,
       numero_documento: doc.numero_documento,
-      fecha_emision: doc.fecha_emision ? new Date(doc.fecha_emision).toISOString().substring(0, 10) : '',
-      fecha_vencimiento: doc.fecha_vencimiento ? new Date(doc.fecha_vencimiento).toISOString().substring(0, 10) : '',
+      fecha_emision: doc.fecha_emision
+        ? new Date(doc.fecha_emision).toISOString().substring(0, 10)
+        : '',
+      fecha_vencimiento: doc.fecha_vencimiento
+        ? new Date(doc.fecha_vencimiento).toISOString().substring(0, 10)
+        : '',
       archivo_url: doc.archivo_url,
       observaciones: doc.observaciones,
     });

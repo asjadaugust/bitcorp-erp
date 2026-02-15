@@ -1,11 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OperatorService } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
@@ -13,6 +8,10 @@ import { FormErrorHandlerService } from '../../core/services/form-error-handler.
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-operator-edit',
@@ -24,14 +23,13 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     FormContainerComponent,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
       [title]="isNew ? 'Nuevo Operador' : 'Editar Operador'"
       [subtitle]="
-        isNew
-          ? 'Registrar un nuevo operador en el sistema'
-          : 'Actualizar información del operador'
+        isNew ? 'Registrar un nuevo operador en el sistema' : 'Actualizar información del operador'
       "
       [icon]="isNew ? 'fa-user-plus' : 'fa-user-pen'"
       [loading]="loading"
@@ -41,11 +39,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       (onCancel)="cancel()"
     >
       <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage"></app-alert>
-      <app-alert
-        *ngIf="successMessage"
-        type="success"
-        [message]="successMessage"
-      ></app-alert>
+      <app-alert *ngIf="successMessage" type="success" [message]="successMessage"></app-alert>
 
       <app-validation-errors
         *ngIf="validationErrors.length > 0"
@@ -69,9 +63,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 placeholder="Ej. 12345678"
                 maxlength="8"
               />
-              <div class="error-msg" *ngIf="hasError('dni')">
-                DNI es requerido (8 dígitos)
-              </div>
+              <div class="error-msg" *ngIf="hasError('dni')">DNI es requerido (8 dígitos)</div>
             </div>
 
             <div class="form-group">
@@ -83,9 +75,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 class="form-control"
                 placeholder="Ej. Juan"
               />
-              <div class="error-msg" *ngIf="hasError('nombres')">
-                Nombres es requerido
-              </div>
+              <div class="error-msg" *ngIf="hasError('nombres')">Nombres es requerido</div>
             </div>
 
             <div class="form-group">
@@ -122,9 +112,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 class="form-control"
                 placeholder="juan.perez@bitcorp.com"
               />
-              <div class="error-msg" *ngIf="hasError('correo_electronico')">
-                Email inválido
-              </div>
+              <div class="error-msg" *ngIf="hasError('correo_electronico')">Email inválido</div>
             </div>
 
             <div class="form-group">
@@ -146,14 +134,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           <div class="form-grid">
             <div class="form-group">
               <label for="is_active">Estado *</label>
-              <select
-                id="is_active"
-                formControlName="is_active"
-                class="form-select"
-              >
-                <option [ngValue]="true">Activo</option>
-                <option [ngValue]="false">Inactivo</option>
-              </select>
+              <app-dropdown formControlName="is_active" [options]="statusOptions"></app-dropdown>
             </div>
 
             <div class="form-group">
@@ -254,6 +235,11 @@ export class OperatorEditComponent implements OnInit {
     });
   }
 
+  statusOptions: DropdownOption[] = [
+    { label: 'Activo', value: true },
+    { label: 'Inactivo', value: false },
+  ];
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -294,7 +280,7 @@ export class OperatorEditComponent implements OnInit {
     this.validationErrors = [];
 
     const operatorData = this.operatorForm.value;
-    
+
     // Ensure 'is_active' is boolean if it comes as string from select
     // (Though [ngValue] usually handles this correctly)
 
@@ -304,9 +290,7 @@ export class OperatorEditComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.successMessage = `Operador ${
-          this.isNew ? 'creado' : 'actualizado'
-        } correctamente`;
+        this.successMessage = `Operador ${this.isNew ? 'creado' : 'actualizado'} correctamente`;
         this.saving = false;
         setTimeout(() => {
           this.router.navigate(['/operators']);

@@ -4,6 +4,10 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DailyReportService } from '../../../core/services/daily-report.service';
 import { AuthService } from '../../../core/services/auth.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 interface HistoryReport {
   id: number;
@@ -17,7 +21,7 @@ interface HistoryReport {
 @Component({
   selector: 'app-operator-history',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DropdownComponent],
   template: `
     <div class="history-container">
       <header class="history-header">
@@ -29,24 +33,20 @@ interface HistoryReport {
       <div class="filters-bar">
         <div class="filter-group">
           <label>Período:</label>
-          <select [(ngModel)]="selectedPeriod" (change)="filterReports()" class="filter-select">
-            <option value="week">Última Semana</option>
-            <option value="month">Último Mes</option>
-            <option value="quarter">Último Trimestre</option>
-            <option value="year">Último Año</option>
-            <option value="all">Todos</option>
-          </select>
+          <app-dropdown
+            [(ngModel)]="selectedPeriod"
+            [options]="periodOptions"
+            (ngModelChange)="filterReports()"
+          ></app-dropdown>
         </div>
 
         <div class="filter-group">
           <label>Estado:</label>
-          <select [(ngModel)]="selectedStatus" (change)="filterReports()" class="filter-select">
-            <option value="all">Todos</option>
-            <option value="BORRADOR">Borradores</option>
-            <option value="ENVIADO">Enviados</option>
-            <option value="APROBADO">Aprobados</option>
-            <option value="RECHAZADO">Rechazados</option>
-          </select>
+          <app-dropdown
+            [(ngModel)]="selectedStatus"
+            [options]="statusOptions"
+            (ngModelChange)="filterReports()"
+          ></app-dropdown>
         </div>
       </div>
 
@@ -424,6 +424,22 @@ export class OperatorHistoryComponent implements OnInit {
 
   allReports: HistoryReport[] = [];
   filteredReports: HistoryReport[] = [];
+
+  periodOptions: DropdownOption[] = [
+    { label: 'Última Semana', value: 'week' },
+    { label: 'Último Mes', value: 'month' },
+    { label: 'Último Trimestre', value: 'quarter' },
+    { label: 'Último Año', value: 'year' },
+    { label: 'Todos', value: 'all' },
+  ];
+
+  statusOptions: DropdownOption[] = [
+    { label: 'Todos', value: 'all' },
+    { label: 'Borradores', value: 'BORRADOR' },
+    { label: 'Enviados', value: 'ENVIADO' },
+    { label: 'Aprobados', value: 'APROBADO' },
+    { label: 'Rechazados', value: 'RECHAZADO' },
+  ];
 
   ngOnInit() {
     this.loadReports();

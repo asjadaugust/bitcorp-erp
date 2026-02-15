@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ProjectService } from '../../../../core/services/project.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-project-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DropdownComponent],
   template: `
     <div class="form-container">
       <!-- Header -->
@@ -80,12 +84,7 @@ import { ProjectService } from '../../../../core/services/project.service';
 
               <div class="form-group">
                 <label for="status">Estado *</label>
-                <select id="status" formControlName="status" class="form-select">
-                  <option value="PLANIFICACION">Planificación</option>
-                  <option value="ACTIVO">En Ejecución</option>
-                  <option value="PAUSADO">Suspendido</option>
-                  <option value="COMPLETADO">Finalizado</option>
-                </select>
+                <app-dropdown formControlName="status" [options]="statusOptions"></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('status')">Estado es requerido</div>
               </div>
             </div>
@@ -145,10 +144,7 @@ import { ProjectService } from '../../../../core/services/project.service';
 
               <div class="form-group">
                 <label for="currency">Moneda *</label>
-                <select id="currency" formControlName="currency" class="form-select">
-                  <option value="PEN">Soles (PEN)</option>
-                  <option value="USD">Dólares (USD)</option>
-                </select>
+                <app-dropdown formControlName="currency" [options]="currencyOptions"></app-dropdown>
               </div>
 
               <div class="form-group full-width">
@@ -345,7 +341,7 @@ export class ProjectFormComponent implements OnInit {
       code: ['', Validators.required],
       name: ['', Validators.required],
       client: ['', Validators.required],
-      status: ['Planificación', Validators.required],
+      status: ['PLANIFICACION', Validators.required],
       startDate: ['', Validators.required],
       endDate: ['', Validators.required],
       location: ['', Validators.required],
@@ -354,6 +350,18 @@ export class ProjectFormComponent implements OnInit {
       description: [''],
     });
   }
+
+  statusOptions: DropdownOption[] = [
+    { label: 'Planificación', value: 'PLANIFICACION' },
+    { label: 'En Ejecución', value: 'ACTIVO' },
+    { label: 'Suspendido', value: 'PAUSADO' },
+    { label: 'Finalizado', value: 'COMPLETADO' },
+  ];
+
+  currencyOptions: DropdownOption[] = [
+    { label: 'Soles (PEN)', value: 'PEN' },
+    { label: 'Dólares (USD)', value: 'USD' },
+  ];
 
   loadProject() {
     if (!this.projectId) return;

@@ -248,6 +248,78 @@ body {
   }
 }
 
+// Filters Grid Utility
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 320px));
+  gap: var(--s-16);
+  align-items: end;
+
+  .filter-group,
+  .filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-8);
+    width: 100%;
+
+    label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--grey-700);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0;
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: var(--s-12);
+    align-items: center;
+    height: 42px; // Match input height for alignment
+    margin-top: 0;
+  }
+}
+
+// Global Form Control Refinement
+.form-control {
+  width: 100%;
+  height: 42px;
+  padding: 0 var(--s-12);
+  background-color: var(--neutral-0);
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-sm);
+  color: var(--primary-900);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--grey-500);
+  }
+
+  &:disabled {
+    background-color: var(--grey-100);
+    cursor: not-allowed;
+  }
+}
+
+// Filters Card Utility
+.filters-card {
+  background: var(--neutral-0);
+  padding: var(--s-20);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--grey-200);
+  margin-bottom: var(--s-24);
+}
+
 // Table
 .table {
   width: 100%;
@@ -324,13 +396,62 @@ body {
 }
 
 // Badges
-.badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 500;
+.badge,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
 
+  // New Global Statuses
+  &.status-draft,
+  &.status-BORRADOR {
+    background: #f5f5f5;
+    color: #666666;
+  }
+
+  &.status-submitted,
+  &.status-ENVIADO,
+  &.status-PENDIENTE {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  &.status-approved,
+  &.status-APROBADO,
+  &.status-supervisor_approved,
+  &.status-APROBADO_SUPERVISOR,
+  &.status-completed,
+  &.status-COMPLETADO {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.status-rejected,
+  &.status-RECHAZADO {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  &.status-pending_finance,
+  &.status-PENDIENTE_FINANZAS {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  &.status-finance_approved,
+  &.status-APROBADO_FINANZAS {
+    background: #e0f2f1;
+    color: #00695c;
+  }
+
+  // Legacy/Specific Badges (keeping for backward compatibility if needed)
   &-available {
     background: #d4edda;
     color: #155724;
@@ -359,6 +480,70 @@ body {
   &-inactive {
     background: var(--grey-500);
     color: white;
+  }
+
+  // Standardization Additions
+  &.status-scheduled,
+  &.status-PROGRAMADO {
+    background: #e3f2fd; // Blue 50
+    color: #1565c0; // Blue 800
+
+    &::before {
+      background: #1976d2;
+    }
+  }
+
+  &.status-in-progress,
+  &.status-in_progress,
+  &.status-EN_PROCESO {
+    background: #fff8e1; // Amber 50
+    color: #ff8f00; // Amber 800
+
+    &::before {
+      background: #ffca28;
+    }
+  }
+
+  &.status-on-hold,
+  &.status-PLANIFICACION,
+  &.status-PAUSADO {
+    background: #fff3e0; // Orange 50
+    color: #e65100; // Orange 900
+
+    &::before {
+      background: #fb8c00;
+    }
+  }
+
+  &.status-paid,
+  &.status-PAGADO {
+    background: #e8f5e9; // Green 50
+    color: #2e7d32; // Green 800
+
+    &::before {
+      background: #43a047;
+    }
+  }
+
+  &.status-partial,
+  &.status-PARCIAL {
+    background: #f3e5f5; // Purple 50
+    color: #7b1fa2; // Purple 800
+
+    &::before {
+      background: #8e24aa;
+    }
+  }
+
+  &.status-cancelled,
+  &.status-CANCELADO,
+  &.status-VENCIDO {
+    background: #ffebee; // Red 50
+    color: #c62828; // Red 800
+
+    &::before {
+      background: #e53935;
+    }
   }
 }
 

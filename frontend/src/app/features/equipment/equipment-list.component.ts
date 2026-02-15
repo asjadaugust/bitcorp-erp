@@ -89,7 +89,6 @@ import {
         [templates]="{
           codigo_equipo: codeTemplate,
           brand_model: brandModelTemplate,
-          estado: statusTemplate,
         }"
         (rowClick)="viewDetails($event)"
       >
@@ -105,13 +104,6 @@ import {
           <span>{{ row.marca }}</span>
           <small>{{ row.modelo }}</small>
         </div>
-      </ng-template>
-
-      <ng-template #statusTemplate let-row>
-        <span [class]="'status-badge status-' + (row.estado || '').toLowerCase()">
-          <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
-          {{ getStatusLabel(row.estado) }}
-        </span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -376,38 +368,7 @@ import {
         font-size: 12px;
       }
 
-      /* Status Badges */
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-
-      .status-available,
-      .status-disponible {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-in_use,
-      .status-en_uso,
-      .status-ocupado {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-maintenance,
-      .status-mantenimiento {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-retired,
-      .status-retirado {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-      }
+      /* Status Badges - Removed local overrides to use global .status-badge */
 
       /* Alerts */
       .alert {
@@ -512,7 +473,45 @@ export class EquipmentListComponent implements OnInit {
     { key: 'categoria', label: 'Categoría', type: 'text' },
     { key: 'placa', label: 'Placa', type: 'text' },
     { key: 'tipo_proveedor', label: 'Tipo Proveedor', type: 'text' },
-    { key: 'estado', label: 'Estado', type: 'template' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        available: {
+          label: 'Disponible',
+          class: 'status-badge status-available',
+          icon: 'fa-check',
+        },
+        disponible: {
+          label: 'Disponible',
+          class: 'status-badge status-available',
+          icon: 'fa-check',
+        },
+        in_use: {
+          label: 'En Uso',
+          class: 'status-badge status-in_use',
+          icon: 'fa-person-digging',
+        },
+        en_uso: {
+          label: 'En Uso',
+          class: 'status-badge status-in_use',
+          icon: 'fa-person-digging',
+        },
+        maintenance: {
+          label: 'Mantenimiento',
+          class: 'status-badge status-maintenance',
+          icon: 'fa-wrench',
+        },
+        mantenimiento: {
+          label: 'Mantenimiento',
+          class: 'status-badge status-maintenance',
+          icon: 'fa-wrench',
+        },
+        retired: { label: 'Retirado', class: 'status-badge status-retired', icon: 'fa-ban' },
+        retirado: { label: 'Retirado', class: 'status-badge status-retired', icon: 'fa-ban' },
+      },
+    },
     { key: 'proveedor_nombre', label: 'Proveedor', type: 'text' },
   ];
 
@@ -626,35 +625,5 @@ export class EquipmentListComponent implements OnInit {
         },
       });
     }
-  }
-
-  getStatusLabel(status: string): string {
-    const s = (status || '').toLowerCase();
-    const labels: Record<string, string> = {
-      available: 'Disponible',
-      disponible: 'Disponible',
-      in_use: 'En Uso',
-      en_uso: 'En Uso',
-      maintenance: 'Mantenimiento', // Fixed typo in previous map if any
-      mantenimiento: 'Mantenimiento',
-      retired: 'Retirado',
-      retirado: 'Retirado',
-    };
-    return labels[s] || status;
-  }
-
-  getStatusIcon(status: string): string {
-    const s = (status || '').toLowerCase();
-    const icons: Record<string, string> = {
-      available: 'fa-check',
-      disponible: 'fa-check',
-      in_use: 'fa-person-digging',
-      en_uso: 'fa-person-digging',
-      maintenance: 'fa-wrench',
-      mantenimiento: 'fa-wrench',
-      retired: 'fa-ban',
-      retirado: 'fa-ban',
-    };
-    return icons[s] || 'fa-circle';
   }
 }

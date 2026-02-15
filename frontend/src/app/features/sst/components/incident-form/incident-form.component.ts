@@ -9,6 +9,10 @@ import {
 } from '../../../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-incident-form',
@@ -19,6 +23,7 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
     RouterModule,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <div class="form-container">
@@ -87,24 +92,22 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
 
               <div class="form-group">
                 <label for="tipo_incidente">Tipo *</label>
-                <select id="tipo_incidente" formControlName="tipo_incidente" class="form-select">
-                  <option value="">Seleccione...</option>
-                  <option value="Accidente">Accidente</option>
-                  <option value="Incidente">Incidente</option>
-                  <option value="Casi Accidente">Casi Accidente</option>
-                  <option value="Condición Insegura">Condición Insegura</option>
-                </select>
+                <app-dropdown
+                  formControlName="tipo_incidente"
+                  [options]="incidentTypeOptions"
+                  [placeholder]="'Seleccione...'"
+                  [error]="hasError('tipo_incidente')"
+                ></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('tipo_incidente')">Tipo es requerido</div>
               </div>
 
               <div class="form-group">
                 <label for="severidad">Severidad *</label>
-                <select id="severidad" formControlName="severidad" class="form-select">
-                  <option value="LEVE">Leve</option>
-                  <option value="MODERADO">Moderado</option>
-                  <option value="GRAVE">Grave</option>
-                  <option value="MUY_GRAVE">Muy Grave / Fatal</option>
-                </select>
+                <app-dropdown
+                  formControlName="severidad"
+                  [options]="severityOptions"
+                  [error]="hasError('severidad')"
+                ></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('severidad')">Severidad es requerida</div>
               </div>
 
@@ -329,6 +332,20 @@ export class IncidentFormComponent implements OnInit {
   incidentId?: string;
   validationErrors: ValidationError[] = [];
   errorMessage: string | null = null;
+
+  incidentTypeOptions: DropdownOption[] = [
+    { label: 'Accidente', value: 'Accidente' },
+    { label: 'Incidente', value: 'Incidente' },
+    { label: 'Casi Accidente', value: 'Casi Accidente' },
+    { label: 'Condición Insegura', value: 'Condición Insegura' },
+  ];
+
+  severityOptions: DropdownOption[] = [
+    { label: 'Leve', value: 'LEVE' },
+    { label: 'Moderado', value: 'MODERADO' },
+    { label: 'Grave', value: 'GRAVE' },
+    { label: 'Muy Grave / Fatal', value: 'MUY_GRAVE' },
+  ];
 
   ngOnInit() {
     this.incidentId = this.route.snapshot.params['id'];

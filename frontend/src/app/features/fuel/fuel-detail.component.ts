@@ -12,7 +12,7 @@ import { FuelRecord } from '../../core/models/fuel-record.model';
     <div class="detail-container">
       <div class="container">
         <div class="breadcrumb">
-          <a routerLink="/fuel" class="breadcrumb-link">← Volver a Combustible</a>
+          <a routerLink="/logistics/fuel" class="breadcrumb-link">← Volver a Combustible</a>
         </div>
 
         <div *ngIf="loading" class="loading">
@@ -110,7 +110,7 @@ import { FuelRecord } from '../../core/models/fuel-record.model';
         <div *ngIf="!loading && !record" class="empty-state card">
           <h3>Registro no encontrado</h3>
           <p>El registro que buscas no existe o ha sido eliminado.</p>
-          <button class="btn btn-primary" routerLink="/fuel">Volver a la lista</button>
+          <button class="btn btn-primary" routerLink="/logistics/fuel">Volver a la lista</button>
         </div>
       </div>
     </div>
@@ -420,7 +420,7 @@ export class FuelDetailComponent implements OnInit {
 
   editRecord(): void {
     if (this.record) {
-      this.router.navigate(['/fuel', this.record.id, 'edit']);
+      this.router.navigate(['/logistics/fuel', this.record.id, 'edit']);
     }
   }
 
@@ -432,7 +432,7 @@ export class FuelDetailComponent implements OnInit {
     if (this.record) {
       this.fuelService.delete(this.record.id).subscribe({
         next: () => {
-          this.router.navigate(['/fuel']);
+          this.router.navigate(['/logistics/fuel']);
         },
         error: (error) => {
           console.error('Failed to delete record:', error);

@@ -46,14 +46,39 @@ import {
           <div class="card-header">
             <h2>Información General</h2>
             <div class="header-badges">
-              <span class="badge" [ngClass]="getEstadoClass(inspection.estado)">
+              <span
+                class="status-badge"
+                [ngClass]="'status-' + inspection.estado.toLowerCase().replace(' ', '_')"
+              >
+                <i
+                  [class]="
+                    inspection.estado === 'EN_PROGRESO'
+                      ? 'fa-solid fa-spinner fa-spin'
+                      : inspection.estado === 'COMPLETADO'
+                        ? 'fa-solid fa-check-circle'
+                        : inspection.estado === 'RECHAZADO'
+                          ? 'fa-solid fa-circle-xmark'
+                          : inspection.estado === 'CANCELADO'
+                            ? 'fa-solid fa-ban'
+                            : 'fa-solid fa-circle'
+                  "
+                ></i>
                 {{ getEstadoLabel(inspection.estado) }}
               </span>
               <span
-                class="badge"
+                class="status-badge"
                 [ngClass]="getResultadoClass(inspection.resultadoGeneral)"
                 *ngIf="inspection.resultadoGeneral"
               >
+                <i
+                  [class]="
+                    inspection.resultadoGeneral === 'APROBADO'
+                      ? 'fa-solid fa-check-circle'
+                      : inspection.resultadoGeneral === 'APROBADO_CON_OBSERVACIONES'
+                        ? 'fa-solid fa-triangle-exclamation'
+                        : 'fa-solid fa-circle-xmark'
+                  "
+                ></i>
                 {{ getResultadoLabel(inspection.resultadoGeneral) }}
               </span>
             </div>
@@ -276,41 +301,6 @@ import {
         text-transform: uppercase;
       }
 
-      .estado-en-progreso {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
-      .estado-completado {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .estado-rechazado {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
-      .estado-cancelado {
-        background: var(--grey-200);
-        color: var(--grey-600);
-      }
-
-      .resultado-aprobado {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .resultado-con-observaciones {
-        background: var(--warning-100);
-        color: var(--warning-800);
-      }
-
-      .resultado-rechazado {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
       .info-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -478,32 +468,10 @@ import {
         font-weight: 700;
         width: fit-content;
       }
+      /* Status Badges */
+      /* Global .status-badge classes are used now */
 
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-4);
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 600;
-        width: fit-content;
-      }
-
-      .status-conforme {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .status-no-conforme {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
-      .status-na {
-        background: var(--grey-200);
-        color: var(--grey-700);
-      }
+      /* Action Badge */
 
       .action-badge {
         display: inline-block;
@@ -685,9 +653,9 @@ export class InspectionDetailComponent implements OnInit {
 
   getResultadoClass(resultado: string): string {
     const classes: Record<string, string> = {
-      APROBADO: 'resultado-aprobado',
-      APROBADO_CON_OBSERVACIONES: 'resultado-con-observaciones',
-      RECHAZADO: 'resultado-rechazado',
+      APROBADO: 'status-approved',
+      APROBADO_CON_OBSERVACIONES: 'status-pending_finance', // Using orange/warning color
+      RECHAZADO: 'status-rejected',
     };
     return classes[resultado] || '';
   }
@@ -720,8 +688,8 @@ export class InspectionDetailComponent implements OnInit {
   }
 
   getStatusClass(conforme: boolean | null | undefined): string {
-    if (conforme === true) return 'status-conforme';
-    if (conforme === false) return 'status-no-conforme';
+    if (conforme === true) return 'status-approved';
+    if (conforme === false) return 'status-rejected';
     return 'status-na';
   }
 

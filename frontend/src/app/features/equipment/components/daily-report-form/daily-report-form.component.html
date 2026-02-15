@@ -9,28 +9,19 @@
         <h1>{{ reportId ? 'Editar Parte Diario' : 'Nuevo Parte Diario' }}</h1>
         <p class="subtitle">
           {{
-            reportId
-              ? 'Actualizar información del reporte diario'
-              : 'Registrar un nuevo reporte de uso de equipo'
+          reportId
+          ? 'Actualizar información del reporte diario'
+          : 'Registrar un nuevo reporte de uso de equipo'
           }}
         </p>
       </div>
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-      <button
-        class="btn btn-secondary"
-        (click)="saveAsDraft()"
-        [disabled]="saving || loading"
-        *ngIf="!reportId"
-      >
+      <button class="btn btn-secondary" (click)="saveAsDraft()" [disabled]="saving || loading" *ngIf="!reportId">
         <i class="fa-solid fa-save"></i> Guardar Borrador
       </button>
-      <button
-        class="btn btn-primary"
-        (click)="submitReport()"
-        [disabled]="reportForm.invalid || saving || loading"
-      >
+      <button class="btn btn-primary" (click)="submitReport()" [disabled]="reportForm.invalid || saving || loading">
         <i class="fa-solid fa-paper-plane"></i> {{ saving ? 'Enviando...' : 'Enviar Reporte' }}
       </button>
     </div>
@@ -50,41 +41,28 @@
   <!-- Form -->
   <div class="card form-card" *ngIf="!loading">
     <form [formGroup]="reportForm" class="form-grid">
-      
+
       <!-- Section 1: Basic Information -->
       <div class="form-section full-width">
         <h3>Información Básica</h3>
         <div class="section-grid">
           <div class="form-group">
             <label for="fecha_parte">Fecha *</label>
-            <input
-              id="fecha_parte"
-              type="date"
-              formControlName="fecha_parte"
-              class="form-control"
-            />
+            <input id="fecha_parte" type="date" formControlName="fecha_parte" class="form-control" />
             <div class="error-msg" *ngIf="hasError('fecha_parte')">La fecha es requerida</div>
           </div>
 
           <div class="form-group">
             <label for="trabajador_id">Operador *</label>
-            <select id="trabajador_id" formControlName="trabajador_id" class="form-select">
-              <option value="">Seleccione un operador</option>
-              <option *ngFor="let operator of operators" [value]="operator.id">
-                {{ operator.nombres }} {{ operator.apellido_paterno }}
-              </option>
-            </select>
+            <app-dropdown formControlName="trabajador_id" [options]="operatorOptions"
+              [placeholder]="'Seleccione un operador'" [searchable]="true"></app-dropdown>
             <div class="error-msg" *ngIf="hasError('trabajador_id')">El operador es requerido</div>
           </div>
 
           <div class="form-group full-width">
             <label for="equipo_id">Equipo *</label>
-            <select id="equipo_id" formControlName="equipo_id" class="form-select">
-              <option value="">Seleccione un equipo</option>
-              <option *ngFor="let eq of filteredEquipment" [value]="eq.id">
-                {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
-              </option>
-            </select>
+            <app-dropdown formControlName="equipo_id" [options]="equipmentOptions"
+              [placeholder]="'Seleccione un equipo'" [searchable]="true"></app-dropdown>
             <div class="error-msg" *ngIf="hasError('equipo_id')">El equipo es requerido</div>
           </div>
         </div>
@@ -96,23 +74,13 @@
         <div class="section-grid">
           <div class="form-group">
             <label for="hora_inicio">Hora de Inicio *</label>
-            <input
-              id="hora_inicio"
-              type="time"
-              formControlName="hora_inicio"
-              class="form-control"
-            />
+            <input id="hora_inicio" type="time" formControlName="hora_inicio" class="form-control" />
             <div class="error-msg" *ngIf="hasError('hora_inicio')">Hora de inicio requerida</div>
           </div>
 
           <div class="form-group">
             <label for="hora_fin">Hora de Fin *</label>
-            <input
-              id="hora_fin"
-              type="time"
-              formControlName="hora_fin"
-              class="form-control"
-            />
+            <input id="hora_fin" type="time" formControlName="hora_fin" class="form-control" />
             <div class="error-msg" *ngIf="hasError('hora_fin')">Hora de fin requerida</div>
             <div class="error-msg" *ngIf="reportForm.get('hora_fin')?.hasError('invalidTimeRange')">
               La hora de fin debe ser mayor a la hora de inicio
@@ -121,25 +89,14 @@
 
           <div class="form-group">
             <label for="horometro_inicial">Horómetro Inicial *</label>
-            <input
-              id="horometro_inicial"
-              type="number"
-              formControlName="horometro_inicial"
-              class="form-control"
-              min="0"
-            />
+            <input id="horometro_inicial" type="number" formControlName="horometro_inicial" class="form-control"
+              min="0" />
             <div class="error-msg" *ngIf="hasError('horometro_inicial')">Requerido</div>
           </div>
 
           <div class="form-group">
             <label for="horometro_final">Horómetro Final *</label>
-            <input
-              id="horometro_final"
-              type="number"
-              formControlName="horometro_final"
-              class="form-control"
-              min="0"
-            />
+            <input id="horometro_final" type="number" formControlName="horometro_final" class="form-control" min="0" />
             <div class="error-msg" *ngIf="hasError('horometro_final')">Requerido</div>
           </div>
 
@@ -156,24 +113,13 @@
         <div class="section-grid">
           <div class="form-group">
             <label for="odometro_inicial">Odómetro Inicial (km)</label>
-            <input
-              id="odometer_inicial"
-              type="number"
-              formControlName="odometro_inicial"
-              class="form-control"
-              min="0"
-            />
+            <input id="odometer_inicial" type="number" formControlName="odometro_inicial" class="form-control"
+              min="0" />
           </div>
 
           <div class="form-group">
             <label for="odometro_final">Odómetro Final (km)</label>
-            <input
-              id="odometer_final"
-              type="number"
-              formControlName="odometro_final"
-              class="form-control"
-              min="0"
-            />
+            <input id="odometer_final" type="number" formControlName="odometro_final" class="form-control" min="0" />
           </div>
         </div>
       </div>
@@ -184,26 +130,12 @@
         <div class="section-grid">
           <div class="form-group">
             <label for="fuel_start">Combustible Inicial (L)</label>
-            <input
-              id="fuel_start"
-              type="number"
-              formControlName="fuel_start"
-              class="form-control"
-              min="0"
-              step="0.1"
-            />
+            <input id="fuel_start" type="number" formControlName="fuel_start" class="form-control" min="0" step="0.1" />
           </div>
 
           <div class="form-group">
             <label for="fuel_end">Combustible Final (L)</label>
-            <input
-              id="fuel_end"
-              type="number"
-              formControlName="fuel_end"
-              class="form-control"
-              min="0"
-              step="0.1"
-            />
+            <input id="fuel_end" type="number" formControlName="fuel_end" class="form-control" min="0" step="0.1" />
           </div>
 
           <div class="full-width calculated-value" *ngIf="fuelConsumed > 0">
@@ -220,19 +152,13 @@
           <div class="form-group full-width">
             <label for="location">Ubicación / Frente de Trabajo *</label>
             <div style="display: flex; gap: 1rem;">
-              <input
-                id="location"
-                type="text"
-                formControlName="location"
-                class="form-control"
-                style="flex: 1;"
-              />
+              <input id="location" type="text" formControlName="location" class="form-control" style="flex: 1;" />
               <button type="button" class="btn btn-accent" (click)="captureGPS()">
                 <i class="fa-solid fa-location-crosshairs"></i> GPS
               </button>
             </div>
             <div class="error-msg" *ngIf="hasError('location')">La ubicación es requerida</div>
-            
+
             <div class="gps-coordinates" *ngIf="reportForm.get('gps_latitude')?.value">
               <span class="chip">
                 <i class="fa-solid fa-location-dot"></i>
@@ -253,14 +179,8 @@
         <div class="section-grid">
           <div class="form-group full-width">
             <label for="work_description">Actividades Realizadas *</label>
-            <textarea
-              id="work_description"
-              formControlName="work_description"
-              class="form-control"
-              rows="4"
-              maxlength="500"
-              placeholder="Describa las actividades realizadas..."
-            ></textarea>
+            <textarea id="work_description" formControlName="work_description" class="form-control" rows="4"
+              maxlength="500" placeholder="Describa las actividades realizadas..."></textarea>
             <div style="text-align: right; font-size: 12px; color: #666;">
               {{ reportForm.get('work_description')?.value?.length || 0 }} / 500
             </div>
@@ -269,26 +189,14 @@
 
           <div class="form-group full-width">
             <label for="notes">Observaciones</label>
-            <textarea
-              id="notes"
-              formControlName="notes"
-              class="form-control"
-              rows="3"
-              maxlength="1000"
-              placeholder="Observaciones adicionales..."
-            ></textarea>
+            <textarea id="notes" formControlName="notes" class="form-control" rows="3" maxlength="1000"
+              placeholder="Observaciones adicionales..."></textarea>
           </div>
 
           <div class="form-group full-width">
             <label for="weather_conditions">Condiciones Climáticas</label>
-            <select id="weather_conditions" formControlName="weather_conditions" class="form-select">
-              <option value="">Seleccione...</option>
-              <option value="soleado">☀️ Soleado</option>
-              <option value="parcialmente_nublado">⛅ Parcialmente Nublado</option>
-              <option value="nublado">☁️ Nublado</option>
-              <option value="lluvioso">🌧️ Lluvioso</option>
-              <option value="tormenta">⛈️ Tormenta</option>
-            </select>
+            <app-dropdown formControlName="weather_conditions" [options]="weatherOptions"
+              [placeholder]="'Seleccione...'"></app-dropdown>
           </div>
         </div>
       </div>
@@ -296,22 +204,13 @@
       <!-- Section 7: Photos -->
       <div class="form-section full-width">
         <h3>Fotografías (Opcional)</h3>
-        
+
         <div class="photo-upload-area">
-          <input 
-            type="file" 
-            #photoInput 
-            accept="image/*" 
-            multiple 
-            (change)="onPhotoSelect($event)"
+          <input type="file" #photoInput accept="image/*" multiple (change)="onPhotoSelect($event)"
             style="display: none">
-          
-          <button 
-            type="button" 
-            class="btn btn-primary"
-            (click)="photoInput.click()"
-            [disabled]="uploadedPhotos.length >= maxPhotos"
-            style="margin: 0 auto;">
+
+          <button type="button" class="btn btn-primary" (click)="photoInput.click()"
+            [disabled]="uploadedPhotos.length >= maxPhotos" style="margin: 0 auto;">
             <i class="fa-solid fa-camera"></i>
             Agregar Fotos ({{ uploadedPhotos.length }} / {{ maxPhotos }})
           </button>

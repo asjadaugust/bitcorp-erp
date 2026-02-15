@@ -275,11 +275,23 @@ export class MaintenanceListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        COMPLETADO: { label: 'Completado', class: 'badge status-completed' },
-        EN_PROCESO: { label: 'En Proceso', class: 'badge status-in_progress' },
-        PROGRAMADO: { label: 'Programado', class: 'badge status-scheduled' },
-        CANCELADO: { label: 'Cancelado', class: 'badge status-cancelled' },
-        PENDIENTE: { label: 'Pendiente', class: 'badge status-pending' },
+        COMPLETADO: {
+          label: 'Completado',
+          class: 'status-badge status-completed',
+          icon: 'fa-check-circle',
+        },
+        EN_PROCESO: {
+          label: 'En Proceso',
+          class: 'status-badge status-in-progress',
+          icon: 'fa-spinner',
+        },
+        PROGRAMADO: {
+          label: 'Programado',
+          class: 'status-badge status-scheduled',
+          icon: 'fa-calendar',
+        },
+        CANCELADO: { label: 'Cancelado', class: 'status-badge status-cancelled', icon: 'fa-ban' },
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-pending', icon: 'fa-clock' },
       },
     },
   ];

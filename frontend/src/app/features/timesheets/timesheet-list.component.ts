@@ -77,8 +77,7 @@ import {
           id: idTemplate,
           trabajador: trabajadorTemplate,
           periodo: periodoTemplate,
-          estado: estadoTemplate,
-          acciones: accionesTemplate
+          acciones: accionesTemplate,
         }"
         (rowClick)="viewTimesheet($event.id)"
       >
@@ -92,7 +91,9 @@ import {
       <ng-template #trabajadorTemplate let-row>
         <div class="worker-info">
           <i class="fa-solid fa-user-circle"></i>
-          <span>{{ row.trabajador_nombre || row.trabajador?.nombre_completo || 'Sin Nombre' }}</span>
+          <span>{{
+            row.trabajador_nombre || row.trabajador?.nombre_completo || 'Sin Nombre'
+          }}</span>
         </div>
       </ng-template>
 
@@ -101,12 +102,6 @@ import {
           <i class="fa-regular fa-calendar"></i>
           {{ row.periodo }}
         </div>
-      </ng-template>
-
-      <ng-template #estadoTemplate let-row>
-        <span class="status-badge" [class]="'status-' + row.estado">
-          {{ getEstadoLabel(row.estado) }}
-        </span>
       </ng-template>
 
       <ng-template #accionesTemplate let-row>
@@ -139,7 +134,7 @@ import {
         font-weight: 500;
         color: var(--grey-800);
       }
-      
+
       .worker-info i {
         color: var(--grey-500);
       }
@@ -154,35 +149,6 @@ import {
         border-radius: var(--s-4);
         font-size: 13px;
         font-weight: 500;
-      }
-
-      .status-badge {
-        padding: var(--s-4) var(--s-12);
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        display: inline-block;
-      }
-
-      .status-BORRADOR {
-        background: var(--grey-200);
-        color: var(--grey-700);
-      }
-
-      .status-ENVIADO {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
-      .status-APROBADO {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .status-RECHAZADO {
-        background: var(--error-100);
-        color: var(--error-800);
       }
 
       .error-message {
@@ -244,7 +210,7 @@ export class TimesheetListComponent implements OnInit {
       label: 'Período',
       type: 'text',
       placeholder: 'YYYY-MM',
-    }
+    },
   ];
 
   columns: TableColumn[] = [
@@ -253,7 +219,17 @@ export class TimesheetListComponent implements OnInit {
     { key: 'periodo', label: 'Período', type: 'template' },
     { key: 'totalHoras', label: 'Horas Totales', type: 'text' },
     { key: 'totalDiasTrabajados', label: 'Días Trab.', type: 'text' },
-    { key: 'estado', label: 'Estado', type: 'template' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-draft' },
+        ENVIADO: { label: 'Enviado', class: 'status-badge status-submitted' },
+        APROBADO: { label: 'Aprobado', class: 'status-badge status-approved' },
+        RECHAZADO: { label: 'Rechazado', class: 'status-badge status-rejected' },
+      },
+    },
     { key: 'acciones', label: 'Acciones', type: 'template' },
   ];
 
@@ -295,32 +271,26 @@ export class TimesheetListComponent implements OnInit {
   }
 
   deleteTimesheet(timesheet: Timesheet) {
-    if (!confirm(`¿Está seguro de eliminar la planilla #${timesheet.id}? Esta acción no se puede deshacer.`)) {
+    if (
+      !confirm(
+        `¿Está seguro de eliminar la planilla #${timesheet.id}? Esta acción no se puede deshacer.`
+      )
+    ) {
       return;
     }
 
     this.loading = true;
     this.timesheetService.deleteTimesheet(timesheet.id).subscribe({
       next: () => {
-        this.timesheets = this.timesheets.filter(t => t.id !== timesheet.id);
+        this.timesheets = this.timesheets.filter((t) => t.id !== timesheet.id);
         this.loading = false;
       },
       error: (err) => {
         console.error('Error deleting timesheet:', err);
         alert('Error al eliminar la planilla');
         this.loading = false;
-      }
+      },
     });
-  }
-
-  getEstadoLabel(estado: string): string {
-    const labels: Record<string, string> = {
-      BORRADOR: 'Borrador',
-      ENVIADO: 'Enviado',
-      APROBADO: 'Aprobado',
-      RECHAZADO: 'Rechazado',
-    };
-    return labels[estado] || estado;
   }
 
   handleExport(format: ExportFormat): void {
@@ -346,13 +316,25 @@ export class TimesheetListComponent implements OnInit {
       'Monto Calculado': timesheet.montoCalculado || 0,
       Estado: this.getEstadoLabel(timesheet.estado || ''),
       Observaciones: timesheet.observaciones || '',
-      Creado: timesheet.createdAt ? new Date(timesheet.createdAt as string).toLocaleDateString('es-PE') : '',
+      Creado: timesheet.createdAt
+        ? new Date(timesheet.createdAt as string).toLocaleDateString('es-PE')
+        : '',
     }));
 
     this.excelService.exportToExcel(exportData, {
       filename: 'planillas',
       sheetName: 'Planillas de Tiempo',
     });
+  }
+
+  private getEstadoLabel(estado: string): string {
+    const labels: Record<string, string> = {
+      BORRADOR: 'Borrador',
+      ENVIADO: 'Enviado',
+      APROBADO: 'Aprobado',
+      RECHAZADO: 'Rechazado',
+    };
+    return labels[estado] || estado;
   }
 
   exportToCSV(): void {
@@ -370,7 +352,9 @@ export class TimesheetListComponent implements OnInit {
       'Monto Calculado': timesheet.montoCalculado || 0,
       Estado: this.getEstadoLabel(timesheet.estado || ''),
       Observaciones: timesheet.observaciones || '',
-      Creado: timesheet.createdAt ? new Date(timesheet.createdAt as string).toLocaleDateString('es-PE') : '',
+      Creado: timesheet.createdAt
+        ? new Date(timesheet.createdAt as string).toLocaleDateString('es-PE')
+        : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'planillas');

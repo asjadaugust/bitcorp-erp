@@ -1,20 +1,16 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
-import {
-  AdministrationService,
-  Provider,
-} from '../../services/administration.service';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AdministrationService, Provider } from '../../services/administration.service';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 import { FormErrorHandlerService } from '../../../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-accounts-payable-form',
@@ -25,11 +21,14 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
     FormContainerComponent,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
       [title]="isEditMode ? 'Editar Cuenta por Pagar' : 'Nueva Cuenta por Pagar'"
-      [subtitle]="isEditMode ? 'Modificar detalles del documento' : 'Registrar nuevo documento por pagar'"
+      [subtitle]="
+        isEditMode ? 'Modificar detalles del documento' : 'Registrar nuevo documento por pagar'
+      "
       icon="fa-file-invoice-dollar"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
@@ -56,21 +55,16 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
       <form [formGroup]="apForm" (ngSubmit)="onSubmit()">
         <div class="form-section">
           <h2 class="section-title">Información del Documento</h2>
-          
+
           <div class="form-grid">
             <div class="form-group">
               <label for="proveedor_id">Proveedor <span class="required">*</span></label>
-              <select
-                id="proveedor_id"
+              <app-dropdown
                 formControlName="proveedor_id"
-                class="form-control"
-                [class.error]="isFieldInvalid('proveedor_id')"
-              >
-                <option value="">Seleccione un proveedor</option>
-                <option *ngFor="let provider of providers" [value]="provider.id">
-                  {{ provider.razonSocial }} - {{ provider.ruc }}
-                </option>
-              </select>
+                [options]="providerOptions"
+                [placeholder]="'Seleccione un proveedor'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-message" *ngIf="isFieldInvalid('proveedor_id')">
                 El proveedor es requerido
               </div>
@@ -106,7 +100,9 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
             </div>
 
             <div class="form-group">
-              <label for="fecha_vencimiento">Fecha de Vencimiento <span class="required">*</span></label>
+              <label for="fecha_vencimiento"
+                >Fecha de Vencimiento <span class="required">*</span></label
+              >
               <input
                 id="fecha_vencimiento"
                 type="date"
@@ -138,15 +134,11 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
 
             <div class="form-group">
               <label for="moneda">Moneda <span class="required">*</span></label>
-              <select
-                id="moneda"
+              <app-dropdown
                 formControlName="moneda"
-                class="form-control"
-                [class.error]="isFieldInvalid('moneda')"
-              >
-                <option value="PEN">Soles (PEN)</option>
-                <option value="USD">Dólares (USD)</option>
-              </select>
+                [options]="currencyOptions"
+                [placeholder]="'Seleccionar Moneda'"
+              ></app-dropdown>
               <div class="error-message" *ngIf="isFieldInvalid('moneda')">
                 La moneda es requerida
               </div>
@@ -197,7 +189,13 @@ export class AccountsPayableFormComponent implements OnInit {
   recordId?: number;
   validationErrors: any[] = [];
   errorMessage: string | null = null;
-  
+
+  providerOptions: DropdownOption[] = [];
+  currencyOptions: DropdownOption[] = [
+    { label: 'Soles (PEN)', value: 'PEN' },
+    { label: 'Dólares (USD)', value: 'USD' },
+  ];
+
   breadcrumbs = [
     { label: 'Inicio', url: '/app' },
     { label: 'Administración', url: '/administracion' },
@@ -220,7 +218,7 @@ export class AccountsPayableFormComponent implements OnInit {
   ngOnInit() {
     this.loadProviders();
     this.recordId = Number(this.route.snapshot.paramMap.get('id'));
-    
+
     if (this.recordId) {
       this.isEditMode = true;
       this.loadRecord();
@@ -231,6 +229,10 @@ export class AccountsPayableFormComponent implements OnInit {
     this.adminService.getProviders().subscribe({
       next: (providers) => {
         this.providers = providers;
+        this.providerOptions = providers.map((p) => ({
+          label: `${p.razonSocial} - ${p.ruc}`,
+          value: p.id,
+        }));
       },
       error: (err) => {
         console.error('Error loading providers:', err);
@@ -248,8 +250,12 @@ export class AccountsPayableFormComponent implements OnInit {
         this.apForm.patchValue({
           proveedor_id: record.proveedor_id,
           numero_factura: record.numero_factura,
-          fecha_emision: record.fecha_emision ? new Date(record.fecha_emision).toISOString().split('T')[0] : '',
-          fecha_vencimiento: record.fecha_vencimiento ? new Date(record.fecha_vencimiento).toISOString().split('T')[0] : '',
+          fecha_emision: record.fecha_emision
+            ? new Date(record.fecha_emision).toISOString().split('T')[0]
+            : '',
+          fecha_vencimiento: record.fecha_vencimiento
+            ? new Date(record.fecha_vencimiento).toISOString().split('T')[0]
+            : '',
           monto_total: record.monto_total,
           moneda: record.moneda,
           observaciones: record.observaciones,
@@ -277,7 +283,7 @@ export class AccountsPayableFormComponent implements OnInit {
     this.loading = true;
     this.errorMessage = null;
     const formValue = this.apForm.getRawValue();
-    
+
     // Convert numeric strings to numbers if needed
     const data = {
       ...formValue,

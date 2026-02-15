@@ -9,6 +9,10 @@ import {
 } from '../../../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-document-form',
@@ -19,6 +23,7 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
     RouterModule,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <div class="form-container">
@@ -94,25 +99,23 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
 
               <div class="form-group">
                 <label for="tipoDocumento">Tipo *</label>
-                <select id="tipoDocumento" formControlName="tipoDocumento" class="form-select">
-                  <option value="">Seleccione...</option>
-                  <option value="Procedimiento">Procedimiento</option>
-                  <option value="Instructivo">Instructivo</option>
-                  <option value="Formato">Formato</option>
-                  <option value="Política">Política</option>
-                  <option value="Manual">Manual</option>
-                </select>
+                <app-dropdown
+                  formControlName="tipoDocumento"
+                  [options]="documentTypeOptions"
+                  [placeholder]="'Seleccione...'"
+                  [error]="hasError('tipoDocumento')"
+                ></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('tipoDocumento')">Tipo es requerido</div>
               </div>
 
               <div class="form-group">
                 <label for="isoStandard">Norma ISO *</label>
-                <select id="isoStandard" formControlName="isoStandard" class="form-select">
-                  <option value="">Seleccione...</option>
-                  <option value="ISO 9001">ISO 9001 - Calidad</option>
-                  <option value="ISO 14001">ISO 14001 - Ambiental</option>
-                  <option value="ISO 45001">ISO 45001 - SST</option>
-                </select>
+                <app-dropdown
+                  formControlName="isoStandard"
+                  [options]="isoStandardOptions"
+                  [placeholder]="'Seleccione...'"
+                  [error]="hasError('isoStandard')"
+                ></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('isoStandard')">Norma ISO es requerida</div>
               </div>
 
@@ -323,6 +326,20 @@ export class DocumentFormComponent implements OnInit {
   documentId?: string;
   validationErrors: ValidationError[] = [];
   errorMessage: string | null = null;
+
+  documentTypeOptions: DropdownOption[] = [
+    { label: 'Procedimiento', value: 'Procedimiento' },
+    { label: 'Instructivo', value: 'Instructivo' },
+    { label: 'Formato', value: 'Formato' },
+    { label: 'Política', value: 'Política' },
+    { label: 'Manual', value: 'Manual' },
+  ];
+
+  isoStandardOptions: DropdownOption[] = [
+    { label: 'ISO 9001 - Calidad', value: 'ISO 9001' },
+    { label: 'ISO 14001 - Ambiental', value: 'ISO 14001' },
+    { label: 'ISO 45001 - SST', value: 'ISO 45001' },
+  ];
 
   ngOnInit() {
     this.documentId = this.route.snapshot.params['id'];

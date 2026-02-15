@@ -12,6 +12,10 @@ import {
   FormErrorHandlerService,
   ValidationError,
 } from '../../../../core/services/form-error-handler.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-timesheet-form',
@@ -23,6 +27,7 @@ import {
     FormContainerComponent,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -67,23 +72,23 @@ import {
           <div class="section-grid">
             <div class="form-group">
               <label for="project">Proyecto *</label>
-              <select id="project" formControlName="proyecto_id" class="form-select">
-                <option [ngValue]="null">Seleccionar Proyecto</option>
-                <option *ngFor="let project of projects" [value]="project.id">
-                  {{ project.nombre }}
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="proyecto_id"
+                [options]="projectOptions"
+                [placeholder]="'Seleccionar Proyecto'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('proyecto_id')">Proyecto es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="operator">Operador *</label>
-              <select id="operator" formControlName="trabajador_id" class="form-select">
-                <option [ngValue]="null">Seleccionar Operador</option>
-                <option *ngFor="let op of operators" [value]="op.id">
-                  {{ op.nombres }} {{ op.apellidos }}
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="trabajador_id"
+                [options]="operatorOptions"
+                [placeholder]="'Seleccionar Operador'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('trabajador_id')">Operador es requerido</div>
             </div>
 
@@ -95,12 +100,11 @@ import {
 
             <div class="form-group">
               <label for="status">Estado *</label>
-              <select id="status" formControlName="estado" class="form-select">
-                <option value="BORRADOR">Borrador</option>
-                <option value="ENVIADO">Enviado</option>
-                <option value="APROBADO">Aprobado</option>
-                <option value="RECHAZADO">Rechazado</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="statusOptions"
+                [placeholder]="'Seleccionar Estado'"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
             </div>
           </div>
@@ -391,6 +395,14 @@ export class TimesheetFormComponent implements OnInit {
   timesheetId?: string;
   projects: any[] = [];
   operators: any[] = [];
+  projectOptions: DropdownOption[] = [];
+  operatorOptions: DropdownOption[] = [];
+  statusOptions: DropdownOption[] = [
+    { label: 'Borrador', value: 'BORRADOR' },
+    { label: 'Enviado', value: 'ENVIADO' },
+    { label: 'Aprobado', value: 'APROBADO' },
+    { label: 'Rechazado', value: 'RECHAZADO' },
+  ];
   validationErrors: ValidationError[] = [];
   errorMessage = '';
   successMessage = '';
@@ -446,8 +458,17 @@ export class TimesheetFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.projectService.getAll().subscribe((res: any) => (this.projects = res.data || res));
-    this.operatorService.getAll().subscribe((res: any) => (this.operators = res.data || res));
+    this.projectService.getAll().subscribe((res: any) => {
+      this.projects = res.data || res;
+      this.projectOptions = this.projects.map((p) => ({ label: p.nombre, value: p.id }));
+    });
+    this.operatorService.getAll().subscribe((res: any) => {
+      this.operators = res.data || res;
+      this.operatorOptions = this.operators.map((op) => ({
+        label: `${op.nombres} ${op.apellidos}`,
+        value: op.id,
+      }));
+    });
   }
 
   loadTimesheet() {

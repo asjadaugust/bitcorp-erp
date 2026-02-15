@@ -8,6 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 import { PaymentService } from '../../core/services/payment.service';
 import { ValuationService } from '../../core/services/valuation.service';
 import {
@@ -23,7 +27,7 @@ import { Valuation } from '../../core/models/valuation.model';
 @Component({
   selector: 'app-payment-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, DropdownComponent],
   template: `
     <div class="form-container">
       <div class="container">
@@ -44,21 +48,15 @@ import { Valuation } from '../../core/models/valuation.model';
                 <div class="form-row">
                   <div class="form-group">
                     <label for="valorizacion">Valorización *</label>
-                    <select
-                      id="valorizacion"
+                    <app-dropdown
                       formControlName="valorizacion_id"
-                      class="form-control"
-                      [class.invalid]="isFieldInvalid('valorizacion_id')"
-                      (change)="onValuationChange()"
+                      [options]="valuationOptions"
+                      [placeholder]="'Seleccione una valorización'"
+                      [searchable]="true"
+                      [error]="isFieldInvalid('valorizacion_id')"
+                      (ngModelChange)="onValuationChange()"
                       [disabled]="isEditMode"
-                    >
-                      <option [ngValue]="null">Seleccione una valorización</option>
-                      <option *ngFor="let val of valuations" [value]="val.id">
-                        {{ val.numeroValorizacion || '#' + val.id }} -
-                        {{ paymentService.formatCurrency(val.totalValorizado, 'PEN') }}
-                        ({{ val.estado }})
-                      </option>
-                    </select>
+                    ></app-dropdown>
                     <div *ngIf="isFieldInvalid('valorizacion_id')" class="error-message">
                       Debe seleccionar una valorización
                     </div>
@@ -146,10 +144,10 @@ import { Valuation } from '../../core/models/valuation.model';
                 <div class="form-row">
                   <div class="form-group">
                     <label for="moneda">Moneda</label>
-                    <select id="moneda" formControlName="moneda" class="form-control">
-                      <option value="PEN">Soles (PEN)</option>
-                      <option value="USD">Dólares (USD)</option>
-                    </select>
+                    <app-dropdown
+                      formControlName="moneda"
+                      [options]="currencyOptions"
+                    ></app-dropdown>
                   </div>
 
                   <div class="form-group" *ngIf="paymentForm.value.moneda === 'USD'">
@@ -168,18 +166,13 @@ import { Valuation } from '../../core/models/valuation.model';
                 <div class="form-row">
                   <div class="form-group">
                     <label for="metodo_pago">Método de Pago *</label>
-                    <select
-                      id="metodo_pago"
+                    <app-dropdown
                       formControlName="metodo_pago"
-                      class="form-control"
-                      [class.invalid]="isFieldInvalid('metodo_pago')"
-                      (change)="onPaymentMethodChange()"
-                    >
-                      <option [ngValue]="null">Seleccione método</option>
-                      <option *ngFor="let metodo of metodoOptions" [value]="metodo">
-                        {{ paymentService.getPaymentMethodLabel(metodo) }}
-                      </option>
-                    </select>
+                      [options]="metodoDropdownOptions"
+                      [placeholder]="'Seleccione método'"
+                      [error]="isFieldInvalid('metodo_pago')"
+                      (ngModelChange)="onPaymentMethodChange()"
+                    ></app-dropdown>
                     <div *ngIf="isFieldInvalid('metodo_pago')" class="error-message">
                       Método de pago requerido
                     </div>
@@ -187,10 +180,10 @@ import { Valuation } from '../../core/models/valuation.model';
 
                   <div class="form-group" *ngIf="!isEditMode">
                     <label for="estado">Estado</label>
-                    <select id="estado" formControlName="estado" class="form-control">
-                      <option value="PENDIENTE">Pendiente</option>
-                      <option value="CONFIRMADO">Confirmado</option>
-                    </select>
+                    <app-dropdown
+                      formControlName="estado"
+                      [options]="statusDropdownOptions"
+                    ></app-dropdown>
                   </div>
                 </div>
               </section>
@@ -294,16 +287,11 @@ import { Valuation } from '../../core/models/valuation.model';
                 <div class="form-row">
                   <div class="form-group">
                     <label for="comprobante_tipo">Tipo de Comprobante</label>
-                    <select
-                      id="comprobante_tipo"
+                    <app-dropdown
                       formControlName="comprobante_tipo"
-                      class="form-control"
-                    >
-                      <option [ngValue]="null">Ninguno</option>
-                      <option *ngFor="let tipo of comprobanteOptions" [value]="tipo">
-                        {{ tipo }}
-                      </option>
-                    </select>
+                      [options]="comprobanteDropdownOptions"
+                      [placeholder]="'Ninguno'"
+                    ></app-dropdown>
                   </div>
 
                   <div class="form-group">
@@ -629,6 +617,30 @@ export class PaymentFormComponent implements OnInit {
   metodoOptions = Object.values(MetodoPago);
   comprobanteOptions = Object.values(TipoComprobante);
 
+  valuationOptions: DropdownOption[] = [];
+  currencyOptions: DropdownOption[] = [
+    { label: 'Soles (PEN)', value: 'PEN' },
+    { label: 'Dólares (USD)', value: 'USD' },
+  ];
+  statusDropdownOptions: DropdownOption[] = [
+    { label: 'Pendiente', value: 'PENDIENTE' },
+    { label: 'Confirmado', value: 'CONFIRMADO' },
+  ];
+
+  get metodoDropdownOptions(): DropdownOption[] {
+    return this.metodoOptions.map((m) => ({
+      label: this.paymentService.getPaymentMethodLabel(m),
+      value: m,
+    }));
+  }
+
+  get comprobanteDropdownOptions(): DropdownOption[] {
+    return this.comprobanteOptions.map((tipo) => ({
+      label: tipo,
+      value: tipo,
+    }));
+  }
+
   ngOnInit() {
     this.initForm();
     this.loadApprovedValuations();
@@ -668,7 +680,13 @@ export class PaymentFormComponent implements OnInit {
     // Load valuations with APROBADO or PAGADO status
     this.valuationService.getAll({ limit: 100 }).subscribe({
       next: (valuations) => {
-        this.valuations = valuations.filter((v) => v.estado === 'APROBADO' || v.estado === 'PAGADO');
+        this.valuations = valuations.filter(
+          (v) => v.estado === 'APROBADO' || v.estado === 'PAGADO'
+        );
+        this.valuationOptions = this.valuations.map((val) => ({
+          label: `${val.numeroValorizacion || '#' + val.id} - ${this.paymentService.formatCurrency(val.totalValorizado || 0, 'PEN')} (${val.estado})`,
+          value: val.id,
+        }));
       },
       error: (error) => {
         console.error('Error loading valuations:', error);

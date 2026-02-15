@@ -253,11 +253,19 @@ export class ProjectListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        PLANIFICACION: { label: 'Planificación', class: 'badge status-on-hold' },
-        ACTIVO: { label: 'Activo', class: 'badge status-active' },
-        PAUSADO: { label: 'Pausado', class: 'badge status-on-hold' },
-        COMPLETADO: { label: 'Completado', class: 'badge status-completed' },
-        CANCELADO: { label: 'Cancelado', class: 'badge status-cancelled' },
+        PLANIFICACION: {
+          label: 'Planificación',
+          class: 'status-badge status-on-hold',
+          icon: 'fa-compass-drafting',
+        },
+        ACTIVO: { label: 'Activo', class: 'status-badge status-active', icon: 'fa-play' },
+        PAUSADO: { label: 'Pausado', class: 'status-badge status-on-hold', icon: 'fa-pause' },
+        COMPLETADO: {
+          label: 'Completado',
+          class: 'status-badge status-completed',
+          icon: 'fa-check-circle',
+        },
+        CANCELADO: { label: 'Cancelado', class: 'status-badge status-cancelled', icon: 'fa-ban' },
       },
     },
   ];

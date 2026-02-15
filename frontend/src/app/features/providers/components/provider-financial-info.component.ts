@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 interface FinancialInfo {
   id?: number;
@@ -20,7 +24,7 @@ interface FinancialInfo {
 @Component({
   selector: 'app-provider-financial-info',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, DropdownComponent],
   template: `
     <div class="financial-info-section">
       <div class="section-header">
@@ -77,10 +81,11 @@ interface FinancialInfo {
 
             <div class="form-group">
               <label for="currency">Moneda *</label>
-              <select id="currency" formControlName="currency" class="form-select">
-                <option value="PEN">Soles (PEN)</option>
-                <option value="USD">Dólares (USD)</option>
-              </select>
+              <app-dropdown
+                formControlName="currency"
+                [options]="currencyOptions"
+                [placeholder]="'Seleccionar...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group checkbox-group">
@@ -273,6 +278,11 @@ export class ProviderFinancialInfoComponent implements OnInit {
   showForm = false;
   loading = false;
   editingId: number | null = null;
+
+  currencyOptions: DropdownOption[] = [
+    { label: 'Soles (PEN)', value: 'PEN' },
+    { label: 'Dólares (USD)', value: 'USD' },
+  ];
 
   ngOnInit(): void {
     this.initForm();

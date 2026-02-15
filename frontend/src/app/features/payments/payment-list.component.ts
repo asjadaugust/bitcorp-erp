@@ -9,11 +9,16 @@ import {
   EstadoPago,
   MetodoPago,
 } from '../../core/models/payment-record.model';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-payment-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DropdownComponent, ButtonComponent],
   template: `
     <div class="list-container">
       <div class="container">
@@ -29,60 +34,80 @@ import {
           <div class="filters-grid">
             <div class="filter-item">
               <label>Estado</label>
-              <select [(ngModel)]="filters.estado" (change)="applyFilters()">
-                <option [ngValue]="undefined">Todos</option>
-                <option *ngFor="let estado of estadoOptions" [value]="estado">
-                  {{ paymentService.getPaymentStatusLabel(estado) }}
-                </option>
-              </select>
+              <app-dropdown
+                [(ngModel)]="filters.estado"
+                [options]="statusOptions"
+                (ngModelChange)="applyFilters()"
+                [placeholder]="'Todos'"
+              ></app-dropdown>
             </div>
 
             <div class="filter-item">
               <label>Método de Pago</label>
-              <select [(ngModel)]="filters.metodo_pago" (change)="applyFilters()">
-                <option [ngValue]="undefined">Todos</option>
-                <option *ngFor="let metodo of metodoOptions" [value]="metodo">
-                  {{ paymentService.getPaymentMethodLabel(metodo) }}
-                </option>
-              </select>
+              <app-dropdown
+                [(ngModel)]="filters.metodo_pago"
+                [options]="paymentMethodOptions"
+                (ngModelChange)="applyFilters()"
+                [placeholder]="'Todos'"
+              ></app-dropdown>
             </div>
 
             <div class="filter-item">
               <label>Conciliado</label>
-              <select [(ngModel)]="filters.conciliado" (change)="applyFilters()">
-                <option [ngValue]="undefined">Todos</option>
-                <option [ngValue]="true">Sí</option>
-                <option [ngValue]="false">No</option>
-              </select>
+              <app-dropdown
+                [(ngModel)]="filters.conciliado"
+                [options]="reconciledOptions"
+                (ngModelChange)="applyFilters()"
+                [placeholder]="'Todos'"
+              ></app-dropdown>
             </div>
 
             <div class="filter-item">
               <label>Fecha Desde</label>
-              <input type="date" [(ngModel)]="filters.fecha_desde" (change)="applyFilters()" />
+              <input
+                type="date"
+                [(ngModel)]="filters.fecha_desde"
+                (change)="applyFilters()"
+                class="form-control"
+              />
             </div>
 
             <div class="filter-item">
               <label>Fecha Hasta</label>
-              <input type="date" [(ngModel)]="filters.fecha_hasta" (change)="applyFilters()" />
+              <input
+                type="date"
+                [(ngModel)]="filters.fecha_hasta"
+                (change)="applyFilters()"
+                class="form-control"
+              />
             </div>
 
             <div class="filter-item">
               <label>Moneda</label>
-              <select [(ngModel)]="filters.moneda" (change)="applyFilters()">
-                <option [ngValue]="undefined">Todas</option>
-                <option value="PEN">Soles (PEN)</option>
-                <option value="USD">Dólares (USD)</option>
-              </select>
+              <app-dropdown
+                [(ngModel)]="filters.moneda"
+                [options]="currencyDropdownOptions"
+                (ngModelChange)="applyFilters()"
+                [placeholder]="'Todas'"
+              ></app-dropdown>
             </div>
           </div>
 
           <div class="filter-actions">
-            <button class="btn btn-secondary" (click)="clearFilters()">
-              <i class="fa-solid fa-times"></i> Limpiar Filtros
-            </button>
-            <button class="btn btn-primary" (click)="exportToExcel()">
-              <i class="fa-solid fa-file-excel"></i> Exportar
-            </button>
+            <app-button
+              variant="ghost"
+              size="sm"
+              label="Limpiar Filtros"
+              icon="fa-times"
+              (onClick)="clearFilters()"
+            ></app-button>
+            <app-button
+              variant="success"
+              size="sm"
+              label="Exportar"
+              icon="fa-file-excel"
+              (onClick)="exportToExcel()"
+            ></app-button>
           </div>
         </div>
 
@@ -136,17 +161,29 @@ import {
                   <td>
                     <span
                       [class]="
-                        'badge badge-' + paymentService.getPaymentStatusColor(payment.estado)
+                        'status-badge status-' +
+                        paymentService.getPaymentStatusColor(payment.estado)
                       "
                     >
+                      <i
+                        [class]="
+                          payment.estado === 'PENDIENTE'
+                            ? 'fa-solid fa-clock'
+                            : payment.estado === 'PAGADO'
+                              ? 'fa-solid fa-check-circle'
+                              : payment.estado === 'ANULADO'
+                                ? 'fa-solid fa-ban'
+                                : 'fa-solid fa-circle'
+                        "
+                      ></i>
                       {{ paymentService.getPaymentStatusLabel(payment.estado) }}
                     </span>
                   </td>
                   <td>
-                    <span *ngIf="payment.conciliado" class="badge badge-success">
-                      <i class="fa-solid fa-check"></i> Sí
+                    <span *ngIf="payment.conciliado" class="status-badge status-completed">
+                      <i class="fa-solid fa-check-double"></i> Sí
                     </span>
-                    <span *ngIf="!payment.conciliado" class="badge badge-warning">
+                    <span *ngIf="!payment.conciliado" class="status-badge status-pending">
                       <i class="fa-solid fa-clock"></i> No
                     </span>
                   </td>
@@ -248,36 +285,6 @@ import {
         margin-bottom: 1.5rem;
         padding: 1.5rem;
       }
-
-      .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-      }
-
-      .filter-item label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: #555;
-      }
-
-      .filter-item select,
-      .filter-item input {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.9rem;
-      }
-
-      .filter-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-      }
-
       .table-card {
         padding: 0;
       }
@@ -446,6 +453,34 @@ export class PaymentListComponent implements OnInit {
   // Filter options
   estadoOptions = Object.values(EstadoPago);
   metodoOptions = Object.values(MetodoPago);
+
+  get statusOptions(): DropdownOption[] {
+    const options = this.estadoOptions.map((estado) => ({
+      label: this.paymentService.getPaymentStatusLabel(estado),
+      value: estado,
+    }));
+    return [{ label: 'Todos', value: undefined }, ...options];
+  }
+
+  get paymentMethodOptions(): DropdownOption[] {
+    const options = this.metodoOptions.map((metodo) => ({
+      label: this.paymentService.getPaymentMethodLabel(metodo),
+      value: metodo,
+    }));
+    return [{ label: 'Todos', value: undefined }, ...options];
+  }
+
+  reconciledOptions: DropdownOption[] = [
+    { label: 'Todos', value: undefined },
+    { label: 'Sí', value: true },
+    { label: 'No', value: false },
+  ];
+
+  currencyDropdownOptions: DropdownOption[] = [
+    { label: 'Todas', value: undefined },
+    { label: 'Soles (PEN)', value: 'PEN' },
+    { label: 'Dólares (USD)', value: 'USD' },
+  ];
 
   ngOnInit() {
     this.loadPayments();

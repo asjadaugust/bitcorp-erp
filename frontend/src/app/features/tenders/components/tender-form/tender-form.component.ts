@@ -15,6 +15,10 @@ import {
 } from '../../../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-tender-form',
@@ -25,6 +29,7 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
     RouterModule,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <div class="form-container">
@@ -158,17 +163,12 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
 
               <div class="form-group">
                 <label for="estado">Estado *</label>
-                <select
-                  id="estado"
+                <app-dropdown
                   formControlName="estado"
-                  class="form-select"
+                  [options]="availableEstados"
                   [disabled]="isEstadoDisabled"
-                  [title]="estadoTooltip"
-                >
-                  <option *ngFor="let option of availableEstados" [value]="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
+                  [error]="hasError('estado')"
+                ></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
                 <div class="info-msg" *ngIf="terminalStateMessage">
                   <i class="fa-solid fa-info-circle"></i>

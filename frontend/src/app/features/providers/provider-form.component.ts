@@ -15,6 +15,10 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
 import { ProviderFinancialInfoComponent } from './components/provider-financial-info.component';
 import { ProviderDocumentsComponent } from './components/provider-documents.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-provider-form',
@@ -30,6 +34,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
     ProviderFinancialInfoComponent,
     ProviderDocumentsComponent,
     FormContainerComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -95,7 +100,13 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
               </div>
               <div class="error-msg" *ngIf="hasError('ruc')">
                 <span *ngIf="providerForm.get('ruc')?.hasError('required')">RUC es requerido</span>
-                <span *ngIf="providerForm.get('ruc')?.hasError('minlength') || providerForm.get('ruc')?.hasError('maxlength')">RUC debe tener 11 dígitos</span>
+                <span
+                  *ngIf="
+                    providerForm.get('ruc')?.hasError('minlength') ||
+                    providerForm.get('ruc')?.hasError('maxlength')
+                  "
+                  >RUC debe tener 11 dígitos</span
+                >
               </div>
             </div>
 
@@ -115,21 +126,20 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
 
             <div class="form-group">
               <label for="tipo_proveedor">Tipo de Proveedor</label>
-              <select id="tipo_proveedor" formControlName="tipo_proveedor" class="form-select">
-                <option value="">Seleccionar...</option>
-                <option value="EQUIPOS">Equipos</option>
-                <option value="SERVICIOS">Servicios</option>
-                <option value="MATERIALES">Suministros / Combustible</option>
-                <option value="MIXTO">Mixto / Otro</option>
-              </select>
+              <app-dropdown
+                formControlName="tipo_proveedor"
+                [options]="providerTypeOptions"
+                [placeholder]="'Seleccionar...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
               <label for="is_active">Estado</label>
-              <select id="is_active" formControlName="is_active" class="form-select">
-                <option [ngValue]="true">Activo</option>
-                <option [ngValue]="false">Inactivo</option>
-              </select>
+              <app-dropdown
+                formControlName="is_active"
+                [options]="statusOptions"
+                [placeholder]="'Seleccionar...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
@@ -486,6 +496,18 @@ export class ProviderFormComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   activeTab: 'contacts' | 'financial' | 'documents' | 'logs' = 'contacts';
+
+  providerTypeOptions: DropdownOption[] = [
+    { label: 'Equipos', value: 'EQUIPOS' },
+    { label: 'Servicios', value: 'SERVICIOS' },
+    { label: 'Suministros / Combustible', value: 'MATERIALES' },
+    { label: 'Mixto / Otro', value: 'MIXTO' },
+  ];
+
+  statusOptions: DropdownOption[] = [
+    { label: 'Activo', value: true },
+    { label: 'Inactivo', value: false },
+  ];
 
   fieldLabels: Record<string, string> = {
     ruc: 'RUC',

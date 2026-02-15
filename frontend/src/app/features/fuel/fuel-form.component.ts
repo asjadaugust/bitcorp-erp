@@ -2,13 +2,17 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 import { FuelService } from '../../core/services/fuel.service';
 import { FuelRecord } from '../../core/models/fuel-record.model';
 
 @Component({
   selector: 'app-fuel-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, DropdownComponent],
   template: `
     <div class="form-container">
       <!-- Header -->
@@ -80,20 +84,11 @@ import { FuelRecord } from '../../core/models/fuel-record.model';
 
               <div class="form-group">
                 <label for="tipo_combustible">Tipo de Combustible</label>
-                <select
-                  id="tipo_combustible"
+                <app-dropdown
                   formControlName="tipo_combustible"
-                  class="form-select"
-                >
-                  <option [ngValue]="null">Seleccionar Tipo</option>
-                  <option value="DIESEL">Diesel</option>
-                  <option value="GASOLINA_84">Gasolina 84</option>
-                  <option value="GASOLINA_90">Gasolina 90</option>
-                  <option value="GASOLINA_95">Gasolina 95</option>
-                  <option value="GASOLINA_97">Gasolina 97</option>
-                  <option value="GLP">GLP</option>
-                  <option value="GNV">GNV</option>
-                </select>
+                  [options]="fuelTypeOptions"
+                  [placeholder]="'Seleccionar Tipo'"
+                ></app-dropdown>
               </div>
             </div>
           </div>
@@ -342,6 +337,16 @@ export class FuelFormComponent implements OnInit {
   isEditMode = false;
   loading = false;
   recordId: number | null = null;
+
+  fuelTypeOptions: DropdownOption[] = [
+    { label: 'Diesel', value: 'DIESEL' },
+    { label: 'Gasolina 84', value: 'GASOLINA_84' },
+    { label: 'Gasolina 90', value: 'GASOLINA_90' },
+    { label: 'Gasolina 95', value: 'GASOLINA_95' },
+    { label: 'Gasolina 97', value: 'GASOLINA_97' },
+    { label: 'GLP', value: 'GLP' },
+    { label: 'GNV', value: 'GNV' },
+  ];
 
   constructor() {
     this.fuelForm = this.fb.group({

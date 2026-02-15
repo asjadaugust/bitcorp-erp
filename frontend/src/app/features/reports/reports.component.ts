@@ -6,11 +6,16 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, AeroTableComponent],
+  imports: [CommonModule, FormsModule, AeroTableComponent, DropdownComponent, ButtonComponent],
   template: `
     <div class="reports-container">
       <div class="header">
@@ -19,44 +24,37 @@ import {
       </div>
 
       <div class="card filter-card">
-        <div class="filter-grid">
-          <div class="form-group">
+        <div class="filters-grid">
+          <div class="filter-group">
             <label>Tipo de Reporte</label>
-            <select [(ngModel)]="selectedReport" class="form-select">
-              <option value="utilization">Utilización de Equipos</option>
-              <option value="maintenance">Historial de Mantenimiento</option>
-              <option value="inventory">Movimientos de Inventario</option>
-              <option value="timesheet">Timesheet de Operadores</option>
-            </select>
+            <app-dropdown [(ngModel)]="selectedReport" [options]="reportOptions"></app-dropdown>
           </div>
 
-          <div class="form-group">
+          <div class="filter-group">
             <label>Fecha Inicio</label>
             <input type="date" [(ngModel)]="startDate" class="form-control" />
           </div>
 
-          <div class="form-group">
+          <div class="filter-group">
             <label>Fecha Fin</label>
             <input type="date" [(ngModel)]="endDate" class="form-control" />
           </div>
 
-          <div class="actions">
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="generateReport()"
-              [disabled]="loading"
-            >
-              <i class="fa-solid fa-table"></i> Ver Datos
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
-              (click)="exportExcel()"
-              [disabled]="loading"
-            >
-              <i class="fa-solid fa-file-excel"></i> Exportar Excel
-            </button>
+          <div class="filter-actions">
+            <app-button
+              variant="primary"
+              label="Ver Datos"
+              icon="fa-table"
+              [loading]="loading"
+              (onClick)="generateReport()"
+            ></app-button>
+            <app-button
+              variant="success"
+              label="Excel"
+              icon="fa-file-excel"
+              [loading]="loading"
+              (onClick)="exportExcel()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -157,14 +155,14 @@ import {
         margin-bottom: 24px;
       }
 
-      .filter-grid {
+      .filters-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px;
         align-items: end;
       }
 
-      .form-group {
+      .filter-group {
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -183,38 +181,9 @@ import {
         width: 100%;
       }
 
-      .actions {
+      .filter-actions {
         display: flex;
         gap: 12px;
-      }
-
-      .btn {
-        padding: 10px 16px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: white;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-      }
-      .btn-success {
-        background: var(--semantic-green-600);
-      }
-      .btn:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-      }
-
-      .report-result {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: var(--shadow-sm);
       }
 
       .data-table {
@@ -267,6 +236,13 @@ export class ReportsComponent {
 
   loading = false;
   reportData: any[] | null = null;
+
+  reportOptions: DropdownOption[] = [
+    { label: 'Utilización de Equipos', value: 'utilization' },
+    { label: 'Historial de Mantenimiento', value: 'maintenance' },
+    { label: 'Movimientos de Inventario', value: 'inventory' },
+    { label: 'Timesheet de Operadores', value: 'timesheet' },
+  ];
 
   columnsUtilization: TableColumn[] = [
     { key: 'codigo_equipo', label: 'Equipo', type: 'text' },

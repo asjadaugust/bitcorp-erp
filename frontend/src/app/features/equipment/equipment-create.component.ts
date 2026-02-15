@@ -4,11 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { Equipment } from '../../core/models/equipment.model';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-equipment-create',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DropdownComponent],
   template: `
     <div class="equipment-edit-container">
       <div class="container">
@@ -83,12 +87,13 @@ import { Equipment } from '../../core/models/equipment.model';
 
                   <div class="form-group">
                     <label for="estado">Estado *</label>
-                    <select id="estado" name="estado" [(ngModel)]="equipment.estado" required>
-                      <option value="DISPONIBLE">Disponible</option>
-                      <option value="EN_USO">En Uso</option>
-                      <option value="MANTENIMIENTO">Mantenimiento</option>
-                      <option value="BAJA">De Baja</option>
-                    </select>
+                    <app-dropdown
+                      name="estado"
+                      [(ngModel)]="equipment.estado"
+                      [options]="statusOptions"
+                      [placeholder]="'Seleccionar Estado'"
+                      required
+                    ></app-dropdown>
                   </div>
                 </div>
               </section>
@@ -100,23 +105,22 @@ import { Equipment } from '../../core/models/equipment.model';
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="tipo_motor">Tipo de Motor</label>
-                    <select id="tipo_motor" name="tipo_motor" [(ngModel)]="equipment.tipo_motor">
-                      <option value="">Seleccionar...</option>
-                      <option value="DIESEL">Diesel</option>
-                      <option value="GASOLINA">Gasolina</option>
-                      <option value="ELECTRICO">Eléctrico</option>
-                      <option value="HIBRIDO">Híbrido</option>
-                    </select>
+                    <app-dropdown
+                      name="tipo_motor"
+                      [(ngModel)]="equipment.tipo_motor"
+                      [options]="engineTypeOptions"
+                      [placeholder]="'Seleccionar Motor'"
+                    ></app-dropdown>
                   </div>
 
                   <div class="form-group">
                     <label for="medidor_uso">Tipo de Medidor</label>
-                    <select id="medidor_uso" name="medidor_uso" [(ngModel)]="equipment.medidor_uso">
-                      <option value="">Seleccionar...</option>
-                      <option value="HOROMETRO">Horómetro</option>
-                      <option value="ODOMETRO">Odómetro</option>
-                      <option value="AMBOS">Ambos</option>
-                    </select>
+                    <app-dropdown
+                      name="medidor_uso"
+                      [(ngModel)]="equipment.medidor_uso"
+                      [options]="usageMeterOptions"
+                      [placeholder]="'Seleccionar Medidor'"
+                    ></app-dropdown>
                   </div>
                 </div>
               </section>
@@ -278,6 +282,26 @@ export class EquipmentCreateComponent {
   errorMessage = '';
   successMessage = '';
   currentYear = new Date().getFullYear();
+
+  statusOptions: DropdownOption[] = [
+    { label: 'Disponible', value: 'DISPONIBLE' },
+    { label: 'En Uso', value: 'EN_USO' },
+    { label: 'Mantenimiento', value: 'MANTENIMIENTO' },
+    { label: 'De Baja', value: 'BAJA' },
+  ];
+
+  engineTypeOptions: DropdownOption[] = [
+    { label: 'Diesel', value: 'DIESEL' },
+    { label: 'Gasolina', value: 'GASOLINA' },
+    { label: 'Eléctrico', value: 'ELECTRICO' },
+    { label: 'Híbrido', value: 'HIBRIDO' },
+  ];
+
+  usageMeterOptions: DropdownOption[] = [
+    { label: 'Horómetro', value: 'HOROMETRO' },
+    { label: 'Odómetro', value: 'ODOMETRO' },
+    { label: 'Ambos', value: 'AMBOS' },
+  ];
 
   saveEquipment(): void {
     this.saving = true;

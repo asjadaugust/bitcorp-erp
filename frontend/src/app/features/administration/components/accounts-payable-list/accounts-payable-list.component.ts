@@ -175,10 +175,10 @@ export class AccountsPayableListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        PENDIENTE: { label: 'Pendiente', class: 'badge badge-warning' },
-        PAGADO: { label: 'Pagado', class: 'badge badge-success' },
-        CANCELADO: { label: 'Cancelado', class: 'badge badge-error' },
-        PARCIAL: { label: 'Parcial', class: 'badge badge-info' },
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-on-hold', icon: 'fa-clock' },
+        PAGADO: { label: 'Pagado', class: 'status-badge status-paid', icon: 'fa-check-circle' },
+        CANCELADO: { label: 'Cancelado', class: 'status-badge status-cancelled', icon: 'fa-ban' },
+        PARCIAL: { label: 'Parcial', class: 'status-badge status-partial', icon: 'fa-chart-pie' },
       },
     },
   ];

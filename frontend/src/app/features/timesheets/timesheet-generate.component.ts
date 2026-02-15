@@ -5,11 +5,15 @@ import { Router } from '@angular/router';
 import { TimesheetService } from '../../core/services/timesheet.service';
 import { OperatorService } from '../../core/services/operator.service';
 import { ProjectService } from '../../core/services/project.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-timesheet-generate',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownComponent],
   template: `
     <div class="container">
       <div class="page-header">
@@ -24,34 +28,26 @@ import { ProjectService } from '../../core/services/project.service';
           <!-- Operator Selection -->
           <div class="form-group">
             <label for="operator">Operador *</label>
-            <select
-              id="operator"
+            <app-dropdown
               name="operator"
               [(ngModel)]="formData.trabajadorId"
-              required
-              class="form-control"
-            >
-              <option value="">Seleccionar operador...</option>
-              <option *ngFor="let op of operators" [value]="op.id">
-                {{ op.nombre_completo || op.nombres + ' ' + op.apellido_paterno }}
-              </option>
-            </select>
+              [options]="operatorOptions"
+              [placeholder]="'Seleccionar operador...'"
+              [searchable]="true"
+              [required]="true"
+            ></app-dropdown>
           </div>
 
           <!-- Project Selection (Optional) -->
           <div class="form-group">
             <label for="project">Proyecto (Opcional)</label>
-            <select
-              id="project"
+            <app-dropdown
               name="project"
               [(ngModel)]="formData.projectId"
-              class="form-control"
-            >
-              <option value="">Todos los proyectos</option>
-              <option *ngFor="let proj of projects" [value]="proj.id">
-                {{ proj.G00007_Codigo }} - {{ proj.G00007_Nombre }}
-              </option>
-            </select>
+              [options]="projectOptions"
+              [placeholder]="'Seleccionar proyecto'"
+              [searchable]="true"
+            ></app-dropdown>
           </div>
 
           <!-- Date Range -->
@@ -248,7 +244,7 @@ import { ProjectService } from '../../core/services/project.service';
       .btn-secondary:hover {
         background: var(--grey-300);
       }
-      
+
       @media (max-width: 640px) {
         .form-actions {
           flex-direction: column-reverse;
@@ -274,7 +270,7 @@ export class TimesheetGenerateComponent implements OnInit {
     periodo: '',
     totalDiasTrabajados: 0,
     totalHoras: 0,
-    observaciones: ''
+    observaciones: '',
   };
 
   operators: any[] = [];
@@ -282,6 +278,21 @@ export class TimesheetGenerateComponent implements OnInit {
   loading = false;
   successMessage = '';
   errorMessage = '';
+
+  get operatorOptions(): DropdownOption[] {
+    return this.operators.map((op) => ({
+      label: op.nombre_completo || `${op.nombres} ${op.apellido_paterno}`,
+      value: op.id,
+    }));
+  }
+
+  get projectOptions(): DropdownOption[] {
+    const options = this.projects.map((proj) => ({
+      label: `${proj.G00007_Codigo} - ${proj.G00007_Nombre}`,
+      value: proj.id,
+    }));
+    return [{ label: 'Todos los proyectos', value: '' }, ...options];
+  }
 
   ngOnInit() {
     this.loadOperators();
@@ -326,9 +337,11 @@ export class TimesheetGenerateComponent implements OnInit {
     const dto = {
       trabajador_id: parseInt(this.formData.trabajadorId.toString()),
       periodo: this.formData.periodo,
-      total_dias_trabajados: this.formData.totalDiasTrabajados ? parseInt(this.formData.totalDiasTrabajados.toString()) : 0,
+      total_dias_trabajados: this.formData.totalDiasTrabajados
+        ? parseInt(this.formData.totalDiasTrabajados.toString())
+        : 0,
       total_horas: this.formData.totalHoras ? parseFloat(this.formData.totalHoras.toString()) : 0,
-      observaciones: this.formData.observaciones
+      observaciones: this.formData.observaciones,
     };
 
     console.log('Sending DTO:', dto);
@@ -343,7 +356,7 @@ export class TimesheetGenerateComponent implements OnInit {
         this.loading = false;
         console.error('Error generating timesheet:', err);
         console.log('FULL ERROR OBJECT:', JSON.stringify(err, null, 2));
-        
+
         if (err.error) {
           if (typeof err.error === 'string') {
             this.errorMessage = err.error;
@@ -355,15 +368,17 @@ export class TimesheetGenerateComponent implements OnInit {
               if (typeof err.error.error === 'string') {
                 this.errorMessage = err.error.error;
               } else if (typeof err.error.error === 'object') {
-                 if (err.error.error.message) {
-                   this.errorMessage = err.error.error.message;
-                   if (err.error.error.details && Array.isArray(err.error.error.details)) {
-                     const details = err.error.error.details.map((d: any) => `${d.field}: ${d.errors.join(', ')}`).join('; ');
-                     this.errorMessage += ` (${details})`;
-                   }
-                 } else {
-                   this.errorMessage = JSON.stringify(err.error.error);
-                 }
+                if (err.error.error.message) {
+                  this.errorMessage = err.error.error.message;
+                  if (err.error.error.details && Array.isArray(err.error.error.details)) {
+                    const details = err.error.error.details
+                      .map((d: any) => `${d.field}: ${d.errors.join(', ')}`)
+                      .join('; ');
+                    this.errorMessage += ` (${details})`;
+                  }
+                } else {
+                  this.errorMessage = JSON.stringify(err.error.error);
+                }
               }
             } else if (Array.isArray(err.error.errors)) {
               this.errorMessage = err.error.errors.join(', ');

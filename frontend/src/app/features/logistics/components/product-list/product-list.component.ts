@@ -78,7 +78,6 @@ import { CurrencyPipe } from '@angular/common';
           category: categoryTemplate,
           stock: stockTemplate,
           totalValue: totalValueTemplate,
-          status: statusTemplate,
         }"
       >
       </aero-table>
@@ -101,14 +100,6 @@ import { CurrencyPipe } from '@angular/common';
       <ng-template #totalValueTemplate let-row>
         <span class="font-semibold">
           {{ row.stock_actual * row.precio_unitario | currency: 'PEN' }}
-        </span>
-      </ng-template>
-
-      <ng-template #statusTemplate let-row>
-        <span
-          [class]="row.esta_activo ? 'badge badge-status-available' : 'badge badge-status-retired'"
-        >
-          {{ row.esta_activo ? 'Activo' : 'Inactivo' }}
         </span>
       </ng-template>
 
@@ -172,14 +163,7 @@ import { CurrencyPipe } from '@angular/common';
         background: var(--grey-200);
         color: var(--grey-900);
       }
-      .badge-status-available {
-        background: #d1fae5;
-        color: var(--semantic-success);
-      }
-      .badge-status-retired {
-        background: #fee2e2;
-        color: var(--semantic-error);
-      }
+      /* Removed obsolete badge-status-* classes as we use global status-badge now */
 
       .text-success {
         color: var(--semantic-success);
@@ -211,6 +195,7 @@ import { CurrencyPipe } from '@angular/common';
         background: var(--primary-100);
         color: var(--primary-500);
         border-radius: var(--s-4);
+        transition: color 0.2s;
       }
     `,
     `
@@ -297,7 +282,15 @@ export class ProductListComponent implements OnInit {
     { key: 'precio_unitario', label: 'Precio Unit.', type: 'currency', format: 'PEN' },
     { key: 'totalValue', label: 'Valor Total', type: 'template' },
     { key: 'ubicacion', label: 'Ubicación', type: 'text' },
-    { key: 'status', label: 'Estado', type: 'template' },
+    {
+      key: 'esta_activo',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        true: { label: 'Activo', class: 'status-badge status-active', icon: 'fa-check' },
+        false: { label: 'Inactivo', class: 'status-badge status-inactive', icon: 'fa-ban' },
+      },
+    },
   ];
 
   ngOnInit(): void {

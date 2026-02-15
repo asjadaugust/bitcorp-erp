@@ -11,6 +11,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 export interface TableColumn {
   key: string;
@@ -21,7 +25,7 @@ export interface TableColumn {
   format?: string; // For date pipes
   sticky?: boolean; // For sticky columns
   badgeConfig?: {
-    [key: string]: { label: string; class: string };
+    [key: string]: { label: string; class: string; icon?: string }; // Added icon support
   };
   customTemplate?: (row: any) => string; // For custom HTML rendering
 }
@@ -30,7 +34,7 @@ export interface TableColumn {
   selector: 'aero-table',
   encapsulation: ViewEncapsulation.None, // Add this to fix table rendering
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownComponent],
   template: `
     <div class="aero-table-container">
       <div *ngIf="loading" class="loading-overlay">
@@ -68,6 +72,10 @@ export interface TableColumn {
               <!-- Badge Column -->
               <ng-container *ngIf="col.type === 'badge'">
                 <span [class]="getBadgeClass(col, row[col.key])">
+                  <i
+                    *ngIf="getBadgeIcon(col, row[col.key])"
+                    [class]="'fa-solid ' + getBadgeIcon(col, row[col.key])"
+                  ></i>
                   {{ getBadgeLabel(col, row[col.key]) }}
                 </span>
               </ng-container>
@@ -114,12 +122,12 @@ export interface TableColumn {
           >
           <div class="page-size-selector">
             <label>Filas por página:</label>
-            <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-select">
-              <option [value]="10">10</option>
-              <option [value]="25">25</option>
-              <option [value]="50">50</option>
-              <option [value]="100">100</option>
-            </select>
+            <app-dropdown
+              [(ngModel)]="pageSize"
+              [options]="pageSizeOptions"
+              (ngModelChange)="onPageSizeChange()"
+              [placeholder]="'Select size'"
+            ></app-dropdown>
           </div>
         </div>
         <div class="pagination-controls">
@@ -295,7 +303,7 @@ export interface TableColumn {
         }
       }
 
-      /* Badge Styles */
+      /* Badge Styles overridden by Global Styles, keeping minimal defaults */
       .badge {
         padding: 4px 10px;
         border-radius: 20px;
@@ -304,13 +312,6 @@ export interface TableColumn {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-
-        &::before {
-          content: '';
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-        }
       }
 
       /* Pagination Styles */
@@ -417,6 +418,13 @@ export class AeroTableComponent {
   pageSize = 10;
   currentPage = 1;
 
+  pageSizeOptions: DropdownOption[] = [
+    { label: '10', value: 10 },
+    { label: '25', value: 25 },
+    { label: '50', value: 50 },
+    { label: '100', value: 100 },
+  ];
+
   get paginatedData(): any[] {
     if (this.serverSide) {
       return this.data || [];
@@ -452,7 +460,7 @@ export class AeroTableComponent {
   }
 
   get totalResults(): number {
-    return this.serverSide ? this.totalItems : (this.data ? this.data.length : 0);
+    return this.serverSide ? this.totalItems : this.data ? this.data.length : 0;
   }
 
   goToPage(page: number): void {
@@ -484,8 +492,10 @@ export class AeroTableComponent {
     if (col.badgeConfig && col.badgeConfig[value]) {
       return col.badgeConfig[value].class;
     }
-    // Default fallback if no config
-    return 'badge badge-' + value;
+    // Updated default fallback to use global status-badge and status-{value}
+    // Normalize value to ensure it matches common patterns (e.g. lowercase) if needed,
+    // but usually status classes are robust. Adding 'status-badge' is key.
+    return 'status-badge status-' + (value ? value.toString().toLowerCase() : 'unknown');
   }
 
   getBadgeLabel(col: TableColumn, value: string): string {
@@ -493,5 +503,12 @@ export class AeroTableComponent {
       return col.badgeConfig[value].label;
     }
     return value;
+  }
+
+  getBadgeIcon(col: TableColumn, value: string): string | undefined {
+    if (col.badgeConfig && col.badgeConfig[value]) {
+      return col.badgeConfig[value].icon;
+    }
+    return undefined;
   }
 }

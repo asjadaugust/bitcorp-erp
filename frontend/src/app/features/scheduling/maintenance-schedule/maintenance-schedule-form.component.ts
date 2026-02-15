@@ -5,11 +5,21 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
 import { EquipmentService } from '../../../core/services/equipment.service';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-maintenance-schedule-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormContainerComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FormContainerComponent,
+    DropdownComponent,
+  ],
   template: `
     <app-form-container
       [title]="isEditMode ? 'Editar Programación' : 'Nueva Programación'"
@@ -46,12 +56,13 @@ import { FormContainerComponent } from '../../../shared/components/form-containe
           <div class="section-grid">
             <div class="form-group">
               <label for="equipment">Equipo *</label>
-              <select id="equipment" formControlName="equipoId" class="form-select">
-                <option [ngValue]="null">Seleccionar Equipo</option>
-                <option *ngFor="let eq of equipmentList" [value]="eq.id">
-                  {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="equipoId"
+                [options]="equipmentOptions"
+                [placeholder]="'Seleccionar Equipo'"
+                [searchable]="true"
+                [error]="hasError('equipoId')"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('equipoId')">Equipo es requerido</div>
             </div>
 
@@ -74,23 +85,21 @@ import { FormContainerComponent } from '../../../shared/components/form-containe
           <div class="section-grid">
             <div class="form-group">
               <label for="type">Tipo de Mantenimiento *</label>
-              <select id="type" formControlName="tipoMantenimiento" class="form-select">
-                <option value="PREVENTIVO">Preventivo</option>
-                <option value="CORRECTIVO">Correctivo</option>
-                <option value="PREDICTIVO">Predictivo</option>
-              </select>
+              <app-dropdown
+                formControlName="tipoMantenimiento"
+                [options]="maintenanceTypeOptions"
+                [error]="hasError('tipoMantenimiento')"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('tipoMantenimiento')">Tipo es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="estado">Estado *</label>
-              <select id="estado" formControlName="estado" class="form-select">
-                <option value="PROGRAMADO">Programado</option>
-                <option value="EN_PROCESO">En Proceso</option>
-                <option value="COMPLETADO">Completado</option>
-                <option value="CANCELADO">Cancelado</option>
-                <option value="PENDIENTE">Pendiente</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="statusOptions"
+                [error]="hasError('estado')"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
             </div>
 
@@ -274,6 +283,20 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
+  equipmentOptions: DropdownOption[] = [];
+  maintenanceTypeOptions: DropdownOption[] = [
+    { label: 'Preventivo', value: 'PREVENTIVO' },
+    { label: 'Correctivo', value: 'CORRECTIVO' },
+    { label: 'Predictivo', value: 'PREDICTIVO' },
+  ];
+  statusOptions: DropdownOption[] = [
+    { label: 'Programado', value: 'PROGRAMADO' },
+    { label: 'En Proceso', value: 'EN_PROCESO' },
+    { label: 'Completado', value: 'COMPLETADO' },
+    { label: 'Cancelado', value: 'CANCELADO' },
+    { label: 'Pendiente', value: 'PENDIENTE' },
+  ];
+
   constructor() {
     this.initForm();
   }
@@ -309,6 +332,10 @@ export class MaintenanceScheduleFormComponent implements OnInit {
       next: (res: any) => {
         // Handle standard array response or wrapped response
         this.equipmentList = Array.isArray(res) ? res : res?.data || [];
+        this.equipmentOptions = this.equipmentList.map((eq) => ({
+          label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
+          value: eq.id,
+        }));
       },
       error: (err: any) => console.error('Error cargando equipos:', err),
     });

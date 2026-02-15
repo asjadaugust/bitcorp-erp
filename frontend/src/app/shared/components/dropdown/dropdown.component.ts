@@ -36,6 +36,7 @@ export interface DropdownOption {
       class="dropdown-container"
       [class.disabled]="disabled"
       [class.open]="isOpen"
+      [class.has-error]="error"
       (clickOutside)="close()"
     >
       <!-- Trigger -->
@@ -119,6 +120,11 @@ export interface DropdownOption {
 
       .dropdown-trigger:hover {
         border-color: var(--primary-300);
+      }
+
+      .dropdown-container.has-error .dropdown-trigger {
+        border-color: var(--error-500, #ef4444);
+        background-color: #fef2f2;
       }
 
       .dropdown-container.open .dropdown-trigger {
@@ -297,6 +303,7 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   @Input() disabled: boolean = false;
   @Input() multiple: boolean = false;
   @Input() searchable: boolean = false;
+  @Input() error: boolean = false;
 
   @Output() selectionChange = new EventEmitter<any>();
 

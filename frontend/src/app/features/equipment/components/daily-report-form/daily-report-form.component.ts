@@ -9,6 +9,10 @@ import { EquipmentService } from '../../../../core/services/equipment.service';
 import { OperatorService } from '../../../../core/services/operator.service';
 import { DailyReportService } from '../../../../core/services/daily-report.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 export interface DailyReportFormData {
   fecha_parte: string;
@@ -36,11 +40,7 @@ export interface DailyReportFormData {
 @Component({
   selector: 'app-daily-report-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatSnackBarModule, // Keeping SnackBar for notifications as it is a service
-  ],
+  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, DropdownComponent],
   templateUrl: './daily-report-form.component.html',
   styleUrls: ['./daily-report-form.component.scss'],
 })
@@ -54,6 +54,15 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   equipment: any[] = [];
   operators: any[] = [];
   filteredEquipment: any[] = [];
+  equipmentOptions: DropdownOption[] = [];
+  operatorOptions: DropdownOption[] = [];
+  weatherOptions: DropdownOption[] = [
+    { label: '☀️ Soleado', value: 'soleado' },
+    { label: '⛅ Parcialmente Nublado', value: 'parcialmente_nublado' },
+    { label: '☁️ Nublado', value: 'nublado' },
+    { label: '🌧️ Lluvioso', value: 'lluvioso' },
+    { label: '⛈️ Tormenta', value: 'tormenta' },
+  ];
 
   uploadedPhotos: File[] = [];
   maxPhotos = 5;
@@ -162,6 +171,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         this.equipment = response.data;
         this.filteredEquipment = response.data;
+        this.equipmentOptions = this.filteredEquipment.map((eq) => ({
+          label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
+          value: eq.id,
+        }));
         this.loading = false;
       },
       error: (error: any) => {
@@ -175,6 +188,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.operatorService.getAll().subscribe({
       next: (data: any) => {
         this.operators = data;
+        this.operatorOptions = this.operators.map((op) => ({
+          label: `${op.nombres} ${op.apellido_paterno}`,
+          value: op.id,
+        }));
 
         // Auto-select current user if they're an operator
         const currentUser = this.authService.currentUser;

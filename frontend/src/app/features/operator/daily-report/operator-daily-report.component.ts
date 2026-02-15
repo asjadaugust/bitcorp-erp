@@ -18,11 +18,15 @@ import { ProjectService } from '../../../core/services/project.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { Project } from '../../../core/models/project.model';
 import { SignaturePadComponent } from '../../../shared/components/signature-pad.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-operator-daily-report',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SignaturePadComponent],
+  imports: [CommonModule, ReactiveFormsModule, SignaturePadComponent, DropdownComponent],
   template: `
     <div class="daily-report-container">
       <header class="report-header">
@@ -65,16 +69,12 @@ import { SignaturePadComponent } from '../../../shared/components/signature-pad.
 
             <div class="form-field">
               <label>Proyecto <span class="required" *ngIf="!isViewMode">*</span></label>
-              <select
+              <app-dropdown
                 formControlName="projectId"
-                class="form-select"
-                [attr.disabled]="isViewMode ? '' : null"
-              >
-                <option value="">Seleccionar proyecto</option>
-                <option *ngFor="let project of availableProjects" [value]="project.id">
-                  {{ project.nombre }}
-                </option>
-              </select>
+                [options]="projectOptions"
+                [placeholder]="'Seleccionar proyecto'"
+                [disabled]="isViewMode"
+              ></app-dropdown>
             </div>
           </div>
         </div>
@@ -85,17 +85,14 @@ import { SignaturePadComponent } from '../../../shared/components/signature-pad.
           <div class="form-grid">
             <div class="form-field full-width">
               <label>Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></label>
-              <select
+              <app-dropdown
                 formControlName="equipmentId"
-                class="form-select"
-                (change)="onEquipmentSelect()"
-                [attr.disabled]="isViewMode ? '' : null"
-              >
-                <option value="">Seleccionar equipo</option>
-                <option *ngFor="let eq of availableEquipment" [value]="eq.id">
-                  {{ eq.code }} - {{ eq.description }}
-                </option>
-              </select>
+                [options]="equipmentOptions"
+                [placeholder]="'Seleccionar equipo'"
+                (ngModelChange)="onEquipmentSelect()"
+                [disabled]="isViewMode"
+                [searchable]="true"
+              ></app-dropdown>
             </div>
 
             <div class="form-field">
@@ -1120,6 +1117,20 @@ export class OperatorDailyReportComponent implements OnInit {
   }> = [];
   capturingGPS = false;
   saving = false;
+
+  get projectOptions(): DropdownOption[] {
+    return this.availableProjects.map((p) => ({
+      label: p.nombre,
+      value: p.id,
+    }));
+  }
+
+  get equipmentOptions(): DropdownOption[] {
+    return this.availableEquipment.map((eq) => ({
+      label: `${eq.codigo_equipo} ${eq.categoria ? '- ' + eq.categoria : ''}`,
+      value: eq.id,
+    }));
+  }
   isEditMode = false;
   isViewMode = false;
   reportId: number | null = null;

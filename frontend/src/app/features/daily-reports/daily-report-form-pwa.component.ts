@@ -9,11 +9,15 @@ import { AuthService } from '../../core/services/auth.service';
 import { SyncService } from '../../core/services/sync.service';
 import { OfflineDBService, OfflineDailyReport } from '../../core/services/offline-db.service';
 import { Equipment } from '../../core/models/equipment.model';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-daily-report-form-pwa',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DropdownComponent],
   template: `
     <div class="daily-report-pwa">
       <!-- Status Bar -->
@@ -73,18 +77,15 @@ import { Equipment } from '../../core/models/equipment.model';
 
             <div class="form-group">
               <label for="equipo_id">Equipo *</label>
-              <select
-                id="equipo_id"
+              <app-dropdown
                 name="equipo_id"
                 [(ngModel)]="report.equipo_id"
+                [options]="equipmentOptions()"
+                [placeholder]="'Seleccionar Equipo'"
+                [searchable]="true"
+                (ngModelChange)="onEquipmentChange()"
                 required
-                (change)="onEquipmentChange()"
-              >
-                <option value="">Seleccionar Equipo</option>
-                <option *ngFor="let eq of equipment()" [value]="eq.id">
-                  {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
-                </option>
-              </select>
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
@@ -265,18 +266,12 @@ import { Equipment } from '../../core/models/equipment.model';
 
             <div class="form-group">
               <label for="weather_conditions">Condiciones Climáticas</label>
-              <select
-                id="weather_conditions"
+              <app-dropdown
                 name="weather_conditions"
                 [(ngModel)]="report.weather_conditions"
-              >
-                <option value="">Seleccionar</option>
-                <option value="sunny">☀️ Soleado</option>
-                <option value="cloudy">⛅ Nublado</option>
-                <option value="rainy">🌧️ Lluvioso</option>
-                <option value="stormy">⛈️ Tormenta</option>
-                <option value="windy">💨 Ventoso</option>
-              </select>
+                [options]="weatherOptions"
+                [placeholder]="'Seleccionar'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
@@ -816,6 +811,21 @@ export class DailyReportFormPWAComponent implements OnInit {
   uploadingPhotos = signal(false);
   today = new Date().toISOString().split('T')[0];
   currentLocalId?: string;
+
+  equipmentOptions = computed(() =>
+    this.equipment().map((eq) => ({
+      label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
+      value: eq.id,
+    }))
+  );
+
+  weatherOptions: DropdownOption[] = [
+    { label: '☀️ Soleado', value: 'sunny' },
+    { label: '⛅ Nublado', value: 'cloudy' },
+    { label: '🌧️ Lluvioso', value: 'rainy' },
+    { label: '⛈️ Tormenta', value: 'stormy' },
+    { label: '💨 Ventoso', value: 'windy' },
+  ];
 
   hoursWorked = computed(() => {
     if (!this.report.hora_inicio || !this.report.hora_fin) return 0;

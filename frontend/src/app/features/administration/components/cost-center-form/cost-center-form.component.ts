@@ -7,11 +7,24 @@ import {
   FormErrorHandlerService,
   ValidationError,
 } from '../../../../core/services/form-error-handler.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
+import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
+import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-cost-center-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    DropdownComponent,
+    ValidationErrorsComponent,
+    AlertComponent,
+  ],
   template: `
     <div class="form-container">
       <!-- Validation Errors and Alerts -->
@@ -86,22 +99,21 @@ import {
 
               <div class="form-group">
                 <label for="tipo">Tipo *</label>
-                <select id="tipo" formControlName="tipo" class="form-select">
-                  <option value="">Seleccione...</option>
-                  <option value="Proyecto">Proyecto</option>
-                  <option value="Departamento">Departamento</option>
-                  <option value="Área">Área</option>
-                  <option value="Otro">Otro</option>
-                </select>
+                <app-dropdown
+                  formControlName="tipo"
+                  [options]="typeOptions"
+                  [placeholder]="'Seleccione...'"
+                ></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('tipo')">Tipo es requerido</div>
               </div>
 
               <div class="form-group">
                 <label for="is_active">Estado *</label>
-                <select id="is_active" formControlName="is_active" class="form-select">
-                  <option [ngValue]="true">Activo</option>
-                  <option [ngValue]="false">Inactivo</option>
-                </select>
+                <app-dropdown
+                  formControlName="is_active"
+                  [options]="statusOptions"
+                  [placeholder]="'Seleccione...'"
+                ></app-dropdown>
                 <div class="error-msg" *ngIf="hasError('is_active')">Estado es requerido</div>
               </div>
 
@@ -289,6 +301,18 @@ export class CostCenterFormComponent implements OnInit {
   costCenterId?: string;
   validationErrors: ValidationError[] = [];
   errorMessage: string | null = null;
+
+  typeOptions: DropdownOption[] = [
+    { label: 'Proyecto', value: 'Proyecto' },
+    { label: 'Departamento', value: 'Departamento' },
+    { label: 'Área', value: 'Área' },
+    { label: 'Otro', value: 'Otro' },
+  ];
+
+  statusOptions: DropdownOption[] = [
+    { label: 'Activo', value: true },
+    { label: 'Inactivo', value: false },
+  ];
 
   ngOnInit() {
     const id = this.route.snapshot.params['id'];

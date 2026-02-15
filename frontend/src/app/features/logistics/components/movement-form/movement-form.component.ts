@@ -10,6 +10,8 @@ import {
 } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { InventoryService, Product, Movement } from '../../services/inventory.service';
+import { ProjectService } from '../../../../core/services/project.service';
+import { ProviderService } from '../../../../core/services/provider.service';
 import {
   FormErrorHandlerService,
   ValidationError,
@@ -17,6 +19,10 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-movement-form',
@@ -29,6 +35,7 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -39,7 +46,9 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
             ? 'Registrar Ingreso de Inventario'
             : 'Registrar Salida de Inventario'
       "
-      [subtitle]="isEditMode ? 'Detalle del movimiento registrado' : 'Gestión de entrada/salida de productos'"
+      [subtitle]="
+        isEditMode ? 'Detalle del movimiento registrado' : 'Gestión de entrada/salida de productos'
+      "
       [loading]="loading || submitting"
       [disableSubmit]="submitting || (movementForm && movementForm.invalid)"
       (onSubmit)="onSubmit()"
@@ -96,32 +105,31 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
 
             <div class="form-group" *ngIf="movementType === 'entrada'">
               <label for="proveedor_id">Proveedor</label>
-              <select id="proveedor_id" formControlName="proveedor_id">
-                <option value="">Seleccionar Proveedor</option>
-                <!-- TODO: Load providers from ProviderService ideally -->
-                <option value="1">Proveedor A</option>
-                <option value="2">Proveedor B</option>
-              </select>
+              <app-dropdown
+                formControlName="proveedor_id"
+                [options]="providerOptions"
+                [placeholder]="'Seleccionar Proveedor'"
+                [searchable]="true"
+              ></app-dropdown>
             </div>
 
             <div class="form-group" *ngIf="movementType === 'salida'">
               <label for="proyecto_id">Proyecto Destino</label>
-              <select id="proyecto_id" formControlName="proyecto_id">
-                <option value="">Seleccionar Proyecto</option>
-                <!-- TODO: Load projects from ProjectService ideally -->
-                <option value="1">Proyecto Alpha</option>
-                <option value="2">Proyecto Beta</option>
-              </select>
+              <app-dropdown
+                formControlName="proyecto_id"
+                [options]="projectOptions"
+                [placeholder]="'Seleccionar Proyecto'"
+                [searchable]="true"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
               <label for="tipo_documento">Tipo Documento</label>
-              <select id="tipo_documento" formControlName="tipo_documento">
-                <option value="GUIA">Guía de Remisión</option>
-                <option value="FACTURA">Factura</option>
-                <option value="BOLETA">Boleta</option>
-                <option value="OTRO">Otro</option>
-              </select>
+              <app-dropdown
+                formControlName="tipo_documento"
+                [options]="documentTypeOptions"
+                [placeholder]="'Seleccionar...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
@@ -175,12 +183,13 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
               <tbody formArrayName="items">
                 <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
                   <td>
-                    <select formControlName="producto_id" (change)="onProductChange(i)">
-                      <option value="">Seleccionar Producto</option>
-                      <option *ngFor="let product of products" [value]="product.id">
-                        {{ product.codigo }} - {{ product.nombre }}
-                      </option>
-                    </select>
+                    <app-dropdown
+                      formControlName="producto_id"
+                      [options]="productOptions"
+                      [placeholder]="'Seleccionar Producto'"
+                      [searchable]="true"
+                      (onChange)="onProductChange(i)"
+                    ></app-dropdown>
                   </td>
                   <td>
                     <input
@@ -241,13 +250,14 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
   `,
   styles: [],
 })
-
 export class MovementFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private inventoryService = inject(InventoryService);
+  private projectService = inject(ProjectService);
+  private providerService = inject(ProviderService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private errorHandler = inject(FormErrorHandlerService); // Inject Error Handler
+  private errorHandler = inject(FormErrorHandlerService);
 
   movementForm: FormGroup;
   isEditMode = false;
@@ -258,6 +268,16 @@ export class MovementFormComponent implements OnInit {
   products: Product[] = [];
   validationErrors: ValidationError[] = [];
   errorMessage: string | null = null;
+
+  productOptions: DropdownOption[] = [];
+  projectOptions: DropdownOption[] = [];
+  providerOptions: DropdownOption[] = [];
+  documentTypeOptions: DropdownOption[] = [
+    { label: 'Guía de Remisión', value: 'GUIA' },
+    { label: 'Factura', value: 'FACTURA' },
+    { label: 'Boleta', value: 'BOLETA' },
+    { label: 'Otro', value: 'OTRO' },
+  ];
 
   fieldLabels: Record<string, string> = {
     proyecto_id: 'Proyecto Destino',
@@ -297,6 +317,7 @@ export class MovementFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    this.loadDependencies();
 
     this.route.queryParams.subscribe((params) => {
       if (params['type']) {
@@ -320,12 +341,38 @@ export class MovementFormComponent implements OnInit {
     this.inventoryService.getProducts().subscribe({
       next: (data) => {
         this.products = data;
+        this.productOptions = this.products.map((p) => ({
+          label: `${p.codigo} - ${p.nombre}`,
+          value: p.id,
+        }));
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading products', err);
         this.errorMessage = this.errorHandler.getErrorMessage(err);
         this.loading = false;
+      },
+    });
+  }
+
+  loadDependencies(): void {
+    this.projectService.getAll().subscribe({
+      next: (response: any) => {
+        const projects = response.data || response;
+        this.projectOptions = projects.map((p: any) => ({
+          label: p.nombre,
+          value: p.id,
+        }));
+      },
+    });
+
+    this.providerService.getAll().subscribe({
+      next: (response: any) => {
+        const providers = response.data || response;
+        this.providerOptions = providers.map((p: any) => ({
+          label: p.razon_social,
+          value: p.id,
+        }));
       },
     });
   }

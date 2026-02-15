@@ -10,6 +10,10 @@ import {
   ChecklistResult,
 } from '../../../core/models/checklist.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 interface InspectionFormData {
   plantillaId?: number;
@@ -25,7 +29,7 @@ interface InspectionFormData {
 @Component({
   selector: 'app-inspection-execute',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent, DropdownComponent],
   template: `
     <app-page-layout
       [title]="getPageTitle()"
@@ -62,17 +66,12 @@ interface InspectionFormData {
 
         <div class="form-group">
           <label for="plantillaId">Plantilla de Checklist *</label>
-          <select
-            id="plantillaId"
+          <app-dropdown
             [(ngModel)]="formData.plantillaId"
-            class="form-control"
-            (change)="onTemplateChange()"
-          >
-            <option value="">Seleccione una plantilla</option>
-            <option *ngFor="let template of templates" [value]="template.id">
-              {{ template.nombre }} ({{ template.tipoEquipo }})
-            </option>
-          </select>
+            [options]="templateOptions"
+            (ngModelChange)="onTemplateChange()"
+            [placeholder]="'Seleccione una plantilla'"
+          ></app-dropdown>
         </div>
 
         <div class="form-group">
@@ -290,16 +289,10 @@ interface InspectionFormData {
 
             <div class="form-group" *ngIf="currentResult.conforme === false">
               <label for="accionRequerida">Acción Requerida *</label>
-              <select
-                id="accionRequerida"
+              <app-dropdown
                 [(ngModel)]="currentResult.accionRequerida"
-                class="form-control"
-              >
-                <option value="NINGUNA">Ninguna</option>
-                <option value="OBSERVAR">Observar</option>
-                <option value="REPARAR">Reparar</option>
-                <option value="REEMPLAZAR">Reemplazar</option>
-              </select>
+                [options]="actionOptions"
+              ></app-dropdown>
             </div>
 
             <div
@@ -838,6 +831,21 @@ export class InspectionExecuteComponent implements OnInit {
   currentStep = 1;
 
   templates: ChecklistTemplate[] = [];
+
+  get templateOptions(): DropdownOption[] {
+    return this.templates.map((t) => ({
+      label: `${t.nombre} (${t.tipoEquipo})`,
+      value: t.id,
+    }));
+  }
+
+  actionOptions: DropdownOption[] = [
+    { label: 'Ninguna', value: 'NINGUNA' },
+    { label: 'Observar', value: 'OBSERVAR' },
+    { label: 'Reparar', value: 'REPARAR' },
+    { label: 'Reemplazar', value: 'REEMPLAZAR' },
+  ];
+
   items: ChecklistItem[] = [];
   inspection: ChecklistInspection | null = null;
 

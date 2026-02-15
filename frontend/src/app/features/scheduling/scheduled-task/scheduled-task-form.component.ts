@@ -12,6 +12,10 @@ import {
   FormErrorHandlerService,
   ValidationError,
 } from '../../../core/services/form-error-handler.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-scheduled-task-form',
@@ -23,6 +27,7 @@ import {
     FormContainerComponent,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -67,23 +72,24 @@ import {
           <div class="section-grid">
             <div class="form-group">
               <label for="equipment">Equipo *</label>
-              <select id="equipment" formControlName="equipoId" class="form-select">
-                <option [ngValue]="null">Seleccionar Equipo</option>
-                <option *ngFor="let eq of equipmentList" [value]="eq.id">
-                  {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="equipoId"
+                [options]="equipmentOptions"
+                [placeholder]="'Seleccionar Equipo'"
+                [searchable]="true"
+                [error]="hasError('equipoId')"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('equipoId')">Equipo es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="operator">Operador</label>
-              <select id="operator" formControlName="operadorId" class="form-select">
-                <option [ngValue]="null">Sin Asignar</option>
-                <option *ngFor="let op of operators" [value]="op.id">
-                  {{ op.C05000_Nombre || op.nombres }} {{ op.C05000_Apellido || op.apellidos }}
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="operadorId"
+                [options]="operatorOptions"
+                [placeholder]="'Sin Asignar'"
+                [searchable]="true"
+              ></app-dropdown>
             </div>
           </div>
         </div>
@@ -100,12 +106,12 @@ import {
 
             <div class="form-group">
               <label for="type">Tipo de Tarea *</label>
-              <select id="type" formControlName="tipoTarea" class="form-select">
-                <option value="mantenimiento">Mantenimiento</option>
-                <option value="inspeccion">Inspección</option>
-                <option value="reparacion">Reparación</option>
-                <option value="transporte">Transporte</option>
-              </select>
+              <app-dropdown
+                formControlName="tipoTarea"
+                [options]="taskTypeOptions"
+                [placeholder]="'Seleccionar Tipo'"
+                [error]="hasError('tipoTarea')"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('tipoTarea')">Tipo es requerido</div>
             </div>
 
@@ -129,24 +135,23 @@ import {
           <div class="section-grid">
             <div class="form-group">
               <label for="priority">Prioridad *</label>
-              <select id="priority" formControlName="prioridad" class="form-select">
-                <option value="BAJA">Baja</option>
-                <option value="MEDIA">Media</option>
-                <option value="ALTA">Alta</option>
-                <option value="URGENTE">Urgente</option>
-              </select>
+              <app-dropdown
+                formControlName="prioridad"
+                [options]="priorityOptions"
+                [placeholder]="'Seleccionar Prioridad'"
+                [error]="hasError('prioridad')"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('prioridad')">Prioridad es requerida</div>
             </div>
 
             <div class="form-group">
               <label for="status">Estado *</label>
-              <select id="status" formControlName="estado" class="form-select">
-                <option value="PENDIENTE">Pendiente</option>
-                <option value="ASIGNADO">Asignado</option>
-                <option value="EN_PROCESO">En Proceso</option>
-                <option value="COMPLETADO">Completado</option>
-                <option value="CANCELADO">Cancelado</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="statusOptions"
+                [placeholder]="'Seleccionar Estado'"
+                [error]="hasError('estado')"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
             </div>
           </div>
@@ -211,94 +216,62 @@ import {
       .form-grid {
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: var(--s-32);
       }
 
-      .form-section h3 {
-        font-size: 16px;
-        color: var(--primary-800);
-        border-bottom: 1px solid var(--grey-200);
-        padding-bottom: 0.5rem;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
+      .form-section {
+        background: var(--grey-50);
+        padding: var(--s-24);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--grey-100);
+
+        h3 {
+          font-size: 14px;
+          color: var(--primary-800);
+          border-bottom: 2px solid var(--primary-100);
+          padding-bottom: var(--s-8);
+          margin-bottom: var(--s-24);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
       }
 
       .section-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
+        gap: var(--s-24);
       }
 
       .full-width {
         grid-column: 1 / -1;
       }
 
-      /* Form Controls */
       .form-group {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-      }
+        gap: var(--s-8);
 
-      label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-700);
-      }
-
-      .form-control,
-      .form-select {
-        padding: 0.625rem;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .form-control:focus,
-      .form-select:focus {
-        border-color: var(--primary-500);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--primary-100);
+        label {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--grey-600);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
       }
 
       .error-msg {
-        color: var(--semantic-red-600);
+        color: var(--semantic-red-500);
         font-size: 12px;
-      }
-
-      /* Buttons */
-      .btn {
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
         font-weight: 500;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
+        margin-top: 2px;
       }
 
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
-      }
-
-      .btn-secondary {
-        background: white;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-50);
+      textarea.form-control {
+        height: auto;
+        padding: var(--s-12);
+        line-height: 1.6;
       }
 
       @media (max-width: 768px) {
@@ -328,6 +301,27 @@ export class ScheduledTaskFormComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  equipmentOptions: DropdownOption[] = [];
+  operatorOptions: DropdownOption[] = [];
+  taskTypeOptions: DropdownOption[] = [
+    { label: 'Mantenimiento', value: 'maintenance' },
+    { label: 'Inspección', value: 'inspection' },
+    { label: 'Asignación', value: 'assignment' },
+  ];
+  priorityOptions: DropdownOption[] = [
+    { label: 'Baja', value: 'low' },
+    { label: 'Media', value: 'medium' },
+    { label: 'Alta', value: 'high' },
+    { label: 'Urgente', value: 'urgent' },
+  ];
+  statusOptions: DropdownOption[] = [
+    { label: 'Pendiente', value: 'pending' },
+    { label: 'Asignado', value: 'assigned' },
+    { label: 'En Proceso', value: 'in_progress' },
+    { label: 'Completado', value: 'completed' },
+    { label: 'Cancelado', value: 'cancelled' },
+  ];
+
   fieldLabels: Record<string, string> = {
     equipoId: 'Equipo',
     operadorId: 'Operador',
@@ -345,10 +339,10 @@ export class ScheduledTaskFormComponent implements OnInit {
       equipoId: [null, Validators.required],
       operadorId: [null],
       fechaInicio: ['', Validators.required],
-      tipoTarea: ['mantenimiento', Validators.required],
+      tipoTarea: ['maintenance', Validators.required],
       descripcion: ['', Validators.required],
-      prioridad: ['MEDIA', Validators.required],
-      estado: ['PENDIENTE', Validators.required],
+      prioridad: ['medium', Validators.required],
+      estado: ['pending', Validators.required],
     });
   }
 
@@ -378,23 +372,34 @@ export class ScheduledTaskFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.equipmentService.getAll().subscribe((res: any) => (this.equipmentList = res.data));
-    this.operatorService.getAll().subscribe((res: any) => (this.operators = res));
+    this.equipmentService.getAll().subscribe((res: any) => {
+      this.equipmentList = res.data;
+      this.equipmentOptions = this.equipmentList.map((eq) => ({
+        label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
+        value: eq.id,
+      }));
+    });
+    this.operatorService.getAll().subscribe((res: any) => {
+      this.operators = res;
+      this.operatorOptions = this.operators.map((op) => ({
+        label: `${op.C05000_Nombre || op.nombres} ${op.C05000_Apellido || op.apellidos}`,
+        value: op.id,
+      }));
+    });
   }
 
   loadTask(id: number) {
     this.loading = true;
     this.taskService.getById(id).subscribe({
-      next: (res: any) => {
-        const data = res.data || res;
-        if (!data || !data.id) {
+      next: (task) => {
+        if (!task || !task.id) {
           this.router.navigate(['/operaciones/scheduling/tasks']);
           return;
         }
-        if (data.fechaInicio) {
-          data.fechaInicio = data.fechaInicio.split('T')[0];
+        if (task.fechaInicio) {
+          task.fechaInicio = task.fechaInicio.split('T')[0];
         }
-        this.taskForm.patchValue(data);
+        this.taskForm.patchValue(task);
         this.loading = false;
       },
       error: (err: any) => {

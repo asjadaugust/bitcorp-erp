@@ -7,11 +7,15 @@ import { Valuation, PaymentData } from '../../core/models/valuation.model';
 import { AuthService } from '../../core/services/auth.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-record.model';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-valuation-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DropdownComponent],
   template: `
     <div class="detail-container">
       <div class="container">
@@ -218,20 +222,31 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
                         <td>
                           <span
                             [class]="
-                              'badge badge-' + paymentService.getPaymentStatusColor(payment.estado)
+                              'status-badge status-' +
+                              paymentService.getPaymentStatusColor(payment.estado)
                             "
                           >
+                            <i
+                              [class]="
+                                payment.estado === 'PENDIENTE'
+                                  ? 'fa-solid fa-clock'
+                                  : payment.estado === 'PAGADO'
+                                    ? 'fa-solid fa-check-circle'
+                                    : payment.estado === 'ANULADO'
+                                      ? 'fa-solid fa-ban'
+                                      : 'fa-solid fa-circle'
+                              "
+                            ></i>
                             {{ paymentService.getPaymentStatusLabel(payment.estado) }}
                           </span>
                         </td>
                         <td>
-                          <span
-                            *ngIf="payment.conciliado"
-                            class="badge badge-success conciliado-badge"
-                          >
-                            <i class="fa-solid fa-check"></i> Sí
+                          <span *ngIf="payment.conciliado" class="status-badge status-completed">
+                            <i class="fa-solid fa-check-double"></i> Sí
                           </span>
-                          <span *ngIf="!payment.conciliado" class="badge badge-warning"> No </span>
+                          <span *ngIf="!payment.conciliado" class="status-badge status-pending">
+                            <i class="fa-solid fa-clock"></i> No
+                          </span>
                         </td>
                         <td>
                           <button
@@ -452,14 +467,12 @@ import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-rec
           </div>
           <div class="form-group">
             <label>Método de Pago <span class="required">*</span></label>
-            <select [(ngModel)]="paymentData.metodo_pago" class="form-control" required>
-              <option value="">Seleccionar...</option>
-              <option value="Transferencia Bancaria">Transferencia Bancaria</option>
-              <option value="Cheque">Cheque</option>
-              <option value="Efectivo">Efectivo</option>
-              <option value="Letra">Letra</option>
-              <option value="Otro">Otro</option>
-            </select>
+            <app-dropdown
+              [(ngModel)]="paymentData.metodo_pago"
+              [options]="paymentMethodOptions"
+              [placeholder]="'Seleccionar...'"
+              [required]="true"
+            ></app-dropdown>
           </div>
           <div class="form-group">
             <label>Referencia de Pago <span class="required">*</span></label>
@@ -1208,6 +1221,15 @@ export class ValuationDetailComponent implements OnInit {
 
   // Form data
   rejectReason = '';
+
+  paymentMethodOptions: DropdownOption[] = [
+    { label: 'Transferencia Bancaria', value: 'Transferencia Bancaria' },
+    { label: 'Cheque', value: 'Cheque' },
+    { label: 'Efectivo', value: 'Efectivo' },
+    { label: 'Letra', value: 'Letra' },
+    { label: 'Otro', value: 'Otro' },
+  ];
+
   paymentData: PaymentData = {
     fecha_pago: new Date().toISOString().split('T')[0],
     metodo_pago: '',

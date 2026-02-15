@@ -10,11 +10,15 @@ import {
 } from '../models/checklist.models';
 import { ChecklistService } from '../services/checklist.service';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-checklist-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, FormContainerComponent],
+  imports: [CommonModule, FormsModule, FormContainerComponent, DropdownComponent],
   template: `
     <app-form-container
       [title]="getTypeLabel(checklistType)"
@@ -28,12 +32,12 @@ import { FormContainerComponent } from '../../../shared/components/form-containe
       <div class="checklist-form-content">
         <div class="template-section" *ngIf="!selectedTemplate && templates.length > 0">
           <label>Usar Plantilla:</label>
-          <select (change)="loadTemplate($event)" class="form-select">
-            <option value="">Seleccionar una plantilla</option>
-            <option *ngFor="let t of templates" [value]="t.id">
-              {{ t.template_name }}
-            </option>
-          </select>
+          <app-dropdown
+            [(ngModel)]="selectedTemplateId"
+            [options]="templateOptions"
+            [placeholder]="'Seleccionar una plantilla'"
+            (ngModelChange)="onTemplateSelect($event)"
+          ></app-dropdown>
         </div>
 
         <div class="checklist-items" *ngIf="selectedTemplate">
@@ -414,6 +418,7 @@ export class ChecklistFormComponent implements OnInit {
   private checklistService = inject(ChecklistService);
 
   templates: ChecklistTemplate[] = [];
+  selectedTemplateId = '';
   selectedTemplate?: ChecklistTemplate;
   items: (ChecklistItem & {
     is_required: boolean;
@@ -423,6 +428,13 @@ export class ChecklistFormComponent implements OnInit {
   })[] = [];
   observations = '';
   overallStatus: ChecklistStatus = ChecklistStatus.PASS;
+
+  get templateOptions(): DropdownOption[] {
+    return this.templates.map((t) => ({
+      label: t.template_name,
+      value: t.id,
+    }));
+  }
 
   statusOptions = [
     { value: ChecklistStatus.PASS, label: 'Pase' },
@@ -452,9 +464,7 @@ export class ChecklistFormComponent implements OnInit {
     });
   }
 
-  loadTemplate(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const templateId = select.value;
+  onTemplateSelect(templateId: string) {
     if (templateId) {
       this.loadTemplateById(templateId);
     }

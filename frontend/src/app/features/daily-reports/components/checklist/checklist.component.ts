@@ -1,6 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 export interface ChecklistItem {
   id: string;
@@ -26,7 +30,7 @@ export interface ChecklistResponse {
 @Component({
   selector: 'app-checklist',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownComponent],
   template: `
     <div class="checklist-container">
       <h3 class="checklist-title">{{ template?.name }}</h3>
@@ -76,18 +80,14 @@ export interface ChecklistResponse {
             class="number-input"
           />
 
-          <select
+          <app-dropdown
             *ngIf="item.type === 'select'"
             [(ngModel)]="responses[item.id]"
+            [options]="item.options?.values || []"
             (ngModelChange)="onResponseChange()"
+            [placeholder]="'Select...'"
             [required]="item.required"
-            class="select-input"
-          >
-            <option value="">Select...</option>
-            <option *ngFor="let option of item.options?.values" [value]="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+          ></app-dropdown>
         </div>
       </div>
     </div>

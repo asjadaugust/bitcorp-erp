@@ -8,6 +8,10 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
+import {
   FormErrorHandlerService,
   ValidationError,
 } from '../../core/services/form-error-handler.service';
@@ -19,9 +23,10 @@ import {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    FormContainerComponent,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
+    FormContainerComponent,
   ],
   template: `
     <app-form-container
@@ -78,12 +83,11 @@ import {
 
             <div class="form-group">
               <label for="estado">Estado *</label>
-              <select id="estado" formControlName="estado" class="form-select">
-                <option value="ACTIVO">Activo</option>
-                <option value="COMPLETADO">Completado</option>
-                <option value="PAUSADO">En Pausa</option>
-                <option value="CANCELADO">Cancelado</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="statusOptions"
+                [placeholder]="'Seleccionar Estado'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group full-width-inner">
@@ -286,6 +290,13 @@ export class ProjectFormComponent implements OnInit {
   successMessage: string | null = null;
   errorMessage: string | null = null;
   validationErrors: ValidationError[] = [];
+
+  statusOptions: DropdownOption[] = [
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Completado', value: 'COMPLETADO' },
+    { label: 'En Pausa', value: 'PAUSADO' },
+    { label: 'Cancelado', value: 'CANCELADO' },
+  ];
 
   fieldLabels: Record<string, string> = {
     codigo: 'Código del Proyecto',

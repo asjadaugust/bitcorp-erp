@@ -16,6 +16,10 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-product-form',
@@ -28,11 +32,16 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
       [title]="isEditMode ? 'Editar Producto' : 'Nuevo Producto'"
-      [subtitle]="isEditMode ? 'Actualizar información del producto' : 'Registrar un nuevo producto en el inventario'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información del producto'
+          : 'Registrar un nuevo producto en el inventario'
+      "
       [loading]="loading || submitting"
       [disableSubmit]="submitting || (productForm && productForm.invalid)"
       (onSubmit)="onSubmit()"
@@ -91,33 +100,22 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
 
             <div class="form-group">
               <label for="categoria">Categoría</label>
-              <select id="categoria" formControlName="categoria">
-                <option value="">Seleccionar Categoría</option>
-                <option value="Repuestos">Repuestos</option>
-                <option value="EPP">EPP</option>
-                <option value="Herramientas">Herramientas</option>
-                <option value="Consumibles">Consumibles</option>
-                <option value="Materiales">Materiales</option>
-              </select>
+              <app-dropdown
+                formControlName="categoria"
+                [options]="categoryOptions"
+                [placeholder]="'Seleccionar Categoría'"
+                [searchable]="true"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
               <label for="unidad_medida">Unidad de Medida <span class="required">*</span></label>
-              <select
-                id="unidad_medida"
+              <app-dropdown
                 formControlName="unidad_medida"
-                [class.error]="isFieldInvalid('unidad_medida')"
-              >
-                <option value="">Seleccionar Unidad</option>
-                <option value="UND">Unidad (UND)</option>
-                <option value="KG">Kilogramo (KG)</option>
-                <option value="M">Metro (M)</option>
-                <option value="M2">Metro Cuadrado (M2)</option>
-                <option value="M3">Metro Cúbico (M3)</option>
-                <option value="GLN">Galón (GLN)</option>
-                <option value="L">Litro (L)</option>
-                <option value="JGO">Juego (JGO)</option>
-              </select>
+                [options]="unitOptions"
+                [placeholder]="'Seleccionar Unidad'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-message" *ngIf="isFieldInvalid('unidad_medida')">
                 La unidad es requerida
               </div>
@@ -143,9 +141,7 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
             <div class="form-group">
               <label for="stock_actual">Stock Inicial</label>
               <input id="stock_actual" type="number" formControlName="stock_actual" min="0" />
-              <div class="hint">
-                Solo editable al crear. Use movimientos para ajustar después.
-              </div>
+              <div class="hint">Solo editable al crear. Use movimientos para ajustar después.</div>
             </div>
 
             <div class="form-group">
@@ -158,10 +154,8 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
                 step="0.01"
               />
             </div>
-
-            </div>
           </div>
-
+        </div>
       </form>
     </app-form-container>
   `,
@@ -181,6 +175,25 @@ export class ProductFormComponent implements OnInit {
   submitting = false;
   validationErrors: ValidationError[] = [];
   errorMessage: string | null = null;
+
+  categoryOptions: DropdownOption[] = [
+    { label: 'Repuestos', value: 'Repuestos' },
+    { label: 'EPP', value: 'EPP' },
+    { label: 'Herramientas', value: 'Herramientas' },
+    { label: 'Consumibles', value: 'Consumibles' },
+    { label: 'Materiales', value: 'Materiales' },
+  ];
+
+  unitOptions: DropdownOption[] = [
+    { label: 'Unidad (UND)', value: 'UND' },
+    { label: 'Kilogramo (KG)', value: 'KG' },
+    { label: 'Metro (M)', value: 'M' },
+    { label: 'Metro Cuadrado (M2)', value: 'M2' },
+    { label: 'Metro Cúbico (M3)', value: 'M3' },
+    { label: 'Galón (GLN)', value: 'GLN' },
+    { label: 'Litro (L)', value: 'L' },
+    { label: 'Juego (JGO)', value: 'JGO' },
+  ];
 
   fieldLabels: Record<string, string> = {
     codigo: 'Código',

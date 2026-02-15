@@ -14,11 +14,12 @@ export interface FilterConfig {
 }
 
 import { DropdownComponent } from '../dropdown/dropdown.component';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-filter-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownComponent],
+  imports: [CommonModule, FormsModule, DropdownComponent, ButtonComponent],
   template: `
     <div class="filter-bar">
       <div class="filter-main">
@@ -98,7 +99,13 @@ import { DropdownComponent } from '../dropdown/dropdown.component';
         </div>
 
         <div class="filter-actions">
-          <button class="btn-clear" (click)="clearFilters()">Limpiar filtros</button>
+          <app-button
+            variant="ghost"
+            size="sm"
+            label="Limpiar filtros"
+            icon="fa-times"
+            (onClick)="clearFilters()"
+          ></app-button>
         </div>
       </div>
     </div>
@@ -216,68 +223,29 @@ import { DropdownComponent } from '../dropdown/dropdown.component';
         border-bottom-right-radius: var(--s-12);
       }
 
-      .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: var(--s-16);
-        margin-bottom: var(--s-16);
-      }
-
-      .filter-group label {
-        display: block;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--grey-600);
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--grey-300);
-        border-radius: var(--s-6);
-        font-size: 14px;
-        background: white;
-        transition:
-          border-color 0.2s ease,
-          box-shadow 0.2s ease;
-      }
-
-      /* Select Arrow */
-      select.form-control {
-        cursor: pointer;
-        appearance: none;
-        background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%23333" d="M6 8L0 2l1.4-1.4L6 5.2 10.6.6 12 2z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 32px;
-      }
-
       .filter-actions {
         display: flex;
         justify-content: flex-end;
-        padding-top: var(--s-16);
+        padding-top: var(--s-20);
+        margin-top: var(--s-16);
         border-top: 1px dashed var(--grey-200);
       }
 
-      .btn-clear {
-        background: none;
-        border: none;
-        color: var(--primary-600);
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: color 0.2s;
+      .date-range-inputs {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: var(--s-8);
+        height: 42px;
       }
 
-      .btn-clear:hover {
-        color: var(--primary-800);
-        text-decoration: underline;
+      .date-input {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .date-separator {
+        color: var(--grey-500);
+        font-weight: 500;
       }
     `,
   ],

@@ -6,11 +6,19 @@ import { DailyReportService } from '../../core/services/daily-report.service';
 import { SyncService } from '../../core/services/sync.service';
 import { OfflineDBService } from '../../core/services/offline-db.service';
 import { DailyReport } from '../../core/models/daily-report.model';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
+import {
+  AeroCardComponent,
+  CardInfoItem,
+} from '../../shared/components/aero-card/aero-card.component';
 
 @Component({
   selector: 'app-daily-report-list-pwa',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DropdownComponent, AeroCardComponent],
   template: `
     <div class="daily-reports-pwa">
       <!-- Status Bar -->
@@ -60,13 +68,12 @@ import { DailyReport } from '../../core/models/daily-report.model';
           />
         </div>
 
-        <select [(ngModel)]="filters.status" (change)="applyFilters()" class="filter-select">
-          <option value="">Todos los Estados</option>
-          <option value="BORRADOR">Borradores</option>
-          <option value="ENVIADO">Enviados</option>
-          <option value="APROBADO">Aprobados</option>
-          <option value="RECHAZADO">Rechazados</option>
-        </select>
+        <app-dropdown
+          [(ngModel)]="filters.status"
+          [options]="statusOptions"
+          (ngModelChange)="applyFilters()"
+          [placeholder]="'Todos los Estados'"
+        ></app-dropdown>
       </div>
 
       <!-- Selection Mode -->
@@ -92,69 +99,56 @@ import { DailyReport } from '../../core/models/daily-report.model';
         </div>
 
         <div class="reports-list" *ngIf="!loading() && filteredReports().length > 0">
-          <div
+          <app-aero-card
             *ngFor="let report of filteredReports()"
-            class="report-card"
+            [title]="report.codigo_equipo + ' - ' + report.equipo_nombre"
+            [statusLabel]="getStatusLabel(report.estado)"
+            [statusClass]="report.estado"
+            [statusIcon]="getStatusIcon(report.estado)"
+            [date]="report.fecha_parte"
+            [infoItems]="getReportInfoItems(report)"
             [class.selected]="isSelected(report)"
-            [class.synced]="report.estado === 'synced'"
-            (click)="selectionMode() ? toggleSelection(report) : viewReport(report)"
+            (cardClick)="selectionMode() ? toggleSelection(report) : viewReport(report)"
           >
-            <div class="report-header">
-              <div class="report-date">
-                <strong>{{ report.fecha_parte | date: 'mediumDate' }}</strong>
-                <span class="status-badge" [class]="'status-' + report.estado">
-                  {{ getStatusLabel(report.estado) }}
-                </span>
-              </div>
-
-              <div class="selection-checkbox" *ngIf="selectionMode()">
+            <div body-extra class="report-metrics-pwa">
+              <div class="selection-indicator-pwa" *ngIf="selectionMode()">
                 <input
                   type="checkbox"
                   [checked]="isSelected(report)"
                   (click)="$event.stopPropagation()"
                 />
               </div>
-            </div>
-
-            <div class="report-info">
-              <div class="info-row">
-                <span class="label">Equipo:</span>
-                <span>{{ report.codigo_equipo }} - {{ report.equipo_nombre }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Operador:</span>
-                <span>{{ report.trabajador_nombre }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Ubicación:</span>
-                <span>{{ report.location }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Horas:</span>
-                <span>{{ report.hora_inicio }} - {{ report.hora_fin }}</span>
+              <div class="metrics-row">
+                <div class="metric">
+                  <span class="metric-label">Horómetro</span>
+                  <span class="metric-value">
+                    {{ (report.horometro_final - report.horometro_inicial).toFixed(1) }} hrs
+                  </span>
+                </div>
+                <div class="metric" *ngIf="report.fuel_consumed">
+                  <span class="metric-label">Combustible</span>
+                  <span class="metric-value">{{ report.fuel_consumed.toFixed(1) }}%</span>
+                </div>
               </div>
             </div>
 
-            <div class="report-metrics">
-              <div class="metric">
-                <span class="metric-label">Horómetro</span>
-                <span class="metric-value">
-                  {{ (report.horometro_final - report.horometro_inicial).toFixed(1) }} hrs
-                </span>
-              </div>
-              <div class="metric" *ngIf="report.fuel_consumed">
-                <span class="metric-label">Combustible</span>
-                <span class="metric-value">{{ report.fuel_consumed.toFixed(1) }}%</span>
-              </div>
-            </div>
-
-            <div class="report-actions" (click)="$event.stopPropagation()">
-              <button class="btn-icon" (click)="exportSinglePDF(report)" title="Exportar PDF">
-                📄
+            <div actions>
+              <button
+                class="btn-icon"
+                (click)="exportSinglePDF(report); $event.stopPropagation()"
+                title="Exportar PDF"
+              >
+                <i class="fa-solid fa-file-pdf"></i>
               </button>
-              <button class="btn-icon" (click)="viewReport(report)" title="Ver detalles">👁️</button>
+              <button
+                class="btn-icon"
+                (click)="viewReport(report); $event.stopPropagation()"
+                title="Ver detalles"
+              >
+                <i class="fa-solid fa-eye"></i>
+              </button>
             </div>
-          </div>
+          </app-aero-card>
         </div>
       </div>
 
@@ -505,6 +499,13 @@ export class DailyReportListPWAComponent implements OnInit {
     status: '',
   };
 
+  statusOptions: DropdownOption[] = [
+    { label: 'Borradores', value: 'BORRADOR' },
+    { label: 'Enviados', value: 'ENVIADO' },
+    { label: 'Aprobados', value: 'APROBADO' },
+    { label: 'Rechazados', value: 'RECHAZADO' },
+  ];
+
   filteredReports = computed(() => {
     let result = this.reports();
 
@@ -635,6 +636,32 @@ export class DailyReportListPWAComponent implements OnInit {
       .catch((error) => console.error('PDF export failed:', error));
 
     this.cancelSelection();
+  }
+
+  getStatusIcon(status: string): string {
+    const icons: Record<string, string> = {
+      BORRADOR: 'fa-solid fa-file-lines',
+      PENDIENTE: 'fa-solid fa-paper-plane',
+      APROBADO: 'fa-solid fa-circle-check',
+      RECHAZADO: 'fa-solid fa-circle-xmark',
+      synced: 'fa-solid fa-cloud-check',
+    };
+    return icons[status] || 'fa-solid fa-file';
+  }
+
+  getReportInfoItems(report: any): CardInfoItem[] {
+    return [
+      {
+        icon: 'fa-solid fa-user-gear',
+        label: 'Operador',
+        value: report.trabajador_nombre || 'Sin asignar',
+      },
+      {
+        icon: 'fa-solid fa-clock',
+        label: 'Horario',
+        value: `${report.hora_inicio || '--:--'} - ${report.hora_fin || '--:--'}`,
+      },
+    ];
   }
 
   getStatusLabel(status: string): string {

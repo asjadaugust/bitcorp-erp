@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../shared/components/dropdown/dropdown.component';
 
 interface Contact {
   id?: number;
@@ -22,7 +26,7 @@ interface Contact {
 @Component({
   selector: 'app-provider-contacts',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, DropdownComponent],
   template: `
     <div class="contacts-section">
       <div class="section-header">
@@ -73,13 +77,11 @@ interface Contact {
 
             <div class="form-group">
               <label for="contact_type">Tipo Contacto</label>
-              <select id="contact_type" formControlName="contact_type" class="form-select">
-                <option value="general">General</option>
-                <option value="commercial">Comercial</option>
-                <option value="administrative">Administrativo</option>
-                <option value="technical">Técnico</option>
-                <option value="financial">Financiero</option>
-              </select>
+              <app-dropdown
+                formControlName="contact_type"
+                [options]="contactTypeOptions"
+                [placeholder]="'Seleccionar...'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group checkbox-group">
@@ -181,6 +183,14 @@ export class ProviderContactsComponent implements OnInit {
   showForm = false;
   loading = false;
   editingId: number | null = null;
+
+  contactTypeOptions: DropdownOption[] = [
+    { label: 'General', value: 'general' },
+    { label: 'Comercial', value: 'commercial' },
+    { label: 'Administrativo', value: 'administrative' },
+    { label: 'Técnico', value: 'technical' },
+    { label: 'Financiero', value: 'financial' },
+  ];
 
   ngOnInit(): void {
     this.initForm();
