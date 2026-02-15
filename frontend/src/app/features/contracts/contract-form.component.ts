@@ -9,6 +9,7 @@ import { Contract } from '../../core/models/contract.model';
 import { Equipment } from '../../core/models/equipment.model';
 import { Provider } from '../../core/models/provider.model';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import {
   FormErrorHandlerService,
   ValidationError,
@@ -26,6 +27,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     FormContainerComponent,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -49,7 +51,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         [fieldLabels]="fieldLabels"
       >
       </app-validation-errors>
-      
+
       <div class="mb-3"></div>
 
       <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" [dismissible]="true">
@@ -85,48 +87,43 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
             <div class="form-group">
               <label for="proveedor_id">Proveedor *</label>
-              <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
-                <option value="">Seleccione un proveedor</option>
-                <option *ngFor="let prov of providerList" [value]="prov.id">
-                  {{ prov.razon_social }} ({{ prov.ruc }})
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="proveedor_id"
+                [options]="providerOptions"
+                [placeholder]="'Seleccione un proveedor'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('proveedor_id')">Proveedor es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="equipo_id">Equipo (Marca / Modelo / Placa) *</label>
-              <select id="equipo_id" formControlName="equipo_id" class="form-select">
-                <option value="">Seleccione un equipo</option>
-                <option *ngFor="let eq of equipmentList" [value]="eq.id">
-                  {{ eq.marca }} {{ eq.modelo }} / {{ eq.placa || 'Sin Placa' }} ({{
-                    eq.codigo_equipo
-                  }})
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="equipo_id"
+                [options]="equipmentOptions"
+                [placeholder]="'Seleccione un equipo'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('equipo_id')">Equipo es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="modalidad">Modalidad *</label>
-              <select id="modalidad" formControlName="modalidad" class="form-select">
-                <option value="">Seleccionar...</option>
-                <option value="alquiler_seco">Alquiler Seco</option>
-                <option value="alquiler_con_operador">Alquiler con Operador</option>
-                <option value="alquiler_todo_costo">Alquiler Todo Costo</option>
-                <option value="servicio">Servicio</option>
-              </select>
+              <app-dropdown
+                formControlName="modalidad"
+                [options]="modalidadOptions"
+                [placeholder]="'Seleccionar...'"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('modalidad')">Modalidad es requerida</div>
             </div>
 
             <div class="form-group">
               <label for="estado">Estado *</label>
-              <select id="estado" formControlName="estado" class="form-select">
-                <option value="ACTIVO">Activo</option>
-                <option value="PENDIENTE">Pendiente</option>
-                <option value="COMPLETADO">Completado</option>
-                <option value="CANCELADO">Cancelado</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="estadoOptions"
+                [placeholder]="'Seleccionar Estado'"
+              ></app-dropdown>
             </div>
           </div>
         </div>
@@ -150,12 +147,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
             <div class="form-group">
               <label for="fecha_fin">Fecha de Fin *</label>
-              <input
-                id="fecha_fin"
-                type="date"
-                formControlName="fecha_fin"
-                class="form-control"
-              />
+              <input id="fecha_fin" type="date" formControlName="fecha_fin" class="form-control" />
               <div class="error-msg" *ngIf="hasError('fecha_fin')">Fecha de fin requerida</div>
               <div
                 class="error-msg"
@@ -170,19 +162,20 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
             <div class="form-group">
               <label for="moneda">Moneda *</label>
-              <select id="moneda" formControlName="moneda" class="form-select">
-                <option value="PEN">Soles (PEN)</option>
-                <option value="USD">Dólares (USD)</option>
-              </select>
+              <app-dropdown
+                formControlName="moneda"
+                [options]="monedaOptions"
+                [placeholder]="'Seleccionar Moneda'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
               <label for="tipo_tarifa">Tipo de Tarifa *</label>
-              <select id="tipo_tarifa" formControlName="tipo_tarifa" class="form-select">
-                <option value="POR_HORA">Por Hora</option>
-                <option value="POR_DIA">Por Día</option>
-                <option value="FIJO">Fijo</option>
-              </select>
+              <app-dropdown
+                formControlName="tipo_tarifa"
+                [options]="tipoTarifaOptions"
+                [placeholder]="'Seleccionar Tipo'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
@@ -446,6 +439,35 @@ export class ContractFormComponent implements OnInit {
   validationErrors: ValidationError[] = [];
   errorMessage = '';
 
+  // Dropdown Options
+  equipmentOptions: { label: string; value: any }[] = [];
+  providerOptions: { label: string; value: any }[] = [];
+
+  modalidadOptions = [
+    { label: 'Alquiler Seco', value: 'alquiler_seco' },
+    { label: 'Alquiler con Operador', value: 'alquiler_con_operador' },
+    { label: 'Alquiler Todo Costo', value: 'alquiler_todo_costo' },
+    { label: 'Servicio', value: 'servicio' },
+  ];
+
+  estadoOptions = [
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Pendiente', value: 'PENDIENTE' },
+    { label: 'Completado', value: 'COMPLETADO' },
+    { label: 'Cancelado', value: 'CANCELADO' },
+  ];
+
+  monedaOptions = [
+    { label: 'Soles (PEN)', value: 'PEN' },
+    { label: 'Dólares (USD)', value: 'USD' },
+  ];
+
+  tipoTarifaOptions = [
+    { label: 'Por Hora', value: 'POR_HORA' },
+    { label: 'Por Día', value: 'POR_DIA' },
+    { label: 'Fijo', value: 'FIJO' },
+  ];
+
   fieldLabels: Record<string, string> = {
     numero_contrato: 'Número de Contrato',
     fecha_contrato: 'Fecha de Contrato',
@@ -515,14 +537,26 @@ export class ContractFormComponent implements OnInit {
 
   loadEquipment(): void {
     this.equipmentService.getAll().subscribe({
-      next: (response) => (this.equipmentList = response.data),
+      next: (response) => {
+        this.equipmentList = response.data;
+        this.equipmentOptions = this.equipmentList.map((eq) => ({
+          label: `${eq.marca} ${eq.modelo} / ${eq.placa || 'Sin Placa'} (${eq.codigo_equipo})`,
+          value: eq.id,
+        }));
+      },
       error: (err) => console.error('Error loading equipment', err),
     });
   }
 
   loadProviders(): void {
     this.providerService.getAll().subscribe({
-      next: (data) => (this.providerList = data),
+      next: (data) => {
+        this.providerList = data;
+        this.providerOptions = this.providerList.map((prov) => ({
+          label: `${prov.razon_social} (${prov.ruc})`,
+          value: prov.id,
+        }));
+      },
       error: (err) => console.error('Error loading providers', err),
     });
   }

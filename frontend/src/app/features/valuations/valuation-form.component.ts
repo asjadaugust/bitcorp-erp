@@ -15,6 +15,7 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-valuation-form',
@@ -25,6 +26,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     FormContainerComponent,
     ValidationErrorsComponent,
     AlertComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -59,36 +61,32 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           <div class="section-grid">
             <div class="form-group">
               <label for="contract">Contrato</label>
-              <select id="contract" formControlName="contractId" class="form-select">
-                <option [ngValue]="null">Seleccionar Contrato (Opcional)</option>
-                <option *ngFor="let contract of contracts" [value]="contract.id">
-                  {{ contract.code }} - {{ contract.project_name }} ({{ contract.client_name }})
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="contractId"
+                [options]="contractOptions"
+                [placeholder]="'Seleccionar Contrato (Opcional)'"
+                [searchable]="true"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
               <label for="equipment">Equipo *</label>
-              <select id="equipment" formControlName="equipmentId" class="form-select">
-                <option [ngValue]="null">Seleccionar Equipo</option>
-                <option *ngFor="let eq of equipments" [ngValue]="eq.id">
-                  {{ eq.codigo_equipo || eq.code }} - {{ eq.marca || eq.brand }}
-                  {{ eq.modelo || eq.model }}
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="equipmentId"
+                [options]="equipmentOptions"
+                [placeholder]="'Seleccionar Equipo'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('equipmentId')">Equipo es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="estado">Estado *</label>
-              <select id="estado" formControlName="estado" class="form-select">
-                <option value="PENDIENTE">Pendiente</option>
-                <option value="EN_REVISION">En Revisión</option>
-                <option value="APROBADO">Aprobado</option>
-                <option value="RECHAZADO">Rechazado</option>
-                <option value="PAGADO">Pagado</option>
-                <option value="ELIMINADO">Eliminado</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="estadoOptions"
+                [placeholder]="'Seleccionar Estado'"
+              ></app-dropdown>
             </div>
           </div>
         </div>
@@ -99,15 +97,8 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           <div class="section-grid">
             <div class="form-group">
               <label for="periodo">Periodo *</label>
-              <input
-                id="periodo"
-                type="month"
-                formControlName="periodo"
-                class="form-control"
-              />
-              <div class="error-msg" *ngIf="hasError('periodo')">
-                Periodo es requerido
-              </div>
+              <input id="periodo" type="month" formControlName="periodo" class="form-control" />
+              <div class="error-msg" *ngIf="hasError('periodo')">Periodo es requerido</div>
             </div>
 
             <div class="form-group">
@@ -118,19 +109,12 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 formControlName="fechaInicio"
                 class="form-control"
               />
-              <div class="error-msg" *ngIf="hasError('fechaInicio')">
-                Fecha de inicio requerida
-              </div>
+              <div class="error-msg" *ngIf="hasError('fechaInicio')">Fecha de inicio requerida</div>
             </div>
 
             <div class="form-group">
               <label for="fechaFin">Fecha Fin del Periodo *</label>
-              <input
-                id="fechaFin"
-                type="date"
-                formControlName="fechaFin"
-                class="form-control"
-              />
+              <input id="fechaFin" type="date" formControlName="fechaFin" class="form-control" />
               <div class="error-msg" *ngIf="hasError('fechaFin')">Fecha de fin requerida</div>
             </div>
 
@@ -293,6 +277,19 @@ export class ValuationFormComponent implements OnInit {
   validationErrors: ValidationError[] = [];
   errorMessage = '';
 
+  // Dropdown Options
+  contractOptions: { label: string; value: any }[] = [];
+  equipmentOptions: { label: string; value: any }[] = [];
+
+  estadoOptions = [
+    { label: 'Pendiente', value: 'PENDIENTE' },
+    { label: 'En Revisión', value: 'EN_REVISION' },
+    { label: 'Aprobado', value: 'APROBADO' },
+    { label: 'Rechazado', value: 'RECHAZADO' },
+    { label: 'Pagado', value: 'PAGADO' },
+    { label: 'Eliminado', value: 'ELIMINADO' },
+  ];
+
   fieldLabels: Record<string, string> = {
     contractId: 'Contrato',
     equipmentId: 'Equipo',
@@ -317,7 +314,7 @@ export class ValuationFormComponent implements OnInit {
     });
 
     // Auto-set period when start date changes if period is empty
-    this.valuationForm.get('fechaInicio')?.valueChanges.subscribe(date => {
+    this.valuationForm.get('fechaInicio')?.valueChanges.subscribe((date) => {
       const currentPeriod = this.valuationForm.get('periodo')?.value;
       if (date && !currentPeriod) {
         // date is typically YYYY-MM-DD
@@ -344,7 +341,13 @@ export class ValuationFormComponent implements OnInit {
   }
 
   loadContracts(): void {
-    this.contractService.getAll().subscribe((data) => (this.contracts = data));
+    this.contractService.getAll().subscribe((data) => {
+      this.contracts = data;
+      this.contractOptions = this.contracts.map((c) => ({
+        label: `${c.numero_contrato} - ${c.provider_name || 'Sin Proveedor'}`,
+        value: c.id,
+      }));
+    });
   }
 
   loadEquipments(): void {
@@ -356,6 +359,11 @@ export class ValuationFormComponent implements OnInit {
       } else {
         this.equipments = [];
       }
+
+      this.equipmentOptions = this.equipments.map((eq) => ({
+        label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
+        value: eq.id,
+      }));
     });
   }
 
@@ -386,7 +394,7 @@ export class ValuationFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.valuationForm.invalid) {
-        console.warn('Form is invalid, but continuing for debug...');
+      console.warn('Form is invalid, but continuing for debug...');
     }
 
     this.loading = true;

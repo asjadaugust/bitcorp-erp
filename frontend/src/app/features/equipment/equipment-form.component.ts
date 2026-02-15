@@ -21,6 +21,7 @@ import {
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-equipment-form',
@@ -33,14 +34,13 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
       [title]="isEditMode ? 'Editar Equipo' : 'Nuevo Equipo'"
       [subtitle]="
-        isEditMode
-          ? 'Actualizar información del equipo'
-          : 'Registrar un nuevo equipo en el sistema'
+        isEditMode ? 'Actualizar información del equipo' : 'Registrar un nuevo equipo en el sistema'
       "
       [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
       [loading]="loading"
@@ -91,16 +91,20 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
 
             <div class="form-group">
               <label for="categoria">Categoría *</label>
-              <select id="categoria" formControlName="categoria" class="form-select">
-                <option value="">Seleccionar Categoría</option>
-                <option value="Excavadora">Excavadora</option>
-                <option value="Tractor de Oruga">Tractor de Oruga</option>
-                <option value="Cargador Frontal">Cargador Frontal</option>
-                <option value="Camión Volquete">Camión Volquete</option>
-                <option value="Motoniveladora">Motoniveladora</option>
-                <option value="Rodillo Compactador">Rodillo Compactador</option>
-                <option value="Camioneta">Camioneta</option>
-              </select>
+              <app-dropdown
+                formControlName="categoria"
+                [options]="[
+                  { label: 'Excavadora', value: 'Excavadora' },
+                  { label: 'Tractor de Oruga', value: 'Tractor de Oruga' },
+                  { label: 'Cargador Frontal', value: 'Cargador Frontal' },
+                  { label: 'Camión Volquete', value: 'Camión Volquete' },
+                  { label: 'Motoniveladora', value: 'Motoniveladora' },
+                  { label: 'Rodillo Compactador', value: 'Rodillo Compactador' },
+                  { label: 'Camioneta', value: 'Camioneta' },
+                ]"
+                [placeholder]="'Seleccionar Categoría'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('categoria')">Categoría es requerida</div>
             </div>
 
@@ -127,8 +131,6 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
               />
               <div class="error-msg" *ngIf="hasError('modelo')">Modelo es requerido</div>
             </div>
-
-            <!-- equipment_type removed -->
 
             <div class="form-group">
               <label for="anio_fabricacion">Año de Fabricación</label>
@@ -160,47 +162,55 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           <div class="section-grid">
             <div class="form-group">
               <label for="estado">Estado *</label>
-              <select id="estado" formControlName="estado" class="form-select">
-                <option value="DISPONIBLE">Disponible</option>
-                <option value="EN_USO">En Uso</option>
-                <option value="MANTENIMIENTO">Mantenimiento</option>
-                <option value="RETIRADO">Retirado</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="[
+                  { label: 'Disponible', value: 'DISPONIBLE' },
+                  { label: 'En Uso', value: 'EN_USO' },
+                  { label: 'Mantenimiento', value: 'MANTENIMIENTO' },
+                  { label: 'Retirado', value: 'RETIRADO' },
+                ]"
+                [placeholder]="'Seleccionar Estado'"
+              ></app-dropdown>
             </div>
-
-            <!-- Location removed -->
 
             <div class="form-group">
               <label for="medidor_uso">Tipo de Medidor</label>
-              <select id="medidor_uso" formControlName="medidor_uso" class="form-select">
-                <option [ngValue]="null">Seleccionar Tipo</option>
-                <option value="HOROMETRO">Horómetro</option>
-                <option value="ODOMETRO">Odómetro</option>
-                <option value="AMBOS">Ambos</option>
-              </select>
+              <app-dropdown
+                formControlName="medidor_uso"
+                [options]="[
+                  { label: 'Horómetro', value: 'HOROMETRO' },
+                  { label: 'Odómetro', value: 'ODOMETRO' },
+                  { label: 'Ambos', value: 'AMBOS' },
+                ]"
+                [placeholder]="'Seleccionar Tipo'"
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
               <label for="tipo_proveedor">Tipo de Proveedor *</label>
-              <select 
-                id="tipo_proveedor" 
-                formControlName="tipo_proveedor" 
-                class="form-select"
-                (change)="onTipoProveedorChange()">
-                <option value="PROPIO">Propio</option>
-                <option value="TERCERO">Tercero (Alquilado)</option>
-              </select>
+              <app-dropdown
+                formControlName="tipo_proveedor"
+                [options]="[
+                  { label: 'Propio', value: 'PROPIO' },
+                  { label: 'Tercero (Alquilado)', value: 'TERCERO' },
+                ]"
+                [placeholder]="'Seleccionar Tipo'"
+                (selectionChange)="onTipoProveedorChange()"
+              ></app-dropdown>
             </div>
 
             <div class="form-group" *ngIf="showProviderSelect">
               <label for="proveedor_id">Proveedor *</label>
-              <select id="proveedor_id" formControlName="proveedor_id" class="form-select">
-                <option [ngValue]="null">Seleccionar Proveedor</option>
-                <option *ngFor="let provider of providers" [ngValue]="provider.id">
-                  {{ provider.razon_social }}
-                </option>
-              </select>
-              <div class="error-msg" *ngIf="hasError('proveedor_id')">Proveedor es requerido para equipos de terceros</div>
+              <app-dropdown
+                formControlName="proveedor_id"
+                [options]="providerOptions"
+                [placeholder]="'Seleccionar Proveedor'"
+                [searchable]="true"
+              ></app-dropdown>
+              <div class="error-msg" *ngIf="hasError('proveedor_id')">
+                Proveedor es requerido para equipos de terceros
+              </div>
             </div>
 
             <!-- Operator Removed -->
@@ -259,19 +269,12 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
               <tbody>
                 <tr *ngFor="let doc of equipmentDocuments; let i = index">
                   <td>
-                    <select
+                    <app-dropdown
                       [(ngModel)]="doc.document_type"
                       [ngModelOptions]="{ standalone: true }"
-                      class="form-select"
-                    >
-                      <option value="">Seleccionar...</option>
-                      <option value="poliza">Póliza de Seguro</option>
-                      <option value="soat">SOAT</option>
-                      <option value="citv">Revisión Técnica (CITV)</option>
-                      <option value="garantia">Garantía</option>
-                      <option value="tarjeta_propiedad">Tarjeta de Propiedad</option>
-                      <option value="otro">Otro</option>
-                    </select>
+                      [options]="documentTypeOptions"
+                      [placeholder]="'Seleccionar...'"
+                    ></app-dropdown>
                   </td>
                   <td>
                     <input
@@ -282,9 +285,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
                     />
                   </td>
                   <td>
-                    <span
-                      [class]="'status-badge status-' + getDocumentStatus(doc.expiration_date)"
-                    >
+                    <span [class]="'status-badge status-' + getDocumentStatus(doc.expiration_date)">
                       {{ getDocumentStatusLabel(doc.expiration_date) }}
                     </span>
                   </td>
@@ -519,12 +520,23 @@ export class EquipmentFormComponent implements OnInit {
   isEditMode = false;
   loading = false;
   equipmentId: string | null = null;
+
   providers: Provider[] = [];
+  providerOptions: { label: string; value: any }[] = [];
   operators: Operator[] = [];
   equipmentDocuments: any[] = [];
   validationErrors: ValidationError[] = [];
   errorMessage = '';
   successMessage = '';
+
+  documentTypeOptions = [
+    { label: 'Póliza de Seguro', value: 'poliza' },
+    { label: 'SOAT', value: 'soat' },
+    { label: 'Revisión Técnica (CITV)', value: 'citv' },
+    { label: 'Garantía', value: 'garantia' },
+    { label: 'Tarjeta de Propiedad', value: 'tarjeta_propiedad' },
+    { label: 'Otro', value: 'otro' },
+  ];
 
   fieldLabels: Record<string, string> = {
     codigo_equipo: 'Código de Equipo',
@@ -591,6 +603,10 @@ export class EquipmentFormComponent implements OnInit {
   loadProviders(): void {
     this.providerService.getAll().subscribe((providers) => {
       this.providers = providers;
+      this.providerOptions = this.providers.map((p) => ({
+        label: p.razon_social,
+        value: p.id,
+      }));
     });
   }
 
@@ -665,10 +681,10 @@ export class EquipmentFormComponent implements OnInit {
       next: (equipment) => {
         // Map API response (Spanish snake_case) to form fields
         this.equipmentForm.patchValue(equipment);
-        
+
         // Ensure validation rules are applied based on loaded data
         this.onTipoProveedorChange();
-        
+
         this.loading = false;
       },
       error: (err) => {

@@ -14,11 +14,19 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-daily-report-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ValidationErrorsComponent, AlertComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ValidationErrorsComponent,
+    AlertComponent,
+    DropdownComponent,
+  ],
   template: `
     <div class="daily-report-form-container">
       <!-- Validation Errors and Alerts -->
@@ -92,41 +100,29 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
                 <div class="form-group">
                   <label for="turno">Turno *</label>
-                  <select
-                    id="turno"
-                    name="turno"
+                  <app-dropdown
+                    [options]="[
+                      { label: 'DIA', value: 'DIA' },
+                      { label: 'NOCHE', value: 'NOCHE' },
+                    ]"
                     [(ngModel)]="report.turno"
-                    #turnoControl="ngModel"
-                    required
+                    [placeholder]="'Seleccionar Turno'"
                     [disabled]="isReadOnly"
-                  >
-                    <option [ngValue]="undefined">Seleccionar Turno</option>
-                    <option value="DIA">DIA</option>
-                    <option value="NOCHE">NOCHE</option>
-                  </select>
-                  <div class="error-msg" *ngIf="turnoControl.invalid && turnoControl.touched">
-                    Turno es obligatorio
-                  </div>
+                  ></app-dropdown>
                 </div>
               </div>
 
               <div class="form-group">
                 <label for="equipo_id">Equipo *</label>
-                <select
-                  id="equipo_id"
-                  name="equipo_id"
+                <app-dropdown
+                  [options]="equipmentOptions"
                   [(ngModel)]="report.equipo_id"
-                  #equipoControl="ngModel"
-                  required
-                  (change)="onEquipmentChange()"
+                  [placeholder]="'Seleccionar Equipo'"
+                  [searchable]="true"
                   [disabled]="isReadOnly"
-                >
-                  <option value="">Seleccionar Equipo</option>
-                  <option *ngFor="let eq of equipment" [ngValue]="eq.id">
-                    {{ eq.codigo_equipo }} - {{ eq.marca }} {{ eq.modelo }}
-                  </option>
-                </select>
-                <div class="error-msg" *ngIf="equipoControl.invalid && equipoControl.touched">
+                  (selectionChange)="onEquipmentChange()"
+                ></app-dropdown>
+                <div class="error-msg" *ngIf="!report.equipo_id && reportForm.submitted">
                   Seleccione un equipo
                 </div>
               </div>
@@ -809,6 +805,7 @@ export class DailyReportFormComponent implements OnInit {
   };
 
   equipment: Equipment[] = [];
+  equipmentOptions: { label: string; value: any }[] = [];
   selectedEquipment: Equipment | null = null;
   loading = false;
   saving = false;
@@ -877,6 +874,10 @@ export class DailyReportFormComponent implements OnInit {
     this.equipmentService.getAll().subscribe({
       next: (response) => {
         this.equipment = response.data;
+        this.equipmentOptions = this.equipment.map((eq) => ({
+          label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
+          value: eq.id,
+        }));
       },
       error: () => {
         this.errorMessage = 'Error al cargar equipos';

@@ -11,10 +11,18 @@ import {
   ValidationError,
 } from '../../core/services/form-error-handler.service';
 
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+
 @Component({
   selector: 'app-maintenance-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, FormContainerComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FormContainerComponent,
+    DropdownComponent,
+  ],
   template: `
     <app-form-container
       [title]="isEditMode ? 'Editar Mantenimiento' : 'Nuevo Mantenimiento'"
@@ -45,22 +53,26 @@ import {
           <div class="section-grid">
             <div class="form-group">
               <label for="equipment">Equipo *</label>
-              <select id="equipment" formControlName="equipoId" class="form-select">
-                <option [ngValue]="null">Seleccionar Equipo</option>
-                <option *ngFor="let equip of equipmentList" [value]="equip.id">
-                  {{ equip.codigo_equipo }} - {{ equip.marca }} {{ equip.modelo }}
-                </option>
-              </select>
+              <app-dropdown
+                formControlName="equipoId"
+                [options]="equipmentOptions"
+                [placeholder]="'Seleccionar Equipo'"
+                [searchable]="true"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('equipoId')">Equipo es requerido</div>
             </div>
 
             <div class="form-group">
               <label for="maintenance_type">Tipo de Mantenimiento *</label>
-              <select id="maintenance_type" formControlName="tipoMantenimiento" class="form-select">
-                <option value="PREVENTIVO">Preventivo</option>
-                <option value="CORRECTIVO">Correctivo</option>
-                <option value="PREDICTIVO">Predictivo</option>
-              </select>
+              <app-dropdown
+                formControlName="tipoMantenimiento"
+                [options]="[
+                  { label: 'Preventivo', value: 'PREVENTIVO' },
+                  { label: 'Correctivo', value: 'CORRECTIVO' },
+                  { label: 'Predictivo', value: 'PREDICTIVO' },
+                ]"
+                [placeholder]="'Seleccionar Tipo'"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('tipoMantenimiento')">Tipo es requerido</div>
             </div>
 
@@ -130,12 +142,16 @@ import {
 
             <div class="form-group">
               <label for="status">Estado *</label>
-              <select id="status" formControlName="estado" class="form-select">
-                <option value="PROGRAMADO">Programado</option>
-                <option value="EN_PROCESO">En Proceso</option>
-                <option value="COMPLETADO">Completado</option>
-                <option value="CANCELADO">Cancelado</option>
-              </select>
+              <app-dropdown
+                formControlName="estado"
+                [options]="[
+                  { label: 'Programado', value: 'PROGRAMADO' },
+                  { label: 'En Proceso', value: 'EN_PROCESO' },
+                  { label: 'Completado', value: 'COMPLETADO' },
+                  { label: 'Cancelado', value: 'CANCELADO' },
+                ]"
+                [placeholder]="'Seleccionar Estado'"
+              ></app-dropdown>
               <div class="error-msg" *ngIf="hasError('estado')">Estado es requerido</div>
             </div>
           </div>
@@ -253,7 +269,8 @@ export class MaintenanceFormComponent implements OnInit {
   isEditMode = false;
   loading = false;
   recordId: number | null = null;
-  equipmentList: any[] = []; // Changed to any[] to support flexibility
+  equipmentList: any[] = [];
+  equipmentOptions: { label: string; value: any }[] = [];
   errorMessage = '';
 
   constructor() {
@@ -290,6 +307,10 @@ export class MaintenanceFormComponent implements OnInit {
     this.equipmentService.getAll().subscribe({
       next: (response: any) => {
         this.equipmentList = Array.isArray(response) ? response : response?.data || [];
+        this.equipmentOptions = this.equipmentList.map((eq) => ({
+          label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
+          value: eq.id,
+        }));
       },
       error: (err) => console.error('Error loading equipment', err),
     });

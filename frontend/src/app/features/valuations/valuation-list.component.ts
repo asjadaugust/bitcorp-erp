@@ -23,6 +23,7 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-valuation-list',
@@ -35,7 +36,9 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
+    ExportDropdownComponent,
     ActionsContainerComponent,
+    DropdownComponent,
   ],
   template: `
     <app-page-layout
@@ -139,9 +142,11 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           </p>
           <div class="form-group">
             <label>Mes</label>
-            <select [(ngModel)]="selectedMonth" class="form-control">
-              <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
-            </select>
+            <app-dropdown
+              [options]="months"
+              [(ngModel)]="selectedMonth"
+              [placeholder]="'Seleccionar Mes'"
+            ></app-dropdown>
           </div>
           <div class="form-group">
             <label>Año</label>
@@ -342,6 +347,8 @@ export class ValuationListComponent implements OnInit {
   tabs: TabItem[] = [
     { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
+    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
+    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar' },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
     { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
   ];
@@ -488,9 +495,7 @@ export class ValuationListComponent implements OnInit {
       Proyecto: val.contrato?.nombre_proyecto || 'N/A',
       'N° Valorización': val.numeroValorizacion || '',
       Periodo: val.periodo || '',
-      'Fecha Inicio': val.fechaInicio
-        ? new Date(val.fechaInicio).toLocaleDateString('es-PE')
-        : '',
+      'Fecha Inicio': val.fechaInicio ? new Date(val.fechaInicio).toLocaleDateString('es-PE') : '',
       'Fecha Fin': val.fechaFin ? new Date(val.fechaFin).toLocaleDateString('es-PE') : '',
       'Costo Base': val.costoBase || 0,
       'Costo Combustible': val.costoCombustible || 0,
@@ -516,9 +521,7 @@ export class ValuationListComponent implements OnInit {
       Proyecto: val.contrato?.nombre_proyecto || 'N/A',
       'N° Valorización': val.numeroValorizacion || '',
       Periodo: val.periodo || '',
-      'Fecha Inicio': val.fechaInicio
-        ? new Date(val.fechaInicio).toLocaleDateString('es-PE')
-        : '',
+      'Fecha Inicio': val.fechaInicio ? new Date(val.fechaInicio).toLocaleDateString('es-PE') : '',
       'Fecha Fin': val.fechaFin ? new Date(val.fechaFin).toLocaleDateString('es-PE') : '',
       'Costo Base': val.costoBase || 0,
       'Costo Combustible': val.costoCombustible || 0,
