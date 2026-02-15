@@ -376,7 +376,7 @@ export class DashboardService {
         .createQueryBuilder('e')
         .where('e.isActive = :isActive', { isActive: true })
         .andWhere('e.estado IN (:...statuses)', {
-          statuses: ['disponible', 'en_uso', 'operativo'],
+          statuses: ['DISPONIBLE', 'EN_USO'],
         });
 
       stats.active_equipment = await activeEquipmentQuery.getCount();

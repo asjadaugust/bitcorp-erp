@@ -8,7 +8,7 @@ test.describe('Equipment Management - Complete CRUD', () => {
     await page.fill('input[name="username"]', TEST_CONFIG.ADMIN_USER.username);
     await page.fill('input[type="password"]', TEST_CONFIG.ADMIN_USER.password);
     await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/app');
   });
 
   test('should list all equipment', async ({ page }) => {
@@ -114,7 +114,7 @@ test.describe('Equipment - Edit Form', () => {
     await page.fill('input[name="username"]', TEST_CONFIG.ADMIN_USER.username);
     await page.fill('input[type="password"]', TEST_CONFIG.ADMIN_USER.password);
     await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/app');
   });
 
   test('should open edit form for equipment', async ({ page }) => {
@@ -143,7 +143,7 @@ test.describe('Contracts Management', () => {
     await page.fill('input[name="username"]', TEST_CONFIG.ADMIN_USER.username);
     await page.fill('input[type="password"]', TEST_CONFIG.ADMIN_USER.password);
     await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/app');
   });
 
   test('should list all contracts', async ({ page }) => {
@@ -178,7 +178,7 @@ test.describe('Operators Management', () => {
     await page.fill('input[name="username"]', TEST_CONFIG.ADMIN_USER.username);
     await page.fill('input[type="password"]', TEST_CONFIG.ADMIN_USER.password);
     await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/app');
   });
 
   test('should list all operators', async ({ page }) => {

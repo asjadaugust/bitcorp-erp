@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { MaintenanceService } from '../../core/services/maintenance.service';
+import { EquipmentService } from '../../core/services/equipment.service';
 import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
 import { ExcelExportService } from '../../core/services/excel-export.service';
 import {
@@ -23,6 +24,7 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-maintenance-list',
@@ -74,8 +76,9 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <!-- Custom Templates -->
       <ng-template #equipmentTemplate let-row>
         <div class="equipment-info">
-          <span class="equip-code">{{ row.equipo?.codigo_equipo || 'N/A' }}</span>
-          <span class="equip-model">{{ row.equipo?.marca }} {{ row.equipo?.modelo }}</span>
+          <!-- Use the map to get equipment details -->
+          <span class="equip-code">{{ getEquipmentCode(row.equipoId) }}</span>
+          <span class="equip-model">{{ getEquipmentModel(row.equipoId) }}</span>
         </div>
       </ng-template>
 
@@ -101,6 +104,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
             title="Editar"
           >
             <i class="fa-solid fa-pen"></i>
+          </button>
+          <button
+            class="btn-icon delete-btn"
+            (click)="deleteRecord(row); $event.stopPropagation()"
+            title="Eliminar"
+          >
+            <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       </ng-template>
@@ -161,6 +171,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         display: flex;
         justify-content: flex-end;
         gap: 8px;
+        align-items: center;
       }
 
       .btn-icon {
@@ -170,18 +181,24 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         padding: 4px 8px;
         color: var(--grey-500);
         transition: color 0.2s;
+        border-radius: var(--s-4);
       }
 
       .btn-icon:hover {
         background: var(--primary-100);
         color: var(--primary-500);
-        border-radius: var(--s-4);
+      }
+
+      .btn-icon.delete-btn:hover {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-600);
       }
     `,
   ],
 })
 export class MaintenanceListComponent implements OnInit {
   maintenanceService = inject(MaintenanceService);
+  equipmentService = inject(EquipmentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private excelService = inject(ExcelExportService);
@@ -189,6 +206,7 @@ export class MaintenanceListComponent implements OnInit {
   records: MaintenanceRecord[] = [];
   loading = false;
   filters = { status: '', type: '', search: '' };
+  equipmentMap: Map<number, any> = new Map();
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Dashboard', url: '/app' },
@@ -272,7 +290,33 @@ export class MaintenanceListComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.loadRecords();
+    this.loadData();
+  }
+
+  loadData(): void {
+    this.loading = true;
+    forkJoin({
+      records: this.maintenanceService.getAll(this.filters),
+      equipment: this.equipmentService.getAll(),
+    }).subscribe({
+      next: (result) => {
+        this.records = result.records;
+
+        const equipmentList = Array.isArray(result.equipment)
+          ? result.equipment
+          : (result.equipment as any).data || [];
+
+        equipmentList.forEach((eq: any) => {
+          this.equipmentMap.set(eq.id, eq);
+        });
+
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading data', err);
+        this.loading = false;
+      },
+    });
   }
 
   loadRecords(): void {
@@ -295,12 +339,40 @@ export class MaintenanceListComponent implements OnInit {
     this.loadRecords();
   }
 
+  getEquipmentCode(id: number | undefined): string {
+    if (!id) return 'N/A';
+    const equip = this.equipmentMap.get(id);
+    return equip ? equip.codigo_equipo || equip.code : 'N/A';
+  }
+
+  getEquipmentModel(id: number | undefined): string {
+    if (!id) return '';
+    const equip = this.equipmentMap.get(id);
+    return equip ? `${equip.marca || ''} ${equip.modelo || ''}` : '';
+  }
+
   viewRecord(record: MaintenanceRecord): void {
     this.router.navigate([record.id], { relativeTo: this.route });
   }
 
   editRecord(record: MaintenanceRecord): void {
     this.router.navigate([record.id, 'edit'], { relativeTo: this.route });
+  }
+
+  deleteRecord(record: MaintenanceRecord): void {
+    if (confirm('¿Está seguro de eliminar este registro de mantenimiento?')) {
+      this.loading = true;
+      this.maintenanceService.delete(record.id).subscribe({
+        next: () => {
+          this.loadRecords();
+        },
+        error: (err) => {
+          console.error('Error deleting record', err);
+          this.loading = false;
+          alert('Error al eliminar el registro');
+        },
+      });
+    }
   }
 
   createMaintenance(): void {
@@ -322,7 +394,7 @@ export class MaintenanceListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      Equipo: record.equipo?.codigo_equipo || 'N/A',
+      Equipo: this.getEquipmentCode(record.equipoId),
       Tipo: record.tipoMantenimiento || '',
       Descripción: record.descripcion || '',
       'Fecha Programada': record.fechaProgramada
@@ -351,7 +423,7 @@ export class MaintenanceListComponent implements OnInit {
     }
 
     const exportData = this.records.map((record) => ({
-      Equipo: record.equipo?.codigo_equipo || 'N/A',
+      Equipo: this.getEquipmentCode(record.equipoId),
       Tipo: record.tipoMantenimiento || '',
       Descripción: record.descripcion || '',
       'Fecha Programada': record.fechaProgramada

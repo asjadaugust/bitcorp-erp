@@ -14,22 +14,29 @@ export type EstadoMantenimiento =
 
 export interface MaintenanceSchedule {
   id: number;
-  equipoId: number;
+  equipo_id: number; // Backend snake_case
+  equipoId: number; // Legacy camelCase
+  equipo_codigo?: string; // Backend flattened
   equipo?: {
     id: number;
     codigo_equipo: string;
     marca: string;
     modelo: string;
   };
-  tipoMantenimiento: TipoMantenimiento;
+  tipo_mantenimiento: TipoMantenimiento; // Backend snake_case
+  tipoMantenimiento: TipoMantenimiento; // Legacy camelCase
   descripcion?: string;
-  fechaProgramada?: string;
+  fecha_programada?: string; // Backend snake_case
+  fechaProgramada?: string; // Legacy camelCase
   fechaRealizada?: string;
-  costoEstimado?: number;
+  costo_estimado?: number; // Backend snake_case
+  costoEstimado?: number; // Legacy camelCase
   costoReal?: number;
-  tecnicoResponsable?: string;
+  tecnico_responsable?: string; // Backend snake_case
+  tecnicoResponsable?: string; // Legacy camelCase
   estado: EstadoMantenimiento;
   observaciones?: string;
-  createdAt?: string;
+  created_at?: string; // Backend snake_case
+  createdAt?: string; // Legacy camelCase
   updatedAt?: string;
 }

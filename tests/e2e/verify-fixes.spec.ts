@@ -9,7 +9,7 @@ test.describe('UI Verification', () => {
       data: { username: 'admin', password: 'admin123' },
     });
     const loginBody = await loginRes.json();
-    authToken = loginBody.access_token || loginBody.token;
+    authToken = loginBody.data?.access_token || loginBody.access_token || loginBody.token;
 
     // 2. Create Equipment if not exists (check list first or just create one)
     // We create a unique one to ensure we have it
@@ -30,11 +30,16 @@ test.describe('UI Verification', () => {
     if (!eqRes.ok()) {
       console.log('Setup: Equipment creation might have failed or persisted', await eqRes.text());
     } else {
-      const eqData = await eqRes.json();
-      console.log('Setup: Created equipment', eqData.id);
+      const eqBody = await eqRes.json();
+      const eqData = eqBody.data;
+      console.log('Setup: Created equipment', eqData?.id);
+
+      if (!eqData?.id) {
+        throw new Error(`Failed to get equipment ID from response: ${JSON.stringify(eqBody)}`);
+      }
 
       // 3. Create a Contract for this equipment
-      await request.post('http://localhost:3400/api/contracts', {
+      const ctrRes = await request.post('http://localhost:3400/api/contracts', {
         headers: { Authorization: `Bearer ${authToken}` },
         data: {
           equipo_id: eqData.id,
@@ -49,18 +54,31 @@ test.describe('UI Verification', () => {
         },
       });
 
-      // 4. Create a Maintenance Schedule
-      await request.post('http://localhost:3400/api/scheduling/maintenance-schedules', {
+      if (!ctrRes.ok()) {
+        console.error('Setup: Contract creation failed', await ctrRes.text());
+      } else {
+        const ctrBody = await ctrRes.json();
+        console.log('Setup: Created contract', ctrBody.data?.id);
+      }
+
+      // 4. Create a One-Time Maintenance Schedule (Programa de Mantenimiento)
+      const maintRes = await request.post('http://localhost:3400/api/maintenance', {
         headers: { Authorization: `Bearer ${authToken}` },
         data: {
           equipo_id: eqData.id,
           tipo_mantenimiento: 'PREVENTIVO',
-          tipo_intervalo: 'HORAS',
-          intervalo_valor: 250,
           descripcion: 'Servicio inicial 250h',
-          estado: 'ACTIVO',
+          fecha_programada: '2025-02-15',
+          estado: 'PROGRAMADO',
         },
       });
+
+      if (!maintRes.ok()) {
+        console.error('Setup: Maintenance schedule creation failed', await maintRes.text());
+      } else {
+        const maintBody = await maintRes.json();
+        console.log('Setup: Created maintenance schedule', maintBody.data?.id);
+      }
     }
   });
 
@@ -70,15 +88,15 @@ test.describe('UI Verification', () => {
     await page.fill('input[name="username"]', 'admin');
     await page.fill('input[type="password"]', 'admin123');
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/dashboard');
+    await expect(page).toHaveURL(/.*\/app/);
   });
 
   test('Maintenance Schedules should display data', async ({ page }) => {
-    await page.goto('http://localhost:3420/equipment/maintenance');
+    await page.goto('http://localhost:3420/equipment/maintenance/schedule');
 
     // We expect data now because we seeded it
     await expect(page.locator('.schedules-grid')).toBeVisible();
-    await expect(page.locator('.schedule-card')).toBeVisible();
+    await expect(page.locator('.schedule-card').first()).toBeVisible();
 
     // Just verify the grid or empty state loads without error
     const cardCount = await page.locator('.schedule-card').count();

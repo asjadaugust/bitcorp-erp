@@ -62,6 +62,7 @@ test.describe('Bitcorp ERP - Detailed CRUD & Filters', () => {
     await page.fill('#ruc', testRuc);
     await page.fill('#razon_social', testName);
     await page.selectOption('#tipo_proveedor', 'EQUIPOS');
+    await page.fill('#correo_electronico', `test.${Date.now()}@example.com`);
     
     // Submit
     await page.locator('.page-header button:has-text("Crear Proveedor")').click();

@@ -226,6 +226,7 @@ import { FormContainerComponent } from '../../../shared/components/form-containe
       .error-msg {
         color: var(--semantic-red-600);
         font-size: 12px;
+        margin-top: 0.25rem;
       }
 
       .alert {
@@ -235,6 +236,7 @@ import { FormContainerComponent } from '../../../shared/components/form-containe
         align-items: center;
         gap: 0.5rem;
         font-size: 14px;
+        margin-bottom: 1.5rem;
       }
 
       .alert-success {
@@ -264,7 +266,7 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  scheduleForm: FormGroup;
+  scheduleForm!: FormGroup;
   isEditMode = false;
   scheduleId: string | null = null;
   loading = false;
@@ -273,18 +275,7 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   errorMessage = '';
 
   constructor() {
-    this.scheduleForm = this.fb.group({
-      equipoId: [null, Validators.required],
-      tipoMantenimiento: ['PREVENTIVO', Validators.required],
-      descripcion: [''],
-      fechaProgramada: [null],
-      fechaRealizada: [null],
-      costoEstimado: [null],
-      costoReal: [null],
-      tecnicoResponsable: [''],
-      estado: ['PROGRAMADO', Validators.required],
-      observaciones: [''],
-    });
+    this.initForm();
   }
 
   ngOnInit() {
@@ -298,9 +289,25 @@ export class MaintenanceScheduleFormComponent implements OnInit {
     });
   }
 
+  private initForm() {
+    this.scheduleForm = this.fb.group({
+      equipoId: [null, [Validators.required]],
+      tipoMantenimiento: ['PREVENTIVO', [Validators.required]],
+      descripcion: [''],
+      fechaProgramada: [null],
+      fechaRealizada: [null],
+      costoEstimado: [null],
+      costoReal: [null],
+      tecnicoResponsable: [''],
+      estado: ['PROGRAMADO', [Validators.required]],
+      observaciones: [''],
+    });
+  }
+
   loadEquipment() {
     this.equipmentService.getAll().subscribe({
       next: (res: any) => {
+        // Handle standard array response or wrapped response
         this.equipmentList = Array.isArray(res) ? res : res?.data || [];
       },
       error: (err: any) => console.error('Error cargando equipos:', err),
@@ -311,7 +318,16 @@ export class MaintenanceScheduleFormComponent implements OnInit {
     this.loading = true;
     this.scheduleService.getById(id).subscribe({
       next: (schedule) => {
-        this.scheduleForm.patchValue(schedule);
+        // Patch form with data, handling potential date formatting if needed
+        this.scheduleForm.patchValue({
+          ...schedule,
+          fechaProgramada: schedule.fechaProgramada
+            ? new Date(schedule.fechaProgramada).toISOString().split('T')[0]
+            : null,
+          fechaRealizada: schedule.fechaRealizada
+            ? new Date(schedule.fechaRealizada).toISOString().split('T')[0]
+            : null,
+        });
         this.loading = false;
       },
       error: (err: any) => {
@@ -346,7 +362,8 @@ export class MaintenanceScheduleFormComponent implements OnInit {
         setTimeout(() => this.router.navigate(['/equipment/maintenance/schedule']), 1500);
       },
       error: (err: any) => {
-        this.errorMessage = err.error?.error || err.error?.message || 'Error al guardar la programación';
+        this.errorMessage =
+          err.error?.error || err.error?.message || 'Error al guardar la programación';
         this.loading = false;
       },
     });

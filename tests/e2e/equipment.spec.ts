@@ -8,7 +8,7 @@ test.describe('Equipment Management', () => {
     await page.fill('input[name="username"]', TEST_CONFIG.ADMIN_USER.username);
     await page.fill('input[type="password"]', TEST_CONFIG.ADMIN_USER.password);
     await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/app');
 
     // Navigate to equipment list
     await page.goto(getUrl('/equipment'));

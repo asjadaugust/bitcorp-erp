@@ -9,6 +9,7 @@ import {
   ExportDropdownComponent,
   ExportFormat,
 } from '../../../shared/components/export-dropdown/export-dropdown.component';
+import { MaintenanceCardComponent } from '../../../shared/components/maintenance-card/maintenance-card.component';
 
 import {
   PageLayoutComponent,
@@ -31,11 +32,12 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    MaintenanceCardComponent,
   ],
   template: `
     <app-page-layout
       title="Programación de Mantenimiento"
-      icon="fa-calendar-days"
+      icon="fa-calendar"
       [breadcrumbs]="[
         { label: 'Dashboard', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
@@ -46,12 +48,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       [tabs]="tabs"
     >
       <app-actions-container actions>
-        <app-export-dropdown [disabled]="schedules.length === 0" (export)="handleExport($event)">
-        </app-export-dropdown>
-
-        <button type="button" class="btn btn-secondary" (click)="generateTasks()">
-          <i class="fa-solid fa-sync"></i> Generar Tareas
-        </button>
         <button type="button" class="btn btn-primary" (click)="createSchedule()">
           <i class="fa-solid fa-plus"></i> Nueva Programación
         </button>
@@ -62,65 +58,20 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <!-- Error State -->
-      <div *ngIf="error" class="error-message">
-        <p>❌ Error: {{ error }}</p>
-        <button type="button" class="btn btn-secondary" (click)="loadSchedules()">
-          Reintentar
-        </button>
-      </div>
-
       <!-- Schedules List -->
       <div class="schedules-container">
         <div *ngIf="schedules.length > 0" class="schedules-grid">
-          <div *ngFor="let schedule of schedules" class="schedule-card">
-            <div class="card-header">
-              <h3>{{ schedule.equipo?.codigo_equipo || 'Equipo #' + schedule.equipoId }}</h3>
-              <span class="status-badge" [class]="'status-' + schedule.estado">
-                {{ getEstadoLabel(schedule.estado) }}
-              </span>
-            </div>
-            <div class="card-body">
-              <div class="info-row">
-                <span class="label">Tipo:</span>
-                <span class="value">{{ getTipoLabel(schedule.tipoMantenimiento) }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Fecha Programada:</span>
-                <span class="value">{{ schedule.fechaProgramada ? (schedule.fechaProgramada | date:'dd/MM/yyyy') : 'Sin programar' }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Última Realización:</span>
-                <span class="value">
-                  {{ schedule.fechaRealizada ? (schedule.fechaRealizada | date:'dd/MM/yyyy') : 'Pendiente' }}
-                </span>
-              </div>
-              <div class="info-row" *ngIf="schedule.tecnicoResponsable">
-                <span class="label">Técnico:</span>
-                <span class="value">{{ schedule.tecnicoResponsable }}</span>
-              </div>
-            </div>
-            <div class="card-actions">
-              <button
-                type="button"
-                class="btn btn-outline-primary"
-                (click)="editSchedule(schedule.id)"
-              >
-                Editar
-              </button>
-              <button
-                type="button"
-                class="btn btn-outline-danger"
-                (click)="deleteSchedule(schedule.id)"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
+          <app-maintenance-card
+            *ngFor="let schedule of schedules"
+            [schedule]="schedule"
+            (edit)="editSchedule($event)"
+            (delete)="deleteSchedule($event)"
+            (click)="editSchedule($event.id)"
+          ></app-maintenance-card>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!loading && !error && schedules.length === 0" class="empty-state">
+        <div *ngIf="!loading && schedules.length === 0" class="empty-state">
           <div class="empty-icon">📅</div>
           <h3>No hay programaciones</h3>
           <p>Crea una nueva programación de mantenimiento para tus equipos.</p>
@@ -176,66 +127,14 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         font-weight: 600;
       }
 
-      .status-PROGRAMADO {
-        background: #bee3f8;
-        color: #2c5282;
-      }
-      .status-EN_PROCESO {
-        background: #fefcbf;
-        color: #744210;
-      }
-      .status-COMPLETADO {
-        background: #c6f6d5;
-        color: #22543d;
-      }
-      .status-CANCELADO {
-        background: #e2e8f0;
-        color: #4a5568;
-      }
-      .status-PENDIENTE {
-        background: #fed7d7;
-        color: #742a2a;
+      .schedules-container {
+        padding: 1rem 0;
       }
 
-      .info-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #f7fafc;
-      }
-
-      .info-row .label {
-        font-weight: 500;
-        color: #718096;
-        font-size: 0.875rem;
-      }
-
-      .info-row .value {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 0.875rem;
-      }
-
-      .text-danger {
-        color: #e53e3e !important;
-      }
-
-      .card-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.5rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e2e8f0;
-      }
-
-      .error-message {
-        background: #fed7d7;
-        color: #742a2a;
-        padding: 1.5rem;
-        border-radius: 12px;
-        text-align: center;
-        margin-bottom: 1rem;
+      .schedules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
       }
 
       .empty-state {

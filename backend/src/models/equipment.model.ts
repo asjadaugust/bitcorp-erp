@@ -108,23 +108,23 @@ export class Equipment {
   estado!: string;
 
   // Document and Certification Fields (from DB schema)
-  @Column({ name: 'documento_acreditacion', type: 'varchar', length: 100, nullable: true })
-  documentoAcreditacion?: string;
+  // @Column({ name: 'documento_acreditacion', type: 'varchar', length: 100, nullable: true })
+  // documentoAcreditacion?: string;
 
-  @Column({ name: 'fecha_acreditacion', type: 'date', nullable: true })
-  fechaAcreditacion?: Date;
+  // @Column({ name: 'fecha_acreditacion', type: 'date', nullable: true })
+  // fechaAcreditacion?: Date;
 
-  @Column({ name: 'codigo_externo', type: 'varchar', length: 50, nullable: true })
-  codigoExterno?: string;
+  // @Column({ name: 'codigo_externo', type: 'varchar', length: 50, nullable: true })
+  // codigoExterno?: string;
 
-  @Column({ name: 'fecha_venc_poliza', type: 'date', nullable: true })
-  fechaVencPoliza?: Date;
+  // @Column({ name: 'fecha_venc_poliza', type: 'date', nullable: true })
+  // fechaVencPoliza?: Date;
 
-  @Column({ name: 'fecha_venc_soat', type: 'date', nullable: true })
-  fechaVencSoat?: Date;
+  // @Column({ name: 'fecha_venc_soat', type: 'date', nullable: true })
+  // fechaVencSoat?: Date;
 
-  @Column({ name: 'fecha_venc_citv', type: 'date', nullable: true })
-  fechaVencCitv?: Date;
+  // @Column({ name: 'fecha_venc_citv', type: 'date', nullable: true })
+  // fechaVencCitv?: Date;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
