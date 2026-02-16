@@ -93,6 +93,28 @@ interface NavItem {
         padding: var(--s-16) 0;
         overflow-y: auto;
         overflow-x: hidden;
+
+        /* Custom Slim Scrollbar for Windows Chrome */
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: var(--grey-300);
+          border-radius: 10px;
+          
+          &:hover {
+            background: var(--grey-400);
+          }
+        }
+
+        /* Firefox Support */
+        scrollbar-width: thin;
+        scrollbar-color: var(--grey-300) transparent;
       }
 
       .nav-label {
