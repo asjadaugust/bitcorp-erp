@@ -10,10 +10,8 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
     <div class="maintenance-card" [class.hoverable]="clickable" (click)="onCardClick()">
       <div class="card-header">
         <div class="status-row">
-          <span
-            class="status-badge"
-            [class]="'status-' + (schedule.estado || 'PENDIENTE').toLowerCase()"
-          >
+          <span [class]="getStatusClass(schedule.estado)">
+            <i [class]="getStatusIcon(schedule.estado)"></i>
             {{ getEstadoLabel(schedule.estado) }}
           </span>
           <span class="header-date">
@@ -123,32 +121,6 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
         display: flex;
         justify-content: space-between;
         align-items: center;
-      }
-
-      .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-
-      /* Theme Badge Colors */
-      .status-programado {
-        background: #e3f2fd;
-        color: #1976d2;
-      }
-      .status-en_proceso {
-        background: #fff8e1;
-        color: #f57f17;
-      }
-      .status-completado {
-        background: #e8f5e9;
-        color: #388e3c;
-      }
-      .status-pendiente {
-        background: #f5f5f5;
-        color: #616161;
       }
 
       .header-date {
@@ -332,5 +304,27 @@ export class MaintenanceCardComponent {
       PREDICTIVO: 'Predictivo',
     };
     return labels[tipo] || tipo;
+  }
+
+  getStatusClass(estado: string): string {
+    const classes: Record<string, string> = {
+      PROGRAMADO: 'status-badge status-scheduled',
+      EN_PROCESO: 'status-badge status-in-progress',
+      COMPLETADO: 'status-badge status-completed',
+      CANCELADO: 'status-badge status-cancelled',
+      PENDIENTE: 'status-badge status-pending',
+    };
+    return classes[estado] || 'status-badge status-pending';
+  }
+
+  getStatusIcon(estado: string): string {
+    const icons: Record<string, string> = {
+      PROGRAMADO: 'fa-regular fa-calendar',
+      EN_PROCESO: 'fa-solid fa-spinner',
+      COMPLETADO: 'fa-solid fa-check',
+      CANCELADO: 'fa-solid fa-ban',
+      PENDIENTE: 'fa-regular fa-clock',
+    };
+    return icons[estado] || 'fa-regular fa-circle';
   }
 }

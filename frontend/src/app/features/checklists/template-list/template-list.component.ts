@@ -54,7 +54,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           itemCount: itemCountTemplate,
-          activo: activoTemplate,
           frecuencia: frecuenciaTemplate,
         }"
         (rowClick)="viewTemplate($event)"
@@ -66,12 +65,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         <span class="item-count">
           <i class="fa-solid fa-list-check"></i>
           {{ row.items?.length || 0 }} items
-        </span>
-      </ng-template>
-
-      <ng-template #activoTemplate let-row>
-        <span class="badge" [class.badge-active]="row.activo" [class.badge-inactive]="!row.activo">
-          {{ row.activo ? 'Activo' : 'Inactivo' }}
         </span>
       </ng-template>
 
@@ -145,24 +138,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         gap: var(--s-4);
         font-weight: 600;
         color: var(--primary-800);
-      }
-
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      .badge-active {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .badge-inactive {
-        background: var(--grey-200);
-        color: var(--grey-600);
       }
 
       .badge-frecuencia {
@@ -278,7 +253,23 @@ export class TemplateListComponent implements OnInit {
     { key: 'tipoEquipo', label: 'Tipo Equipo', type: 'text' },
     { key: 'frecuencia', label: 'Frecuencia', type: 'template' },
     { key: 'itemCount', label: 'Items', type: 'template' },
-    { key: 'activo', label: 'Estado', type: 'template' },
+    {
+      key: 'activo',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        true: {
+          label: 'Activo',
+          class: 'status-badge status-active',
+          icon: 'fa-solid fa-check',
+        },
+        false: {
+          label: 'Inactivo',
+          class: 'status-badge status-inactive',
+          icon: 'fa-solid fa-ban',
+        },
+      },
+    },
   ];
 
   ngOnInit(): void {

@@ -409,7 +409,7 @@ body {
   letter-spacing: 0.025em;
   white-space: nowrap;
 
-  // New Global Statuses
+  // Global Statuses - Standardized
   &.status-draft,
   &.status-BORRADOR {
     background: #f5f5f5;
@@ -418,7 +418,8 @@ body {
 
   &.status-submitted,
   &.status-ENVIADO,
-  &.status-PENDIENTE {
+  &.status-PENDIENTE,
+  &.status-pending {
     background: #e3f2fd;
     color: #1565c0;
   }
@@ -428,13 +429,20 @@ body {
   &.status-supervisor_approved,
   &.status-APROBADO_SUPERVISOR,
   &.status-completed,
-  &.status-COMPLETADO {
+  &.status-COMPLETADO,
+  &.status-paid,
+  &.status-PAGADO {
     background: #e8f5e9;
     color: #2e7d32;
   }
 
   &.status-rejected,
-  &.status-RECHAZADO {
+  &.status-RECHAZADO,
+  &.status-cancelled,
+  &.status-CANCELADO,
+  &.status-VENCIDO,
+  &.status-eliminado,
+  &.status-retired {
     background: #ffebee;
     color: #c62828;
   }
@@ -451,33 +459,31 @@ body {
     color: #00695c;
   }
 
-  // Legacy/Specific Badges (keeping for backward compatibility if needed)
-  &-available {
+  &.status-available,
+  &.status-disponible {
     background: #d4edda;
     color: #155724;
   }
 
-  &-in_use {
+  &.status-in_use,
+  &.status-in-use,
+  &.status-en_uso {
     background: #cce5ff;
     color: #004085;
   }
 
-  &-maintenance {
+  &.status-maintenance,
+  &.status-mantenimiento {
     background: #fff3cd;
     color: #856404;
   }
 
-  &-retired {
-    background: #f8d7da;
-    color: #721c24;
-  }
-
-  &-active {
+  &.status-active {
     background: var(--semantic-green-500);
     color: white;
   }
 
-  &-inactive {
+  &.status-inactive {
     background: var(--grey-500);
     color: white;
   }
@@ -489,7 +495,7 @@ body {
     color: #1565c0; // Blue 800
 
     &::before {
-      background: #1976d2;
+      background: #1976d2; // Optional dot
     }
   }
 
@@ -515,16 +521,6 @@ body {
     }
   }
 
-  &.status-paid,
-  &.status-PAGADO {
-    background: #e8f5e9; // Green 50
-    color: #2e7d32; // Green 800
-
-    &::before {
-      background: #43a047;
-    }
-  }
-
   &.status-partial,
   &.status-PARCIAL {
     background: #f3e5f5; // Purple 50
@@ -535,16 +531,54 @@ body {
     }
   }
 
-  &.status-cancelled,
-  &.status-CANCELADO,
-  &.status-VENCIDO {
-    background: #ffebee; // Red 50
-    color: #c62828; // Red 800
-
-    &::before {
-      background: #e53935;
-    }
+  // SST Severity Classes (used as secondary classes on badge)
+  &.low {
+    background: #e8f5e9;
+    color: #2e7d32;
   }
+
+  &.medium {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  &.high {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  &.critical {
+    background: #b71c1c;
+    color: #ffffff;
+  }
+
+  // SIG Document Statuses
+  &.quality {
+    // VIGENTE
+    @extend .status-active;
+  }
+
+  &.environment {
+    // OBSOLETO
+    background: #eeeeee;
+    color: #616161;
+  }
+
+  &.safety {
+    // EN_REVISION
+    @extend .status-pending;
+  }
+}
+
+// Aero Card Specific Statuses (PWA)
+.aero-card__status--ENVIADO {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 // Loading

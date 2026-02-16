@@ -57,7 +57,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           nombre_completo: userTemplate,
           contacto: contactTemplate,
           licencia: licenseTemplate,
-          estado: statusTemplate,
         }"
         (rowClick)="viewOperator($event)"
       >
@@ -90,12 +89,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           {{ row.licencia_conducir }}
         </span>
         <span class="text-muted" *ngIf="!row.licencia_conducir">-</span>
-      </ng-template>
-
-      <ng-template #statusTemplate let-row>
-        <span [class]="'status-badge status-' + (row.is_active ? 'active' : 'inactive')">
-          {{ row.is_active ? 'Activo' : 'Inactivo' }}
-        </span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -201,39 +194,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         font-size: 12px;
       }
 
-      .status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .status-badge::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-
-      .status-active {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-active::before {
-        background: var(--semantic-green-500);
-      }
-
-      .status-inactive {
-        background: var(--grey-100);
-        color: var(--grey-600);
-      }
-      .status-inactive::before {
-        background: var(--grey-400);
-      }
-
       .text-muted {
         color: var(--grey-400);
       }
@@ -275,7 +235,23 @@ export class OperatorListEnhancedComponent implements OnInit {
     { key: 'contacto', label: 'Contacto', type: 'template' },
     { key: 'licencia', label: 'Licencia', type: 'template' },
     { key: 'fecha_ingreso', label: 'Ingreso', type: 'date' },
-    { key: 'estado', label: 'Estado', type: 'template' },
+    {
+      key: 'is_active',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        true: {
+          label: 'Activo',
+          class: 'status-badge status-active',
+          icon: 'fa-solid fa-check',
+        },
+        false: {
+          label: 'Inactivo',
+          class: 'status-badge status-inactive',
+          icon: 'fa-solid fa-ban',
+        },
+      },
+    },
   ];
 
   actionsTemplate: any;

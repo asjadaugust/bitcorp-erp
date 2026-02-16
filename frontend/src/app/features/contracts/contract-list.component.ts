@@ -246,10 +246,26 @@ export class ContractListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        ACTIVO: { label: 'Activo', class: 'badge status-active' },
-        VENCIDO: { label: 'Vencido', class: 'badge status-completed' },
-        BORRADOR: { label: 'Borrador', class: 'badge status-pending' },
-        CANCELADO: { label: 'Cancelado', class: 'badge status-cancelled' },
+        ACTIVO: {
+          label: 'Activo',
+          class: 'status-badge status-active',
+          icon: 'fa-solid fa-check',
+        },
+        VENCIDO: {
+          label: 'Vencido',
+          class: 'status-badge status-cancelled',
+          icon: 'fa-solid fa-clock',
+        },
+        BORRADOR: {
+          label: 'Borrador',
+          class: 'status-badge status-draft',
+          icon: 'fa-solid fa-pencil',
+        },
+        CANCELADO: {
+          label: 'Cancelado',
+          class: 'status-badge status-cancelled',
+          icon: 'fa-solid fa-ban',
+        },
       },
     },
   ];

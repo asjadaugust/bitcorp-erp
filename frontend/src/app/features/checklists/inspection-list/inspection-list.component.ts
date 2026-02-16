@@ -66,8 +66,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
           equipo: equipoTemplate,
           trabajador: trabajadorTemplate,
           progreso: progresoTemplate,
-          estado: estadoTemplate,
-          resultado: resultadoTemplate,
         }"
         (rowClick)="viewInspection($event)"
       >
@@ -98,23 +96,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
             {{ (row.itemsConforme || 0) + (row.itemsNoConforme || 0) }} / {{ row.itemsTotal || 0 }}
           </span>
         </div>
-      </ng-template>
-
-      <ng-template #estadoTemplate let-row>
-        <span class="badge" [ngClass]="getEstadoClass(row.estado)">
-          {{ getEstadoLabel(row.estado) }}
-        </span>
-      </ng-template>
-
-      <ng-template #resultadoTemplate let-row>
-        <span
-          class="badge"
-          [ngClass]="getResultadoClass(row.resultadoGeneral)"
-          *ngIf="row.resultadoGeneral"
-        >
-          {{ getResultadoLabel(row.resultadoGeneral) }}
-        </span>
-        <span *ngIf="!row.resultadoGeneral">-</span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -219,52 +200,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         font-size: 12px;
         color: var(--grey-700);
         font-weight: 600;
-      }
-
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
-
-      /* Estado badges */
-      .estado-en-progreso {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
-      .estado-completado {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .estado-rechazado {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
-      .estado-cancelado {
-        background: var(--grey-200);
-        color: var(--grey-600);
-      }
-
-      /* Resultado badges */
-      .resultado-aprobado {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .resultado-con-observaciones {
-        background: var(--warning-100);
-        color: var(--warning-800);
-      }
-
-      .resultado-rechazado {
-        background: var(--error-100);
-        color: var(--error-800);
       }
 
       .action-buttons {
@@ -427,8 +362,55 @@ export class InspectionListComponent implements OnInit {
     { key: 'equipo', label: 'Equipo', type: 'template' },
     { key: 'trabajador', label: 'Inspector', type: 'template' },
     { key: 'progreso', label: 'Progreso', type: 'template' },
-    { key: 'estado', label: 'Estado', type: 'template' },
-    { key: 'resultado', label: 'Resultado', type: 'template' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        EN_PROGRESO: {
+          label: 'En Progreso',
+          class: 'status-badge status-in-progress',
+          icon: 'fa-solid fa-spinner',
+        },
+        COMPLETADO: {
+          label: 'Completado',
+          class: 'status-badge status-completed',
+          icon: 'fa-solid fa-check',
+        },
+        RECHAZADO: {
+          label: 'Rechazado',
+          class: 'status-badge status-rejected',
+          icon: 'fa-solid fa-xmark',
+        },
+        CANCELADO: {
+          label: 'Cancelado',
+          class: 'status-badge status-cancelled',
+          icon: 'fa-solid fa-ban',
+        },
+      },
+    },
+    {
+      key: 'resultadoGeneral',
+      label: 'Resultado',
+      type: 'badge',
+      badgeConfig: {
+        APROBADO: {
+          label: 'Aprobado',
+          class: 'status-badge status-approved',
+          icon: 'fa-solid fa-check-double',
+        },
+        APROBADO_CON_OBSERVACIONES: {
+          label: 'Con Observaciones',
+          class: 'status-badge status-warning',
+          icon: 'fa-solid fa-triangle-exclamation',
+        },
+        RECHAZADO: {
+          label: 'Rechazado',
+          class: 'status-badge status-rejected',
+          icon: 'fa-solid fa-xmark',
+        },
+      },
+    },
   ];
 
   ngOnInit(): void {

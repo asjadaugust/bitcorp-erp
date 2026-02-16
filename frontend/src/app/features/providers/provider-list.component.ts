@@ -262,8 +262,16 @@ export class ProviderListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        true: { label: 'Activo', class: 'badge status-active' },
-        false: { label: 'Inactivo', class: 'badge status-inactive' },
+        true: {
+          label: 'Activo',
+          class: 'status-badge status-active',
+          icon: 'fa-solid fa-check',
+        },
+        false: {
+          label: 'Inactivo',
+          class: 'status-badge status-inactive',
+          icon: 'fa-solid fa-ban',
+        },
       },
     },
   ];

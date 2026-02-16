@@ -384,12 +384,36 @@ export class ValuationListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        PAGADO: { label: 'Pagado', class: 'badge status-paid' },
-        APROBADO: { label: 'Aprobado', class: 'badge status-approved' },
-        EN_REVISION: { label: 'En Revisión', class: 'badge status-under_review' },
-        PENDIENTE: { label: 'Pendiente', class: 'badge status-pending' },
-        RECHAZADO: { label: 'Rechazado', class: 'badge status-rejected' },
-        ELIMINADO: { label: 'Eliminado', class: 'badge status-deleted' },
+        PAGADO: {
+          label: 'Pagado',
+          class: 'status-badge status-paid',
+          icon: 'fa-solid fa-check-circle',
+        },
+        APROBADO: {
+          label: 'Aprobado',
+          class: 'status-badge status-approved',
+          icon: 'fa-solid fa-check',
+        },
+        EN_REVISION: {
+          label: 'En Revisión',
+          class: 'status-badge status-under_review',
+          icon: 'fa-solid fa-file-signature',
+        },
+        PENDIENTE: {
+          label: 'Pendiente',
+          class: 'status-badge status-pending',
+          icon: 'fa-solid fa-clock',
+        },
+        RECHAZADO: {
+          label: 'Rechazado',
+          class: 'status-badge status-rejected',
+          icon: 'fa-solid fa-file-circle-xmark',
+        },
+        ELIMINADO: {
+          label: 'Eliminado',
+          class: 'status-badge status-cancelled',
+          icon: 'fa-solid fa-trash',
+        },
       },
     },
   ];

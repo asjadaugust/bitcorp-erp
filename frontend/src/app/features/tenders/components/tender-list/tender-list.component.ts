@@ -114,11 +114,31 @@ export class TenderListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        PUBLICADO: { label: 'Publicado', class: 'badge open' },
-        EVALUACION: { label: 'En Evaluación', class: 'badge submitted' },
-        ADJUDICADO: { label: 'Adjudicado', class: 'badge won' },
-        DESIERTO: { label: 'Desierto', class: 'badge lost' },
-        CANCELADO: { label: 'Cancelado', class: 'badge cancelled' },
+        PUBLICADO: {
+          label: 'Publicado',
+          class: 'status-badge status-submitted',
+          icon: 'fa-solid fa-earth-americas',
+        },
+        EVALUACION: {
+          label: 'En Evaluación',
+          class: 'status-badge status-in-progress',
+          icon: 'fa-solid fa-magnifying-glass',
+        },
+        ADJUDICADO: {
+          label: 'Adjudicado',
+          class: 'status-badge status-approved',
+          icon: 'fa-solid fa-trophy',
+        },
+        DESIERTO: {
+          label: 'Desierto',
+          class: 'status-badge status-rejected',
+          icon: 'fa-solid fa-wind',
+        },
+        CANCELADO: {
+          label: 'Cancelado',
+          class: 'status-badge status-cancelled',
+          icon: 'fa-solid fa-ban',
+        },
       },
     },
   ];
