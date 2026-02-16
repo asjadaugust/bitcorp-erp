@@ -109,7 +109,6 @@ import {
           [data]="reports"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
-            date: dateTemplate,
             equipment: equipmentTemplate,
             operator: operatorTemplate,
             meter: meterTemplate,
@@ -640,7 +639,7 @@ export class DailyReportListEnhancedComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'date', label: 'Fecha', type: 'template' },
+    { key: 'date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
     { key: 'code', label: 'Código', type: 'text' },
     { key: 'equipment', label: 'Equipo', type: 'template' },
     { key: 'operator', label: 'Operador', type: 'template' },

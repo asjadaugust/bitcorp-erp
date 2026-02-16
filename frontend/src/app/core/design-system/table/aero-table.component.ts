@@ -89,7 +89,9 @@ export interface TableColumn {
 
               <!-- Date Column -->
               <ng-container *ngIf="col.type === 'date'">
-                {{ row[col.key] | date: col.format || 'dd/MM/yyyy' }}
+                <div class="date-cell">
+                  {{ row[col.key] | date: col.format || 'dd/MM/yyyy' }}
+                </div>
               </ng-container>
 
               <!-- Default Text Column -->
@@ -301,6 +303,13 @@ export interface TableColumn {
           white-space: nowrap;
           text-align: right;
         }
+
+        .date-cell {
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+          text-align: center;
+          color: var(--grey-700);
+        }
       }
 
       /* Badge Styles overridden by Global Styles, keeping minimal defaults */
@@ -332,6 +341,7 @@ export interface TableColumn {
         gap: 16px;
         font-size: 13px;
         color: var(--grey-700);
+        flex-wrap: wrap;
       }
 
       .page-size-selector {
@@ -342,6 +352,8 @@ export interface TableColumn {
         label {
           font-size: 13px;
           color: var(--grey-700);
+          white-space: nowrap;
+          margin-right: 8px;
         }
 
         .form-select {

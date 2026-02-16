@@ -57,7 +57,13 @@ When starting a task, follow these steps:
 2.  **Check Application Status**:
     - Check if `docker-compose` is running.
     - If not, start the application: `docker-compose up -d --build`.
-3.  **Commit & Push**:
+3.  **Check Logs**:
+    - Before committing, check the logs for any errors:
+      ```bash
+      docker-compose logs --tail=50 -f backend
+      docker-compose logs --tail=50 -f frontend
+      ```
+4.  **Commit & Push**:
     - Stage all changes: `git add .`
     - Configure Identity (if needed):
       ```bash

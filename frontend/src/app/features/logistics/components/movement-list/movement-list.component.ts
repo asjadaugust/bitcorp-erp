@@ -76,7 +76,6 @@ import {
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
-          date: dateTemplate,
           type: typeTemplate,
           document: documentTemplate,
           entity: entityTemplate,
@@ -265,7 +264,7 @@ export class MovementListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'date', label: 'Fecha', type: 'template' },
+    { key: 'fecha', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
     { key: 'type', label: 'Tipo', type: 'template' },
     { key: 'document', label: 'Documento', type: 'template' },
     { key: 'entity', label: 'Proyecto/Origen', type: 'template' },
