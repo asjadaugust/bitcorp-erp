@@ -14,6 +14,8 @@ export interface Provider {
   direccion?: string;
   telefono?: string;
   correo_electronico?: string; // Changed from email to match API
+  estado_contribuyente?: string;
+  condicion_contribuyente?: string;
   is_active: boolean;
   created_at: Date | string;
   updated_at: Date | string;

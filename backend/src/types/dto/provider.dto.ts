@@ -29,6 +29,8 @@ export interface ProviderDto {
   direccion?: string | null;
   telefono?: string | null;
   correo_electronico?: string | null; // ✅ Spanish naming (was: email)
+  estado_contribuyente?: string | null;
+  condicion_contribuyente?: string | null;
   is_active: boolean;
   created_at: string; // ISO datetime string
   updated_at: string; // ISO datetime string
@@ -86,6 +88,8 @@ export function toProviderDto(entity: Provider): ProviderDto {
     direccion: entity.direccion || null,
     telefono: entity.telefono || null,
     correo_electronico: entity.email || null, // ✅ Map entity.email → DTO.correo_electronico
+    estado_contribuyente: entity.estadoContribuyente || null,
+    condicion_contribuyente: entity.condicionContribuyente || null,
     is_active: entity.isActive,
     created_at: toDateTimeString(entity.createdAt),
     updated_at: toDateTimeString(entity.updatedAt),
@@ -115,6 +119,10 @@ export function fromProviderDto(dto: Partial<ProviderDto>): Partial<Provider> {
   if (dto.direccion !== undefined) entity.direccion = dto.direccion || undefined;
   if (dto.telefono !== undefined) entity.telefono = dto.telefono || undefined;
   if (dto.correo_electronico !== undefined) entity.email = dto.correo_electronico || undefined; // ✅ Map DTO.correo_electronico → entity.email
+  if (dto.estado_contribuyente !== undefined)
+    entity.estadoContribuyente = dto.estado_contribuyente || undefined;
+  if (dto.condicion_contribuyente !== undefined)
+    entity.condicionContribuyente = dto.condicion_contribuyente || undefined;
   if (dto.is_active !== undefined) entity.isActive = dto.is_active;
 
   return entity;
@@ -166,6 +174,16 @@ export class ProviderCreateDto {
   @IsEmail({}, { message: 'correo_electronico debe ser un correo electrónico válido' })
   @MaxLength(100, { message: 'correo_electronico no puede exceder 100 caracteres' })
   correo_electronico?: string; // ✅ Spanish naming (was: email)
+
+  @IsOptional()
+  @IsString({ message: 'estado_contribuyente debe ser un string' })
+  @MaxLength(100, { message: 'estado_contribuyente no puede exceder 100 caracteres' })
+  estado_contribuyente?: string;
+
+  @IsOptional()
+  @IsString({ message: 'condicion_contribuyente debe ser un string' })
+  @MaxLength(100, { message: 'condicion_contribuyente no puede exceder 100 caracteres' })
+  condicion_contribuyente?: string;
 
   @IsOptional()
   @IsBoolean({ message: 'is_active debe ser un booleano' })
@@ -220,6 +238,16 @@ export class ProviderUpdateDto {
   @IsEmail({}, { message: 'correo_electronico debe ser un correo electrónico válido' })
   @MaxLength(100, { message: 'correo_electronico no puede exceder 100 caracteres' })
   correo_electronico?: string; // ✅ Spanish naming (was: email)
+
+  @IsOptional()
+  @IsString({ message: 'estado_contribuyente debe ser un string' })
+  @MaxLength(100, { message: 'estado_contribuyente no puede exceder 100 caracteres' })
+  estado_contribuyente?: string;
+
+  @IsOptional()
+  @IsString({ message: 'condicion_contribuyente debe ser un string' })
+  @MaxLength(100, { message: 'condicion_contribuyente no puede exceder 100 caracteres' })
+  condicion_contribuyente?: string;
 
   @IsOptional()
   @IsBoolean({ message: 'is_active debe ser un booleano' })

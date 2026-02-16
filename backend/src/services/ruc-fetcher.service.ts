@@ -12,6 +12,8 @@ export interface RucData {
   distrito?: string;
   estado?: string;
   condicion?: string;
+  estado_contribuyente?: string;
+  condicion_contribuyente?: string;
 }
 
 export class RucFetcherService {
@@ -81,6 +83,8 @@ export class RucFetcherService {
                 distrito: response.distrito,
                 estado: response.estado,
                 condicion: response.condicion,
+                estado_contribuyente: response.estado,
+                condicion_contribuyente: response.condicion,
               };
 
               resolve(rucData);

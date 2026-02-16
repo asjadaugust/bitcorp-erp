@@ -37,6 +37,12 @@ export class Provider {
   @Column({ name: 'correo_electronico', type: 'varchar', length: 255, nullable: true })
   email?: string;
 
+  @Column({ name: 'estado_contribuyente', type: 'varchar', length: 100, nullable: true })
+  estadoContribuyente?: string;
+
+  @Column({ name: 'condicion_contribuyente', type: 'varchar', length: 100, nullable: true })
+  condicionContribuyente?: string;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 

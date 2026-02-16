@@ -185,6 +185,30 @@ import {
                 placeholder="ej. contacto@proveedor.com"
               />
             </div>
+
+            <div class="form-group">
+              <label for="estado_contribuyente">Estado del Contribuyente</label>
+              <input
+                id="estado_contribuyente"
+                type="text"
+                formControlName="estado_contribuyente"
+                class="form-control"
+                readonly
+                placeholder="Autocompletado desde SUNAT"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="condicion_contribuyente">Condición del Contribuyente</label>
+              <input
+                id="condicion_contribuyente"
+                type="text"
+                formControlName="condicion_contribuyente"
+                class="form-control"
+                readonly
+                placeholder="Autocompletado desde SUNAT"
+              />
+            </div>
           </div>
         </div>
 
@@ -519,6 +543,8 @@ export class ProviderFormComponent implements OnInit {
     telefono: 'Teléfono',
     nombre_comercial: 'Nombre Comercial',
     sitio_web: 'Sitio Web',
+    estado_contribuyente: 'Estado del Contribuyente',
+    condicion_contribuyente: 'Condición del Contribuyente',
   };
 
   constructor() {
@@ -531,6 +557,8 @@ export class ProviderFormComponent implements OnInit {
       nombre_comercial: [''],
       telefono: [''],
       correo_electronico: ['', Validators.email],
+      estado_contribuyente: [''],
+      condicion_contribuyente: [''],
     });
   }
 
@@ -560,6 +588,8 @@ export class ProviderFormComponent implements OnInit {
           nombre_comercial: provider.nombre_comercial || '',
           telefono: provider.telefono || '',
           correo_electronico: provider.correo_electronico || '',
+          estado_contribuyente: provider.estado_contribuyente || '',
+          condicion_contribuyente: provider.condicion_contribuyente || '',
         });
 
         // Bank accounts and contacts removed from form load as mapped to entity props not supported
@@ -636,6 +666,8 @@ export class ProviderFormComponent implements OnInit {
             razon_social: data.razon_social,
             nombre_comercial: data.nombre_comercial || '',
             direccion: data.direccion || '',
+            estado_contribuyente: data.estado_contribuyente || '',
+            condicion_contribuyente: data.condicion_contribuyente || '',
           });
           this.successMessage = 'Datos del RUC recuperados exitosamente';
         }
