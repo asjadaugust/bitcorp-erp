@@ -1,10 +1,13 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateProviderTables1718000000000 implements MigrationInterface {
+export class CreateProviderTables1768607800000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Check if tables allow for safe re-run
     const hasAuditLog = await queryRunner.hasTable('proveedores.provider_audit_log');
     const hasDocuments = await queryRunner.hasTable('proveedores.provider_document');
+
+    // Ensure schema exists
+    await queryRunner.query(`CREATE SCHEMA IF NOT EXISTS proveedores`);
 
     if (!hasAuditLog) {
       await queryRunner.createTable(
