@@ -7,7 +7,7 @@ export class CreateValuationPaymentDocTable1771400300000 implements MigrationInt
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS equipo.valorizacion_documento_pago (
         id SERIAL PRIMARY KEY,
-        valorizacion_id integer NOT NULL REFERENCES equipo.valorizacion(id) ON DELETE CASCADE,
+        valorizacion_id integer NOT NULL REFERENCES equipo.valorizacion_equipo(id) ON DELETE CASCADE,
         tipo_documento varchar(50) NOT NULL,
         numero varchar(100),
         fecha_documento date,
