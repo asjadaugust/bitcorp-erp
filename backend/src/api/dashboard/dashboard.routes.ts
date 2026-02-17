@@ -20,6 +20,9 @@ router.get('/user-info', dashboardController.getUserInfo);
 // PUT /api/dashboard/switch-project - Switch active project
 router.put('/switch-project', validateDto(SwitchProjectDto), dashboardController.switchProject);
 
+// GET /api/dashboard/document-alerts - Get document expiry alerts
+router.get('/document-alerts', dashboardController.getDocumentAlerts);
+
 // GET /api/dashboard/stats - Get dashboard statistics
 router.get('/stats', dashboardController.getStats);
 

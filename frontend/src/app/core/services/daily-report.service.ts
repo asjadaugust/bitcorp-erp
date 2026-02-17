@@ -6,6 +6,19 @@ import { DailyReport, CreateDailyReportDto } from '../models/daily-report.model'
 
 import { environment } from '../../../environments/environment';
 
+export interface EquipmentReceptionStatus {
+  equipo_id: number;
+  codigo_equipo: string;
+  marca: string;
+  modelo: string;
+  proyecto_nombre?: string;
+  total_dias: number;
+  reportes_recibidos: number;
+  reportes_pendientes: number;
+  porcentaje_recepcion: number;
+  fechas_faltantes: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class DailyReportService {
   private http = inject(HttpClient);
@@ -121,6 +134,28 @@ export class DailyReportService {
 
   deletePhoto(id: string | number, photoIndex: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}/photos/${photoIndex}`);
+  }
+
+  /**
+   * Get reception status for daily reports per equipment
+   */
+  getReceptionStatus(
+    fechaDesde: string,
+    fechaHasta: string,
+    proyectoId?: number
+  ): Observable<EquipmentReceptionStatus[]> {
+    let params = new HttpParams().set('fecha_desde', fechaDesde).set('fecha_hasta', fechaHasta);
+    if (proyectoId) {
+      params = params.set('proyecto_id', proyectoId.toString());
+    }
+    return this.http.get<any>(`${this.apiUrl}/reception-status`, { params }).pipe(
+      map((response) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response;
+      })
+    );
   }
 
   /**

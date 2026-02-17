@@ -113,6 +113,64 @@ import {
                     </div>
                   </div>
                 </div>
+
+                <!-- Document Expiry Dates -->
+                <div class="info-group">
+                  <h3>Documentos y Vencimientos</h3>
+                  <div class="specs-grid">
+                    <div class="spec-item">
+                      <span class="spec-label">SOAT</span>
+                      <span class="spec-value">
+                        <span
+                          *ngIf="equipment.fecha_venc_soat"
+                          [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_soat)"
+                        >
+                          {{ equipment.fecha_venc_soat | date: 'dd/MM/yyyy' }}
+                          <span class="doc-tag">{{
+                            getDocExpiryLabel(equipment.fecha_venc_soat)
+                          }}</span>
+                        </span>
+                        <span *ngIf="!equipment.fecha_venc_soat" class="text-muted"
+                          >Sin registro</span
+                        >
+                      </span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Póliza TREC</span>
+                      <span class="spec-value">
+                        <span
+                          *ngIf="equipment.fecha_venc_poliza"
+                          [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_poliza)"
+                        >
+                          {{ equipment.fecha_venc_poliza | date: 'dd/MM/yyyy' }}
+                          <span class="doc-tag">{{
+                            getDocExpiryLabel(equipment.fecha_venc_poliza)
+                          }}</span>
+                        </span>
+                        <span *ngIf="!equipment.fecha_venc_poliza" class="text-muted"
+                          >Sin registro</span
+                        >
+                      </span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">CITV</span>
+                      <span class="spec-value">
+                        <span
+                          *ngIf="equipment.fecha_venc_citv"
+                          [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_citv)"
+                        >
+                          {{ equipment.fecha_venc_citv | date: 'dd/MM/yyyy' }}
+                          <span class="doc-tag">{{
+                            getDocExpiryLabel(equipment.fecha_venc_citv)
+                          }}</span>
+                        </span>
+                        <span *ngIf="!equipment.fecha_venc_citv" class="text-muted"
+                          >Sin registro</span
+                        >
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Maintenance Tab -->
@@ -469,6 +527,48 @@ import {
         font-weight: 600;
       }
 
+      .doc-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .doc-tag {
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .doc-expired {
+        color: #c62828;
+      }
+      .doc-expired .doc-tag {
+        background: #ffebee;
+        color: #c62828;
+      }
+      .doc-critical {
+        color: #e65100;
+      }
+      .doc-critical .doc-tag {
+        background: #fff3e0;
+        color: #e65100;
+      }
+      .doc-warning {
+        color: #f57f17;
+      }
+      .doc-warning .doc-tag {
+        background: #fffde7;
+        color: #f57f17;
+      }
+      .doc-ok {
+        color: #2e7d32;
+      }
+      .doc-ok .doc-tag {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -653,5 +753,24 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/equipment/maintenance'], {
       queryParams: { equipo_id: this.equipment?.id },
     });
+  }
+
+  getDocExpiry(dateStr: string): string {
+    if (!dateStr) return 'none';
+    const expDate = new Date(dateStr);
+    const today = new Date();
+    const days = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (days < 0) return 'expired';
+    if (days <= 7) return 'critical';
+    if (days <= 30) return 'warning';
+    return 'ok';
+  }
+
+  getDocExpiryLabel(dateStr: string): string {
+    const status = this.getDocExpiry(dateStr);
+    if (status === 'expired') return 'Vencido';
+    if (status === 'critical') return 'Critico';
+    if (status === 'warning') return 'Por vencer';
+    return 'Vigente';
   }
 }

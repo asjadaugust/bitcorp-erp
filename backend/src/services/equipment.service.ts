@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { AppDataSource } from '../config/database.config';
 import { Equipment } from '../models/equipment.model';
-import { Repository } from 'typeorm';
+import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import Logger from '../utils/logger';
 import {
   EquipmentListDto,
@@ -36,6 +36,20 @@ export interface CreateEquipmentDto {
   proveedor_id?: number;
   creado_por?: number;
   actualizado_por?: number;
+  fecha_venc_poliza?: string;
+  fecha_venc_soat?: string;
+  fecha_venc_citv?: string;
+}
+
+export interface ExpiringDocumentInfo {
+  equipmentId: number;
+  codigoEquipo: string;
+  marca: string | null;
+  modelo: string | null;
+  documentType: string;
+  expiryDate: Date;
+  daysUntilExpiry: number;
+  status: 'expired' | 'critical' | 'warning';
 }
 
 export type UpdateEquipmentDto = Partial<CreateEquipmentDto>;
@@ -570,8 +584,9 @@ export class EquipmentService {
         tipoProveedor: data.tipo_proveedor,
         tipoEquipoId: data.tipo_equipo_id,
         proveedorId: data.proveedor_id,
-        // TODO: Add creadoPor property to Equipment model if user tracking is needed
-        // creadoPor: data.creado_por,
+        fechaVencPoliza: data.fecha_venc_poliza ? new Date(data.fecha_venc_poliza) : undefined,
+        fechaVencSoat: data.fecha_venc_soat ? new Date(data.fecha_venc_soat) : undefined,
+        fechaVencCitv: data.fecha_venc_citv ? new Date(data.fecha_venc_citv) : undefined,
         isActive: true,
       });
 
@@ -711,6 +726,21 @@ export class EquipmentService {
       }
       if (data.proveedor_id !== undefined) {
         equipment.proveedorId = data.proveedor_id;
+      }
+      if ((data as any).fecha_venc_poliza !== undefined) {
+        equipment.fechaVencPoliza = (data as any).fecha_venc_poliza
+          ? new Date((data as any).fecha_venc_poliza)
+          : undefined;
+      }
+      if ((data as any).fecha_venc_soat !== undefined) {
+        equipment.fechaVencSoat = (data as any).fecha_venc_soat
+          ? new Date((data as any).fecha_venc_soat)
+          : undefined;
+      }
+      if ((data as any).fecha_venc_citv !== undefined) {
+        equipment.fechaVencCitv = (data as any).fecha_venc_citv
+          ? new Date((data as any).fecha_venc_citv)
+          : undefined;
       }
       // TODO: Add actualizadoPor property to Equipment model if user tracking is needed
       // if (data.actualizado_por !== undefined) {
@@ -1197,5 +1227,83 @@ export class EquipmentService {
       context: 'EquipmentService.getAssignmentHistory',
     });
     return [];
+  }
+
+  /**
+   * Get equipment with documents expiring within a given threshold
+   *
+   * Checks fecha_venc_soat, fecha_venc_poliza, and fecha_venc_citv fields.
+   * Returns a flat list of expiring/expired documents with equipment info.
+   *
+   * @param daysAhead - Number of days to look ahead (default: 30)
+   * @returns Array of expiring document info objects
+   */
+  async getExpiringDocuments(daysAhead: number = 30): Promise<ExpiringDocumentInfo[]> {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const threshold = new Date(today);
+      threshold.setDate(threshold.getDate() + daysAhead);
+
+      const equipment = await this.repository
+        .createQueryBuilder('e')
+        .where('e.isActive = :isActive', { isActive: true })
+        .andWhere(
+          '(e.fechaVencSoat <= :threshold OR e.fechaVencPoliza <= :threshold OR e.fechaVencCitv <= :threshold)',
+          { threshold }
+        )
+        .getMany();
+
+      const results: ExpiringDocumentInfo[] = [];
+
+      for (const equip of equipment) {
+        const docFields: Array<{ field: keyof Equipment; label: string }> = [
+          { field: 'fechaVencSoat' as keyof Equipment, label: 'SOAT' },
+          { field: 'fechaVencPoliza' as keyof Equipment, label: 'Póliza TREC' },
+          { field: 'fechaVencCitv' as keyof Equipment, label: 'CITV' },
+        ];
+
+        for (const { field, label } of docFields) {
+          const date = equip[field] as Date | undefined;
+          if (!date) continue;
+
+          const expiryDate = typeof date === 'string' ? new Date(date) : date;
+          const daysUntil = Math.ceil(
+            (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          if (daysUntil <= daysAhead) {
+            results.push({
+              equipmentId: equip.id,
+              codigoEquipo: equip.codigoEquipo,
+              marca: equip.marca || null,
+              modelo: equip.modelo || null,
+              documentType: label,
+              expiryDate,
+              daysUntilExpiry: daysUntil,
+              status: daysUntil < 0 ? 'expired' : daysUntil <= 7 ? 'critical' : 'warning',
+            });
+          }
+        }
+      }
+
+      Logger.info('Expiring equipment documents retrieved', {
+        total: results.length,
+        daysAhead,
+        context: 'EquipmentService.getExpiringDocuments',
+      });
+
+      return results;
+    } catch (error) {
+      Logger.error('Error getting expiring documents', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'EquipmentService.getExpiringDocuments',
+      });
+      throw new DatabaseError(
+        'Failed to get expiring documents',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : new Error(String(error))
+      );
+    }
   }
 }

@@ -4,6 +4,8 @@ import { Equipment } from '../models/equipment.model';
 import { Trabajador } from '../models/trabajador.model';
 import { DailyReport } from '../models/daily-report-typeorm.model';
 import { Project } from '../models/project.model';
+import { OperatorDocument } from '../models/operator-document.entity';
+import { ContractRequiredDocument } from '../models/contract-required-document.model';
 import { Repository } from 'typeorm';
 import { ModuleWithPermissions } from '../models/module.model';
 import Logger from '../utils/logger';
@@ -14,6 +16,41 @@ import {
   ProjectSwitchResponseDto,
 } from '../types/dto/dashboard.dto';
 import { cacheService } from './cache.service';
+
+export interface DocumentAlertsSummary {
+  equipment: {
+    expired: number;
+    critical: number; // <= 7 days
+    warning: number; // <= 30 days
+    details: Array<{
+      equipment_id: number;
+      codigo_equipo: string;
+      document_type: string;
+      expiry_date: string;
+      days_until_expiry: number;
+      status: 'expired' | 'critical' | 'warning';
+    }>;
+  };
+  operators: {
+    expired: number;
+    critical: number;
+    warning: number;
+    details: Array<{
+      operator_id: number;
+      operator_name: string;
+      document_type: string;
+      expiry_date: string;
+      days_until_expiry: number;
+      status: 'expired' | 'critical' | 'warning';
+    }>;
+  };
+  contracts: {
+    expired: number;
+    critical: number;
+    warning: number;
+  };
+  total_alerts: number;
+}
 
 /**
  * Dashboard Service
@@ -417,6 +454,185 @@ export class DashboardService {
         userId,
         cacheKey,
         context: 'DashboardService.getDashboardStats',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get document alerts summary for dashboard
+   *
+   * Aggregates expiring/expired documents across:
+   * - Equipment (SOAT, Póliza TREC, CITV)
+   * - Operator documents (licenses, certifications)
+   * - Contract required documents
+   *
+   * @returns DocumentAlertsSummary with counts and details
+   */
+  async getDocumentAlerts(): Promise<DocumentAlertsSummary> {
+    const cacheKey = 'dashboard:document-alerts';
+    const cached = await cacheService.get<DocumentAlertsSummary>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const thirtyDaysFromNow = new Date(today);
+      thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+      // Equipment documents
+      const equipmentWithDocs = await this.equipmentRepository
+        .createQueryBuilder('e')
+        .where('e.isActive = :isActive', { isActive: true })
+        .andWhere(
+          '(e.fechaVencSoat <= :threshold OR e.fechaVencPoliza <= :threshold OR e.fechaVencCitv <= :threshold)',
+          { threshold: thirtyDaysFromNow }
+        )
+        .getMany();
+
+      const equipmentAlerts: DocumentAlertsSummary['equipment'] = {
+        expired: 0,
+        critical: 0,
+        warning: 0,
+        details: [],
+      };
+
+      const docFields = [
+        { field: 'fechaVencSoat' as const, label: 'SOAT' },
+        { field: 'fechaVencPoliza' as const, label: 'Póliza TREC' },
+        { field: 'fechaVencCitv' as const, label: 'CITV' },
+      ];
+
+      for (const equip of equipmentWithDocs) {
+        for (const { field, label } of docFields) {
+          const date = equip[field];
+          if (!date) continue;
+          const expiryDate = typeof date === 'string' ? new Date(date) : date;
+          const daysUntil = Math.ceil(
+            (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          if (daysUntil > 30) continue;
+
+          const status: 'expired' | 'critical' | 'warning' =
+            daysUntil < 0 ? 'expired' : daysUntil <= 7 ? 'critical' : 'warning';
+
+          if (status === 'expired') equipmentAlerts.expired++;
+          else if (status === 'critical') equipmentAlerts.critical++;
+          else equipmentAlerts.warning++;
+
+          equipmentAlerts.details.push({
+            equipment_id: equip.id,
+            codigo_equipo: equip.codigoEquipo,
+            document_type: label,
+            expiry_date: expiryDate.toISOString().split('T')[0],
+            days_until_expiry: daysUntil,
+            status,
+          });
+        }
+      }
+
+      // Operator documents
+      const operatorDocRepo = AppDataSource.getRepository(OperatorDocument);
+      const expiringOperatorDocs = await operatorDocRepo
+        .createQueryBuilder('doc')
+        .leftJoinAndSelect('doc.trabajador', 'trabajador')
+        .where('doc.fechaVencimiento <= :threshold', { threshold: thirtyDaysFromNow })
+        .andWhere('doc.fechaVencimiento IS NOT NULL')
+        .andWhere('trabajador.isActive = :isActive', { isActive: true })
+        .orderBy('doc.fechaVencimiento', 'ASC')
+        .getMany();
+
+      const operatorAlerts: DocumentAlertsSummary['operators'] = {
+        expired: 0,
+        critical: 0,
+        warning: 0,
+        details: [],
+      };
+
+      for (const doc of expiringOperatorDocs) {
+        if (!doc.fechaVencimiento || !doc.trabajador) continue;
+        const expiryDate =
+          typeof doc.fechaVencimiento === 'string'
+            ? new Date(doc.fechaVencimiento)
+            : doc.fechaVencimiento;
+        const daysUntil = Math.ceil(
+          (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        const status: 'expired' | 'critical' | 'warning' =
+          daysUntil < 0 ? 'expired' : daysUntil <= 7 ? 'critical' : 'warning';
+
+        if (status === 'expired') operatorAlerts.expired++;
+        else if (status === 'critical') operatorAlerts.critical++;
+        else operatorAlerts.warning++;
+
+        operatorAlerts.details.push({
+          operator_id: doc.trabajadorId,
+          operator_name: `${doc.trabajador.nombres} ${doc.trabajador.apellidoPaterno}`,
+          document_type: doc.tipoDocumento,
+          expiry_date: expiryDate.toISOString().split('T')[0],
+          days_until_expiry: daysUntil,
+          status,
+        });
+      }
+
+      // Contract required documents
+      const contractDocRepo = AppDataSource.getRepository(ContractRequiredDocument);
+      const expiringContractDocs = await contractDocRepo
+        .createQueryBuilder('cd')
+        .where('cd.fechaVencimiento <= :threshold', { threshold: thirtyDaysFromNow })
+        .andWhere('cd.fechaVencimiento IS NOT NULL')
+        .andWhere('cd.estado != :estado', { estado: 'CUMPLIDO' })
+        .getMany();
+
+      const contractAlerts = { expired: 0, critical: 0, warning: 0 };
+
+      for (const doc of expiringContractDocs) {
+        if (!doc.fechaVencimiento) continue;
+        const expiryDate =
+          typeof doc.fechaVencimiento === 'string'
+            ? new Date(doc.fechaVencimiento)
+            : doc.fechaVencimiento;
+        const daysUntil = Math.ceil(
+          (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        if (daysUntil < 0) contractAlerts.expired++;
+        else if (daysUntil <= 7) contractAlerts.critical++;
+        else contractAlerts.warning++;
+      }
+
+      const result: DocumentAlertsSummary = {
+        equipment: equipmentAlerts,
+        operators: operatorAlerts,
+        contracts: contractAlerts,
+        total_alerts:
+          equipmentAlerts.expired +
+          equipmentAlerts.critical +
+          equipmentAlerts.warning +
+          operatorAlerts.expired +
+          operatorAlerts.critical +
+          operatorAlerts.warning +
+          contractAlerts.expired +
+          contractAlerts.critical +
+          contractAlerts.warning,
+      };
+
+      // Cache for 5 minutes
+      await cacheService.set(cacheKey, result, 300);
+
+      Logger.info('Document alerts fetched', {
+        total_alerts: result.total_alerts,
+        context: 'DashboardService.getDocumentAlerts',
+      });
+
+      return result;
+    } catch (error) {
+      Logger.error('Error fetching document alerts', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'DashboardService.getDocumentAlerts',
       });
       throw error;
     }

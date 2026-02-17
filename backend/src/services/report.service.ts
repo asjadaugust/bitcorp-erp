@@ -1,6 +1,7 @@
 import { DailyReportModel } from '../models/daily-report.model';
 import { AppDataSource } from '../config/database.config';
 import { DailyReport as DailyReportEntity } from '../models/daily-report-typeorm.model';
+import { Equipment } from '../models/equipment.model';
 import { transformToDailyReportPdfDto } from '../utils/daily-report-pdf-transformer';
 import { DailyReportPdfDto } from '../types/dto/daily-report-pdf.dto';
 import {
@@ -15,6 +16,20 @@ import Logger from '../utils/logger';
 import { NotFoundError } from '../errors/http.errors';
 import { ValidationError } from '../errors/validation.error';
 import { DashboardService } from './dashboard.service';
+import { Between, In } from 'typeorm';
+
+export interface EquipmentReceptionStatus {
+  equipo_id: number;
+  codigo_equipo: string;
+  marca: string;
+  modelo: string;
+  proyecto_nombre?: string;
+  total_dias: number;
+  reportes_recibidos: number;
+  reportes_pendientes: number;
+  porcentaje_recepcion: number;
+  fechas_faltantes: string[];
+}
 
 /**
  * ReportService
@@ -659,6 +674,127 @@ export class ReportService {
         tenantId,
         reportId: id,
         context: 'ReportService.getDailyReportPdfData',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get reception status for daily reports per equipment
+   *
+   * For each active equipment (optionally filtered by project), checks which dates
+   * within the given range have daily reports and which are missing.
+   */
+  async getReceptionStatus(
+    tenantId: number,
+    fechaDesde: string,
+    fechaHasta: string,
+    proyectoId?: number
+  ): Promise<EquipmentReceptionStatus[]> {
+    try {
+      Logger.info('Fetching daily report reception status', {
+        tenantId,
+        fechaDesde,
+        fechaHasta,
+        proyectoId,
+        context: 'ReportService.getReceptionStatus',
+      });
+
+      const equipmentRepo = AppDataSource.getRepository(Equipment);
+      const reportRepo = AppDataSource.getRepository(DailyReportEntity);
+
+      // Get active equipment
+      const equipment = await equipmentRepo.find({
+        where: { estado: In(['DISPONIBLE', 'EN_USO', 'OPERATIVO']) },
+        order: { codigoEquipo: 'ASC' },
+      });
+
+      // Calculate total working days in range (Mon-Sat)
+      const start = new Date(fechaDesde);
+      const end = new Date(fechaHasta);
+      const workingDays: string[] = [];
+      const current = new Date(start);
+      while (current <= end) {
+        const dow = current.getDay();
+        if (dow >= 1 && dow <= 6) {
+          // Mon-Sat
+          workingDays.push(current.toISOString().split('T')[0]);
+        }
+        current.setDate(current.getDate() + 1);
+      }
+
+      const totalDias = workingDays.length;
+
+      // Get all daily reports in the date range (optionally filtered by project)
+      const reportWhere: Record<string, unknown> = {
+        fecha: Between(new Date(fechaDesde), new Date(fechaHasta)),
+      };
+      if (proyectoId) {
+        reportWhere.proyectoId = proyectoId;
+      }
+
+      const reports = await reportRepo.find({
+        where: reportWhere,
+        select: ['id', 'equipoId', 'fecha', 'proyectoId'],
+        relations: ['proyecto'],
+      });
+
+      // Group report dates by equipment
+      const reportsByEquipment = new Map<number, Set<string>>();
+      const projectByEquipment = new Map<number, string>();
+      for (const r of reports) {
+        const dateStr = new Date(r.fecha).toISOString().split('T')[0];
+        if (!reportsByEquipment.has(r.equipoId)) {
+          reportsByEquipment.set(r.equipoId, new Set());
+        }
+        reportsByEquipment.get(r.equipoId)!.add(dateStr);
+        if (r.proyecto?.nombre && !projectByEquipment.has(r.equipoId)) {
+          projectByEquipment.set(r.equipoId, r.proyecto.nombre);
+        }
+      }
+
+      // If filtering by project, only include equipment that has reports for that project
+      const relevantEquipment = proyectoId
+        ? equipment.filter((eq) => reportsByEquipment.has(eq.id))
+        : equipment;
+
+      // Build result per equipment
+      const result: EquipmentReceptionStatus[] = relevantEquipment.map((eq) => {
+        const reportDates = reportsByEquipment.get(eq.id) || new Set();
+        const fechasFaltantes = workingDays.filter((d) => !reportDates.has(d));
+        const recibidos = totalDias - fechasFaltantes.length;
+
+        return {
+          equipo_id: eq.id,
+          codigo_equipo: eq.codigoEquipo || '',
+          marca: eq.marca || '',
+          modelo: eq.modelo || '',
+          proyecto_nombre: projectByEquipment.get(eq.id) || undefined,
+          total_dias: totalDias,
+          reportes_recibidos: recibidos,
+          reportes_pendientes: fechasFaltantes.length,
+          porcentaje_recepcion: totalDias > 0 ? Math.round((recibidos / totalDias) * 100) : 0,
+          fechas_faltantes: fechasFaltantes,
+        };
+      });
+
+      Logger.info('Daily report reception status fetched', {
+        tenantId,
+        equipmentCount: result.length,
+        totalDias,
+        context: 'ReportService.getReceptionStatus',
+      });
+
+      return result;
+    } catch (error) {
+      Logger.error('Error fetching reception status', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        fechaDesde,
+        fechaHasta,
+        proyectoId,
+        context: 'ReportService.getReceptionStatus',
       });
       throw error;
     }

@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { MainNavComponent } from '../../shared/components/main-nav.component';
 import { Role, ROLES, getRoleName } from '../../core/types/roles';
+import { DashboardApiService, DocumentAlertsSummary } from '../../core/services/dashboard.service';
 
 interface Module {
   id: string;
@@ -30,6 +31,80 @@ interface ModuleCategory {
   template: `
     <div class="dashboard-container">
       <div class="dashboard-content">
+        <!-- Document Alerts -->
+        <div class="alerts-panel" *ngIf="documentAlerts && documentAlerts.total_alerts > 0">
+          <h3 class="alerts-title">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Alertas de Documentos
+            <span class="alert-count">{{ documentAlerts.total_alerts }}</span>
+          </h3>
+          <div class="alerts-grid">
+            <div
+              class="alert-card"
+              *ngIf="getAlertTotal(documentAlerts.equipment) > 0"
+              (click)="navigateTo('/equipment')"
+            >
+              <div class="alert-icon"><i class="fa-solid fa-tractor"></i></div>
+              <div class="alert-info">
+                <span class="alert-label">Equipos</span>
+                <div class="alert-badges">
+                  <span class="badge badge-red" *ngIf="documentAlerts.equipment.expired > 0">
+                    {{ documentAlerts.equipment.expired }} vencidos
+                  </span>
+                  <span class="badge badge-orange" *ngIf="documentAlerts.equipment.critical > 0">
+                    {{ documentAlerts.equipment.critical }} criticos
+                  </span>
+                  <span class="badge badge-yellow" *ngIf="documentAlerts.equipment.warning > 0">
+                    {{ documentAlerts.equipment.warning }} por vencer
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="alert-card"
+              *ngIf="getAlertTotal(documentAlerts.operators) > 0"
+              (click)="navigateTo('/operators')"
+            >
+              <div class="alert-icon"><i class="fa-solid fa-id-card"></i></div>
+              <div class="alert-info">
+                <span class="alert-label">Operadores</span>
+                <div class="alert-badges">
+                  <span class="badge badge-red" *ngIf="documentAlerts.operators.expired > 0">
+                    {{ documentAlerts.operators.expired }} vencidos
+                  </span>
+                  <span class="badge badge-orange" *ngIf="documentAlerts.operators.critical > 0">
+                    {{ documentAlerts.operators.critical }} criticos
+                  </span>
+                  <span class="badge badge-yellow" *ngIf="documentAlerts.operators.warning > 0">
+                    {{ documentAlerts.operators.warning }} por vencer
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="alert-card"
+              *ngIf="getAlertTotal(documentAlerts.contracts) > 0"
+              (click)="navigateTo('/equipment/contracts')"
+            >
+              <div class="alert-icon"><i class="fa-solid fa-file-contract"></i></div>
+              <div class="alert-info">
+                <span class="alert-label">Contratos</span>
+                <div class="alert-badges">
+                  <span class="badge badge-red" *ngIf="documentAlerts.contracts.expired > 0">
+                    {{ documentAlerts.contracts.expired }} vencidos
+                  </span>
+                  <span class="badge badge-orange" *ngIf="documentAlerts.contracts.critical > 0">
+                    {{ documentAlerts.contracts.critical }} criticos
+                  </span>
+                  <span class="badge badge-yellow" *ngIf="documentAlerts.contracts.warning > 0">
+                    {{ documentAlerts.contracts.warning }} por vencer
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Control Panel / Module Grid -->
         <div class="control-panel">
           <h2 class="panel-title">Panel de Control</h2>
@@ -76,6 +151,102 @@ interface ModuleCategory {
         padding: var(--s-32);
         max-width: 1400px;
         margin: 0 auto;
+      }
+
+      /* Alerts Panel */
+      .alerts-panel {
+        background: var(--neutral-0);
+        padding: var(--s-24);
+        border-radius: var(--s-8);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        margin-bottom: var(--s-24);
+        border-left: 4px solid var(--semantic-red-500);
+      }
+
+      .alerts-title {
+        font-size: var(--type-bodyLarge-size);
+        font-weight: 600;
+        color: var(--semantic-red-700);
+        margin-bottom: var(--s-16);
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+
+      .alert-count {
+        background: var(--semantic-red-500);
+        color: var(--neutral-0);
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: var(--type-label-size);
+        font-weight: 700;
+      }
+
+      .alerts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: var(--s-16);
+      }
+
+      .alert-card {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--s-12);
+        padding: var(--s-16);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--s-8);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .alert-card:hover {
+        border-color: var(--primary-500);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .alert-icon {
+        font-size: 24px;
+        color: var(--grey-500);
+      }
+
+      .alert-info {
+        flex: 1;
+      }
+
+      .alert-label {
+        font-weight: 600;
+        font-size: var(--type-body-size);
+        color: var(--grey-800);
+        display: block;
+        margin-bottom: var(--s-8);
+      }
+
+      .alert-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-4);
+      }
+
+      .badge {
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .badge-red {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+
+      .badge-orange {
+        background: #fff3e0;
+        color: #e65100;
+      }
+
+      .badge-yellow {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
 
       /* Control Panel */
@@ -236,8 +407,10 @@ interface ModuleCategory {
 export class DashboardComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private dashboardApi = inject(DashboardApiService);
 
   currentUser: any = null;
+  documentAlerts: DocumentAlertsSummary | null = null;
   userProjects: string[] = ['Proyecto Carretera Norte', 'Proyecto Puente Sur'];
   activeProject: string = this.userProjects[0];
 
@@ -393,6 +566,22 @@ export class DashboardComponent implements OnInit {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
     });
+    this.loadDocumentAlerts();
+  }
+
+  loadDocumentAlerts(): void {
+    this.dashboardApi.getDocumentAlerts().subscribe({
+      next: (alerts) => {
+        this.documentAlerts = alerts;
+      },
+      error: (err) => {
+        console.error('Error loading document alerts:', err);
+      },
+    });
+  }
+
+  getAlertTotal(category: { expired: number; critical: number; warning: number }): number {
+    return category.expired + category.critical + category.warning;
   }
 
   canAccessModule(module: Module): boolean {
@@ -408,6 +597,10 @@ export class DashboardComponent implements OnInit {
   navigateToModule(module: Module): void {
     if (!this.canAccessModule(module)) return;
     this.router.navigate([module.route]);
+  }
+
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
   }
 
   getRoleDisplay(roles?: string[]): string {

@@ -73,6 +73,39 @@ export class ValuationService {
   }
 
   /**
+   * Compute deadline dates for a valuation period per PRD CORP-GEM-P-002
+   *
+   * Deadlines are calendar days from the start of the month following the period:
+   * - Day 5: Valorización parcial ready
+   * - Day 7: Informe gastos de obra (Administrador) + Informe adelantos (Responsable Taller)
+   * - Day 10: Valorización final ready
+   *
+   * @param periodo - Period in YYYY-MM format
+   * @returns Object with computed deadline dates
+   */
+  static computeDeadlines(periodo: string): {
+    parcial: Date;
+    gastoObra: Date;
+    adelantos: Date;
+    final: Date;
+  } | null {
+    if (!periodo) return null;
+    const [year, month] = periodo.split('-').map(Number);
+    if (!year || !month) return null;
+
+    // Deadlines are in the following month
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+
+    return {
+      parcial: new Date(nextYear, nextMonth - 1, 5),
+      gastoObra: new Date(nextYear, nextMonth - 1, 7),
+      adelantos: new Date(nextYear, nextMonth - 1, 7),
+      final: new Date(nextYear, nextMonth - 1, 10),
+    };
+  }
+
+  /**
    * Retrieves a paginated list of valuations with optional filtering and sorting.
    *
    * Supports filtering by estado, search text, project, equipment, and provides

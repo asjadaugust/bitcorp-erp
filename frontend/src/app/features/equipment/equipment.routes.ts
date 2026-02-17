@@ -19,6 +19,13 @@ export const EQUIPMENT_ROUTES: Routes = [
       ),
   },
   {
+    path: 'daily-reports/reception',
+    loadComponent: () =>
+      import('../daily-reports/daily-report-reception.component').then(
+        (m) => m.DailyReportReceptionComponent
+      ),
+  },
+  {
     path: 'daily-reports/new',
     loadComponent: () =>
       import('./components/daily-report-form/daily-report-form.component').then(

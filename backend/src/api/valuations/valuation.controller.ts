@@ -75,7 +75,29 @@ export class ValuationController {
         return;
       }
 
-      sendSuccess(res, record);
+      // Enrich with deadline info
+      const deadlines = ValuationService.computeDeadlines(record.periodo);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const enriched = {
+        ...record,
+        deadlines: deadlines
+          ? {
+              parcial: deadlines.parcial.toISOString().split('T')[0],
+              gasto_obra: deadlines.gastoObra.toISOString().split('T')[0],
+              adelantos: deadlines.adelantos.toISOString().split('T')[0],
+              final: deadlines.final.toISOString().split('T')[0],
+              is_overdue:
+                today > deadlines.final && ['BORRADOR', 'PENDIENTE'].includes(record.estado),
+              days_until_final: Math.ceil(
+                (deadlines.final.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+              ),
+            }
+          : null,
+      };
+
+      sendSuccess(res, enriched);
     } catch (error) {
       next(error);
     }

@@ -248,10 +248,68 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
           </div>
         </div>
 
-        <!-- Section 4: Documentation & Dates (Table Format) -->
+        <!-- Section 4: Document Expiry Dates -->
+        <div class="form-section full-width">
+          <h3>Fechas de Vencimiento de Documentos</h3>
+          <div class="section-grid section-grid-3">
+            <div class="form-group">
+              <label for="fecha_venc_soat">SOAT</label>
+              <input
+                id="fecha_venc_soat"
+                type="date"
+                formControlName="fecha_venc_soat"
+                class="form-control"
+              />
+              <span
+                [class]="
+                  'status-badge status-' +
+                  getDocumentStatus(equipmentForm.get('fecha_venc_soat')?.value)
+                "
+              >
+                {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_soat')?.value) }}
+              </span>
+            </div>
+            <div class="form-group">
+              <label for="fecha_venc_poliza">Póliza TREC</label>
+              <input
+                id="fecha_venc_poliza"
+                type="date"
+                formControlName="fecha_venc_poliza"
+                class="form-control"
+              />
+              <span
+                [class]="
+                  'status-badge status-' +
+                  getDocumentStatus(equipmentForm.get('fecha_venc_poliza')?.value)
+                "
+              >
+                {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_poliza')?.value) }}
+              </span>
+            </div>
+            <div class="form-group">
+              <label for="fecha_venc_citv">CITV</label>
+              <input
+                id="fecha_venc_citv"
+                type="date"
+                formControlName="fecha_venc_citv"
+                class="form-control"
+              />
+              <span
+                [class]="
+                  'status-badge status-' +
+                  getDocumentStatus(equipmentForm.get('fecha_venc_citv')?.value)
+                "
+              >
+                {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_citv')?.value) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Additional Documents (Table Format) -->
         <div class="form-section full-width">
           <div class="section-header">
-            <h3>Documentación y Fechas</h3>
+            <h3>Documentación Adicional</h3>
             <button type="button" class="btn btn-sm btn-secondary" (click)="addDocument()">
               <i class="fa-solid fa-plus"></i> Agregar Documento
             </button>
@@ -344,6 +402,10 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
+      }
+
+      .section-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
       }
 
       .full-width {
@@ -581,6 +643,9 @@ export class EquipmentFormComponent implements OnInit {
       numero_serie_equipo: [''],
       numero_chasis: [''],
       numero_serie_motor: [''],
+      fecha_venc_soat: [''],
+      fecha_venc_poliza: [''],
+      fecha_venc_citv: [''],
       notes: [''], // Optional notes field
     });
   }
@@ -744,6 +809,9 @@ export class EquipmentFormComponent implements OnInit {
       'numero_serie_motor',
       'tipo_motor',
       'medidor_uso',
+      'fecha_venc_soat',
+      'fecha_venc_poliza',
+      'fecha_venc_citv',
     ].forEach((field) => {
       if (!equipmentData[field]) equipmentData[field] = null;
     });

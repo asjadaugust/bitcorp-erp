@@ -73,6 +73,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         [templates]="{
           contrato: contractTemplate,
           period: periodTemplate,
+          deadline: deadlineTemplate,
         }"
         (rowClick)="viewValuation($event)"
       >
@@ -94,6 +95,24 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
           <i class="fa-solid fa-arrow-right"></i>
           <span>{{ row.fechaFin | date: 'dd/MM/yyyy' }}</span>
         </div>
+      </ng-template>
+
+      <ng-template #deadlineTemplate let-row>
+        <span *ngIf="isValuationOverdue(row)" class="deadline-badge overdue">
+          <i class="fa-solid fa-triangle-exclamation"></i> Vencido
+        </span>
+        <span
+          *ngIf="isValuationNearDeadline(row) && !isValuationOverdue(row)"
+          class="deadline-badge near"
+        >
+          <i class="fa-solid fa-clock"></i> Por vencer
+        </span>
+        <span
+          *ngIf="!isValuationOverdue(row) && !isValuationNearDeadline(row) && isOpenValuation(row)"
+          class="deadline-badge ok"
+        >
+          En plazo
+        </span>
       </ng-template>
 
       <!-- Actions Template -->
@@ -221,6 +240,31 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       .date-range i {
         font-size: 10px;
         color: var(--grey-400);
+      }
+
+      .deadline-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .deadline-badge.overdue {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+
+      .deadline-badge.near {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+
+      .deadline-badge.ok {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
 
       /* Modal Styles */
@@ -382,6 +426,7 @@ export class ValuationListComponent implements OnInit {
     { key: 'contrato', label: 'Contrato', type: 'template' },
     { key: 'period', label: 'Periodo', type: 'template' },
     { key: 'numeroValorizacion', label: 'N° Valoriz.', type: 'text' },
+    { key: 'deadline', label: 'Plazo', type: 'template' },
     { key: 'totalValorizado', label: 'Total', type: 'currency', format: 'PEN', align: 'right' },
     {
       key: 'estado',
@@ -522,6 +567,36 @@ export class ValuationListComponent implements OnInit {
           alert('Error al generar valorizaciones: ' + err.message);
         },
       });
+  }
+
+  /** Compute the final deadline (day 10 of the following month) for a periodo */
+  private getDeadline(periodo: string): Date | null {
+    if (!periodo) return null;
+    const [year, month] = periodo.split('-').map(Number);
+    if (!year || !month) return null;
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+    return new Date(nextYear, nextMonth - 1, 10, 23, 59, 59);
+  }
+
+  isOpenValuation(row: Valuation): boolean {
+    return ['BORRADOR', 'PENDIENTE'].includes(row.estado);
+  }
+
+  isValuationOverdue(row: Valuation): boolean {
+    if (!this.isOpenValuation(row)) return false;
+    const deadline = this.getDeadline(row.periodo);
+    if (!deadline) return false;
+    return new Date() > deadline;
+  }
+
+  isValuationNearDeadline(row: Valuation): boolean {
+    if (!this.isOpenValuation(row)) return false;
+    const deadline = this.getDeadline(row.periodo);
+    if (!deadline) return false;
+    const today = new Date();
+    const daysUntil = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return daysUntil >= 0 && daysUntil <= 3;
   }
 
   handleExport(format: ExportFormat): void {

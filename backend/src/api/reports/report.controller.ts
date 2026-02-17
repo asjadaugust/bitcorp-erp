@@ -253,6 +253,38 @@ export class ReportController {
     }
   }
 
+  async getReceptionStatus(req: AuthRequest, res: Response) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const { fecha_desde, fecha_hasta, proyecto_id } = req.query;
+
+      if (!fecha_desde || !fecha_hasta) {
+        return sendError(res, 400, 'MISSING_PARAMS', 'fecha_desde y fecha_hasta son requeridos');
+      }
+
+      const result = await reportService.getReceptionStatus(
+        tenantId,
+        fecha_desde as string,
+        fecha_hasta as string,
+        proyecto_id ? parseInt(proyecto_id as string) : undefined
+      );
+
+      sendSuccess(res, result);
+    } catch (error: any) {
+      Logger.error('Error fetching reception status', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ReportController.getReceptionStatus',
+      });
+      return sendError(
+        res,
+        500,
+        'RECEPTION_STATUS_FAILED',
+        'Failed to fetch reception status',
+        error.message
+      );
+    }
+  }
+
   async downloadPdf(req: AuthRequest, res: Response) {
     try {
       // Get tenantId from JWT token (multi-tenant context)

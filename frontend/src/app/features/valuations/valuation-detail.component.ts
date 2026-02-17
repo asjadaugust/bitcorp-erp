@@ -45,6 +45,60 @@ import {
               </span>
             </div>
 
+            <!-- Deadline Timeline -->
+            <div class="deadline-section" *ngIf="valuation.deadlines">
+              <h3 class="deadline-title">
+                <i class="fa-solid fa-calendar-check"></i> Plazos de Entrega (CORP-GEM-P-002)
+              </h3>
+              <div class="deadline-timeline">
+                <div
+                  class="deadline-item"
+                  [class.done]="isDeadlinePassed(valuation.deadlines.parcial)"
+                  [class.overdue]="isDeadlineMissed(valuation.deadlines.parcial, valuation.estado)"
+                >
+                  <div class="deadline-dot"></div>
+                  <div class="deadline-info">
+                    <span class="deadline-label">Día 5 - Valorización Parcial</span>
+                    <span class="deadline-date">{{
+                      valuation.deadlines.parcial | date: 'dd/MM/yyyy'
+                    }}</span>
+                  </div>
+                </div>
+                <div
+                  class="deadline-item"
+                  [class.done]="isDeadlinePassed(valuation.deadlines.gasto_obra)"
+                  [class.overdue]="
+                    isDeadlineMissed(valuation.deadlines.gasto_obra, valuation.estado)
+                  "
+                >
+                  <div class="deadline-dot"></div>
+                  <div class="deadline-info">
+                    <span class="deadline-label">Día 7 - Informe Gastos / Adelantos</span>
+                    <span class="deadline-date">{{
+                      valuation.deadlines.gasto_obra | date: 'dd/MM/yyyy'
+                    }}</span>
+                  </div>
+                </div>
+                <div
+                  class="deadline-item"
+                  [class.done]="isDeadlinePassed(valuation.deadlines.final)"
+                  [class.overdue]="isDeadlineMissed(valuation.deadlines.final, valuation.estado)"
+                >
+                  <div class="deadline-dot"></div>
+                  <div class="deadline-info">
+                    <span class="deadline-label">Día 10 - Valorización Final</span>
+                    <span class="deadline-date">{{
+                      valuation.deadlines.final | date: 'dd/MM/yyyy'
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="deadline-alert" *ngIf="valuation.deadlines.is_overdue">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                Esta valorización ha superado el plazo de entrega
+              </div>
+            </div>
+
             <div class="detail-sections">
               <section class="detail-section">
                 <h2>Información del Contrato</h2>
@@ -1983,6 +2037,108 @@ import {
         color: var(--grey-500);
         margin-bottom: var(--s-16);
       }
+
+      /* Deadline Timeline */
+      .deadline-section {
+        margin-bottom: var(--s-24);
+        padding: var(--s-16);
+        background: var(--grey-50);
+        border-radius: var(--s-8);
+        border: 1px solid var(--grey-200);
+      }
+
+      .deadline-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--grey-700);
+        margin-bottom: var(--s-16);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .deadline-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-left: 8px;
+      }
+
+      .deadline-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        padding-left: 20px;
+      }
+
+      .deadline-item::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 20px;
+        bottom: -16px;
+        width: 2px;
+        background: var(--grey-300);
+      }
+
+      .deadline-item:last-child::before {
+        display: none;
+      }
+
+      .deadline-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--grey-300);
+        position: absolute;
+        left: 0;
+        flex-shrink: 0;
+      }
+
+      .deadline-item.done .deadline-dot {
+        background: var(--semantic-green-500);
+      }
+
+      .deadline-item.overdue .deadline-dot {
+        background: var(--semantic-red-500);
+      }
+
+      .deadline-info {
+        display: flex;
+        justify-content: space-between;
+        flex: 1;
+      }
+
+      .deadline-label {
+        font-size: 13px;
+        color: var(--grey-700);
+        font-weight: 500;
+      }
+
+      .deadline-date {
+        font-size: 13px;
+        color: var(--grey-500);
+        font-family: monospace;
+      }
+
+      .deadline-item.overdue .deadline-label {
+        color: var(--semantic-red-700);
+        font-weight: 600;
+      }
+
+      .deadline-alert {
+        margin-top: var(--s-12);
+        padding: 8px 12px;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
     `,
   ],
 })
@@ -2477,5 +2633,15 @@ export class ValuationDetailComponent implements OnInit {
 
   viewPayment(paymentId: number): void {
     this.router.navigate(['/payments', paymentId]);
+  }
+
+  isDeadlinePassed(dateStr: string): boolean {
+    if (!dateStr) return false;
+    return new Date() > new Date(dateStr);
+  }
+
+  isDeadlineMissed(dateStr: string, estado: string): boolean {
+    if (!dateStr) return false;
+    return this.isDeadlinePassed(dateStr) && ['BORRADOR', 'PENDIENTE'].includes(estado);
   }
 }

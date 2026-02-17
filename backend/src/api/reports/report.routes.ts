@@ -11,6 +11,7 @@ const controller = new ReportController();
 router.use(authenticate);
 
 router.get('/', controller.getReports.bind(controller));
+router.get('/reception-status', controller.getReceptionStatus.bind(controller));
 router.post('/', validateDto(DailyReportCreateDto), controller.createReport.bind(controller));
 router.get('/:id', controller.getReportById.bind(controller));
 router.put('/:id', validateDto(DailyReportUpdateDto), controller.updateReport.bind(controller));

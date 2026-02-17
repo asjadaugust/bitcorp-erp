@@ -5,6 +5,10 @@ import { MaintenanceSchedule, EstadoMantenimiento } from '../models/maintenance-
 import { Contract, EstadoContrato } from '../models/contract.model';
 import { Trabajador } from '../models/trabajador.model';
 import { User } from '../models/user.model';
+import { Equipment } from '../models/equipment.model';
+import { OperatorDocument } from '../models/operator-document.entity';
+import { Valorizacion, EstadoValorizacion } from '../models/valuation.model';
+import { AccountsPayable, AccountsPayableStatus } from '../models/accounts-payable.model';
 import { NotificationService } from './notification.service';
 import logger from '../config/logger.config';
 import { DatabaseError, DatabaseErrorType } from '../errors';
@@ -125,6 +129,8 @@ export class CronService {
   private contractRepository: Repository<Contract>;
   private trabajadorRepository: Repository<Trabajador>;
   private userRepository: Repository<User>;
+  private equipmentRepository: Repository<Equipment>;
+  private operatorDocumentRepository: Repository<OperatorDocument>;
   private notificationService: NotificationService;
   private jobs: ScheduledTask[] = [];
 
@@ -133,6 +139,8 @@ export class CronService {
     this.contractRepository = AppDataSource.getRepository(Contract);
     this.trabajadorRepository = AppDataSource.getRepository(Trabajador);
     this.userRepository = AppDataSource.getRepository(User);
+    this.equipmentRepository = AppDataSource.getRepository(Equipment);
+    this.operatorDocumentRepository = AppDataSource.getRepository(OperatorDocument);
     this.notificationService = new NotificationService();
   }
 
@@ -438,74 +446,73 @@ export class CronService {
       logger.info('Starting certification expiry check');
 
       const today = new Date();
-      const thirtyDaysFromNow = new Date();
+      today.setHours(0, 0, 0, 0);
+      const thirtyDaysFromNow = new Date(today);
       thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-      const operators = await this.trabajadorRepository.find({
-        where: {
-          cargo: 'OPERADOR' as const,
-          isActive: true,
-        },
-      });
+      // Query operator documents expiring within 30 days
+      const expiringDocs = await this.operatorDocumentRepository
+        .createQueryBuilder('doc')
+        .leftJoinAndSelect('doc.trabajador', 'trabajador')
+        .where('doc.fechaVencimiento <= :threshold', { threshold: thirtyDaysFromNow })
+        .andWhere('doc.fechaVencimiento IS NOT NULL')
+        .andWhere('trabajador.isActive = :isActive', { isActive: true })
+        .orderBy('doc.fechaVencimiento', 'ASC')
+        .getMany();
 
-      if (operators.length === 0) {
-        logger.info('Certification check complete: No operators found');
+      if (expiringDocs.length === 0) {
+        logger.info('Certification check complete: No documents expiring within 30 days');
         return;
       }
 
-      // TODO: This logic needs to be updated based on actual certification schema
-      const operatorsWithExpiringCerts: Array<{
-        operator: Trabajador;
-        expiringCerts: Array<{ name: string; expiryDate: Date }>;
-      }> = [];
-
-      for (const operator of operators) {
-        const expiringCerts: Array<{ name: string; expiryDate: Date }> = [];
-        // TODO: Add actual certification checking logic here
-        // Example: Check operator.certificaciones or related table
-
-        if (expiringCerts.length > 0) {
-          operatorsWithExpiringCerts.push({ operator, expiringCerts });
+      // Group by operator
+      const operatorMap = new Map<number, { operator: Trabajador; docs: OperatorDocument[] }>();
+      for (const doc of expiringDocs) {
+        if (!doc.trabajador) continue;
+        if (!operatorMap.has(doc.trabajadorId)) {
+          operatorMap.set(doc.trabajadorId, { operator: doc.trabajador, docs: [] });
         }
+        operatorMap.get(doc.trabajadorId)!.docs.push(doc);
       }
 
-      if (operatorsWithExpiringCerts.length === 0) {
-        logger.info('Certification check complete: No certifications expiring within 30 days');
-        return;
-      }
-
-      // Find users with HR or ADMIN roles
+      // Find users with JEFE_EQUIPO or ADMIN roles
       const targetUsers = await this.userRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.rol', 'rol')
-        .where('rol.code IN (:...roles)', { roles: ['HR', 'ADMIN'] })
+        .where('rol.code IN (:...roles)', { roles: ['JEFE_EQUIPO', 'ADMIN'] })
         .andWhere('user.is_active = :isActive', { isActive: true })
         .getMany();
 
       if (targetUsers.length === 0) {
-        logger.warn('No HR or ADMIN users found to notify for certification expiry');
+        logger.warn('No JEFE_EQUIPO or ADMIN users found to notify for certification expiry');
         return;
       }
 
       let notificationsSent = 0;
 
-      for (const { operator, expiringCerts } of operatorsWithExpiringCerts) {
-        const certList = expiringCerts
-          .map((cert) => {
+      for (const [, { operator, docs }] of operatorMap) {
+        const certList = docs
+          .map((doc) => {
+            const expiryDate =
+              typeof doc.fechaVencimiento === 'string'
+                ? new Date(doc.fechaVencimiento)
+                : doc.fechaVencimiento!;
             const daysUntil = Math.ceil(
-              (cert.expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+              (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
             );
-            return `- ${cert.name}: ${cert.expiryDate.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''})`;
+            const statusText =
+              daysUntil < 0 ? 'VENCIDO' : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
+            return `- ${doc.tipoDocumento}: ${expiryDate.toLocaleDateString('es-PE')} (${statusText})`;
           })
           .join('\n');
 
-        const title = `Certificación por Vencer - ${operator.nombres} ${operator.apellidoPaterno}`;
-        const message = `Las certificaciones de ${operator.nombres} ${operator.apellidoPaterno} (${operator.cargo || 'OPERADOR'}) vencen próximamente:\n${certList}`;
+        const title = `Documentos por Vencer - ${operator.nombres} ${operator.apellidoPaterno}`;
+        const message = `Los documentos de ${operator.nombres} ${operator.apellidoPaterno} vencen próximamente:\n${certList}`;
 
         for (const user of targetUsers) {
           try {
             await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/operators/${operator.id}/certifications`,
+              link: `/operators/${operator.id}`,
             });
             notificationsSent++;
           } catch (error) {
@@ -519,7 +526,8 @@ export class CronService {
       }
 
       logger.info('Certification check complete', {
-        operators_with_expiring_certs: operatorsWithExpiringCerts.length,
+        operators_with_expiring_docs: operatorMap.size,
+        total_expiring_docs: expiringDocs.length,
         notifications_sent: notificationsSent,
         target_users: targetUsers.length,
       });
@@ -562,6 +570,295 @@ export class CronService {
    * @returns void
    * @see stopAllJobs - Stop all running jobs
    */
+  /**
+   * Check for equipment documents (SOAT, Póliza, CITV) expiring within 30 days
+   */
+  async checkEquipmentDocumentExpiry(): Promise<void> {
+    try {
+      logger.info('Starting equipment document expiry check');
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const thirtyDaysFromNow = new Date(today);
+      thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+      const equipment = await this.equipmentRepository
+        .createQueryBuilder('e')
+        .where('e.isActive = :isActive', { isActive: true })
+        .andWhere(
+          '(e.fechaVencSoat <= :threshold OR e.fechaVencPoliza <= :threshold OR e.fechaVencCitv <= :threshold)',
+          { threshold: thirtyDaysFromNow }
+        )
+        .getMany();
+
+      if (equipment.length === 0) {
+        logger.info('Equipment document check complete: No documents expiring within 30 days');
+        return;
+      }
+
+      const targetUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.rol', 'rol')
+        .where('rol.code IN (:...roles)', { roles: ['JEFE_EQUIPO', 'ADMIN'] })
+        .andWhere('user.is_active = :isActive', { isActive: true })
+        .getMany();
+
+      if (targetUsers.length === 0) {
+        logger.warn('No JEFE_EQUIPO or ADMIN users found for equipment document alerts');
+        return;
+      }
+
+      let notificationsSent = 0;
+      const docFields = [
+        { field: 'fechaVencSoat' as const, label: 'SOAT' },
+        { field: 'fechaVencPoliza' as const, label: 'Póliza TREC' },
+        { field: 'fechaVencCitv' as const, label: 'CITV' },
+      ];
+
+      for (const equip of equipment) {
+        const expiringDocs: string[] = [];
+
+        for (const { field, label } of docFields) {
+          const date = equip[field];
+          if (!date) continue;
+          const expiryDate = typeof date === 'string' ? new Date(date) : date;
+          const daysUntil = Math.ceil(
+            (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          if (daysUntil <= 30) {
+            const statusText =
+              daysUntil < 0 ? 'VENCIDO' : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
+            expiringDocs.push(
+              `- ${label}: ${expiryDate.toLocaleDateString('es-PE')} (${statusText})`
+            );
+          }
+        }
+
+        if (expiringDocs.length === 0) continue;
+
+        const title = `Documentos por Vencer - ${equip.codigoEquipo}`;
+        const message = `El equipo ${equip.codigoEquipo} (${equip.marca || ''} ${equip.modelo || ''}) tiene documentos por vencer:\n${expiringDocs.join('\n')}`;
+
+        for (const user of targetUsers) {
+          try {
+            await this.notificationService.notifyWarning(String(user.id), title, message, {
+              link: `/equipment/${equip.id}`,
+            });
+            notificationsSent++;
+          } catch (error) {
+            logger.error('Failed to create equipment document notification', {
+              error: error instanceof Error ? error.message : String(error),
+              user_id: user.id,
+              equipo_id: equip.id,
+            });
+          }
+        }
+      }
+
+      logger.info('Equipment document check complete', {
+        equipment_with_expiring_docs: equipment.length,
+        notifications_sent: notificationsSent,
+      });
+    } catch (error) {
+      logger.error('Equipment document expiry check failed', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      throw new DatabaseError(
+        'Failed to check equipment document expiry',
+        DatabaseErrorType.QUERY,
+        error,
+        { operation: 'checkEquipmentDocumentExpiry', threshold_days: 30 }
+      );
+    }
+  }
+
+  /**
+   * Check for overdue valuations (BORRADOR past the day-10 deadline)
+   * Per PRD CORP-GEM-P-002: Day 10 of the following month is the final deadline.
+   */
+  async checkValuationDeadlines(): Promise<void> {
+    try {
+      logger.info('Starting valuation deadline check');
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const valuationRepo = AppDataSource.getRepository(Valorizacion);
+
+      // Find valuations still in BORRADOR or PENDIENTE that may be overdue
+      const openValuations = await valuationRepo.find({
+        where: [
+          { estado: 'BORRADOR' as EstadoValorizacion },
+          { estado: 'PENDIENTE' as EstadoValorizacion },
+        ],
+        relations: ['contrato'],
+      });
+
+      if (openValuations.length === 0) {
+        logger.info('Valuation deadline check complete: No open valuations');
+        return;
+      }
+
+      const overdueValuations: Valorizacion[] = [];
+
+      for (const val of openValuations) {
+        if (!val.periodo) continue;
+        // periodo format: YYYY-MM
+        const [year, month] = val.periodo.split('-').map(Number);
+        if (!year || !month) continue;
+        // Deadline is day 10 of the following month
+        const deadlineMonth = month === 12 ? 1 : month + 1;
+        const deadlineYear = month === 12 ? year + 1 : year;
+        const deadline = new Date(deadlineYear, deadlineMonth - 1, 10);
+        deadline.setHours(23, 59, 59, 999);
+
+        if (today > deadline) {
+          overdueValuations.push(val);
+        }
+      }
+
+      if (overdueValuations.length === 0) {
+        logger.info('Valuation deadline check complete: No overdue valuations');
+        return;
+      }
+
+      const targetUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.rol', 'rol')
+        .where('rol.code IN (:...roles)', { roles: ['JEFE_EQUIPO', 'ADMIN'] })
+        .andWhere('user.is_active = :isActive', { isActive: true })
+        .getMany();
+
+      if (targetUsers.length === 0) {
+        logger.warn('No target users for valuation deadline alerts');
+        return;
+      }
+
+      let notificationsSent = 0;
+
+      for (const val of overdueValuations) {
+        const contratoInfo = val.contrato ? ` - Contrato ${val.contrato.numeroContrato}` : '';
+        const title = `Valorización Vencida - ${val.periodo}${contratoInfo}`;
+        const message = `La valorización del periodo ${val.periodo}${contratoInfo} está en estado ${val.estado} y ha superado el plazo de entrega (día 10 del mes siguiente).`;
+
+        for (const user of targetUsers) {
+          try {
+            await this.notificationService.notifyWarning(String(user.id), title, message, {
+              link: `/equipment/valuations/${val.id}`,
+            });
+            notificationsSent++;
+          } catch (error) {
+            logger.error('Failed to create valuation deadline notification', {
+              error: error instanceof Error ? error.message : String(error),
+              user_id: user.id,
+              valuation_id: val.id,
+            });
+          }
+        }
+      }
+
+      logger.info('Valuation deadline check complete', {
+        overdue_valuations: overdueValuations.length,
+        notifications_sent: notificationsSent,
+      });
+    } catch (error) {
+      logger.error('Valuation deadline check failed', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      throw new DatabaseError(
+        'Failed to check valuation deadlines',
+        DatabaseErrorType.QUERY,
+        error,
+        { operation: 'checkValuationDeadlines' }
+      );
+    }
+  }
+
+  /**
+   * Check for overdue accounts payable (past due_date, still PENDIENTE or PARCIAL)
+   */
+  async checkOverduePayments(): Promise<void> {
+    try {
+      logger.info('Starting overdue payments check');
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const apRepo = AppDataSource.getRepository(AccountsPayable);
+
+      const overduePayments = await apRepo
+        .createQueryBuilder('ap')
+        .leftJoinAndSelect('ap.provider', 'provider')
+        .where('ap.due_date < :today', { today })
+        .andWhere('ap.status IN (:...statuses)', {
+          statuses: [AccountsPayableStatus.PENDING, AccountsPayableStatus.PARTIAL],
+        })
+        .orderBy('ap.due_date', 'ASC')
+        .getMany();
+
+      if (overduePayments.length === 0) {
+        logger.info('Overdue payments check complete: No overdue payments');
+        return;
+      }
+
+      const targetUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.rol', 'rol')
+        .where('rol.code IN (:...roles)', { roles: ['ADMIN', 'DIRECTOR'] })
+        .andWhere('user.is_active = :isActive', { isActive: true })
+        .getMany();
+
+      if (targetUsers.length === 0) {
+        logger.warn('No ADMIN or DIRECTOR users found for overdue payment alerts');
+        return;
+      }
+
+      let notificationsSent = 0;
+
+      for (const payment of overduePayments) {
+        const dueDate =
+          typeof payment.due_date === 'string' ? new Date(payment.due_date) : payment.due_date;
+        const daysOverdue = Math.ceil(
+          (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        const providerName = payment.provider?.razonSocial || 'Proveedor desconocido';
+        const title = `Pago Vencido - ${payment.document_number}`;
+        const message = `La factura ${payment.document_number} de ${providerName} venció hace ${daysOverdue} día${daysOverdue !== 1 ? 's' : ''} (${dueDate.toLocaleDateString('es-PE')}). Monto pendiente: S/ ${Number(payment.balance || payment.amount).toFixed(2)}`;
+
+        for (const user of targetUsers) {
+          try {
+            await this.notificationService.notifyWarning(String(user.id), title, message, {
+              link: `/payments`,
+            });
+            notificationsSent++;
+          } catch (error) {
+            logger.error('Failed to create overdue payment notification', {
+              error: error instanceof Error ? error.message : String(error),
+              user_id: user.id,
+              payment_id: payment.id,
+            });
+          }
+        }
+      }
+
+      logger.info('Overdue payments check complete', {
+        overdue_count: overduePayments.length,
+        notifications_sent: notificationsSent,
+      });
+    } catch (error) {
+      logger.error('Overdue payments check failed', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      throw new DatabaseError('Failed to check overdue payments', DatabaseErrorType.QUERY, error, {
+        operation: 'checkOverduePayments',
+      });
+    }
+  }
+
   startAllJobs(): void {
     try {
       const maintenanceJob = cron.schedule('0 8 * * *', async () => {
@@ -594,7 +891,44 @@ export class CronService {
         }
       });
 
-      this.jobs.push(maintenanceJob, contractJob, certificationJob);
+      const equipmentDocJob = cron.schedule('0 8 * * *', async () => {
+        try {
+          await this.checkEquipmentDocumentExpiry();
+        } catch (error) {
+          logger.error('Equipment document expiry cron job failed', {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      });
+
+      const valuationDeadlineJob = cron.schedule('0 8 * * *', async () => {
+        try {
+          await this.checkValuationDeadlines();
+        } catch (error) {
+          logger.error('Valuation deadline cron job failed', {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      });
+
+      const overduePaymentsJob = cron.schedule('0 8 * * *', async () => {
+        try {
+          await this.checkOverduePayments();
+        } catch (error) {
+          logger.error('Overdue payments cron job failed', {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      });
+
+      this.jobs.push(
+        maintenanceJob,
+        contractJob,
+        certificationJob,
+        equipmentDocJob,
+        valuationDeadlineJob,
+        overduePaymentsJob
+      );
 
       logger.info('All cron jobs started successfully', {
         job_count: this.jobs.length,
@@ -602,6 +936,9 @@ export class CronService {
           'Maintenance: 8:00 AM daily',
           'Contracts: 8:00 AM daily',
           'Certifications: 8:00 AM daily',
+          'Equipment Documents: 8:00 AM daily',
+          'Valuation Deadlines: 8:00 AM daily',
+          'Overdue Payments: 8:00 AM daily',
         ],
       });
     } catch (error) {

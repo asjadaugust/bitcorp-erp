@@ -58,8 +58,25 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         [data]="filteredRecords"
         [loading]="loading"
         [actionsTemplate]="actionsTemplate"
+        [templates]="{ mora: moraTemplate }"
       >
       </aero-table>
+
+      <ng-template #moraTemplate let-row>
+        <span *ngIf="getDaysOverdue(row) > 0" class="mora-badge overdue">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          {{ getDaysOverdue(row) }}d
+        </span>
+        <span *ngIf="getDaysOverdue(row) === 0 && isNearDue(row)" class="mora-badge near">
+          <i class="fa-solid fa-clock"></i> Hoy
+        </span>
+        <span
+          *ngIf="getDaysOverdue(row) < 0 && getDaysOverdue(row) >= -7"
+          class="mora-badge warning"
+        >
+          {{ -getDaysOverdue(row) }}d
+        </span>
+      </ng-template>
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
@@ -120,6 +137,29 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         justify-content: flex-end;
         gap: 8px;
       }
+
+      .mora-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .mora-badge.overdue {
+        background: var(--error-100);
+        color: var(--error-600);
+      }
+      .mora-badge.near {
+        background: #fff3e0;
+        color: #e65100;
+      }
+      .mora-badge.warning {
+        background: #fff8e1;
+        color: #f9a825;
+      }
     `,
   ],
 })
@@ -170,6 +210,7 @@ export class AccountsPayableListComponent implements OnInit {
     { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' }, // We'll need to handle this mapping
     { key: 'monto_total', label: 'Monto', type: 'currency', format: 'PEN' },
     { key: 'fecha_vencimiento', label: 'Vencimiento', type: 'date' },
+    { key: 'mora', label: 'Mora', type: 'template' },
     {
       key: 'estado',
       label: 'Estado',
@@ -326,6 +367,25 @@ export class AccountsPayableListComponent implements OnInit {
     }));
 
     this.excelService.exportToCSV(exportData, 'cuentas-por-pagar');
+  }
+
+  getDaysOverdue(row: AccountsPayable): number {
+    if (!row.fecha_vencimiento || row.estado === 'PAGADO' || row.estado === 'CANCELADO')
+      return -999;
+    const due = new Date(row.fecha_vencimiento);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+    return Math.floor((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  isNearDue(row: AccountsPayable): boolean {
+    if (!row.fecha_vencimiento) return false;
+    const due = new Date(row.fecha_vencimiento);
+    const today = new Date();
+    due.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return due.getTime() === today.getTime();
   }
 
   private getStatusLabel(estado: string): string {

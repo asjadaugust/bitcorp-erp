@@ -106,6 +106,24 @@ export class DashboardController {
   };
 
   /**
+   * GET /api/dashboard/document-alerts
+   * Get document expiry alerts summary
+   */
+  getDocumentAlerts = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const alerts = await this.dashboardService.getDocumentAlerts();
+      sendSuccess(res, alerts);
+    } catch (error) {
+      Logger.error('Error in getDocumentAlerts', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        context: 'DashboardController.getDocumentAlerts',
+      });
+      sendError(res, 500, 'INTERNAL_ERROR', 'Error al obtener las alertas de documentos');
+    }
+  };
+
+  /**
    * GET /api/dashboard/stats
    * Get dashboard statistics
    */
