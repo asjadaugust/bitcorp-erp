@@ -128,6 +128,30 @@ router.get(
   controller.checkPaymentDocsComplete
 );
 
+// Recalculate (Anexo B)
+router.post(
+  '/:id/recalculate',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  controller.recalculate
+);
+
+// Discount events (Anexo B)
+router.get(
+  '/:id/discount-events',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  controller.getDiscountEvents
+);
+router.post(
+  '/:id/discount-events',
+  authorize(ROLES.ADMIN, ROLES.JEFE_EQUIPO),
+  controller.createDiscountEvent
+);
+router.delete(
+  '/discount-events/:eventId',
+  authorize(ROLES.ADMIN, ROLES.JEFE_EQUIPO),
+  controller.deleteDiscountEvent
+);
+
 // Payment-related endpoints for valuations
 router.get(
   '/:valuationId/payments',

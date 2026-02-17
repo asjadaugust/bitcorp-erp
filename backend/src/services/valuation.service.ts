@@ -6,6 +6,7 @@ import { ExcessFuel } from '../models/excess-fuel.model';
 import { WorkExpense } from '../models/work-expense.model';
 import { AdvanceAmortization } from '../models/advance-amortization.model';
 import { ValuationPaymentDocument } from '../models/valuation-payment-document.model';
+import { DiscountEvent, TipoEventoDescuento } from '../models/discount-event.model';
 import { Repository } from 'typeorm';
 import { valuationEmailNotifier } from './valuation-email-notifier';
 import {
@@ -1605,12 +1606,18 @@ export class ValuationService {
     equipoId: number,
     fechaInicio: Date,
     fechaFin: Date
-  ): Promise<{ diasTrabajados: number; horasTrabajadas: number; combustibleConsumido: number }> {
+  ): Promise<{
+    diasTrabajados: number;
+    horasTrabajadas: number;
+    combustibleConsumido: number;
+    horasPrecalentamiento: number;
+  }> {
     const result = await AppDataSource.query(
       `SELECT
         COUNT(DISTINCT fecha)::int AS dias_trabajados,
         COALESCE(SUM(horas_trabajadas), 0)::numeric AS horas_trabajadas,
-        COALESCE(SUM(combustible_consumido), 0)::numeric AS combustible_consumido
+        COALESCE(SUM(combustible_consumido), 0)::numeric AS combustible_consumido,
+        COALESCE(SUM(horas_precalentamiento), 0)::numeric AS horas_precalentamiento
       FROM equipo.parte_diario
       WHERE equipo_id = $1
         AND fecha BETWEEN $2 AND $3
@@ -1623,6 +1630,7 @@ export class ValuationService {
       diasTrabajados: parseInt(row.dias_trabajados) || 0,
       horasTrabajadas: parseFloat(row.horas_trabajadas) || 0,
       combustibleConsumido: parseFloat(row.combustible_consumido) || 0,
+      horasPrecalentamiento: parseFloat(row.horas_precalentamiento) || 0,
     };
   }
 
@@ -1637,7 +1645,80 @@ export class ValuationService {
    *
    * @returns Complete calculation result
    */
-  async calculateValuation(contractId: string, month: number, year: number) {
+  /**
+   * Sum discount events (hours and days) for a valuation.
+   */
+  private async sumDiscountEvents(
+    valuationId: number
+  ): Promise<{ totalDiscountHours: number; totalDiscountDays: number }> {
+    const result = await AppDataSource.query(
+      `SELECT
+        COALESCE(SUM(horas_descuento), 0)::numeric AS total_horas,
+        COALESCE(SUM(dias_descuento), 0)::numeric AS total_dias
+      FROM equipo.evento_descuento
+      WHERE valorizacion_id = $1`,
+      [valuationId]
+    );
+    const row = result[0] || {};
+    return {
+      totalDiscountHours: parseFloat(row.total_horas) || 0,
+      totalDiscountDays: parseFloat(row.total_dias) || 0,
+    };
+  }
+
+  /**
+   * Sum work expenses (importe_sin_igv) for a valuation.
+   */
+  private async sumWorkExpenses(valuationId: number): Promise<number> {
+    const result = await AppDataSource.query(
+      `SELECT COALESCE(SUM(importe_sin_igv), 0)::numeric AS total
+       FROM equipo.gasto_obra
+       WHERE valorizacion_id = $1`,
+      [valuationId]
+    );
+    return parseFloat(result[0]?.total) || 0;
+  }
+
+  /**
+   * Sum advance amortizations (monto) for a valuation.
+   */
+  private async sumAdvanceAmortizations(valuationId: number): Promise<number> {
+    const result = await AppDataSource.query(
+      `SELECT COALESCE(SUM(monto), 0)::numeric AS total
+       FROM equipo.adelanto_amortizacion
+       WHERE valorizacion_id = $1`,
+      [valuationId]
+    );
+    return parseFloat(result[0]?.total) || 0;
+  }
+
+  /**
+   * Sum excess fuel costs for a valuation.
+   */
+  private async sumExcessFuel(valuationId: number): Promise<number> {
+    const result = await AppDataSource.query(
+      `SELECT COALESCE(SUM(importe_exceso_combustible), 0)::numeric AS total
+       FROM equipo.exceso_combustible
+       WHERE valorizacion_id = $1`,
+      [valuationId]
+    );
+    return parseFloat(result[0]?.total) || 0;
+  }
+
+  /**
+   * Calculate valuation totals for a contract period (Anexo B full formula).
+   *
+   * Implements all 5 tariff variants:
+   * - HORA + minimum hours
+   * - HORA without minimum
+   * - DIA + minimum days
+   * - DIA without minimum
+   * - MES (proportional monthly)
+   *
+   * Includes: pre-warming deduction, manipuleo, discount events,
+   * work expenses, advance amortizations, excess fuel.
+   */
+  async calculateValuation(contractId: string, month: number, year: number, valuationId?: number) {
     const contract = await this.contractRepository.findOne({
       where: { id: parseInt(contractId) },
       relations: ['equipo'],
@@ -1653,80 +1734,178 @@ export class ValuationService {
 
     const fechaInicio = new Date(year, month - 1, 1);
     const fechaFin = new Date(year, month, 0); // last day of month
+    const daysInMonth = fechaFin.getDate();
 
     const agg = await this.aggregateDailyReports(contract.equipo.id, fechaInicio, fechaFin);
 
     const tarifa = parseFloat((contract.tarifa || 0).toString());
     const tipoTarifa = (contract.tipoTarifa || 'HORA').toUpperCase();
-    const horasIncluidas = contract.horasIncluidas || 0;
-    const penalidadExceso = parseFloat((contract.penalidadExceso || 0).toString());
+    const minimoPor = contract.minimoPor ? contract.minimoPor.toUpperCase() : null;
+    const cantidadMinima = parseFloat((contract.cantidadMinima || 0).toString());
 
-    // Calculate base cost based on tariff type
+    // Get discount events (only if valuation already exists)
+    let totalDiscountHours = 0;
+    let totalDiscountDays = 0;
+    if (valuationId) {
+      const discounts = await this.sumDiscountEvents(valuationId);
+      totalDiscountHours = discounts.totalDiscountHours;
+      totalDiscountDays = discounts.totalDiscountDays;
+    }
+
+    // Adjusted minimum pools (reduced by discount events)
+    const adjustedMinHours = Math.max(0, cantidadMinima - totalDiscountHours);
+    const adjustedMinDays = Math.max(0, cantidadMinima - totalDiscountDays);
+
+    // Effective hours after pre-warming deduction
+    const effectiveHours = Math.max(0, agg.horasTrabajadas - agg.horasPrecalentamiento);
+
+    // Calculate costoBase by tariff variant
     let costoBase = 0;
-    switch (tipoTarifa) {
-      case 'HORA':
-        costoBase = tarifa * agg.horasTrabajadas;
-        break;
-      case 'DIA':
-        costoBase = tarifa * agg.diasTrabajados;
-        break;
-      case 'MES':
-        costoBase = tarifa; // flat monthly
-        break;
-      default:
-        costoBase = tarifa * agg.horasTrabajadas;
+
+    if (tipoTarifa === 'HORA' && minimoPor === 'HORAS' && cantidadMinima > 0) {
+      // Variant A: Hourly with minimum hours
+      const billableHours = Math.max(effectiveHours, adjustedMinHours);
+      costoBase = billableHours * tarifa;
+    } else if (tipoTarifa === 'HORA') {
+      // Variant B: Hourly without minimum
+      costoBase = effectiveHours * tarifa;
+    } else if (tipoTarifa === 'DIA' && minimoPor === 'DIAS' && cantidadMinima > 0) {
+      // Variant C: Daily with minimum days
+      const billableDays = Math.max(agg.diasTrabajados, adjustedMinDays);
+      costoBase = billableDays * tarifa;
+    } else if (tipoTarifa === 'DIA') {
+      // Variant D: Daily without minimum
+      costoBase = agg.diasTrabajados * tarifa;
+    } else if (tipoTarifa === 'MES') {
+      // Variant E: Monthly (proportional)
+      const minDays = cantidadMinima > 0 ? adjustedMinDays : daysInMonth;
+      const billableDays = Math.max(agg.diasTrabajados, minDays);
+      costoBase = (billableDays / daysInMonth) * tarifa;
+    } else {
+      // Fallback: treat as hourly
+      costoBase = effectiveHours * tarifa;
     }
 
-    // Minimum guarantee: if contract specifies minimum hours and actual is below
-    if (horasIncluidas > 0 && agg.horasTrabajadas < horasIncluidas && tipoTarifa === 'HORA') {
-      costoBase = tarifa * horasIncluidas;
+    // Manipuleo de combustible: S/ 0.80 per gallon
+    const MANIPULEO_RATE = 0.8;
+    const importeManipuleo = agg.combustibleConsumido * MANIPULEO_RATE;
+
+    // Deductions from linked financial entities (only if valuation exists)
+    let importeGastoObra = 0;
+    let importeAdelanto = 0;
+    let importeExcesoCombustible = 0;
+    if (valuationId) {
+      [importeGastoObra, importeAdelanto, importeExcesoCombustible] = await Promise.all([
+        this.sumWorkExpenses(valuationId),
+        this.sumAdvanceAmortizations(valuationId),
+        this.sumExcessFuel(valuationId),
+      ]);
     }
 
-    // Excess cost: when actual hours exceed included hours
-    let excessCost = 0;
-    if (penalidadExceso > 0 && horasIncluidas > 0 && agg.horasTrabajadas > horasIncluidas) {
-      const excessHours = agg.horasTrabajadas - horasIncluidas;
-      excessCost = excessHours * penalidadExceso;
-    }
+    // Totals (Anexo B formula)
+    const descuentoMonto = importeGastoObra + importeAdelanto + importeExcesoCombustible;
+    const totalValorizado = costoBase + importeManipuleo - descuentoMonto;
+    const igvMonto = totalValorizado * 0.18;
+    const totalConIgv = totalValorizado + igvMonto;
 
-    // Fuel cost: use average fuel price from fuel records or default
-    const FUEL_PRICE_DEFAULT = 3.5; // PEN per gallon (fallback)
-    let fuelPricePerGallon = FUEL_PRICE_DEFAULT;
-
-    // Try to get average fuel price from fuel records for this period
-    const fuelPriceResult = await AppDataSource.query(
-      `SELECT COALESCE(AVG(precio_unitario), 0)::numeric AS avg_price
-       FROM equipo.equipo_combustible
-       WHERE fecha BETWEEN $1 AND $2
-       LIMIT 1`,
-      [fechaInicio, fechaFin]
-    );
-    const avgFuelPrice = parseFloat(fuelPriceResult?.[0]?.avg_price) || 0;
-    if (avgFuelPrice > 0) {
-      fuelPricePerGallon = avgFuelPrice;
-    }
-
-    const costoCombustible = agg.combustibleConsumido * fuelPricePerGallon;
-    const totalEstimated = costoBase + excessCost;
+    const round2 = (n: number) => Math.round(n * 100) / 100;
 
     return {
       contract_id: contractId,
       equipo_id: contract.equipo.id,
       period_month: month,
       period_year: year,
+      days_in_month: daysInMonth,
       total_hours: agg.horasTrabajadas,
       total_days: agg.diasTrabajados,
       total_fuel: agg.combustibleConsumido,
-      base_cost: Math.round(costoBase * 100) / 100,
-      excess_cost: Math.round(excessCost * 100) / 100,
-      fuel_cost: Math.round(costoCombustible * 100) / 100,
-      fuel_price_per_gallon: fuelPricePerGallon,
-      total_estimated: Math.round(totalEstimated * 100) / 100,
+      horas_precalentamiento: agg.horasPrecalentamiento,
+      effective_hours: round2(effectiveHours),
+      discount_hours: totalDiscountHours,
+      discount_days: totalDiscountDays,
+      adjusted_min_hours: round2(adjustedMinHours),
+      adjusted_min_days: round2(adjustedMinDays),
+      base_cost: round2(costoBase),
+      importe_manipuleo: round2(importeManipuleo),
+      importe_gasto_obra: round2(importeGastoObra),
+      importe_adelanto: round2(importeAdelanto),
+      importe_exceso_combustible: round2(importeExcesoCombustible),
+      descuento_monto: round2(descuentoMonto),
+      total_valorizado: round2(totalValorizado),
+      igv_monto: round2(igvMonto),
+      total_con_igv: round2(totalConIgv),
       currency: contract.moneda || 'PEN',
       tipo_tarifa: tipoTarifa,
       tarifa: tarifa,
-      horas_incluidas: horasIncluidas,
+      minimo_por: minimoPor,
+      cantidad_minima: cantidadMinima,
     };
+  }
+
+  /**
+   * Recalculate an existing valuation's financial fields.
+   * Re-reads daily report aggregates, discount events, and linked deductions,
+   * then recomputes all financial fields and saves.
+   *
+   * Only works on BORRADOR or PENDIENTE states.
+   */
+  async recalculateValuation(valuationId: number) {
+    const valuation = await this.repository.findOne({
+      where: { id: valuationId },
+      relations: ['contrato'],
+    });
+
+    if (!valuation) {
+      throw new NotFoundError('Valuation', valuationId);
+    }
+
+    if (!['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+      throw new BusinessRuleError(
+        `Cannot recalculate valuation in state ${valuation.estado}. Only BORRADOR or PENDIENTE allowed.`,
+        'INVALID_VALUATION_STATE'
+      );
+    }
+
+    if (!valuation.contratoId) {
+      throw new ValidationError('Valuation has no linked contract', []);
+    }
+
+    // Parse period
+    const [yearStr, monthStr] = valuation.periodo.split('-');
+    const month = parseInt(monthStr);
+    const year = parseInt(yearStr);
+
+    const calculation = await this.calculateValuation(
+      valuation.contratoId.toString(),
+      month,
+      year,
+      valuationId
+    );
+
+    // Update valuation with recalculated values
+    valuation.diasTrabajados = calculation.total_days;
+    valuation.horasTrabajadas = calculation.total_hours;
+    valuation.combustibleConsumido = calculation.total_fuel;
+    valuation.costoBase = calculation.base_cost;
+    valuation.importeManipuleo = calculation.importe_manipuleo;
+    valuation.importeGastoObra = calculation.importe_gasto_obra;
+    valuation.importeAdelanto = calculation.importe_adelanto;
+    valuation.importeExcesoCombustible = calculation.importe_exceso_combustible;
+    valuation.descuentoMonto = calculation.descuento_monto;
+    valuation.totalValorizado = calculation.total_valorizado;
+    valuation.igvMonto = calculation.igv_monto;
+    valuation.totalConIgv = calculation.total_con_igv;
+
+    await this.repository.save(valuation);
+
+    logger.info('Valuation recalculated', {
+      valuation_id: valuationId,
+      base_cost: calculation.base_cost,
+      total_valorizado: calculation.total_valorizado,
+      total_con_igv: calculation.total_con_igv,
+    });
+
+    return valuation;
   }
 
   /**
@@ -1773,11 +1952,6 @@ export class ValuationService {
     const fechaInicio = new Date(year, month - 1, 1);
     const fechaFin = new Date(year, month, 0);
 
-    const totalValorizado = calculation.total_estimated;
-    const igvPorcentaje = 18.0;
-    const igvMonto = Math.round(totalValorizado * (igvPorcentaje / 100) * 100) / 100;
-    const totalConIgv = totalValorizado + igvMonto;
-
     const valuation = await this.create(
       {
         contratoId: parseInt(contractId),
@@ -1789,12 +1963,15 @@ export class ValuationService {
         horasTrabajadas: calculation.total_hours,
         combustibleConsumido: calculation.total_fuel,
         costoBase: calculation.base_cost,
-        costoCombustible: calculation.fuel_cost,
-        cargosAdicionales: calculation.excess_cost,
-        totalValorizado: totalValorizado,
-        igvPorcentaje: igvPorcentaje,
-        igvMonto: igvMonto,
-        totalConIgv: totalConIgv,
+        importeManipuleo: calculation.importe_manipuleo,
+        importeGastoObra: calculation.importe_gasto_obra,
+        importeAdelanto: calculation.importe_adelanto,
+        importeExcesoCombustible: calculation.importe_exceso_combustible,
+        descuentoMonto: calculation.descuento_monto,
+        totalValorizado: calculation.total_valorizado,
+        igvPorcentaje: 18.0,
+        igvMonto: calculation.igv_monto,
+        totalConIgv: calculation.total_con_igv,
         estado: 'BORRADOR',
         observaciones: `Auto-generado el ${new Date().toISOString()}`,
       },
@@ -2793,6 +2970,67 @@ export class ValuationService {
         return false;
       }
     }
+    return true;
+  }
+
+  // ─── Discount Events (Anexo B) ───
+
+  async getDiscountEvents(valorizacionId: number): Promise<DiscountEvent[]> {
+    const repo = AppDataSource.getRepository(DiscountEvent);
+    return repo.find({
+      where: { valorizacionId },
+      order: { fecha: 'ASC' },
+    });
+  }
+
+  async createDiscountEvent(data: {
+    valorizacionId: number;
+    fecha: Date;
+    tipo: string;
+    horasDescuento?: number;
+    diasDescuento?: number;
+    descripcion?: string;
+  }): Promise<DiscountEvent> {
+    // Verify valuation exists and is in editable state
+    const valuation = await this.repository.findOne({ where: { id: data.valorizacionId } });
+    if (!valuation) {
+      throw new NotFoundError('Valuation', data.valorizacionId);
+    }
+    if (!['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+      throw new BusinessRuleError(
+        `Cannot add discount events to valuation in state ${valuation.estado}`,
+        'INVALID_VALUATION_STATE'
+      );
+    }
+
+    const repo = AppDataSource.getRepository(DiscountEvent);
+    const event = new DiscountEvent();
+    event.valorizacionId = data.valorizacionId;
+    event.fecha = data.fecha;
+    event.tipo = data.tipo as TipoEventoDescuento;
+    event.horasDescuento = data.horasDescuento || 0;
+    event.diasDescuento = data.diasDescuento || 0;
+    event.descripcion = data.descripcion;
+    return repo.save(event);
+  }
+
+  async deleteDiscountEvent(eventId: number): Promise<boolean> {
+    const repo = AppDataSource.getRepository(DiscountEvent);
+    const event = await repo.findOne({ where: { id: eventId } });
+    if (!event) {
+      throw new NotFoundError('DiscountEvent', eventId);
+    }
+
+    // Verify valuation is editable
+    const valuation = await this.repository.findOne({ where: { id: event.valorizacionId } });
+    if (valuation && !['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+      throw new BusinessRuleError(
+        `Cannot remove discount events from valuation in state ${valuation.estado}`,
+        'INVALID_VALUATION_STATE'
+      );
+    }
+
+    await repo.remove(event);
     return true;
   }
 }

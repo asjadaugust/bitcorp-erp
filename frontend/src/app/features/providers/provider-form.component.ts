@@ -48,6 +48,7 @@ import {
       [loading]="loading"
       [disableSubmit]="providerForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Proveedor'"
+      [backUrl]="'/providers'"
       (onSubmit)="onSubmit()"
       (onCancel)="cancel()"
     >

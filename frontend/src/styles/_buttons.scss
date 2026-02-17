@@ -193,7 +193,8 @@
   border-color: transparent;
 
   &:hover:not(:disabled) {
-    background: var(--grey-100);
+    background: var(--grey-200);
+    color: var(--primary-600);
   }
 
   &:active:not(:disabled) {

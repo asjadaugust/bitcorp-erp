@@ -32,6 +32,7 @@ import {
         { label: equipment?.codigo_equipo || 'Detalle' },
       ]"
       [loading]="loading"
+      [backUrl]="'/equipment'"
     >
       <div actions>
         <button class="btn btn-primary" (click)="editEquipment()">
@@ -118,7 +119,7 @@ import {
               <div *ngIf="activeTab === 'maintenance'" class="tab-pane fade-in">
                 <div class="section-header">
                   <h3>Programaciones de Mantenimiento</h3>
-                  <button class="btn btn-sm btn-outline" (click)="goToMaintenance()">
+                  <button class="btn btn-sm btn-secondary" (click)="goToMaintenance()">
                     Ver Todo
                   </button>
                 </div>

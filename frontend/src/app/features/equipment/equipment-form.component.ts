@@ -46,6 +46,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       [loading]="loading"
       [disableSubmit]="equipmentForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Equipo'"
+      [backUrl]="'/equipment'"
       (onSubmit)="onSubmit()"
       (onCancel)="cancel()"
     >

@@ -306,4 +306,40 @@ export class ValuationService {
       .get<any>(`${this.apiUrl}/${valuationId}/payment-documents/check`)
       .pipe(map((response) => response?.data || response));
   }
+
+  // ─── Recalculate & Discount Events (Anexo B) ───
+
+  recalculate(id: number | string): Observable<Valuation> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/recalculate`, {})
+      .pipe(map((response) => this.toCamelCase(response?.data || response)));
+  }
+
+  getDiscountEvents(valuationId: number): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/${valuationId}/discount-events`).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  createDiscountEvent(
+    valuationId: number,
+    data: {
+      fecha: string;
+      tipo: string;
+      horas_descuento?: number;
+      dias_descuento?: number;
+      descripcion?: string;
+    }
+  ): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${valuationId}/discount-events`, data)
+      .pipe(map((response) => response?.data || response));
+  }
+
+  deleteDiscountEvent(eventId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/discount-events/${eventId}`);
+  }
 }

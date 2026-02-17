@@ -65,6 +65,7 @@ import { ProviderDocument } from '../models/provider-document.model';
 import { ContractAnnex } from '../models/contract-annex.model';
 import { ContractRequiredDocument } from '../models/contract-required-document.model';
 import { ValuationPaymentDocument } from '../models/valuation-payment-document.model';
+import { DiscountEvent } from '../models/discount-event.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -139,6 +140,7 @@ export const AppDataSource = new DataSource({
     ContractAnnex,
     ContractRequiredDocument,
     ValuationPaymentDocument,
+    DiscountEvent,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

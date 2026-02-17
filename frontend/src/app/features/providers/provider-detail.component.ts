@@ -3,127 +3,148 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProviderService } from '../../core/services/provider.service';
 import { Provider } from '../../core/models/provider.model';
+import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ProviderFinancialInfoComponent } from './components/provider-financial-info.component';
 import { ProviderContactsComponent } from './components/provider-contacts.component';
 
 @Component({
   selector: 'app-provider-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, ProviderFinancialInfoComponent, ProviderContactsComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    PageLayoutComponent,
+    ProviderFinancialInfoComponent,
+    ProviderContactsComponent,
+  ],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/providers" class="breadcrumb-link">← Volver a Proveedores</a>
-        </div>
+    <app-page-layout
+      [title]="provider ? provider.razon_social : 'Detalle de Proveedor'"
+      icon="fa-handshake"
+      [breadcrumbs]="[
+        { label: 'Inicio', url: '/app' },
+        { label: 'Proveedores', url: '/providers' },
+        { label: provider?.razon_social || 'Detalle' },
+      ]"
+      [loading]="loading"
+      [backUrl]="'/providers'"
+    >
+      <div actions>
+        <button type="button" class="btn btn-primary" (click)="editProvider()">
+          <i class="fa-solid fa-pen"></i> Editar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="deleteProvider()">
+          <i class="fa-solid fa-trash"></i> Eliminar
+        </button>
+      </div>
 
-        <div *ngIf="loading" class="loading">
-          <div class="spinner"></div>
-          <p>Cargando detalles del proveedor...</p>
-        </div>
-
-        <div *ngIf="!loading && provider" class="detail-grid">
-          <div class="detail-main card">
-            <div class="detail-header">
-              <div>
-                <h1>{{ provider.razon_social }}</h1>
-                <p class="code-badge">{{ provider.ruc }}</p>
-              </div>
-              <div class="detail-actions">
-                <button type="button" class="btn btn-primary" (click)="editProvider()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button type="button" class="btn btn-danger" (click)="deleteProvider()">
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-
-            <div class="detail-status">
-              <span [class]="'status-badge status-' + (provider.is_active ? 'active' : 'inactive')">
+      <div *ngIf="provider" class="detail-grid">
+        <div class="detail-main">
+          <div class="card p-6">
+            <div class="detail-status mb-6">
+              <span [class]="'badge ' + (provider.is_active ? 'status-active' : 'status-inactive')">
                 {{ provider.is_active ? 'Activo' : 'Inactivo' }}
               </span>
             </div>
 
             <div class="detail-sections">
               <section class="detail-section">
-                <h2>Información General</h2>
+                <h3 class="text-lg font-semibold mb-4 text-primary-900">Información General</h3>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>RUC / Tax ID</label>
-                    <p class="highlight">{{ provider.ruc }}</p>
+                    <label class="text-xs uppercase font-medium text-grey-500 tracking-wider"
+                      >RUC / Tax ID</label
+                    >
+                    <p class="text-xl font-semibold text-primary-500">{{ provider.ruc }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Dirección</label>
-                    <p>{{ provider.direccion || '-' }}</p>
+                    <label class="text-xs uppercase font-medium text-grey-500 tracking-wider"
+                      >Dirección</label
+                    >
+                    <p class="text-base text-grey-900">{{ provider.direccion || '-' }}</p>
                   </div>
                 </div>
               </section>
 
-              <section class="detail-section">
-                <h2>Información de Contacto</h2>
+              <section class="detail-section mt-8">
+                <h3 class="text-lg font-semibold mb-4 text-primary-900">Información de Contacto</h3>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>Nombre Comercial</label>
-                    <p>{{ provider.nombre_comercial || '-' }}</p>
+                    <label class="text-xs uppercase font-medium text-grey-500 tracking-wider"
+                      >Nombre Comercial</label
+                    >
+                    <p class="text-base text-grey-900">{{ provider.nombre_comercial || '-' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Email</label>
-                    <p>{{ provider.correo_electronico || '-' }}</p>
+                    <label class="text-xs uppercase font-medium text-grey-500 tracking-wider"
+                      >Email</label
+                    >
+                    <p class="text-base text-grey-900">{{ provider.correo_electronico || '-' }}</p>
                   </div>
                   <div class="info-item">
-                    <label>Teléfono</label>
-                    <p>{{ provider.telefono || '-' }}</p>
+                    <label class="text-xs uppercase font-medium text-grey-500 tracking-wider"
+                      >Teléfono</label
+                    >
+                    <p class="text-base text-grey-900">{{ provider.telefono || '-' }}</p>
                   </div>
                 </div>
               </section>
 
               <!-- Financial Info Component -->
-              <app-provider-financial-info [providerId]="provider.id"></app-provider-financial-info>
+              <div class="mt-8">
+                <app-provider-financial-info
+                  [providerId]="provider.id"
+                ></app-provider-financial-info>
+              </div>
 
               <!-- Contacts Component -->
-              <app-provider-contacts [providerId]="provider.id"></app-provider-contacts>
-            </div>
-          </div>
-
-          <div class="detail-sidebar">
-            <div class="card">
-              <h3>Acciones Rápidas</h3>
-              <div class="quick-actions">
-                <button type="button" class="btn btn-secondary" (click)="viewContracts()">
-                  <i class="fa-solid fa-file-contract"></i> Ver Contratos
-                </button>
-                <button type="button" class="btn btn-secondary" (click)="viewEquipment()">
-                  <i class="fa-solid fa-truck-front"></i> Ver Equipos
-                </button>
-              </div>
-            </div>
-
-            <div class="card">
-              <h3>Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ provider.updated_at | date: 'short' }}</div>
-                  <div class="timeline-content">Última actualización</div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ provider.created_at | date: 'short' }}</div>
-                  <div class="timeline-content">Proveedor registrado</div>
-                </div>
+              <div class="mt-8">
+                <app-provider-contacts [providerId]="provider.id"></app-provider-contacts>
               </div>
             </div>
           </div>
         </div>
 
-        <div *ngIf="!loading && !provider" class="empty-state card">
-          <h3>Proveedor no encontrado</h3>
-          <p>El proveedor que buscas no existe o ha sido eliminado.</p>
-          <button type="button" class="btn btn-primary" (click)="navigateTo('/providers')">
-            Volver a la lista
-          </button>
+        <div class="detail-sidebar flex flex-col gap-6">
+          <div class="card p-6">
+            <h3 class="text-base font-semibold mb-4 text-primary-900">Acciones Rápidas</h3>
+            <div class="flex flex-col gap-2">
+              <button type="button" class="btn btn-secondary w-full" (click)="viewContracts()">
+                <i class="fa-solid fa-file-contract"></i> Ver Contratos
+              </button>
+              <button type="button" class="btn btn-secondary w-full" (click)="viewEquipment()">
+                <i class="fa-solid fa-truck-front"></i> Ver Equipos
+              </button>
+            </div>
+          </div>
+
+          <div class="card p-6">
+            <h3 class="text-base font-semibold mb-4 text-primary-900">Información del Sistema</h3>
+            <div class="flex flex-col gap-4">
+              <div class="system-info-item">
+                <div class="text-xs text-grey-500 mb-1">Última actualización</div>
+                <div class="text-sm font-medium">{{ provider.updated_at | date: 'short' }}</div>
+              </div>
+              <div class="system-info-item">
+                <div class="text-xs text-grey-500 mb-1">Proveedor registrado</div>
+                <div class="text-sm font-medium">{{ provider.created_at | date: 'short' }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      <div
+        *ngIf="!loading && !provider"
+        class="empty-state p-12 text-center bg-white rounded-lg shadow"
+      >
+        <h3 class="text-xl font-semibold mb-2">Proveedor no encontrado</h3>
+        <p class="text-grey-500 mb-6">El proveedor que buscas no existe o ha sido eliminado.</p>
+        <button type="button" class="btn btn-primary" (click)="navigateTo('/providers')">
+          Volver a la lista
+        </button>
+      </div>
+    </app-page-layout>
 
     <div *ngIf="showDeleteModal" class="modal" (click)="showDeleteModal = false">
       <div class="modal-content" (click)="$event.stopPropagation()">

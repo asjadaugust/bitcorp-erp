@@ -5,17 +5,20 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface Product {
-  id: string;
+  id: string | number;
   codigo: string;
   nombre: string;
   descripcion?: string;
   categoria?: string;
   unidad_medida: string;
   stock_actual: number;
+  stock_minimo?: number; // Added
   precio_unitario: number;
   valor_total?: number;
   ubicacion?: string;
-  esta_activo: boolean; // Updated to match backend DTO
+  esta_activo: boolean;
+  created_at?: string; // Added for detail view
+  updated_at?: string; // Added for detail view
 }
 
 export interface Movement {
@@ -60,18 +63,18 @@ export class InventoryService {
   constructor(private http: HttpClient) {}
 
   getProducts(): Observable<Product[]> {
-    return this.http.get<{ data: Product[] }>(`${this.apiUrl}/products`).pipe(
-      map((response) => response.data || [])
-    );
+    return this.http
+      .get<{ data: Product[] }>(`${this.apiUrl}/products`)
+      .pipe(map((response) => response.data || []));
   }
 
-  getProduct(id: string): Observable<Product> {
-    return this.http.get<{ data: Product }>(`${this.apiUrl}/products/${id}`).pipe(
-      map((response) => response.data)
-    );
+  getProduct(id: string | number): Observable<Product> {
+    return this.http
+      .get<{ data: Product }>(`${this.apiUrl}/products/${id}`)
+      .pipe(map((response) => response.data));
   }
 
-  getProductById(id: string): Observable<Product> {
+  getProductById(id: string | number): Observable<Product> {
     return this.getProduct(id);
   }
 
@@ -81,22 +84,22 @@ export class InventoryService {
       .pipe(map((response) => response.data));
   }
 
-  updateProduct(id: string, product: Partial<Product>): Observable<Product> {
+  updateProduct(id: string | number, product: Partial<Product>): Observable<Product> {
     return this.http
       .put<{ data: Product }>(`${this.apiUrl}/products/${id}`, product)
       .pipe(map((response) => response.data));
   }
 
   getMovements(): Observable<Movement[]> {
-    return this.http.get<{ data: Movement[] }>(`${this.apiUrl}/movements`).pipe(
-      map((response) => response.data || [])
-    );
+    return this.http
+      .get<{ data: Movement[] }>(`${this.apiUrl}/movements`)
+      .pipe(map((response) => response.data || []));
   }
 
   getMovementById(id: number): Observable<Movement> {
-    return this.http.get<{ data: Movement }>(`${this.apiUrl}/movements/${id}`).pipe(
-      map((response) => response.data)
-    );
+    return this.http
+      .get<{ data: Movement }>(`${this.apiUrl}/movements/${id}`)
+      .pipe(map((response) => response.data));
   }
 
   createMovement(movement: Partial<Movement>): Observable<Movement> {

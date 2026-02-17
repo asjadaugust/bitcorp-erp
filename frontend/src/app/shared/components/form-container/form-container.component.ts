@@ -1,16 +1,18 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { BackButtonComponent } from '../back-button/back-button.component';
 
 @Component({
   selector: 'app-form-container',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BackButtonComponent],
   template: `
     <div class="form-container">
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
-          <div class="icon-wrapper">
+          <app-back-button *ngIf="backUrl" [url]="backUrl" class="mr-4"></app-back-button>
+          <div class="icon-wrapper" *ngIf="!backUrl">
             <i class="fa-solid" [class]="icon"></i>
           </div>
           <div class="title-group">
@@ -205,6 +207,7 @@ export class FormContainerComponent {
   @Input() loading = false;
   @Input() loadingText = 'Guardando...';
   @Input() showFooter = true;
+  @Input() backUrl?: string;
 
   @Output() onSubmit = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();

@@ -642,4 +642,81 @@ export class ValuationController {
       next(error);
     }
   };
+
+  // ─── Recalculate (Anexo B) ───
+
+  recalculate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const result = await this.valuationService.recalculateValuation(id);
+      sendSuccess(res, toValuationDto(result));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // ─── Discount Events (Anexo B) ───
+
+  getDiscountEvents = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const events = await this.valuationService.getDiscountEvents(id);
+      sendSuccess(res, events);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createDiscountEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const { fecha, tipo, horas_descuento, dias_descuento, descripcion } = req.body;
+      if (!fecha || !tipo) {
+        sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: fecha, tipo');
+        return;
+      }
+
+      const event = await this.valuationService.createDiscountEvent({
+        valorizacionId: id,
+        fecha,
+        tipo,
+        horasDescuento: horas_descuento || 0,
+        diasDescuento: dias_descuento || 0,
+        descripcion,
+      });
+      sendCreated(res, event.id, 'Evento de descuento creado');
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteDiscountEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const eventId = parseInt(req.params.eventId);
+      if (isNaN(eventId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de evento inválido');
+        return;
+      }
+
+      await this.valuationService.deleteDiscountEvent(eventId);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
 }

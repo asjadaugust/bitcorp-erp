@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { BackButtonComponent } from '../back-button/back-button.component';
 
 export interface TabItem {
   label: string;
@@ -18,7 +19,7 @@ export interface Breadcrumb {
 @Component({
   selector: 'app-page-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, BackButtonComponent],
   animations: [
     trigger('tabItemAnim', [
       transition(':enter', [
@@ -42,7 +43,8 @@ export interface Breadcrumb {
       <div class="page-header">
         <div class="header-main">
           <div class="page-title-wrapper">
-            <div *ngIf="icon" class="icon-wrapper">
+            <app-back-button *ngIf="backUrl" [url]="backUrl" class="mr-4"></app-back-button>
+            <div *ngIf="icon && !backUrl" class="icon-wrapper">
               <i [class]="'fa-solid ' + icon"></i>
             </div>
             <div class="title-content">
@@ -309,4 +311,5 @@ export class PageLayoutComponent {
   @Input() breadcrumbs: Breadcrumb[] = [];
   @Input() loading = false;
   @Input() tabs?: TabItem[];
+  @Input() backUrl?: string;
 }

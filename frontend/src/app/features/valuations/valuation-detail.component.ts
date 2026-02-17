@@ -639,6 +639,15 @@ import {
             <div class="card">
               <h3>Acciones Rápidas</h3>
               <div class="quick-actions">
+                <button
+                  *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
+                  class="btn btn-primary btn-block"
+                  (click)="recalculate()"
+                  [disabled]="recalculating"
+                >
+                  <i class="fa-solid fa-calculator"></i>
+                  {{ recalculating ? 'Recalculando...' : 'Recalcular' }}
+                </button>
                 <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
                   <i class="fa-solid fa-file-pdf"></i> Descargar PDF
                 </button>
@@ -650,6 +659,49 @@ import {
                   <i class="fa-solid fa-pen"></i> Editar
                 </button>
               </div>
+            </div>
+
+            <!-- Discount Events (Anexo B) -->
+            <div
+              class="card"
+              *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
+            >
+              <h3>Eventos de Descuento</h3>
+              <p class="section-hint">
+                Averías, stand-by o clima que reducen el mínimo contractual.
+              </p>
+              <div class="discount-events-list">
+                <div class="discount-event-item" *ngFor="let evt of discountEvents">
+                  <div class="discount-event-header">
+                    <span class="discount-event-type">{{ evt.tipo }}</span>
+                    <span class="discount-event-date">{{ evt.fecha | date: 'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="discount-event-values">
+                    <span *ngIf="evt.horas_descuento > 0">{{ evt.horas_descuento }}h desc.</span>
+                    <span *ngIf="evt.dias_descuento > 0">{{ evt.dias_descuento }}d desc.</span>
+                  </div>
+                  <div class="discount-event-desc" *ngIf="evt.descripcion">
+                    {{ evt.descripcion }}
+                  </div>
+                  <button
+                    class="btn-action btn-action-danger"
+                    (click)="removeDiscountEvent(evt.id)"
+                    title="Eliminar"
+                  >
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="discountEvents.length === 0" class="empty-docs">
+                  No hay eventos de descuento
+                </div>
+              </div>
+              <button
+                class="btn btn-secondary btn-block"
+                style="margin-top: 12px"
+                (click)="showAddDiscountModal = true"
+              >
+                <i class="fa-solid fa-plus"></i> Agregar Evento
+              </button>
             </div>
 
             <!-- Payment Documents (Cláusula 6.1) -->
@@ -834,6 +886,70 @@ import {
         </div>
       </div>
     </div>
+    <!-- Add Discount Event Modal -->
+    <div *ngIf="showAddDiscountModal" class="modal" (click)="showAddDiscountModal = false">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Agregar Evento de Descuento</h2>
+          <button class="close" (click)="showAddDiscountModal = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Fecha <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="newDiscountEvent.fecha" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label>Tipo <span class="required">*</span></label>
+            <app-dropdown
+              [(ngModel)]="newDiscountEvent.tipo"
+              [options]="discountTypeOptions"
+              [placeholder]="'Seleccionar tipo...'"
+              [required]="true"
+            ></app-dropdown>
+          </div>
+          <div class="form-group">
+            <label>Horas Descuento</label>
+            <input
+              type="number"
+              [(ngModel)]="newDiscountEvent.horas_descuento"
+              class="form-control"
+              step="0.5"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label>Días Descuento</label>
+            <input
+              type="number"
+              [(ngModel)]="newDiscountEvent.dias_descuento"
+              class="form-control"
+              step="0.5"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea
+              [(ngModel)]="newDiscountEvent.descripcion"
+              class="form-control"
+              rows="2"
+              placeholder="Descripción opcional..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="showAddDiscountModal = false">Cancelar</button>
+          <button
+            class="btn btn-primary"
+            (click)="confirmAddDiscountEvent()"
+            [disabled]="!newDiscountEvent.fecha || !newDiscountEvent.tipo"
+          >
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Conformidad Modal -->
     <div *ngIf="showConformidadModal" class="modal" (click)="showConformidadModal = false">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -1776,6 +1892,75 @@ import {
         }
       }
 
+      /* Discount events */
+      .section-hint {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-bottom: var(--s-12);
+      }
+
+      .discount-events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .discount-event-item {
+        padding: 8px;
+        border: 1px solid var(--grey-200);
+        border-radius: 6px;
+        position: relative;
+      }
+
+      .discount-event-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .discount-event-type {
+        font-size: 13px;
+        font-weight: 500;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .discount-event-date {
+        font-size: 12px;
+        color: var(--grey-500);
+      }
+
+      .discount-event-values {
+        font-size: 12px;
+        color: var(--grey-700);
+        display: flex;
+        gap: 8px;
+      }
+
+      .discount-event-desc {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-top: 4px;
+        font-style: italic;
+      }
+
+      .discount-event-item .btn-action {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+      }
+
+      .btn-action-danger {
+        color: var(--semantic-red-500);
+
+        &:hover {
+          background: var(--semantic-red-50);
+        }
+      }
+
       .empty-state-payments {
         display: flex;
         flex-direction: column;
@@ -1820,6 +2005,24 @@ export class ValuationDetailComponent implements OnInit {
   paymentCount = 0;
   loadingPayments = false;
 
+  // Recalculate & discount events
+  recalculating = false;
+  discountEvents: any[] = [];
+  showAddDiscountModal = false;
+  newDiscountEvent = {
+    fecha: new Date().toISOString().split('T')[0],
+    tipo: '',
+    horas_descuento: 0,
+    dias_descuento: 0,
+    descripcion: '',
+  };
+  discountTypeOptions: DropdownOption[] = [
+    { label: 'Avería', value: 'AVERIA' },
+    { label: 'Stand By', value: 'STAND_BY' },
+    { label: 'Climático', value: 'CLIMATICO' },
+    { label: 'Otro', value: 'OTRO' },
+  ];
+
   // Modal states
   showApproveModal = false;
   showRejectModal = false;
@@ -1853,6 +2056,7 @@ export class ValuationDetailComponent implements OnInit {
     this.loadSummary(id);
     this.loadPayments(id);
     this.loadPaymentSummary(id);
+    this.loadDiscountEvents(id);
   }
 
   loadValuation(id: number): void {
@@ -2175,6 +2379,65 @@ export class ValuationDetailComponent implements OnInit {
       fecha_pago: new Date().toISOString().split('T')[0],
       metodo_pago: '',
       referencia_pago: '',
+    };
+  }
+
+  // ─── Recalculate & Discount Events ───
+
+  recalculate(): void {
+    if (!this.valuation || this.recalculating) return;
+    this.recalculating = true;
+    this.valuationService.recalculate(this.valuation.id).subscribe({
+      next: (updated) => {
+        this.valuation = updated;
+        this.recalculating = false;
+        this.loadSummary(this.valuation!.id);
+        alert('Valorización recalculada exitosamente');
+      },
+      error: (err) => {
+        this.recalculating = false;
+        alert('Error al recalcular: ' + (err.error?.error?.message || err.message));
+      },
+    });
+  }
+
+  loadDiscountEvents(valuationId: number): void {
+    this.valuationService.getDiscountEvents(valuationId).subscribe({
+      next: (events) => (this.discountEvents = events),
+    });
+  }
+
+  confirmAddDiscountEvent(): void {
+    if (!this.valuation || !this.newDiscountEvent.fecha || !this.newDiscountEvent.tipo) return;
+    this.valuationService.createDiscountEvent(this.valuation.id, this.newDiscountEvent).subscribe({
+      next: () => {
+        this.showAddDiscountModal = false;
+        this.resetDiscountEventForm();
+        this.loadDiscountEvents(this.valuation!.id);
+      },
+      error: (err) => {
+        alert('Error: ' + (err.error?.error?.message || err.message));
+      },
+    });
+  }
+
+  removeDiscountEvent(eventId: number): void {
+    if (!confirm('¿Eliminar este evento de descuento?')) return;
+    this.valuationService.deleteDiscountEvent(eventId).subscribe({
+      next: () => this.loadDiscountEvents(this.valuation!.id),
+      error: (err) => {
+        alert('Error: ' + (err.error?.error?.message || err.message));
+      },
+    });
+  }
+
+  private resetDiscountEventForm(): void {
+    this.newDiscountEvent = {
+      fecha: new Date().toISOString().split('T')[0],
+      tipo: '',
+      horas_descuento: 0,
+      dias_descuento: 0,
+      descripcion: '',
     };
   }
 

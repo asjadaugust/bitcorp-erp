@@ -400,7 +400,7 @@ export class ProductListComponent implements OnInit {
   }
 
   viewDetails(product: Product): void {
-    this.router.navigate(['/logistics/products', product.id, 'edit']);
+    this.router.navigate(['/logistics/products', product.id]);
   }
 
   editProduct(product: Product): void {

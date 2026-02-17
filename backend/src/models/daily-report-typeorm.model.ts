@@ -87,6 +87,9 @@ export class DailyReport {
   })
   combustibleConsumido?: number;
 
+  @Column({ name: 'horas_precalentamiento', type: 'decimal', precision: 5, scale: 2, default: 0 })
+  horasPrecalentamiento?: number;
+
   @Column({ name: 'observaciones', type: 'text', nullable: true })
   observaciones?: string;
 

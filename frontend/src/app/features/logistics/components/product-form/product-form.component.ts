@@ -39,11 +39,13 @@ import {
       [title]="isEditMode ? 'Editar Producto' : 'Nuevo Producto'"
       [subtitle]="
         isEditMode
-          ? 'Actualizar información del producto'
-          : 'Registrar un nuevo producto en el inventario'
+          ? 'Actualiza la información del producto'
+          : 'Registra un nuevo producto en el catálogo'
       "
+      [icon]="isEditMode ? 'fa-edit' : 'fa-plus'"
       [loading]="loading || submitting"
       [disableSubmit]="submitting || (productForm && productForm.invalid)"
+      [backUrl]="'/logistics/products'"
       (onSubmit)="onSubmit()"
       (onCancel)="cancel()"
     >
@@ -259,23 +261,36 @@ export class ProductFormComponent implements OnInit {
 
     const productData = this.productForm.getRawValue();
 
-    const request =
-      this.isEditMode && this.productId
-        ? this.inventoryService.updateProduct(this.productId, productData)
-        : this.inventoryService.createProduct(productData);
+    if (this.isEditMode && this.productId) {
+      // Strip non-permitted fields for update (strict backend validation)
+      const { codigo, id, created_at, updated_at, stock_actual, ...updateData } = productData;
 
-    request.subscribe({
-      next: () => {
-        this.submitting = false;
-        this.router.navigate(['/logistics/products']);
-      },
-      error: (err: any) => {
-        console.error('Error saving product', err);
-        this.submitting = false;
-        this.validationErrors = this.errorHandler.extractValidationErrors(err);
-        this.errorMessage = this.errorHandler.getErrorMessage(err);
-      },
-    });
+      this.inventoryService.updateProduct(this.productId, updateData).subscribe({
+        next: () => {
+          this.submitting = false;
+          this.router.navigate(['/logistics/products']);
+        },
+        error: (err: any) => {
+          console.error('Error updating product:', err);
+          this.submitting = false;
+          this.validationErrors = this.errorHandler.extractValidationErrors(err);
+          this.errorMessage = this.errorHandler.getErrorMessage(err);
+        },
+      });
+    } else {
+      this.inventoryService.createProduct(productData).subscribe({
+        next: () => {
+          this.submitting = false;
+          this.router.navigate(['/logistics/products']);
+        },
+        error: (err: any) => {
+          console.error('Error saving product', err);
+          this.submitting = false;
+          this.validationErrors = this.errorHandler.extractValidationErrors(err);
+          this.errorMessage = this.errorHandler.getErrorMessage(err);
+        },
+      });
+    }
   }
 
   cancel(): void {
