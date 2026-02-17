@@ -133,19 +133,19 @@ import {
       <!-- Column Templates -->
       <ng-template #equipoTemplate let-row>
         <div class="cell-group">
-          <span class="equipo-code">{{ row.equipo?.codigo_equipo || '-' }}</span>
+          <span class="equipo-code">{{ row.equipo?.codigo || '-' }}</span>
           <span class="equipo-name">{{ row.equipo?.nombre }}</span>
         </div>
       </ng-template>
 
       <ng-template #proveedorTemplate let-row>
-        <span class="text-truncate" [title]="row.contrato?.provider?.razon_social">
-          {{ row.contrato?.provider?.razon_social || '-' }}
+        <span class="text-truncate" [title]="row.contrato?.proveedor?.razon_social">
+          {{ row.contrato?.proveedor?.razon_social || '-' }}
         </span>
       </ng-template>
 
       <ng-template #contratoTemplate let-row>
-        <span class="code">{{ row.contrato?.numero_contrato || '-' }}</span>
+        <span class="code">{{ row.contrato?.codigo || '-' }}</span>
       </ng-template>
     </app-page-layout>
   `,
@@ -460,9 +460,9 @@ export class ValuationRegistryComponent implements OnInit {
     return this.registryData.map((row) => ({
       'N° Valorización': row.numeroValorizacion || '',
       Periodo: row.periodo || '',
-      Equipo: row.equipo?.codigo_equipo || '',
-      Proveedor: row.contrato?.provider?.razon_social || '',
-      Contrato: row.contrato?.numero_contrato || '',
+      Equipo: row.equipo?.codigo || '',
+      Proveedor: row.contrato?.proveedor?.razon_social || '',
+      Contrato: row.contrato?.codigo || '',
       'Total Valorizado': row.totalValorizado || 0,
       IGV: row.igvMonto || 0,
       'Total con IGV': row.totalConIgv || 0,

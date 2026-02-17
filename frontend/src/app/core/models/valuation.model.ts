@@ -63,8 +63,14 @@ export interface Valuation {
   };
   contrato?: {
     id: number;
-    numero_contrato: string;
+    codigo: string;
+    numero_contrato?: string; // Legacy
     nombre_proyecto?: string;
+    proveedor?: {
+      id: number;
+      ruc: string;
+      razon_social: string;
+    };
   };
 }
 

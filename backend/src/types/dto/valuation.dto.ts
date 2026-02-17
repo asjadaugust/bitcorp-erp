@@ -61,17 +61,17 @@ export interface ValuationDto {
   updated_at: string; // ISO datetime string
 
   // Optional joined data
-  creator?: {
+  creador?: {
     id: number;
     username: string;
     full_name: string;
   };
-  approver?: {
+  aprobador?: {
     id: number;
     username: string;
     full_name: string;
   };
-  validator?: {
+  validador?: {
     id: number;
     username: string;
     full_name: string;
@@ -80,7 +80,7 @@ export interface ValuationDto {
     id: number;
     codigo: string;
     nombre_proyecto?: string;
-    provider?: {
+    proveedor?: {
       id: number;
       ruc: string;
       razon_social: string;
@@ -174,16 +174,16 @@ export function toValuationDto(entity: Valorizacion): ValuationDto {
     updated_at: toDateTimeString(entity.updatedAt) || '',
 
     // Include relations if loaded
-    creator: entity.creator,
-    approver: entity.approver,
-    validator: entity.validator,
+    creador: entity.creator,
+    aprobador: entity.approver,
+    validador: entity.validator,
     contrato: entity.contrato
       ? {
           id: entity.contrato.id,
           codigo: entity.contrato.numeroContrato,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           nombre_proyecto: (entity.contrato as any).nombre_proyecto,
-          provider: entity.contrato.provider
+          proveedor: entity.contrato.provider
             ? {
                 id: entity.contrato.provider.id,
                 ruc: entity.contrato.provider.ruc,

@@ -126,16 +126,25 @@ export class ValuationService {
 
       // Define sortable fields (snake_case API → camelCase DB mapping)
       const sortableFields: Record<string, string> = {
+        // Snake case aliases (standard)
         numero_valorizacion: 'v.numeroValorizacion',
+        total_valorizado: 'v.totalValorizado',
+        igv_monto: 'v.igvMonto',
+        total_con_igv: 'v.totalConIgv',
         periodo: 'v.periodo',
         fecha_inicio: 'v.fechaInicio',
         fecha_fin: 'v.fechaFin',
-        total_valorizado: 'v.totalValorizado',
-        total_con_igv: 'v.totalConIgv',
         estado: 'v.estado',
         created_at: 'v.createdAt',
         equipo_id: 'v.equipoId',
         contrato_id: 'v.contratoId',
+        // Camel case aliases (matching frontend model/AeroTable keys)
+        numeroValorizacion: 'v.numeroValorizacion',
+        totalValorizado: 'v.totalValorizado',
+        igvMonto: 'v.igvMonto',
+        totalConIgv: 'v.totalConIgv',
+        fechaInicio: 'v.fechaInicio',
+        fechaFin: 'v.fechaFin',
       };
 
       const sortBy =
@@ -251,8 +260,8 @@ export class ValuationService {
         valuation_id: id,
         numero_valorizacion: v.numeroValorizacion,
         estado: v.estado,
-        has_creator: !!v.creator,
-        has_approver: !!v.approver,
+        has_creador: !!v.creator,
+        has_aprobador: !!v.approver,
       });
 
       return result;

@@ -337,9 +337,9 @@ export class ValuationController {
 
       const result = await this.valuationService.getRegistry(filters);
 
-      // Transform records to DTOs
+      // Service already returns DTOs, so we don't need to map them again
       const responseData = {
-        data: (result.data as any[]).map(toValuationDto),
+        data: result.data,
         total: result.total,
         summary: result.summary,
       };

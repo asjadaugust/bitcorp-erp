@@ -129,7 +129,9 @@ export class ValuationService {
       equipo: data.equipo
         ? {
             id: data.equipo.id,
-            codigo_equipo: data.equipo.codigo_equipo || data.equipo.codigo,
+            codigo: data.equipo.codigo,
+            codigo_equipo: data.equipo.codigo, // Keep for legacy
+            nombre: data.equipo.nombre,
             marca: data.equipo.marca || '',
             modelo: data.equipo.modelo || '',
           }
@@ -137,12 +139,16 @@ export class ValuationService {
       contrato: data.contrato
         ? {
             id: data.contrato.id,
-            numero_contrato: data.contrato.numero_contrato || data.contrato.codigo,
+            codigo: data.contrato.codigo,
+            numero_contrato: data.contrato.codigo, // Keep for legacy
             nombre_proyecto: data.contrato.nombre_proyecto,
-            provider: data.contrato.provider,
+            proveedor: data.contrato.proveedor,
           }
         : undefined,
-    } as Valuation;
+      creador: data.creador,
+      aprobador: data.aprobador,
+      validador: data.validador,
+    } as any;
   }
 
   delete(id: number | string): Observable<void> {
