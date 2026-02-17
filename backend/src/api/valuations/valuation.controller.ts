@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ValuationService } from '../../services/valuation.service';
 import { PdfService } from '../../services/pdf.service';
 import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
+import { toValuationDto } from '../../types/dto/valuation.dto';
 import {
   sendSuccess,
   sendPaginatedSuccess,
@@ -40,6 +41,21 @@ export class ValuationController {
         limit,
         total: result.total,
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getSummary = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const data = await this.valuationService.getValuationPage1Data(id);
+      sendSuccess(res, data);
     } catch (error) {
       next(error);
     }
@@ -303,6 +319,58 @@ export class ValuationController {
   };
 
   /**
+   * Get valuation registry (consolidated cross-project)
+   * GET /api/valuations/registry
+   */
+  getRegistry = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const filters = {
+        proyecto_id: req.query.proyecto_id ? parseInt(req.query.proyecto_id as string) : undefined,
+        periodo_desde: req.query.periodo_desde as string,
+        periodo_hasta: req.query.periodo_hasta as string,
+        estado: req.query.estado as string,
+        proveedor: req.query.proveedor as string,
+        equipo_id: req.query.equipo_id ? parseInt(req.query.equipo_id as string) : undefined,
+        page: parseInt(req.query.page as string) || 1,
+        limit: Math.min(parseInt(req.query.limit as string) || 50, 200),
+      };
+
+      const result = await this.valuationService.getRegistry(filters);
+
+      // Transform records to DTOs
+      const responseData = {
+        data: (result.data as any[]).map(toValuationDto),
+        total: result.total,
+        summary: result.summary,
+      };
+
+      sendSuccess(res, responseData);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Submit draft valuation (BORRADOR → PENDIENTE)
+   * POST /api/valuations/:id/submit-draft
+   */
+  submitDraft = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const userId = (req as any).user.id;
+      const record = await this.valuationService.submitDraft(id, userId);
+      sendSuccess(res, record);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
    * Submit valuation for review
    * POST /api/valuations/:id/submit-review
    */
@@ -328,9 +396,30 @@ export class ValuationController {
   };
 
   /**
-   * Approve valuation
+   * Validate valuation (EN_REVISION → VALIDADO)
+   * POST /api/valuations/:id/validate
+   * Requires RESIDENTE, ADMINISTRADOR_PROYECTO, or ADMIN role
+   */
+  validateValuation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const userId = (req as any).user.id;
+      const record = await this.valuationService.validate(id, userId);
+      sendSuccess(res, record);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Approve valuation (VALIDADO → APROBADO)
    * POST /api/valuations/:id/approve
-   * Requires ADMIN or DIRECTOR role
+   * Requires DIRECTOR or ADMIN role
    */
   approveValuation = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -342,7 +431,7 @@ export class ValuationController {
 
       const user = (req as any).user;
       const userRoles = user.roles || [user.rol];
-      const allowedRoles = ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'];
+      const allowedRoles = ['ADMIN', 'DIRECTOR'];
 
       const hasPermission = userRoles.some((role: string) => allowedRoles.includes(role));
 
@@ -365,7 +454,7 @@ export class ValuationController {
   /**
    * Reject valuation
    * POST /api/valuations/:id/reject
-   * Requires ADMIN or DIRECTOR role
+   * Requires RESIDENTE, ADMINISTRADOR_PROYECTO, DIRECTOR, or ADMIN role
    */
   rejectValuation = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -382,16 +471,6 @@ export class ValuationController {
       }
 
       const user = (req as any).user;
-      const userRoles = user.roles || [user.rol];
-      const allowedRoles = ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'];
-
-      const hasPermission = userRoles.some((role: string) => allowedRoles.includes(role));
-
-      if (!hasPermission) {
-        sendError(res, 403, 'FORBIDDEN', 'No tienes permisos para rechazar valorizaciones');
-        return;
-      }
-
       const record = await this.valuationService.reject(id, user.id, reason);
       sendSuccess(res, record);
     } catch (error) {
@@ -399,6 +478,51 @@ export class ValuationController {
         sendError(res, 400, 'INVALID_STATE_TRANSITION', error.message);
         return;
       }
+      next(error);
+    }
+  };
+
+  /**
+   * Reopen rejected valuation (RECHAZADO → BORRADOR)
+   * POST /api/valuations/:id/reopen
+   */
+  reopenValuation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const userId = (req as any).user.id;
+      const record = await this.valuationService.reopen(id, userId);
+      sendSuccess(res, record);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Register provider conformity
+   * POST /api/valuations/:id/conformidad
+   */
+  registerConformidad = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const userId = (req as any).user.id;
+      const data = {
+        fecha: req.body.fecha ? new Date(req.body.fecha) : undefined,
+        observaciones: req.body.observaciones,
+      };
+
+      const record = await this.valuationService.registerConformidad(id, userId, data);
+      sendSuccess(res, record);
+    } catch (error) {
       next(error);
     }
   };
@@ -442,6 +566,79 @@ export class ValuationController {
         sendError(res, 400, 'INVALID_STATE_TRANSITION', error.message);
         return;
       }
+      next(error);
+    }
+  };
+
+  // ─── Payment Document Endpoints (WS-5) ───
+
+  getPaymentDocuments = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid valuation ID');
+        return;
+      }
+      const docs = await this.valuationService.getPaymentDocuments(id);
+      sendSuccess(res, docs);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createPaymentDocument = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid valuation ID');
+        return;
+      }
+      const doc = await this.valuationService.createPaymentDocument({
+        valorizacion_id: id,
+        ...req.body,
+      });
+      sendCreated(res, doc);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updatePaymentDocument = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const docId = parseInt(req.params.docId);
+      if (isNaN(docId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid document ID');
+        return;
+      }
+      const doc = await this.valuationService.updatePaymentDocument(docId, req.body);
+      sendSuccess(res, doc);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  checkPaymentDocsComplete = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid valuation ID');
+        return;
+      }
+      const complete = await this.valuationService.checkPaymentDocumentsComplete(id);
+      sendSuccess(res, { complete });
+    } catch (error) {
       next(error);
     }
   };

@@ -54,6 +54,19 @@ export interface ContractDto {
   horas_incluidas?: number | null;
   penalidad_exceso?: number | null;
 
+  // Ownership proof (Cláusula 2)
+  documento_acredita?: string | null;
+  fecha_acreditada?: string | null;
+
+  // Jurisdiction & duration text (Cláusula 2, 4)
+  jurisdiccion?: string | null;
+  plazo_texto?: string | null;
+
+  // Termination (Cláusula 12)
+  motivo_resolucion?: string | null;
+  fecha_resolucion?: string | null;
+  monto_liquidacion?: number | null;
+
   // Additional info
   condiciones_especiales?: string | null;
   documento_url?: string | null;
@@ -103,6 +116,17 @@ export function toContractDto(entity: any): ContractDto {
     costo_adicional_motor: entity.costoAdicionalMotor,
     horas_incluidas: entity.horasIncluidas,
     penalidad_exceso: entity.penalidadExceso,
+    documento_acredita: entity.documentoAcredita || null,
+    fecha_acreditada: entity.fechaAcreditada
+      ? new Date(entity.fechaAcreditada).toISOString().split('T')[0]
+      : null,
+    jurisdiccion: entity.jurisdiccion || null,
+    plazo_texto: entity.plazoTexto || null,
+    motivo_resolucion: entity.motivoResolucion || null,
+    fecha_resolucion: entity.fechaResolucion
+      ? new Date(entity.fechaResolucion).toISOString().split('T')[0]
+      : null,
+    monto_liquidacion: entity.montoLiquidacion || null,
     condiciones_especiales: entity.condicionesEspeciales,
     documento_url: entity.documentoUrl,
     estado: entity.estado,
@@ -140,6 +164,15 @@ export function fromContractDto(dto: Partial<ContractDto>): any {
     entity.costoAdicionalMotor = dto.costo_adicional_motor;
   if (dto.horas_incluidas !== undefined) entity.horasIncluidas = dto.horas_incluidas;
   if (dto.penalidad_exceso !== undefined) entity.penalidadExceso = dto.penalidad_exceso;
+  if (dto.documento_acredita !== undefined) entity.documentoAcredita = dto.documento_acredita;
+  if (dto.fecha_acreditada !== undefined)
+    entity.fechaAcreditada = dto.fecha_acreditada ? new Date(dto.fecha_acreditada) : null;
+  if (dto.jurisdiccion !== undefined) entity.jurisdiccion = dto.jurisdiccion;
+  if (dto.plazo_texto !== undefined) entity.plazoTexto = dto.plazo_texto;
+  if (dto.motivo_resolucion !== undefined) entity.motivoResolucion = dto.motivo_resolucion;
+  if (dto.fecha_resolucion !== undefined)
+    entity.fechaResolucion = dto.fecha_resolucion ? new Date(dto.fecha_resolucion) : null;
+  if (dto.monto_liquidacion !== undefined) entity.montoLiquidacion = dto.monto_liquidacion;
   if (dto.condiciones_especiales !== undefined)
     entity.condicionesEspeciales = dto.condiciones_especiales;
   if (dto.documento_url !== undefined) entity.documentoUrl = dto.documento_url;
@@ -231,6 +264,38 @@ export class ContractCreateDto {
   @IsNumber({}, { message: 'penalidad_exceso debe ser un número' })
   @Min(0, { message: 'penalidad_exceso debe ser mayor o igual a 0' })
   penalidad_exceso?: number | null;
+
+  @IsOptional()
+  @IsString({ message: 'documento_acredita debe ser texto' })
+  @MaxLength(200, { message: 'documento_acredita no puede exceder 200 caracteres' })
+  documento_acredita?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_acreditada debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_acreditada?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'jurisdiccion debe ser texto' })
+  @MaxLength(200, { message: 'jurisdiccion no puede exceder 200 caracteres' })
+  jurisdiccion?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'plazo_texto debe ser texto' })
+  @MaxLength(200, { message: 'plazo_texto no puede exceder 200 caracteres' })
+  plazo_texto?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'motivo_resolucion debe ser texto' })
+  motivo_resolucion?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_resolucion debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_resolucion?: string | null;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'monto_liquidacion debe ser un número' })
+  @Min(0, { message: 'monto_liquidacion debe ser mayor o igual a 0' })
+  monto_liquidacion?: number | null;
 
   @IsOptional()
   @IsString({ message: 'condiciones_especiales debe ser texto' })
@@ -342,6 +407,38 @@ export class ContractUpdateDto {
   @IsNumber({}, { message: 'penalidad_exceso debe ser un número' })
   @Min(0, { message: 'penalidad_exceso debe ser mayor o igual a 0' })
   penalidad_exceso?: number | null;
+
+  @IsOptional()
+  @IsString({ message: 'documento_acredita debe ser texto' })
+  @MaxLength(200, { message: 'documento_acredita no puede exceder 200 caracteres' })
+  documento_acredita?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_acreditada debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_acreditada?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'jurisdiccion debe ser texto' })
+  @MaxLength(200, { message: 'jurisdiccion no puede exceder 200 caracteres' })
+  jurisdiccion?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'plazo_texto debe ser texto' })
+  @MaxLength(200, { message: 'plazo_texto no puede exceder 200 caracteres' })
+  plazo_texto?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'motivo_resolucion debe ser texto' })
+  motivo_resolucion?: string | null;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_resolucion debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_resolucion?: string | null;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'monto_liquidacion debe ser un número' })
+  @Min(0, { message: 'monto_liquidacion debe ser mayor o igual a 0' })
+  monto_liquidacion?: number | null;
 
   @IsOptional()
   @IsString({ message: 'condiciones_especiales debe ser texto' })

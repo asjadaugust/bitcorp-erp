@@ -5,6 +5,7 @@ import { ProviderContactController } from './provider-contact.controller';
 import { ProviderFinancialInfoController } from './provider-financial-info.controller';
 import { ProviderDocumentController } from './provider-document.controller';
 import { validateDto } from '../../middleware/validation.middleware';
+import { uploadProviderDocument } from '../../middleware/upload.middleware';
 import { ProviderCreateDto, ProviderUpdateDto } from '../../types/dto/provider.dto';
 import {
   ProviderContactCreateDto,
@@ -101,10 +102,21 @@ router.post(
 );
 
 // PUT /api/providers/documents/:id - Update document
-router.put('/documents/:id', validateDto(ProviderDocumentUpdateDto), documentController.updateDocument);
+router.put(
+  '/documents/:id',
+  validateDto(ProviderDocumentUpdateDto),
+  documentController.updateDocument
+);
 
 // DELETE /api/providers/documents/:id - Delete document
 router.delete('/documents/:id', documentController.deleteDocument);
+
+// POST /api/providers/documents/upload - Upload document file
+router.post(
+  '/documents/upload',
+  uploadProviderDocument,
+  documentController.uploadDocument.bind(documentController)
+);
 
 // POST /api/providers - Create new provider
 router.post('/', validateDto(ProviderCreateDto), ProviderController.create);

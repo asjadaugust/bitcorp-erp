@@ -72,6 +72,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         <app-aero-card
           *ngFor="let report of reports"
           [title]="report.equipo_nombre || report.codigo_equipo || 'Sin Equipo'"
+          [subtitle]="'Cod: #' + report.id"
+          [icon]="'fa-solid fa-truck-front'"
           [statusLabel]="getStatusLabel(report.estado)"
           [statusClass]="report.estado"
           [statusIcon]="getStatusIcon(report.estado)"
@@ -82,23 +84,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           (cardClick)="viewReport(report)"
           [attr.data-testid]="'report-card-' + report.id"
         >
-          <div body-extra class="report-card__extra-info">
-            <div class="report-card__info-grid">
-              <div class="report-card__info-item">
-                <i class="fa-solid fa-clock"></i>
-                <span class="report-card__info-label">Horario</span>
-                <span class="report-card__info-value"
-                  >{{ report.hora_inicio || '--:--' }} - {{ report.hora_fin || '--:--' }}</span
-                >
-              </div>
-              <div class="report-card__info-item">
-                <i class="fa-solid fa-gas-pump"></i>
-                <span class="report-card__info-label">Combustible</span>
-                <span class="report-card__info-value">{{ report.diesel_gln || 0 }} gal</span>
-              </div>
-            </div>
-          </div>
-
           <div actions>
             <button
               *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
@@ -563,6 +548,16 @@ export class DailyReportListComponent implements OnInit {
         icon: 'fa-solid fa-hard-hat',
         label: 'Operador',
         value: report.trabajador_nombre || 'Sin asignar',
+      },
+      {
+        icon: 'fa-solid fa-clock',
+        label: 'Horario',
+        value: `${report.hora_inicio || '--:--'} - ${report.hora_fin || '--:--'}`,
+      },
+      {
+        icon: 'fa-solid fa-gas-pump',
+        label: 'Combustible',
+        value: `${report.diesel_gln || 0} gal`,
       },
       {
         icon: 'fa-solid fa-gauge-high',

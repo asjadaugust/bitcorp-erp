@@ -18,11 +18,29 @@ const paymentController = new PaymentRecordController();
 
 router.use(authenticate);
 
+// Registry endpoint (must be before /:id to avoid conflict)
+router.get(
+  '/registry',
+  authorize(
+    ROLES.ADMIN,
+    ROLES.DIRECTOR,
+    ROLES.JEFE_EQUIPO,
+    ROLES.RESIDENTE,
+    ROLES.ADMINISTRADOR_PROYECTO
+  ),
+  controller.getRegistry
+);
+
 router.get('/', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.getAll);
 router.get(
   '/analytics',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   controller.getAnalytics
+);
+router.get(
+  '/:id/summary',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  controller.getSummary
 );
 router.get('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO), controller.getById);
 router.get(
@@ -64,23 +82,51 @@ router.put(
 );
 router.delete('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR), controller.remove);
 
-// Approval workflow endpoints
+// Approval workflow endpoints (CORP-GEM-P-002 multi-step)
+router.post('/:id/submit-draft', authorize(ROLES.JEFE_EQUIPO, ROLES.ADMIN), controller.submitDraft);
 router.post(
   '/:id/submit-review',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
+  authorize(ROLES.JEFE_EQUIPO, ROLES.ADMIN),
   controller.submitForReview
 );
 router.post(
-  '/:id/approve',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
-  controller.approveValuation
+  '/:id/validate',
+  authorize(ROLES.RESIDENTE, ROLES.ADMINISTRADOR_PROYECTO, ROLES.ADMIN),
+  controller.validateValuation
 );
+router.post('/:id/approve', authorize(ROLES.DIRECTOR, ROLES.ADMIN), controller.approveValuation);
 router.post(
   '/:id/reject',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  authorize(ROLES.RESIDENTE, ROLES.ADMINISTRADOR_PROYECTO, ROLES.DIRECTOR, ROLES.ADMIN),
   controller.rejectValuation
 );
+router.post('/:id/reopen', authorize(ROLES.JEFE_EQUIPO, ROLES.ADMIN), controller.reopenValuation);
 router.post('/:id/mark-paid', authorize(ROLES.ADMIN), controller.markAsPaid);
+
+// Provider conformity
+router.post(
+  '/:id/conformidad',
+  authorize(ROLES.JEFE_EQUIPO, ROLES.ADMIN, ROLES.DIRECTOR),
+  controller.registerConformidad
+);
+
+// Payment document tracking (Cláusula 6.1 prerequisites)
+router.get(
+  '/:id/payment-documents',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  controller.getPaymentDocuments
+);
+router.post(
+  '/:id/payment-documents',
+  authorize(ROLES.ADMIN, ROLES.JEFE_EQUIPO),
+  controller.createPaymentDocument
+);
+router.put('/payment-documents/:docId', authorize(ROLES.ADMIN), controller.updatePaymentDocument);
+router.get(
+  '/:id/payment-documents/check',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR),
+  controller.checkPaymentDocsComplete
+);
 
 // Payment-related endpoints for valuations
 router.get(

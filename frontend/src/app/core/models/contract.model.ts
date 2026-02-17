@@ -27,6 +27,7 @@ export interface Contract {
   tarifa: string; // API returns string
   modalidad?: string; // ALQUILER SOLO EQUIPO, etc.
   minimo_por?: string; // DIA, HORA, etc.
+  cantidad_minima?: number;
 
   // Options
   incluye_motor: boolean;
@@ -35,10 +36,23 @@ export interface Contract {
   horas_incluidas?: number;
   penalidad_exceso?: string; // API returns string
 
+  // Ownership proof (Cláusula 2)
+  documento_acredita?: string;
+  fecha_acreditada?: string;
+
+  // Jurisdiction & duration text (Cláusula 2, 4)
+  jurisdiccion?: string;
+  plazo_texto?: string;
+
+  // Termination (Cláusula 12)
+  motivo_resolucion?: string;
+  fecha_resolucion?: string;
+  monto_liquidacion?: number;
+
   // Additional info
   condiciones_especiales?: string;
   documento_url?: string;
-  estado: string; // ACTIVO, VENCIDO, etc. (Spanish uppercase)
+  estado: string; // BORRADOR, ACTIVO, VENCIDO, CANCELADO
 
   // Metadata
   created_at?: string;

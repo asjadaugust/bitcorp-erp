@@ -1,0 +1,58 @@
+
+Running 1 test using 1 worker
+
+BROWSER-CONSOLE: Adding token to request: http://localhost:3400/api/notifications?_t=1771279889869
+BROWSER-CONSOLE: [vite] connecting...
+BROWSER-CONSOLE: Bitcorp ERP Application started
+BROWSER-CONSOLE: Service Worker initialized
+BROWSER-CONSOLE: Service Worker disabled for development
+BROWSER-CONSOLE: [vite] connected.
+BROWSER-CONSOLE: [PWA] Service worker registered: ServiceWorkerRegistration
+BROWSER-CONSOLE: [PWA] Sync manager initialized
+BROWSER-CONSOLE: Fetching user from API...
+BROWSER-CONSOLE: Adding token to request: http://localhost:3400/api/auth/me?_t=1771279889992
+BROWSER-CONSOLE: Returning existing user load observable
+BROWSER-CONSOLE: Returning existing user load observable
+BROWSER-CONSOLE: User API wrapped response: {success: true, data: Object}
+BROWSER-CONSOLE: User loaded successfully: {id: 1, username: admin, email: admin@bitcorp.pe, full_name: Administrador Sistema, nombres: Administrador}
+BROWSER-CONSOLE: Adding token to request: http://localhost:3400/api/notifications?_t=1771279890096
+BROWSER-CONSOLE: Adding token to request: http://localhost:3400/api/valuations/registry?_t=1771279890110
+Step 2: Verifying summary stats...
+  ✘  1 [chromium] › tests/e2e/modules/valuations_registry.spec.ts:14:7 › Valuations Registry (WS-4) › should display approved valuations in the registry and verify summary stats (6.3s)
+
+
+  1) [chromium] › tests/e2e/modules/valuations_registry.spec.ts:14:7 › Valuations Registry (WS-4) › should display approved valuations in the registry and verify summary stats 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).not.[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.stat-card:has-text("Total Registros") .stat-value')
+    Expected: not [32m"0"[39m
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "not toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for locator('.stat-card:has-text("Total Registros") .stat-value')[22m
+
+
+      24 |     console.log('Step 2: Verifying summary stats...');
+      25 |     const totalCountStat = page.locator('.stat-card:has-text("Total Registros") .stat-value');
+    > 26 |     await expect(totalCountStat).not.toHaveText('0');
+         |                                      ^
+      27 |     
+      28 |     // 3. Filter by period (Feb 2026)
+      29 |     console.log('Step 3: Filtering by Feb 2026...');
+        at /Users/klm95441/Drive/projects/bitcorp-erp/tests/e2e/modules/valuations_registry.spec.ts:26:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/modules-valuations_registr-afd59-ry-and-verify-summary-stats-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/modules-valuations_registr-afd59-ry-and-verify-summary-stats-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/modules-valuations_registr-afd59-ry-and-verify-summary-stats-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/modules/valuations_registry.spec.ts:14:7 › Valuations Registry (WS-4) › should display approved valuations in the registry and verify summary stats 

@@ -17,19 +17,24 @@ import { Router } from '@angular/router';
         </label>
 
         <div class="dropdown-wrapper" (click)="$event.stopPropagation()">
-          <button 
-            type="button" 
-            class="toggle-btn" 
+          <button
+            type="button"
+            class="toggle-btn"
             (click)="toggleDropdown()"
             [disabled]="availableProjects().length <= 1 && !currentProject()"
             [class.is-open]="isOpen()"
           >
             <div class="current-info">
-              <div class="project-avatar" [style.background-color]="getProjectColor(currentProject()?.id || '')">
+              <div
+                class="project-avatar"
+                [style.background-color]="getProjectColor(currentProject()?.id || '')"
+              >
                 {{ getInitials(currentProject()?.name || '?') }}
               </div>
               <div class="project-text">
-                <span class="project-name">{{ currentProject()?.name || 'Seleccionar Proyecto' }}</span>
+                <span class="project-name">{{
+                  currentProject()?.name || 'Seleccionar Proyecto'
+                }}</span>
                 <!-- Code hidden for cleaner navbar look -->
               </div>
             </div>
@@ -40,20 +45,20 @@ import { Router } from '@angular/router';
             <div class="dropdown-header">
               <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input 
-                  type="text" 
-                  placeholder="Buscar por nombre o código..." 
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre o código..."
                   [(ngModel)]="searchQuery"
                   (input)="filterProjects()"
                   (click)="$event.stopPropagation()"
                   #searchInput
-                >
+                />
               </div>
             </div>
-            
+
             <div class="options-list">
-              <div 
-                *ngFor="let project of filteredProjects()" 
+              <div
+                *ngFor="let project of filteredProjects()"
                 class="option-item"
                 [class.active]="project.id === currentProject()?.id"
                 (click)="onProjectClick(project)"
@@ -82,7 +87,10 @@ import { Router } from '@angular/router';
             </div>
 
             <div class="dropdown-footer" *ngIf="availableProjects().length > 5">
-              <span>Mostrando {{ filteredProjects().length }} de {{ availableProjects().length }} proyectos</span>
+              <span
+                >Mostrando {{ filteredProjects().length }} de
+                {{ availableProjects().length }} proyectos</span
+              >
             </div>
           </div>
         </div>
@@ -146,14 +154,13 @@ import { Router } from '@angular/router';
         color: var(--grey-900);
       }
 
-
       .toggle-btn:disabled {
         opacity: 0.7;
         cursor: default;
         background: transparent;
         border-color: transparent;
       }
-      
+
       .current-info {
         display: flex;
         align-items: center;
@@ -190,8 +197,6 @@ import { Router } from '@angular/router';
         text-overflow: ellipsis;
         color: var(--grey-900);
       }
-
-
 
       .current-info {
         display: flex;
@@ -253,7 +258,10 @@ import { Router } from '@angular/router';
         width: 100%;
         background: white;
         border-radius: 14px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04),
+          0 0 0 1px rgba(0, 0, 0, 0.05);
         overflow: hidden;
         color: #111827;
         opacity: 0;
@@ -390,21 +398,38 @@ import { Router } from '@angular/router';
         background: var(--grey-100);
       }
 
-      .status-ACTIVE { color: var(--semantic-green-700); background: var(--semantic-green-50); }
-      .status-INACTIVE { color: var(--semantic-red-700); background: var(--semantic-red-50); }
-      .status-COMPLETED { color: var(--semantic-blue-700); background: var(--semantic-blue-50); }
-      .status-ON_HOLD { color: var(--semantic-yellow-700); background: var(--semantic-yellow-50); }
+      .status-ACTIVE {
+        color: var(--semantic-green-700);
+        background: var(--semantic-green-50);
+      }
+      .status-INACTIVE {
+        color: var(--semantic-red-700);
+        background: var(--semantic-red-50);
+      }
+      .status-COMPLETED {
+        color: var(--semantic-blue-700);
+        background: var(--semantic-blue-50);
+      }
+      .status-ON_HOLD {
+        color: var(--semantic-yellow-700);
+        background: var(--semantic-yellow-50);
+      }
 
       .active-indicator {
         color: var(--primary-600);
         margin-left: 8px;
         font-size: 14px;
       }
-      }
 
-      .status-active { color: #059669; }
-      .status-inactive { color: #d97706; }
-      .status-completed { color: #4f46e5; }
+      .status-active {
+        color: #059669;
+      }
+      .status-inactive {
+        color: #d97706;
+      }
+      .status-completed {
+        color: #4f46e5;
+      }
 
       .active-indicator {
         color: var(--primary-600);
@@ -459,9 +484,18 @@ import { Router } from '@angular/router';
         box-shadow: 0 0 8px currentColor;
       }
 
-      .status-indicator.status-active { color: #34d399; background: #34d399; }
-      .status-indicator.status-inactive { color: #fbbf24; background: #fbbf24; }
-      .status-indicator.status-completed { color: #818cf8; background: #818cf8; }
+      .status-indicator.status-active {
+        color: #34d399;
+        background: #34d399;
+      }
+      .status-indicator.status-inactive {
+        color: #fbbf24;
+        background: #fbbf24;
+      }
+      .status-indicator.status-completed {
+        color: #818cf8;
+        background: #818cf8;
+      }
 
       @media (max-width: 1024px) {
         .selector-label span {
@@ -473,7 +507,7 @@ import { Router } from '@angular/router';
         .project-selector {
           padding: 0.75rem 1rem;
         }
-        
+
         .selector-container {
           gap: 1rem;
         }

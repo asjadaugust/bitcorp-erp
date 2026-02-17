@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ValuationService } from '../../core/services/valuation.service';
-import { Valuation, PaymentData } from '../../core/models/valuation.model';
+import { Valuation, PaymentData, ValuationSummary } from '../../core/models/valuation.model';
 import { AuthService } from '../../core/services/auth.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { PaymentRecordList, PaymentSummary } from '../../core/models/payment-record.model';
@@ -41,19 +41,7 @@ import {
 
             <div class="detail-status">
               <span [class]="'status-badge status-' + valuation.estado">
-                {{
-                  valuation.estado === 'PENDIENTE'
-                    ? 'Pendiente'
-                    : valuation.estado === 'EN_REVISION'
-                      ? 'En Revisión'
-                      : valuation.estado === 'APROBADO'
-                        ? 'Aprobado'
-                        : valuation.estado === 'RECHAZADO'
-                          ? 'Rechazado'
-                          : valuation.estado === 'PAGADO'
-                            ? 'Pagado'
-                            : valuation.estado
-                }}
+                {{ getEstadoLabel(valuation.estado) }}
               </span>
             </div>
 
@@ -69,6 +57,251 @@ import {
                     <label>Proyecto</label>
                     <p>{{ valuation.contrato?.nombre_proyecto || 'N/A' }}</p>
                   </div>
+                </div>
+              </section>
+
+              <!-- Equipo y Proveedor (from PDF summary) -->
+              <section class="detail-section" *ngIf="valuationSummary">
+                <h2>Equipo y Proveedor</h2>
+                <div class="info-grid info-grid-2col">
+                  <div class="info-column">
+                    <div class="info-item">
+                      <label>Codigo Equipo</label>
+                      <p>{{ valuationSummary.equipo.codigo_equipo || 'N/A' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Equipo</label>
+                      <p>{{ valuationSummary.equipo.nombre || 'N/A' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Placa</label>
+                      <p>{{ valuationSummary.equipo.placa || 'N/A' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Marca</label>
+                      <p>{{ valuationSummary.equipo.marca || 'N/A' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Modelo</label>
+                      <p>{{ valuationSummary.equipo.modelo || 'N/A' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Tipo Medidor</label>
+                      <p>{{ valuationSummary.equipo.tipo_medidor || 'N/A' }}</p>
+                    </div>
+                  </div>
+                  <div class="info-column">
+                    <div class="info-item">
+                      <label>RUC</label>
+                      <p>{{ valuationSummary.proveedor.ruc || 'N/A' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Razon Social</label>
+                      <p>{{ valuationSummary.proveedor.razon_social || 'N/A' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <label>Direccion</label>
+                      <p>{{ valuationSummary.proveedor.direccion || 'N/A' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Datos del Contrato Detallado (from PDF summary) -->
+              <section class="detail-section" *ngIf="valuationSummary">
+                <h2>Datos del Contrato (Detallado)</h2>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>N° Contrato</label>
+                    <p>{{ valuationSummary.contrato.numero_contrato || 'N/A' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Tipo Documento</label>
+                    <p>{{ valuationSummary.contrato.tipo_documento || 'N/A' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Modalidad</label>
+                    <p>{{ valuationSummary.contrato.modalidad || 'N/A' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Tipo Tarifa</label>
+                    <p>{{ valuationSummary.contrato.tipo_tarifa || 'N/A' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Tarifa</label>
+                    <p>{{ valuationSummary.contrato.tarifa | number: '1.2-2' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Moneda</label>
+                    <p>{{ valuationSummary.contrato.moneda || 'N/A' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Tipo Cambio</label>
+                    <p>{{ valuationSummary.valorizacion.tipo_cambio | number: '1.2-4' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Minimo Por</label>
+                    <p>{{ valuationSummary.contrato.minimo_por || 'N/A' }}</p>
+                  </div>
+                  <div class="info-item">
+                    <label>Cantidad Minima</label>
+                    <p>{{ valuationSummary.contrato.cantidad_minima }}</p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Resumen Financiero (from PDF summary) -->
+              <section class="detail-section" *ngIf="valuationSummary">
+                <h2>Resumen Financiero</h2>
+                <div class="financial-table-container">
+                  <table class="financial-table">
+                    <thead>
+                      <tr>
+                        <th>Descripcion</th>
+                        <th class="text-right">Cantidad</th>
+                        <th>Unid</th>
+                        <th class="text-right">P.U.</th>
+                        <th class="text-right">Importe</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- VALORIZACIÓN -->
+                      <tr class="row-header">
+                        <td colspan="5"><strong>VALORIZACION</strong></td>
+                      </tr>
+                      <tr>
+                        <td>Cantidad a Valorizar</td>
+                        <td class="text-right">
+                          {{ valuationSummary.financiero.cantidad | number: '1.2-2' }}
+                        </td>
+                        <td>{{ valuationSummary.financiero.unidad_medida }}</td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.precio_unitario | number: '1.2-2' }}
+                        </td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.valorizacion_bruta | number: '1.2-2' }}
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td>Horas en Exceso</td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right"></td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.cargos_adicionales | number: '1.2-2' }}
+                        </td>
+                      </tr>
+
+                      <!-- DESCUENTOS -->
+                      <tr class="row-header">
+                        <td colspan="5"><strong>DESCUENTOS</strong></td>
+                      </tr>
+                      <tr>
+                        <td>Combustible</td>
+                        <td class="text-right">
+                          {{ valuationSummary.financiero.cantidad_combustible | number: '1.2-2' }}
+                        </td>
+                        <td>gln</td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.precio_combustible | number: '1.2-2' }}
+                        </td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.importe_combustible | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Manipuleo de Combustible</td>
+                        <td class="text-right">
+                          {{ valuationSummary.financiero.cantidad_combustible | number: '1.2-2' }}
+                        </td>
+                        <td>gln</td>
+                        <td class="text-right">
+                          S/
+                          {{
+                            valuationSummary.financiero.precio_manipuleo_combustible
+                              | number: '1.2-2'
+                          }}
+                        </td>
+                        <td class="text-right">
+                          S/
+                          {{
+                            valuationSummary.financiero.importe_manipuleo_combustible
+                              | number: '1.2-2'
+                          }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Gastos en Obra</td>
+                        <td class="text-right"></td>
+                        <td></td>
+                        <td class="text-right"></td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.importe_gasto_obra | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Amortizacion por Adelantos</td>
+                        <td class="text-right"></td>
+                        <td></td>
+                        <td class="text-right"></td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.importe_adelanto | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Exceso de Combustible</td>
+                        <td class="text-right"></td>
+                        <td></td>
+                        <td class="text-right"></td>
+                        <td class="text-right">
+                          S/
+                          {{
+                            valuationSummary.financiero.importe_exceso_combustible | number: '1.2-2'
+                          }}
+                        </td>
+                      </tr>
+
+                      <!-- NETA -->
+                      <tr class="row-total">
+                        <td><strong>VALORIZACION NETA</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">
+                          <strong
+                            >S/
+                            {{
+                              valuationSummary.financiero.valorizacion_neta | number: '1.2-2'
+                            }}</strong
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>I.G.V. 18%</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">
+                          S/ {{ valuationSummary.financiero.igv | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                      <tr class="row-total row-grand-total">
+                        <td><strong>NETO A FACTURAR</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">
+                          <strong
+                            >S/
+                            {{
+                              valuationSummary.financiero.neto_facturar | number: '1.2-2'
+                            }}</strong
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </section>
 
@@ -283,9 +516,20 @@ import {
             <div class="card">
               <h3>Acciones de Workflow</h3>
               <div class="workflow-actions">
-                <!-- Submit for Review: Only for PENDING state -->
+                <!-- Submit Draft: BORRADOR → PENDIENTE -->
                 <button
-                  *ngIf="valuation.estado === 'PENDIENTE' && canSubmitForReview()"
+                  *ngIf="valuation.estado === 'BORRADOR'"
+                  class="btn btn-primary btn-block"
+                  (click)="submitDraft()"
+                  [disabled]="processingWorkflow"
+                >
+                  <i class="fa-solid fa-arrow-right"></i>
+                  {{ processingWorkflow ? 'Enviando...' : 'Marcar como Pendiente' }}
+                </button>
+
+                <!-- Submit for Review: PENDIENTE → EN_REVISION (requires conformidad) -->
+                <button
+                  *ngIf="valuation.estado === 'PENDIENTE'"
                   class="btn btn-primary btn-block"
                   (click)="submitForReview()"
                   [disabled]="processingWorkflow"
@@ -294,9 +538,20 @@ import {
                   {{ processingWorkflow ? 'Enviando...' : 'Enviar a Revisión' }}
                 </button>
 
-                <!-- Approve: Only for UNDER_REVIEW state, Admin/Director/JefeEquipo only -->
+                <!-- Validate: EN_REVISION → VALIDADO -->
                 <button
-                  *ngIf="valuation.estado === 'EN_REVISION' && canApprove()"
+                  *ngIf="valuation.estado === 'EN_REVISION' && canValidate()"
+                  class="btn btn-success btn-block"
+                  (click)="confirmValidate()"
+                  [disabled]="processingWorkflow"
+                >
+                  <i class="fa-solid fa-clipboard-check"></i>
+                  {{ processingWorkflow ? 'Validando...' : 'Validar' }}
+                </button>
+
+                <!-- Approve: VALIDADO → APROBADO -->
+                <button
+                  *ngIf="valuation.estado === 'VALIDADO' && canApprove()"
                   class="btn btn-success btn-block"
                   (click)="showApproveModal = true"
                   [disabled]="processingWorkflow"
@@ -304,17 +559,28 @@ import {
                   <i class="fa-solid fa-check"></i> Aprobar Valorización
                 </button>
 
-                <!-- Reject: For any state except PAID, Admin/Director/JefeEquipo only -->
+                <!-- Reject: For non-terminal states -->
                 <button
-                  *ngIf="valuation.estado !== 'PAGADO' && canReject()"
+                  *ngIf="canRejectCurrentState() && canReject()"
                   class="btn btn-danger btn-block"
                   (click)="showRejectModal = true"
                   [disabled]="processingWorkflow"
                 >
-                  <i class="fa-solid fa-times"></i> Rechazar Valorización
+                  <i class="fa-solid fa-times"></i> Rechazar
                 </button>
 
-                <!-- Mark as Paid: Only for APPROVED state, Admin only -->
+                <!-- Reopen: RECHAZADO → BORRADOR -->
+                <button
+                  *ngIf="valuation.estado === 'RECHAZADO'"
+                  class="btn btn-secondary btn-block"
+                  (click)="confirmReopen()"
+                  [disabled]="processingWorkflow"
+                >
+                  <i class="fa-solid fa-rotate-left"></i>
+                  {{ processingWorkflow ? 'Reabriendo...' : 'Reabrir para Corrección' }}
+                </button>
+
+                <!-- Mark as Paid: APROBADO → PAGADO -->
                 <button
                   *ngIf="valuation.estado === 'APROBADO' && canMarkAsPaid()"
                   class="btn btn-secondary btn-block"
@@ -330,6 +596,45 @@ import {
               </div>
             </div>
 
+            <!-- Provider Conformity Card -->
+            <div class="card">
+              <h3>Conformidad del Proveedor</h3>
+              <div *ngIf="valuation.conformidadProveedor" class="conformidad-status conformidad-ok">
+                <i class="fa-solid fa-check-circle"></i>
+                <div>
+                  <strong>Conformidad Registrada</strong>
+                  <p *ngIf="valuation.conformidadFecha">
+                    {{ valuation.conformidadFecha | date: 'dd/MM/yyyy' }}
+                  </p>
+                  <p *ngIf="valuation.conformidadObservaciones" class="conformidad-obs">
+                    {{ valuation.conformidadObservaciones }}
+                  </p>
+                </div>
+              </div>
+              <div
+                *ngIf="!valuation.conformidadProveedor"
+                class="conformidad-status conformidad-pending"
+              >
+                <i class="fa-solid fa-clock"></i>
+                <div>
+                  <strong>Pendiente de Conformidad</strong>
+                  <p>Se requiere antes de enviar a revisión</p>
+                </div>
+              </div>
+              <button
+                *ngIf="
+                  !valuation.conformidadProveedor &&
+                  (valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE')
+                "
+                class="btn btn-primary btn-block"
+                style="margin-top: 12px"
+                (click)="showConformidadModal = true"
+                [disabled]="processingWorkflow"
+              >
+                <i class="fa-solid fa-handshake"></i> Registrar Conformidad
+              </button>
+            </div>
+
             <!-- Quick Actions -->
             <div class="card">
               <h3>Acciones Rápidas</h3>
@@ -340,10 +645,32 @@ import {
                 <button
                   class="btn btn-secondary btn-block"
                   (click)="editValuation()"
-                  *ngIf="valuation.estado === 'PENDIENTE'"
+                  *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
                 >
                   <i class="fa-solid fa-pen"></i> Editar
                 </button>
+              </div>
+            </div>
+
+            <!-- Payment Documents (Cláusula 6.1) -->
+            <div
+              class="card"
+              *ngIf="valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'"
+            >
+              <h3>Documentos de Pago</h3>
+              <div class="payment-docs-list">
+                <div class="pay-doc-item" *ngFor="let doc of paymentDocs">
+                  <div class="pay-doc-header">
+                    <span class="pay-doc-type">{{ translatePayDocType(doc.tipo_documento) }}</span>
+                    <span [class]="'pay-doc-badge pay-doc-' + doc.estado?.toLowerCase()">
+                      {{ doc.estado }}
+                    </span>
+                  </div>
+                  <div class="pay-doc-meta" *ngIf="doc.numero">N° {{ doc.numero }}</div>
+                </div>
+                <div *ngIf="paymentDocs.length === 0" class="empty-docs">
+                  No hay documentos registrados
+                </div>
               </div>
             </div>
 
@@ -356,12 +683,22 @@ import {
                   <div class="timeline-content">Aprobado</div>
                 </div>
 
+                <div class="timeline-item" *ngIf="valuation.validadoEn">
+                  <div class="timeline-date">{{ valuation.validadoEn | date: 'short' }}</div>
+                  <div class="timeline-content">Validado</div>
+                </div>
+
+                <div class="timeline-item" *ngIf="valuation.conformidadFecha">
+                  <div class="timeline-date">{{ valuation.conformidadFecha | date: 'short' }}</div>
+                  <div class="timeline-content">Conformidad del Proveedor</div>
+                </div>
+
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ valuation.updated_at | date: 'short' }}</div>
+                  <div class="timeline-date">{{ valuation.updatedAt | date: 'short' }}</div>
                   <div class="timeline-content">Última actualización</div>
                 </div>
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ valuation.created_at | date: 'short' }}</div>
+                  <div class="timeline-date">{{ valuation.createdAt | date: 'short' }}</div>
                   <div class="timeline-content">Valorización creada</div>
                 </div>
               </div>
@@ -493,6 +830,41 @@ import {
             [disabled]="!isPaymentDataValid() || processingWorkflow"
           >
             {{ processingWorkflow ? 'Procesando...' : 'Marcar como Pagado' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Conformidad Modal -->
+    <div *ngIf="showConformidadModal" class="modal" (click)="showConformidadModal = false">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Registrar Conformidad del Proveedor</h2>
+          <button class="close" (click)="showConformidadModal = false">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Registra la conformidad del proveedor para esta valorización.</p>
+          <div class="form-group">
+            <label>Fecha de Conformidad <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="conformidadData.fecha" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label>Observaciones</label>
+            <textarea
+              [(ngModel)]="conformidadData.observaciones"
+              class="form-control"
+              rows="3"
+              placeholder="Observaciones opcionales..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="showConformidadModal = false">Cancelar</button>
+          <button
+            class="btn btn-primary"
+            (click)="confirmConformidad()"
+            [disabled]="!conformidadData.fecha || processingWorkflow"
+          >
+            {{ processingWorkflow ? 'Procesando...' : 'Registrar Conformidad' }}
           </button>
         </div>
       </div>
@@ -744,6 +1116,70 @@ import {
         color: #333;
       }
 
+      /* Payment Documents */
+      .payment-docs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .pay-doc-item {
+        padding: 8px;
+        border: 1px solid var(--grey-200);
+        border-radius: 6px;
+      }
+
+      .pay-doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .pay-doc-type {
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .pay-doc-badge {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+
+      .pay-doc-pendiente {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+
+      .pay-doc-presentado {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
+      }
+
+      .pay-doc-aprobado {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+
+      .pay-doc-rechazado {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+
+      .pay-doc-meta {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-top: 4px;
+      }
+
+      .empty-docs {
+        font-size: 13px;
+        color: var(--grey-500);
+        text-align: center;
+        padding: 8px;
+      }
+
       /* Status Badges */
       .status-badge {
         padding: 4px 10px;
@@ -794,12 +1230,112 @@ import {
         background: var(--semantic-red-500);
       }
 
+      .status-BORRADOR {
+        background: var(--grey-100);
+        color: var(--grey-600);
+      }
+      .status-BORRADOR::before {
+        background: var(--grey-400);
+      }
+
+      .status-PENDIENTE {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .status-PENDIENTE::before {
+        background: var(--semantic-yellow-500);
+      }
+
+      .status-EN_REVISION {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
+      }
+      .status-EN_REVISION::before {
+        background: var(--semantic-blue-500);
+      }
+
+      .status-VALIDADO {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .status-VALIDADO::before {
+        background: #4caf50;
+      }
+
+      .status-APROBADO {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .status-APROBADO::before {
+        background: var(--semantic-green-500);
+      }
+
+      .status-RECHAZADO {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+      .status-RECHAZADO::before {
+        background: var(--semantic-red-500);
+      }
+
+      .status-PAGADO {
+        background: var(--grey-100);
+        color: var(--grey-700);
+      }
+      .status-PAGADO::before {
+        background: var(--grey-400);
+      }
+
       .status-paid {
         background: var(--grey-100);
         color: var(--grey-700);
       }
       .status-paid::before {
         background: var(--grey-400);
+      }
+
+      /* Conformidad card */
+      .conformidad-status {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--s-12);
+        padding: var(--s-12);
+        border-radius: var(--radius-sm);
+      }
+
+      .conformidad-ok {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+
+      .conformidad-ok i {
+        font-size: 20px;
+        margin-top: 2px;
+      }
+
+      .conformidad-pending {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+
+      .conformidad-pending i {
+        font-size: 20px;
+        margin-top: 2px;
+      }
+
+      .conformidad-status strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .conformidad-status p {
+        font-size: 12px;
+        margin: 0;
+      }
+
+      .conformidad-obs {
+        font-style: italic;
+        margin-top: 4px !important;
       }
 
       /* Modal */
@@ -981,12 +1517,11 @@ import {
       }
 
       .payment-summary-widget {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: var(--neutral-0);
+        border: 1px solid var(--grey-200);
         padding: var(--s-24);
         border-radius: var(--radius-md);
         margin-bottom: var(--s-24);
-        box-shadow: var(--shadow-md);
       }
 
       .summary-row {
@@ -1002,12 +1537,13 @@ import {
 
       .summary-label {
         font-size: 14px;
-        opacity: 0.9;
+        color: var(--grey-600);
       }
 
       .summary-value {
         font-size: 18px;
         font-weight: 600;
+        color: var(--grey-900);
       }
 
       .payment-status-badge {
@@ -1015,13 +1551,12 @@ import {
         border-radius: 20px;
         font-size: 12px;
         font-weight: 500;
-        background: rgba(255, 255, 255, 0.2);
       }
 
       .progress-bar-container {
         width: 100%;
         height: 8px;
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--grey-100);
         border-radius: 4px;
         overflow: hidden;
         margin-bottom: var(--s-8);
@@ -1029,7 +1564,7 @@ import {
 
       .progress-bar-fill {
         height: 100%;
-        background: white;
+        background: var(--primary-500);
         border-radius: 4px;
         transition: width 0.3s ease;
       }
@@ -1037,15 +1572,84 @@ import {
       .progress-label {
         font-size: 12px;
         text-align: center;
-        opacity: 0.9;
+        color: var(--grey-600);
       }
 
       .text-success {
-        color: #4ade80 !important;
+        color: var(--semantic-green-700) !important;
       }
 
       .text-warning {
-        color: #fbbf24 !important;
+        color: var(--semantic-yellow-700) !important;
+      }
+
+      /* Two-column info grid */
+      .info-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-24);
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .info-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-16);
+      }
+
+      /* Financial summary table */
+      .financial-table-container {
+        overflow-x: auto;
+      }
+
+      .financial-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th {
+          background: var(--grey-50);
+          padding: var(--s-12) var(--s-16);
+          text-align: left;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--grey-700);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 2px solid var(--grey-200);
+        }
+
+        td {
+          padding: var(--s-8) var(--s-16);
+          border-bottom: 1px solid var(--grey-100);
+          font-size: 14px;
+          color: var(--grey-900);
+        }
+
+        .text-right {
+          text-align: right;
+          font-family: monospace;
+        }
+
+        .row-header td {
+          background: var(--grey-50);
+          padding-top: var(--s-12);
+          padding-bottom: var(--s-8);
+          border-bottom: 1px solid var(--grey-200);
+        }
+
+        .row-total td {
+          border-top: 2px solid var(--grey-300);
+          padding-top: var(--s-12);
+        }
+
+        .row-grand-total td {
+          background: var(--grey-50);
+          border-top: 2px solid var(--grey-400);
+          font-size: 15px;
+        }
       }
 
       .loading-payments {
@@ -1205,12 +1809,14 @@ export class ValuationDetailComponent implements OnInit {
   paymentService = inject(PaymentService); // Made public for template access
 
   valuation: Valuation | null = null;
+  valuationSummary: ValuationSummary | null = null;
   loading = true;
   processingWorkflow = false;
 
   // Payment-related properties
   payments: PaymentRecordList[] = [];
   paymentSummary: PaymentSummary | null = null;
+  paymentDocs: any[] = [];
   paymentCount = 0;
   loadingPayments = false;
 
@@ -1218,9 +1824,14 @@ export class ValuationDetailComponent implements OnInit {
   showApproveModal = false;
   showRejectModal = false;
   showMarkPaidModal = false;
+  showConformidadModal = false;
 
   // Form data
   rejectReason = '';
+  conformidadData = {
+    fecha: new Date().toISOString().split('T')[0],
+    observaciones: '',
+  };
 
   paymentMethodOptions: DropdownOption[] = [
     { label: 'Transferencia Bancaria', value: 'Transferencia Bancaria' },
@@ -1239,6 +1850,7 @@ export class ValuationDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
     this.loadValuation(id);
+    this.loadSummary(id);
     this.loadPayments(id);
     this.loadPaymentSummary(id);
   }
@@ -1249,9 +1861,37 @@ export class ValuationDetailComponent implements OnInit {
       next: (data) => {
         this.valuation = data;
         this.loading = false;
+        this.loadPaymentDocs(id);
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  loadPaymentDocs(id: number): void {
+    this.valuationService.getPaymentDocuments(id).subscribe({
+      next: (docs) => (this.paymentDocs = docs),
+    });
+  }
+
+  translatePayDocType(tipo: string): string {
+    const map: Record<string, string> = {
+      FACTURA: 'Factura',
+      POLIZA_TREC: 'Póliza TREC',
+      ESSALUD: 'ESSALUD',
+      SCTR: 'SCTR',
+    };
+    return map[tipo] || tipo;
+  }
+
+  loadSummary(id: number): void {
+    this.valuationService.getSummary(id).subscribe({
+      next: (data) => {
+        this.valuationSummary = data;
+      },
+      error: (error) => {
+        console.error('Error loading valuation summary:', error);
       },
     });
   }
@@ -1297,18 +1937,29 @@ export class ValuationDetailComponent implements OnInit {
   }
 
   canSubmitForReview(): boolean {
-    // Any user can submit for review
     return true;
+  }
+
+  canValidate(): boolean {
+    const roles = this.getUserRoles();
+    return roles.some((r) => ['ADMIN', 'RESIDENTE', 'ADMINISTRADOR_PROYECTO'].includes(r));
   }
 
   canApprove(): boolean {
     const roles = this.getUserRoles();
-    return roles.some((r) => ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'].includes(r));
+    return roles.some((r) => ['ADMIN', 'DIRECTOR'].includes(r));
   }
 
   canReject(): boolean {
     const roles = this.getUserRoles();
-    return roles.some((r) => ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'].includes(r));
+    return roles.some((r) =>
+      ['ADMIN', 'DIRECTOR', 'RESIDENTE', 'ADMINISTRADOR_PROYECTO'].includes(r)
+    );
+  }
+
+  canRejectCurrentState(): boolean {
+    if (!this.valuation) return false;
+    return ['PENDIENTE', 'EN_REVISION', 'VALIDADO', 'APROBADO'].includes(this.valuation.estado);
   }
 
   canMarkAsPaid(): boolean {
@@ -1316,22 +1967,45 @@ export class ValuationDetailComponent implements OnInit {
     return roles.includes('ADMIN');
   }
 
+  getEstadoLabel(estado: string): string {
+    const labels: Record<string, string> = {
+      BORRADOR: 'Borrador',
+      PENDIENTE: 'Pendiente',
+      EN_REVISION: 'En Revisión',
+      VALIDADO: 'Validado',
+      APROBADO: 'Aprobado',
+      RECHAZADO: 'Rechazado',
+      PAGADO: 'Pagado',
+      ELIMINADO: 'Eliminado',
+    };
+    return labels[estado] || estado;
+  }
+
   getWorkflowHint(): string | null {
     if (!this.valuation) return null;
 
     const status = this.valuation.estado;
 
-    if (status === 'PENDIENTE') {
-      return 'Envía esta valorización a revisión para que pueda ser aprobada.';
+    if (status === 'BORRADOR') {
+      return 'Completa los datos y marca como pendiente para iniciar el proceso.';
     }
-    if (status === 'EN_REVISION' && this.canApprove()) {
-      return 'Esta valorización está en revisión y puede ser aprobada o rechazada.';
+    if (status === 'PENDIENTE') {
+      if (!this.valuation.conformidadProveedor) {
+        return 'Registra la conformidad del proveedor antes de enviar a revisión.';
+      }
+      return 'Envía esta valorización a revisión.';
+    }
+    if (status === 'EN_REVISION') {
+      return 'Esta valorización está en revisión y puede ser validada o rechazada.';
+    }
+    if (status === 'VALIDADO') {
+      return 'Validada por Control OC. Pendiente de aprobación final.';
     }
     if (status === 'APROBADO' && this.canMarkAsPaid()) {
-      return 'Esta valorización ha sido aprobada y puede ser marcada como pagada.';
+      return 'Aprobada. Puede ser marcada como pagada.';
     }
     if (status === 'RECHAZADO') {
-      return 'Esta valorización ha sido rechazada. Revisa las observaciones.';
+      return 'Rechazada. Puede ser reabierta para corrección.';
     }
     if (status === 'PAGADO') {
       return 'Esta valorización ya ha sido pagada.';
@@ -1341,6 +2015,24 @@ export class ValuationDetailComponent implements OnInit {
   }
 
   // Workflow actions
+  submitDraft(): void {
+    if (!this.valuation || this.processingWorkflow) return;
+    if (!confirm('¿Deseas marcar esta valorización como pendiente?')) return;
+
+    this.processingWorkflow = true;
+    this.valuationService.submitDraft(this.valuation.id).subscribe({
+      next: () => {
+        this.processingWorkflow = false;
+        alert('Valorización marcada como pendiente');
+        this.loadValuation(this.valuation!.id);
+      },
+      error: (err) => {
+        this.processingWorkflow = false;
+        alert('Error: ' + (err.error?.error?.message || err.message));
+      },
+    });
+  }
+
   submitForReview(): void {
     if (!this.valuation || this.processingWorkflow) return;
 
@@ -1412,6 +2104,60 @@ export class ValuationDetailComponent implements OnInit {
       error: (err) => {
         this.processingWorkflow = false;
         alert('Error al marcar como pagado: ' + (err.error?.error?.message || err.message));
+      },
+    });
+  }
+
+  confirmValidate(): void {
+    if (!this.valuation || this.processingWorkflow) return;
+    if (!confirm('¿Deseas validar esta valorización?')) return;
+
+    this.processingWorkflow = true;
+    this.valuationService.validate(this.valuation.id).subscribe({
+      next: () => {
+        this.processingWorkflow = false;
+        alert('Valorización validada exitosamente');
+        this.loadValuation(this.valuation!.id);
+      },
+      error: (err) => {
+        this.processingWorkflow = false;
+        alert('Error al validar: ' + (err.error?.error?.message || err.message));
+      },
+    });
+  }
+
+  confirmReopen(): void {
+    if (!this.valuation || this.processingWorkflow) return;
+    if (!confirm('¿Deseas reabrir esta valorización para corrección?')) return;
+
+    this.processingWorkflow = true;
+    this.valuationService.reopen(this.valuation.id).subscribe({
+      next: () => {
+        this.processingWorkflow = false;
+        alert('Valorización reabierta como borrador');
+        this.loadValuation(this.valuation!.id);
+      },
+      error: (err) => {
+        this.processingWorkflow = false;
+        alert('Error al reabrir: ' + (err.error?.error?.message || err.message));
+      },
+    });
+  }
+
+  confirmConformidad(): void {
+    if (!this.valuation || !this.conformidadData.fecha || this.processingWorkflow) return;
+
+    this.processingWorkflow = true;
+    this.valuationService.registerConformidad(this.valuation.id, this.conformidadData).subscribe({
+      next: () => {
+        this.processingWorkflow = false;
+        this.showConformidadModal = false;
+        alert('Conformidad del proveedor registrada');
+        this.loadValuation(this.valuation!.id);
+      },
+      error: (err) => {
+        this.processingWorkflow = false;
+        alert('Error: ' + (err.error?.error?.message || err.message));
       },
     });
   }

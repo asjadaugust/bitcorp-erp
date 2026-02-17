@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ClickOutsideDirective } from '../../directives/click-outside.directive';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 export interface DropdownOption {
   label: string;
@@ -23,7 +23,7 @@ export interface DropdownOption {
 @Component({
   selector: 'app-dropdown',
   standalone: true,
-  imports: [CommonModule, FormsModule, ClickOutsideDirective],
+  imports: [CommonModule, FormsModule, OverlayModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -37,10 +37,9 @@ export interface DropdownOption {
       [class.disabled]="disabled"
       [class.open]="isOpen"
       [class.has-error]="error"
-      (clickOutside)="close()"
     >
       <!-- Trigger -->
-      <div class="dropdown-trigger" (click)="toggle()">
+      <div class="dropdown-trigger" (click)="toggle()" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
         <div class="selected-value" [class.placeholder]="!hasValue()">
           <span *ngIf="!hasValue()">{{ placeholder }}</span>
           <span *ngIf="hasValue()">{{ getDisplayValue() }}</span>
@@ -48,45 +47,72 @@ export interface DropdownOption {
         <i class="fa-solid fa-chevron-down arrow-icon"></i>
       </div>
 
-      <!-- Menu -->
-      <div class="dropdown-menu" *ngIf="isOpen">
-        <!-- Search -->
-        <div class="search-box" *ngIf="searchable">
-          <i class="fa-solid fa-search search-icon"></i>
-          <input
-            #searchInput
-            type="text"
-            [(ngModel)]="searchTerm"
-            (input)="filterOptions()"
-            placeholder="Buscar..."
-            class="search-input"
-            (click)="$event.stopPropagation()"
-          />
-        </div>
+      <!-- Menu Overlay -->
+      <ng-template
+        cdkConnectedOverlay
+        [cdkConnectedOverlayOrigin]="trigger"
+        [cdkConnectedOverlayOpen]="isOpen"
+        [cdkConnectedOverlayHasBackdrop]="true"
+        [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
+        [cdkConnectedOverlayMinWidth]="triggerWidth"
+        [cdkConnectedOverlayPositions]="[
+          {
+            originX: 'start',
+            originY: 'bottom',
+            overlayX: 'start',
+            overlayY: 'top',
+            offsetY: 4,
+          },
+          {
+            originX: 'start',
+            originY: 'top',
+            overlayX: 'start',
+            overlayY: 'bottom',
+            offsetY: -4,
+          },
+        ]"
+        (backdropClick)="close()"
+        (detach)="close()"
+      >
+        <div class="dropdown-menu">
+          <!-- Search -->
+          <div class="search-box" *ngIf="searchable">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input
+              #searchInput
+              type="text"
+              [(ngModel)]="searchTerm"
+              (input)="filterOptions()"
+              placeholder="Buscar..."
+              class="search-input"
+              (click)="$event.stopPropagation()"
+            />
+          </div>
 
-        <!-- Options -->
-        <div class="options-list">
-          <div
-            *ngFor="let option of filteredOptions"
-            class="option-item"
-            [class.selected]="isSelected(option)"
-            [class.disabled]="option.disabled"
-            (click)="selectOption(option)"
-          >
-            <div class="option-content">
-              <i *ngIf="option.icon" [class]="option.icon"></i>
-              <span>{{ option.label }}</span>
+          <!-- Options -->
+          <div class="options-list">
+            <div
+              *ngFor="let option of filteredOptions"
+              class="option-item"
+              [class.selected]="isSelected(option)"
+              [class.disabled]="option.disabled"
+              (click)="selectOption(option)"
+            >
+              <div class="option-content">
+                <i *ngIf="option.icon" [class]="option.icon"></i>
+                <span>{{ option.label }}</span>
+              </div>
+              <i *ngIf="isSelected(option) && !multiple" class="fa-solid fa-check check-icon"></i>
+              <div *ngIf="multiple" class="checkbox" [class.checked]="isSelected(option)">
+                <i class="fa-solid fa-check"></i>
+              </div>
             </div>
-            <i *ngIf="isSelected(option) && !multiple" class="fa-solid fa-check check-icon"></i>
-            <div *ngIf="multiple" class="checkbox" [class.checked]="isSelected(option)">
-              <i class="fa-solid fa-check"></i>
+            <div *ngIf="filteredOptions.length === 0" class="no-results">
+              No se encontraron resultados
             </div>
-          </div>
-          <div *ngIf="filteredOptions.length === 0" class="no-results">
-            No se encontraron resultados
           </div>
         </div>
-      </div>
+      </ng-template>
     </div>
   `,
   styles: [
@@ -116,6 +142,7 @@ export interface DropdownOption {
         cursor: pointer;
         transition: all 0.2s ease;
         min-height: 42px;
+        user-select: none;
       }
 
       .dropdown-trigger:hover {
@@ -165,18 +192,15 @@ export interface DropdownOption {
 
       /* Menu */
       .dropdown-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        margin-top: 4px;
         background: white;
         border: 1px solid var(--grey-200);
         border-radius: var(--radius-sm);
         box-shadow: var(--shadow-lg);
-        z-index: 1000;
         overflow: hidden;
         animation: slideDown 0.15s ease-out;
+        min-width: 100%;
+        /* Ensure specificty for overlay content */
+        pointer-events: auto;
       }
 
       @keyframes slideDown {
@@ -308,10 +332,12 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   @Output() selectionChange = new EventEmitter<any>();
 
   @ViewChild('searchInput') searchInput!: ElementRef;
+  @ViewChild('trigger', { read: ElementRef }) trigger!: ElementRef;
 
   isOpen = false;
   searchTerm = '';
   filteredOptions: DropdownOption[] = [];
+  triggerWidth = 0;
 
   // Value accessor storage
   private value: any = null;
@@ -319,6 +345,8 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   // Callbacks
   onChange: any = () => {};
   onTouch: any = () => {};
+
+  constructor(private elementRef: ElementRef) {}
 
   ngOnInit() {
     this.filteredOptions = this.options;
@@ -345,7 +373,9 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   toggle() {
     if (this.disabled) return;
     this.isOpen = !this.isOpen;
+
     if (this.isOpen) {
+      this.updateTriggerWidth();
       this.searchTerm = '';
       this.filteredOptions = this.options;
       if (this.searchable) {
@@ -359,6 +389,12 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   close() {
     this.isOpen = false;
     this.onTouch();
+  }
+
+  updateTriggerWidth() {
+    if (this.trigger) {
+      this.triggerWidth = this.trigger.nativeElement.getBoundingClientRect().width;
+    }
   }
 
   filterOptions() {

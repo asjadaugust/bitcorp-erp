@@ -90,7 +90,11 @@ export function transformToValuationPage1Dto(
   };
 
   // Financial calculations
-  const financieroDto: ValuationFinancialDto = calculateFinancials(valuation, contract, financialTotals);
+  const financieroDto: ValuationFinancialDto = calculateFinancials(
+    valuation,
+    contract,
+    financialTotals
+  );
 
   return {
     equipo: equipoDto,
@@ -105,7 +109,7 @@ export function transformToValuationPage1Dto(
  * Calculate financial summary from valuation data
  */
 function calculateFinancials(
-  valuation: Valorizacion, 
+  valuation: Valorizacion,
   contract: Contract,
   financialTotals?: {
     importe_gasto_obra?: number;
@@ -155,7 +159,13 @@ function calculateFinancials(
     importeExcesoCombustible;
 
   // Net valuation
-  const valorizacionNeta = valorizacionBruta - descuentoTotal;
+  // cargos_adicionales (excess hours) are ADDED to base valuation or handled separately?
+  // In ValuationService.calculateValuation: totalEstimated = costoBase + excessCost
+  // So cargos_adicionales should be ADDED to valorizacionBruta or listed as an ADDITION.
+  const valorizacionTotalBruta = valorizacionBruta + cargosAdicionales;
+
+  // Net valuation = (Base + Excess Hours) - (Fuel + Handling + Expenses + Advances + Excess Fuel)
+  const valorizacionNeta = valorizacionTotalBruta - descuentoTotal;
 
   // IGV (18% by default, can be overridden)
   const igvPorcentaje = parseFloat(String(valuation.igvPorcentaje || 18));
@@ -177,6 +187,7 @@ function calculateFinancials(
     importe_gasto_obra: importeGastoObra,
     importe_adelanto: importeAdelanto,
     importe_exceso_combustible: importeExcesoCombustible,
+    cargos_adicionales: cargosAdicionales,
     valorizacion_neta: valorizacionNeta,
     igv,
     neto_facturar: netoFacturar,
@@ -582,7 +593,11 @@ export function transformToValuationPage7Dto(
   };
 
   // Reuse financial calculation from Page 1
-  const financieroDto: ValuationFinancialDto = calculateFinancials(valuation, contract, financialTotals);
+  const financieroDto: ValuationFinancialDto = calculateFinancials(
+    valuation,
+    contract,
+    financialTotals
+  );
 
   return {
     equipo: equipoDto,

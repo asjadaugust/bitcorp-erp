@@ -1,6 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ContractService } from '../../core/services/contract.service';
 import { EquipmentService } from '../../core/services/equipment.service';
@@ -22,6 +28,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     RouterModule,
     FormContainerComponent,
@@ -124,6 +131,55 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 [options]="estadoOptions"
                 [placeholder]="'Seleccionar Estado'"
               ></app-dropdown>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Ownership Proof & Jurisdiction -->
+        <div class="form-section full-width">
+          <h3>Propiedad del Equipo y Jurisdicción</h3>
+          <div class="section-grid">
+            <div class="form-group">
+              <label for="documento_acredita">Documento que Acredita Propiedad</label>
+              <input
+                id="documento_acredita"
+                type="text"
+                formControlName="documento_acredita"
+                class="form-control"
+                placeholder="ej. Tarjeta de Propiedad, Factura"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="fecha_acreditada">Fecha del Documento</label>
+              <input
+                id="fecha_acreditada"
+                type="date"
+                formControlName="fecha_acreditada"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="jurisdiccion">Jurisdicción</label>
+              <input
+                id="jurisdiccion"
+                type="text"
+                formControlName="jurisdiccion"
+                class="form-control"
+                placeholder="ej. Lima, Cusco"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="plazo_texto">Plazo (texto)</label>
+              <input
+                id="plazo_texto"
+                type="text"
+                formControlName="plazo_texto"
+                class="form-control"
+                placeholder="ej. 6 meses"
+              />
             </div>
           </div>
         </div>
@@ -234,6 +290,112 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 placeholder="0.00"
               />
             </div>
+          </div>
+        </div>
+
+        <!-- Section: ANEXO A - Tariff Inclusions -->
+        <div class="form-section full-width" *ngIf="isEditMode">
+          <h3>ANEXO A — Inclusiones de Tarifa</h3>
+          <div class="annex-editor">
+            <div class="annex-row annex-header">
+              <span class="annex-concept">Concepto</span>
+              <span class="annex-included">Incluido</span>
+              <span class="annex-obs">Observaciones</span>
+              <span class="annex-actions"></span>
+            </div>
+            <div class="annex-row" *ngFor="let item of annexA; let i = index">
+              <input
+                class="form-control annex-concept"
+                [(ngModel)]="item.concepto"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="ej. Combustible, Operador"
+              />
+              <label class="annex-included checkbox-inline">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="item.incluido"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+              </label>
+              <input
+                class="form-control annex-obs"
+                [(ngModel)]="item.observaciones"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Notas..."
+              />
+              <button
+                type="button"
+                class="btn btn-icon btn-danger-ghost"
+                (click)="removeAnnexItem('A', i)"
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="addAnnexItem('A')">
+              <i class="fa-solid fa-plus"></i> Agregar ítem
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              style="margin-left: 8px"
+              (click)="saveAnnex('A')"
+              [disabled]="savingAnnexA"
+            >
+              <i class="fa-solid fa-save"></i> Guardar Anexo A
+            </button>
+          </div>
+        </div>
+
+        <!-- Section: ANEXO B - Valuation Conditions -->
+        <div class="form-section full-width" *ngIf="isEditMode">
+          <h3>ANEXO B — Condiciones de Valorización</h3>
+          <div class="annex-editor">
+            <div class="annex-row annex-header">
+              <span class="annex-concept">Concepto</span>
+              <span class="annex-included">Incluido</span>
+              <span class="annex-obs">Observaciones</span>
+              <span class="annex-actions"></span>
+            </div>
+            <div class="annex-row" *ngFor="let item of annexB; let i = index">
+              <input
+                class="form-control annex-concept"
+                [(ngModel)]="item.concepto"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="ej. Partes Diarios, Conformidad"
+              />
+              <label class="annex-included checkbox-inline">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="item.incluido"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+              </label>
+              <input
+                class="form-control annex-obs"
+                [(ngModel)]="item.observaciones"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Notas..."
+              />
+              <button
+                type="button"
+                class="btn btn-icon btn-danger-ghost"
+                (click)="removeAnnexItem('B', i)"
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="addAnnexItem('B')">
+              <i class="fa-solid fa-plus"></i> Agregar ítem
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              style="margin-left: 8px"
+              (click)="saveAnnex('B')"
+              [disabled]="savingAnnexB"
+            >
+              <i class="fa-solid fa-save"></i> Guardar Anexo B
+            </button>
           </div>
         </div>
 
@@ -416,6 +578,59 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         color: var(--grey-500);
         font-size: 12px;
       }
+
+      /* Annex Editor */
+      .annex-editor {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .annex-row {
+        display: grid;
+        grid-template-columns: 1fr 60px 1fr 40px;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .annex-header {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--grey-500);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid var(--grey-200);
+      }
+
+      .checkbox-inline {
+        display: flex;
+        justify-content: center;
+      }
+
+      .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: var(--grey-500);
+        border-radius: 4px;
+      }
+
+      .btn-icon:hover {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-600);
+      }
+
+      .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 13px;
+      }
     `,
   ],
 })
@@ -439,6 +654,12 @@ export class ContractFormComponent implements OnInit {
   validationErrors: ValidationError[] = [];
   errorMessage = '';
 
+  // Annex data
+  annexA: Array<{ concepto: string; incluido: boolean; observaciones: string }> = [];
+  annexB: Array<{ concepto: string; incluido: boolean; observaciones: string }> = [];
+  savingAnnexA = false;
+  savingAnnexB = false;
+
   // Dropdown Options
   equipmentOptions: { label: string; value: any }[] = [];
   providerOptions: { label: string; value: any }[] = [];
@@ -451,9 +672,9 @@ export class ContractFormComponent implements OnInit {
   ];
 
   estadoOptions = [
+    { label: 'Borrador', value: 'BORRADOR' },
     { label: 'Activo', value: 'ACTIVO' },
-    { label: 'Pendiente', value: 'PENDIENTE' },
-    { label: 'Completado', value: 'COMPLETADO' },
+    { label: 'Vencido', value: 'VENCIDO' },
     { label: 'Cancelado', value: 'CANCELADO' },
   ];
 
@@ -507,7 +728,11 @@ export class ContractFormComponent implements OnInit {
         incluye_operador: [false],
         costo_adicional_motor: [0, Validators.min(0)],
         condiciones_especiales: [''],
-        estado: ['ACTIVO', Validators.required],
+        documento_acredita: [''],
+        fecha_acreditada: [''],
+        jurisdiccion: [''],
+        plazo_texto: [''],
+        estado: ['BORRADOR', Validators.required],
         tipo: ['CONTRATO'], // Default to CONTRATO
       },
       { validators: this.dateRangeValidator }
@@ -573,6 +798,7 @@ export class ContractFormComponent implements OnInit {
           fecha_contrato: formatDate(contract.fecha_contrato),
           fecha_inicio: formatDate(contract.fecha_inicio),
           fecha_fin: formatDate(contract.fecha_fin),
+          fecha_acreditada: formatDate(contract.fecha_acreditada || ''),
           proveedor_id: contract.proveedor_id ? contract.proveedor_id.toString() : '',
           equipo_id: contract.equipo_id ? contract.equipo_id.toString() : '',
           tarifa: contract.tarifa,
@@ -581,6 +807,7 @@ export class ContractFormComponent implements OnInit {
           costo_adicional_motor: contract.costo_adicional_motor,
         });
         this.loading = false;
+        this.loadAnnexes();
       },
       error: (err) => {
         console.error('Error loading contract', err);
@@ -630,5 +857,60 @@ export class ContractFormComponent implements OnInit {
       return { dateRangeInvalid: true };
     }
     return null;
+  }
+
+  // ─── Annex Methods ───
+
+  loadAnnexes(): void {
+    if (!this.contractId) return;
+    this.contractService.getAnnexes(this.contractId, 'A').subscribe({
+      next: (items) => {
+        this.annexA = items.map((i: any) => ({
+          concepto: i.concepto || '',
+          incluido: i.incluido || false,
+          observaciones: i.observaciones || '',
+        }));
+      },
+    });
+    this.contractService.getAnnexes(this.contractId, 'B').subscribe({
+      next: (items) => {
+        this.annexB = items.map((i: any) => ({
+          concepto: i.concepto || '',
+          incluido: i.incluido || false,
+          observaciones: i.observaciones || '',
+        }));
+      },
+    });
+  }
+
+  addAnnexItem(tipo: 'A' | 'B'): void {
+    const item = { concepto: '', incluido: false, observaciones: '' };
+    if (tipo === 'A') this.annexA.push(item);
+    else this.annexB.push(item);
+  }
+
+  removeAnnexItem(tipo: 'A' | 'B', index: number): void {
+    if (tipo === 'A') this.annexA.splice(index, 1);
+    else this.annexB.splice(index, 1);
+  }
+
+  saveAnnex(tipo: 'A' | 'B'): void {
+    if (!this.contractId) return;
+    const items = tipo === 'A' ? this.annexA : this.annexB;
+    const validItems = items.filter((i) => i.concepto.trim());
+
+    if (tipo === 'A') this.savingAnnexA = true;
+    else this.savingAnnexB = true;
+
+    this.contractService.saveAnnexes(this.contractId, tipo, validItems).subscribe({
+      next: () => {
+        if (tipo === 'A') this.savingAnnexA = false;
+        else this.savingAnnexB = false;
+      },
+      error: () => {
+        if (tipo === 'A') this.savingAnnexA = false;
+        else this.savingAnnexB = false;
+      },
+    });
   }
 }

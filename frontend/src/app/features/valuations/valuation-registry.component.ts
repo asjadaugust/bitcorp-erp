@@ -1,0 +1,491 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { ValuationService } from '../../core/services/valuation.service';
+import { ExcelExportService } from '../../core/services/excel-export.service';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../shared/components/page-layout/page-layout.component';
+import {
+  ExportDropdownComponent,
+  ExportFormat,
+} from '../../shared/components/export-dropdown/export-dropdown.component';
+import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
+import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../core/design-system/table/aero-table.component';
+
+@Component({
+  selector: 'app-valuation-registry',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    PageLayoutComponent,
+    ExportDropdownComponent,
+    ActionsContainerComponent,
+    DropdownComponent,
+    AeroCardComponent,
+    AeroInputComponent,
+    AeroTableComponent,
+  ],
+  template: `
+    <app-page-layout
+      title="Registro de Valorizaciones"
+      icon="fa-file-invoice-dollar"
+      [breadcrumbs]="breadcrumbs"
+      [loading]="loading"
+      [tabs]="tabs"
+    >
+      <app-actions-container actions>
+        <app-export-dropdown (export)="handleExport($event)"></app-export-dropdown>
+      </app-actions-container>
+
+      <!-- Summary Stats -->
+      <div class="summary-grid" *ngIf="summary">
+        <aero-card [title]="'Total Valorizado'">
+          <div class="stat-value">S/ {{ summary.total_valorizado | number: '1.2-2' }}</div>
+          <div class="stat-label">Sin IGV</div>
+        </aero-card>
+        <aero-card [title]="'Total con IGV'">
+          <div class="stat-value">S/ {{ summary.total_con_igv | number: '1.2-2' }}</div>
+          <div class="stat-label">Facturado</div>
+        </aero-card>
+        <aero-card [title]="'Registros'">
+          <div class="stat-value">{{ summary.total_count }}</div>
+          <div class="stat-label">Total</div>
+        </aero-card>
+        <aero-card [title]="'Estados'">
+          <div class="status-summary">
+            <div *ngFor="let s of summary.by_status" class="status-item">
+              <span [class]="'status-dot status-' + s.status"></span>
+              <span class="status-count">{{ s.count }}</span>
+              <span class="status-name">{{ getEstadoLabel(s.status) }}</span>
+            </div>
+          </div>
+        </aero-card>
+      </div>
+
+      <!-- Filters -->
+      <aero-card variant="outlined">
+        <div class="filter-grid">
+          <aero-input
+            label="Periodo Desde"
+            type="month"
+            [(ngModel)]="filters.periodo_desde"
+            (ngModelChange)="loadRegistry()"
+            inputId="filter-periodo-desde"
+          ></aero-input>
+
+          <aero-input
+            label="Periodo Hasta"
+            type="month"
+            [(ngModel)]="filters.periodo_hasta"
+            (ngModelChange)="loadRegistry()"
+            inputId="filter-periodo-hasta"
+          ></aero-input>
+
+          <div class="filter-group">
+            <label class="aero-label">Estado</label>
+            <app-dropdown
+              [(ngModel)]="filters.estado"
+              [options]="statusOptions"
+              [placeholder]="'Todos'"
+              (ngModelChange)="loadRegistry()"
+            ></app-dropdown>
+          </div>
+
+          <aero-input
+            label="Proveedor"
+            placeholder="RUC o razón social..."
+            [(ngModel)]="filters.proveedor"
+            (input)="onProveedorSearch()"
+            inputId="filter-proveedor"
+          ></aero-input>
+        </div>
+      </aero-card>
+
+      <!-- Data Table -->
+      <aero-table
+        [columns]="tableColumns"
+        [data]="registryData"
+        [loading]="loading"
+        [serverSide]="true"
+        [totalItems]="totalRecords"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+        (rowClick)="viewDetail($event)"
+        [templates]="{
+          equipo: equipoTemplate,
+          proveedor: proveedorTemplate,
+          contrato: contratoTemplate,
+        }"
+      >
+      </aero-table>
+
+      <!-- Column Templates -->
+      <ng-template #equipoTemplate let-row>
+        <div class="cell-group">
+          <span class="equipo-code">{{ row.equipo?.codigo_equipo || '-' }}</span>
+          <span class="equipo-name">{{ row.equipo?.nombre }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template #proveedorTemplate let-row>
+        <span class="text-truncate" [title]="row.contrato?.provider?.razon_social">
+          {{ row.contrato?.provider?.razon_social || '-' }}
+        </span>
+      </ng-template>
+
+      <ng-template #contratoTemplate let-row>
+        <span class="code">{{ row.contrato?.numero_contrato || '-' }}</span>
+      </ng-template>
+    </app-page-layout>
+  `,
+  styles: [
+    `
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--s-16);
+        margin-bottom: var(--s-24);
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-800);
+        font-family: monospace;
+        letter-spacing: -0.5px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-top: 4px;
+      }
+
+      .status-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .status-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--grey-700);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .status-count {
+        font-weight: 600;
+        min-width: 20px;
+      }
+
+      .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--s-16);
+        align-items: flex-start;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .aero-label {
+        font-size: var(--type-bodySmall-size);
+        font-weight: 500;
+        color: var(--primary-900);
+        margin-bottom: var(--s-4);
+      }
+
+      .cell-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .equipo-code {
+        font-weight: 600;
+        color: var(--primary-700);
+        font-family: monospace;
+      }
+
+      .equipo-name {
+        font-size: 12px;
+        color: var(--grey-500);
+      }
+
+      .code {
+        font-family: monospace;
+        font-weight: 600;
+      }
+
+      .text-truncate {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+
+      /* Reuse status colors for summary dots */
+      .status-borrador {
+        background: var(--grey-400);
+      }
+      .status-pendiente {
+        background: var(--semantic-yellow-500);
+      }
+      .status-en_revision {
+        background: var(--semantic-blue-500);
+      }
+      .status-validado {
+        background: #2e7d32;
+      }
+      .status-aprobado {
+        background: var(--semantic-green-500);
+      }
+      .status-rechazado {
+        background: var(--semantic-red-500);
+      }
+      .status-pagado {
+        background: var(--grey-700);
+      }
+
+      /* Ensure status badges in table (provided by AeroTable classes mostly, but we set custom classes in config) */
+      /* We rely on global status classes or AeroTable's default behavior, but we used custom classes in previous impl. */
+      /* Let's define them here to be safe if AeroTable falls back to class strings */
+      .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .status-BORRADOR {
+        background: var(--grey-100);
+        color: var(--grey-600);
+      }
+      .status-PENDIENTE {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .status-EN_REVISION {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
+      }
+      .status-VALIDADO {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .status-APROBADO {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .status-RECHAZADO {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+      .status-PAGADO {
+        background: var(--grey-100);
+        color: var(--grey-700);
+      }
+    `,
+  ],
+})
+export class ValuationRegistryComponent implements OnInit {
+  private valuationService = inject(ValuationService);
+  private router = inject(Router);
+  private excelService = inject(ExcelExportService);
+
+  registryData: any[] = [];
+  summary: any = null;
+  loading = false;
+  totalRecords = 0;
+
+  breadcrumbs = [
+    { label: 'Inicio', url: '/app' },
+    { label: 'Equipos', url: '/equipment' },
+    { label: 'Valorizaciones' },
+  ];
+
+  tabs: TabItem[] = [
+    { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
+    { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
+    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
+    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar' },
+    { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
+    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
+  ];
+
+  filters: any = {
+    periodo_desde: '',
+    periodo_hasta: '',
+    estado: '',
+    proveedor: '',
+    page: 1,
+    limit: 50,
+  };
+
+  tableColumns: TableColumn[] = [
+    {
+      key: 'numeroValorizacion',
+      label: 'N° Val',
+      width: '100px',
+      sticky: true,
+      customTemplate: (row) => row.numeroValorizacion || '-',
+    },
+    { key: 'periodo', label: 'Periodo', width: '100px' },
+    { key: 'equipo', label: 'Equipo', width: '180px', type: 'template' },
+    { key: 'proveedor', label: 'Proveedor', width: '250px', type: 'template' },
+    { key: 'contrato', label: 'Contrato', width: '120px', type: 'template' },
+    { key: 'totalValorizado', label: 'Total Val.', align: 'right', type: 'currency' },
+    { key: 'igvMonto', label: 'IGV', align: 'right', type: 'currency' },
+    { key: 'totalConIgv', label: 'Total', align: 'right', type: 'currency' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      align: 'center',
+      type: 'badge',
+      badgeConfig: {
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-BORRADOR' },
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-PENDIENTE' },
+        EN_REVISION: { label: 'En Revisión', class: 'status-badge status-EN_REVISION' },
+        VALIDADO: { label: 'Validado', class: 'status-badge status-VALIDADO' },
+        APROBADO: { label: 'Aprobado', class: 'status-badge status-APROBADO' },
+        RECHAZADO: { label: 'Rechazado', class: 'status-badge status-RECHAZADO' },
+        PAGADO: { label: 'Pagado', class: 'status-badge status-PAGADO' },
+        ELIMINADO: { label: 'Eliminado', class: 'status-badge status-ELIMINADO' },
+      },
+    },
+  ];
+
+  private searchTimeout: any;
+
+  statusOptions = [
+    { value: 'BORRADOR', label: 'Borrador' },
+    { value: 'PENDIENTE', label: 'Pendiente' },
+    { value: 'EN_REVISION', label: 'En Revisión' },
+    { value: 'VALIDADO', label: 'Validado' },
+    { value: 'APROBADO', label: 'Aprobado' },
+    { value: 'RECHAZADO', label: 'Rechazado' },
+    { value: 'PAGADO', label: 'Pagado' },
+  ];
+
+  ngOnInit(): void {
+    this.loadRegistry();
+  }
+
+  loadRegistry(): void {
+    this.loading = true;
+    this.valuationService.getRegistry(this.filters).subscribe({
+      next: (result) => {
+        this.registryData = result.data || [];
+        this.totalRecords = result.total || 0;
+        this.summary = result.summary || null;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading registry:', err);
+        this.loading = false;
+      },
+    });
+  }
+
+  onPageChange(page: number): void {
+    this.filters.page = page;
+    this.loadRegistry();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.filters.limit = size;
+    this.filters.page = 1;
+    this.loadRegistry();
+  }
+
+  onProveedorSearch(): void {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.filters.page = 1;
+      this.loadRegistry();
+    }, 400);
+  }
+
+  viewDetail(row: any): void {
+    this.router.navigate(['/equipment/valuations', row.id]);
+  }
+
+  getEstadoLabel(estado: string): string {
+    const labels: Record<string, string> = {
+      BORRADOR: 'Borrador',
+      PENDIENTE: 'Pendiente',
+      EN_REVISION: 'En Revisión',
+      VALIDADO: 'Validado',
+      APROBADO: 'Aprobado',
+      RECHAZADO: 'Rechazado',
+      PAGADO: 'Pagado',
+      ELIMINADO: 'Eliminado',
+    };
+    return labels[estado] || estado;
+  }
+
+  handleExport(format: ExportFormat): void {
+    if (format === 'excel') {
+      this.exportToExcel();
+    } else if (format === 'csv') {
+      this.exportToCSV();
+    }
+  }
+
+  private getExportData() {
+    return this.registryData.map((row) => ({
+      'N° Valorización': row.numeroValorizacion || '',
+      Periodo: row.periodo || '',
+      Equipo: row.equipo?.codigo_equipo || '',
+      Proveedor: row.contrato?.provider?.razon_social || '',
+      Contrato: row.contrato?.numero_contrato || '',
+      'Total Valorizado': row.totalValorizado || 0,
+      IGV: row.igvMonto || 0,
+      'Total con IGV': row.totalConIgv || 0,
+      Estado: row.estado || '',
+    }));
+  }
+
+  exportToExcel(): void {
+    if (this.registryData.length === 0) {
+      alert('No hay datos para exportar');
+      return;
+    }
+    this.excelService.exportToExcel(this.getExportData(), {
+      filename: 'registro-valorizaciones',
+      sheetName: 'Registro',
+    });
+  }
+
+  exportToCSV(): void {
+    if (this.registryData.length === 0) {
+      alert('No hay datos para exportar');
+      return;
+    }
+    this.excelService.exportToCSV(this.getExportData(), 'registro-valorizaciones');
+  }
+}

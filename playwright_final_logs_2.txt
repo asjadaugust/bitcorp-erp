@@ -1,0 +1,71 @@
+
+Running 1 test using 1 worker
+
+BROWSER-CONSOLE: Adding token to request: /api/notifications?_t=1771280421944
+BROWSER-CONSOLE: [vite] connecting...
+BROWSER-CONSOLE: Bitcorp ERP Application started
+BROWSER-CONSOLE: Service Worker initialized
+BROWSER-CONSOLE: Service Worker disabled for development
+BROWSER-CONSOLE: [vite] connected.
+BROWSER-CONSOLE: [PWA] Service worker registered: ServiceWorkerRegistration
+BROWSER-CONSOLE: [PWA] Sync manager initialized
+BROWSER-CONSOLE: Fetching user from API...
+BROWSER-CONSOLE: Adding token to request: /api/auth/me?_t=1771280422108
+BROWSER-CONSOLE: Returning existing user load observable
+BROWSER-CONSOLE: Returning existing user load observable
+BROWSER-CONSOLE: User API wrapped response: {success: true, data: Object}
+BROWSER-CONSOLE: User loaded successfully: {id: 1, username: admin, email: admin@bitcorp.pe, full_name: Administrador Sistema, nombres: Administrador}
+BROWSER-CONSOLE: Adding token to request: /api/notifications?_t=1771280422201
+BROWSER-CONSOLE: [DEBUG] ValuationService.getRegistry calling API...
+BROWSER-CONSOLE: Adding token to request: /api/valuations/registry?_t=1771280422217
+Step 2: Verifying summary stats...
+BROWSER-CONSOLE: [DEBUG] loadRegistry result: {data: Array(8), total: 8, summary: Object}
+BROWSER-CONSOLE: [DEBUG] loadRegistry result.data: [Object, Object, Object, Object, Object, Object, Object, Object]
+Step 3: Filtering by Feb 2026...
+BROWSER-CONSOLE: [DEBUG] ValuationService.getRegistry calling API...
+BROWSER-CONSOLE: Adding token to request: /api/valuations/registry?_t=1771280422351
+BROWSER-CONSOLE: [DEBUG] ValuationService.getRegistry calling API...
+BROWSER-CONSOLE: Adding token to request: /api/valuations/registry?_t=1771280422358
+BROWSER-CONSOLE: [DEBUG] loadRegistry result: {data: Array(4), total: 4, summary: Object}
+BROWSER-CONSOLE: [DEBUG] loadRegistry result.data: [Object, Object, Object, Object]
+BROWSER-CONSOLE: [DEBUG] loadRegistry result: {data: Array(2), total: 2, summary: Object}
+BROWSER-CONSOLE: [DEBUG] loadRegistry result.data: [Object, Object]
+Step 4: Verifying table row for CTR-VIVA-01...
+  ✘  1 [chromium] › tests/e2e/modules/valuations_registry.spec.ts:14:7 › Valuations Registry (WS-4) › should display approved valuations in the registry and verify summary stats (8.5s)
+
+
+  1) [chromium] › tests/e2e/modules/valuations_registry.spec.ts:14:7 › Valuations Registry (WS-4) › should display approved valuations in the registry and verify summary stats 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('.registry-table tbody tr').filter({ hasText: 'CTR-VIVA-01' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('.registry-table tbody tr').filter({ hasText: 'CTR-VIVA-01' })[22m
+
+
+      38 |     // We look for the contract we created in WS-1
+      39 |     const registryRow = page.locator('.registry-table tbody tr').filter({ hasText: 'CTR-VIVA-01' });
+    > 40 |     await expect(registryRow).toBeVisible();
+         |                               ^
+      41 |     // await expect(registryRow).toContainText('Aprobado'); // Might be Borrador/Pendiente depending on previous tests
+      42 |     // await expect(registryRow).toContainText('S/ 7,600.00'); // Total Valorizado
+      43 |     
+        at /Users/klm95441/Drive/projects/bitcorp-erp/tests/e2e/modules/valuations_registry.spec.ts:40:31
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/modules-valuations_registr-afd59-ry-and-verify-summary-stats-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/modules-valuations_registr-afd59-ry-and-verify-summary-stats-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/modules-valuations_registr-afd59-ry-and-verify-summary-stats-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/modules/valuations_registry.spec.ts:14:7 › Valuations Registry (WS-4) › should display approved valuations in the registry and verify summary stats 

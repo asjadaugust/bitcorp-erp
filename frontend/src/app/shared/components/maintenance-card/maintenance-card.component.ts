@@ -186,9 +186,17 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
         font-size: 13px;
         font-weight: 600;
         color: #072b45;
-        white-space: nowrap;
+
+        /* Multi-line truncation logic */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.2;
+        max-height: 2.4em;
       }
 
       .detail-value.highlight {

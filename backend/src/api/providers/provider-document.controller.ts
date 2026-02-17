@@ -199,4 +199,34 @@ export class ProviderDocumentController {
       );
     }
   }
+  /**
+   * POST /api/providers/documents/upload
+   * Upload provider document file
+   */
+  async uploadDocument(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        sendError(res, 400, 'NO_FILE_UPLOADED', 'No se ha subido ningún archivo');
+        return;
+      }
+
+      const fileUrl = `/uploads/providers/${req.file.filename}`;
+
+      sendSuccess(res, {
+        url: fileUrl,
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      });
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'PROVIDER_DOCUMENT_UPLOAD_FAILED',
+        'Error al subir el archivo',
+        error.message
+      );
+    }
+  }
 }

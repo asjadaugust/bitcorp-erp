@@ -110,11 +110,13 @@ export class ProviderService {
     const payload: any = {};
     if (provider.ruc !== undefined) payload.ruc = provider.ruc;
     if (provider.razon_social !== undefined) payload.razon_social = provider.razon_social;
-    if (provider.nombre_comercial !== undefined) payload.nombre_comercial = provider.nombre_comercial;
+    if (provider.nombre_comercial !== undefined)
+      payload.nombre_comercial = provider.nombre_comercial;
     if (provider.tipo_proveedor !== undefined) payload.tipo_proveedor = provider.tipo_proveedor;
     if (provider.direccion !== undefined) payload.direccion = provider.direccion;
     if (provider.telefono !== undefined) payload.telefono = provider.telefono;
-    if (provider.correo_electronico !== undefined) payload.correo_electronico = provider.correo_electronico;
+    if (provider.correo_electronico !== undefined)
+      payload.correo_electronico = provider.correo_electronico;
     if (provider.is_active !== undefined) payload.is_active = provider.is_active;
 
     return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
@@ -131,36 +133,59 @@ export class ProviderService {
   }
 
   getAuditLogs(id: number | string): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/${id}/logs`).pipe(
-      map((response) => response.data || response)
-    );
+    return this.http
+      .get<any>(`${this.apiUrl}/${id}/logs`)
+      .pipe(map((response) => response.data || response));
   }
 
   lookupRuc(ruc: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/ruc/${ruc}/lookup`).pipe(
-      map((response) => response.data || response)
-    );
+    return this.http
+      .get<any>(`${this.apiUrl}/ruc/${ruc}/lookup`)
+      .pipe(map((response) => response.data || response));
   }
 
   getDocuments(providerId: number | string): Observable<ProviderDocument[]> {
-    return this.http.get<any>(`${this.apiUrl}/${providerId}/documents`).pipe(
-      map((response) => response.data || response)
-    );
+    return this.http
+      .get<any>(`${this.apiUrl}/${providerId}/documents`)
+      .pipe(map((response) => response.data || response));
   }
 
-  createDocument(providerId: number | string, document: Partial<ProviderDocument>): Observable<ProviderDocument> {
-    return this.http.post<any>(`${this.apiUrl}/${providerId}/documents`, document).pipe(
-      map((response) => response.data || response)
-    );
+  createDocument(
+    providerId: number | string,
+    document: Partial<ProviderDocument>
+  ): Observable<ProviderDocument> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${providerId}/documents`, document)
+      .pipe(map((response) => response.data || response));
   }
 
-  updateDocument(id: number | string, document: Partial<ProviderDocument>): Observable<ProviderDocument> {
-    return this.http.put<any>(`${this.apiUrl}/documents/${id}`, document).pipe(
-      map((response) => response.data || response)
-    );
+  updateDocument(
+    id: number | string,
+    document: Partial<ProviderDocument>
+  ): Observable<ProviderDocument> {
+    return this.http
+      .put<any>(`${this.apiUrl}/documents/${id}`, document)
+      .pipe(map((response) => response.data || response));
   }
 
   deleteDocument(id: number | string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/documents/${id}`);
+  }
+
+  uploadDocumentFile(
+    file: File
+  ): Observable<{
+    url: string;
+    filename: string;
+    originalname: string;
+    mimetype: string;
+    size: number;
+  }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http
+      .post<any>(`${this.apiUrl}/documents/upload`, formData)
+      .pipe(map((response) => response.data || response));
   }
 }

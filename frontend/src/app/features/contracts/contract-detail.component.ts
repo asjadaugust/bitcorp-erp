@@ -125,6 +125,106 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                 </div>
               </section>
 
+              <section
+                class="detail-section"
+                *ngIf="contract.documento_acredita || contract.jurisdiccion || contract.plazo_texto"
+              >
+                <h2>Propiedad y Jurisdicción</h2>
+                <div class="info-grid">
+                  <div class="info-item" *ngIf="contract.documento_acredita">
+                    <label>Documento que Acredita</label>
+                    <p>{{ contract.documento_acredita }}</p>
+                  </div>
+                  <div class="info-item" *ngIf="contract.fecha_acreditada">
+                    <label>Fecha Acreditada</label>
+                    <p>{{ contract.fecha_acreditada | date: 'dd/MM/yyyy' }}</p>
+                  </div>
+                  <div class="info-item" *ngIf="contract.jurisdiccion">
+                    <label>Jurisdicción</label>
+                    <p>{{ contract.jurisdiccion }}</p>
+                  </div>
+                  <div class="info-item" *ngIf="contract.plazo_texto">
+                    <label>Plazo</label>
+                    <p>{{ contract.plazo_texto }}</p>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                class="detail-section termination-section"
+                *ngIf="contract.estado === 'CANCELADO'"
+              >
+                <h2>Resolución del Contrato</h2>
+                <div class="info-grid">
+                  <div class="info-item" *ngIf="contract.motivo_resolucion">
+                    <label>Motivo de Resolución</label>
+                    <p>{{ contract.motivo_resolucion }}</p>
+                  </div>
+                  <div class="info-item" *ngIf="contract.fecha_resolucion">
+                    <label>Fecha de Resolución</label>
+                    <p>{{ contract.fecha_resolucion | date: 'dd/MM/yyyy' }}</p>
+                  </div>
+                  <div class="info-item" *ngIf="contract.monto_liquidacion">
+                    <label>Monto de Liquidación</label>
+                    <p class="highlight">
+                      {{ contract.moneda === 'PEN' ? 'S/ ' : '$ ' }}{{ contract.monto_liquidacion }}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="detail-section" *ngIf="annexA.length > 0">
+                <h2>ANEXO A — Inclusiones de Tarifa</h2>
+                <table class="annex-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Concepto</th>
+                      <th>Incluido</th>
+                      <th>Observaciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of annexA; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{ item.concepto }}</td>
+                      <td>
+                        <span [class]="item.incluido ? 'badge-yes' : 'badge-no'">
+                          {{ item.incluido ? 'Sí' : 'No' }}
+                        </span>
+                      </td>
+                      <td>{{ item.observaciones || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+
+              <section class="detail-section" *ngIf="annexB.length > 0">
+                <h2>ANEXO B — Condiciones de Valorización</h2>
+                <table class="annex-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Concepto</th>
+                      <th>Incluido</th>
+                      <th>Observaciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of annexB; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{ item.concepto }}</td>
+                      <td>
+                        <span [class]="item.incluido ? 'badge-yes' : 'badge-no'">
+                          {{ item.incluido ? 'Sí' : 'No' }}
+                        </span>
+                      </td>
+                      <td>{{ item.observaciones || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+
               <section class="detail-section" *ngIf="contract.condiciones_especiales">
                 <h2>Condiciones Especiales</h2>
                 <p style="white-space: pre-wrap;">{{ contract.condiciones_especiales }}</p>
@@ -142,6 +242,23 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                 <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
                   <i class="fa-solid fa-file-pdf"></i> Descargar PDF
                 </button>
+              </div>
+            </div>
+
+            <div class="card" *ngIf="requiredDocs.length > 0">
+              <h3>Documentos Requeridos</h3>
+              <div class="required-docs-list">
+                <div class="req-doc-item" *ngFor="let doc of requiredDocs">
+                  <div class="req-doc-header">
+                    <span class="req-doc-type">{{ translateDocType(doc.tipo_documento) }}</span>
+                    <span [class]="'req-doc-badge req-doc-' + doc.estado.toLowerCase()">
+                      {{ doc.estado }}
+                    </span>
+                  </div>
+                  <div class="req-doc-meta" *ngIf="doc.fecha_vencimiento">
+                    Vence: {{ doc.fecha_vencimiento | date: 'dd/MM/yyyy' }}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -407,6 +524,14 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
         border-radius: 50%;
       }
 
+      .status-draft {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .status-draft::before {
+        background: var(--semantic-yellow-500);
+      }
+
       .status-active {
         background: var(--semantic-green-50);
         color: var(--semantic-green-700);
@@ -415,20 +540,12 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
         background: var(--semantic-green-500);
       }
 
-      .status-completed {
+      .status-expired {
         background: var(--semantic-blue-50);
         color: var(--semantic-blue-700);
       }
-      .status-completed::before {
+      .status-expired::before {
         background: var(--semantic-blue-500);
-      }
-
-      .status-pending {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-pending::before {
-        background: var(--semantic-yellow-500);
       }
 
       .status-cancelled {
@@ -519,6 +636,105 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
         color: #f59e0b;
         font-weight: 600;
       }
+
+      .termination-section {
+        background: var(--semantic-red-50, #fef2f2);
+        border: 1px solid var(--semantic-red-200, #fecaca);
+        border-radius: 8px;
+        padding: var(--s-16);
+      }
+
+      /* Annex Tables */
+      .annex-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+
+        th,
+        td {
+          padding: 8px 12px;
+          text-align: left;
+          border-bottom: 1px solid var(--grey-200);
+        }
+
+        th {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--grey-500);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      .badge-yes {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .badge-no {
+        background: var(--grey-100);
+        color: var(--grey-600);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      /* Required Documents */
+      .required-docs-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-8);
+      }
+
+      .req-doc-item {
+        padding: var(--s-8);
+        border: 1px solid var(--grey-200);
+        border-radius: 6px;
+      }
+
+      .req-doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .req-doc-type {
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .req-doc-badge {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+
+      .req-doc-pendiente {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+
+      .req-doc-cumplido {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+
+      .req-doc-vencido {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+
+      .req-doc-meta {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-top: 4px;
+      }
     `,
   ],
 })
@@ -531,6 +747,9 @@ export class ContractDetailComponent implements OnInit {
   contract: Contract | null = null;
   loading = true;
   showDeleteModal = false;
+  annexA: any[] = [];
+  annexB: any[] = [];
+  requiredDocs: any[] = [];
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
@@ -543,11 +762,39 @@ export class ContractDetailComponent implements OnInit {
       next: (data) => {
         this.contract = data;
         this.loading = false;
+        this.loadAnnexes(id);
+        this.loadRequiredDocs(id);
       },
       error: () => {
         this.loading = false;
       },
     });
+  }
+
+  loadAnnexes(id: string): void {
+    this.contractService.getAnnexes(id, 'A').subscribe({
+      next: (items) => (this.annexA = items),
+    });
+    this.contractService.getAnnexes(id, 'B').subscribe({
+      next: (items) => (this.annexB = items),
+    });
+  }
+
+  loadRequiredDocs(id: string): void {
+    this.contractService.getRequiredDocuments(id).subscribe({
+      next: (docs) => (this.requiredDocs = docs),
+    });
+  }
+
+  translateDocType(tipo: string): string {
+    const map: Record<string, string> = {
+      POLIZA_TREC: 'Póliza TREC',
+      SOAT: 'SOAT',
+      INSPECCION_TECNICA: 'Inspección Técnica',
+      TARJETA_PROPIEDAD: 'Tarjeta de Propiedad',
+      LICENCIA_CONDUCIR: 'Licencia de Conducir',
+    };
+    return map[tipo] || tipo;
   }
 
   editContract(): void {
@@ -636,19 +883,19 @@ export class ContractDetailComponent implements OnInit {
 
   getStatusClass(estado: string): string {
     const statusMap: { [key: string]: string } = {
+      BORRADOR: 'draft',
       ACTIVO: 'active',
-      COMPLETADO: 'completed',
-      PENDIENTE: 'pending',
+      VENCIDO: 'expired',
       CANCELADO: 'cancelled',
     };
-    return statusMap[estado] || 'pending';
+    return statusMap[estado] || 'draft';
   }
 
   getStatusLabel(estado: string): string {
     const labelMap: { [key: string]: string } = {
+      BORRADOR: 'Borrador',
       ACTIVO: 'Activo',
-      COMPLETADO: 'Completado',
-      PENDIENTE: 'Pendiente',
+      VENCIDO: 'Vencido',
       CANCELADO: 'Cancelado',
     };
     return labelMap[estado] || estado;

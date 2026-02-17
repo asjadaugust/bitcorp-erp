@@ -106,7 +106,7 @@ interface NavItem {
         &::-webkit-scrollbar-thumb {
           background: var(--grey-300);
           border-radius: 10px;
-          
+
           &:hover {
             background: var(--grey-400);
           }
@@ -291,6 +291,12 @@ export class SidebarComponent {
   // Settings items (bottom of sidebar)
   settingsNavItems: NavItem[] = [
     {
+      label: 'Usuarios',
+      route: '/users',
+      icon: 'fa-solid fa-user-lock',
+      roles: ['ADMIN'],
+    },
+    {
       label: 'Configuración',
       route: '/settings',
       icon: 'fa-solid fa-gear',
@@ -302,15 +308,15 @@ export class SidebarComponent {
     if (!item.roles) return true;
     const userRole = this.authService.getCurrentUserRole();
     if (!userRole) return false;
-    // Case-insensitive comparison for backward compatibility
-    return item.roles.some((role) => role.toLowerCase() === userRole.toLowerCase());
+    // Case-insensitive comparison and trim to handle potential whitespace
+    return item.roles.some((role) => role.trim().toUpperCase() === userRole.trim().toUpperCase());
   }
 
   toggleCollapse() {
     this.collapsed = !this.collapsed;
     this.collapsedChange.emit(this.collapsed);
 
-    // Dispatch event to notify layout (legacy support if needed, but we are moving to Input/Output)
+    // Dispatch event to notify layout
     window.dispatchEvent(
       new CustomEvent('sidebar-toggle', { detail: { collapsed: this.collapsed } })
     );

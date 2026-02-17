@@ -13,8 +13,10 @@ import { Contract } from './contract.model';
 import { Equipment } from './equipment.model';
 
 export type EstadoValorizacion =
+  | 'BORRADOR'
   | 'PENDIENTE'
   | 'EN_REVISION'
+  | 'VALIDADO'
   | 'APROBADO'
   | 'RECHAZADO'
   | 'PAGADO'
@@ -74,6 +76,24 @@ export class Valorizacion {
   @Column({ name: 'cargos_adicionales', type: 'decimal', precision: 15, scale: 2, nullable: true })
   cargosAdicionales?: number;
 
+  @Column({ name: 'importe_manipuleo', type: 'decimal', precision: 15, scale: 2, default: 0.0 })
+  importeManipuleo?: number;
+
+  @Column({ name: 'importe_gasto_obra', type: 'decimal', precision: 15, scale: 2, default: 0.0 })
+  importeGastoObra?: number;
+
+  @Column({ name: 'importe_adelanto', type: 'decimal', precision: 15, scale: 2, default: 0.0 })
+  importeAdelanto?: number;
+
+  @Column({
+    name: 'importe_exceso_combustible',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    default: 0.0,
+  })
+  importeExcesoCombustible?: number;
+
   @Column({ name: 'total_valorizado', type: 'decimal', precision: 15, scale: 2, nullable: true })
   totalValorizado?: number;
 
@@ -99,7 +119,7 @@ export class Valorizacion {
   @Column({ name: 'total_con_igv', type: 'decimal', precision: 15, scale: 2, default: 0.0 })
   totalConIgv?: number;
 
-  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'PENDIENTE' })
+  @Column({ name: 'estado', type: 'varchar', length: 50, default: 'BORRADOR' })
   @Index('idx_valorizacion_equipo_estado')
   estado!: EstadoValorizacion;
 
@@ -115,6 +135,21 @@ export class Valorizacion {
   @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
   aprobadoEn?: Date;
 
+  @Column({ name: 'validado_por', type: 'integer', nullable: true })
+  validadoPor?: number;
+
+  @Column({ name: 'validado_en', type: 'timestamp', nullable: true })
+  validadoEn?: Date;
+
+  @Column({ name: 'conformidad_proveedor', type: 'boolean', default: false })
+  conformidadProveedor!: boolean;
+
+  @Column({ name: 'conformidad_fecha', type: 'timestamp', nullable: true })
+  conformidadFecha?: Date;
+
+  @Column({ name: 'conformidad_observaciones', type: 'text', nullable: true })
+  conformidadObservaciones?: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
@@ -129,6 +164,10 @@ export class Valorizacion {
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'aprobado_por' })
   approver?: User;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'validado_por' })
+  validator?: User;
 
   @ManyToOne(() => Contract, { nullable: true })
   @JoinColumn({ name: 'contrato_id' })

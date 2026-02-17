@@ -62,6 +62,9 @@ import { Company, UserProject } from '../models/company-entity.model';
 import { PaymentRecord } from '../models/payment-record.model';
 import { ProviderAuditLog } from '../models/provider-audit-log.model';
 import { ProviderDocument } from '../models/provider-document.model';
+import { ContractAnnex } from '../models/contract-annex.model';
+import { ContractRequiredDocument } from '../models/contract-required-document.model';
+import { ValuationPaymentDocument } from '../models/valuation-payment-document.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -133,6 +136,9 @@ export const AppDataSource = new DataSource({
     PaymentRecord,
     ProviderAuditLog,
     ProviderDocument,
+    ContractAnnex,
+    ContractRequiredDocument,
+    ValuationPaymentDocument,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

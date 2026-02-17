@@ -52,6 +52,13 @@ export class ContractService {
       costo_adicional_motor: backendData.costo_adicional_motor,
       horas_incluidas: backendData.horas_incluidas,
       penalidad_exceso: backendData.penalidad_exceso,
+      documento_acredita: backendData.documento_acredita,
+      fecha_acreditada: backendData.fecha_acreditada,
+      jurisdiccion: backendData.jurisdiccion,
+      plazo_texto: backendData.plazo_texto,
+      motivo_resolucion: backendData.motivo_resolucion,
+      fecha_resolucion: backendData.fecha_resolucion,
+      monto_liquidacion: backendData.monto_liquidacion,
       condiciones_especiales: backendData.condiciones_especiales,
       documento_url: backendData.documento_url,
       estado: backendData.estado,
@@ -205,5 +212,55 @@ export class ContractService {
 
   downloadPdf(contractId: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${contractId}/pdf`, { responseType: 'blob' });
+  }
+
+  // ─── Annex methods (WS-3) ───
+
+  getAnnexes(contractId: string, tipo?: 'A' | 'B'): Observable<any[]> {
+    let params = new HttpParams();
+    if (tipo) params = params.set('tipo', tipo);
+    return this.http.get<any>(`${this.apiUrl}/${contractId}/annexes`, { params }).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  saveAnnexes(contractId: string, tipo: 'A' | 'B', items: any[]): Observable<any[]> {
+    return this.http.put<any>(`${this.apiUrl}/${contractId}/annexes/${tipo}`, { items }).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  // ─── Required Document methods (WS-4) ───
+
+  getRequiredDocuments(contractId: string): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/${contractId}/required-documents`).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  initializeRequiredDocuments(contractId: string): Observable<any[]> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${contractId}/required-documents/initialize`, {})
+      .pipe(
+        map((response) => {
+          const data = response?.data || response;
+          return Array.isArray(data) ? data : [];
+        })
+      );
+  }
+
+  updateRequiredDocument(docId: number, data: any): Observable<any> {
+    return this.http
+      .put<any>(`${this.apiUrl}/required-documents/${docId}`, data)
+      .pipe(map((response) => response?.data || response));
   }
 }

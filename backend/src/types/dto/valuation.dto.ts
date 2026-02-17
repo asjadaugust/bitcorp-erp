@@ -35,6 +35,10 @@ export interface ValuationDto {
   costo_base?: number | null;
   costo_combustible?: number | null;
   cargos_adicionales?: number | null;
+  importe_manipuleo?: number | null;
+  importe_gasto_obra?: number | null;
+  importe_adelanto?: number | null;
+  importe_exceso_combustible?: number | null;
   total_valorizado?: number | null;
   numero_valorizacion?: string | null;
   tipo_cambio?: number | null;
@@ -43,11 +47,16 @@ export interface ValuationDto {
   igv_porcentaje?: number | null;
   igv_monto?: number | null;
   total_con_igv?: number | null;
-  estado: string; // PENDIENTE, APROBADO, RECHAZADO, PAGADO
+  estado: string; // BORRADOR, PENDIENTE, EN_REVISION, VALIDADO, APROBADO, RECHAZADO, PAGADO
   observaciones?: string | null;
   creado_por?: number | null;
   aprobado_por?: number | null;
   aprobado_en?: string | null; // ISO datetime string
+  validado_por?: number | null;
+  validado_en?: string | null; // ISO datetime string
+  conformidad_proveedor?: boolean;
+  conformidad_fecha?: string | null; // ISO datetime string
+  conformidad_observaciones?: string | null;
   created_at: string; // ISO datetime string
   updated_at: string; // ISO datetime string
 
@@ -62,15 +71,27 @@ export interface ValuationDto {
     username: string;
     full_name: string;
   };
+  validator?: {
+    id: number;
+    username: string;
+    full_name: string;
+  };
   contrato?: {
     id: number;
     codigo: string;
     nombre_proyecto?: string;
+    provider?: {
+      id: number;
+      ruc: string;
+      razon_social: string;
+    };
   };
   equipo?: {
     id: number;
     codigo: string;
     nombre?: string;
+    marca?: string;
+    modelo?: string;
   };
 }
 
@@ -119,6 +140,16 @@ export function toValuationDto(entity: Valorizacion): ValuationDto {
     cargos_adicionales: entity.cargosAdicionales
       ? parseFloat(entity.cargosAdicionales.toString())
       : null,
+    importe_manipuleo: entity.importeManipuleo
+      ? parseFloat(entity.importeManipuleo.toString())
+      : null,
+    importe_gasto_obra: entity.importeGastoObra
+      ? parseFloat(entity.importeGastoObra.toString())
+      : null,
+    importe_adelanto: entity.importeAdelanto ? parseFloat(entity.importeAdelanto.toString()) : null,
+    importe_exceso_combustible: entity.importeExcesoCombustible
+      ? parseFloat(entity.importeExcesoCombustible.toString())
+      : null,
     total_valorizado: entity.totalValorizado ? parseFloat(entity.totalValorizado.toString()) : null,
     numero_valorizacion: entity.numeroValorizacion || null,
     tipo_cambio: entity.tipoCambio ? parseFloat(entity.tipoCambio.toString()) : null,
@@ -134,24 +165,45 @@ export function toValuationDto(entity: Valorizacion): ValuationDto {
     creado_por: entity.creadoPor || null,
     aprobado_por: entity.aprobadoPor || null,
     aprobado_en: toDateTimeString(entity.aprobadoEn),
+    validado_por: entity.validadoPor || null,
+    validado_en: toDateTimeString(entity.validadoEn),
+    conformidad_proveedor: entity.conformidadProveedor || false,
+    conformidad_fecha: toDateTimeString(entity.conformidadFecha),
+    conformidad_observaciones: entity.conformidadObservaciones || null,
     created_at: toDateTimeString(entity.createdAt) || '',
     updated_at: toDateTimeString(entity.updatedAt) || '',
 
     // Include relations if loaded
     creator: entity.creator,
     approver: entity.approver,
-    contrato: entity.contrato ? {
-      id: entity.contrato.id,
-      codigo: entity.contrato.numeroContrato,
-      nombre_proyecto: undefined, // Contract model doesn't have project name
-    } : undefined,
-    equipo: entity.equipo ? {
-      id: entity.equipo.id,
-      codigo: entity.equipo.codigoEquipo,
-      nombre: entity.equipo.marca && entity.equipo.modelo 
-        ? `${entity.equipo.marca} ${entity.equipo.modelo}` 
-        : entity.equipo.codigoEquipo,
-    } : undefined,
+    validator: entity.validator,
+    contrato: entity.contrato
+      ? {
+          id: entity.contrato.id,
+          codigo: entity.contrato.numeroContrato,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          nombre_proyecto: (entity.contrato as any).nombre_proyecto,
+          provider: entity.contrato.provider
+            ? {
+                id: entity.contrato.provider.id,
+                ruc: entity.contrato.provider.ruc,
+                razon_social: entity.contrato.provider.razonSocial,
+              }
+            : undefined,
+        }
+      : undefined,
+    equipo: entity.equipo
+      ? {
+          id: entity.equipo.id,
+          codigo: entity.equipo.codigoEquipo,
+          nombre:
+            entity.equipo.marca && entity.equipo.modelo
+              ? `${entity.equipo.marca} ${entity.equipo.modelo}`
+              : entity.equipo.codigoEquipo,
+          marca: entity.equipo.marca,
+          modelo: entity.equipo.modelo,
+        }
+      : undefined,
   };
 }
 
@@ -180,6 +232,14 @@ export function fromValuationDto(dto: Partial<ValuationDto>): Partial<Valorizaci
     entity.costoCombustible = dto.costo_combustible || undefined;
   if (dto.cargos_adicionales !== undefined)
     entity.cargosAdicionales = dto.cargos_adicionales || undefined;
+  if (dto.importe_manipuleo !== undefined)
+    entity.importeManipuleo = dto.importe_manipuleo || undefined;
+  if (dto.importe_gasto_obra !== undefined)
+    entity.importeGastoObra = dto.importe_gasto_obra || undefined;
+  if (dto.importe_adelanto !== undefined)
+    entity.importeAdelanto = dto.importe_adelanto || undefined;
+  if (dto.importe_exceso_combustible !== undefined)
+    entity.importeExcesoCombustible = dto.importe_exceso_combustible || undefined;
   if (dto.total_valorizado !== undefined)
     entity.totalValorizado = dto.total_valorizado || undefined;
   if (dto.numero_valorizacion !== undefined)
@@ -259,6 +319,22 @@ export class ValuationCreateDto {
   cargos_adicionales?: number;
 
   @IsOptional()
+  @IsNumber({}, { message: 'El importe por manipuleo debe ser un número' })
+  importe_manipuleo?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El importe por gasto en obra debe ser un número' })
+  importe_gasto_obra?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El importe por adelanto debe ser un número' })
+  importe_adelanto?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El importe por exceso de combustible debe ser un número' })
+  importe_exceso_combustible?: number;
+
+  @IsOptional()
   @IsNumber({}, { message: 'El total valorizado debe ser un número' })
   @Min(0, { message: 'El total valorizado no puede ser negativo' })
   total_valorizado?: number;
@@ -297,8 +373,9 @@ export class ValuationCreateDto {
   total_con_igv?: number;
 
   @IsOptional()
-  @IsIn(['PENDIENTE', 'EN_REVISION', 'APROBADO', 'RECHAZADO', 'PAGADO'], {
-    message: 'El estado debe ser PENDIENTE, EN_REVISION, APROBADO, RECHAZADO o PAGADO',
+  @IsIn(['BORRADOR', 'PENDIENTE', 'EN_REVISION', 'VALIDADO', 'APROBADO', 'RECHAZADO', 'PAGADO'], {
+    message:
+      'El estado debe ser BORRADOR, PENDIENTE, EN_REVISION, VALIDADO, APROBADO, RECHAZADO o PAGADO',
   })
   estado?: string;
 
@@ -365,6 +442,22 @@ export class ValuationUpdateDto {
   cargos_adicionales?: number;
 
   @IsOptional()
+  @IsNumber({}, { message: 'El importe por manipuleo debe ser un número' })
+  importe_manipuleo?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El importe por gasto en obra debe ser un número' })
+  importe_gasto_obra?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El importe por adelanto debe ser un número' })
+  importe_adelanto?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'El importe por exceso de combustible debe ser un número' })
+  importe_exceso_combustible?: number;
+
+  @IsOptional()
   @IsNumber({}, { message: 'El total valorizado debe ser un número' })
   @Min(0, { message: 'El total valorizado no puede ser negativo' })
   total_valorizado?: number;
@@ -403,9 +496,22 @@ export class ValuationUpdateDto {
   total_con_igv?: number;
 
   @IsOptional()
-  @IsIn(['PENDIENTE', 'EN_REVISION', 'APROBADO', 'RECHAZADO', 'PAGADO', 'ELIMINADO'], {
-    message: 'El estado debe ser PENDIENTE, EN_REVISION, APROBADO, RECHAZADO, PAGADO o ELIMINADO',
-  })
+  @IsIn(
+    [
+      'BORRADOR',
+      'PENDIENTE',
+      'EN_REVISION',
+      'VALIDADO',
+      'APROBADO',
+      'RECHAZADO',
+      'PAGADO',
+      'ELIMINADO',
+    ],
+    {
+      message:
+        'El estado debe ser BORRADOR, PENDIENTE, EN_REVISION, VALIDADO, APROBADO, RECHAZADO, PAGADO o ELIMINADO',
+    }
+  )
   estado?: string;
 
   @IsOptional()

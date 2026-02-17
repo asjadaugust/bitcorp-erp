@@ -5,6 +5,7 @@ import { Contract } from '../models/contract.model';
 import { ExcessFuel } from '../models/excess-fuel.model';
 import { WorkExpense } from '../models/work-expense.model';
 import { AdvanceAmortization } from '../models/advance-amortization.model';
+import { ValuationPaymentDocument } from '../models/valuation-payment-document.model';
 import { Repository } from 'typeorm';
 import { valuationEmailNotifier } from './valuation-email-notifier';
 import {
@@ -25,7 +26,13 @@ import {
   ValuationPage6Dto,
   ValuationPage7Dto,
 } from '../types/dto/valuation-pdf.dto';
-import { toValuationDto, fromValuationDto, ValuationDto } from '../types/dto/valuation.dto';
+import {
+  toValuationDto,
+  fromValuationDto,
+  ValuationDto,
+  ValuationCreateDto,
+  ValuationUpdateDto,
+} from '../types/dto/valuation.dto';
 import Logger from '../utils/logger';
 import {
   NotFoundError,
@@ -141,6 +148,7 @@ export class ValuationService {
         .leftJoinAndSelect('v.creator', 'creator')
         .leftJoinAndSelect('v.approver', 'approver')
         .leftJoinAndSelect('v.contrato', 'contrato')
+        .leftJoinAndSelect('contrato.provider', 'provider')
         .leftJoinAndSelect('v.equipo', 'equipo');
 
       if (filters?.estado) {
@@ -156,9 +164,12 @@ export class ValuationService {
       }
 
       if (filters?.search) {
-        queryBuilder.andWhere('(v.periodo ILIKE :search OR v.observaciones ILIKE :search)', {
-          search: `%${filters.search}%`,
-        });
+        queryBuilder.andWhere(
+          '(v.periodo ILIKE :search OR v.observaciones ILIKE :search OR contrato.numeroContrato ILIKE :search OR equipo.codigoEquipo ILIKE :search)',
+          {
+            search: `%${filters.search}%`,
+          }
+        );
       }
 
       queryBuilder.orderBy(sortBy, sortOrder);
@@ -339,9 +350,14 @@ export class ValuationService {
         costoBase: valuationData.costo_base || data.costoBase,
         costoCombustible: valuationData.costo_combustible || data.costoCombustible,
         cargosAdicionales: valuationData.cargos_adicionales || data.cargosAdicionales,
+        importeManipuleo: valuationData.importe_manipuleo || (data as any).importeManipuleo,
+        importeGastoObra: valuationData.importe_gasto_obra || (data as any).importeGastoObra,
+        importeAdelanto: valuationData.importe_adelanto || (data as any).importeAdelanto,
+        importeExcesoCombustible:
+          valuationData.importe_exceso_combustible || (data as any).importeExcesoCombustible,
         totalValorizado: valuationData.total_valorizado || data.totalValorizado,
         numeroValorizacion: valuationData.numero_valorizacion || data.numeroValorizacion,
-        estado: data.estado || 'PENDIENTE',
+        estado: data.estado || 'BORRADOR',
         creadoPor: userId,
       });
 
@@ -415,18 +431,18 @@ export class ValuationService {
         throw new NotFoundError('Valuation', id);
       }
 
-      // Business rule: Prevent modification of terminal states
-      const terminalStates = ['PAGADO', 'RECHAZADO', 'ELIMINADO'];
+      // Business rule: Prevent modification of terminal/locked states
+      const terminalStates = ['PAGADO', 'ELIMINADO', 'APROBADO', 'VALIDADO'];
       if (terminalStates.includes(valorizacion.estado)) {
         throw new BusinessRuleError(
-          `Cannot modify valuation in terminal state ${valorizacion.estado}`,
+          `Cannot modify valuation in state ${valorizacion.estado}`,
           'VALUATION_TERMINAL_STATE',
           {
             valuation_id: id,
             current_estado: valorizacion.estado,
             attempted_action: 'update',
           },
-          'Terminal states (PAGADO, RECHAZADO, ELIMINADO) cannot be modified'
+          'Locked states (PAGADO, ELIMINADO, APROBADO, VALIDADO) cannot be directly modified'
         );
       }
 
@@ -437,14 +453,11 @@ export class ValuationService {
           where: { numeroValorizacion: numVal },
         });
         if (existing) {
-          throw new ConflictError(
-            `Valuation with numero '${numVal}' already exists`,
-            {
-              field: 'numero_valorizacion',
-              value: numVal,
-              existing_id: existing.id,
-            }
-          );
+          throw new ConflictError(`Valuation with numero '${numVal}' already exists`, {
+            field: 'numero_valorizacion',
+            value: numVal,
+            existing_id: existing.id,
+          });
         }
       }
 
@@ -485,6 +498,13 @@ export class ValuationService {
       mergeIfDefined('estado', ['estado']);
       mergeIfDefined('observaciones', ['observaciones']);
       mergeIfDefined('cargosAdicionales', ['cargosAdicionales', 'cargos_adicionales']);
+      mergeIfDefined('importeManipuleo', ['importeManipuleo', 'importe_manipuleo']);
+      mergeIfDefined('importeGastoObra', ['importeGastoObra', 'importe_gasto_obra']);
+      mergeIfDefined('importeAdelanto', ['importeAdelanto', 'importe_adelanto']);
+      mergeIfDefined('importeExcesoCombustible', [
+        'importeExcesoCombustible',
+        'importe_exceso_combustible',
+      ]);
       mergeIfDefined('costoBase', ['costoBase', 'costo_base']);
       mergeIfDefined('costoCombustible', ['costoCombustible', 'costo_combustible']);
       mergeIfDefined('tipoCambio', ['tipoCambio', 'tipo_cambio']);
@@ -616,6 +636,157 @@ export class ValuationService {
    * console.log(`Approved by user ${approved.approved_by} at ${approved.approved_at}`);
    * ```
    */
+  /**
+   * Submit a draft valuation to PENDIENTE state.
+   * State transition: BORRADOR → PENDIENTE
+   */
+  async submitDraft(id: number, userId: number): Promise<ValuationDto> {
+    try {
+      const valorizacion = await this.repository.findOne({ where: { id } });
+      if (!valorizacion) {
+        throw new NotFoundError('Valuation', id);
+      }
+
+      if (valorizacion.estado !== 'BORRADOR') {
+        throw new BusinessRuleError(
+          `Cannot submit draft in state ${valorizacion.estado}. Must be BORRADOR.`,
+          'STATE_TRANSITION_INVALID',
+          {
+            valuation_id: id,
+            current_estado: valorizacion.estado,
+            required_estado: 'BORRADOR',
+          },
+          'Valuation must be in BORRADOR state to submit'
+        );
+      }
+
+      valorizacion.estado = 'PENDIENTE';
+      valorizacion.updatedAt = new Date();
+
+      const updated = await this.repository.save(valorizacion);
+
+      logger.info('Valuation draft submitted', {
+        valuation_id: id,
+        submitted_by: userId,
+        new_estado: updated.estado,
+      });
+
+      return toValuationDto(updated);
+    } catch (error) {
+      if (error instanceof NotFoundError || error instanceof BusinessRuleError) {
+        throw error;
+      }
+      throw new DatabaseError(
+        'Failed to submit draft',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined,
+        { valuation_id: id, user_id: userId }
+      );
+    }
+  }
+
+  /**
+   * Validate a valuation (Control Oficina Central step).
+   * State transition: EN_REVISION → VALIDADO
+   */
+  async validate(id: number, userId: number): Promise<ValuationDto> {
+    try {
+      const valorizacion = await this.repository.findOne({ where: { id } });
+      if (!valorizacion) {
+        throw new NotFoundError('Valuation', id);
+      }
+
+      if (valorizacion.estado !== 'EN_REVISION') {
+        throw new BusinessRuleError(
+          `Cannot validate valuation in state ${valorizacion.estado}. Must be EN_REVISION.`,
+          'STATE_TRANSITION_INVALID',
+          {
+            valuation_id: id,
+            current_estado: valorizacion.estado,
+            required_estado: 'EN_REVISION',
+          },
+          'Valuation must be in EN_REVISION state to be validated'
+        );
+      }
+
+      valorizacion.estado = 'VALIDADO';
+      valorizacion.validadoPor = userId;
+      valorizacion.validadoEn = new Date();
+
+      const updated = await this.repository.save(valorizacion);
+
+      logger.info('Valuation validated', {
+        valuation_id: id,
+        validated_by: userId,
+        new_estado: updated.estado,
+      });
+
+      return toValuationDto(updated);
+    } catch (error) {
+      if (error instanceof NotFoundError || error instanceof BusinessRuleError) {
+        throw error;
+      }
+      throw new DatabaseError(
+        'Failed to validate valuation',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined,
+        { valuation_id: id, user_id: userId }
+      );
+    }
+  }
+
+  /**
+   * Reopen a rejected valuation for rework.
+   * State transition: RECHAZADO → BORRADOR
+   */
+  async reopen(id: number, userId: number): Promise<ValuationDto> {
+    try {
+      const valorizacion = await this.repository.findOne({ where: { id } });
+      if (!valorizacion) {
+        throw new NotFoundError('Valuation', id);
+      }
+
+      if (valorizacion.estado !== 'RECHAZADO') {
+        throw new BusinessRuleError(
+          `Cannot reopen valuation in state ${valorizacion.estado}. Must be RECHAZADO.`,
+          'STATE_TRANSITION_INVALID',
+          {
+            valuation_id: id,
+            current_estado: valorizacion.estado,
+            required_estado: 'RECHAZADO',
+          },
+          'Valuation must be in RECHAZADO state to reopen'
+        );
+      }
+
+      valorizacion.estado = 'BORRADOR';
+      valorizacion.conformidadProveedor = false;
+      valorizacion.conformidadFecha = undefined;
+      valorizacion.conformidadObservaciones = undefined;
+      valorizacion.updatedAt = new Date();
+
+      const updated = await this.repository.save(valorizacion);
+
+      logger.info('Valuation reopened', {
+        valuation_id: id,
+        reopened_by: userId,
+        new_estado: updated.estado,
+      });
+
+      return toValuationDto(updated);
+    } catch (error) {
+      if (error instanceof NotFoundError || error instanceof BusinessRuleError) {
+        throw error;
+      }
+      throw new DatabaseError(
+        'Failed to reopen valuation',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined,
+        { valuation_id: id, user_id: userId }
+      );
+    }
+  }
+
   async approve(id: number, userId: number): Promise<ValuationDto> {
     try {
       const valorizacion = await this.repository.findOne({ where: { id } });
@@ -623,17 +794,17 @@ export class ValuationService {
         throw new NotFoundError('Valuation', id);
       }
 
-      // Validate state transition: Only EN_REVISION can be approved
-      if (valorizacion.estado !== 'EN_REVISION') {
+      // Validate state transition: Only VALIDADO can be approved
+      if (valorizacion.estado !== 'VALIDADO') {
         throw new BusinessRuleError(
-          `Cannot approve valuation in state ${valorizacion.estado}. Must be EN_REVISION.`,
+          `Cannot approve valuation in state ${valorizacion.estado}. Must be VALIDADO.`,
           'STATE_TRANSITION_INVALID',
           {
             valuation_id: id,
             current_estado: valorizacion.estado,
-            required_estado: 'EN_REVISION',
+            required_estado: 'VALIDADO',
           },
-          'Valuation must be in EN_REVISION state to be approved'
+          'Valuation must be in VALIDADO state to be approved'
         );
       }
 
@@ -726,6 +897,19 @@ export class ValuationService {
         );
       }
 
+      // Gate: Provider conformity required before submitting for review
+      if (!valorizacion.conformidadProveedor) {
+        throw new BusinessRuleError(
+          'Se requiere la conformidad del proveedor antes de enviar a revisión.',
+          'CONFORMIDAD_REQUIRED',
+          {
+            valuation_id: id,
+            conformidad_proveedor: valorizacion.conformidadProveedor,
+          },
+          'Register provider conformity before submitting for review'
+        );
+      }
+
       valorizacion.estado = 'EN_REVISION';
       valorizacion.updatedAt = new Date();
 
@@ -811,18 +995,18 @@ export class ValuationService {
         throw new NotFoundError('Valuation', id);
       }
 
-      // Check terminal states (PAGADO and RECHAZADO are immutable)
-      const terminalStates = ['PAGADO', 'RECHAZADO'];
-      if (terminalStates.includes(valorizacion.estado)) {
+      // Check terminal states (PAGADO, ELIMINADO are immutable; RECHAZADO can be reopened but not re-rejected)
+      const nonRejectableStates = ['PAGADO', 'ELIMINADO', 'RECHAZADO', 'BORRADOR'];
+      if (nonRejectableStates.includes(valorizacion.estado)) {
         throw new BusinessRuleError(
-          `Cannot reject valuation in terminal state ${valorizacion.estado}`,
+          `Cannot reject valuation in state ${valorizacion.estado}`,
           'VALUATION_TERMINAL_STATE',
           {
             valuation_id: id,
             current_estado: valorizacion.estado,
             attempted_action: 'reject',
           },
-          'Terminal states (PAGADO, RECHAZADO) cannot transition to other states'
+          'Only PENDIENTE, EN_REVISION, VALIDADO, and APROBADO valuations can be rejected'
         );
       }
 
@@ -1100,6 +1284,197 @@ export class ValuationService {
     }
   }
 
+  /**
+   * Register provider conformity on a valuation.
+   * Can be done when valuation is in BORRADOR or PENDIENTE state.
+   */
+  async registerConformidad(
+    id: number,
+    userId: number,
+    data: { fecha?: Date; observaciones?: string }
+  ): Promise<ValuationDto> {
+    try {
+      const valorizacion = await this.repository.findOne({ where: { id } });
+      if (!valorizacion) {
+        throw new NotFoundError('Valuation', id);
+      }
+
+      const allowedStates = ['BORRADOR', 'PENDIENTE'];
+      if (!allowedStates.includes(valorizacion.estado)) {
+        throw new BusinessRuleError(
+          `Cannot register conformidad in state ${valorizacion.estado}. Must be BORRADOR or PENDIENTE.`,
+          'STATE_TRANSITION_INVALID',
+          {
+            valuation_id: id,
+            current_estado: valorizacion.estado,
+          },
+          'Conformidad can only be registered for BORRADOR or PENDIENTE valuations'
+        );
+      }
+
+      valorizacion.conformidadProveedor = true;
+      valorizacion.conformidadFecha = data.fecha || new Date();
+      valorizacion.conformidadObservaciones = data.observaciones || undefined;
+      valorizacion.updatedAt = new Date();
+
+      const updated = await this.repository.save(valorizacion);
+
+      logger.info('Provider conformidad registered', {
+        valuation_id: id,
+        registered_by: userId,
+        conformidad_fecha: updated.conformidadFecha,
+      });
+
+      return toValuationDto(updated);
+    } catch (error) {
+      if (error instanceof NotFoundError || error instanceof BusinessRuleError) {
+        throw error;
+      }
+      throw new DatabaseError(
+        'Failed to register conformidad',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined,
+        { valuation_id: id, user_id: userId }
+      );
+    }
+  }
+
+  /**
+   * Get consolidated valuation registry with filters and summary totals.
+   * Implements CORP-GEM-F-011 cross-project consolidated register.
+   */
+  async getRegistry(filters?: {
+    proyecto_id?: number;
+    periodo_desde?: string;
+    periodo_hasta?: string;
+    estado?: string;
+    proveedor?: string;
+    equipo_id?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    try {
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 50;
+      const skip = (page - 1) * limit;
+
+      const queryBuilder = this.repository
+        .createQueryBuilder('v')
+        .leftJoinAndSelect('v.equipo', 'equipo')
+        .leftJoinAndSelect('v.contrato', 'contrato')
+        .leftJoinAndSelect('contrato.provider', 'provider')
+        .where('v.estado != :eliminado', { eliminado: 'ELIMINADO' });
+
+      if (filters?.proyecto_id) {
+        queryBuilder.andWhere('v.proyecto_id = :proyectoId', { proyectoId: filters.proyecto_id });
+      }
+
+      if (filters?.periodo_desde) {
+        queryBuilder.andWhere('v.periodo >= :periodoDesde', {
+          periodoDesde: filters.periodo_desde,
+        });
+      }
+
+      if (filters?.periodo_hasta) {
+        queryBuilder.andWhere('v.periodo <= :periodoHasta', {
+          periodoHasta: filters.periodo_hasta,
+        });
+      }
+
+      if (filters?.estado) {
+        queryBuilder.andWhere('v.estado = :estado', { estado: filters.estado });
+      }
+
+      if (filters?.equipo_id) {
+        queryBuilder.andWhere('v.equipo_id = :equipoId', { equipoId: filters.equipo_id });
+      }
+
+      if (filters?.proveedor) {
+        queryBuilder.andWhere(
+          '(provider.razon_social ILIKE :proveedor OR provider.ruc ILIKE :proveedor)',
+          { proveedor: `%${filters.proveedor}%` }
+        );
+      }
+
+      queryBuilder.orderBy('v.periodo', 'DESC').addOrderBy('v.id', 'DESC');
+
+      const total = await queryBuilder.getCount();
+      queryBuilder.skip(skip).take(limit);
+
+      const records = await queryBuilder.getMany();
+      console.log('[DEBUG] getRegistry records.length:', records.length);
+
+      // Get summary totals (separate query for all matching records, not just current page)
+      const summaryBuilder = this.repository
+        .createQueryBuilder('v')
+        .select('COALESCE(SUM(v.total_valorizado), 0)', 'total_valorizado')
+        .addSelect('COALESCE(SUM(v.total_con_igv), 0)', 'total_con_igv')
+        .addSelect('COUNT(*)::int', 'total_count')
+        .where('v.estado != :eliminado', { eliminado: 'ELIMINADO' });
+
+      // Apply same filters
+      if (filters?.proyecto_id) {
+        summaryBuilder.andWhere('v.proyecto_id = :proyectoId', { proyectoId: filters.proyecto_id });
+      }
+      if (filters?.periodo_desde) {
+        summaryBuilder.andWhere('v.periodo >= :periodoDesde', {
+          periodoDesde: filters.periodo_desde,
+        });
+      }
+      if (filters?.periodo_hasta) {
+        summaryBuilder.andWhere('v.periodo <= :periodoHasta', {
+          periodoHasta: filters.periodo_hasta,
+        });
+      }
+      if (filters?.estado) {
+        summaryBuilder.andWhere('v.estado = :estado', { estado: filters.estado });
+      }
+      if (filters?.equipo_id) {
+        summaryBuilder.andWhere('v.equipo_id = :equipoId', { equipoId: filters.equipo_id });
+      }
+
+      const summaryRow = await summaryBuilder.getRawOne();
+      console.log('[DEBUG] getRegistry summaryRow:', summaryRow);
+
+      // Status breakdown
+      const statusBreakdown = await this.repository
+        .createQueryBuilder('v')
+        .select('v.estado', 'estado')
+        .addSelect('COUNT(*)::int', 'count')
+        .where('v.estado != :eliminado', { eliminado: 'ELIMINADO' })
+        .groupBy('v.estado')
+        .getRawMany();
+
+      const data = records.map((v) => toValuationDto(v));
+
+      return {
+        data,
+        total,
+        summary: {
+          total_valorizado: parseFloat(summaryRow?.total_valorizado) || 0,
+          total_con_igv: parseFloat(summaryRow?.total_con_igv) || 0,
+          total_count: parseInt(summaryRow?.total_count) || 0,
+          by_status: statusBreakdown.map((r: any) => ({
+            status: r.estado,
+            count: parseInt(r.count),
+          })),
+        },
+      };
+    } catch (error) {
+      Logger.error('Error fetching valuation registry', {
+        error: error instanceof Error ? error.message : String(error),
+        filters,
+        context: 'ValuationService.getRegistry',
+      });
+      throw new DatabaseError(
+        'Failed to fetch valuation registry',
+        DatabaseErrorType.QUERY,
+        error instanceof Error ? error : undefined,
+        { filters }
+      );
+    }
+  }
+
   // Backward compatibility methods (DEPRECATED - use new method names)
 
   /**
@@ -1219,42 +1594,138 @@ export class ValuationService {
   }
 
   /**
-   * Calculate valuation totals for a contract period (STUB - NOT IMPLEMENTED).
+   * Aggregate approved daily reports for an equipment within a date range.
    *
-   * TODO: Implement actual calculation logic based on:
-   * - Daily reports (partes_diarios) for the period
-   * - Contract pricing model (Anexo B variant)
-   * - Equipment hours/days worked
-   * - Fuel consumption
-   * - Work expenses
-   * - Advance deductions
+   * @param equipoId - Equipment ID
+   * @param fechaInicio - Start date
+   * @param fechaFin - End date
+   * @returns Aggregated daily report data
+   */
+  private async aggregateDailyReports(
+    equipoId: number,
+    fechaInicio: Date,
+    fechaFin: Date
+  ): Promise<{ diasTrabajados: number; horasTrabajadas: number; combustibleConsumido: number }> {
+    const result = await AppDataSource.query(
+      `SELECT
+        COUNT(DISTINCT fecha)::int AS dias_trabajados,
+        COALESCE(SUM(horas_trabajadas), 0)::numeric AS horas_trabajadas,
+        COALESCE(SUM(combustible_consumido), 0)::numeric AS combustible_consumido
+      FROM equipo.parte_diario
+      WHERE equipo_id = $1
+        AND fecha BETWEEN $2 AND $3
+        AND estado = 'APROBADO'`,
+      [equipoId, fechaInicio, fechaFin]
+    );
+
+    const row = result[0] || {};
+    return {
+      diasTrabajados: parseInt(row.dias_trabajados) || 0,
+      horasTrabajadas: parseFloat(row.horas_trabajadas) || 0,
+      combustibleConsumido: parseFloat(row.combustible_consumido) || 0,
+    };
+  }
+
+  /**
+   * Calculate valuation totals for a contract period.
+   *
+   * Reads approved daily reports and contract tariffs to produce real financial figures.
    *
    * @param contractId - Contract ID
    * @param month - Month (1-12)
    * @param year - Year (YYYY)
    *
-   * @returns Stub calculation result (all zeros)
-   *
-   * @example
-   * ```typescript
-   * const calc = await valuationService.calculateValuation('123', 1, 2026);
-   * // Currently returns stub data with zeros
-   * // TODO: Implement real calculation based on partes_diarios
-   * ```
+   * @returns Complete calculation result
    */
   async calculateValuation(contractId: string, month: number, year: number) {
-    // TODO: Implement calculation logic
+    const contract = await this.contractRepository.findOne({
+      where: { id: parseInt(contractId) },
+      relations: ['equipo'],
+    });
+
+    if (!contract) {
+      throw new NotFoundError('Contract', parseInt(contractId));
+    }
+
+    if (!contract.equipo) {
+      throw new NotFoundError('Equipment', `in contract ${contractId}`);
+    }
+
+    const fechaInicio = new Date(year, month - 1, 1);
+    const fechaFin = new Date(year, month, 0); // last day of month
+
+    const agg = await this.aggregateDailyReports(contract.equipo.id, fechaInicio, fechaFin);
+
+    const tarifa = parseFloat((contract.tarifa || 0).toString());
+    const tipoTarifa = (contract.tipoTarifa || 'HORA').toUpperCase();
+    const horasIncluidas = contract.horasIncluidas || 0;
+    const penalidadExceso = parseFloat((contract.penalidadExceso || 0).toString());
+
+    // Calculate base cost based on tariff type
+    let costoBase = 0;
+    switch (tipoTarifa) {
+      case 'HORA':
+        costoBase = tarifa * agg.horasTrabajadas;
+        break;
+      case 'DIA':
+        costoBase = tarifa * agg.diasTrabajados;
+        break;
+      case 'MES':
+        costoBase = tarifa; // flat monthly
+        break;
+      default:
+        costoBase = tarifa * agg.horasTrabajadas;
+    }
+
+    // Minimum guarantee: if contract specifies minimum hours and actual is below
+    if (horasIncluidas > 0 && agg.horasTrabajadas < horasIncluidas && tipoTarifa === 'HORA') {
+      costoBase = tarifa * horasIncluidas;
+    }
+
+    // Excess cost: when actual hours exceed included hours
+    let excessCost = 0;
+    if (penalidadExceso > 0 && horasIncluidas > 0 && agg.horasTrabajadas > horasIncluidas) {
+      const excessHours = agg.horasTrabajadas - horasIncluidas;
+      excessCost = excessHours * penalidadExceso;
+    }
+
+    // Fuel cost: use average fuel price from fuel records or default
+    const FUEL_PRICE_DEFAULT = 3.5; // PEN per gallon (fallback)
+    let fuelPricePerGallon = FUEL_PRICE_DEFAULT;
+
+    // Try to get average fuel price from fuel records for this period
+    const fuelPriceResult = await AppDataSource.query(
+      `SELECT COALESCE(AVG(precio_unitario), 0)::numeric AS avg_price
+       FROM equipo.equipo_combustible
+       WHERE fecha BETWEEN $1 AND $2
+       LIMIT 1`,
+      [fechaInicio, fechaFin]
+    );
+    const avgFuelPrice = parseFloat(fuelPriceResult?.[0]?.avg_price) || 0;
+    if (avgFuelPrice > 0) {
+      fuelPricePerGallon = avgFuelPrice;
+    }
+
+    const costoCombustible = agg.combustibleConsumido * fuelPricePerGallon;
+    const totalEstimated = costoBase + excessCost;
+
     return {
       contract_id: contractId,
+      equipo_id: contract.equipo.id,
       period_month: month,
       period_year: year,
-      total_hours: 0,
-      total_days: 0,
-      total_fuel: 0,
-      base_cost: 0,
-      excess_cost: 0,
-      total_estimated: 0,
-      currency: 'PEN',
+      total_hours: agg.horasTrabajadas,
+      total_days: agg.diasTrabajados,
+      total_fuel: agg.combustibleConsumido,
+      base_cost: Math.round(costoBase * 100) / 100,
+      excess_cost: Math.round(excessCost * 100) / 100,
+      fuel_cost: Math.round(costoCombustible * 100) / 100,
+      fuel_price_per_gallon: fuelPricePerGallon,
+      total_estimated: Math.round(totalEstimated * 100) / 100,
+      currency: contract.moneda || 'PEN',
+      tipo_tarifa: tipoTarifa,
+      tarifa: tarifa,
+      horas_incluidas: horasIncluidas,
     };
   }
 
@@ -1302,9 +1773,15 @@ export class ValuationService {
     const fechaInicio = new Date(year, month - 1, 1);
     const fechaFin = new Date(year, month, 0);
 
-    return this.create(
+    const totalValorizado = calculation.total_estimated;
+    const igvPorcentaje = 18.0;
+    const igvMonto = Math.round(totalValorizado * (igvPorcentaje / 100) * 100) / 100;
+    const totalConIgv = totalValorizado + igvMonto;
+
+    const valuation = await this.create(
       {
         contratoId: parseInt(contractId),
+        equipoId: calculation.equipo_id,
         periodo,
         fechaInicio,
         fechaFin,
@@ -1312,12 +1789,30 @@ export class ValuationService {
         horasTrabajadas: calculation.total_hours,
         combustibleConsumido: calculation.total_fuel,
         costoBase: calculation.base_cost,
-        totalValorizado: calculation.total_estimated,
-        estado: 'PENDIENTE',
+        costoCombustible: calculation.fuel_cost,
+        cargosAdicionales: calculation.excess_cost,
+        totalValorizado: totalValorizado,
+        igvPorcentaje: igvPorcentaje,
+        igvMonto: igvMonto,
+        totalConIgv: totalConIgv,
+        estado: 'BORRADOR',
         observaciones: `Auto-generado el ${new Date().toISOString()}`,
       },
       parseInt(userId)
     );
+
+    // Link approved daily reports to this valuation
+    await AppDataSource.query(
+      `UPDATE equipo.parte_diario
+       SET valorizacion_id = $1
+       WHERE equipo_id = $2
+         AND fecha BETWEEN $3 AND $4
+         AND estado = 'APROBADO'
+         AND valorizacion_id IS NULL`,
+      [valuation.id, calculation.equipo_id, fechaInicio, fechaFin]
+    );
+
+    return valuation;
   }
 
   /**
@@ -1343,8 +1838,79 @@ export class ValuationService {
    * ```
    */
   async generateValuationsForPeriod(month: number, year: number, userId: string) {
-    // TODO: Implement batch generation
-    return [];
+    const fechaInicio = new Date(year, month - 1, 1);
+    const fechaFin = new Date(year, month, 0);
+    const periodo = `${year}-${String(month).padStart(2, '0')}`;
+
+    // Find all active contracts for this period
+    const activeContracts = await this.contractRepository
+      .createQueryBuilder('c')
+      .leftJoinAndSelect('c.equipo', 'equipo')
+      .where('c.estado = :estado', { estado: 'ACTIVO' })
+      .andWhere('c.fecha_inicio <= :fechaFin', { fechaFin })
+      .andWhere('c.fecha_fin >= :fechaInicio', { fechaInicio })
+      .getMany();
+
+    console.log(`[DEBUG] Found ${activeContracts.length} active contracts for ${periodo}`);
+    activeContracts.forEach((c) =>
+      console.log(
+        `[DEBUG]   Contract: ${c.numeroContrato}, Equipo: ${c.equipo?.placa}, ID: ${c.id}`
+      )
+    );
+
+    const generated: Valorizacion[] = [];
+
+    for (const contract of activeContracts) {
+      if (!contract.equipo) {
+        console.log(`[DEBUG] Skipping contract ${contract.numeroContrato} - No equipment`);
+        continue;
+      }
+
+      // Check if valuation already exists for this period + equipment
+      const existing = await this.repository.findOne({
+        where: {
+          equipoId: contract.equipo.id,
+          periodo,
+        },
+      });
+
+      if (existing) {
+        logger.info('Skipping - valuation already exists', {
+          contract_id: contract.id,
+          equipo_id: contract.equipo.id,
+          periodo,
+          existing_valuation_id: existing.id,
+        });
+        continue;
+      }
+
+      try {
+        const valuation = await this.generateValuationForContract(
+          contract.id.toString(),
+          month,
+          year,
+          userId
+        );
+        generated.push(valuation);
+      } catch (error) {
+        Logger.error('Error generating valuation for contract', {
+          error: error instanceof Error ? error.message : String(error),
+          contract_id: contract.id,
+          equipo_id: contract.equipo?.id,
+          periodo,
+          context: 'ValuationService.generateValuationsForPeriod',
+        });
+        // Continue with other contracts
+      }
+    }
+
+    logger.info('Batch valuation generation completed', {
+      periodo,
+      active_contracts: activeContracts.length,
+      generated: generated.length,
+    });
+
+    return generated;
   }
 
   /**
@@ -1437,7 +2003,12 @@ export class ValuationService {
       const financialTotals = await this.getFinancialTotals(id);
 
       // Transform entities to DTO using centralized transformer
-      const result = transformToValuationPage1Dto(valuation, contract, contract.equipo, financialTotals);
+      const result = transformToValuationPage1Dto(
+        valuation,
+        contract,
+        contract.equipo,
+        financialTotals
+      );
 
       logger.info('Page 1 data fetched successfully', {
         valuation_id: id,
@@ -2033,7 +2604,12 @@ export class ValuationService {
       // Fetch financial totals for Page 7 summary
       const financialTotals = await this.getFinancialTotals(id);
 
-      const result = transformToValuationPage7Dto(valuation, contract, contract.equipo, financialTotals);
+      const result = transformToValuationPage7Dto(
+        valuation,
+        contract,
+        contract.equipo,
+        financialTotals
+      );
 
       logger.info('Page 7 data fetched successfully', {
         valuation_id: id,
@@ -2098,13 +2674,126 @@ export class ValuationService {
     // net impact of advances
     const importeAdelanto = totalAdelantos - totalAmortizaciones;
 
-    const importeExcesoCombustible = excessFuel ? Number(excessFuel.importeExcesoCombustible || 0) : 0;
+    const importeExcesoCombustible = excessFuel
+      ? Number(excessFuel.importeExcesoCombustible || 0)
+      : 0;
 
     return {
       importe_gasto_obra: totalGastoObra,
       importe_adelanto: importeAdelanto,
       importe_exceso_combustible: importeExcesoCombustible,
     };
+  }
+
+  // ─── Payment Document Methods (WS-5) ───
+
+  private get paymentDocRepository(): Repository<ValuationPaymentDocument> {
+    return AppDataSource.getRepository(ValuationPaymentDocument);
+  }
+
+  async getPaymentDocuments(valorizacionId: number): Promise<ValuationPaymentDocument[]> {
+    try {
+      const docs = await this.paymentDocRepository.find({
+        where: { valorizacionId },
+        order: { tipoDocumento: 'ASC' },
+      });
+
+      logger.info('Retrieved payment documents', { valorizacionId, count: docs.length });
+      return docs;
+    } catch (error) {
+      logger.error('Error fetching payment documents', {
+        error: error instanceof Error ? error.message : String(error),
+        valorizacionId,
+        context: 'ValuationService.getPaymentDocuments',
+      });
+      throw new DatabaseError(
+        'Failed to retrieve payment documents',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async createPaymentDocument(data: {
+    valorizacion_id: number;
+    tipo_documento: string;
+    numero?: string;
+    fecha_documento?: string;
+    archivo_url?: string;
+    observaciones?: string;
+  }): Promise<ValuationPaymentDocument> {
+    try {
+      const doc = this.paymentDocRepository.create({
+        valorizacionId: data.valorizacion_id,
+        tipoDocumento: data.tipo_documento as any,
+        numero: data.numero,
+        fechaDocumento: data.fecha_documento ? new Date(data.fecha_documento) : undefined,
+        archivoUrl: data.archivo_url,
+        estado: 'PRESENTADO' as any,
+        observaciones: data.observaciones,
+      });
+
+      const saved = await this.paymentDocRepository.save(doc);
+      logger.info('Created payment document', {
+        id: saved.id,
+        valorizacionId: saved.valorizacionId,
+        tipo: saved.tipoDocumento,
+      });
+      return saved;
+    } catch (error) {
+      logger.error('Error creating payment document', {
+        error: error instanceof Error ? error.message : String(error),
+        data,
+        context: 'ValuationService.createPaymentDocument',
+      });
+      throw new DatabaseError(
+        'Failed to create payment document',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async updatePaymentDocument(
+    id: number,
+    data: { estado?: string; observaciones?: string }
+  ): Promise<ValuationPaymentDocument> {
+    try {
+      const doc = await this.paymentDocRepository.findOne({ where: { id } });
+      if (!doc) throw new NotFoundError('ValuationPaymentDocument', id);
+
+      if (data.estado !== undefined) doc.estado = data.estado as any;
+      if (data.observaciones !== undefined) doc.observaciones = data.observaciones || undefined;
+
+      const saved = await this.paymentDocRepository.save(doc);
+      logger.info('Updated payment document', { id, estado: saved.estado });
+      return saved;
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      logger.error('Error updating payment document', {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+        context: 'ValuationService.updatePaymentDocument',
+      });
+      throw new DatabaseError(
+        'Failed to update payment document',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async checkPaymentDocumentsComplete(valorizacionId: number): Promise<boolean> {
+    const requiredTypes = ['FACTURA', 'POLIZA_TREC', 'ESSALUD', 'SCTR'];
+    const docs = await this.getPaymentDocuments(valorizacionId);
+
+    for (const tipo of requiredTypes) {
+      const doc = docs.find((d) => d.tipoDocumento === tipo);
+      if (!doc || (doc.estado !== 'PRESENTADO' && doc.estado !== 'APROBADO')) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 

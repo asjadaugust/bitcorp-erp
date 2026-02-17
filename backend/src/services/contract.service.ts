@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { AppDataSource } from '../config/database.config';
 import { Contract, Addendum } from '../models/contract.model';
+import { ContractAnnex } from '../models/contract-annex.model';
+import { ContractRequiredDocument } from '../models/contract-required-document.model';
 import { Repository, Between } from 'typeorm';
 import { ContractDto, toContractDto, fromContractDto } from '../types/dto/contract.dto';
 import {
@@ -1410,6 +1412,200 @@ export class ContractService {
    * const count = await contractService.getActiveCount();
    * console.log(`Active contracts: ${count}`);
    */
+  // ─── Annex Methods (WS-3) ───
+
+  private get annexRepository(): Repository<ContractAnnex> {
+    return AppDataSource.getRepository(ContractAnnex);
+  }
+
+  async getAnnexes(contractId: number, tipoAnexo?: 'A' | 'B'): Promise<ContractAnnex[]> {
+    try {
+      const where: any = { contratoId: contractId };
+      if (tipoAnexo) where.tipoAnexo = tipoAnexo;
+
+      const annexes = await this.annexRepository.find({
+        where,
+        order: { tipoAnexo: 'ASC', orden: 'ASC' },
+      });
+
+      logger.info('Retrieved contract annexes', { contractId, tipoAnexo, count: annexes.length });
+      return annexes;
+    } catch (error) {
+      logger.error('Error fetching annexes', {
+        error: error instanceof Error ? error.message : String(error),
+        contractId,
+        context: 'ContractService.getAnnexes',
+      });
+      throw new DatabaseError(
+        'Failed to retrieve annexes',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async saveAnnexes(
+    contractId: number,
+    tipoAnexo: 'A' | 'B',
+    items: Array<{ concepto: string; incluido: boolean; observaciones?: string }>
+  ): Promise<ContractAnnex[]> {
+    try {
+      // Verify contract exists
+      await this.findById(contractId);
+
+      // Delete existing annexes of this type
+      await this.annexRepository.delete({ contratoId: contractId, tipoAnexo });
+
+      // Create new ones
+      const annexes = items.map((item, index) =>
+        this.annexRepository.create({
+          contratoId: contractId,
+          tipoAnexo,
+          orden: index + 1,
+          concepto: item.concepto,
+          incluido: item.incluido,
+          observaciones: item.observaciones || null,
+        })
+      );
+
+      const saved = await this.annexRepository.save(annexes);
+
+      logger.info('Saved contract annexes', {
+        contractId,
+        tipoAnexo,
+        count: saved.length,
+      });
+
+      return saved;
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      logger.error('Error saving annexes', {
+        error: error instanceof Error ? error.message : String(error),
+        contractId,
+        tipoAnexo,
+        context: 'ContractService.saveAnnexes',
+      });
+      throw new DatabaseError('Failed to save annexes', DatabaseErrorType.QUERY, error as Error);
+    }
+  }
+
+  // ─── Required Document Methods (WS-4) ───
+
+  private get requiredDocRepository(): Repository<ContractRequiredDocument> {
+    return AppDataSource.getRepository(ContractRequiredDocument);
+  }
+
+  async getRequiredDocuments(contractId: number): Promise<ContractRequiredDocument[]> {
+    try {
+      const docs = await this.requiredDocRepository.find({
+        where: { contratoId: contractId },
+        relations: ['providerDocument'],
+        order: { tipoDocumento: 'ASC' },
+      });
+
+      logger.info('Retrieved required documents', { contractId, count: docs.length });
+      return docs;
+    } catch (error) {
+      logger.error('Error fetching required documents', {
+        error: error instanceof Error ? error.message : String(error),
+        contractId,
+        context: 'ContractService.getRequiredDocuments',
+      });
+      throw new DatabaseError(
+        'Failed to retrieve required documents',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async initializeRequiredDocuments(contractId: number): Promise<ContractRequiredDocument[]> {
+    try {
+      await this.findById(contractId);
+
+      const existingDocs = await this.requiredDocRepository.find({
+        where: { contratoId: contractId },
+      });
+
+      if (existingDocs.length > 0) {
+        return existingDocs;
+      }
+
+      const defaultTypes = [
+        'POLIZA_TREC',
+        'SOAT',
+        'INSPECCION_TECNICA',
+        'TARJETA_PROPIEDAD',
+        'LICENCIA_CONDUCIR',
+      ];
+
+      const docs = defaultTypes.map((tipo) =>
+        this.requiredDocRepository.create({
+          contratoId: contractId,
+          tipoDocumento: tipo as any,
+          estado: 'PENDIENTE' as any,
+        })
+      );
+
+      const saved = await this.requiredDocRepository.save(docs);
+
+      logger.info('Initialized required documents', { contractId, count: saved.length });
+      return saved;
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      logger.error('Error initializing required documents', {
+        error: error instanceof Error ? error.message : String(error),
+        contractId,
+        context: 'ContractService.initializeRequiredDocuments',
+      });
+      throw new DatabaseError(
+        'Failed to initialize required documents',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async updateRequiredDocument(
+    id: number,
+    data: {
+      providerDocumentId?: number | null;
+      estado?: string;
+      fechaVencimiento?: string | null;
+      observaciones?: string | null;
+    }
+  ): Promise<ContractRequiredDocument> {
+    try {
+      const doc = await this.requiredDocRepository.findOne({ where: { id } });
+      if (!doc) {
+        throw new NotFoundError('ContractRequiredDocument', id);
+      }
+
+      if (data.providerDocumentId !== undefined) doc.providerDocumentId = data.providerDocumentId;
+      if (data.estado !== undefined) doc.estado = data.estado as any;
+      if (data.fechaVencimiento !== undefined)
+        doc.fechaVencimiento = data.fechaVencimiento ? new Date(data.fechaVencimiento) : undefined;
+      if (data.observaciones !== undefined) doc.observaciones = data.observaciones || undefined;
+
+      const saved = await this.requiredDocRepository.save(doc);
+
+      logger.info('Updated required document', { id, estado: saved.estado });
+      return saved;
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      logger.error('Error updating required document', {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+        context: 'ContractService.updateRequiredDocument',
+      });
+      throw new DatabaseError(
+        'Failed to update required document',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
   async getActiveCount(): Promise<number> {
     try {
       // TODO: [Phase 21 - Tenant Context] Add tenant filtering

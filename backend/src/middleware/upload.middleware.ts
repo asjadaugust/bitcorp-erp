@@ -7,124 +7,64 @@ const uploadsDir = path.join(__dirname, '../../uploads');
 const dailyReportsDir = path.join(uploadsDir, 'daily-reports');
 const equipmentDir = path.join(uploadsDir, 'equipment');
 const operatorDir = path.join(uploadsDir, 'operators');
+const providerDir = path.join(uploadsDir, 'providers');
 const contractsDir = path.join(uploadsDir, 'contracts');
 
-[uploadsDir, dailyReportsDir, equipmentDir, operatorDir, contractsDir].forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+[uploadsDir, dailyReportsDir, equipmentDir, operatorDir, contractsDir, providerDir].forEach(
+  (dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
   }
-});
+);
 
-// Storage configuration for daily report photos
-const dailyReportStorage = multer.diskStorage({
+// ... (existing storage configs)
+
+// Storage configuration for provider documents
+const providerDocumentStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, dailyReportsDir);
+    cb(null, providerDir);
   },
   filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, `report-${uniqueSuffix}${ext}`);
+    cb(null, `provider-doc-${uniqueSuffix}${ext}`);
   },
 });
 
-// Storage configuration for equipment photos
-const equipmentStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, equipmentDir);
-  },
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `equipment-${uniqueSuffix}${ext}`);
-  },
-});
+import { Request } from 'express';
 
-// Storage configuration for operator photos
-const operatorStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, operatorDir);
-  },
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `operator-${uniqueSuffix}${ext}`);
-  },
-});
-
-// Storage configuration for contract documents
-const contractStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, contractsDir);
-  },
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `contract-${uniqueSuffix}${ext}`);
-  },
-});
-
-// File filter for images only
-const imageFileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'));
-  }
-};
-
-// File filter for documents
+// Filter for documents
 const documentFileFilter = (
-  _req: any,
+  _req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
-  const allowedTypes = /pdf|doc|docx|xls|xlsx/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const allowedMimeTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'image/jpeg',
+    'image/png',
+    'image/jpg',
+  ];
 
-  if (extname) {
+  if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only document files are allowed (pdf, doc, docx, xls, xlsx)'));
+    cb(new Error('Formato de archivo no soportado. Permite PDF, Word, Excel e imágenes.'));
   }
 };
 
-// Upload middleware configurations
-export const uploadDailyReportPhotos = multer({
-  storage: dailyReportStorage,
-  fileFilter: imageFileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB per file
-    files: 10, // Maximum 10 files per upload
-  },
-}).array('photos', 10);
-
-export const uploadEquipmentPhoto = multer({
-  storage: equipmentStorage,
-  fileFilter: imageFileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
-  },
-}).single('photo');
-
-export const uploadOperatorPhoto = multer({
-  storage: operatorStorage,
-  fileFilter: imageFileFilter,
-  limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB
-  },
-}).single('photo');
-
-export const uploadContractDocument = multer({
-  storage: contractStorage,
+export const uploadProviderDocument = multer({
+  storage: providerDocumentStorage,
   fileFilter: documentFileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
   },
-}).single('document');
+}).single('file');
 
 // Helper to delete file
 export const deleteFile = (filePath: string): void => {

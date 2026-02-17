@@ -139,6 +139,9 @@ export interface ValuationFinancialDto {
   // Excess fuel
   importe_exceso_combustible: number;
 
+  // Excess hours charges
+  cargos_adicionales: number;
+
   // Net calculation
   valorizacion_neta: number;
   igv: number;

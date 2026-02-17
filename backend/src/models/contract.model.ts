@@ -93,8 +93,35 @@ export class Contract {
   @Column({ name: 'horas_incluidas', type: 'integer', nullable: true })
   horasIncluidas?: number;
 
+  @Column({ name: 'minimo_por', type: 'varchar', length: 20, nullable: true })
+  minimoPor?: 'HORAS' | 'DIAS' | 'MES';
+
+  @Column({ name: 'cantidad_minima', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  cantidadMinima?: number;
+
   @Column({ name: 'penalidad_exceso', type: 'decimal', precision: 12, scale: 2, nullable: true })
   penalidadExceso?: number;
+
+  @Column({ name: 'documento_acredita', type: 'varchar', length: 200, nullable: true })
+  documentoAcredita?: string;
+
+  @Column({ name: 'fecha_acreditada', type: 'date', nullable: true })
+  fechaAcreditada?: Date;
+
+  @Column({ name: 'jurisdiccion', type: 'varchar', length: 200, nullable: true })
+  jurisdiccion?: string;
+
+  @Column({ name: 'plazo_texto', type: 'varchar', length: 200, nullable: true })
+  plazoTexto?: string;
+
+  @Column({ name: 'motivo_resolucion', type: 'text', nullable: true })
+  motivoResolucion?: string;
+
+  @Column({ name: 'fecha_resolucion', type: 'date', nullable: true })
+  fechaResolucion?: Date;
+
+  @Column({ name: 'monto_liquidacion', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  montoLiquidacion?: number;
 
   @Column({ name: 'condiciones_especiales', type: 'text', nullable: true })
   condicionesEspeciales?: string;

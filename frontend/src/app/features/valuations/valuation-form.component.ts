@@ -142,6 +142,61 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
             </div>
 
             <div class="form-group">
+              <label for="cargosAdicionales">Cargos Adicionales (S/)</label>
+              <input
+                id="cargosAdicionales"
+                type="number"
+                formControlName="cargosAdicionales"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="importeManipuleo">Importe Manipuleo (S/)</label>
+              <input
+                id="importeManipuleo"
+                type="number"
+                formControlName="importeManipuleo"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="importeGastoObra">Gasto en Obra (S/)</label>
+              <input
+                id="importeGastoObra"
+                type="number"
+                formControlName="importeGastoObra"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="importeAdelanto">Amortización Adelanto (S/)</label>
+              <input
+                id="importeAdelanto"
+                type="number"
+                formControlName="importeAdelanto"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="importeExcesoCombustible">Exceso Combustible (S/)</label>
+              <input
+                id="importeExcesoCombustible"
+                type="number"
+                formControlName="importeExcesoCombustible"
+                class="form-control"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
               <label for="numeroValorizacion">N° Valorización</label>
               <input
                 id="numeroValorizacion"
@@ -309,6 +364,11 @@ export class ValuationFormComponent implements OnInit {
       fechaFin: ['', Validators.required],
       periodo: ['', Validators.required],
       totalValorizado: [0, [Validators.required, Validators.min(0)]],
+      cargosAdicionales: [0, [Validators.min(0)]],
+      importeManipuleo: [0, [Validators.min(0)]],
+      importeGastoObra: [0, [Validators.min(0)]],
+      importeAdelanto: [0, [Validators.min(0)]],
+      importeExcesoCombustible: [0, [Validators.min(0)]],
       estado: ['PENDIENTE', Validators.required],
       numeroValorizacion: [''],
     });
@@ -408,6 +468,11 @@ export class ValuationFormComponent implements OnInit {
       contratoId: formValue.contratoId ? Number(formValue.contratoId) : null,
       equipoId: Number(formValue.equipoId),
       totalValorizado: Number(formValue.totalValorizado),
+      cargosAdicionales: Number(formValue.cargosAdicionales || 0),
+      importeManipuleo: Number(formValue.importeManipuleo || 0),
+      importeGastoObra: Number(formValue.importeGastoObra || 0),
+      importeAdelanto: Number(formValue.importeAdelanto || 0),
+      importeExcesoCombustible: Number(formValue.importeExcesoCombustible || 0),
       // Ensure periodo is set
       periodo: formValue.periodo || formValue.fechaInicio.substring(0, 7),
     };

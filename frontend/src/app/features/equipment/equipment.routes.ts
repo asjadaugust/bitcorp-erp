@@ -130,7 +130,9 @@ export const EQUIPMENT_ROUTES: Routes = [
   {
     path: 'valuations',
     loadComponent: () =>
-      import('../valuations/valuation-list.component').then((m) => m.ValuationListComponent),
+      import('../valuations/valuation-registry.component').then(
+        (m) => m.ValuationRegistryComponent
+      ),
   },
   {
     path: 'valuations/new',

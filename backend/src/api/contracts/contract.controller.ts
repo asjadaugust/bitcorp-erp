@@ -261,6 +261,158 @@ export class ContractController {
     }
   }
 
+  // ─── Annex Endpoints (WS-3) ───
+
+  /**
+   * GET /api/contracts/:id/annexes
+   */
+  static async getAnnexes(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+
+      const tipo = req.query.tipo as 'A' | 'B' | undefined;
+      const annexes = await contractService.getAnnexes(contractId, tipo);
+      sendSuccess(res, annexes);
+    } catch (error: any) {
+      Logger.error('Error in getAnnexes', {
+        error: error.message,
+        context: 'ContractController.getAnnexes',
+      });
+      sendError(res, 500, 'ANNEX_FETCH_FAILED', 'Failed to fetch annexes', error.message);
+    }
+  }
+
+  /**
+   * PUT /api/contracts/:id/annexes/:tipo
+   */
+  static async saveAnnexes(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      const tipo = req.params.tipo as 'A' | 'B';
+
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+      if (tipo !== 'A' && tipo !== 'B') {
+        sendError(res, 400, 'INVALID_TIPO', 'tipo must be A or B');
+        return;
+      }
+
+      const items = req.body.items || [];
+      const annexes = await contractService.saveAnnexes(contractId, tipo, items);
+      sendSuccess(res, annexes);
+    } catch (error: any) {
+      Logger.error('Error in saveAnnexes', {
+        error: error.message,
+        context: 'ContractController.saveAnnexes',
+      });
+      if (error.message?.includes('not found')) {
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', error.message);
+        return;
+      }
+      sendError(res, 500, 'ANNEX_SAVE_FAILED', 'Failed to save annexes', error.message);
+    }
+  }
+
+  // ─── Required Document Endpoints (WS-4) ───
+
+  /**
+   * GET /api/contracts/:id/required-documents
+   */
+  static async getRequiredDocuments(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+
+      const docs = await contractService.getRequiredDocuments(contractId);
+      sendSuccess(res, docs);
+    } catch (error: any) {
+      Logger.error('Error in getRequiredDocuments', {
+        error: error.message,
+        context: 'ContractController.getRequiredDocuments',
+      });
+      sendError(
+        res,
+        500,
+        'REQ_DOC_FETCH_FAILED',
+        'Failed to fetch required documents',
+        error.message
+      );
+    }
+  }
+
+  /**
+   * POST /api/contracts/:id/required-documents/initialize
+   */
+  static async initializeRequiredDocuments(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+
+      const docs = await contractService.initializeRequiredDocuments(contractId);
+      sendSuccess(res, docs);
+    } catch (error: any) {
+      Logger.error('Error in initializeRequiredDocuments', {
+        error: error.message,
+        context: 'ContractController.initializeRequiredDocuments',
+      });
+      if (error.message?.includes('not found')) {
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', error.message);
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'REQ_DOC_INIT_FAILED',
+        'Failed to initialize required documents',
+        error.message
+      );
+    }
+  }
+
+  /**
+   * PUT /api/contracts/required-documents/:docId
+   */
+  static async updateRequiredDocument(req: Request, res: Response): Promise<void> {
+    try {
+      const docId = parseInt(req.params.docId);
+      if (isNaN(docId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid document ID');
+        return;
+      }
+
+      const doc = await contractService.updateRequiredDocument(docId, req.body);
+      sendSuccess(res, doc);
+    } catch (error: any) {
+      Logger.error('Error in updateRequiredDocument', {
+        error: error.message,
+        context: 'ContractController.updateRequiredDocument',
+      });
+      if (error.message?.includes('not found')) {
+        sendError(res, 404, 'DOC_NOT_FOUND', error.message);
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'REQ_DOC_UPDATE_FAILED',
+        'Failed to update required document',
+        error.message
+      );
+    }
+  }
+
   /**
    * GET /api/contracts/stats/count
    * Get active contract count

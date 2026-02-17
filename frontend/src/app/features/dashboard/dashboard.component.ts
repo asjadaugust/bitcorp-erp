@@ -361,6 +361,32 @@ export class DashboardComponent implements OnInit {
         },
       ],
     },
+    {
+      name: 'Sistema',
+      level: 4,
+      modules: [
+        {
+          id: 'users',
+          name: 'Usuarios',
+          icon: 'fa-solid fa-user-lock',
+          route: '/users',
+          level: 4,
+          requiredRoles: ['ADMIN'],
+          description: 'Gestión de Usuarios y Permisos',
+          isActive: true,
+        },
+        {
+          id: 'settings',
+          name: 'Configuración',
+          icon: 'fa-solid fa-gear',
+          route: '/settings',
+          level: 4,
+          requiredRoles: ['ADMIN'],
+          description: 'Configuración General del Sistema',
+          isActive: true,
+        },
+      ],
+    },
   ];
 
   ngOnInit(): void {

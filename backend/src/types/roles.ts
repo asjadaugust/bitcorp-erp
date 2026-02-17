@@ -23,8 +23,17 @@ export const ROLES = {
   /** Project Director - Project-level management access */
   DIRECTOR: 'DIRECTOR',
 
+  /** Project Resident Engineer - approvals, oversight */
+  RESIDENTE: 'RESIDENTE',
+
+  /** Project Administrator - contracts, procurement */
+  ADMINISTRADOR_PROYECTO: 'ADMINISTRADOR_PROYECTO',
+
   /** Team Leader - Department/team-level access */
   JEFE_EQUIPO: 'JEFE_EQUIPO',
+
+  /** Safety & Health officer - checklists, inspections */
+  SSOMA: 'SSOMA',
 
   /** Field Operator - Mobile app access only */
   OPERADOR: 'OPERADOR',
@@ -63,7 +72,10 @@ export function isValidRole(value: string): value is Role {
 export const ROLE_NAMES: Record<Role, string> = {
   [ROLES.ADMIN]: 'Administrador del Sistema',
   [ROLES.DIRECTOR]: 'Director de Proyecto',
+  [ROLES.RESIDENTE]: 'Residente de Proyecto',
+  [ROLES.ADMINISTRADOR_PROYECTO]: 'Administrador de Proyecto',
   [ROLES.JEFE_EQUIPO]: 'Jefe de Equipo',
+  [ROLES.SSOMA]: 'Responsable SSOMA',
   [ROLES.OPERADOR]: 'Operador de Equipos',
 };
 
@@ -80,7 +92,10 @@ export function getRoleName(role: Role): string {
  */
 export const ROLE_HIERARCHY: Record<Role, number> = {
   [ROLES.OPERADOR]: 1,
+  [ROLES.SSOMA]: 2,
   [ROLES.JEFE_EQUIPO]: 2,
+  [ROLES.ADMINISTRADOR_PROYECTO]: 2,
+  [ROLES.RESIDENTE]: 2,
   [ROLES.DIRECTOR]: 3,
   [ROLES.ADMIN]: 4,
 };

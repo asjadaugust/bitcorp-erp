@@ -33,4 +33,13 @@ router.get('/:id/addendums', ContractController.getAddendums);
 // POST /api/contracts/addendums - Create addendum
 router.post('/addendums', validateDto(ContractCreateDto), ContractController.createAddendum);
 
+// ─── Annex routes (WS-3) ───
+router.get('/:id/annexes', ContractController.getAnnexes);
+router.put('/:id/annexes/:tipo', ContractController.saveAnnexes);
+
+// ─── Required Document routes (WS-4) ───
+router.get('/:id/required-documents', ContractController.getRequiredDocuments);
+router.post('/:id/required-documents/initialize', ContractController.initializeRequiredDocuments);
+router.put('/required-documents/:docId', ContractController.updateRequiredDocument);
+
 export default router;

@@ -322,6 +322,11 @@ export const routes: Routes = [
             (m) => m.ProviderFormComponent
           ),
       },
+      // User Management (ADMIN only)
+      {
+        path: 'users',
+        loadChildren: () => import('./features/users/user.routes').then((m) => m.USER_ROUTES),
+      },
       {
         path: 'settings',
         loadComponent: () =>

@@ -81,8 +81,10 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       <!-- Custom Column Templates -->
       <ng-template #contractTemplate let-row>
         <div class="contract-info">
-          <span class="contract-code">{{ row.contrato?.codigo || 'N/A' }}</span>
-          <span class="project-name">{{ row.contrato?.nombre_proyecto }}</span>
+          <span class="contract-code">{{ row.contrato?.numero_contrato || 'N/A' }}</span>
+          <span class="project-name">{{
+            row.contrato?.nombre_proyecto || row.contrato?.proyecto?.nombre
+          }}</span>
         </div>
       </ng-template>
 
@@ -365,8 +367,10 @@ export class ValuationListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
+        { label: 'Borrador', value: 'BORRADOR' },
         { label: 'Pendiente', value: 'PENDIENTE' },
         { label: 'En Revisión', value: 'EN_REVISION' },
+        { label: 'Validado', value: 'VALIDADO' },
         { label: 'Aprobado', value: 'APROBADO' },
         { label: 'Rechazado', value: 'RECHAZADO' },
         { label: 'Pagado', value: 'PAGADO' },
@@ -384,6 +388,11 @@ export class ValuationListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
+        BORRADOR: {
+          label: 'Borrador',
+          class: 'status-badge status-draft',
+          icon: 'fa-solid fa-file-pen',
+        },
         PAGADO: {
           label: 'Pagado',
           class: 'status-badge status-paid',
@@ -393,6 +402,11 @@ export class ValuationListComponent implements OnInit {
           label: 'Aprobado',
           class: 'status-badge status-approved',
           icon: 'fa-solid fa-check',
+        },
+        VALIDADO: {
+          label: 'Validado',
+          class: 'status-badge status-validated',
+          icon: 'fa-solid fa-clipboard-check',
         },
         EN_REVISION: {
           label: 'En Revisión',
@@ -480,6 +494,14 @@ export class ValuationListComponent implements OnInit {
   }
 
   confirmGeneration(): void {
+    console.log('[DEBUG] confirmGeneration called', {
+      month: this.selectedMonth,
+      year: this.selectedYear,
+    });
+    if (this.selectedMonth === undefined || this.selectedYear === undefined) {
+      console.warn('[DEBUG] confirmGeneration aborted: missing values');
+      return;
+    }
     this.generating = true;
     this.valuationService
       .generate({
@@ -487,11 +509,13 @@ export class ValuationListComponent implements OnInit {
         year: this.selectedYear,
       })
       .subscribe({
-        next: (res) => {
+        next: (res: any) => {
+          console.log('[DEBUG] generation success', res);
           this.generating = false;
           this.closeGenerationModal();
           this.loadValuations();
-          alert(`Se generaron/actualizaron ${res.data.length} valorizaciones.`);
+          const count = Array.isArray(res) ? res.length : res?.data?.length || 0;
+          alert(`Se generaron/actualizaron ${count} valorizaciones.`);
         },
         error: (err) => {
           this.generating = false;
@@ -515,7 +539,7 @@ export class ValuationListComponent implements OnInit {
     }
 
     const exportData = this.valuations.map((val) => ({
-      Contrato: val.contrato?.codigo || 'N/A',
+      Contrato: val.contrato?.numero_contrato || 'N/A',
       Proyecto: val.contrato?.nombre_proyecto || 'N/A',
       'N° Valorización': val.numeroValorizacion || '',
       Periodo: val.periodo || '',
@@ -541,7 +565,7 @@ export class ValuationListComponent implements OnInit {
     }
 
     const exportData = this.valuations.map((val) => ({
-      Contrato: val.contrato?.codigo || 'N/A',
+      Contrato: val.contrato?.numero_contrato || 'N/A',
       Proyecto: val.contrato?.nombre_proyecto || 'N/A',
       'N° Valorización': val.numeroValorizacion || '',
       Periodo: val.periodo || '',

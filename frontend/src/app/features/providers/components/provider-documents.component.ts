@@ -70,14 +70,36 @@ import {
             </div>
 
             <div class="form-group full-width">
-              <label for="archivo_url" class="form-label">URL del Documento (PDF/Imagen) *</label>
-              <input
-                id="archivo_url"
-                type="url"
-                formControlName="archivo_url"
-                class="form-control"
-                placeholder="https://..."
-              />
+              <label class="form-label">Documento *</label>
+
+              <div *ngIf="!documentForm.get('archivo_url')?.value" class="upload-container">
+                <app-file-uploader
+                  [accept]="'.pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx'"
+                  (fileSelected)="onFileSelected($event)"
+                  [label]="'Subir documento'"
+                ></app-file-uploader>
+                <div *ngIf="uploading" class="upload-progress">
+                  <i class="fa-solid fa-spinner fa-spin"></i> Subiendo archivo...
+                </div>
+              </div>
+
+              <div *ngIf="documentForm.get('archivo_url')?.value" class="file-preview">
+                <div class="file-info">
+                  <i class="fa-solid fa-file-check"></i>
+                  <a
+                    [href]="documentForm.get('archivo_url')?.value"
+                    target="_blank"
+                    class="file-link"
+                    >Ver archivo actual</a
+                  >
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="removeFile()">
+                  <i class="fa-solid fa-xmark"></i> Cambiar
+                </button>
+              </div>
+
+              <!-- Hidden input to store URL but keep validation working -->
+              <input type="hidden" formControlName="archivo_url" />
             </div>
 
             <div class="form-group full-width">
@@ -93,7 +115,11 @@ import {
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancelar</button>
-            <button type="submit" class="btn btn-primary" [disabled]="documentForm.invalid">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="documentForm.invalid || uploading"
+            >
               {{ editingId ? 'Actualizar' : 'Guardar' }}
             </button>
           </div>
