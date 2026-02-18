@@ -166,17 +166,17 @@ export class ProviderContactService {
       // Additional validation can be added here if needed
 
       const contact = this.repository.create({
-        providerId: data.provider_id!,
-        contactName: data.contact_name,
-        position: data.position,
-        primaryPhone: data.primary_phone,
-        secondaryPhone: data.secondary_phone,
-        email: data.email,
-        secondaryEmail: data.secondary_email,
-        contactType: (data.contact_type || 'general') as ContactType,
-        isPrimary: data.is_primary ?? false,
-        status: (data.status || 'active') as ContactStatus,
-        notes: data.notes,
+        providerId: data.id_proveedor!,
+        contactName: data.nombre_contacto,
+        position: data.cargo,
+        primaryPhone: data.telefono_principal,
+        secondaryPhone: data.telefono_secundario,
+        email: data.correo,
+        secondaryEmail: data.correo_secundario,
+        contactType: (data.tipo_contacto || 'general') as ContactType,
+        isPrimary: data.es_principal ?? false,
+        status: (data.estado || 'active') as ContactStatus,
+        notes: data.notas,
         // TODO: tenantId should come from auth context (Phase 21)
         // Current: Hardcoded to 1
         // Should be: tenantId: req.user.tenantId
@@ -201,8 +201,8 @@ export class ProviderContactService {
       Logger.error('Error creating provider contact', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        providerId: data.provider_id,
-        contactName: data.contact_name,
+        providerId: data.id_proveedor,
+        contactName: data.nombre_contacto,
         context: 'ProviderContactService.create',
       });
       throw new DatabaseError('Failed to create provider contact');
@@ -243,17 +243,18 @@ export class ProviderContactService {
 
       // Build update object with only provided fields
       const updateData: Partial<ProviderContact> = {};
-      if (data.contact_name !== undefined) updateData.contactName = data.contact_name;
-      if (data.position !== undefined) updateData.position = data.position;
-      if (data.primary_phone !== undefined) updateData.primaryPhone = data.primary_phone;
-      if (data.secondary_phone !== undefined) updateData.secondaryPhone = data.secondary_phone;
-      if (data.email !== undefined) updateData.email = data.email;
-      if (data.secondary_email !== undefined) updateData.secondaryEmail = data.secondary_email;
-      if (data.contact_type !== undefined)
-        updateData.contactType = data.contact_type as ContactType;
-      if (data.is_primary !== undefined) updateData.isPrimary = data.is_primary;
-      if (data.status !== undefined) updateData.status = data.status as ContactStatus;
-      if (data.notes !== undefined) updateData.notes = data.notes;
+      if (data.nombre_contacto !== undefined) updateData.contactName = data.nombre_contacto;
+      if (data.cargo !== undefined) updateData.position = data.cargo;
+      if (data.telefono_principal !== undefined) updateData.primaryPhone = data.telefono_principal;
+      if (data.telefono_secundario !== undefined)
+        updateData.secondaryPhone = data.telefono_secundario;
+      if (data.correo !== undefined) updateData.email = data.correo;
+      if (data.correo_secundario !== undefined) updateData.secondaryEmail = data.correo_secundario;
+      if (data.tipo_contacto !== undefined)
+        updateData.contactType = data.tipo_contacto as ContactType;
+      if (data.es_principal !== undefined) updateData.isPrimary = data.es_principal;
+      if (data.estado !== undefined) updateData.status = data.estado as ContactStatus;
+      if (data.notas !== undefined) updateData.notes = data.notas;
       if (data.updated_by !== undefined) updateData.updatedBy = data.updated_by;
 
       // Update fields
@@ -348,17 +349,17 @@ export class ProviderContactService {
   private toDto(contact: ProviderContact): ProviderContactDto {
     return {
       id: contact.id,
-      provider_id: contact.providerId,
-      contact_name: contact.contactName,
-      position: contact.position,
-      primary_phone: contact.primaryPhone,
-      secondary_phone: contact.secondaryPhone,
-      email: contact.email,
-      secondary_email: contact.secondaryEmail,
-      contact_type: contact.contactType,
-      is_primary: contact.isPrimary,
-      status: contact.status,
-      notes: contact.notes,
+      id_proveedor: contact.providerId,
+      nombre_contacto: contact.contactName,
+      cargo: contact.position,
+      telefono_principal: contact.primaryPhone,
+      telefono_secundario: contact.secondaryPhone,
+      correo: contact.email,
+      correo_secundario: contact.secondaryEmail,
+      tipo_contacto: contact.contactType,
+      es_principal: contact.isPrimary,
+      estado: contact.status,
+      notas: contact.notes,
       tenant_id: contact.tenantId,
       created_by: contact.createdBy,
       updated_by: contact.updatedBy,

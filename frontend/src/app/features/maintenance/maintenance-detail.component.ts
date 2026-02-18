@@ -29,18 +29,10 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
                 <h1>Mantenimiento {{ record.tipoMantenimiento }}</h1>
                 <p class="code-badge">{{ record.fechaProgramada | date: 'dd/MM/yyyy' }}</p>
               </div>
-              <div class="detail-actions">
-                <button type="button" class="btn btn-primary" (click)="editRecord()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button type="button" class="btn btn-danger" (click)="deleteRecord()">
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
-              </div>
             </div>
 
             <div class="detail-status">
-              <span [class]="'status-badge status-' + getStatusClass(record.estado)">
+              <span [class]="'status-badge status-' + record.estado">
                 {{ getStatusLabel(record.estado) }}
               </span>
             </div>
@@ -100,6 +92,25 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
           </div>
 
           <div class="detail-sidebar">
+            <div class="card">
+              <h3>Acciones</h3>
+              <div class="quick-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-block"
+                  (click)="router.navigate(['/equipment/maintenance'])"
+                >
+                  <i class="fa-solid fa-arrow-left"></i> Volver
+                </button>
+                <button type="button" class="btn btn-primary btn-block" (click)="editRecord()">
+                  <i class="fa-solid fa-pen"></i> Editar
+                </button>
+                <button type="button" class="btn btn-danger btn-block" (click)="deleteRecord()">
+                  <i class="fa-solid fa-trash"></i> Eliminar
+                </button>
+              </div>
+            </div>
+
             <div class="card">
               <h3>Información del Sistema</h3>
               <div class="timeline">
@@ -277,7 +288,7 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
       }
 
       .notes {
-        background: #f8f9fa;
+        background: var(--grey-50);
         padding: var(--s-16);
         border-radius: var(--radius-sm);
         border-left: 4px solid var(--primary-500);
@@ -296,6 +307,17 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
           color: var(--primary-900);
           margin-bottom: var(--s-16);
         }
+      }
+
+      .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-8);
+      }
+
+      .btn-block {
+        width: 100%;
+        justify-content: center;
       }
 
       .timeline {
@@ -363,35 +385,43 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
         border-radius: 50%;
       }
 
-      .status-scheduled {
+      .status-PROGRAMADO {
         background: var(--semantic-blue-50);
         color: var(--semantic-blue-700);
       }
-      .status-scheduled::before {
+      .status-PROGRAMADO::before {
         background: var(--semantic-blue-500);
       }
 
-      .status-in_progress {
+      .status-PENDIENTE {
         background: var(--semantic-yellow-50);
         color: var(--semantic-yellow-700);
       }
-      .status-in_progress::before {
+      .status-PENDIENTE::before {
         background: var(--semantic-yellow-500);
       }
 
-      .status-completed {
+      .status-EN_PROCESO {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .status-EN_PROCESO::before {
+        background: var(--semantic-yellow-500);
+      }
+
+      .status-COMPLETADO {
         background: var(--semantic-green-50);
         color: var(--semantic-green-700);
       }
-      .status-completed::before {
+      .status-COMPLETADO::before {
         background: var(--semantic-green-500);
       }
 
-      .status-cancelled {
+      .status-CANCELADO {
         background: var(--grey-100);
         color: var(--grey-700);
       }
-      .status-cancelled::before {
+      .status-CANCELADO::before {
         background: var(--grey-400);
       }
 
@@ -476,7 +506,7 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
 export class MaintenanceDetailComponent implements OnInit {
   private maintenanceService = inject(MaintenanceService);
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  router = inject(Router);
 
   record: MaintenanceRecord | null = null;
   loading = true;
@@ -512,17 +542,6 @@ export class MaintenanceDetailComponent implements OnInit {
 
   deleteRecord(): void {
     this.showDeleteModal = true;
-  }
-
-  getStatusClass(estado: string): string {
-    const map: Record<string, string> = {
-      PROGRAMADO: 'scheduled',
-      EN_PROCESO: 'in_progress',
-      COMPLETADO: 'completed',
-      CANCELADO: 'cancelled',
-      PENDIENTE: 'pending',
-    };
-    return map[estado] || 'pending';
   }
 
   getStatusLabel(estado: string): string {

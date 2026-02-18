@@ -30,18 +30,10 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                 <h1>Contrato {{ contract.numero_contrato }}</h1>
                 <p class="code-badge">{{ contract.numero_contrato }}</p>
               </div>
-              <div class="detail-actions">
-                <button class="btn btn-primary" (click)="editContract()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button class="btn btn-danger" (click)="deleteContract()">
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
-              </div>
             </div>
 
             <div class="detail-status">
-              <span [class]="'status-badge status-' + getStatusClass(contract.estado)">
+              <span [class]="'status-badge status-' + contract.estado">
                 {{ getStatusLabel(contract.estado) }}
               </span>
             </div>
@@ -227,20 +219,32 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
 
               <section class="detail-section" *ngIf="contract.condiciones_especiales">
                 <h2>Condiciones Especiales</h2>
-                <p style="white-space: pre-wrap;">{{ contract.condiciones_especiales }}</p>
+                <p class="pre-wrap">{{ contract.condiciones_especiales }}</p>
               </section>
             </div>
           </div>
 
           <div class="detail-sidebar">
             <div class="card">
-              <h3>Acciones Rápidas</h3>
+              <h3>Acciones</h3>
               <div class="quick-actions">
+                <button
+                  class="btn btn-secondary btn-block"
+                  (click)="router.navigate(['/equipment/contracts'])"
+                >
+                  <i class="fa-solid fa-arrow-left"></i> Volver
+                </button>
+                <button class="btn btn-primary btn-block" (click)="editContract()">
+                  <i class="fa-solid fa-pen"></i> Editar
+                </button>
                 <button class="btn btn-secondary btn-block" (click)="viewAddendums()">
                   <i class="fa-solid fa-file-signature"></i> Ver Adendas
                 </button>
                 <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
                   <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+                </button>
+                <button class="btn btn-danger btn-block" (click)="deleteContract()">
+                  <i class="fa-solid fa-trash"></i> Eliminar
                 </button>
               </div>
             </div>
@@ -524,36 +528,40 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
         border-radius: 50%;
       }
 
-      .status-draft {
+      .status-BORRADOR {
         background: var(--semantic-yellow-50);
         color: var(--semantic-yellow-700);
       }
-      .status-draft::before {
+      .status-BORRADOR::before {
         background: var(--semantic-yellow-500);
       }
 
-      .status-active {
+      .status-ACTIVO {
         background: var(--semantic-green-50);
         color: var(--semantic-green-700);
       }
-      .status-active::before {
+      .status-ACTIVO::before {
         background: var(--semantic-green-500);
       }
 
-      .status-expired {
+      .status-VENCIDO {
         background: var(--semantic-blue-50);
         color: var(--semantic-blue-700);
       }
-      .status-expired::before {
+      .status-VENCIDO::before {
         background: var(--semantic-blue-500);
       }
 
-      .status-cancelled {
+      .status-CANCELADO {
         background: var(--grey-100);
         color: var(--grey-700);
       }
-      .status-cancelled::before {
+      .status-CANCELADO::before {
         background: var(--grey-400);
+      }
+
+      .pre-wrap {
+        white-space: pre-wrap;
       }
 
       /* Modal */
@@ -741,7 +749,7 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
 export class ContractDetailComponent implements OnInit {
   private contractService = inject(ContractService);
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  router = inject(Router);
   private dialog = inject(MatDialog);
 
   contract: Contract | null = null;
@@ -879,16 +887,6 @@ export class ContractDetailComponent implements OnInit {
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  }
-
-  getStatusClass(estado: string): string {
-    const statusMap: { [key: string]: string } = {
-      BORRADOR: 'draft',
-      ACTIVO: 'active',
-      VENCIDO: 'expired',
-      CANCELADO: 'cancelled',
-    };
-    return statusMap[estado] || 'draft';
   }
 
   getStatusLabel(estado: string): string {

@@ -8,19 +8,19 @@ import {
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
 
-interface Contact {
+interface Contacto {
   id?: number;
-  provider_id: string;
-  contact_name: string;
-  position?: string;
-  primary_phone?: string;
-  secondary_phone?: string;
-  email?: string;
-  secondary_email?: string;
-  contact_type: string;
-  is_primary: boolean;
-  status: string;
-  notes?: string;
+  id_proveedor: string;
+  nombre_contacto: string;
+  cargo?: string;
+  telefono_principal?: string;
+  telefono_secundario?: string;
+  correo?: string;
+  correo_secundario?: string;
+  tipo_contacto: string;
+  es_principal: boolean;
+  estado: string;
+  notas?: string;
 }
 
 @Component({
@@ -46,39 +46,39 @@ interface Contact {
         <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
           <div class="form-grid">
             <div class="form-group">
-              <label for="contact_name">Nombre Contacto *</label>
+              <label for="nombre_contacto">Nombre Contacto *</label>
               <input
-                id="contact_name"
+                id="nombre_contacto"
                 type="text"
-                formControlName="contact_name"
+                formControlName="nombre_contacto"
                 class="form-control"
               />
             </div>
 
             <div class="form-group">
-              <label for="position">Cargo</label>
-              <input id="position" type="text" formControlName="position" class="form-control" />
+              <label for="cargo">Cargo</label>
+              <input id="cargo" type="text" formControlName="cargo" class="form-control" />
             </div>
 
             <div class="form-group">
-              <label for="primary_phone">Teléfono Principal</label>
+              <label for="telefono_principal">Teléfono Principal</label>
               <input
-                id="primary_phone"
+                id="telefono_principal"
                 type="tel"
-                formControlName="primary_phone"
+                formControlName="telefono_principal"
                 class="form-control"
               />
             </div>
 
             <div class="form-group">
-              <label for="email">Email</label>
-              <input id="email" type="email" formControlName="email" class="form-control" />
+              <label for="correo">Correo Electrónico</label>
+              <input id="correo" type="email" formControlName="correo" class="form-control" />
             </div>
 
             <div class="form-group">
-              <label for="contact_type">Tipo Contacto</label>
+              <label for="tipo_contacto">Tipo Contacto</label>
               <app-dropdown
-                formControlName="contact_type"
+                formControlName="tipo_contacto"
                 [options]="contactTypeOptions"
                 [placeholder]="'Seleccionar...'"
               ></app-dropdown>
@@ -86,7 +86,7 @@ interface Contact {
 
             <div class="form-group checkbox-group">
               <label>
-                <input type="checkbox" formControlName="is_primary" />
+                <input type="checkbox" formControlName="es_principal" />
                 Contacto Principal
               </label>
             </div>
@@ -106,22 +106,22 @@ interface Contact {
         <div class="contact-card" *ngFor="let contact of contactsList">
           <div class="card-header">
             <div class="contact-info">
-              <h4>{{ contact.contact_name }}</h4>
-              <span class="position" *ngIf="contact.position">{{ contact.position }}</span>
+              <h4>{{ contact.nombre_contacto }}</h4>
+              <span class="position" *ngIf="contact.cargo">{{ contact.cargo }}</span>
             </div>
             <div class="badges">
-              <span class="badge badge-primary" *ngIf="contact.is_primary">Principal</span>
-              <span class="badge badge-type">{{ getContactTypeLabel(contact.contact_type) }}</span>
+              <span class="badge badge-primary" *ngIf="contact.es_principal">Principal</span>
+              <span class="badge badge-type">{{ getContactTypeLabel(contact.tipo_contacto) }}</span>
             </div>
           </div>
           <div class="card-body">
-            <div class="contact-detail" *ngIf="contact.primary_phone">
+            <div class="contact-detail" *ngIf="contact.telefono_principal">
               <i class="fa-solid fa-phone"></i>
-              <span>{{ contact.primary_phone }}</span>
+              <span>{{ contact.telefono_principal }}</span>
             </div>
-            <div class="contact-detail" *ngIf="contact.email">
+            <div class="contact-detail" *ngIf="contact.correo">
               <i class="fa-solid fa-envelope"></i>
-              <span>{{ contact.email }}</span>
+              <span>{{ contact.correo }}</span>
             </div>
           </div>
           <div class="card-actions">
@@ -143,33 +143,138 @@ interface Contact {
   `,
   styles: [
     `
-    .contacts-section { margin-top: var(--s-24); }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-16); }
-    .section-header h3 { font-size: var(--type-h4-size); color: var(--grey-900); display: flex; align-items: center; gap: var(--s-8); }
-    .contact-form { margin-bottom: var(--s-24); padding: var(--s-24); background: var(--neutral-0); border-radius: var(--s-8); }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s-16); margin-bottom: var(--s-24); }
-    .form-group { display: flex; flex-direction: column; }
-    .form-control, .form-select { padding: var(--s-8) var(--s-12); border: 1px solid var(--grey-300); border-radius: var(--s-4); }
-    .btn { padding: var(--s-8) var(--s-16); border: none; border-radius: var(--s-8); font-weight: 600; cursor: pointer; }
-    .btn-primary { background: var(--primary-500); color: var(--neutral-0); }
-    .btn-secondary { background: var(--grey-300); color: var(--grey-700); }
-    .btn-sm { padding: var(--s-4) var(--s-12); font-size: var(--type-bodySmall-size); }
-    .form-actions { display: flex; gap: var(--s-12); justify-content: flex-end); }
-    .contacts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--s-16); }
-    .contact-card { background: var(--neutral-0); border: 1px solid var(--grey-200); border-radius: var(--s-8); padding: var(--s-16); }
-    .card-header { margin-bottom: var(--s-12); }
-    .contact-info h4 { font-size: var(--type-body-size); font-weight: 600; margin-bottom: var(--s-4); }
-    .position { color: var(--grey-600); font-size: var(--type-bodySmall-size); }
-    .badges { display: flex; gap: var(--s-8); margin-top: var(--s-8); }
-    .badge { padding: var(--s-4) var(--s-8); border-radius: var(--s-12); font-size: var(--type-label-size); font-weight: 600; }
-    .badge-primary { background: var(--primary-100); color: var(--primary-700); }
-    .badge-type { background: var(--grey-100); color: var(--grey-700); }
-    .card-body { margin-bottom: var(--s-12); }
-    .contact-detail { display: flex; align-items: center; gap: var(--s-8); padding: var(--s-8) 0; color: var(--grey-700); }
-    .card-actions { display: flex; gap: var(--s-8); justify-content: flex-end; }
-    .btn-icon { background: none; border: none; cursor: pointer; padding: var(--s-4); color: var(--grey-500); }
-    .empty-state { text-align: center; padding: var(--s-48) var(--s-24); color: var(--grey-500); }
-  `,
+      .contacts-section {
+        margin-top: var(--s-24);
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--s-16);
+      }
+      .section-header h3 {
+        font-size: var(--type-h4-size);
+        color: var(--grey-900);
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+      .contact-form {
+        margin-bottom: var(--s-24);
+        padding: var(--s-24);
+        background: var(--neutral-0);
+        border-radius: var(--s-8);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--s-16);
+        margin-bottom: var(--s-24);
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .form-control,
+      .form-select {
+        padding: var(--s-8) var(--s-12);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--s-4);
+      }
+      .btn {
+        padding: var(--s-8) var(--s-16);
+        border: none;
+        border-radius: var(--s-8);
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: var(--primary-500);
+        color: var(--neutral-0);
+      }
+      .btn-secondary {
+        background: var(--grey-300);
+        color: var(--grey-700);
+      }
+      .btn-sm {
+        padding: var(--s-4) var(--s-12);
+        font-size: var(--type-bodySmall-size);
+      }
+      .form-actions {
+        display: flex;
+        gap: var(--s-12);
+        justify-content: flex-end;
+      }
+      .contacts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: var(--s-16);
+      }
+      .contact-card {
+        background: var(--neutral-0);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--s-8);
+        padding: var(--s-16);
+      }
+      .card-header {
+        margin-bottom: var(--s-12);
+      }
+      .contact-info h4 {
+        font-size: var(--type-body-size);
+        font-weight: 600;
+        margin-bottom: var(--s-4);
+      }
+      .position {
+        color: var(--grey-600);
+        font-size: var(--type-bodySmall-size);
+      }
+      .badges {
+        display: flex;
+        gap: var(--s-8);
+        margin-top: var(--s-8);
+      }
+      .badge {
+        padding: var(--s-4) var(--s-8);
+        border-radius: var(--s-12);
+        font-size: var(--type-label-size);
+        font-weight: 600;
+      }
+      .badge-primary {
+        background: var(--primary-100);
+        color: var(--primary-700);
+      }
+      .badge-type {
+        background: var(--grey-100);
+        color: var(--grey-700);
+      }
+      .card-body {
+        margin-bottom: var(--s-12);
+      }
+      .contact-detail {
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+        padding: var(--s-8) 0;
+        color: var(--grey-700);
+      }
+      .card-actions {
+        display: flex;
+        gap: var(--s-8);
+        justify-content: flex-end;
+      }
+      .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--s-4);
+        color: var(--grey-500);
+      }
+      .empty-state {
+        text-align: center;
+        padding: var(--s-48) var(--s-24);
+        color: var(--grey-500);
+      }
+    `,
   ],
 })
 export class ProviderContactsComponent implements OnInit {
@@ -178,7 +283,7 @@ export class ProviderContactsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
 
-  contactsList: Contact[] = [];
+  contactsList: Contacto[] = [];
   contactForm!: FormGroup;
   showForm = false;
   loading = false;
@@ -199,22 +304,22 @@ export class ProviderContactsComponent implements OnInit {
 
   initForm(): void {
     this.contactForm = this.fb.group({
-      contact_name: ['', Validators.required],
-      position: [''],
-      primary_phone: [''],
-      secondary_phone: [''],
-      email: ['', Validators.email],
-      secondary_email: [''],
-      contact_type: ['general', Validators.required],
-      is_primary: [false],
-      notes: [''],
+      nombre_contacto: ['', Validators.required],
+      cargo: [''],
+      telefono_principal: [''],
+      telefono_secundario: [''],
+      correo: ['', Validators.email],
+      correo_secundario: [''],
+      tipo_contacto: ['general', Validators.required],
+      es_principal: [false],
+      notas: [''],
     });
   }
 
   loadContacts(): void {
     this.loading = true;
     this.http
-      .get<Contact[]>(`${environment.apiUrl}/providers/${this.providerId}/contacts`)
+      .get<Contacto[]>(`${environment.apiUrl}/providers/${this.providerId}/contacts`)
       .subscribe({
         next: (data) => {
           this.contactsList = data;
@@ -247,7 +352,7 @@ export class ProviderContactsComponent implements OnInit {
     });
   }
 
-  editContact(contact: Contact): void {
+  editContact(contact: Contacto): void {
     this.editingId = contact.id!;
     this.contactForm.patchValue(contact);
     this.showForm = true;
@@ -264,7 +369,7 @@ export class ProviderContactsComponent implements OnInit {
   cancelForm(): void {
     this.showForm = false;
     this.editingId = null;
-    this.contactForm.reset({ contact_type: 'general', is_primary: false });
+    this.contactForm.reset({ tipo_contacto: 'general', es_principal: false });
   }
 
   getContactTypeLabel(type: string): string {
