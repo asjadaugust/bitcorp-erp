@@ -93,77 +93,7 @@ body {
   }
 }
 
-// Buttons
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-family: var(--font-family-base);
-  font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &-primary {
-    background: var(--primary-500);
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: var(--primary-900);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-    }
-  }
-
-  &-secondary {
-    background: white;
-    color: var(--primary-500);
-    border: 1px solid var(--primary-500);
-
-    &:hover:not(:disabled) {
-      background: var(--primary-500);
-      color: white;
-    }
-  }
-
-  &-danger {
-    background: var(--semantic-red-500);
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: #c41530;
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-    }
-  }
-
-  &-success {
-    background: var(--semantic-green-500);
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: #008a50;
-    }
-  }
-
-  &-small {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  &-large {
-    padding: 14px 28px;
-    font-size: 16px;
-  }
-}
+// Redundant legacy button styles removed. Buttons are now managed in styles/_buttons.scss
 
 // Cards
 .card {
@@ -634,61 +564,69 @@ body {
   }
 }
 
-// Modal
-.modal {
+// Modal & Dialogs
+.modal,
+.aero-dialog-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.6); // Slate 900 with opacity
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 
   &-content {
     background: white;
     border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
+    padding: 0; // Padding handled by internal components or shared layout
     max-width: 600px;
     width: 90%;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow: hidden;
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--grey-200);
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
 
-  &-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-lg);
+  to {
+    opacity: 1;
+  }
+}
 
-    h2 {
-      font-family: var(--font-family-display);
-      color: var(--primary-900);
-    }
-
-    .close {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--grey-500);
-
-      &:hover {
-        color: var(--primary-900);
-      }
-    }
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
   }
 
-  &-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-lg);
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid #e0e0e0;
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Global Dialog Material Overrides
+.cdk-overlay-backdrop {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.mat-mdc-dialog-container {
+  .mdc-dialog__surface {
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg) !important;
+    overflow: hidden !important;
   }
 }
 

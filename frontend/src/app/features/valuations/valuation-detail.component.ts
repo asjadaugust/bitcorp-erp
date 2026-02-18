@@ -1117,7 +1117,7 @@ import {
 
       .detail-grid {
         display: grid;
-        grid-template-columns: 1fr 350px;
+        grid-template-columns: 1fr 300px;
         gap: var(--s-24);
 
         @media (max-width: 968px) {
@@ -1129,14 +1129,15 @@ import {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: var(--s-24);
+        margin-bottom: var(--s-32);
         padding-bottom: var(--s-24);
-        border-bottom: 2px solid #e0e0e0;
+        border-bottom: 1px solid var(--grey-100);
 
         h1 {
-          font-size: 28px;
-          color: var(--primary-900);
-          margin-bottom: var(--s-4);
+          margin: 0;
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--grey-900);
         }
 
         .code-badge {
@@ -1237,59 +1238,10 @@ import {
         font-style: italic;
       }
 
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-
+      /* Button variants managed globally in _buttons.scss */
       .btn-block {
         width: 100%;
         justify-content: center;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover:not(:disabled) {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover:not(:disabled) {
-        background: var(--grey-300);
-      }
-
-      .btn-success {
-        background: var(--semantic-green-500);
-        color: white;
-      }
-      .btn-success:hover:not(:disabled) {
-        background: var(--semantic-green-700);
-      }
-
-      .btn-danger {
-        background: var(--semantic-red-500);
-        color: white;
-      }
-      .btn-danger:hover:not(:disabled) {
-        background: var(--semantic-red-700);
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
       }
 
       .timeline {

@@ -281,7 +281,7 @@ export class ValuationService {
     try {
       const v = await this.repository.findOne({
         where: { id },
-        relations: ['creator', 'approver'],
+        relations: ['creator', 'approver', 'contrato', 'contrato.provider', 'equipo'],
       });
 
       if (!v) return null;

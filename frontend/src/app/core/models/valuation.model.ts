@@ -52,7 +52,11 @@ export interface Valuation {
   conformidadFecha?: string;
   conformidadObservaciones?: string;
   createdAt?: string;
-  updatedAt?: string;
+  updatedAt: string;
+
+  // Shorthand for header display
+  cliente_nombre?: string;
+  codigo_equipo?: string;
 
   // Relations (populated by backend joins)
   equipo?: {

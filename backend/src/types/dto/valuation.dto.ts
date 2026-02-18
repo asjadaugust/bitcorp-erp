@@ -93,6 +93,10 @@ export interface ValuationDto {
     marca?: string;
     modelo?: string;
   };
+
+  // Shorthand for header display
+  cliente_nombre?: string | null;
+  codigo_equipo?: string | null;
 }
 
 /**
@@ -204,6 +208,10 @@ export function toValuationDto(entity: Valorizacion): ValuationDto {
           modelo: entity.equipo.modelo,
         }
       : undefined,
+
+    // Shorthand for header
+    cliente_nombre: entity.contrato?.provider?.razonSocial || null,
+    codigo_equipo: entity.equipo?.codigoEquipo || null,
   };
 }
 

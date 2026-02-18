@@ -148,6 +148,8 @@ export class ValuationService {
       creador: data.creador,
       aprobador: data.aprobador,
       validador: data.validador,
+      cliente_nombre: data.cliente_nombre,
+      codigo_equipo: data.codigo_equipo,
     } as any;
   }
 
