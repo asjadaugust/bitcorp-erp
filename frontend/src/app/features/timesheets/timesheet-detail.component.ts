@@ -7,7 +7,6 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
-import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   StatsGridComponent,
   StatItem,
@@ -16,214 +15,152 @@ import {
 @Component({
   selector: 'app-timesheet-detail',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    AeroTableComponent,
-    PageLayoutComponent,
-    StatsGridComponent,
-  ],
+  imports: [CommonModule, RouterModule, AeroTableComponent, StatsGridComponent],
   template: `
-    <app-page-layout
-      [breadcrumbs]="breadcrumbs"
-      [loading]="loading"
-      [title]="'Detalle de Planilla'"
-      icon="fa-file-invoice"
-    >
-      <div class="page-header-actions" actions>
-        <div class="header-actions">
-          <button class="btn btn-secondary" routerLink="/operaciones/timesheets">
-            <i class="fa-solid fa-arrow-left"></i> Volver
-          </button>
-          <button
-            *ngIf="timesheet?.estado === 'BORRADOR'"
-            class="btn btn-primary"
-            (click)="submitTimesheet()"
-          >
-            <i class="fa-solid fa-paper-plane"></i> Enviar
-          </button>
-          <button
-            *ngIf="timesheet?.estado === 'ENVIADO'"
-            class="btn btn-success"
-            (click)="approveTimesheet()"
-          >
-            <i class="fa-solid fa-check"></i> Aprobar
-          </button>
-          <button
-            *ngIf="timesheet?.estado === 'ENVIADO'"
-            class="btn btn-danger"
-            (click)="rejectTimesheet()"
-          >
-            <i class="fa-solid fa-xmark"></i> Rechazar
+    <div class="detail-container">
+      <div class="container">
+        <div *ngIf="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando detalles de la planilla...</p>
+        </div>
+
+        <div *ngIf="timesheet && !loading" class="detail-grid">
+          <div class="detail-main">
+            <!-- Header Card -->
+            <div class="card detail-header-card">
+              <div class="detail-header">
+                <div>
+                  <h1>Detalle de Planilla #{{ timesheet.id }}</h1>
+                  <p class="text-subtitle">
+                    {{ timesheet.fecha_inicio | date: 'dd/MM/yyyy' }} -
+                    {{ timesheet.fecha_fin | date: 'dd/MM/yyyy' }}
+                  </p>
+                </div>
+                <div class="detail-status">
+                  <span
+                    class="status-badge"
+                    [class.status-APROBADO]="timesheet.estado === 'APROBADO'"
+                    [class.status-PENDIENTE]="
+                      timesheet.estado === 'ENVIADO' || timesheet.estado === 'BORRADOR'
+                    "
+                    [class.status-CANCELADO]="timesheet.estado === 'RECHAZADO'"
+                  >
+                    {{ timesheet.estado }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Stats Grid -->
+              <app-stats-grid [items]="statItems" testId="timesheet-summary-stats"></app-stats-grid>
+            </div>
+
+            <!-- Details Table Card -->
+            <div class="card mt-6">
+              <div class="detail-section">
+                <h2>Detalle Diario</h2>
+                <div class="table-container">
+                  <aero-table
+                    [columns]="columns"
+                    [data]="timesheet.details || []"
+                    [templates]="{
+                      project: projectTemplate,
+                      equipment: equipmentTemplate,
+                      hours: hoursTemplate,
+                    }"
+                  >
+                  </aero-table>
+
+                  <ng-template #projectTemplate let-row>
+                    {{ row.project?.G00007_Nombre || '-' }}
+                  </ng-template>
+
+                  <ng-template #equipmentTemplate let-row>
+                    {{ row.equipment?.C08001_Nombre || '-' }}
+                  </ng-template>
+
+                  <ng-template #hoursTemplate let-row>
+                    <strong>{{ row.hours_worked }}</strong>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="detail-sidebar">
+            <div class="card">
+              <h3 class="sidebar-card-title">Acciones</h3>
+              <div class="quick-actions">
+                <button
+                  *ngIf="timesheet.estado === 'BORRADOR'"
+                  class="btn btn-primary btn-block"
+                  (click)="submitTimesheet()"
+                >
+                  <i class="fa-solid fa-paper-plane"></i> Enviar Planilla
+                </button>
+                <button
+                  *ngIf="timesheet.estado === 'ENVIADO'"
+                  class="btn btn-primary btn-block"
+                  (click)="approveTimesheet()"
+                >
+                  <i class="fa-solid fa-check"></i> Aprobar Planilla
+                </button>
+                <button
+                  *ngIf="timesheet.estado === 'ENVIADO'"
+                  class="btn btn-danger btn-block"
+                  (click)="rejectTimesheet()"
+                >
+                  <i class="fa-solid fa-xmark"></i> Rechazar Planilla
+                </button>
+                <button class="btn btn-ghost btn-block" routerLink="/operaciones/timesheets">
+                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+                </button>
+              </div>
+            </div>
+
+            <div class="card" *ngIf="timesheet.notes">
+              <h3 class="sidebar-card-title">Observaciones</h3>
+              <p class="text-sm text-grey-600">{{ timesheet.notes }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !loading" class="empty-state-card mt-6">
+          <i class="fa-solid fa-circle-exclamation text-danger"></i>
+          <h3>Error</h3>
+          <p>{{ error }}</p>
+          <button class="btn btn-primary mt-4" routerLink="/operaciones/timesheets">
+            Volver a la lista
           </button>
         </div>
       </div>
-
-      <div *ngIf="timesheet && !loading" class="content-grid">
-        <!-- Summary Stats -->
-        <div class="stats-section">
-          <div class="section-header">
-            <h2>Resumen</h2>
-            <span class="status-badge" [class]="timesheet?.estado || ''">
-              {{ timesheet?.estado }}
-            </span>
-          </div>
-          <app-stats-grid [items]="statItems" testId="timesheet-summary-stats"></app-stats-grid>
-        </div>
-
-        <!-- Details Table -->
-        <div class="card details-card">
-          <h2>Detalle Diario</h2>
-          <div class="table-responsive">
-            <aero-table
-              [columns]="columns"
-              [data]="timesheet.details || []"
-              [templates]="{
-                project: projectTemplate,
-                equipment: equipmentTemplate,
-                hours: hoursTemplate,
-              }"
-            >
-            </aero-table>
-
-            <ng-template #projectTemplate let-row>
-              {{ row.project?.G00007_Nombre || '-' }}
-            </ng-template>
-
-            <ng-template #equipmentTemplate let-row>
-              {{ row.equipment?.C08001_Nombre || '-' }}
-            </ng-template>
-
-            <ng-template #hoursTemplate let-row>
-              <strong>{{ row.hours_worked }}</strong>
-            </ng-template>
-          </div>
-        </div>
-      </div>
-    </app-page-layout>
+    </div>
   `,
   styles: [
     `
-      .container-fluid {
-        padding: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .header-content h1 {
-        margin: 0;
-        font-size: 1.8rem;
-        color: #2d3748;
-      }
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-      }
+      @use 'detail-layout' as *;
 
-      .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
+      .mt-4 {
+        margin-top: 1rem;
+      }
+      .mt-6 {
+        margin-top: 1.5rem;
+      }
+      .text-sm {
         font-size: 0.875rem;
-        font-weight: 600;
       }
-      .status-badge.BORRADOR {
-        background: #edf2f7;
-        color: #4a5568;
+      .text-grey-600 {
+        color: var(--grey-600);
       }
-      .status-badge.ENVIADO {
-        background: #feebc8;
-        color: #c05621;
-      }
-      .status-badge.APROBADO {
-        background: #c6f6d5;
-        color: #2f855a;
-      }
-      .status-badge.RECHAZADO {
-        background: #fed7d7;
-        color: #c53030;
+      .text-subtitle {
+        font-size: 14px;
+        color: var(--grey-500);
+        margin-top: 4px;
       }
 
-      .card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1.5rem;
-      }
-      .stats-section {
-        margin-bottom: 2rem;
-      }
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
-      .section-header h2 {
-        margin: 0;
-        font-size: 1.25rem;
-        color: #4a5568;
-      }
-
-      .text-center {
-        text-align: center;
-        color: #718096;
-        font-style: italic;
-      }
-
-      .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-      }
-      .btn:hover {
-        transform: translateY(-1px);
-      }
-      .btn-primary {
-        background: #3182ce;
-        color: white;
-      }
-      .btn-secondary {
-        background: #e2e8f0;
-        color: #4a5568;
-      }
-      .btn-success {
-        background: #48bb78;
-        color: white;
-      }
-      .btn-danger {
-        background: #f56565;
-        color: white;
-      }
-
-      .loading-spinner {
-        text-align: center;
-        padding: 3rem;
-        color: #718096;
-        font-size: 1.2rem;
-      }
-      .error-message {
-        background: #fed7d7;
-        color: #c53030;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
+      .detail-header-card {
+        padding-bottom: var(--s-24);
       }
     `,
   ],

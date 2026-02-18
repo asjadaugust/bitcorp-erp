@@ -11,11 +11,7 @@ import { Project } from '../../core/models/project.model';
   template: `
     <div class="detail-container">
       <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/projects" class="breadcrumb-link">← Volver a Proyectos</a>
-        </div>
-
-        <div *ngIf="loading" class="loading">
+        <div *ngIf="loading" class="loading-state">
           <div class="spinner"></div>
           <p>Cargando detalles del proyecto...</p>
         </div>
@@ -25,28 +21,26 @@ import { Project } from '../../core/models/project.model';
             <div class="detail-header">
               <div>
                 <h1>{{ project.nombre }}</h1>
-                <p class="code-badge">{{ project.codigo_proyecto }}</p>
+                <p class="text-subtitle">{{ project.codigo_proyecto }}</p>
               </div>
-              <div class="detail-actions">
-                <button type="button" class="btn btn-primary" (click)="editProject()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button type="button" class="btn btn-danger" (click)="deleteProject()">
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
+              <div class="detail-status">
+                <span
+                  class="status-badge"
+                  [class.status-APROBADO]="
+                    project.estado === 'ACTIVO' || project.estado === 'COMPLETADO'
+                  "
+                  [class.status-PENDIENTE]="project.estado === 'EN_PAUSA'"
+                  [class.status-CANCELADO]="project.estado === 'CANCELADO'"
+                >
+                  {{ getStatusLabel(project.estado) }}
+                </span>
               </div>
-            </div>
-
-            <div class="detail-status">
-              <span [class]="'status-badge status-' + getStatusClass(project.estado)">
-                {{ getStatusLabel(project.estado) }}
-              </span>
             </div>
 
             <div class="detail-sections">
               <section class="detail-section">
                 <h2>Información General</h2>
-                <div class="info-grid">
+                <div class="info-grid three-cols">
                   <div class="info-item">
                     <label>Cliente</label>
                     <p>{{ project.cliente || '-' }}</p>
@@ -57,7 +51,7 @@ import { Project } from '../../core/models/project.model';
                   </div>
                   <div class="info-item">
                     <label>Presupuesto Total</label>
-                    <p class="highlight">
+                    <p class="highlight text-primary">
                       {{ project.presupuesto_total | currency: 'PEN' : 'S/ ' }}
                     </p>
                   </div>
@@ -66,7 +60,7 @@ import { Project } from '../../core/models/project.model';
 
               <section class="detail-section">
                 <h2>Fechas y Plazos</h2>
-                <div class="info-grid">
+                <div class="info-grid three-cols">
                   <div class="info-item">
                     <label>Fecha de Inicio</label>
                     <p>{{ project.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
@@ -91,22 +85,45 @@ import { Project } from '../../core/models/project.model';
 
           <div class="detail-sidebar">
             <div class="card">
-              <h3>Acciones Rápidas</h3>
+              <h3 class="sidebar-card-title">Acciones</h3>
               <div class="quick-actions">
-                <button type="button" class="btn btn-secondary" (click)="assignResources()">
+                <button type="button" class="btn btn-primary btn-block" (click)="editProject()">
+                  <i class="fa-solid fa-pen"></i> Editar Proyecto
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-block"
+                  (click)="navigateTo('/projects')"
+                >
+                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+                </button>
+                <button type="button" class="btn btn-danger btn-block" (click)="deleteProject()">
+                  <i class="fa-solid fa-trash"></i> Eliminar Proyecto
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 class="sidebar-card-title">Gestión</h3>
+              <div class="quick-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-block"
+                  (click)="assignResources()"
+                >
                   <i class="fa-solid fa-users"></i> Asignar Recursos
                 </button>
-                <button type="button" class="btn btn-secondary" (click)="viewReports()">
+                <button type="button" class="btn btn-secondary btn-block" (click)="viewReports()">
                   <i class="fa-solid fa-file-alt"></i> Ver Reportes
                 </button>
-                <button type="button" class="btn btn-secondary" (click)="viewBudget()">
+                <button type="button" class="btn btn-secondary btn-block" (click)="viewBudget()">
                   <i class="fa-solid fa-chart-line"></i> Ver Presupuesto
                 </button>
               </div>
             </div>
 
             <div class="card">
-              <h3>Información del Sistema</h3>
+              <h3 class="sidebar-card-title">Información del Sistema</h3>
               <div class="timeline">
                 <div class="timeline-item">
                   <div class="timeline-date">{{ project.updated_at | date: 'short' }}</div>
@@ -121,10 +138,11 @@ import { Project } from '../../core/models/project.model';
           </div>
         </div>
 
-        <div *ngIf="!loading && !project" class="empty-state card">
+        <div *ngIf="!loading && !project" class="empty-state-card mt-6">
+          <i class="fa-solid fa-project-diagram"></i>
           <h3>Proyecto no encontrado</h3>
           <p>El proyecto que buscas no existe o ha sido eliminado.</p>
-          <button type="button" class="btn btn-primary" (click)="navigateTo('/projects')">
+          <button type="button" class="btn btn-primary mt-4" (click)="navigateTo('/projects')">
             Volver a la lista
           </button>
         </div>
@@ -159,260 +177,42 @@ import { Project } from '../../core/models/project.model';
   `,
   styles: [
     `
-      .detail-container {
-        min-height: 100vh;
-        background: #f5f5f5;
-        padding: var(--s-24) 0;
+      @use 'detail-layout' as *;
+
+      .text-subtitle {
+        font-size: 16px;
+        color: var(--grey-600);
+        margin-top: -4px;
+        font-family: monospace;
+        background: var(--grey-100);
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
       }
 
-      .breadcrumb {
-        margin-bottom: var(--s-24);
+      .highlight {
+        font-weight: 700;
+        font-size: 20px;
       }
 
-      .breadcrumb-link {
-        color: var(--primary-500);
-        text-decoration: none;
-        font-weight: 500;
-
-        &:hover {
-          text-decoration: underline;
-        }
+      .text-primary {
+        color: var(--primary-600);
       }
-
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: var(--s-24);
-
-        @media (max-width: 968px) {
-          grid-template-columns: 1fr;
-        }
+      .mt-4 {
+        margin-top: 1rem;
       }
-
-      .detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: var(--s-24);
-        padding-bottom: var(--s-24);
-        border-bottom: 2px solid #e0e0e0;
-
-        h1 {
-          font-size: 28px;
-          color: var(--primary-900);
-          margin-bottom: var(--s-4);
-        }
-
-        .code-badge {
-          font-family: monospace;
-          background: var(--grey-100);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 14px;
-          color: var(--grey-700);
-          font-weight: 600;
-          display: inline-block;
-        }
-
-        @media (max-width: 768px) {
-          flex-direction: column;
-          gap: var(--s-16);
-        }
-      }
-
-      .detail-actions {
-        display: flex;
-        gap: var(--s-8);
-
-        @media (max-width: 768px) {
-          width: 100%;
-
-          .btn {
-            flex: 1;
-          }
-        }
-      }
-
-      .detail-status {
-        margin-bottom: var(--s-24);
-      }
-
-      .detail-sections {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-32);
-      }
-
-      .detail-section {
-        h2 {
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-24);
-      }
-
-      .info-item {
-        label {
-          display: block;
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--grey-500);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: var(--s-4);
-        }
-
-        p {
-          font-size: 16px;
-          color: #333;
-          margin: 0;
-
-          &.highlight {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--primary-500);
-          }
-        }
+      .mt-6 {
+        margin-top: 1.5rem;
       }
 
       .notes {
-        background: #f8f9fa;
+        background: var(--grey-50);
         padding: var(--s-16);
         border-radius: var(--radius-sm);
         border-left: 4px solid var(--primary-500);
         line-height: 1.6;
         margin: 0;
-      }
-
-      .detail-sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-24);
-
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
-      }
-
-      .quick-actions {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-8);
-      }
-
-      .btn-block {
-        width: 100%;
-        justify-content: center;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .timeline {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-16);
-      }
-
-      .timeline-item {
-        position: relative;
-        padding-left: var(--s-24);
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--primary-500);
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 3px;
-          top: 14px;
-          width: 2px;
-          height: calc(100% + var(--s-16));
-          background: #e0e0e0;
-        }
-
-        &:last-child::after {
-          display: none;
-        }
-      }
-
-      .timeline-date {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-bottom: var(--s-4);
-      }
-
-      .timeline-content {
-        font-size: 14px;
-        color: #333;
-      }
-
-      /* Status Badges */
-      .status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .status-badge::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-
-      .status-active {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-active::before {
-        background: var(--semantic-green-500);
-      }
-
-      .status-completed {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-completed::before {
-        background: var(--semantic-blue-500);
-      }
-
-      .status-on-hold {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-on-hold::before {
-        background: var(--semantic-yellow-500);
-      }
-
-      .status-cancelled {
-        background: var(--grey-100);
         color: var(--grey-700);
-      }
-      .status-cancelled::before {
-        background: var(--grey-400);
       }
 
       /* Modal */

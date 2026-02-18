@@ -326,13 +326,13 @@ export interface TableColumn {
       /* Pagination Styles */
       .pagination-container {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
         padding: 12px 16px;
         border-top: 1px solid var(--grey-200);
         background: var(--grey-50);
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 24px;
       }
 
       .pagination-info {
@@ -341,7 +341,7 @@ export interface TableColumn {
         gap: 16px;
         font-size: 13px;
         color: var(--grey-700);
-        flex-wrap: wrap;
+        margin-right: auto;
       }
 
       .page-size-selector {

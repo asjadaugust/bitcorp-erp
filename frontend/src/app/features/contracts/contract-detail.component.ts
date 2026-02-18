@@ -14,159 +14,118 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
   template: `
     <div class="detail-container">
       <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/equipment/contracts" class="breadcrumb-link">← Volver a Contratos</a>
-        </div>
-
-        <div *ngIf="loading" class="loading">
+        <div *ngIf="loading" class="loading-state">
           <div class="spinner"></div>
           <p>Cargando detalles del contrato...</p>
         </div>
 
         <div *ngIf="!loading && contract" class="detail-grid">
+          <!-- Main Column -->
           <div class="detail-main card">
+            <!-- Header (Inside Main Card) -->
             <div class="detail-header">
               <div>
-                <h1>Contrato {{ contract.numero_contrato }}</h1>
-                <p class="code-badge">{{ contract.numero_contrato }}</p>
+                <h1>Contrato {{ contract.code }}</h1>
+                <p class="text-subtitle">
+                  {{ contract.client_name }}
+                </p>
+              </div>
+              <div class="detail-status">
+                <span
+                  class="status-badge"
+                  [class.status-APROBADO]="contract.status === 'ACTIVO'"
+                  [class.status-PENDIENTE]="
+                    contract.status === 'PENDIENTE' || contract.status === 'BORRADOR'
+                  "
+                  [class.status-CANCELADO]="
+                    contract.status === 'FINALIZADO' || contract.status === 'RESCINDIDO'
+                  "
+                  [class.status-VENCIDO]="contract.status === 'VENCIDO'"
+                >
+                  {{ contract.status }}
+                </span>
               </div>
             </div>
 
-            <div class="detail-status">
-              <span [class]="'status-badge status-' + contract.estado">
-                {{ getStatusLabel(contract.estado) }}
-              </span>
+            <!-- Key Info Grid (Header) -->
+            <div class="info-grid four-cols mb-6 border-b border-grey-100 pb-6">
+              <div class="info-item">
+                <label>Fecha Inicio</label>
+                <p>{{ contract.start_date | date: 'dd/MM/yyyy' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Fecha Fin</label>
+                <p>{{ contract.end_date | date: 'dd/MM/yyyy' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Monto Total</label>
+                <p class="font-medium text-lg">
+                  {{ contract.total_amount | currency: 'USD' }}
+                </p>
+              </div>
+              <div class="info-item">
+                <label>Tipo</label>
+                <p>{{ contract.contract_type || 'Alquiler' }}</p>
+              </div>
             </div>
 
             <div class="detail-sections">
-              <section class="detail-section">
-                <h2>Información General</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Tipo</label>
-                    <p>{{ contract.tipo || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Modalidad</label>
-                    <p>{{ contract.modalidad_display || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tarifa</label>
-                    <p class="highlight">
-                      {{ contract.moneda === 'PEN' ? 'S/ ' : '$ ' }}{{ contract.tarifa }}
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tipo Tarifa</label>
-                    <p>{{ contract.tipo_tarifa_display || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Mínimo Por</label>
-                    <p>{{ contract.minimo_por || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Horas Incluidas</label>
-                    <p>{{ contract.horas_incluidas || 0 }}</p>
+              <!-- Termination Alert Section (if applicable) -->
+              <section *ngIf="contract.termination_date" class="detail-section termination-section">
+                <div class="alert alert-danger bg-red-50 border border-red-200 rounded-md p-4">
+                  <div class="flex items-start">
+                    <i class="fa-solid fa-circle-exclamation text-red-600 mt-1 mr-3"></i>
+                    <div>
+                      <h3 class="text-red-800 font-semibold text-sm">Contrato Rescindido</h3>
+                      <p class="text-red-700 text-sm mt-1">
+                        Este contrato fue rescindido el
+                        {{ contract.termination_date | date: 'longDate' }}.
+                      </p>
+                      <p *ngIf="contract.termination_reason" class="text-red-700 text-sm mt-1">
+                        <strong>Motivo:</strong> {{ contract.termination_reason }}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </section>
 
+              <!-- Equipment Info -->
               <section class="detail-section">
-                <h2>Equipo</h2>
-                <div class="info-grid">
+                <h2>Equipo Asignado</h2>
+                <div class="info-grid four-cols">
                   <div class="info-item">
                     <label>Código</label>
-                    <p>{{ contract.equipo_codigo || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Marca</label>
-                    <p>{{ contract.equipo_marca || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Modelo</label>
-                    <p>{{ contract.equipo_modelo || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Placa</label>
-                    <p>{{ contract.equipo_placa || '-' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Vigencia</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Fecha de Contrato</label>
-                    <p>{{ contract.fecha_contrato | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha de Inicio</label>
-                    <p>{{ contract.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha de Fin</label>
-                    <p>{{ contract.fecha_fin | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Días Restantes</label>
-                    <p [class.text-warning]="isExpiring(contract.fecha_fin)">
-                      {{ getDaysRemaining(contract.fecha_fin) }} días
+                    <p class="font-medium">
+                      <a
+                        [routerLink]="['/equipment', contract.equipment_id]"
+                        class="text-primary-600 hover:underline"
+                      >
+                        {{ contract.equipment?.codigo_equipo || '-' }}
+                      </a>
                     </p>
                   </div>
-                </div>
-              </section>
-
-              <section
-                class="detail-section"
-                *ngIf="contract.documento_acredita || contract.jurisdiccion || contract.plazo_texto"
-              >
-                <h2>Propiedad y Jurisdicción</h2>
-                <div class="info-grid">
-                  <div class="info-item" *ngIf="contract.documento_acredita">
-                    <label>Documento que Acredita</label>
-                    <p>{{ contract.documento_acredita }}</p>
+                  <div class="info-item">
+                    <label>Marca/Modelo</label>
+                    <p>{{ contract.equipment?.marca }} {{ contract.equipment?.modelo }}</p>
                   </div>
-                  <div class="info-item" *ngIf="contract.fecha_acreditada">
-                    <label>Fecha Acreditada</label>
-                    <p>{{ contract.fecha_acreditada | date: 'dd/MM/yyyy' }}</p>
+                  <div class="info-item">
+                    <label>Serie</label>
+                    <p>{{ contract.equipment?.numero_serie_equipo || '-' }}</p>
                   </div>
-                  <div class="info-item" *ngIf="contract.jurisdiccion">
-                    <label>Jurisdicción</label>
-                    <p>{{ contract.jurisdiccion }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="contract.plazo_texto">
-                    <label>Plazo</label>
-                    <p>{{ contract.plazo_texto }}</p>
+                  <div class="info-item">
+                    <label>Ubicación</label>
+                    <p>{{ contract.location || 'No especificada' }}</p>
                   </div>
                 </div>
               </section>
 
-              <section
-                class="detail-section termination-section"
-                *ngIf="contract.estado === 'CANCELADO'"
-              >
-                <h2>Resolución del Contrato</h2>
-                <div class="info-grid">
-                  <div class="info-item" *ngIf="contract.motivo_resolucion">
-                    <label>Motivo de Resolución</label>
-                    <p>{{ contract.motivo_resolucion }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="contract.fecha_resolucion">
-                    <label>Fecha de Resolución</label>
-                    <p>{{ contract.fecha_resolucion | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="contract.monto_liquidacion">
-                    <label>Monto de Liquidación</label>
-                    <p class="highlight">
-                      {{ contract.moneda === 'PEN' ? 'S/ ' : '$ ' }}{{ contract.monto_liquidacion }}
-                    </p>
-                  </div>
-                </div>
-              </section>
+              <!-- Contract Details -->
+            </div>
 
-              <section class="detail-section" *ngIf="annexA.length > 0">
-                <h2>ANEXO A — Inclusiones de Tarifa</h2>
+            <!-- Annex A -->
+            <div class="detail-section" *ngIf="annexA.length > 0">
+              <h2>ANEXO A — Inclusiones de Tarifa</h2>
+              <div class="table-container">
                 <table class="annex-table">
                   <thead>
                     <tr>
@@ -189,10 +148,13 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                     </tr>
                   </tbody>
                 </table>
-              </section>
+              </div>
+            </div>
 
-              <section class="detail-section" *ngIf="annexB.length > 0">
-                <h2>ANEXO B — Condiciones de Valorización</h2>
+            <!-- Annex B -->
+            <div class="detail-section" *ngIf="annexB.length > 0">
+              <h2>ANEXO B — Condiciones de Valorización</h2>
+              <div class="table-container">
                 <table class="annex-table">
                   <thead>
                     <tr>
@@ -215,25 +177,54 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                     </tr>
                   </tbody>
                 </table>
-              </section>
+              </div>
+            </div>
 
-              <section class="detail-section" *ngIf="contract.condiciones_especiales">
-                <h2>Condiciones Especiales</h2>
-                <p class="pre-wrap">{{ contract.condiciones_especiales }}</p>
-              </section>
+            <!-- Property & Jurisdiction -->
+            <div
+              class="detail-section"
+              *ngIf="contract.documento_acredita || contract.jurisdiccion || contract.plazo_texto"
+            >
+              <h2>Propiedad y Jurisdicción</h2>
+              <div class="info-grid three-cols">
+                <div class="info-item" *ngIf="contract.documento_acredita">
+                  <label>Documento que Acredita</label>
+                  <p>{{ contract.documento_acredita }}</p>
+                </div>
+                <div class="info-item" *ngIf="contract.fecha_acreditada">
+                  <label>Fecha Acreditada</label>
+                  <p>
+                    {{ contract.fecha_acreditada | date: 'dd/MM/yyyy' }}
+                  </p>
+                </div>
+                <div class="info-item" *ngIf="contract.jurisdiccion">
+                  <label>Jurisdicción</label>
+                  <p>{{ contract.jurisdiccion }}</p>
+                </div>
+                <div class="info-item" *ngIf="contract.plazo_texto">
+                  <label>Plazo</label>
+                  <p>{{ contract.plazo_texto }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Special Conditions -->
+            <div class="card" *ngIf="contract.condiciones_especiales">
+              <div class="detail-section">
+                <h2><i class="fa-solid fa-circle-exclamation"></i> Condiciones Especiales</h2>
+              </div>
+              <div class="text-content">
+                <p>{{ contract.condiciones_especiales }}</p>
+              </div>
             </div>
           </div>
 
+          <!-- Sidebar -->
           <div class="detail-sidebar">
+            <!-- Quick Actions -->
             <div class="card">
-              <h3>Acciones</h3>
+              <h3 class="sidebar-card-title">Acciones</h3>
               <div class="quick-actions">
-                <button
-                  class="btn btn-secondary btn-block"
-                  (click)="router.navigate(['/equipment/contracts'])"
-                >
-                  <i class="fa-solid fa-arrow-left"></i> Volver
-                </button>
                 <button class="btn btn-primary btn-block" (click)="editContract()">
                   <i class="fa-solid fa-pen"></i> Editar
                 </button>
@@ -243,14 +234,18 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
                 <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
                   <i class="fa-solid fa-file-pdf"></i> Descargar PDF
                 </button>
+                <button class="btn btn-ghost btn-block" routerLink="/equipment/contracts">
+                  <i class="fa-solid fa-arrow-left"></i> Cancelar
+                </button>
                 <button class="btn btn-danger btn-block" (click)="deleteContract()">
                   <i class="fa-solid fa-trash"></i> Eliminar
                 </button>
               </div>
             </div>
 
+            <!-- Required Docs -->
             <div class="card" *ngIf="requiredDocs.length > 0">
-              <h3>Documentos Requeridos</h3>
+              <h3 class="sidebar-title">Documentos Requeridos</h3>
               <div class="required-docs-list">
                 <div class="req-doc-item" *ngFor="let doc of requiredDocs">
                   <div class="req-doc-header">
@@ -266,35 +261,78 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
               </div>
             </div>
 
+            <!-- Validity & Dates -->
             <div class="card">
-              <h3>Información del Sistema</h3>
+              <h3 class="sidebar-title">Vigencia</h3>
+              <div class="info-list">
+                <div class="info-list-item">
+                  <label>Fecha Contrato</label>
+                  <span>{{ contract.fecha_contrato | date: 'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="info-list-item">
+                  <label>Fecha Inicio</label>
+                  <span>{{ contract.fecha_inicio | date: 'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="info-list-item">
+                  <label>Fecha Fin</label>
+                  <span>{{ contract.fecha_fin | date: 'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="info-list-item">
+                  <label>Días Restantes</label>
+                  <span [class.text-warning]="isExpiring(contract.fecha_fin)">
+                    {{ getDaysRemaining(contract.fecha_fin) }} días
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="card">
+              <h3 class="sidebar-title">Información del Sistema</h3>
               <div class="timeline">
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ contract.updated_at | date: 'short' }}</div>
-                  <div class="timeline-content">Última actualización</div>
+                  <div class="timeline-marker"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-date">
+                      {{ contract.updated_at | date: 'short' }}
+                    </div>
+                    <div class="timeline-text">Última actualización</div>
+                  </div>
                 </div>
                 <div class="timeline-item">
-                  <div class="timeline-date">{{ contract.created_at | date: 'short' }}</div>
-                  <div class="timeline-content">Contrato creado</div>
+                  <div class="timeline-marker"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-date">
+                      {{ contract.created_at | date: 'short' }}
+                    </div>
+                    <div class="timeline-text">Contrato creado</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Empty State -->
         <div *ngIf="!loading && !contract" class="empty-state card">
+          <i class="fa-solid fa-file-contract"></i>
           <h3>Contrato no encontrado</h3>
           <p>El contrato que buscas no existe o ha sido eliminado.</p>
-          <button class="btn btn-primary" routerLink="/contracts">Volver a la lista</button>
+          <button class="btn btn-primary" routerLink="/equipment/contracts">
+            Volver a la lista
+          </button>
         </div>
       </div>
     </div>
 
-    <div *ngIf="showDeleteModal" class="modal" (click)="showDeleteModal = false">
+    <!-- Delete Modal -->
+    <div *ngIf="showDeleteModal" class="modal-overlay" (click)="showDeleteModal = false">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Confirmar Eliminación</h2>
-          <button class="close" (click)="showDeleteModal = false">&times;</button>
+          <button class="btn-icon close-btn" (click)="showDeleteModal = false">
+            <i class="fa-solid fa-times"></i>
+          </button>
         </div>
         <div class="modal-body">
           <p>
@@ -302,7 +340,10 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
             <strong>{{ contract?.numero_contrato }}</strong
             >?
           </p>
-          <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
+          <div class="alert alert-warning">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            Esta acción no se puede deshacer.
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>
@@ -316,262 +357,464 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
       .detail-container {
         min-height: 100vh;
         background: #f5f5f5;
-        padding: var(--s-24) 0;
+        padding: 1.5rem 0;
       }
 
-      .breadcrumb {
-        margin-bottom: var(--s-24);
-      }
-
-      .breadcrumb-link {
-        color: var(--primary-500);
-        text-decoration: none;
-        font-weight: 500;
-
-        &:hover {
-          text-decoration: underline;
-        }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
       }
 
       .detail-grid {
         display: grid;
         grid-template-columns: 1fr 350px;
-        gap: var(--s-24);
+        gap: 1.5rem;
+      }
 
-        @media (max-width: 968px) {
+      @media (max-width: 968px) {
+        .detail-grid {
           grid-template-columns: 1fr;
         }
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
       }
 
       .detail-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: var(--s-24);
-        padding-bottom: var(--s-24);
-        border-bottom: 2px solid #e0e0e0;
-
-        h1 {
-          font-size: 28px;
-          color: var(--primary-900);
-          margin-bottom: var(--s-4);
-        }
-
-        .code-badge {
-          font-family: monospace;
-          background: var(--grey-100);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 14px;
-          color: var(--grey-700);
-          font-weight: 600;
-          display: inline-block;
-        }
-
-        @media (max-width: 768px) {
-          flex-direction: column;
-          gap: var(--s-16);
-        }
+        margin-bottom: 1.5rem;
       }
 
-      .detail-actions {
-        display: flex;
-        gap: var(--s-8);
+      .detail-header h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.25rem 0;
+      }
 
-        @media (max-width: 768px) {
-          width: 100%;
-
-          .btn {
-            flex: 1;
-          }
-        }
+      .text-subtitle {
+        font-size: 1rem;
+        color: #6b7280;
+        margin: 0;
       }
 
       .detail-status {
-        margin-bottom: var(--s-24);
-      }
-
-      .detail-sections {
         display: flex;
         flex-direction: column;
-        gap: var(--s-32);
+        align-items: flex-end;
       }
 
-      .detail-section {
-        h2 {
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
+      .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      .status-active,
+      .status-APROBADO,
+      .status-ACTIVO {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+
+      .status-pending,
+      .status-PENDIENTE,
+      .status-BORRADOR {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
+      .status-cancelled,
+      .status-CANCELADO,
+      .status-RESCINDIDO,
+      .status-FINALIZADO {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+
+      .status-expired,
+      .status-VENCIDO {
+        background-color: #fee2e2;
+        color: #991b1b;
       }
 
       .info-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-24);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
       }
 
-      .info-item {
-        label {
-          display: block;
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--grey-500);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: var(--s-4);
-        }
+      .info-grid.four-cols {
+        grid-template-columns: repeat(4, 1fr);
+      }
 
-        p {
-          font-size: 16px;
-          color: #333;
-          margin: 0;
+      .info-grid.three-cols {
+        grid-template-columns: repeat(3, 1fr);
+      }
 
-          &.highlight {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--primary-500);
-          }
+      .info-grid.two-cols {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (max-width: 768px) {
+        .info-grid.four-cols,
+        .info-grid.three-cols,
+        .info-grid.two-cols {
+          grid-template-columns: 1fr 1fr;
         }
+      }
+
+      .info-item label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+      }
+
+      .info-item p {
+        margin: 0;
+        font-size: 1rem;
+        color: #111827;
+        font-weight: 400;
+      }
+
+      .info-item p.font-medium {
+        font-weight: 500;
+      }
+
+      .info-item p.text-lg {
+        font-size: 1.125rem;
+      }
+
+      .hover\:underline:hover {
+        text-decoration: underline;
+      }
+
+      .detail-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .detail-section:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .detail-section h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 1rem 0;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      .annex-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+
+      .annex-table th {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        background-color: #f9fafb;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .annex-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        color: #111827;
+      }
+
+      .badge-yes {
+        background-color: #d1fae5;
+        color: #065f46;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .badge-no {
+        background-color: #f3f4f6;
+        color: #6b7280;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
       }
 
       .detail-sidebar {
         display: flex;
         flex-direction: column;
-        gap: var(--s-24);
-
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
+        gap: 1.5rem;
       }
 
-      .quick-actions {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-8);
+      .sidebar-card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 1rem 0;
+      }
+
+      .sidebar-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 1rem 0;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        gap: 0.5rem;
       }
 
       .btn-block {
         width: 100%;
-        justify-content: center;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        margin-bottom: 0.5rem;
       }
 
-      .timeline {
+      .btn-primary {
+        background-color: #2563eb;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #1d4ed8;
+      }
+
+      .btn-secondary {
+        background-color: #ffffff;
+        border-color: #d1d5db;
+        color: #374151;
+      }
+
+      .btn-secondary:hover {
+        background-color: #f9fafb;
+      }
+
+      .btn-danger {
+        background-color: #dc2626;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #b91c1c;
+      }
+
+      .btn-warning {
+        background-color: #d97706;
+        color: white;
+      }
+
+      .btn-warning:hover {
+        background-color: #b45309;
+      }
+
+      .btn-ghost {
+        background-color: transparent;
+        color: #6b7280;
+      }
+
+      .btn-ghost:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+      }
+
+      /* Utilities */
+      .mt-6 {
+        margin-top: 1.5rem;
+      }
+      .mb-6 {
+        margin-bottom: 1.5rem;
+      }
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
+      .border-b {
+        border-bottom-width: 1px;
+      }
+      .border-grey-100 {
+        border-color: #f3f4f6;
+      }
+      .pb-6 {
+        padding-bottom: 1.5rem;
+      }
+      .mr-1 {
+        margin-right: 0.25rem;
+      }
+      .mr-3 {
+        margin-right: 0.75rem;
+      }
+      .text-muted {
+        color: #9ca3af;
+      }
+      .text-primary-600 {
+        color: #2563eb;
+      }
+      .font-semibold {
+        font-weight: 600;
+      }
+      .text-sm {
+        font-size: 0.875rem;
+      }
+      .p-4 {
+        padding: 1rem;
+      }
+      .rounded-md {
+        border-radius: 0.375rem;
+      }
+      .flex {
+        display: flex;
+      }
+      .items-start {
+        align-items: flex-start;
+      }
+
+      .empty-state-section {
+        text-align: center;
+        padding: 2rem;
+        color: #6b7280;
+        background: #f9fafb;
+        border-radius: 0.5rem;
+      }
+
+      .empty-state-section i {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        color: #d1d5db;
+      }
+
+      .text-content {
+        max-width: 80ch;
+        line-height: 1.6;
+        color: #374151;
+      }
+
+      /* Required Docs Styles */
+      .required-docs-list {
         display: flex;
         flex-direction: column;
-        gap: var(--s-16);
+        gap: 0.5rem;
       }
 
-      .timeline-item {
-        position: relative;
-        padding-left: var(--s-24);
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--primary-500);
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 3px;
-          top: 14px;
-          width: 2px;
-          height: calc(100% + var(--s-16));
-          background: #e0e0e0;
-        }
-
-        &:last-child::after {
-          display: none;
-        }
+      .req-doc-item {
+        padding: 0.75rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background: white;
       }
 
-      .timeline-date {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-bottom: var(--s-4);
+      .req-doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.25rem;
+        gap: 0.5rem;
       }
 
-      .timeline-content {
-        font-size: 14px;
-        color: #333;
-      }
-
-      /* Status Badges */
-      .status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
+      .req-doc-type {
         font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
+        font-size: 0.875rem;
+        color: #374151;
       }
 
-      .status-badge::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
+      .req-doc-badge {
+        font-size: 0.75rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-weight: 500;
       }
 
-      .status-BORRADOR {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-BORRADOR::before {
-        background: var(--semantic-yellow-500);
+      .req-doc-vigente,
+      .req-doc-active {
+        background-color: #d1fae5;
+        color: #065f46;
       }
 
-      .status-ACTIVO {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-ACTIVO::before {
-        background: var(--semantic-green-500);
+      .req-doc-vencido,
+      .req-doc-expired {
+        background-color: #fee2e2;
+        color: #991b1b;
       }
 
-      .status-VENCIDO {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-VENCIDO::before {
-        background: var(--semantic-blue-500);
+      .req-doc-por_vencer,
+      .req-doc-warning {
+        background-color: #fef3c7;
+        color: #92400e;
       }
 
-      .status-CANCELADO {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-      .status-CANCELADO::before {
-        background: var(--grey-400);
+      .req-doc-meta {
+        font-size: 0.75rem;
+        color: #6b7280;
       }
 
-      .pre-wrap {
-        white-space: pre-wrap;
+      /* Info List for Validity */
+      .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
       }
 
-      /* Modal */
-      .modal {
+      .info-list-item {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .info-list-item label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.125rem;
+      }
+
+      .info-list-item span {
+        font-size: 0.875rem;
+        color: #111827;
+        font-weight: 500;
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.5);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -580,168 +823,106 @@ import { ContractAddendumDialogComponent } from './components/contract-addendum-
 
       .modal-content {
         background: white;
-        padding: 0;
-        border-radius: var(--radius-md);
+        border-radius: 0.5rem;
         width: 90%;
         max-width: 500px;
-        box-shadow: var(--shadow-lg);
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
       }
 
       .modal-header {
-        padding: var(--s-16) var(--s-24);
-        border-bottom: 1px solid var(--grey-200);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
         display: flex;
         justify-content: space-between;
         align-items: center;
+      }
 
-        h2 {
-          margin: 0;
-          font-size: 18px;
-        }
-
-        .close {
-          background: none;
-          border: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: var(--grey-500);
-        }
+      .modal-header h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
       }
 
       .modal-body {
-        padding: var(--s-24);
-
-        p {
-          margin-bottom: var(--s-16);
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
+        padding: 1.5rem;
       }
 
       .modal-footer {
-        padding: var(--s-16) var(--s-24);
-        border-top: 1px solid var(--grey-200);
+        padding: 1rem 1.5rem;
+        background-color: #f9fafb;
+        border-top: 1px solid #e5e7eb;
         display: flex;
         justify-content: flex-end;
-        gap: var(--s-8);
+        gap: 0.75rem;
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
       }
 
+      .btn-icon {
+        background: transparent;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 1.25rem;
+      }
+
+      .btn-icon:hover {
+        color: #6b7280;
+      }
+
+      /* Loading State */
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem;
+        color: #6b7280;
+      }
+
+      .spinner {
+        border: 3px solid #e5e7eb;
+        border-top: 3px solid #2563eb;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Alert Styles */
       .alert {
-        padding: var(--s-12);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 0.75rem;
       }
 
       .alert-warning {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-        border: 1px solid var(--semantic-yellow-200);
+        background-color: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fcd34d;
       }
 
-      .text-warning {
-        color: #f59e0b;
-        font-weight: 600;
-      }
-
-      .termination-section {
-        background: var(--semantic-red-50, #fef2f2);
-        border: 1px solid var(--semantic-red-200, #fecaca);
-        border-radius: 8px;
-        padding: var(--s-16);
-      }
-
-      /* Annex Tables */
-      .annex-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-
-        th,
-        td {
-          padding: 8px 12px;
-          text-align: left;
-          border-bottom: 1px solid var(--grey-200);
-        }
-
-        th {
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--grey-500);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-      }
-
-      .badge-yes {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-
-      .badge-no {
-        background: var(--grey-100);
-        color: var(--grey-600);
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-
-      /* Required Documents */
-      .required-docs-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-8);
-      }
-
-      .req-doc-item {
-        padding: var(--s-8);
-        border: 1px solid var(--grey-200);
-        border-radius: 6px;
-      }
-
-      .req-doc-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .req-doc-type {
-        font-size: 13px;
-        font-weight: 500;
-      }
-
-      .req-doc-badge {
-        font-size: 11px;
-        padding: 2px 6px;
-        border-radius: 10px;
-        font-weight: 500;
-      }
-
-      .req-doc-pendiente {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-
-      .req-doc-cumplido {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-
-      .req-doc-vencido {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-      }
-
-      .req-doc-meta {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-top: 4px;
+      .alert-danger {
+        background-color: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
       }
     `,
   ],
@@ -811,10 +992,6 @@ export class ContractDetailComponent implements OnInit {
     }
   }
 
-  deleteContract(): void {
-    this.showDeleteModal = true;
-  }
-
   confirmDelete(): void {
     if (this.contract) {
       this.contractService.delete(this.contract.id.toString()).subscribe({
@@ -827,6 +1004,10 @@ export class ContractDetailComponent implements OnInit {
         },
       });
     }
+  }
+
+  deleteContract(): void {
+    this.showDeleteModal = true;
   }
 
   viewAddendums(): void {

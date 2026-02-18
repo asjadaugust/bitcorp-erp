@@ -33,7 +33,7 @@ interface InfoFinanciera {
           type="button"
           class="btn btn-primary btn-sm"
           (click)="showForm = !showForm"
-          *ngIf="!showForm"
+          *ngIf="!showForm && !readOnly"
         >
           <i class="fa-solid fa-plus"></i> Agregar Cuenta
         </button>
@@ -114,11 +114,13 @@ interface InfoFinanciera {
         <div class="financial-card" *ngFor="let info of financialInfoList">
           <div class="card-header">
             <div class="bank-info">
-              <h4>{{ info.nombre_banco }}</h4>
-              <span class="badge badge-primary" *ngIf="info.es_principal">Principal</span>
-              <span class="badge badge-currency">{{ info.moneda }}</span>
+              <h4>{{ info.bank_name }}</h4>
+              <div class="bank-badges">
+                <span class="badge badge-primary" *ngIf="info.is_primary">Principal</span>
+                <span class="badge badge-currency">{{ info.currency }}</span>
+              </div>
             </div>
-            <div class="actions">
+            <div class="actions" *ngIf="!readOnly">
               <button type="button" class="btn-icon" (click)="editFinancialInfo(info)">
                 <i class="fa-solid fa-pen"></i>
               </button>
@@ -133,12 +135,16 @@ interface InfoFinanciera {
           </div>
           <div class="card-body">
             <div class="info-row">
-              <span class="label">N° Cuenta:</span>
-              <span class="value">{{ info.numero_cuenta }}</span>
+              <i class="fa-solid fa-hashtag" title="Número de Cuenta"></i>
+              <span class="value">{{ info.account_number }}</span>
             </div>
             <div class="info-row" *ngIf="info.cci">
-              <span class="label">CCI:</span>
+              <i class="fa-solid fa-building" title="CCI"></i>
               <span class="value">{{ info.cci }}</span>
+            </div>
+            <div class="info-row" *ngIf="info.account_holder_name">
+              <i class="fa-solid fa-user" title="Titular"></i>
+              <span class="value">{{ info.account_holder_name }}</span>
             </div>
           </div>
         </div>
@@ -216,59 +222,128 @@ interface InfoFinanciera {
       }
       .financial-list {
         display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: var(--s-16);
       }
       .financial-card {
         background: var(--neutral-0);
         border: 1px solid var(--grey-200);
-        border-radius: var(--s-8);
+        border-radius: var(--s-12);
+        transition: all 0.2s ease-in-out;
+        display: flex;
+        flex-direction: column;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+          border-color: var(--primary-200);
+        }
       }
       .card-header {
         display: flex;
         justify-content: space-between;
-        padding: var(--s-16);
-        background: var(--grey-50);
+        align-items: flex-start;
+        padding: var(--s-20);
+        border-bottom: 1px solid var(--grey-100);
+        background: transparent;
       }
       .bank-info {
         display: flex;
-        align-items: center;
-        gap: var(--s-12);
+        flex-direction: column;
+        gap: var(--s-4);
+      }
+      .bank-info h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--grey-900);
+      }
+      .bank-badges {
+        display: flex;
+        gap: var(--s-8);
+        margin-top: var(--s-4);
       }
       .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-12);
-        font-size: var(--type-label-size);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
         font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       .badge-primary {
-        background: var(--primary-100);
+        background: var(--primary-50);
         color: var(--primary-700);
+        border: 1px solid var(--primary-100);
+      }
+      .badge-currency {
+        background: var(--grey-100);
+        color: var(--grey-700);
+        border: 1px solid var(--grey-200);
       }
       .btn-icon {
         background: none;
         border: none;
         cursor: pointer;
         padding: var(--s-4);
-        color: var(--grey-500);
+        color: var(--grey-400);
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--primary-600);
+        }
+
+        &.btn-danger:hover {
+          color: var(--semantic-red-600);
+        }
       }
       .card-body {
-        padding: var(--s-16);
+        padding: var(--s-20);
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-12);
       }
       .info-row {
         display: flex;
-        justify-content: space-between;
-        padding: var(--s-8) 0;
+        align-items: center;
+        gap: var(--s-12);
+        color: var(--grey-700);
+        font-size: 14px;
+
+        i {
+          color: var(--grey-400);
+          width: 16px;
+          text-align: center;
+        }
+      }
+      .label {
+        font-weight: 500;
+        color: var(--grey-500);
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-right: var(--s-4);
+        display: none; /* Icons replace labels for cleaner look */
+      }
+      .value {
+        font-family: monospace;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--grey-900);
       }
       .empty-state {
         text-align: center;
         padding: var(--s-48) var(--s-24);
         color: var(--grey-500);
+        background: var(--grey-50);
+        border-radius: var(--s-8);
+        border: 1px dashed var(--grey-300);
       }
     `,
   ],
 })
 export class ProviderFinancialInfoComponent implements OnInit {
   @Input() providerId!: string;
+  @Input() readOnly = false;
 
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);

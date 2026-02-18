@@ -19,13 +19,7 @@ import {
   template: `
     <div class="detail-container">
       <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/equipment/valuations" class="breadcrumb-link"
-            >← Volver a Valorizaciones</a
-          >
-        </div>
-
-        <div *ngIf="loading" class="loading">
+        <div *ngIf="loading" class="loading-state">
           <div class="spinner"></div>
           <p>Cargando detalles de la valorización...</p>
         </div>
@@ -35,14 +29,29 @@ import {
             <div class="detail-header">
               <div>
                 <h1>Valorización {{ valuation.numeroValorizacion || '#' + valuation.id }}</h1>
-                <p class="code-badge">{{ valuation.estado }}</p>
+                <p class="text-subtitle">
+                  {{ valuation.cliente_nombre }} - {{ valuation.codigo_equipo }}
+                </p>
               </div>
-            </div>
-
-            <div class="detail-status">
-              <span [class]="'status-badge status-' + valuation.estado">
-                {{ getEstadoLabel(valuation.estado) }}
-              </span>
+              <div class="detail-status">
+                <span
+                  class="status-badge"
+                  [class.status-BORRADOR]="valuation.estado === 'BORRADOR'"
+                  [class.status-PENDIENTE]="
+                    valuation.estado === 'PENDIENTE' ||
+                    valuation.estado === 'EN_REVISION' ||
+                    valuation.estado === 'VALIDADO'
+                  "
+                  [class.status-APROBADO]="
+                    valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'
+                  "
+                  [class.status-CANCELADO]="
+                    valuation.estado === 'RECHAZADO' || valuation.estado === 'ELIMINADO'
+                  "
+                >
+                  {{ getEstadoLabel(valuation.estado) }}
+                </span>
+              </div>
             </div>
 
             <!-- Deadline Timeline -->
@@ -566,9 +575,9 @@ import {
           </div>
 
           <div class="detail-sidebar">
-            <!-- Workflow Actions -->
+            <!-- Combined Actions Card -->
             <div class="card">
-              <h3>Acciones de Workflow</h3>
+              <h3 class="sidebar-card-title">Acciones</h3>
               <div class="workflow-actions">
                 <!-- Submit Draft: BORRADOR → PENDIENTE -->
                 <button
@@ -585,42 +594,54 @@ import {
                 <button
                   *ngIf="valuation.estado === 'PENDIENTE'"
                   class="btn btn-primary btn-block"
-                  (click)="submitForReview()"
-                  [disabled]="processingWorkflow"
+                  (click)="submitReview()"
+                  [disabled]="processingWorkflow || !conformidadFile"
                 >
-                  <i class="fa-solid fa-paper-plane"></i>
+                  <i class="fa-solid fa-file-signature"></i>
                   {{ processingWorkflow ? 'Enviando...' : 'Enviar a Revisión' }}
                 </button>
 
-                <!-- Validate: EN_REVISION → VALIDADO -->
+                <!-- Approve: EN_REVISION → APROBADO -->
                 <button
-                  *ngIf="valuation.estado === 'EN_REVISION' && canValidate()"
+                  *ngIf="
+                    valuation.estado === 'EN_REVISION' &&
+                    (userRole === 'admin' || userRole === 'approver')
+                  "
                   class="btn btn-success btn-block"
-                  (click)="confirmValidate()"
-                  [disabled]="processingWorkflow"
-                >
-                  <i class="fa-solid fa-clipboard-check"></i>
-                  {{ processingWorkflow ? 'Validando...' : 'Validar' }}
-                </button>
-
-                <!-- Approve: VALIDADO → APROBADO -->
-                <button
-                  *ngIf="valuation.estado === 'VALIDADO' && canApprove()"
-                  class="btn btn-success btn-block"
-                  (click)="showApproveModal = true"
+                  (click)="approveValuation()"
                   [disabled]="processingWorkflow"
                 >
                   <i class="fa-solid fa-check"></i> Aprobar Valorización
                 </button>
 
-                <!-- Reject: For non-terminal states -->
+                <!-- Validate: VALIDADO (intermediate step if used) -->
                 <button
-                  *ngIf="canRejectCurrentState() && canReject()"
-                  class="btn btn-danger btn-block"
-                  (click)="showRejectModal = true"
+                  *ngIf="
+                    valuation.estado === 'VALIDADO' &&
+                    (userRole === 'admin' || userRole === 'approver')
+                  "
+                  class="btn btn-success btn-block"
+                  (click)="approveValuation()"
                   [disabled]="processingWorkflow"
                 >
-                  <i class="fa-solid fa-times"></i> Rechazar
+                  <i class="fa-solid fa-check-double"></i>
+                  {{ processingWorkflow ? 'Procesando...' : 'Autorizar Pago' }}
+                </button>
+
+                <!-- Reject: Any active state → RECHAZADO -->
+                <button
+                  *ngIf="
+                    (valuation.estado === 'PENDIENTE' ||
+                      valuation.estado === 'EN_REVISION' ||
+                      valuation.estado === 'VALIDADO') &&
+                    (userRole === 'admin' || userRole === 'approver')
+                  "
+                  class="btn btn-danger btn-block"
+                  (click)="rejectValuation()"
+                  [disabled]="processingWorkflow"
+                >
+                  <i class="fa-solid fa-xmark"></i>
+                  {{ processingWorkflow ? 'Rechazando...' : 'Rechazar' }}
                 </button>
 
                 <!-- Reopen: RECHAZADO → BORRADOR -->
@@ -647,6 +668,38 @@ import {
                 <p class="workflow-hint" *ngIf="getWorkflowHint()">
                   {{ getWorkflowHint() }}
                 </p>
+
+                <!-- Print / Download -->
+                <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
+                  <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+                </button>
+
+                <!-- Edit (Draft or Pending) -->
+                <button
+                  class="btn btn-secondary btn-block"
+                  (click)="editValuation()"
+                  *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
+                >
+                  <i class="fa-solid fa-pen"></i> Editar
+                </button>
+
+                <!-- Cancel / Delete (Draft only) -->
+                <button
+                  *ngIf="valuation.estado === 'BORRADOR'"
+                  class="btn btn-danger btn-block"
+                  (click)="deleteValuation()"
+                >
+                  <i class="fa-solid fa-trash"></i> Eliminar
+                </button>
+
+                <!-- Navigation (Back) -->
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-block mt-2"
+                  routerLink="/equipment/valuations"
+                >
+                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+                </button>
               </div>
             </div>
 
@@ -2643,5 +2696,19 @@ export class ValuationDetailComponent implements OnInit {
   isDeadlineMissed(dateStr: string, estado: string): boolean {
     if (!dateStr) return false;
     return this.isDeadlinePassed(dateStr) && ['BORRADOR', 'PENDIENTE'].includes(estado);
+  }
+  deleteValuation(): void {
+    if (!this.valuation) return;
+    if (confirm('¿Está seguro de eliminar esta valorización?')) {
+      this.valuationService.delete(this.valuation.id).subscribe({
+        next: () => {
+          this.router.navigate(['/equipment/valuations']);
+        },
+        error: (err) => {
+          console.error('Error deleting valuation', err);
+          alert('Error al eliminar la valorización: ' + (err.error?.error?.message || err.message));
+        },
+      });
+    }
   }
 }

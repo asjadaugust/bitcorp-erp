@@ -1,0 +1,310 @@
+/* Shared Detail Page Layout
+   Based on ValuationDetailComponent design
+   Usage: @import 'detail-layout'; in component SCSS
+*/
+
+.detail-container {
+  min-height: 100vh;
+  background: var(--grey-50);
+  padding: var(--s-24) 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: var(--s-24);
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Main Content Area */
+.detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+}
+
+/* Sidebar Area */
+.detail-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+
+  .card {
+    position: sticky;
+    top: var(--s-24);
+  }
+}
+
+/* Header Section */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--s-24);
+  padding-bottom: var(--s-24);
+  border-bottom: 2px solid var(--grey-100);
+
+  h1 {
+    font-family: var(--font-family-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-900);
+    margin: 0 0 var(--s-4) 0;
+    line-height: 1.2;
+  }
+
+  .code-badge {
+    font-family: var(--font-family-mono);
+    background: var(--grey-100);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: var(--grey-700);
+    font-weight: 600;
+    display: inline-block;
+  }
+}
+
+/* Status Badges */
+.detail-status {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--s-24);
+
+  .status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    &.status-BORRADOR,
+    &.status-draft {
+      background: var(--grey-100);
+      color: var(--grey-700);
+      border: 1px solid var(--grey-200);
+
+      &::before {
+        background: var(--grey-400);
+      }
+    }
+
+    &.status-PENDIENTE,
+    &.status-pending {
+      background: var(--semantic-yellow-50);
+      color: var(--semantic-yellow-700);
+      border: 1px solid var(--semantic-yellow-200);
+
+      &::before {
+        background: var(--semantic-yellow-500);
+      }
+    }
+
+    &.status-APROBADO,
+    &.status-approved,
+    &.status-active {
+      background: var(--semantic-green-50);
+      color: var(--semantic-green-700);
+      border: 1px solid var(--semantic-green-200);
+
+      &::before {
+        background: var(--semantic-green-500);
+      }
+    }
+
+    &.status-CANCELADO,
+    &.status-cancelled,
+    &.status-inactive,
+    &.status-RECHAZADO {
+      background: var(--semantic-red-50);
+      color: var(--semantic-red-700);
+      border: 1px solid var(--semantic-red-200);
+
+      &::before {
+        background: var(--semantic-red-500);
+      }
+    }
+  }
+}
+
+/* Sections */
+.detail-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-32);
+}
+
+.detail-section {
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-900);
+    margin: 0 0 var(--s-16) 0;
+    padding-bottom: var(--s-8);
+    border-bottom: 1px solid var(--grey-100);
+  }
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--s-24) var(--s-16);
+
+  &.info-grid-2col {
+    grid-template-columns: 1fr 1fr;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.info-item {
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--grey-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--grey-900);
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.4;
+
+    &.highlight {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary-600);
+    }
+  }
+}
+
+/* Sidebar Cards */
+.sidebar-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--grey-800);
+  margin: 0 0 var(--s-16) 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+
+  .btn-block {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+
+    i {
+      width: 20px;
+      text-align: center;
+      margin-right: 8px;
+    }
+  }
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-16);
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: var(--s-24);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-500);
+    z-index: 1;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 14px;
+    width: 2px;
+    height: calc(100% + var(--s-16));
+    background: var(--grey-200);
+  }
+
+  &:last-child::after {
+    display: none;
+  }
+
+  .timeline-date {
+    font-size: 12px;
+    color: var(--grey-500);
+    margin-bottom: 2px;
+  }
+
+  .timeline-content {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--grey-800);
+  }
+}
+
+/* Empty States */
+.empty-state-card {
+  text-align: center;
+  padding: var(--s-48);
+  color: var(--grey-500);
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+
+  i {
+    font-size: 48px;
+    margin-bottom: var(--s-16);
+    color: var(--grey-300);
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--grey-900);
+    margin: 0 0 var(--s-8) 0;
+  }
+
+  p {
+    margin: 0 0 var(--s-24) 0;
+  }
+}

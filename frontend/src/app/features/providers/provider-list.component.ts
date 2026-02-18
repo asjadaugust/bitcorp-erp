@@ -92,14 +92,16 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           <div *ngIf="row.telefono" class="contact-item">
             <i class="fa-solid fa-phone"></i> {{ row.telefono }}
           </div>
+          <div *ngIf="!row.correo_electronico && !row.telefono" class="text-muted">-</div>
         </div>
       </ng-template>
 
       <ng-template #locationTemplate let-row>
-        <div class="address-info" title="{{ row.direccion }}">
+        <div class="address-info" title="{{ row.direccion }}" *ngIf="row.direccion">
           <i class="fa-solid fa-location-dot"></i>
-          <span class="address-text">{{ row.direccion || '-' }}</span>
+          <span class="address-text">{{ row.direccion }}</span>
         </div>
+        <div *ngIf="!row.direccion" class="text-muted">-</div>
       </ng-template>
 
       <!-- Actions Template -->

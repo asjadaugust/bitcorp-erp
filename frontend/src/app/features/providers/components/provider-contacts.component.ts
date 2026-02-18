@@ -35,7 +35,7 @@ interface Contacto {
           type="button"
           class="btn btn-primary btn-sm"
           (click)="showForm = !showForm"
-          *ngIf="!showForm"
+          *ngIf="!showForm && !readOnly"
         >
           <i class="fa-solid fa-plus"></i> Agregar Contacto
         </button>
@@ -105,32 +105,44 @@ interface Contacto {
       <div class="contacts-grid" *ngIf="!loading && contactsList.length > 0">
         <div class="contact-card" *ngFor="let contact of contactsList">
           <div class="card-header">
-            <div class="contact-info">
-              <h4>{{ contact.nombre_contacto }}</h4>
-              <span class="position" *ngIf="contact.cargo">{{ contact.cargo }}</span>
+            <div class="header-content">
+              <div class="avatar-circle">
+                {{ contact.contact_name ? contact.contact_name[0] : 'C' }}
+              </div>
+              <div class="contact-info">
+                <h4>{{ contact.contact_name }}</h4>
+                <span class="position" *ngIf="contact.position">{{ contact.position }}</span>
+                <div class="badges">
+                  <span class="badge badge-primary" *ngIf="contact.is_primary">Principal</span>
+                  <span class="badge badge-type">{{
+                    getContactTypeLabel(contact.contact_type)
+                  }}</span>
+                </div>
+              </div>
             </div>
-            <div class="badges">
-              <span class="badge badge-primary" *ngIf="contact.es_principal">Principal</span>
-              <span class="badge badge-type">{{ getContactTypeLabel(contact.tipo_contacto) }}</span>
+            <div class="card-actions" *ngIf="!readOnly">
+              <button type="button" class="btn-icon" (click)="editContact(contact)">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button
+                type="button"
+                class="btn-icon btn-danger"
+                (click)="deleteContact(contact.id!)"
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
             </div>
           </div>
+
           <div class="card-body">
-            <div class="contact-detail" *ngIf="contact.telefono_principal">
-              <i class="fa-solid fa-phone"></i>
-              <span>{{ contact.telefono_principal }}</span>
+            <div class="contact-detail" *ngIf="contact.email">
+              <i class="fa-solid fa-envelope" title="Email"></i>
+              <span>{{ contact.email }}</span>
             </div>
-            <div class="contact-detail" *ngIf="contact.correo">
-              <i class="fa-solid fa-envelope"></i>
-              <span>{{ contact.correo }}</span>
+            <div class="contact-detail" *ngIf="contact.primary_phone">
+              <i class="fa-solid fa-phone" title="Teléfono"></i>
+              <span>{{ contact.primary_phone }}</span>
             </div>
-          </div>
-          <div class="card-actions">
-            <button type="button" class="btn-icon" (click)="editContact(contact)">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button type="button" class="btn-icon btn-danger" (click)="deleteContact(contact.id!)">
-              <i class="fa-solid fa-trash"></i>
-            </button>
           </div>
         </div>
       </div>
@@ -143,142 +155,136 @@ interface Contacto {
   `,
   styles: [
     `
-      .contacts-section {
-        margin-top: var(--s-24);
+    .contacts-section { margin-top: var(--s-24); }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-16); }
+    .section-header h3 { font-size: var(--type-h4-size); color: var(--grey-900); display: flex; align-items: center; gap: var(--s-8); }
+    .contact-form { margin-bottom: var(--s-24); padding: var(--s-24); background: var(--neutral-0); border-radius: var(--s-8); }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s-16); margin-bottom: var(--s-24); }
+    .form-group { display: flex; flex-direction: column; }
+    .form-control, .form-select { padding: var(--s-8) var(--s-12); border: 1px solid var(--grey-300); border-radius: var(--s-4); }
+    .btn { padding: var(--s-8) var(--s-16); border: none; border-radius: var(--s-8); font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--primary-500); color: var(--neutral-0); }
+    .btn-secondary { background: var(--grey-300); color: var(--grey-700); }
+    .btn-sm { padding: var(--s-4) var(--s-12); font-size: var(--type-bodySmall-size); }
+    .form-actions { display: flex; gap: var(--s-12); justify-content: flex-end); }
+    .contacts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--s-16); }
+    
+    /* Card Styles */
+    .contact-card { 
+      background: var(--neutral-0); 
+      border: 1px solid var(--grey-200); 
+      border-radius: var(--s-12); 
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      flex-direction: column;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-200);
       }
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-16);
-      }
-      .section-header h3 {
-        font-size: var(--type-h4-size);
-        color: var(--grey-900);
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-      }
-      .contact-form {
-        margin-bottom: var(--s-24);
-        padding: var(--s-24);
-        background: var(--neutral-0);
-        border-radius: var(--s-8);
-      }
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: var(--s-16);
-        margin-bottom: var(--s-24);
-      }
-      .form-group {
+    }
+
+    .card-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-start;
+      padding: var(--s-20);
+      border-bottom: 1px solid var(--grey-100);
+    }
+
+    .header-content {
+      display: flex;
+      gap: var(--s-12);
+      align-items: flex-start;
+    }
+
+    .avatar-circle {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-100);
+      color: var(--primary-700);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .contact-info {
         display: flex;
         flex-direction: column;
+        gap: 2px;
+    }
+
+    .contact-info h4 { 
+      font-size: 16px; 
+      font-weight: 700; 
+      color: var(--grey-900); 
+      margin: 0;
+    }
+
+    .position { 
+      color: var(--grey-500); 
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .badges { display: flex; gap: var(--s-8); margin-top: var(--s-8); }
+    .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge-primary { background: var(--primary-50); color: var(--primary-700); border: 1px solid var(--primary-100); }
+    .badge-type { background: var(--grey-100); color: var(--grey-700); border: 1px solid var(--grey-200); }
+
+    .card-body { 
+      padding: var(--s-20);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-12);
+    }
+
+    .contact-detail { 
+      display: flex; 
+      align-items: center; 
+      gap: var(--s-12); 
+      font-size: 14px;
+      color: var(--grey-700); 
+      
+      i {
+          color: var(--grey-400);
+          width: 16px;
+          text-align: center;
       }
-      .form-control,
-      .form-select {
-        padding: var(--s-8) var(--s-12);
-        border: 1px solid var(--grey-300);
-        border-radius: var(--s-4);
-      }
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-secondary {
-        background: var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-sm {
-        padding: var(--s-4) var(--s-12);
-        font-size: var(--type-bodySmall-size);
-      }
-      .form-actions {
-        display: flex;
-        gap: var(--s-12);
-        justify-content: flex-end;
-      }
-      .contacts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: var(--s-16);
-      }
-      .contact-card {
-        background: var(--neutral-0);
-        border: 1px solid var(--grey-200);
-        border-radius: var(--s-8);
-        padding: var(--s-16);
-      }
-      .card-header {
-        margin-bottom: var(--s-12);
-      }
-      .contact-info h4 {
-        font-size: var(--type-body-size);
-        font-weight: 600;
-        margin-bottom: var(--s-4);
-      }
-      .position {
-        color: var(--grey-600);
-        font-size: var(--type-bodySmall-size);
-      }
-      .badges {
-        display: flex;
-        gap: var(--s-8);
-        margin-top: var(--s-8);
-      }
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-12);
-        font-size: var(--type-label-size);
-        font-weight: 600;
-      }
-      .badge-primary {
-        background: var(--primary-100);
-        color: var(--primary-700);
-      }
-      .badge-type {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-      .card-body {
-        margin-bottom: var(--s-12);
-      }
-      .contact-detail {
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-        padding: var(--s-8) 0;
-        color: var(--grey-700);
-      }
-      .card-actions {
-        display: flex;
-        gap: var(--s-8);
-        justify-content: flex-end;
-      }
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--s-4);
-        color: var(--grey-500);
-      }
-      .empty-state {
-        text-align: center;
-        padding: var(--s-48) var(--s-24);
-        color: var(--grey-500);
-      }
-    `,
+    }
+
+    .card-actions { display: flex; gap: var(--s-8); justify-content: flex-end; }
+    .btn-icon { 
+      background: none; 
+      border: none; 
+      cursor: pointer; 
+      padding: var(--s-4); 
+      color: var(--grey-400);
+      transition: color 0.2s;
+      
+      &:hover { color: var(--primary-600); }
+      &.btn-danger:hover { color: var(--semantic-red-600); }
+    }
+    
+    .empty-state { 
+      text-align: center; 
+      padding: var(--s-48) var(--s-24); 
+      color: var(--grey-500);
+      background: var(--grey-50);
+      border-radius: var(--s-8);
+      border: 1px dashed var(--grey-300);
+    }
+  `,
   ],
 })
 export class ProviderContactsComponent implements OnInit {
   @Input() providerId!: string;
+  @Input() readOnly = false;
 
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
@@ -334,15 +340,17 @@ export class ProviderContactsComponent implements OnInit {
   onSubmit(): void {
     if (this.contactForm.invalid) return;
 
+    // Convert empty strings to null for optional fields to avoid backend validation errors
+    const formValue = { ...this.contactForm.value };
+    Object.keys(formValue).forEach((key) => {
+      if (formValue[key] === '') {
+        formValue[key] = null;
+      }
+    });
+
     const request = this.editingId
-      ? this.http.put(
-          `${environment.apiUrl}/providers/contacts/${this.editingId}`,
-          this.contactForm.value
-        )
-      : this.http.post(
-          `${environment.apiUrl}/providers/${this.providerId}/contacts`,
-          this.contactForm.value
-        );
+      ? this.http.put(`${environment.apiUrl}/providers/contacts/${this.editingId}`, formValue)
+      : this.http.post(`${environment.apiUrl}/providers/${this.providerId}/contacts`, formValue);
 
     request.subscribe({
       next: () => {

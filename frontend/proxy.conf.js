@@ -1,6 +1,6 @@
 const PROXY_CONFIG = {
   '/api/**': {
-    target: 'http://backend:3400',
+    target: 'http://backend:3400', // Reverted to backend container name for Docker support
     secure: false,
     changeOrigin: true,
     logLevel: 'debug',

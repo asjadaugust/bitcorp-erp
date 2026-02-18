@@ -42,7 +42,7 @@ export type ExportFormat = 'excel' | 'csv';
         align-items: center;
         gap: 0.5rem;
         padding: 0.625rem 1rem;
-        background: var(--secondary-500, #6366f1);
+        background: var(--primary-500);
         color: white;
         border: none;
         border-radius: 6px;

@@ -17,69 +17,86 @@ import {
 @Component({
   selector: 'app-equipment-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, PageLayoutComponent, StatsGridComponent],
+  imports: [CommonModule, RouterModule, StatsGridComponent],
   template: `
-    <app-page-layout
-      [title]="
-        equipment
-          ? equipment.codigo_equipo + ' - ' + equipment.marca + ' ' + equipment.modelo
-          : 'Detalle de Equipo'
-      "
-      icon="fa-tractor"
-      [breadcrumbs]="[
-        { label: 'Inicio', url: '/app' },
-        { label: 'Equipos', url: '/equipment' },
-        { label: equipment?.codigo_equipo || 'Detalle' },
-      ]"
-      [loading]="loading"
-    >
-      <div *ngIf="equipment" class="detail-container">
-        <!-- Header Stats Cards -->
-        <app-stats-grid [items]="statItems" testId="equipment-detail-stats"></app-stats-grid>
+    <div class="detail-container">
+      <div class="container">
+        <div *ngIf="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando detalles del equipo...</p>
+        </div>
 
-        <!-- Main Content Grid -->
-        <div class="content-grid">
-          <!-- Left Column: Tabs & Details -->
-          <div class="content-main card">
+        <div *ngIf="!loading && equipment" class="detail-grid">
+          <div class="detail-main card">
+            <!-- Header (Inside Main Card) -->
+            <div class="detail-header">
+              <div>
+                <h1>{{ equipment.codigo_equipo }}</h1>
+                <p class="text-subtitle">{{ equipment.marca }} {{ equipment.modelo }}</p>
+              </div>
+              <div class="detail-status">
+                <span
+                  class="status-badge"
+                  [class.status-APROBADO]="
+                    equipment.estado === 'DISPONIBLE' || equipment.estado === 'AVAILABLE'
+                  "
+                  [class.status-PENDIENTE]="
+                    equipment.estado === 'EN_USO' ||
+                    equipment.estado === 'IN_USE' ||
+                    equipment.estado === 'MANTENIMIENTO' ||
+                    equipment.estado === 'MAINTENANCE'
+                  "
+                  [class.status-CANCELADO]="
+                    equipment.estado === 'RETIRADO' || equipment.estado === 'RETIRED'
+                  "
+                >
+                  {{ equipment.estado }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <app-stats-grid [items]="statItems" testId="equipment-detail-stats"></app-stats-grid>
+
             <!-- Tabs Navigation -->
-            <div class="tabs-nav">
+            <div class="tabs-header mt-6">
               <button
                 class="tab-btn"
                 [class.active]="activeTab === 'general'"
                 (click)="activeTab = 'general'"
               >
-                <i class="fa-solid fa-info-circle"></i> General
+                General
               </button>
               <button
                 class="tab-btn"
                 [class.active]="activeTab === 'maintenance'"
                 (click)="activeTab = 'maintenance'"
               >
-                <i class="fa-solid fa-wrench"></i> Mantenimiento
+                Mantenimiento
               </button>
               <button
                 class="tab-btn"
                 [class.active]="activeTab === 'contracts'"
                 (click)="activeTab = 'contracts'"
               >
-                <i class="fa-solid fa-file-contract"></i> Contratos
+                Contratos
               </button>
               <button
                 class="tab-btn"
                 [class.active]="activeTab === 'reports'"
                 (click)="activeTab = 'reports'"
               >
-                <i class="fa-solid fa-clipboard-list"></i> Partes Diarios
+                Partes Diarios
               </button>
             </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content-area">
+            <!-- Tab Content Area -->
+            <div class="detail-sections mt-6">
               <!-- General Tab -->
-              <div *ngIf="activeTab === 'general'" class="tab-pane fade-in">
+              <div *ngIf="activeTab === 'general'">
                 <section class="detail-section">
                   <h2>Especificaciones Técnicas</h2>
-                  <div class="info-grid">
+                  <div class="info-grid four-cols">
                     <div class="info-item">
                       <label>Marca</label>
                       <p>{{ equipment.marca }}</p>
@@ -110,237 +127,230 @@ import {
                 <!-- Document Expiry Dates -->
                 <section class="detail-section">
                   <h2>Documentos y Vencimientos</h2>
-                  <div class="info-grid">
+                  <div class="info-grid three-cols">
                     <div class="info-item">
                       <label>SOAT</label>
-                      <p>
+                      <div class="doc-status-item">
+                        <p *ngIf="equipment.fecha_venc_soat">
+                          {{ equipment.fecha_venc_soat | date: 'dd/MM/yyyy' }}
+                        </p>
                         <span
                           *ngIf="equipment.fecha_venc_soat"
-                          [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_soat)"
+                          [class]="'doc-tag doc-' + getDocExpiry(equipment.fecha_venc_soat)"
                         >
-                          {{ equipment.fecha_venc_soat | date: 'dd/MM/yyyy' }}
-                          <span class="doc-tag">{{
-                            getDocExpiryLabel(equipment.fecha_venc_soat)
-                          }}</span>
+                          {{ getDocExpiryLabel(equipment.fecha_venc_soat) }}
                         </span>
-                        <span *ngIf="!equipment.fecha_venc_soat" class="text-muted"
-                          >Sin registro</span
-                        >
-                      </p>
+                        <p *ngIf="!equipment.fecha_venc_soat" class="text-muted">Sin registro</p>
+                      </div>
                     </div>
                     <div class="info-item">
                       <label>Póliza TREC</label>
-                      <p>
+                      <div class="doc-status-item">
+                        <p *ngIf="equipment.fecha_venc_poliza">
+                          {{ equipment.fecha_venc_poliza | date: 'dd/MM/yyyy' }}
+                        </p>
                         <span
                           *ngIf="equipment.fecha_venc_poliza"
-                          [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_poliza)"
+                          [class]="'doc-tag doc-' + getDocExpiry(equipment.fecha_venc_poliza)"
                         >
-                          {{ equipment.fecha_venc_poliza | date: 'dd/MM/yyyy' }}
-                          <span class="doc-tag">{{
-                            getDocExpiryLabel(equipment.fecha_venc_poliza)
-                          }}</span>
+                          {{ getDocExpiryLabel(equipment.fecha_venc_poliza) }}
                         </span>
-                        <span *ngIf="!equipment.fecha_venc_poliza" class="text-muted"
-                          >Sin registro</span
-                        >
-                      </p>
+                        <p *ngIf="!equipment.fecha_venc_poliza" class="text-muted">Sin registro</p>
+                      </div>
                     </div>
                     <div class="info-item">
                       <label>CITV</label>
-                      <p>
+                      <div class="doc-status-item">
+                        <p *ngIf="equipment.fecha_venc_citv">
+                          {{ equipment.fecha_venc_citv | date: 'dd/MM/yyyy' }}
+                        </p>
                         <span
                           *ngIf="equipment.fecha_venc_citv"
-                          [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_citv)"
+                          [class]="'doc-tag doc-' + getDocExpiry(equipment.fecha_venc_citv)"
                         >
-                          {{ equipment.fecha_venc_citv | date: 'dd/MM/yyyy' }}
-                          <span class="doc-tag">{{
-                            getDocExpiryLabel(equipment.fecha_venc_citv)
-                          }}</span>
+                          {{ getDocExpiryLabel(equipment.fecha_venc_citv) }}
                         </span>
-                        <span *ngIf="!equipment.fecha_venc_citv" class="text-muted"
-                          >Sin registro</span
-                        >
-                      </p>
+                        <p *ngIf="!equipment.fecha_venc_citv" class="text-muted">Sin registro</p>
+                      </div>
                     </div>
                   </div>
                 </section>
               </div>
 
               <!-- Maintenance Tab -->
-              <div *ngIf="activeTab === 'maintenance'" class="tab-pane fade-in">
-                <div class="section-header">
-                  <h2>Programaciones de Mantenimiento</h2>
-                  <button class="btn btn-sm btn-secondary" (click)="goToMaintenance()">
-                    Ver Todo
-                  </button>
-                </div>
-
-                <div *ngIf="maintenanceSchedules.length > 0; else noMaintenance">
-                  <table class="aero-table">
-                    <thead>
-                      <tr>
-                        <th>Tipo</th>
-                        <th>Estado</th>
-                        <th>Intervalo</th>
-                        <th>Próximo</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let schedule of maintenanceSchedules">
-                        <td>{{ schedule.maintenanceType }}</td>
-                        <td>
-                          <span
-                            class="status-badge"
-                            [class]="'status-badge status-' + schedule.status"
-                          >
-                            {{ schedule.status }}
-                          </span>
-                        </td>
-                        <td>{{ schedule.intervalValue }} {{ schedule.intervalType }}</td>
-                        <td>{{ schedule.nextDueHours || schedule.nextDueDate }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <ng-template #noMaintenance>
-                  <div class="empty-state">
-                    <i class="fa-solid fa-check-circle"></i>
-                    <p>No hay mantenimientos pendientes.</p>
+              <div *ngIf="activeTab === 'maintenance'">
+                <section class="detail-section">
+                  <div class="section-header flex justify-between items-center mb-4">
+                    <h2>Programaciones de Mantenimiento</h2>
+                    <button class="btn btn-sm btn-secondary" (click)="goToMaintenance()">
+                      Ver Todo
+                    </button>
                   </div>
-                </ng-template>
+                  <div
+                    *ngIf="maintenanceSchedules.length > 0; else noMaintenance"
+                    class="table-container"
+                  >
+                    <table class="annex-table">
+                      <thead>
+                        <tr>
+                          <th>Tipo</th>
+                          <th>Estado</th>
+                          <th>Intervalo</th>
+                          <th>Próximo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let schedule of maintenanceSchedules">
+                          <td class="font-medium">{{ schedule.maintenanceType }}</td>
+                          <td>
+                            <span
+                              class="status-badge status-sm"
+                              [class.status-APROBADO]="schedule.status === 'COMPLETO'"
+                              [class.status-PENDIENTE]="schedule.status === 'PENDIENTE'"
+                            >
+                              {{ schedule.status }}
+                            </span>
+                          </td>
+                          <td>{{ schedule.intervalValue }} {{ schedule.intervalType }}</td>
+                          <td>{{ schedule.nextDueHours || schedule.nextDueDate }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <ng-template #noMaintenance>
+                    <div class="empty-state-section">
+                      <i class="fa-solid fa-check-circle"></i>
+                      <p>No hay mantenimientos pendientes.</p>
+                    </div>
+                  </ng-template>
+                </section>
               </div>
 
               <!-- Contracts Tab -->
-              <div *ngIf="activeTab === 'contracts'" class="tab-pane fade-in">
-                <div class="section-header">
-                  <h2>Historial de Contratos</h2>
-                  <button class="btn btn-sm btn-primary" (click)="createContract()">
-                    <i class="fa-solid fa-plus"></i> Nuevo
-                  </button>
-                </div>
-
-                <div *ngIf="contracts.length > 0; else noContracts">
-                  <table class="aero-table">
-                    <thead>
-                      <tr>
-                        <th>Código</th>
-                        <th>Cliente</th>
-                        <th>Vigencia</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let contract of contracts">
-                        <td class="font-mono">{{ contract.code }}</td>
-                        <td>{{ contract.client_name }}</td>
-                        <td>
-                          {{ contract.start_date | date: 'shortDate' }} -
-                          {{ contract.end_date | date: 'shortDate' }}
-                        </td>
-                        <td>
-                          <span [class]="'status-badge status-' + contract.status">
-                            {{ contract.status }}
-                          </span>
-                        </td>
-                        <td>
-                          <button class="btn-icon" (click)="viewContract(contract.id)">
-                            <i class="fa-solid fa-eye"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <ng-template #noContracts>
-                  <div class="empty-state">
-                    <i class="fa-solid fa-file-contract"></i>
-                    <p>No hay contratos asociados.</p>
+              <div *ngIf="activeTab === 'contracts'">
+                <section class="detail-section">
+                  <div class="section-header flex justify-between items-center mb-4">
+                    <h2>Historial de Contratos</h2>
+                    <button class="btn btn-sm btn-primary" (click)="createContract()">
+                      <i class="fa-solid fa-plus"></i> Nuevo
+                    </button>
                   </div>
-                </ng-template>
+
+                  <div *ngIf="contracts.length > 0; else noContracts" class="table-container">
+                    <table class="annex-table">
+                      <thead>
+                        <tr>
+                          <th>Código</th>
+                          <th>Cliente</th>
+                          <th>Vigencia</th>
+                          <th>Estado</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let contract of contracts">
+                          <td class="font-mono">{{ contract.code }}</td>
+                          <td>{{ contract.client_name }}</td>
+                          <td>
+                            {{ contract.start_date | date: 'shortDate' }} -
+                            {{ contract.end_date | date: 'shortDate' }}
+                          </td>
+                          <td>
+                            <span
+                              class="status-badge status-sm"
+                              [class.status-APROBADO]="contract.status === 'ACTIVO'"
+                              [class.status-CANCELADO]="contract.status === 'FINALIZADO'"
+                            >
+                              {{ contract.status }}
+                            </span>
+                          </td>
+                          <td class="text-right">
+                            <button class="btn btn-icon" (click)="viewContract(contract.id)">
+                              <i class="fa-solid fa-eye"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <ng-template #noContracts>
+                    <div class="empty-state-section">
+                      <i class="fa-solid fa-file-contract"></i>
+                      <p>No hay contratos asociados.</p>
+                    </div>
+                  </ng-template>
+                </section>
               </div>
 
               <!-- Reports Tab -->
-              <div *ngIf="activeTab === 'reports'" class="tab-pane fade-in">
-                <div class="section-header">
+              <div *ngIf="activeTab === 'reports'">
+                <section class="detail-section">
                   <h2>Últimos Partes Diarios</h2>
-                </div>
-                <div *ngIf="dailyReports.length > 0; else noReports">
-                  <table class="aero-table">
-                    <thead>
-                      <tr>
-                        <th>Fecha</th>
-                        <th>Operador</th>
-                        <th>Horas</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let report of dailyReports">
-                        <td>{{ report.fecha_parte | date: 'dd/MM/yyyy' }}</td>
-                        <td>{{ report.operator_name }}</td>
-                        <td>
-                          {{ report.horometro_final - report.horometro_inicial | number: '1.1-1' }}
-                        </td>
-                        <td>
-                          <span [class]="'status-badge status-' + report.status">
-                            {{ report.status }}
-                          </span>
-                        </td>
-                        <td>
-                          <button class="btn-icon" (click)="viewReport(report.id)">
-                            <i class="fa-solid fa-eye"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <ng-template #noReports>
-                  <div class="empty-state">
-                    <i class="fa-solid fa-clipboard"></i>
-                    <p>No hay partes diarios registrados recientemente.</p>
+                  <div *ngIf="dailyReports.length > 0; else noReports" class="table-container">
+                    <table class="annex-table">
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Operador</th>
+                          <th>Horas</th>
+                          <th>Estado</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let report of dailyReports">
+                          <td>{{ report.fecha_parte | date: 'dd/MM/yyyy' }}</td>
+                          <td>{{ report.operator_name }}</td>
+                          <td class="font-medium">
+                            {{
+                              report.horometro_final - report.horometro_inicial | number: '1.1-1'
+                            }}h
+                          </td>
+                          <td>
+                            <span
+                              class="status-badge status-sm"
+                              [class.status-APROBADO]="report.status === 'APROBADO'"
+                              [class.status-PENDIENTE]="report.status === 'PENDIENTE'"
+                            >
+                              {{ report.status }}
+                            </span>
+                          </td>
+                          <td class="text-right">
+                            <button class="btn btn-icon" (click)="viewReport(report.id)">
+                              <i class="fa-solid fa-eye"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                </ng-template>
+                  <ng-template #noReports>
+                    <div class="empty-state-section">
+                      <i class="fa-solid fa-clipboard"></i>
+                      <p>No hay partes diarios registrados recientemente.</p>
+                    </div>
+                  </ng-template>
+                </section>
               </div>
             </div>
           </div>
 
-          <!-- Right Column: Quick Actions -->
+          <!-- Sidebar -->
           <div class="detail-sidebar">
             <div class="card">
-              <h3>Acciones</h3>
+              <h3 class="sidebar-card-title">Acciones</h3>
               <div class="quick-actions">
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-block"
-                  (click)="router.navigate(['/equipment'])"
-                >
-                  <i class="fa-solid fa-arrow-left"></i> Volver
+                <button class="btn btn-primary btn-block" (click)="editEquipment()">
+                  <i class="fa-solid fa-pen"></i> Editar Equipo
                 </button>
-                <button type="button" class="btn btn-primary btn-block" (click)="editEquipment()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-block"
-                  (click)="goToMaintenance()"
-                >
-                  <i class="fa-solid fa-wrench"></i> Ver Mantenimiento
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-block"
-                  (click)="createContract()"
-                >
-                  <i class="fa-solid fa-file-contract"></i> Nuevo Contrato
+                <button class="btn btn-ghost btn-block" (click)="navigateTo('/equipment')">
+                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
                 </button>
               </div>
             </div>
 
             <div class="card">
-              <h3>Información del Sistema</h3>
+              <h3 class="sidebar-card-title">Información del Sistema</h3>
               <div class="timeline">
                 <div class="timeline-item">
                   <div class="timeline-date">{{ equipment.updated_at | date: 'short' }}</div>
@@ -355,258 +365,52 @@ import {
           </div>
         </div>
       </div>
-    </app-page-layout>
+    </div>
   `,
   styles: [
     `
-      .detail-container {
+      @use 'detail-layout' as *;
+
+      /* Equipment specific custom styles */
+      .text-subtitle {
+        font-size: 16px;
+        color: var(--grey-600);
+        margin-top: -4px;
+      }
+
+      .tabs-header {
         display: flex;
-        flex-direction: column;
         gap: var(--s-24);
-      }
-
-      .content-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: var(--s-24);
-        align-items: start;
-
-        @media (max-width: 968px) {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* Tabs & Content */
-      .content-main {
-        overflow: hidden;
-        min-height: 400px;
-        padding: 0;
-      }
-
-      .tabs-nav {
-        display: flex;
-        border-bottom: 1px solid var(--grey-200);
-        background: var(--grey-50);
-        padding: 0 var(--s-16);
+        border-bottom: 2px solid var(--grey-100);
       }
 
       .tab-btn {
-        padding: var(--s-16) var(--s-24);
-        border: none;
+        padding: var(--s-12) var(--s-4);
         background: none;
-        font-weight: 600;
-        color: var(--grey-500);
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-      }
-
-      .tab-btn:hover {
-        color: var(--primary-500);
-        background: var(--primary-50, rgba(49, 130, 206, 0.05));
-      }
-
-      .tab-btn.active {
-        color: var(--primary-500);
-        border-bottom-color: var(--primary-500);
-      }
-
-      .tab-content-area {
-        padding: var(--s-24);
-      }
-
-      .detail-section {
-        margin-bottom: var(--s-32);
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-
-        h2 {
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
-      }
-
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-24);
-
-        h2 {
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin: 0;
-        }
-      }
-
-      /* Info Grid */
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-24);
-      }
-
-      .info-item {
-        label {
-          display: block;
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--grey-500);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: var(--s-4);
-        }
-
-        p {
-          font-size: 16px;
-          color: #333;
-          margin: 0;
-        }
-      }
-
-      .text-muted {
-        color: var(--grey-500);
-        font-style: italic;
-      }
-
-      /* Tables */
-      .aero-table {
-        width: 100%;
-        border-collapse: collapse;
+        border: none;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
         font-size: 14px;
-      }
-
-      .aero-table th {
-        text-align: left;
-        padding: var(--s-12) var(--s-16);
-        background: var(--grey-50);
-        color: var(--grey-500);
-        font-size: 12px;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 1px solid var(--grey-200);
-      }
-
-      .aero-table td {
-        padding: var(--s-12) var(--s-16);
-        border-bottom: 1px solid var(--grey-200);
-        color: #333;
-      }
-
-      .aero-table tr:hover td {
-        background: var(--grey-50);
-      }
-
-      /* Status Badges */
-      .status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .status-badge::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-
-      .status-DISPONIBLE,
-      .status-available,
-      .status-active,
-      .status-ACTIVO {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-DISPONIBLE::before,
-      .status-available::before,
-      .status-active::before,
-      .status-ACTIVO::before {
-        background: var(--semantic-green-500);
-      }
-
-      .status-EN_USO,
-      .status-assigned {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-EN_USO::before,
-      .status-assigned::before {
-        background: var(--semantic-blue-500);
-      }
-
-      .status-MANTENIMIENTO,
-      .status-maintenance {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-MANTENIMIENTO::before,
-      .status-maintenance::before {
-        background: var(--semantic-yellow-500);
-      }
-
-      .status-RETIRADO,
-      .status-inactive {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-      .status-RETIRADO::before,
-      .status-inactive::before {
-        background: var(--grey-400);
-      }
-
-      /* Buttons */
-      .btn-icon {
-        background: none;
-        border: none;
         color: var(--grey-500);
         cursor: pointer;
-        padding: var(--s-8);
-        border-radius: var(--radius-sm);
-        transition: 0.2s;
+        transition: all 0.2s;
 
         &:hover {
-          background: var(--grey-100);
-          color: var(--primary-500);
+          color: var(--primary-600);
+        }
+
+        &.active {
+          color: var(--primary-600);
+          border-bottom-color: var(--primary-600);
         }
       }
 
-      .empty-state {
-        text-align: center;
-        padding: var(--s-48) var(--s-24);
-        color: var(--grey-500);
-
-        i {
-          font-size: 2.5rem;
-          margin-bottom: var(--s-16);
-          opacity: 0.5;
-          display: block;
-        }
-      }
-
-      .font-mono {
-        font-family: monospace;
-        font-weight: 600;
-      }
-
-      /* Document expiry badges */
-      .doc-status {
-        display: inline-flex;
+      .doc-status-item {
+        display: flex;
         align-items: center;
-        gap: var(--s-8);
+        gap: 8px;
+        margin-top: 4px;
       }
 
       .doc-tag {
@@ -614,132 +418,69 @@ import {
         border-radius: 999px;
         font-size: 11px;
         font-weight: 600;
+        text-transform: uppercase;
       }
 
       .doc-expired {
-        color: var(--semantic-red-700);
-
-        .doc-tag {
-          background: var(--semantic-red-50);
-          color: var(--semantic-red-700);
-        }
+        background: #fee2e2;
+        color: #991b1b;
       }
 
       .doc-critical {
-        color: var(--semantic-red-700);
-
-        .doc-tag {
-          background: var(--semantic-red-50);
-          color: var(--semantic-red-700);
-        }
+        background: #ffedd5;
+        color: #9a3412;
       }
 
       .doc-warning {
-        color: var(--semantic-yellow-700);
-
-        .doc-tag {
-          background: var(--semantic-yellow-50);
-          color: var(--semantic-yellow-700);
-        }
+        background: #fef9c3;
+        color: #854d0e;
       }
 
       .doc-ok {
-        color: var(--semantic-green-700);
-
-        .doc-tag {
-          background: var(--semantic-green-50);
-          color: var(--semantic-green-700);
-        }
+        background: #dcfce7;
+        color: #166534;
       }
 
-      /* Sidebar */
-      .detail-sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-24);
-
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
+      .mt-6 {
+        margin-top: 1.5rem;
       }
-
-      .quick-actions {
+      .flex {
         display: flex;
-        flex-direction: column;
-        gap: var(--s-8);
       }
-
-      .btn-block {
-        width: 100%;
-        justify-content: center;
-        display: flex;
+      .justify-between {
+        justify-content: space-between;
+      }
+      .items-center {
         align-items: center;
-        gap: 8px;
+      }
+      .font-medium {
+        font-weight: 500;
+      }
+      .text-right {
+        text-align: right;
       }
 
-      .timeline {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-16);
-      }
-
-      .timeline-item {
-        position: relative;
-        padding-left: var(--s-24);
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--primary-500);
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 3px;
-          top: 14px;
-          width: 2px;
-          height: calc(100% + var(--s-16));
-          background: var(--grey-200);
-        }
-
-        &:last-child::after {
-          display: none;
-        }
-      }
-
-      .timeline-date {
-        font-size: 12px;
+      .empty-state-section {
+        text-align: center;
+        padding: var(--s-32);
         color: var(--grey-500);
-        margin-bottom: var(--s-4);
-      }
+        background: var(--grey-50);
+        border-radius: var(--radius-md);
 
-      .timeline-content {
-        font-size: 14px;
-        color: #333;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
+        i {
+          font-size: 32px;
+          margin-bottom: var(--s-12);
+          color: var(--grey-300);
         }
-        to {
-          opacity: 1;
-          transform: translateY(0);
+
+        p {
+          margin: 0;
+          font-size: 14px;
         }
       }
 
-      .fade-in {
-        animation: fadeIn 0.2s ease-in-out;
+      .mb-4 {
+        margin-bottom: 1rem;
       }
     `,
   ],

@@ -248,8 +248,21 @@ export class LoginComponent {
       },
       error: (error) => {
         console.error('❌ Login failed:', error);
-        this.errorMessage =
-          error.error?.error || 'Error de inicio de sesión. Por favor verifique sus credenciales.';
+
+        const errBody = error.error;
+        if (errBody && typeof errBody === 'object') {
+          // Backend structure: { success: false, error: { code, message } }
+          this.errorMessage =
+            errBody.error?.message ||
+            errBody.message ||
+            errBody.error?.code ||
+            'Error de inicio de sesión. Por favor verifique sus credenciales.';
+        } else if (typeof errBody === 'string' && errBody.length < 200) {
+          this.errorMessage = errBody;
+        } else {
+          this.errorMessage = 'Error de inicio de sesión. Por favor verifique sus credenciales.';
+        }
+
         this.loading = false;
       },
     });

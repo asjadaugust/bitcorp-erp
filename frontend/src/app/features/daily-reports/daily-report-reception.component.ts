@@ -263,7 +263,7 @@ export class DailyReportReceptionComponent implements OnInit {
     if (!this.fechaDesde || !this.fechaHasta) return;
     this.loading = true;
     this.reportService.getReceptionStatus(this.fechaDesde, this.fechaHasta).subscribe({
-      next: (result) => {
+      next: (result: EquipmentReceptionStatus[]) => {
         this.data = result;
         this.loading = false;
       },

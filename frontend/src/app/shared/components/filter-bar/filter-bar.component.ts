@@ -125,11 +125,13 @@ import { ButtonComponent } from '../button/button.component';
         display: flex;
         gap: var(--s-16);
         align-items: center;
+        flex-wrap: wrap;
       }
 
       .search-wrapper {
         flex: 1;
         position: relative;
+        min-width: 200px;
         max-width: 400px;
       }
 
