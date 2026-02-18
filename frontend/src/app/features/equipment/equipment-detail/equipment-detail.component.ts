@@ -32,22 +32,15 @@ import {
         { label: equipment?.codigo_equipo || 'Detalle' },
       ]"
       [loading]="loading"
-      [backUrl]="'/equipment'"
     >
-      <div actions>
-        <button class="btn btn-primary" (click)="editEquipment()">
-          <i class="fa-solid fa-pen"></i> Editar Equipo
-        </button>
-      </div>
-
       <div *ngIf="equipment" class="detail-container">
         <!-- Header Stats Cards -->
         <app-stats-grid [items]="statItems" testId="equipment-detail-stats"></app-stats-grid>
 
         <!-- Main Content Grid -->
-        <div class="content-layout">
-          <!-- Left Column: Details -->
-          <div class="main-column">
+        <div class="content-grid">
+          <!-- Left Column: Tabs & Details -->
+          <div class="content-main card">
             <!-- Tabs Navigation -->
             <div class="tabs-nav">
               <button
@@ -84,43 +77,43 @@ import {
             <div class="tab-content-area">
               <!-- General Tab -->
               <div *ngIf="activeTab === 'general'" class="tab-pane fade-in">
-                <div class="info-group">
-                  <h3>Especificaciones Técnicas</h3>
-                  <div class="specs-grid">
-                    <div class="spec-item">
-                      <span class="spec-label">Marca</span>
-                      <span class="spec-value">{{ equipment.marca }}</span>
+                <section class="detail-section">
+                  <h2>Especificaciones Técnicas</h2>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <label>Marca</label>
+                      <p>{{ equipment.marca }}</p>
                     </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Modelo</span>
-                      <span class="spec-value">{{ equipment.modelo }}</span>
+                    <div class="info-item">
+                      <label>Modelo</label>
+                      <p>{{ equipment.modelo }}</p>
                     </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Año</span>
-                      <span class="spec-value">{{ equipment.anio_fabricacion || '-' }}</span>
+                    <div class="info-item">
+                      <label>Año</label>
+                      <p>{{ equipment.anio_fabricacion || '-' }}</p>
                     </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Serie</span>
-                      <span class="spec-value">{{ equipment.numero_serie_equipo || '-' }}</span>
+                    <div class="info-item">
+                      <label>Serie</label>
+                      <p>{{ equipment.numero_serie_equipo || '-' }}</p>
                     </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Placa</span>
-                      <span class="spec-value">{{ equipment.placa || '-' }}</span>
+                    <div class="info-item">
+                      <label>Placa</label>
+                      <p>{{ equipment.placa || '-' }}</p>
                     </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Categoría</span>
-                      <span class="spec-value">{{ equipment.categoria || '-' }}</span>
+                    <div class="info-item">
+                      <label>Categoría</label>
+                      <p>{{ equipment.categoria || '-' }}</p>
                     </div>
                   </div>
-                </div>
+                </section>
 
                 <!-- Document Expiry Dates -->
-                <div class="info-group">
-                  <h3>Documentos y Vencimientos</h3>
-                  <div class="specs-grid">
-                    <div class="spec-item">
-                      <span class="spec-label">SOAT</span>
-                      <span class="spec-value">
+                <section class="detail-section">
+                  <h2>Documentos y Vencimientos</h2>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <label>SOAT</label>
+                      <p>
                         <span
                           *ngIf="equipment.fecha_venc_soat"
                           [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_soat)"
@@ -133,11 +126,11 @@ import {
                         <span *ngIf="!equipment.fecha_venc_soat" class="text-muted"
                           >Sin registro</span
                         >
-                      </span>
+                      </p>
                     </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Póliza TREC</span>
-                      <span class="spec-value">
+                    <div class="info-item">
+                      <label>Póliza TREC</label>
+                      <p>
                         <span
                           *ngIf="equipment.fecha_venc_poliza"
                           [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_poliza)"
@@ -150,11 +143,11 @@ import {
                         <span *ngIf="!equipment.fecha_venc_poliza" class="text-muted"
                           >Sin registro</span
                         >
-                      </span>
+                      </p>
                     </div>
-                    <div class="spec-item">
-                      <span class="spec-label">CITV</span>
-                      <span class="spec-value">
+                    <div class="info-item">
+                      <label>CITV</label>
+                      <p>
                         <span
                           *ngIf="equipment.fecha_venc_citv"
                           [class]="'doc-status doc-' + getDocExpiry(equipment.fecha_venc_citv)"
@@ -167,16 +160,16 @@ import {
                         <span *ngIf="!equipment.fecha_venc_citv" class="text-muted"
                           >Sin registro</span
                         >
-                      </span>
+                      </p>
                     </div>
                   </div>
-                </div>
+                </section>
               </div>
 
               <!-- Maintenance Tab -->
               <div *ngIf="activeTab === 'maintenance'" class="tab-pane fade-in">
                 <div class="section-header">
-                  <h3>Programaciones de Mantenimiento</h3>
+                  <h2>Programaciones de Mantenimiento</h2>
                   <button class="btn btn-sm btn-secondary" (click)="goToMaintenance()">
                     Ver Todo
                   </button>
@@ -196,7 +189,10 @@ import {
                       <tr *ngFor="let schedule of maintenanceSchedules">
                         <td>{{ schedule.maintenanceType }}</td>
                         <td>
-                          <span class="badge" [class]="'status-' + schedule.status">
+                          <span
+                            class="status-badge"
+                            [class]="'status-badge status-' + schedule.status"
+                          >
                             {{ schedule.status }}
                           </span>
                         </td>
@@ -217,7 +213,7 @@ import {
               <!-- Contracts Tab -->
               <div *ngIf="activeTab === 'contracts'" class="tab-pane fade-in">
                 <div class="section-header">
-                  <h3>Historial de Contratos</h3>
+                  <h2>Historial de Contratos</h2>
                   <button class="btn btn-sm btn-primary" (click)="createContract()">
                     <i class="fa-solid fa-plus"></i> Nuevo
                   </button>
@@ -243,7 +239,7 @@ import {
                           {{ contract.end_date | date: 'shortDate' }}
                         </td>
                         <td>
-                          <span class="badge" [class]="'status-' + contract.status">
+                          <span [class]="'status-badge status-' + contract.status">
                             {{ contract.status }}
                           </span>
                         </td>
@@ -267,7 +263,7 @@ import {
               <!-- Reports Tab -->
               <div *ngIf="activeTab === 'reports'" class="tab-pane fade-in">
                 <div class="section-header">
-                  <h3>Últimos Partes Diarios</h3>
+                  <h2>Últimos Partes Diarios</h2>
                 </div>
                 <div *ngIf="dailyReports.length > 0; else noReports">
                   <table class="aero-table">
@@ -288,7 +284,7 @@ import {
                           {{ report.horometro_final - report.horometro_inicial | number: '1.1-1' }}
                         </td>
                         <td>
-                          <span class="badge" [class]="'status-' + report.status">
+                          <span [class]="'status-badge status-' + report.status">
                             {{ report.status }}
                           </span>
                         </td>
@@ -311,215 +307,294 @@ import {
             </div>
           </div>
 
-          <!-- Right Column: Quick Actions / Summary -->
-          <!-- Can be added later for more density -->
+          <!-- Right Column: Quick Actions -->
+          <div class="detail-sidebar">
+            <div class="card">
+              <h3>Acciones</h3>
+              <div class="quick-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-block"
+                  (click)="router.navigate(['/equipment'])"
+                >
+                  <i class="fa-solid fa-arrow-left"></i> Volver
+                </button>
+                <button type="button" class="btn btn-primary btn-block" (click)="editEquipment()">
+                  <i class="fa-solid fa-pen"></i> Editar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-block"
+                  (click)="goToMaintenance()"
+                >
+                  <i class="fa-solid fa-wrench"></i> Ver Mantenimiento
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-block"
+                  (click)="createContract()"
+                >
+                  <i class="fa-solid fa-file-contract"></i> Nuevo Contrato
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Información del Sistema</h3>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="timeline-date">{{ equipment.updated_at | date: 'short' }}</div>
+                  <div class="timeline-content">Última actualización</div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-date">{{ equipment.created_at | date: 'short' }}</div>
+                  <div class="timeline-content">Equipo registrado</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </app-page-layout>
   `,
   styles: [
     `
-      /* Variables & General */
-      :host {
-        --primary-color: #3182ce;
-        --bg-color: #f7fafc;
-        --card-bg: #ffffff;
-        --text-main: #2d3748;
-        --text-muted: #718096;
-        --border-color: #e2e8f0;
-      }
-
       .detail-container {
         display: flex;
         flex-direction: column;
-        gap: 2rem;
-        animation: fadeIn 0.3s ease-in-out;
+        gap: var(--s-24);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: var(--s-24);
+        align-items: start;
+
+        @media (max-width: 968px) {
+          grid-template-columns: 1fr;
+        }
       }
 
       /* Tabs & Content */
-      .content-layout {
-        background: var(--card-bg);
-        border-radius: 16px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      .content-main {
         overflow: hidden;
         min-height: 400px;
+        padding: 0;
       }
 
       .tabs-nav {
         display: flex;
-        border-bottom: 1px solid var(--border-color);
-        background: #f8f9fa;
-        padding: 0 1rem;
+        border-bottom: 1px solid var(--grey-200);
+        background: var(--grey-50);
+        padding: 0 var(--s-16);
       }
 
       .tab-btn {
-        padding: 1rem 1.5rem;
+        padding: var(--s-16) var(--s-24);
         border: none;
         background: none;
         font-weight: 600;
-        color: var(--text-muted);
+        color: var(--grey-500);
         cursor: pointer;
         border-bottom: 3px solid transparent;
         transition: all 0.2s;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--s-8);
       }
 
       .tab-btn:hover {
-        color: var(--primary-color);
-        background: rgba(49, 130, 206, 0.05);
+        color: var(--primary-500);
+        background: var(--primary-50, rgba(49, 130, 206, 0.05));
       }
 
       .tab-btn.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
+        color: var(--primary-500);
+        border-bottom-color: var(--primary-500);
       }
 
       .tab-content-area {
-        padding: 2rem;
+        padding: var(--s-24);
+      }
+
+      .detail-section {
+        margin-bottom: var(--s-32);
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        h2 {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--s-16);
+        }
       }
 
       .section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: var(--s-24);
+
+        h2 {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin: 0;
+        }
       }
 
-      .section-header h3 {
-        font-size: 1.25rem;
-        color: var(--text-main);
-        margin: 0;
-      }
-
-      /* Specs Grid */
-      .specs-grid {
+      /* Info Grid */
+      .info-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--s-24);
       }
 
-      .spec-item {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
+      .info-item {
+        label {
+          display: block;
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--grey-500);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: var(--s-4);
+        }
+
+        p {
+          font-size: 16px;
+          color: #333;
+          margin: 0;
+        }
       }
 
-      .spec-label {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .spec-value {
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--text-main);
+      .text-muted {
+        color: var(--grey-500);
+        font-style: italic;
       }
 
       /* Tables */
       .aero-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.95rem;
+        font-size: 14px;
       }
 
       .aero-table th {
         text-align: left;
-        padding: 1rem;
-        background: #f7fafc;
-        color: var(--text-muted);
+        padding: var(--s-12) var(--s-16);
+        background: var(--grey-50);
+        color: var(--grey-500);
+        font-size: 12px;
         font-weight: 600;
-        border-bottom: 1px solid var(--border-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--grey-200);
       }
 
       .aero-table td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border-color);
-        color: var(--text-main);
+        padding: var(--s-12) var(--s-16);
+        border-bottom: 1px solid var(--grey-200);
+        color: #333;
       }
 
-      .aero-table tr:hover {
-        background: #f8f9fa;
+      .aero-table tr:hover td {
+        background: var(--grey-50);
       }
 
-      /* Badges & Buttons */
-      .badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      .status-available,
-      .status-active {
-        background: #c6f6d5;
-        color: #22543d;
-      }
-      .status-maintenance {
-        background: #feeebc;
-        color: #744210;
-      }
-      .status-assigned {
-        background: #bee3f8;
-        color: #2a4365;
-      }
-      .status-inactive {
-        background: #edf2f7;
-        color: #4a5568;
-      }
-
-      .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
+      /* Status Badges */
+      .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        transition: 0.2s;
+        gap: 6px;
       }
 
-      .btn-primary {
-        background: var(--primary-color);
-        color: white;
-      }
-      .btn-primary:hover {
-        opacity: 0.9;
-      }
-
-      .btn-outline {
-        background: transparent;
-        border: 1px solid var(--border-color);
-        color: var(--text-main);
+      .status-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
       }
 
+      .status-DISPONIBLE,
+      .status-available,
+      .status-active,
+      .status-ACTIVO {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .status-DISPONIBLE::before,
+      .status-available::before,
+      .status-active::before,
+      .status-ACTIVO::before {
+        background: var(--semantic-green-500);
+      }
+
+      .status-EN_USO,
+      .status-assigned {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
+      }
+      .status-EN_USO::before,
+      .status-assigned::before {
+        background: var(--semantic-blue-500);
+      }
+
+      .status-MANTENIMIENTO,
+      .status-maintenance {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .status-MANTENIMIENTO::before,
+      .status-maintenance::before {
+        background: var(--semantic-yellow-500);
+      }
+
+      .status-RETIRADO,
+      .status-inactive {
+        background: var(--grey-100);
+        color: var(--grey-700);
+      }
+      .status-RETIRADO::before,
+      .status-inactive::before {
+        background: var(--grey-400);
+      }
+
+      /* Buttons */
       .btn-icon {
         background: none;
         border: none;
-        color: var(--text-muted);
+        color: var(--grey-500);
         cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 4px;
-      }
-      .btn-icon:hover {
-        background: #edf2f7;
-        color: var(--primary-color);
+        padding: var(--s-8);
+        border-radius: var(--radius-sm);
+        transition: 0.2s;
+
+        &:hover {
+          background: var(--grey-100);
+          color: var(--primary-500);
+        }
       }
 
       .empty-state {
         text-align: center;
-        padding: 3rem;
-        color: var(--text-muted);
-      }
-      .empty-state i {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
+        padding: var(--s-48) var(--s-24);
+        color: var(--grey-500);
+
+        i {
+          font-size: 2.5rem;
+          margin-bottom: var(--s-16);
+          opacity: 0.5;
+          display: block;
+        }
       }
 
       .font-mono {
@@ -527,10 +602,11 @@ import {
         font-weight: 600;
       }
 
+      /* Document expiry badges */
       .doc-status {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--s-8);
       }
 
       .doc-tag {
@@ -541,32 +617,114 @@ import {
       }
 
       .doc-expired {
-        color: #c62828;
+        color: var(--semantic-red-700);
+
+        .doc-tag {
+          background: var(--semantic-red-50);
+          color: var(--semantic-red-700);
+        }
       }
-      .doc-expired .doc-tag {
-        background: #ffebee;
-        color: #c62828;
-      }
+
       .doc-critical {
-        color: #e65100;
+        color: var(--semantic-red-700);
+
+        .doc-tag {
+          background: var(--semantic-red-50);
+          color: var(--semantic-red-700);
+        }
       }
-      .doc-critical .doc-tag {
-        background: #fff3e0;
-        color: #e65100;
-      }
+
       .doc-warning {
-        color: #f57f17;
+        color: var(--semantic-yellow-700);
+
+        .doc-tag {
+          background: var(--semantic-yellow-50);
+          color: var(--semantic-yellow-700);
+        }
       }
-      .doc-warning .doc-tag {
-        background: #fffde7;
-        color: #f57f17;
-      }
+
       .doc-ok {
-        color: #2e7d32;
+        color: var(--semantic-green-700);
+
+        .doc-tag {
+          background: var(--semantic-green-50);
+          color: var(--semantic-green-700);
+        }
       }
-      .doc-ok .doc-tag {
-        background: #e8f5e9;
-        color: #2e7d32;
+
+      /* Sidebar */
+      .detail-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-24);
+
+        h3 {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--primary-900);
+          margin-bottom: var(--s-16);
+        }
+      }
+
+      .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-8);
+      }
+
+      .btn-block {
+        width: 100%;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-16);
+      }
+
+      .timeline-item {
+        position: relative;
+        padding-left: var(--s-24);
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--primary-500);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 3px;
+          top: 14px;
+          width: 2px;
+          height: calc(100% + var(--s-16));
+          background: var(--grey-200);
+        }
+
+        &:last-child::after {
+          display: none;
+        }
+      }
+
+      .timeline-date {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-bottom: var(--s-4);
+      }
+
+      .timeline-content {
+        font-size: 14px;
+        color: #333;
       }
 
       @keyframes fadeIn {
@@ -579,12 +737,16 @@ import {
           transform: translateY(0);
         }
       }
+
+      .fade-in {
+        animation: fadeIn 0.2s ease-in-out;
+      }
     `,
   ],
 })
 export class EquipmentDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  router = inject(Router);
   private equipmentService = inject(EquipmentService);
   private dailyReportService = inject(DailyReportService);
   private contractService = inject(ContractService);
@@ -641,7 +803,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
       EN_USO: { color: 'primary', icon: 'fa-person-digging' },
       MANTENIMIENTO: { color: 'warning', icon: 'fa-wrench' },
       RETIRADO: { color: 'danger', icon: 'fa-ban' },
-      AVAILABLE: { color: 'success', icon: 'fa-check-circle' }, // Fallback for various case/lang
+      AVAILABLE: { color: 'success', icon: 'fa-check-circle' },
       IN_USE: { color: 'primary', icon: 'fa-person-digging' },
       MAINTENANCE: { color: 'warning', icon: 'fa-wrench' },
       RETIRED: { color: 'danger', icon: 'fa-ban' },
@@ -685,7 +847,6 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   }
 
   loadRelatedData(id: number) {
-    // Load daily reports for this equipment
     this.dailyReportService
       .getAll({ equipo_id: id })
       .pipe(takeUntil(this.destroy$))
@@ -697,7 +858,6 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
         error: () => this.checkLoading(),
       });
 
-    // Load contracts for this equipment
     this.contractService
       .getAll({ equipmentId: id })
       .pipe(takeUntil(this.destroy$))
@@ -709,13 +869,11 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
         error: () => this.checkLoading(),
       });
 
-    // Load maintenance schedules - FIX: response is array directly, not {data: [...]}
     this.maintenanceService
       .getAll({ equipo_id: id })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (schedules) => {
-          // Interceptor already unwraps to array, no need to access .data
           this.maintenanceSchedules = Array.isArray(schedules) ? schedules : [];
           this.checkLoading();
         },
@@ -724,8 +882,6 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   }
 
   checkLoading() {
-    // Simple verification to turn off loading when at least equipment is loaded
-    // and requests are fired.
     this.loading = false;
   }
 
@@ -736,7 +892,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   }
 
   viewReport(id: string) {
-    this.router.navigate(['/daily-reports', id]); // Correct global route? Or nested?
+    this.router.navigate(['/daily-reports', id]);
   }
 
   viewContract(id: string) {

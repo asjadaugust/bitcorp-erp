@@ -14,17 +14,17 @@ import {
 export class ProviderFinancialInfoCreateDto {
   @IsOptional()
   @IsNumber({}, { message: 'El ID del proveedor debe ser un número' })
-  provider_id?: number;
+  id_proveedor?: number;
 
   @IsNotEmpty({ message: 'El nombre del banco es requerido' })
   @IsString({ message: 'El nombre del banco debe ser texto' })
   @MaxLength(200, { message: 'El nombre del banco no debe exceder 200 caracteres' })
-  bank_name!: string;
+  nombre_banco!: string;
 
   @IsNotEmpty({ message: 'El número de cuenta es requerido' })
   @IsString({ message: 'El número de cuenta debe ser texto' })
   @MaxLength(50, { message: 'El número de cuenta no debe exceder 50 caracteres' })
-  account_number!: string;
+  numero_cuenta!: string;
 
   @IsOptional()
   @IsString({ message: 'El CCI debe ser texto' })
@@ -34,28 +34,28 @@ export class ProviderFinancialInfoCreateDto {
   @IsOptional()
   @IsString({ message: 'El nombre del titular debe ser texto' })
   @MaxLength(200, { message: 'El nombre del titular no debe exceder 200 caracteres' })
-  account_holder_name?: string;
+  nombre_titular?: string;
 
   @IsOptional()
   @IsString({ message: 'El tipo de cuenta debe ser texto' })
   @IsIn(['savings', 'checking', 'cci'], {
     message: 'El tipo de cuenta debe ser: savings, checking o cci',
   })
-  account_type?: string;
+  tipo_cuenta?: string;
 
   @IsOptional()
   @IsString({ message: 'La moneda debe ser texto' })
   @IsIn(['PEN', 'USD', 'EUR'], { message: 'La moneda debe ser: PEN, USD o EUR' })
-  currency?: string;
+  moneda?: string;
 
   @IsOptional()
-  @IsBoolean({ message: 'El campo is_primary debe ser verdadero o falso' })
-  is_primary?: boolean;
+  @IsBoolean({ message: 'El campo es_principal debe ser verdadero o falso' })
+  es_principal?: boolean;
 
   @IsOptional()
   @IsString({ message: 'El estado debe ser texto' })
   @IsIn(['active', 'inactive'], { message: 'El estado debe ser: active o inactive' })
-  status?: string;
+  estado?: string;
 
   @IsOptional()
   @IsNumber({}, { message: 'El tenant_id debe ser un número' })
@@ -73,12 +73,12 @@ export class ProviderFinancialInfoUpdateDto {
   @IsOptional()
   @IsString({ message: 'El nombre del banco debe ser texto' })
   @MaxLength(200, { message: 'El nombre del banco no debe exceder 200 caracteres' })
-  bank_name?: string;
+  nombre_banco?: string;
 
   @IsOptional()
   @IsString({ message: 'El número de cuenta debe ser texto' })
   @MaxLength(50, { message: 'El número de cuenta no debe exceder 50 caracteres' })
-  account_number?: string;
+  numero_cuenta?: string;
 
   @IsOptional()
   @IsString({ message: 'El CCI debe ser texto' })
@@ -88,28 +88,28 @@ export class ProviderFinancialInfoUpdateDto {
   @IsOptional()
   @IsString({ message: 'El nombre del titular debe ser texto' })
   @MaxLength(200, { message: 'El nombre del titular no debe exceder 200 caracteres' })
-  account_holder_name?: string;
+  nombre_titular?: string;
 
   @IsOptional()
   @IsString({ message: 'El tipo de cuenta debe ser texto' })
   @IsIn(['savings', 'checking', 'cci'], {
     message: 'El tipo de cuenta debe ser: savings, checking o cci',
   })
-  account_type?: string;
+  tipo_cuenta?: string;
 
   @IsOptional()
   @IsString({ message: 'La moneda debe ser texto' })
   @IsIn(['PEN', 'USD', 'EUR'], { message: 'La moneda debe ser: PEN, USD o EUR' })
-  currency?: string;
+  moneda?: string;
 
   @IsOptional()
-  @IsBoolean({ message: 'El campo is_primary debe ser verdadero o falso' })
-  is_primary?: boolean;
+  @IsBoolean({ message: 'El campo es_principal debe ser verdadero o falso' })
+  es_principal?: boolean;
 
   @IsOptional()
   @IsString({ message: 'El estado debe ser texto' })
   @IsIn(['active', 'inactive'], { message: 'El estado debe ser: active o inactive' })
-  status?: string;
+  estado?: string;
 
   @IsOptional()
   @IsNumber({}, { message: 'El updated_by debe ser un número' })
@@ -121,15 +121,15 @@ export class ProviderFinancialInfoUpdateDto {
  */
 export interface ProviderFinancialInfoDto {
   id: number;
-  provider_id: number;
-  bank_name: string;
-  account_number: string;
+  id_proveedor: number;
+  nombre_banco: string;
+  numero_cuenta: string;
   cci?: string;
-  account_holder_name?: string;
-  account_type?: string;
-  currency: string;
-  is_primary: boolean;
-  status: string;
+  nombre_titular?: string;
+  tipo_cuenta?: string;
+  moneda: string;
+  es_principal: boolean;
+  estado: string;
   tenant_id: number;
   created_by?: number;
   updated_by?: number;

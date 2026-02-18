@@ -8,17 +8,17 @@ import {
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
 
-interface FinancialInfo {
+interface InfoFinanciera {
   id?: number;
-  provider_id: string;
-  bank_name: string;
-  account_number: string;
+  id_proveedor: string;
+  nombre_banco: string;
+  numero_cuenta: string;
   cci?: string;
-  account_holder_name?: string;
-  account_type?: string;
-  currency: string;
-  is_primary: boolean;
-  status: string;
+  nombre_titular?: string;
+  tipo_cuenta?: string;
+  moneda: string;
+  es_principal: boolean;
+  estado: string;
 }
 
 @Component({
@@ -44,22 +44,22 @@ interface FinancialInfo {
         <form [formGroup]="financialForm" (ngSubmit)="onSubmit()">
           <div class="form-grid">
             <div class="form-group">
-              <label for="bank_name">Entidad Financiera *</label>
+              <label for="nombre_banco">Entidad Financiera *</label>
               <input
-                id="bank_name"
+                id="nombre_banco"
                 type="text"
-                formControlName="bank_name"
+                formControlName="nombre_banco"
                 class="form-control"
                 placeholder="ej. Banco de Crédito del Perú"
               />
             </div>
 
             <div class="form-group">
-              <label for="account_number">N° Cuenta *</label>
+              <label for="numero_cuenta">N° Cuenta *</label>
               <input
-                id="account_number"
+                id="numero_cuenta"
                 type="text"
-                formControlName="account_number"
+                formControlName="numero_cuenta"
                 class="form-control"
               />
             </div>
@@ -70,19 +70,19 @@ interface FinancialInfo {
             </div>
 
             <div class="form-group">
-              <label for="account_holder_name">Nombre de la Cuenta</label>
+              <label for="nombre_titular">Nombre de la Cuenta</label>
               <input
-                id="account_holder_name"
+                id="nombre_titular"
                 type="text"
-                formControlName="account_holder_name"
+                formControlName="nombre_titular"
                 class="form-control"
               />
             </div>
 
             <div class="form-group">
-              <label for="currency">Moneda *</label>
+              <label for="moneda">Moneda *</label>
               <app-dropdown
-                formControlName="currency"
+                formControlName="moneda"
                 [options]="currencyOptions"
                 [placeholder]="'Seleccionar...'"
               ></app-dropdown>
@@ -90,7 +90,7 @@ interface FinancialInfo {
 
             <div class="form-group checkbox-group">
               <label>
-                <input type="checkbox" formControlName="is_primary" />
+                <input type="checkbox" formControlName="es_principal" />
                 Cuenta Principal
               </label>
             </div>
@@ -114,9 +114,9 @@ interface FinancialInfo {
         <div class="financial-card" *ngFor="let info of financialInfoList">
           <div class="card-header">
             <div class="bank-info">
-              <h4>{{ info.bank_name }}</h4>
-              <span class="badge badge-primary" *ngIf="info.is_primary">Principal</span>
-              <span class="badge badge-currency">{{ info.currency }}</span>
+              <h4>{{ info.nombre_banco }}</h4>
+              <span class="badge badge-primary" *ngIf="info.es_principal">Principal</span>
+              <span class="badge badge-currency">{{ info.moneda }}</span>
             </div>
             <div class="actions">
               <button type="button" class="btn-icon" (click)="editFinancialInfo(info)">
@@ -134,7 +134,7 @@ interface FinancialInfo {
           <div class="card-body">
             <div class="info-row">
               <span class="label">N° Cuenta:</span>
-              <span class="value">{{ info.account_number }}</span>
+              <span class="value">{{ info.numero_cuenta }}</span>
             </div>
             <div class="info-row" *ngIf="info.cci">
               <span class="label">CCI:</span>
@@ -273,7 +273,7 @@ export class ProviderFinancialInfoComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
 
-  financialInfoList: FinancialInfo[] = [];
+  financialInfoList: InfoFinanciera[] = [];
   financialForm!: FormGroup;
   showForm = false;
   loading = false;
@@ -291,19 +291,19 @@ export class ProviderFinancialInfoComponent implements OnInit {
 
   initForm(): void {
     this.financialForm = this.fb.group({
-      bank_name: ['', Validators.required],
-      account_number: ['', Validators.required],
+      nombre_banco: ['', Validators.required],
+      numero_cuenta: ['', Validators.required],
       cci: [''],
-      account_holder_name: [''],
-      currency: ['PEN', Validators.required],
-      is_primary: [false],
+      nombre_titular: [''],
+      moneda: ['PEN', Validators.required],
+      es_principal: [false],
     });
   }
 
   loadFinancialInfo(): void {
     this.loading = true;
     this.http
-      .get<FinancialInfo[]>(`${environment.apiUrl}/providers/${this.providerId}/financial-info`)
+      .get<InfoFinanciera[]>(`${environment.apiUrl}/providers/${this.providerId}/financial-info`)
       .subscribe({
         next: (data) => {
           this.financialInfoList = data;
@@ -336,7 +336,7 @@ export class ProviderFinancialInfoComponent implements OnInit {
     });
   }
 
-  editFinancialInfo(info: FinancialInfo): void {
+  editFinancialInfo(info: InfoFinanciera): void {
     this.editingId = info.id!;
     this.financialForm.patchValue(info);
     this.showForm = true;
@@ -353,6 +353,6 @@ export class ProviderFinancialInfoComponent implements OnInit {
   cancelForm(): void {
     this.showForm = false;
     this.editingId = null;
-    this.financialForm.reset({ currency: 'PEN', is_primary: false });
+    this.financialForm.reset({ moneda: 'PEN', es_principal: false });
   }
 }

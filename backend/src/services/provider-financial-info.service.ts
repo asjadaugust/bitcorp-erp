@@ -179,15 +179,15 @@ export class ProviderFinancialInfoService {
       // Additional validation can be added here if needed
 
       const financialInfo = this.repository.create({
-        providerId: data.provider_id!,
-        bankName: data.bank_name,
-        accountNumber: data.account_number,
+        providerId: data.id_proveedor!,
+        bankName: data.nombre_banco,
+        accountNumber: data.numero_cuenta,
         cci: data.cci,
-        accountHolderName: data.account_holder_name,
-        accountType: data.account_type as AccountType,
-        currency: (data.currency || 'PEN') as Currency,
-        isPrimary: data.is_primary ?? false,
-        status: (data.status || 'active') as FinancialStatus,
+        accountHolderName: data.nombre_titular,
+        accountType: data.tipo_cuenta as AccountType,
+        currency: (data.moneda || 'PEN') as Currency,
+        isPrimary: data.es_principal ?? false,
+        status: (data.estado || 'active') as FinancialStatus,
         // TODO: tenantId should come from auth context (Phase 21)
         // Current: Hardcoded to 1
         // Should be: tenantId: req.user.tenantId
@@ -214,8 +214,8 @@ export class ProviderFinancialInfoService {
       Logger.error('Error creating provider financial info', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        providerId: data.provider_id,
-        bankName: data.bank_name,
+        providerId: data.id_proveedor,
+        bankName: data.nombre_banco,
         context: 'ProviderFinancialInfoService.create',
       });
       throw new DatabaseError('Failed to create provider financial info');
@@ -261,16 +261,14 @@ export class ProviderFinancialInfoService {
 
       // Build update object with only provided fields
       const updateData: Partial<ProviderFinancialInfo> = {};
-      if (data.bank_name !== undefined) updateData.bankName = data.bank_name;
-      if (data.account_number !== undefined) updateData.accountNumber = data.account_number;
+      if (data.nombre_banco !== undefined) updateData.bankName = data.nombre_banco;
+      if (data.numero_cuenta !== undefined) updateData.accountNumber = data.numero_cuenta;
       if (data.cci !== undefined) updateData.cci = data.cci;
-      if (data.account_holder_name !== undefined)
-        updateData.accountHolderName = data.account_holder_name;
-      if (data.account_type !== undefined)
-        updateData.accountType = data.account_type as AccountType;
-      if (data.currency !== undefined) updateData.currency = data.currency as Currency;
-      if (data.is_primary !== undefined) updateData.isPrimary = data.is_primary;
-      if (data.status !== undefined) updateData.status = data.status as FinancialStatus;
+      if (data.nombre_titular !== undefined) updateData.accountHolderName = data.nombre_titular;
+      if (data.tipo_cuenta !== undefined) updateData.accountType = data.tipo_cuenta as AccountType;
+      if (data.moneda !== undefined) updateData.currency = data.moneda as Currency;
+      if (data.es_principal !== undefined) updateData.isPrimary = data.es_principal;
+      if (data.estado !== undefined) updateData.status = data.estado as FinancialStatus;
       if (data.updated_by !== undefined) updateData.updatedBy = data.updated_by;
 
       // Update fields
@@ -366,15 +364,15 @@ export class ProviderFinancialInfoService {
   private toDto(info: ProviderFinancialInfo): ProviderFinancialInfoDto {
     return {
       id: info.id,
-      provider_id: info.providerId,
-      bank_name: info.bankName,
-      account_number: info.accountNumber,
+      id_proveedor: info.providerId,
+      nombre_banco: info.bankName,
+      numero_cuenta: info.accountNumber,
       cci: info.cci,
-      account_holder_name: info.accountHolderName,
-      account_type: info.accountType,
-      currency: info.currency,
-      is_primary: info.isPrimary,
-      status: info.status,
+      nombre_titular: info.accountHolderName,
+      tipo_cuenta: info.accountType,
+      moneda: info.currency,
+      es_principal: info.isPrimary,
+      estado: info.status,
       tenant_id: info.tenantId,
       created_by: info.createdBy,
       updated_by: info.updatedBy,

@@ -15,57 +15,57 @@ import {
 export class ProviderContactCreateDto {
   @IsOptional()
   @IsNumber({}, { message: 'El ID del proveedor debe ser un número' })
-  provider_id?: number;
+  id_proveedor?: number;
 
   @IsNotEmpty({ message: 'El nombre del contacto es requerido' })
   @IsString({ message: 'El nombre del contacto debe ser texto' })
   @MaxLength(200, { message: 'El nombre del contacto no debe exceder 200 caracteres' })
-  contact_name!: string;
+  nombre_contacto!: string;
 
   @IsOptional()
   @IsString({ message: 'El cargo debe ser texto' })
   @MaxLength(100, { message: 'El cargo no debe exceder 100 caracteres' })
-  position?: string;
+  cargo?: string;
 
   @IsOptional()
   @IsString({ message: 'El teléfono principal debe ser texto' })
   @MaxLength(20, { message: 'El teléfono principal no debe exceder 20 caracteres' })
-  primary_phone?: string;
+  telefono_principal?: string;
 
   @IsOptional()
   @IsString({ message: 'El teléfono secundario debe ser texto' })
   @MaxLength(20, { message: 'El teléfono secundario no debe exceder 20 caracteres' })
-  secondary_phone?: string;
+  telefono_secundario?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'El email debe ser válido' })
-  @MaxLength(200, { message: 'El email no debe exceder 200 caracteres' })
-  email?: string;
+  @IsEmail({}, { message: 'El correo debe ser válido' })
+  @MaxLength(200, { message: 'El correo no debe exceder 200 caracteres' })
+  correo?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'El email secundario debe ser válido' })
-  @MaxLength(200, { message: 'El email secundario no debe exceder 200 caracteres' })
-  secondary_email?: string;
+  @IsEmail({}, { message: 'El correo secundario debe ser válido' })
+  @MaxLength(200, { message: 'El correo secundario no debe exceder 200 caracteres' })
+  correo_secundario?: string;
 
   @IsOptional()
   @IsString({ message: 'El tipo de contacto debe ser texto' })
   @IsIn(['sales', 'billing', 'technical', 'general'], {
     message: 'El tipo de contacto debe ser: sales, billing, technical o general',
   })
-  contact_type?: string;
+  tipo_contacto?: string;
 
   @IsOptional()
-  @IsBoolean({ message: 'El campo is_primary debe ser verdadero o falso' })
-  is_primary?: boolean;
+  @IsBoolean({ message: 'El campo es_principal debe ser verdadero o falso' })
+  es_principal?: boolean;
 
   @IsOptional()
   @IsString({ message: 'El estado debe ser texto' })
   @IsIn(['active', 'inactive'], { message: 'El estado debe ser: active o inactive' })
-  status?: string;
+  estado?: string;
 
   @IsOptional()
   @IsString({ message: 'Las notas deben ser texto' })
-  notes?: string;
+  notas?: string;
 
   @IsOptional()
   @IsNumber({}, { message: 'El tenant_id debe ser un número' })
@@ -83,52 +83,52 @@ export class ProviderContactUpdateDto {
   @IsOptional()
   @IsString({ message: 'El nombre del contacto debe ser texto' })
   @MaxLength(200, { message: 'El nombre del contacto no debe exceder 200 caracteres' })
-  contact_name?: string;
+  nombre_contacto?: string;
 
   @IsOptional()
   @IsString({ message: 'El cargo debe ser texto' })
   @MaxLength(100, { message: 'El cargo no debe exceder 100 caracteres' })
-  position?: string;
+  cargo?: string;
 
   @IsOptional()
   @IsString({ message: 'El teléfono principal debe ser texto' })
   @MaxLength(20, { message: 'El teléfono principal no debe exceder 20 caracteres' })
-  primary_phone?: string;
+  telefono_principal?: string;
 
   @IsOptional()
   @IsString({ message: 'El teléfono secundario debe ser texto' })
   @MaxLength(20, { message: 'El teléfono secundario no debe exceder 20 caracteres' })
-  secondary_phone?: string;
+  telefono_secundario?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'El email debe ser válido' })
-  @MaxLength(200, { message: 'El email no debe exceder 200 caracteres' })
-  email?: string;
+  @IsEmail({}, { message: 'El correo debe ser válido' })
+  @MaxLength(200, { message: 'El correo no debe exceder 200 caracteres' })
+  correo?: string;
 
   @IsOptional()
-  @IsEmail({}, { message: 'El email secundario debe ser válido' })
-  @MaxLength(200, { message: 'El email secundario no debe exceder 200 caracteres' })
-  secondary_email?: string;
+  @IsEmail({}, { message: 'El correo secundario debe ser válido' })
+  @MaxLength(200, { message: 'El correo secundario no debe exceder 200 caracteres' })
+  correo_secundario?: string;
 
   @IsOptional()
   @IsString({ message: 'El tipo de contacto debe ser texto' })
   @IsIn(['sales', 'billing', 'technical', 'general'], {
     message: 'El tipo de contacto debe ser: sales, billing, technical o general',
   })
-  contact_type?: string;
+  tipo_contacto?: string;
 
   @IsOptional()
-  @IsBoolean({ message: 'El campo is_primary debe ser verdadero o falso' })
-  is_primary?: boolean;
+  @IsBoolean({ message: 'El campo es_principal debe ser verdadero o falso' })
+  es_principal?: boolean;
 
   @IsOptional()
   @IsString({ message: 'El estado debe ser texto' })
   @IsIn(['active', 'inactive'], { message: 'El estado debe ser: active o inactive' })
-  status?: string;
+  estado?: string;
 
   @IsOptional()
   @IsString({ message: 'Las notas deben ser texto' })
-  notes?: string;
+  notas?: string;
 
   @IsOptional()
   @IsNumber({}, { message: 'El updated_by debe ser un número' })
@@ -140,17 +140,17 @@ export class ProviderContactUpdateDto {
  */
 export interface ProviderContactDto {
   id: number;
-  provider_id: number;
-  contact_name: string;
-  position?: string;
-  primary_phone?: string;
-  secondary_phone?: string;
-  email?: string;
-  secondary_email?: string;
-  contact_type: string;
-  is_primary: boolean;
-  status: string;
-  notes?: string;
+  id_proveedor: number;
+  nombre_contacto: string;
+  cargo?: string;
+  telefono_principal?: string;
+  telefono_secundario?: string;
+  correo?: string;
+  correo_secundario?: string;
+  tipo_contacto: string;
+  es_principal: boolean;
+  estado: string;
+  notas?: string;
   tenant_id: number;
   created_by?: number;
   updated_by?: number;
