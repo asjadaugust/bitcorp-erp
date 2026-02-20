@@ -5,138 +5,95 @@ import { FormsModule } from '@angular/forms';
 import { OperatorService } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
 
+import {
+  EntityDetailShellComponent,
+  EntityDetailHeader,
+  AuditInfo,
+  NotFoundConfig,
+} from '../../shared/components/entity-detail';
+
 @Component({
   selector: 'app-operator-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, EntityDetailShellComponent],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/operators" class="breadcrumb-link">← Volver a Operadores</a>
-        </div>
-
-        <div *ngIf="loading" class="loading">
-          <div class="spinner"></div>
-          <p>Cargando detalles del operador...</p>
-        </div>
-
-        <div *ngIf="!loading && operator" class="detail-grid">
-          <div class="detail-main card">
-            <div class="detail-header">
-              <div class="profile-intro">
-                <div class="avatar-large">
-                  {{ operator.nombres.charAt(0) }}{{ operator.apellido_paterno.charAt(0) }}
-                </div>
-                <div>
-                  <h1>{{ operator.nombres }} {{ operator.apellido_paterno }}</h1>
-                  <p class="code-badge">DNI: {{ operator.dni }}</p>
-                </div>
-              </div>
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="operator"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      [notFound]="notFoundConfig"
+      loadingText="Cargando detalles del operador..."
+    >
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div entity-main-content class="detail-sections">
+        <section class="detail-section">
+          <h2>Información de Contacto</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Email</label>
+              <p>{{ operator?.correo_electronico || '-' }}</p>
             </div>
-
-            <div class="detail-status">
-              <span [class]="'status-badge status-' + (operator.is_active ? 'active' : 'inactive')">
-                {{ operator.is_active ? 'Activo' : 'Inactivo' }}
-              </span>
-            </div>
-
-            <div class="detail-sections">
-              <section class="detail-section">
-                <h2>Información de Contacto</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Email</label>
-                    <p>{{ operator.correo_electronico }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Teléfono</label>
-                    <p>{{ operator.telefono || '-' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Información Laboral</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Cargo</label>
-                    <p>{{ operator.cargo || 'No especificado' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha Ingreso</label>
-                    <p>
-                      {{
-                        operator.fecha_ingreso ? (operator.fecha_ingreso | date: 'dd/MM/yyyy') : '-'
-                      }}
-                    </p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section" *ngIf="operator.licencia_conducir">
-                <h2>Licencia de Conducir</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Nro. Licencia</label>
-                    <p>{{ operator.licencia_conducir }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Vencimiento</label>
-                    <p>
-                      {{
-                        operator.vencimiento_licencia
-                          ? (operator.vencimiento_licencia | date: 'dd/MM/yyyy')
-                          : '-'
-                      }}
-                    </p>
-                  </div>
-                </div>
-              </section>
+            <div class="info-item">
+              <label>Teléfono</label>
+              <p>{{ operator?.telefono || '-' }}</p>
             </div>
           </div>
+        </section>
 
-          <div class="detail-sidebar">
-            <!-- Quick Actions -->
-            <div class="card">
-              <h3>Acciones Rápidas</h3>
-              <div class="quick-actions">
-                <button class="btn btn-secondary btn-block" (click)="editOperator()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button class="btn btn-primary btn-block" (click)="sendNotification()">
-                  <i class="fa-solid fa-bell"></i> Notificar
-                </button>
-                <button class="btn btn-secondary btn-block" (click)="viewReports()">
-                  <i class="fa-solid fa-clipboard-list"></i> Ver Reportes
-                </button>
-              </div>
+        <section class="detail-section">
+          <h2>Información Laboral</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Cargo</label>
+              <p>{{ operator?.cargo || 'No especificado' }}</p>
             </div>
-
-            <!-- System Info -->
-            <div class="card">
-              <h3>Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ operator.created_at | date: 'short' }}</div>
-                  <div class="timeline-content">Registro creado</div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ operator.updated_at | date: 'short' }}</div>
-                  <div class="timeline-content">Última actualización</div>
-                </div>
-              </div>
+            <div class="info-item">
+              <label>Fecha Ingreso</label>
+              <p>
+                {{ operator?.fecha_ingreso ? (operator!.fecha_ingreso | date: 'dd/MM/yyyy') : '-' }}
+              </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div *ngIf="!loading && !operator" class="empty-state card">
-          <h3>Operador no encontrado</h3>
-          <p>El operador que buscas no existe o ha sido eliminado.</p>
-          <button class="btn btn-primary" routerLink="/operators">Volver a la lista</button>
-        </div>
+        <section class="detail-section" *ngIf="operator?.licencia_conducir">
+          <h2>Licencia de Conducir</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Nro. Licencia</label>
+              <p>{{ operator?.licencia_conducir }}</p>
+            </div>
+            <div class="info-item">
+              <label>Vencimiento</label>
+              <p>
+                {{
+                  operator?.vencimiento_licencia
+                    ? (operator!.vencimiento_licencia | date: 'dd/MM/yyyy')
+                    : '-'
+                }}
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
+
+      <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        <button class="btn btn-secondary btn-block" (click)="editOperator()">
+          <i class="fa-solid fa-pen"></i> Editar
+        </button>
+        <button class="btn btn-primary btn-block" (click)="sendNotification()">
+          <i class="fa-solid fa-bell"></i> Notificar
+        </button>
+        <button class="btn btn-secondary btn-block" (click)="viewReports()">
+          <i class="fa-solid fa-clipboard-list"></i> Ver Reportes
+        </button>
+        <button class="btn btn-ghost btn-block" routerLink="/operators">
+          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+        </button>
+      </ng-container>
+    </entity-detail-shell>
   `,
   styles: [
     `
@@ -462,6 +419,34 @@ export class OperatorDetailComponent implements OnInit {
 
   operator: Operator | null = null;
   loading = true;
+
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-user-gear',
+      title: `${this.operator?.nombres} ${this.operator?.apellido_paterno}`,
+      codeBadge: `DNI: ${this.operator?.dni}`,
+      subtitle: this.operator?.cargo || 'Sin cargo especificado',
+      statusLabel: this.operator?.is_active ? 'ACTIVO' : 'INACTIVO',
+      statusClass: this.operator?.is_active ? 'status-active' : 'status-inactive',
+    };
+  }
+
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        { date: this.operator?.updated_at, label: 'Última actualización' },
+        { date: this.operator?.created_at, label: 'Registro creado' },
+      ],
+    };
+  }
+
+  notFoundConfig: NotFoundConfig = {
+    icon: 'fa-solid fa-user-slash',
+    title: 'Operador no encontrado',
+    message: 'El operador que buscas no existe o ha sido eliminado.',
+    backLabel: 'Volver a la lista',
+    backRoute: '/operators',
+  };
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];

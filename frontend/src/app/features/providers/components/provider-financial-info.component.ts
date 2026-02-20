@@ -114,10 +114,10 @@ interface InfoFinanciera {
         <div class="financial-card" *ngFor="let info of financialInfoList">
           <div class="card-header">
             <div class="bank-info">
-              <h4>{{ info.bank_name }}</h4>
+              <h4>{{ info.nombre_banco }}</h4>
               <div class="bank-badges">
-                <span class="badge badge-primary" *ngIf="info.is_primary">Principal</span>
-                <span class="badge badge-currency">{{ info.currency }}</span>
+                <span class="badge badge-primary" *ngIf="info.es_principal">Principal</span>
+                <span class="badge badge-currency">{{ info.moneda }}</span>
               </div>
             </div>
             <div class="actions" *ngIf="!readOnly">
@@ -136,15 +136,15 @@ interface InfoFinanciera {
           <div class="card-body">
             <div class="info-row">
               <i class="fa-solid fa-hashtag" title="Número de Cuenta"></i>
-              <span class="value">{{ info.account_number }}</span>
+              <span class="value">{{ info.numero_cuenta }}</span>
             </div>
             <div class="info-row" *ngIf="info.cci">
               <i class="fa-solid fa-building" title="CCI"></i>
               <span class="value">{{ info.cci }}</span>
             </div>
-            <div class="info-row" *ngIf="info.account_holder_name">
+            <div class="info-row" *ngIf="info.nombre_titular">
               <i class="fa-solid fa-user" title="Titular"></i>
-              <span class="value">{{ info.account_holder_name }}</span>
+              <span class="value">{{ info.nombre_titular }}</span>
             </div>
           </div>
         </div>

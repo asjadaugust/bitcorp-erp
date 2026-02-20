@@ -107,15 +107,15 @@ interface Contacto {
           <div class="card-header">
             <div class="header-content">
               <div class="avatar-circle">
-                {{ contact.contact_name ? contact.contact_name[0] : 'C' }}
+                {{ contact.nombre_contacto ? contact.nombre_contacto[0] : 'C' }}
               </div>
               <div class="contact-info">
-                <h4>{{ contact.contact_name }}</h4>
-                <span class="position" *ngIf="contact.position">{{ contact.position }}</span>
+                <h4>{{ contact.nombre_contacto }}</h4>
+                <span class="position" *ngIf="contact.cargo">{{ contact.cargo }}</span>
                 <div class="badges">
-                  <span class="badge badge-primary" *ngIf="contact.is_primary">Principal</span>
+                  <span class="badge badge-primary" *ngIf="contact.es_principal">Principal</span>
                   <span class="badge badge-type">{{
-                    getContactTypeLabel(contact.contact_type)
+                    getContactTypeLabel(contact.tipo_contacto)
                   }}</span>
                 </div>
               </div>
@@ -135,13 +135,13 @@ interface Contacto {
           </div>
 
           <div class="card-body">
-            <div class="contact-detail" *ngIf="contact.email">
+            <div class="contact-detail" *ngIf="contact.correo">
               <i class="fa-solid fa-envelope" title="Email"></i>
-              <span>{{ contact.email }}</span>
+              <span>{{ contact.correo }}</span>
             </div>
-            <div class="contact-detail" *ngIf="contact.primary_phone">
+            <div class="contact-detail" *ngIf="contact.telefono_principal">
               <i class="fa-solid fa-phone" title="Teléfono"></i>
-              <span>{{ contact.primary_phone }}</span>
+              <span>{{ contact.telefono_principal }}</span>
             </div>
           </div>
         </div>

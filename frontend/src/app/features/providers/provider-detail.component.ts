@@ -6,6 +6,12 @@ import { Provider } from '../../core/models/provider.model';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ProviderFinancialInfoComponent } from './components/provider-financial-info.component';
 import { ProviderContactsComponent } from './components/provider-contacts.component';
+import {
+  EntityDetailShellComponent,
+  EntityDetailHeader,
+  AuditInfo,
+  NotFoundConfig,
+} from '../../shared/components/entity-detail';
 
 @Component({
   selector: 'app-provider-detail',
@@ -17,235 +23,232 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
     FormsModule,
     ProviderFinancialInfoComponent,
     ProviderContactsComponent,
+    EntityDetailShellComponent,
   ],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div *ngIf="loading" class="loading">
-          <div class="spinner"></div>
-          <p>Cargando detalles del proveedor...</p>
-        </div>
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="provider"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      [notFound]="notFoundConfig"
+      loadingText="Cargando detalles del proveedor..."
+    >
+      <!-- ── BELOW HEADER: tab bar ───────────────────────────── -->
+      <!-- ── BELOW HEADER: tab bar ───────────────────────────── -->
+      <div entity-header-below class="tabs-header-premium">
+        <button
+          type="button"
+          class="tab-link"
+          [class.active]="activeTab === 'general'"
+          (click)="activeTab = 'general'"
+        >
+          <i class="fa-solid fa-circle-info"></i>
+          General
+        </button>
+        <button
+          type="button"
+          class="tab-link"
+          [class.active]="activeTab === 'contacts'"
+          (click)="activeTab = 'contacts'"
+        >
+          <i class="fa-solid fa-address-book"></i>
+          Contactos
+        </button>
+        <button
+          type="button"
+          class="tab-link"
+          [class.active]="activeTab === 'financial'"
+          (click)="activeTab = 'financial'"
+        >
+          <i class="fa-solid fa-building-columns"></i>
+          Financiero
+        </button>
+        <button
+          type="button"
+          class="tab-link"
+          [class.active]="activeTab === 'equipment'"
+          (click)="activeTab = 'equipment'"
+        >
+          <i class="fa-solid fa-truck-front"></i>
+          Equipos
+        </button>
+        <button
+          type="button"
+          class="tab-link"
+          [class.active]="activeTab === 'documents'"
+          (click)="activeTab = 'documents'"
+        >
+          <i class="fa-solid fa-file-lines"></i>
+          Documentos
+        </button>
+        <button
+          type="button"
+          class="tab-link"
+          [class.active]="activeTab === 'history'"
+          (click)="activeTab = 'history'"
+        >
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          Historial
+        </button>
+      </div>
 
-        <div *ngIf="!loading && provider" class="detail-grid">
-          <!-- Monolithic Main Card -->
-          <div class="detail-main card">
-            <!-- Header (Inside Main Card) -->
-            <div class="detail-header">
-              <div>
-                <h1>{{ provider.razon_social }}</h1>
-                <div class="flex items-center gap-3">
-                  <span class="code-badge">{{ provider.ruc }}</span>
-                  <span class="text-sm text-grey-600 border-l border-grey-300 pl-3">
-                    <i class="fa-regular fa-building mr-1"></i>
-                    {{ provider.nombre_comercial || 'Sin nombre comercial' }}
-                  </span>
-                </div>
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div entity-main-content class="tab-content">
+        <!-- GENERAL TAB -->
+        @if (activeTab === 'general') {
+          <section class="detail-section">
+            <h2>Información General</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>RUC / Tax ID</label>
+                <p>{{ provider?.ruc }}</p>
               </div>
-              <div class="detail-status">
-                <span
-                  class="status-badge"
-                  [class.status-APROBADO]="provider.is_active"
-                  [class.status-CANCELADO]="!provider.is_active"
-                >
-                  {{ provider.is_active ? 'Activo' : 'Inactivo' }}
-                </span>
+              <div class="info-item">
+                <label>Dirección</label>
+                <p>{{ provider?.direccion || '-' }}</p>
               </div>
-            </div>
-
-            <!-- Tabs Header (Inside Main Card) -->
-            <div class="tabs-header">
-              <button
-                type="button"
-                class="tab-btn"
-                [class.active]="activeTab === 'general'"
-                (click)="activeTab = 'general'"
-              >
-                General
-              </button>
-              <button
-                type="button"
-                class="tab-btn"
-                [class.active]="activeTab === 'contacts'"
-                (click)="activeTab = 'contacts'"
-              >
-                Contactos
-              </button>
-              <button
-                type="button"
-                class="tab-btn"
-                [class.active]="activeTab === 'documents'"
-                (click)="activeTab = 'documents'"
-              >
-                Documentos
-              </button>
-              <button
-                type="button"
-                class="tab-btn"
-                [class.active]="activeTab === 'history'"
-                (click)="activeTab = 'history'"
-              >
-                Historial
-              </button>
-            </div>
-
-            <!-- Tab Content (Inside Main Card) -->
-            <div class="detail-sections mt-6">
-              <!-- GENERAL TAB -->
-              <div *ngIf="activeTab === 'general'">
-                <section class="detail-section">
-                  <h2>Información General</h2>
-                  <div class="info-grid four-cols">
-                    <div class="info-item">
-                      <label>RUC / Tax ID</label>
-                      <p>{{ provider.ruc }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Dirección</label>
-                      <p>{{ provider.direccion || '-' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Teléfono</label>
-                      <p>{{ provider.telefono || '-' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Email</label>
-                      <p class="text-primary-600 font-medium">
-                        {{ provider.correo_electronico || '-' }}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                <!-- Financial Info (Read Only) -->
-                <app-provider-financial-info
-                  [providerId]="provider.id"
-                  [readOnly]="true"
-                ></app-provider-financial-info>
+              <div class="info-item">
+                <label>Teléfono</label>
+                <p>{{ provider?.telefono || '-' }}</p>
               </div>
-
-              <!-- CONTACTS TAB -->
-              <div *ngIf="activeTab === 'contacts'">
-                <app-provider-contacts
-                  [providerId]="provider.id"
-                  [readOnly]="true"
-                ></app-provider-contacts>
-              </div>
-
-              <!-- DOCUMENTS TAB (Placeholder) -->
-              <div *ngIf="activeTab === 'documents'" class="empty-state-section">
-                <i class="fa-regular fa-file-lines"></i>
-                <h3>Gestión de Documentos</h3>
-                <p>Próximamente disponible</p>
-              </div>
-
-              <!-- HISTORY TAB (Placeholder) -->
-              <div *ngIf="activeTab === 'history'" class="empty-state-section">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <h3>Historial de Cambios</h3>
-                <p>Próximamente disponible</p>
+              <div class="info-item">
+                <label>Email</label>
+                <p class="email-text">{{ provider?.correo_electronico || '-' }}</p>
               </div>
             </div>
+          </section>
+
+          @if (provider) {
+            <app-provider-financial-info
+              [providerId]="provider.id"
+              [readOnly]="true"
+            ></app-provider-financial-info>
+          }
+        }
+
+        <!-- CONTACTS TAB -->
+        @if (activeTab === 'contacts' && provider) {
+          <app-provider-contacts
+            [providerId]="provider.id"
+            [readOnly]="true"
+          ></app-provider-contacts>
+        }
+
+        <!-- FINANCIAL TAB -->
+        @if (activeTab === 'financial' && provider) {
+          <app-provider-financial-info
+            [providerId]="provider.id"
+            [readOnly]="true"
+          ></app-provider-financial-info>
+        }
+
+        <!-- EQUIPMENT TAB -->
+        @if (activeTab === 'equipment') {
+          <div class="empty-state-section">
+            <i class="fa-solid fa-truck-front"></i>
+            <h3>Equipos del Proveedor</h3>
+            <p>Próximamente disponible - Listado de maquinaria y vehículos</p>
           </div>
+        }
 
-          <div class="detail-sidebar">
-            <div class="card">
-              <h3 class="sidebar-card-title">Acciones</h3>
-              <div class="quick-actions">
-                <button type="button" class="btn btn-primary btn-block" (click)="editProvider()">
-                  <i class="fa-solid fa-pen"></i> Editar Proveedor
-                </button>
-                <button type="button" class="btn btn-secondary btn-block" (click)="viewContracts()">
-                  <i class="fa-solid fa-file-contract"></i> Ver Contratos
-                </button>
-                <button type="button" class="btn btn-secondary btn-block" (click)="viewEquipment()">
-                  <i class="fa-solid fa-truck-front"></i> Ver Equipos
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-block"
-                  (click)="navigateTo('/providers')"
-                >
-                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-                </button>
-                <button type="button" class="btn btn-danger btn-block" (click)="deleteProvider()">
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-
-            <div class="card">
-              <h3 class="sidebar-card-title">Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ provider.updated_at | date: 'short' }}</div>
-                  <div class="timeline-content">Última actualización</div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ provider.created_at | date: 'short' }}</div>
-                  <div class="timeline-content">Proveedor registrado</div>
-                </div>
-              </div>
-            </div>
+        <!-- DOCUMENTS TAB -->
+        @if (activeTab === 'documents') {
+          <div class="empty-state-section">
+            <i class="fa-regular fa-file-lines"></i>
+            <h3>Gestión de Documentos</h3>
+            <p>Próximamente disponible</p>
           </div>
-        </div>
+        }
 
-        <div *ngIf="!loading && !provider" class="empty-state-card">
-          <i class="fa-solid fa-search"></i>
-          <h3>Proveedor no encontrado</h3>
-          <p>El proveedor que buscas no existe o ha sido eliminado.</p>
-          <button type="button" class="btn btn-primary" (click)="navigateTo('/providers')">
-            Volver a la lista
-          </button>
+        <!-- HISTORY TAB -->
+        @if (activeTab === 'history') {
+          <div class="empty-state-section">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <h3>Historial de Cambios</h3>
+            <p>Próximamente disponible</p>
+          </div>
+        }
+      </div>
+
+      <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        <button type="button" class="btn btn-primary btn-block" (click)="editProvider()">
+          <i class="fa-solid fa-pen-to-square"></i>
+          Editar Detalles
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" (click)="activeTab = 'financial'">
+          <i class="fa-solid fa-file-contract"></i>
+          Ver Información Financiera
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" (click)="activeTab = 'equipment'">
+          <i class="fa-solid fa-truck-front"></i>
+          Ver Equipos
+        </button>
+        <button type="button" class="btn btn-ghost btn-block" routerLink="/providers">
+          <i class="fa-solid fa-arrow-left-long"></i>
+          Volver a Lista
+        </button>
+        <button type="button" class="btn btn-danger btn-block" (click)="deleteProvider()">
+          <i class="fa-solid fa-trash-can"></i>
+          Eliminar Proveedor
+        </button>
+      </ng-container>
+    </entity-detail-shell>
+
+    <!-- Delete Modal -->
+    @if (showDeleteModal) {
+      <div class="modal" (click)="showDeleteModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Confirmar Eliminación</h2>
+            <button type="button" class="close" (click)="showDeleteModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              ¿Estás seguro de que deseas eliminar el proveedor
+              <strong>{{ provider?.razon_social }}</strong
+              >?
+            </p>
+            <p class="alert-warning p-3 rounded">Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+              Eliminar Proveedor
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Delete Modal remains same -->
-    <div *ngIf="showDeleteModal" class="modal" (click)="showDeleteModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Confirmar Eliminación</h2>
-          <button type="button" class="close" (click)="showDeleteModal = false">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>
-            ¿Estás seguro de que deseas eliminar el proveedor
-            <strong>{{ provider?.razon_social }}</strong
-            >?
-          </p>
-          <p class="alert-warning p-3 rounded">Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
-            Cancelar
-          </button>
-          <button type="button" class="btn btn-danger" (click)="confirmDelete()">
-            Eliminar Proveedor
-          </button>
-        </div>
-      </div>
-    </div>
+    }
   `,
   styles: [
     `
       @use 'detail-layout' as *;
 
-      .detail-header {
+      /* Override header: no divider since tabs bar takes that role */
+      :host ::ng-deep .detail-header {
         border-bottom: none;
-        margin-bottom: var(--s-16);
+        margin-bottom: var(--s-8);
+        padding-bottom: var(--s-8);
       }
 
-      .tabs-header {
+      .tabs-header-premium {
         display: flex;
-        gap: var(--s-24);
+        gap: var(--s-8);
         border-bottom: 2px solid var(--grey-100);
         margin-top: var(--s-8);
       }
 
-      .tab-btn {
-        padding: var(--s-12) 0;
+      .tab-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
         background: none;
         border: none;
         border-bottom: 2px solid transparent;
@@ -254,20 +257,41 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
         font-weight: 600;
         color: var(--grey-500);
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 8px 8px 0 0;
+
+        i {
+          font-size: 16px;
+          opacity: 0.7;
+        }
 
         &:hover {
           color: var(--primary-600);
+          background: var(--primary-50);
+          opacity: 1;
         }
 
         &.active {
           color: var(--primary-600);
-          border-bottom-color: var(--primary-600);
+          border-bottom: 3px solid var(--primary-600);
+          background: var(--primary-50);
+
+          i {
+            opacity: 1;
+          }
         }
       }
 
-      .mt-6 {
+      .tab-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-24);
         margin-top: var(--s-24);
+      }
+
+      .email-text {
+        color: var(--primary-600);
+        font-weight: 500;
       }
 
       .empty-state-section {
@@ -279,6 +303,7 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
           font-size: 48px;
           margin-bottom: var(--s-16);
           color: var(--grey-300);
+          display: block;
         }
 
         h3 {
@@ -299,8 +324,38 @@ export class ProviderDetailComponent implements OnInit {
   provider: Provider | null = null;
   loading = true;
   showDeleteModal = false;
-  errorMessage: string | null = null;
-  activeTab: 'general' | 'contacts' | 'documents' | 'history' = 'general';
+  activeTab: 'general' | 'contacts' | 'documents' | 'history' | 'financial' | 'equipment' =
+    'general';
+
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-building',
+      title: this.provider?.razon_social ?? '',
+      codeBadge: this.provider?.ruc,
+      subtitle: this.provider?.nombre_comercial
+        ? `${this.provider.nombre_comercial}`
+        : 'Sin nombre comercial',
+      statusLabel: this.provider?.is_active ? 'Activo' : 'Inactivo',
+      statusClass: this.provider?.is_active ? 'status-APROBADO' : 'status-CANCELADO',
+    };
+  }
+
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        { date: this.provider?.updated_at, label: 'Última actualización' },
+        { date: this.provider?.created_at, label: 'Proveedor registrado' },
+      ],
+    };
+  }
+
+  notFoundConfig: NotFoundConfig = {
+    icon: 'fa-solid fa-search',
+    title: 'Proveedor no encontrado',
+    message: 'El proveedor que buscas no existe o ha sido eliminado.',
+    backLabel: 'Volver a la lista',
+    backRoute: '/providers',
+  };
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];

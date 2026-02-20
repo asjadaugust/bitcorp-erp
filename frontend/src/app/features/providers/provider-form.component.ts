@@ -44,11 +44,10 @@ import {
           ? 'Actualizar información del proveedor'
           : 'Registrar un nuevo proveedor en el sistema'
       "
-      [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
+      [icon]="isEditMode ? 'fa-pen' : 'fa-building'"
       [loading]="loading"
       [disableSubmit]="providerForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Proveedor'"
-      [backUrl]="'/providers'"
       (onSubmit)="onSubmit()"
       (onCancel)="cancel()"
     >
@@ -76,7 +75,7 @@ import {
       <form [formGroup]="providerForm" class="form-grid">
         <!-- Section 1: Basic Information -->
         <div class="form-section full-width">
-          <h3>Información Básica</h3>
+          <h3 class="section-title"><i class="fa-solid fa-building"></i> Información Básica</h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="ruc">RUC *</label>
@@ -276,12 +275,6 @@ import {
   `,
   styles: [
     `
-      .form-container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding-bottom: 2rem;
-      }
-
       .input-with-button {
         display: flex;
         gap: 0.5rem;
@@ -330,172 +323,6 @@ import {
       .tab-pane {
         padding: 1.5rem;
         background: white;
-      }
-
-      /* Header */
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .icon-wrapper {
-        width: 48px;
-        height: 48px;
-        background: var(--primary-100);
-        color: var(--primary-800);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-      }
-      .title-group h1 {
-        margin: 0;
-        font-size: 24px;
-        color: var(--grey-900);
-      }
-      .subtitle {
-        margin: 0;
-        color: var(--grey-500);
-        font-size: 14px;
-      }
-      .header-actions {
-        display: flex;
-        gap: 1rem;
-      }
-
-      /* Form Card */
-      .form-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .form-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .form-section h3 {
-        font-size: 16px;
-        color: var(--primary-800);
-        border-bottom: 1px solid var(--grey-200);
-        padding-bottom: 0.5rem;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-      }
-
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
-
-      .section-header h3 {
-        margin: 0;
-        border: none;
-        padding: 0;
-      }
-
-      .section-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-      }
-
-      .full-width {
-        grid-column: 1 / -1;
-      }
-
-      /* Form Controls */
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-700);
-      }
-
-      .form-control,
-      .form-select {
-        padding: 0.625rem;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .form-control:focus,
-      .form-select:focus {
-        border-color: var(--primary-500);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--primary-100);
-      }
-
-      .error-msg {
-        color: var(--semantic-red-600);
-        font-size: 12px;
-      }
-
-      /* Data Table */
-      .table-container {
-        overflow-x: auto;
-      }
-
-      .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-      }
-
-      .data-table th,
-      .data-table td {
-        padding: 0.75rem;
-        text-align: left;
-        border-bottom: 1px solid var(--grey-200);
-      }
-
-      .data-table th {
-        background: var(--grey-50);
-        font-weight: 600;
-        color: var(--grey-700);
-        font-size: 12px;
-        text-transform: uppercase;
-      }
-
-      .data-table td .form-control {
-        padding: 0.5rem;
-        font-size: 13px;
-      }
-
-      .empty-row {
-        text-align: center;
-        color: var(--grey-500);
-        font-style: italic;
-        padding: 1.5rem !important;
-      }
-
-      .btn-sm {
-        padding: 0.375rem 0.75rem;
-        font-size: 12px;
-      }
-
-      .btn-icon {
-        padding: 0.5rem;
-        min-width: auto;
       }
 
       @media (max-width: 768px) {
