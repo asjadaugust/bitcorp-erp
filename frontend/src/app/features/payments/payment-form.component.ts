@@ -44,7 +44,9 @@ import { Valuation } from '../../core/models/valuation.model';
             <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
               <!-- Valuation Selection -->
               <section class="form-section">
-                <h2>Valorización</h2>
+                <h2 class="section-title">
+                  <i class="fa-solid fa-file-invoice-dollar"></i> Valorización
+                </h2>
                 <div class="form-row">
                   <div class="form-group">
                     <label for="valorizacion">Valorización *</label>
@@ -99,7 +101,9 @@ import { Valuation } from '../../core/models/valuation.model';
 
               <!-- Payment Details -->
               <section class="form-section">
-                <h2>Detalles del Pago</h2>
+                <h2 class="section-title">
+                  <i class="fa-solid fa-money-bill-transfer"></i> Detalles del Pago
+                </h2>
                 <div class="form-row">
                   <div class="form-group">
                     <label for="fecha_pago">Fecha de Pago *</label>
@@ -190,7 +194,9 @@ import { Valuation } from '../../core/models/valuation.model';
 
               <!-- Bank Details (conditional) -->
               <section class="form-section" *ngIf="showBankFields()">
-                <h2>Información Bancaria</h2>
+                <h2 class="section-title">
+                  <i class="fa-solid fa-building-columns"></i> Información Bancaria
+                </h2>
                 <div class="form-row">
                   <div class="form-group">
                     <label for="banco_origen">Banco Origen</label>
@@ -255,7 +261,9 @@ import { Valuation } from '../../core/models/valuation.model';
 
               <!-- Check Details (conditional) -->
               <section class="form-section" *ngIf="paymentForm.value.metodo_pago === 'CHEQUE'">
-                <h2>Información del Cheque</h2>
+                <h2 class="section-title">
+                  <i class="fa-solid fa-money-check"></i> Información del Cheque
+                </h2>
                 <div class="form-row">
                   <div class="form-group">
                     <label for="numero_cheque">Número de Cheque</label>
@@ -283,7 +291,9 @@ import { Valuation } from '../../core/models/valuation.model';
 
               <!-- Receipt Details -->
               <section class="form-section">
-                <h2>Comprobante (Opcional)</h2>
+                <h2 class="section-title">
+                  <i class="fa-solid fa-receipt"></i> Comprobante (Opcional)
+                </h2>
                 <div class="form-row">
                   <div class="form-group">
                     <label for="comprobante_tipo">Tipo de Comprobante</label>
@@ -332,7 +342,7 @@ import { Valuation } from '../../core/models/valuation.model';
 
               <!-- Observations -->
               <section class="form-section">
-                <h2>Observaciones</h2>
+                <h2 class="section-title"><i class="fa-solid fa-clipboard"></i> Observaciones</h2>
                 <div class="form-group">
                   <textarea
                     id="observaciones"

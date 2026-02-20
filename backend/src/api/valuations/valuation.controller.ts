@@ -707,7 +707,15 @@ export class ValuationController {
         return;
       }
 
-      const { fecha, tipo, horas_descuento, dias_descuento, descripcion } = req.body;
+      const {
+        fecha,
+        tipo,
+        subtipo,
+        horas_descuento,
+        dias_descuento,
+        horas_horometro_mecanica,
+        descripcion,
+      } = req.body;
       if (!fecha || !tipo) {
         sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: fecha, tipo');
         return;
@@ -717,8 +725,10 @@ export class ValuationController {
         valorizacionId: id,
         fecha,
         tipo,
+        subtipo,
         horasDescuento: horas_descuento || 0,
         diasDescuento: dias_descuento || 0,
+        horasHorometroMecanica: horas_horometro_mecanica,
         descripcion,
       });
       sendCreated(res, event.id, 'Evento de descuento creado');

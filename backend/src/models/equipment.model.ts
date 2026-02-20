@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 // import { BaseModel } from './base.model'; // Unused
 import { Provider } from './provider.model';
+import { TipoEquipo } from './tipo-equipo.model';
 // import { Project } from './project.model'; // Unused
 
 export enum EquipmentStatus {
@@ -60,6 +61,10 @@ export class Equipment {
 
   @Column({ name: 'tipo_equipo_id', type: 'integer', nullable: true })
   tipoEquipoId?: number;
+
+  @ManyToOne(() => TipoEquipo, { nullable: true, eager: false })
+  @JoinColumn({ name: 'tipo_equipo_id' })
+  tipoEquipo?: TipoEquipo;
 
   @Column({ name: 'proveedor_id', type: 'integer', nullable: true })
   proveedorId?: number;

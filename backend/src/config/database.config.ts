@@ -66,6 +66,11 @@ import { ContractAnnex } from '../models/contract-annex.model';
 import { ContractRequiredDocument } from '../models/contract-required-document.model';
 import { ValuationPaymentDocument } from '../models/valuation-payment-document.model';
 import { DiscountEvent } from '../models/discount-event.model';
+import { SolicitudEquipo } from '../models/solicitud-equipo.model';
+import { ActaDevolucion } from '../models/acta-devolucion.model';
+import { OrdenAlquiler } from '../models/orden-alquiler.model';
+import { PeriodoInoperatividad } from '../models/periodo-inoperatividad.model';
+import { TipoEquipo } from '../models/tipo-equipo.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -141,6 +146,11 @@ export const AppDataSource = new DataSource({
     ContractRequiredDocument,
     ValuationPaymentDocument,
     DiscountEvent,
+    SolicitudEquipo,
+    ActaDevolucion,
+    OrdenAlquiler,
+    PeriodoInoperatividad,
+    TipoEquipo,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

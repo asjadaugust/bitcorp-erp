@@ -14,6 +14,38 @@ export interface EmailOptions {
   }>;
 }
 
+export interface DocumentExpiryAlertData {
+  items: Array<{
+    codigo_equipo: string;
+    marca?: string;
+    modelo?: string;
+    documentos: Array<{ tipo: string; fecha_vencimiento: string; estado: string }>;
+    link: string;
+  }>;
+}
+
+export interface ValuationDeadlineAlertData {
+  items: Array<{
+    numero_valorizacion: string;
+    periodo: string;
+    estado: string;
+    contrato?: string;
+    dias_vencidos: number;
+    link: string;
+  }>;
+}
+
+export interface OverduePaymentAlertData {
+  items: Array<{
+    numero_documento: string;
+    proveedor: string;
+    fecha_vencimiento: string;
+    dias_vencidos: number;
+    monto_pendiente: number;
+    moneda: string;
+  }>;
+}
+
 export interface ValuationEmailData {
   valuation: {
     id: number;
@@ -614,6 +646,82 @@ class EmailService {
 </body>
 </html>
     `;
+  }
+
+  /**
+   * Send equipment document expiry digest alert
+   */
+  async sendDocumentExpiryAlert(
+    data: DocumentExpiryAlertData,
+    recipients: string[]
+  ): Promise<boolean> {
+    const rows = data.items
+      .map((item) => {
+        const docs = item.documentos
+          .map(
+            (d) =>
+              `<li><strong>${d.tipo}:</strong> ${d.fecha_vencimiento} — <span style="color:${d.estado === 'VENCIDO' ? '#dc2626' : '#d97706'}">${d.estado}</span></li>`
+          )
+          .join('');
+        return `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0"><strong>${item.codigo_equipo}</strong><br><small style="color:#64748b">${item.marca || ''} ${item.modelo || ''}</small></td><td style="padding:8px;border-bottom:1px solid #e2e8f0"><ul style="margin:0;padding-left:16px">${docs}</ul></td></tr>`;
+      })
+      .join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333;background:#f4f4f4;margin:0;padding:0}.container{max-width:640px;margin:20px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.1)}.header{background:#d97706;color:#fff;padding:24px 20px;text-align:center}.header h1{margin:0;font-size:22px}.content{padding:24px}.footer{background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0}table{width:100%;border-collapse:collapse}th{background:#fef3c7;padding:8px;text-align:left;font-size:13px;color:#92400e}</style></head><body><div class="container"><div class="header"><div style="font-size:36px;margin-bottom:8px">⚠️</div><h1>Alerta: Documentos de Equipo por Vencer</h1></div><div class="content"><p>Se han detectado <strong>${data.items.length} equipo${data.items.length !== 1 ? 's' : ''}</strong> con documentos próximos a vencer o ya vencidos:</p><table><thead><tr><th>Equipo</th><th>Documentos</th></tr></thead><tbody>${rows}</tbody></table><p style="margin-top:20px;font-size:13px;color:#64748b">Ingrese al sistema para gestionar las renovaciones correspondientes.</p></div><div class="footer"><p>Notificación automática — BitCorp ERP</p></div></div></body></html>`;
+
+    return this.sendEmail({
+      to: recipients,
+      subject: `⚠️ Alerta Documentos Equipo: ${data.items.length} equipo${data.items.length !== 1 ? 's' : ''} con documentos por vencer`,
+      html,
+    });
+  }
+
+  /**
+   * Send valuation deadline overdue digest alert
+   */
+  async sendValuationDeadlineAlert(
+    data: ValuationDeadlineAlertData,
+    recipients: string[]
+  ): Promise<boolean> {
+    const rows = data.items
+      .map(
+        (item) =>
+          `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0">${item.numero_valorizacion}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0">${item.periodo}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0">${item.contrato || '—'}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0;color:#dc2626"><strong>${item.dias_vencidos} día${item.dias_vencidos !== 1 ? 's' : ''}</strong></td></tr>`
+      )
+      .join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333;background:#f4f4f4;margin:0;padding:0}.container{max-width:640px;margin:20px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.1)}.header{background:#dc2626;color:#fff;padding:24px 20px;text-align:center}.header h1{margin:0;font-size:22px}.content{padding:24px}.footer{background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0}table{width:100%;border-collapse:collapse}th{background:#fef2f2;padding:8px;text-align:left;font-size:13px;color:#991b1b}</style></head><body><div class="container"><div class="header"><div style="font-size:36px;margin-bottom:8px">🚨</div><h1>Valorizaciones con Plazo Vencido</h1></div><div class="content"><p>Las siguientes <strong>${data.items.length} valorización${data.items.length !== 1 ? 'es' : ''}</strong> han superado el plazo de entrega (día 10 del mes siguiente):</p><table><thead><tr><th>Valorización</th><th>Período</th><th>Contrato</th><th>Días Vencidos</th></tr></thead><tbody>${rows}</tbody></table><p style="margin-top:20px;font-size:13px;color:#64748b">Por favor, complete y envíe estas valorizaciones a la brevedad posible.</p></div><div class="footer"><p>Notificación automática — BitCorp ERP</p></div></div></body></html>`;
+
+    return this.sendEmail({
+      to: recipients,
+      subject: `🚨 ${data.items.length} valorización${data.items.length !== 1 ? 'es' : ''} con plazo vencido`,
+      html,
+    });
+  }
+
+  /**
+   * Send overdue payments digest alert
+   */
+  async sendOverduePaymentAlert(
+    data: OverduePaymentAlertData,
+    recipients: string[]
+  ): Promise<boolean> {
+    const rows = data.items
+      .map(
+        (item) =>
+          `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0">${item.numero_documento}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0">${item.proveedor}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0">${item.fecha_vencimiento}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0;color:#dc2626">${item.dias_vencidos} día${item.dias_vencidos !== 1 ? 's' : ''}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:right"><strong>${item.moneda} ${item.monto_pendiente.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</strong></td></tr>`
+      )
+      .join('');
+
+    const totalMonto = data.items.reduce((sum, i) => sum + i.monto_pendiente, 0);
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333;background:#f4f4f4;margin:0;padding:0}.container{max-width:640px;margin:20px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.1)}.header{background:#7c3aed;color:#fff;padding:24px 20px;text-align:center}.header h1{margin:0;font-size:22px}.content{padding:24px}.footer{background:#f8fafc;padding:16px;text-align:center;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0}table{width:100%;border-collapse:collapse}th{background:#f5f3ff;padding:8px;text-align:left;font-size:13px;color:#5b21b6}.total-row{background:#faf5ff;font-weight:bold}</style></head><body><div class="container"><div class="header"><div style="font-size:36px;margin-bottom:8px">💸</div><h1>Pagos Vencidos Pendientes</h1></div><div class="content"><p>Se han detectado <strong>${data.items.length} documento${data.items.length !== 1 ? 's' : ''}</strong> con pagos vencidos:</p><table><thead><tr><th>Documento</th><th>Proveedor</th><th>Vencimiento</th><th>Días Vencidos</th><th>Monto</th></tr></thead><tbody>${rows}<tr class="total-row"><td colspan="4" style="padding:10px;text-align:right">Total Pendiente:</td><td style="padding:10px;text-align:right">S/ ${totalMonto.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td></tr></tbody></table><p style="margin-top:20px;font-size:13px;color:#64748b">Ingrese al módulo de Pagos para gestionar los documentos vencidos.</p></div><div class="footer"><p>Notificación automática — BitCorp ERP</p></div></div></body></html>`;
+
+    return this.sendEmail({
+      to: recipients,
+      subject: `💸 ${data.items.length} pago${data.items.length !== 1 ? 's' : ''} vencido${data.items.length !== 1 ? 's' : ''} pendiente${data.items.length !== 1 ? 's' : ''} — S/ ${totalMonto.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`,
+      html,
+    });
   }
 }
 

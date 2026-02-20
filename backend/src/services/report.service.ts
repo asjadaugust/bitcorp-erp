@@ -1,6 +1,7 @@
 import { DailyReportModel } from '../models/daily-report.model';
 import { AppDataSource } from '../config/database.config';
-import { DailyReport as DailyReportEntity } from '../models/daily-report-typeorm.model';
+import { DailyReport } from '../models/daily-report-typeorm.model';
+import { DailyReportMechanicalDelay } from '../models/daily-report-mechanical-delay.model';
 import { Equipment } from '../models/equipment.model';
 import { transformToDailyReportPdfDto } from '../utils/daily-report-pdf-transformer';
 import { DailyReportPdfDto } from '../types/dto/daily-report-pdf.dto';
@@ -560,6 +561,66 @@ export class ReportService {
   }
 
   /**
+   * Register resident signature on daily report
+   *
+   * @param tenantId - Tenant identifier
+   * @param id - Daily report ID
+   * @param firmaResidente - Resident name or signature value
+   *
+   * @returns Updated daily report DTO
+   * @throws {NotFoundError} If report not found
+   */
+  async firmarResidente(
+    tenantId: number,
+    id: string,
+    firmaResidente: string
+  ): Promise<DailyReportDto> {
+    try {
+      Logger.info('Registrando firma del residente en parte diario', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.firmarResidente',
+      });
+
+      if (!firmaResidente || firmaResidente.trim() === '') {
+        throw new ValidationError('La firma del residente es requerida', [
+          {
+            field: 'firma_residente',
+            message: 'Firma del residente no puede estar vacía',
+            rule: 'required',
+            value: firmaResidente,
+          },
+        ]);
+      }
+
+      const entity = await DailyReportModel.firmarResidente(id, firmaResidente.trim());
+
+      if (!entity) {
+        throw new NotFoundError('Daily report', id, { tenantId });
+      }
+
+      const report = toDailyReportDto(entity);
+
+      Logger.info('Firma del residente registrada exitosamente', {
+        tenantId,
+        reportId: id,
+        context: 'ReportService.firmarResidente',
+      });
+
+      return report;
+    } catch (error) {
+      Logger.error('Error al registrar firma del residente', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        reportId: id,
+        context: 'ReportService.firmarResidente',
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Delete daily report (soft delete)
    *
    * @param tenantId - Tenant identifier for data isolation
@@ -634,7 +695,7 @@ export class ReportService {
         context: 'ReportService.getDailyReportPdfData',
       });
 
-      const repository = AppDataSource.getRepository(DailyReportEntity);
+      const repository = AppDataSource.getRepository(DailyReport);
 
       // TODO: Add tenant_id filter when column exists
       // where: { id, tenant_id: tenantId }
@@ -701,7 +762,7 @@ export class ReportService {
       });
 
       const equipmentRepo = AppDataSource.getRepository(Equipment);
-      const reportRepo = AppDataSource.getRepository(DailyReportEntity);
+      const reportRepo = AppDataSource.getRepository(DailyReport);
 
       // Get active equipment
       const equipment = await equipmentRepo.find({
@@ -712,6 +773,11 @@ export class ReportService {
       // Calculate total working days in range (Mon-Sat)
       const start = new Date(fechaDesde);
       const end = new Date(fechaHasta);
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        throw new Error('Rango de fechas inválido');
+      }
+
       const workingDays: string[] = [];
       const current = new Date(start);
       while (current <= end) {
@@ -799,4 +865,128 @@ export class ReportService {
       throw error;
     }
   }
+
+  /**
+   * Get inspection tracking: list of equipment with pending/resolved mechanical observations.
+   */
+  async getInspectionTracking(
+    fechaDesde?: string,
+    fechaHasta?: string,
+    soloAbiertas?: boolean
+  ): Promise<EquipmentInspectionTracking[]> {
+    try {
+      const delayRepo = AppDataSource.getRepository(DailyReportMechanicalDelay);
+
+      const qb = delayRepo
+        .createQueryBuilder('dm')
+        .innerJoinAndSelect('dm.parteDiario', 'pd')
+        .innerJoinAndSelect('pd.equipo', 'eq')
+        .orderBy('pd.fecha', 'DESC')
+        .addOrderBy('dm.resuelta', 'ASC')
+        .addOrderBy('dm.createdAt', 'DESC');
+
+      if (fechaDesde) qb.andWhere('pd.fecha >= :desde', { desde: fechaDesde });
+      if (fechaHasta) qb.andWhere('pd.fecha <= :hasta', { hasta: fechaHasta });
+      if (soloAbiertas) qb.andWhere('dm.resuelta = false');
+
+      const delays = await qb.getMany();
+
+      // Group by equipment
+      const byEquipo = new Map<
+        number,
+        { equipo: Equipment; observaciones: DailyReportMechanicalDelay[] }
+      >();
+
+      for (const d of delays) {
+        const equipo = d.parteDiario?.equipo;
+        if (!equipo) continue;
+        if (!byEquipo.has(equipo.id)) {
+          byEquipo.set(equipo.id, { equipo, observaciones: [] });
+        }
+        byEquipo.get(equipo.id)!.observaciones.push(d);
+      }
+
+      const result: EquipmentInspectionTracking[] = [];
+      for (const { equipo, observaciones } of byEquipo.values()) {
+        const abiertas = observaciones.filter((o) => !o.resuelta).length;
+        result.push({
+          equipo_id: equipo.id,
+          codigo_equipo: equipo.codigoEquipo,
+          marca: equipo.marca || null,
+          modelo: equipo.modelo || null,
+          total_observaciones: observaciones.length,
+          observaciones_abiertas: abiertas,
+          observaciones_resueltas: observaciones.length - abiertas,
+          observaciones: observaciones.map((o) => ({
+            id: o.id,
+            parte_diario_id: o.parteDiarioId,
+            fecha: o.parteDiario?.fecha
+              ? new Date(o.parteDiario.fecha).toISOString().split('T')[0]
+              : null,
+            codigo: o.codigo,
+            descripcion: o.descripcion || null,
+            resuelta: o.resuelta,
+            fecha_resolucion: o.fechaResolucion
+              ? new Date(o.fechaResolucion).toISOString().split('T')[0]
+              : null,
+            observacion_resolucion: o.observacionResolucion || null,
+          })),
+        });
+      }
+
+      result.sort((a, b) => b.observaciones_abiertas - a.observaciones_abiertas);
+
+      Logger.info('Inspection tracking fetched', {
+        total_equipos: result.length,
+        context: 'ReportService.getInspectionTracking',
+      });
+
+      return result;
+    } catch (error) {
+      Logger.error('Error fetching inspection tracking', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ReportService.getInspectionTracking',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Mark a mechanical delay observation as resolved.
+   */
+  async resolverObservacion(id: number, observacionResolucion?: string): Promise<void> {
+    const delayRepo = AppDataSource.getRepository(DailyReportMechanicalDelay);
+    const obs = await delayRepo.findOneBy({ id });
+    if (!obs) throw new NotFoundError('Observación', String(id));
+
+    obs.resuelta = true;
+    obs.fechaResolucion = new Date();
+    obs.observacionResolucion = observacionResolucion || null;
+    await delayRepo.save(obs);
+
+    Logger.info('Mechanical observation resolved', {
+      observacion_id: id,
+      context: 'ReportService.resolverObservacion',
+    });
+  }
+}
+
+export interface EquipmentInspectionTracking {
+  equipo_id: number;
+  codigo_equipo: string;
+  marca: string | null;
+  modelo: string | null;
+  total_observaciones: number;
+  observaciones_abiertas: number;
+  observaciones_resueltas: number;
+  observaciones: Array<{
+    id: number;
+    parte_diario_id: number;
+    fecha: string | null;
+    codigo: string;
+    descripcion: string | null;
+    resuelta: boolean;
+    fecha_resolucion: string | null;
+    observacion_resolucion: string | null;
+  }>;
 }

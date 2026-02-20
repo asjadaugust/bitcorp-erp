@@ -48,6 +48,9 @@ export class MovementController {
       const proyectoId = req.query.proyecto_id
         ? parseInt(req.query.proyecto_id as string)
         : undefined;
+      const productoId = req.query.producto_id
+        ? parseInt(req.query.producto_id as string)
+        : undefined;
       const estado = req.query.estado as string;
 
       // Parse sorting parameters
@@ -83,6 +86,12 @@ export class MovementController {
       }
       if (proyectoId) {
         queryBuilder.andWhere('m.projectId = :proyectoId', { proyectoId });
+      }
+      if (productoId) {
+        // Filter by product ID in details
+        queryBuilder.innerJoin('m.details', 'd_filter', 'd_filter.productId = :productoId', {
+          productoId,
+        });
       }
       if (estado) {
         queryBuilder.andWhere('m.estado = :estado', { estado });

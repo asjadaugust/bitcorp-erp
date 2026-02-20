@@ -24,6 +24,10 @@ Modern ERP system for civil engineering equipment management built with Angular 
 # Install dependencies
 npm install
 
+# Start colima (if using colima on macOS)
+make colima-start
+# Follow the instructions output by the command to set DOCKER_HOST
+
 # Start containers
 docker-compose up -d --build
 

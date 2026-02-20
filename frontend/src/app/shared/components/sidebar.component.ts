@@ -283,6 +283,26 @@ export class SidebarComponent {
     { label: 'Logística', route: '/logistics', icon: 'fa-solid fa-boxes-stacked' },
     { label: 'Proveedores', route: '/providers', icon: 'fa-solid fa-handshake' },
     { label: 'Equipo Mecánico', route: '/equipment', icon: 'fa-solid fa-tractor' },
+    {
+      label: 'Inoperatividad',
+      route: '/equipment/inoperatividad',
+      icon: 'fa-solid fa-triangle-exclamation',
+    },
+    {
+      label: 'Solicitudes de Equipo',
+      route: '/equipment/solicitudes',
+      icon: 'fa-solid fa-clipboard-list',
+    },
+    {
+      label: 'Órdenes de Alquiler',
+      route: '/equipment/ordenes-alquiler',
+      icon: 'fa-solid fa-file-contract',
+    },
+    {
+      label: 'Actas de Devolución',
+      route: '/equipment/actas-devolucion',
+      icon: 'fa-solid fa-file-signature',
+    },
     { label: 'Operadores', route: '/operators', icon: 'fa-solid fa-id-card' },
     { label: 'Checklists', route: '/checklists', icon: 'fa-solid fa-clipboard-check' },
     // Note: Daily Reports, Contracts, and Valuations are accessed via tabs in Equipment module

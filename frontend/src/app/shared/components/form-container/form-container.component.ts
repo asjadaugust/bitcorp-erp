@@ -11,8 +11,8 @@ import { BackButtonComponent } from '../back-button/back-button.component';
       <!-- Header -->
       <div class="page-header">
         <div class="header-content">
-          <app-back-button *ngIf="backUrl" [url]="backUrl" class="mr-4"></app-back-button>
-          <div class="icon-wrapper" *ngIf="!backUrl">
+          <app-back-button *ngIf="backUrl" [url]="backUrl" class="mr-2"></app-back-button>
+          <div class="icon-wrapper">
             <i class="fa-solid" [class]="icon"></i>
           </div>
           <div class="title-group">

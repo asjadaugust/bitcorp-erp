@@ -21,12 +21,12 @@ export interface StatItem {
         [class]="item.color || 'primary'"
         [attr.data-testid]="item.testId || 'stat-card-' + i"
       >
-        <div class="stat-icon-wrapper" *ngIf="item.icon">
+        <div class="stat-icon" *ngIf="item.icon">
           <i class="fa-solid" [ngClass]="item.icon"></i>
         </div>
         <div class="stat-content">
-          <span class="stat-value">{{ item.value }}</span>
           <span class="stat-label">{{ item.label }}</span>
+          <span class="stat-value">{{ item.value }}</span>
         </div>
       </div>
     </div>
@@ -36,100 +36,70 @@ export interface StatItem {
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-16);
+        gap: var(--s-24);
         margin-bottom: var(--s-24);
       }
 
       .stat-card {
-        background: var(--neutral-0);
-        border-radius: var(--s-12);
+        background: white;
+        border: 1px solid var(--grey-100);
+        border-radius: var(--radius-md);
         padding: var(--s-20);
         display: flex;
         align-items: center;
         gap: var(--s-16);
         box-shadow: var(--shadow-sm);
-        transition:
-          transform 0.2s ease,
-          box-shadow 0.2s ease;
-        border: 1px solid var(--grey-200);
+        transition: all 0.2s ease;
       }
 
       .stat-card:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
+        border-color: var(--grey-200);
       }
 
-      .stat-icon-wrapper {
-        width: var(--s-48);
-        height: var(--s-48);
-        border-radius: var(--s-12);
+      .stat-icon {
+        font-size: 24px;
+        color: var(--primary-500);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: var(--s-24);
         flex-shrink: 0;
       }
 
       .stat-content {
         display: flex;
         flex-direction: column;
-        gap: var(--s-2);
-      }
-
-      .stat-value {
-        font-size: var(--type-h3-size);
-        font-weight: 700;
-        color: var(--grey-900);
-        line-height: 1.2;
+        gap: 4px;
       }
 
       .stat-label {
-        font-size: var(--type-label-size);
-        color: var(--grey-600);
-        font-weight: 500;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--grey-500);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.5px;
       }
 
-      /* Color Variations */
-      .primary .stat-icon-wrapper {
-        background: var(--primary-100);
-        color: var(--primary-600);
-      }
-      .primary {
-        border-left: 4px solid var(--primary-500);
+      .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--primary-900);
+        line-height: 1.2;
       }
 
-      .success .stat-icon-wrapper {
-        background: rgba(var(--semantic-success-rgb, 0, 168, 98), 0.1);
-        color: var(--semantic-success);
+      /* Color Overrides (Subtle) */
+      .success .stat-icon {
+        color: var(--semantic-green-600);
       }
-      .success {
-        border-left: 4px solid var(--semantic-success);
+      .warning .stat-icon {
+        color: var(--semantic-yellow-600);
       }
-
-      .warning .stat-icon-wrapper {
-        background: rgba(var(--semantic-warning-rgb, 255, 158, 24), 0.1);
-        color: var(--semantic-warning);
+      .danger .stat-icon {
+        color: var(--semantic-red-600);
       }
-      .warning {
-        border-left: 4px solid var(--semantic-warning);
-      }
-
-      .danger .stat-icon-wrapper {
-        background: rgba(var(--semantic-error-rgb, 212, 28, 59), 0.1);
-        color: var(--semantic-error);
-      }
-      .danger {
-        border-left: 4px solid var(--semantic-error);
-      }
-
-      .info .stat-icon-wrapper {
-        background: var(--primary-50);
+      .info .stat-icon {
         color: var(--klm-blue);
-      }
-      .info {
-        border-left: 4px solid var(--klm-blue);
       }
 
       @media (max-width: 640px) {

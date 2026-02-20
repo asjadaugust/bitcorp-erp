@@ -8,479 +8,574 @@ import { Equipment } from '../../../core/models/equipment.model';
 import { DailyReportService } from '../../../core/services/daily-report.service';
 import { ContractService } from '../../../core/services/contract.service';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
-import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import {
-  StatsGridComponent,
-  StatItem,
-} from '../../../shared/components/stats-grid/stats-grid.component';
+  EntityDetailShellComponent,
+  EntityDetailHeader,
+  AuditInfo,
+  NotFoundConfig,
+  TabConfig,
+} from '../../../shared/components/entity-detail';
+import {
+  SolicitudEquipoService,
+  SolicitudEquipo,
+} from '../../../core/services/solicitud-equipo.service';
+import {
+  AeroTableComponent,
+  TableColumn,
+} from '../../../core/design-system/table/aero-table.component';
+import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
+import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-list.component';
 
 @Component({
   selector: 'app-equipment-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, StatsGridComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EntityDetailShellComponent,
+    AeroTableComponent,
+    AeroBadgeComponent,
+    PeriodoInoperatividadListComponent,
+  ],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div *ngIf="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Cargando detalles del equipo...</p>
-        </div>
-
-        <div *ngIf="!loading && equipment" class="detail-grid">
-          <div class="detail-main card">
-            <!-- Header (Inside Main Card) -->
-            <div class="detail-header">
-              <div>
-                <h1>{{ equipment.codigo_equipo }}</h1>
-                <p class="text-subtitle">{{ equipment.marca }} {{ equipment.modelo }}</p>
-              </div>
-              <div class="detail-status">
-                <span
-                  class="status-badge"
-                  [class.status-APROBADO]="
-                    equipment.estado === 'DISPONIBLE' || equipment.estado === 'AVAILABLE'
-                  "
-                  [class.status-PENDIENTE]="
-                    equipment.estado === 'EN_USO' ||
-                    equipment.estado === 'IN_USE' ||
-                    equipment.estado === 'MANTENIMIENTO' ||
-                    equipment.estado === 'MAINTENANCE'
-                  "
-                  [class.status-CANCELADO]="
-                    equipment.estado === 'RETIRADO' || equipment.estado === 'RETIRED'
-                  "
-                >
-                  {{ equipment.estado }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <app-stats-grid [items]="statItems" testId="equipment-detail-stats"></app-stats-grid>
-
-            <!-- Tabs Navigation -->
-            <div class="tabs-header mt-6">
-              <button
-                class="tab-btn"
-                [class.active]="activeTab === 'general'"
-                (click)="activeTab = 'general'"
-              >
-                General
-              </button>
-              <button
-                class="tab-btn"
-                [class.active]="activeTab === 'maintenance'"
-                (click)="activeTab = 'maintenance'"
-              >
-                Mantenimiento
-              </button>
-              <button
-                class="tab-btn"
-                [class.active]="activeTab === 'contracts'"
-                (click)="activeTab = 'contracts'"
-              >
-                Contratos
-              </button>
-              <button
-                class="tab-btn"
-                [class.active]="activeTab === 'reports'"
-                (click)="activeTab = 'reports'"
-              >
-                Partes Diarios
-              </button>
-            </div>
-
-            <!-- Tab Content Area -->
-            <div class="detail-sections mt-6">
-              <!-- General Tab -->
-              <div *ngIf="activeTab === 'general'">
-                <section class="detail-section">
-                  <h2>Especificaciones Técnicas</h2>
-                  <div class="info-grid four-cols">
-                    <div class="info-item">
-                      <label>Marca</label>
-                      <p>{{ equipment.marca }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Modelo</label>
-                      <p>{{ equipment.modelo }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Año</label>
-                      <p>{{ equipment.anio_fabricacion || '-' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Serie</label>
-                      <p>{{ equipment.numero_serie_equipo || '-' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Placa</label>
-                      <p>{{ equipment.placa || '-' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Categoría</label>
-                      <p>{{ equipment.categoria || '-' }}</p>
-                    </div>
-                  </div>
-                </section>
-
-                <!-- Document Expiry Dates -->
-                <section class="detail-section">
-                  <h2>Documentos y Vencimientos</h2>
-                  <div class="info-grid three-cols">
-                    <div class="info-item">
-                      <label>SOAT</label>
-                      <div class="doc-status-item">
-                        <p *ngIf="equipment.fecha_venc_soat">
-                          {{ equipment.fecha_venc_soat | date: 'dd/MM/yyyy' }}
-                        </p>
-                        <span
-                          *ngIf="equipment.fecha_venc_soat"
-                          [class]="'doc-tag doc-' + getDocExpiry(equipment.fecha_venc_soat)"
-                        >
-                          {{ getDocExpiryLabel(equipment.fecha_venc_soat) }}
-                        </span>
-                        <p *ngIf="!equipment.fecha_venc_soat" class="text-muted">Sin registro</p>
-                      </div>
-                    </div>
-                    <div class="info-item">
-                      <label>Póliza TREC</label>
-                      <div class="doc-status-item">
-                        <p *ngIf="equipment.fecha_venc_poliza">
-                          {{ equipment.fecha_venc_poliza | date: 'dd/MM/yyyy' }}
-                        </p>
-                        <span
-                          *ngIf="equipment.fecha_venc_poliza"
-                          [class]="'doc-tag doc-' + getDocExpiry(equipment.fecha_venc_poliza)"
-                        >
-                          {{ getDocExpiryLabel(equipment.fecha_venc_poliza) }}
-                        </span>
-                        <p *ngIf="!equipment.fecha_venc_poliza" class="text-muted">Sin registro</p>
-                      </div>
-                    </div>
-                    <div class="info-item">
-                      <label>CITV</label>
-                      <div class="doc-status-item">
-                        <p *ngIf="equipment.fecha_venc_citv">
-                          {{ equipment.fecha_venc_citv | date: 'dd/MM/yyyy' }}
-                        </p>
-                        <span
-                          *ngIf="equipment.fecha_venc_citv"
-                          [class]="'doc-tag doc-' + getDocExpiry(equipment.fecha_venc_citv)"
-                        >
-                          {{ getDocExpiryLabel(equipment.fecha_venc_citv) }}
-                        </span>
-                        <p *ngIf="!equipment.fecha_venc_citv" class="text-muted">Sin registro</p>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-
-              <!-- Maintenance Tab -->
-              <div *ngIf="activeTab === 'maintenance'">
-                <section class="detail-section">
-                  <div class="section-header flex justify-between items-center mb-4">
-                    <h2>Programaciones de Mantenimiento</h2>
-                    <button class="btn btn-sm btn-secondary" (click)="goToMaintenance()">
-                      Ver Todo
-                    </button>
-                  </div>
-                  <div
-                    *ngIf="maintenanceSchedules.length > 0; else noMaintenance"
-                    class="table-container"
-                  >
-                    <table class="annex-table">
-                      <thead>
-                        <tr>
-                          <th>Tipo</th>
-                          <th>Estado</th>
-                          <th>Intervalo</th>
-                          <th>Próximo</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let schedule of maintenanceSchedules">
-                          <td class="font-medium">{{ schedule.maintenanceType }}</td>
-                          <td>
-                            <span
-                              class="status-badge status-sm"
-                              [class.status-APROBADO]="schedule.status === 'COMPLETO'"
-                              [class.status-PENDIENTE]="schedule.status === 'PENDIENTE'"
-                            >
-                              {{ schedule.status }}
-                            </span>
-                          </td>
-                          <td>{{ schedule.intervalValue }} {{ schedule.intervalType }}</td>
-                          <td>{{ schedule.nextDueHours || schedule.nextDueDate }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <ng-template #noMaintenance>
-                    <div class="empty-state-section">
-                      <i class="fa-solid fa-check-circle"></i>
-                      <p>No hay mantenimientos pendientes.</p>
-                    </div>
-                  </ng-template>
-                </section>
-              </div>
-
-              <!-- Contracts Tab -->
-              <div *ngIf="activeTab === 'contracts'">
-                <section class="detail-section">
-                  <div class="section-header flex justify-between items-center mb-4">
-                    <h2>Historial de Contratos</h2>
-                    <button class="btn btn-sm btn-primary" (click)="createContract()">
-                      <i class="fa-solid fa-plus"></i> Nuevo
-                    </button>
-                  </div>
-
-                  <div *ngIf="contracts.length > 0; else noContracts" class="table-container">
-                    <table class="annex-table">
-                      <thead>
-                        <tr>
-                          <th>Código</th>
-                          <th>Cliente</th>
-                          <th>Vigencia</th>
-                          <th>Estado</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let contract of contracts">
-                          <td class="font-mono">{{ contract.code }}</td>
-                          <td>{{ contract.client_name }}</td>
-                          <td>
-                            {{ contract.start_date | date: 'shortDate' }} -
-                            {{ contract.end_date | date: 'shortDate' }}
-                          </td>
-                          <td>
-                            <span
-                              class="status-badge status-sm"
-                              [class.status-APROBADO]="contract.status === 'ACTIVO'"
-                              [class.status-CANCELADO]="contract.status === 'FINALIZADO'"
-                            >
-                              {{ contract.status }}
-                            </span>
-                          </td>
-                          <td class="text-right">
-                            <button class="btn btn-icon" (click)="viewContract(contract.id)">
-                              <i class="fa-solid fa-eye"></i>
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <ng-template #noContracts>
-                    <div class="empty-state-section">
-                      <i class="fa-solid fa-file-contract"></i>
-                      <p>No hay contratos asociados.</p>
-                    </div>
-                  </ng-template>
-                </section>
-              </div>
-
-              <!-- Reports Tab -->
-              <div *ngIf="activeTab === 'reports'">
-                <section class="detail-section">
-                  <h2>Últimos Partes Diarios</h2>
-                  <div *ngIf="dailyReports.length > 0; else noReports" class="table-container">
-                    <table class="annex-table">
-                      <thead>
-                        <tr>
-                          <th>Fecha</th>
-                          <th>Operador</th>
-                          <th>Horas</th>
-                          <th>Estado</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let report of dailyReports">
-                          <td>{{ report.fecha_parte | date: 'dd/MM/yyyy' }}</td>
-                          <td>{{ report.operator_name }}</td>
-                          <td class="font-medium">
-                            {{
-                              report.horometro_final - report.horometro_inicial | number: '1.1-1'
-                            }}h
-                          </td>
-                          <td>
-                            <span
-                              class="status-badge status-sm"
-                              [class.status-APROBADO]="report.status === 'APROBADO'"
-                              [class.status-PENDIENTE]="report.status === 'PENDIENTE'"
-                            >
-                              {{ report.status }}
-                            </span>
-                          </td>
-                          <td class="text-right">
-                            <button class="btn btn-icon" (click)="viewReport(report.id)">
-                              <i class="fa-solid fa-eye"></i>
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <ng-template #noReports>
-                    <div class="empty-state-section">
-                      <i class="fa-solid fa-clipboard"></i>
-                      <p>No hay partes diarios registrados recientemente.</p>
-                    </div>
-                  </ng-template>
-                </section>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sidebar -->
-          <div class="detail-sidebar">
-            <div class="card">
-              <h3 class="sidebar-card-title">Acciones</h3>
-              <div class="quick-actions">
-                <button class="btn btn-primary btn-block" (click)="editEquipment()">
-                  <i class="fa-solid fa-pen"></i> Editar Equipo
-                </button>
-                <button class="btn btn-ghost btn-block" (click)="navigateTo('/equipment')">
-                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-                </button>
-              </div>
-            </div>
-
-            <div class="card">
-              <h3 class="sidebar-card-title">Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ equipment.updated_at | date: 'short' }}</div>
-                  <div class="timeline-content">Última actualización</div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ equipment.created_at | date: 'short' }}</div>
-                  <div class="timeline-content">Equipo registrado</div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="equipment"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      [notFound]="notFoundConfig"
+      loadingText="Cargando detalles del equipo..."
+    >
+      <div entity-header-below>
+        <!-- Standard Tab Navigation -->
+        <div class="detail-tabs">
+          <button
+            *ngFor="let tab of tabConfigs"
+            class="tab-link"
+            [class.active]="activeTab === tab.id"
+            (click)="activeTab = tab.id"
+          >
+            <i [class]="tab.icon"></i>
+            {{ tab.label }}
+          </button>
         </div>
       </div>
-    </div>
+
+      <div entity-main-content class="detail-sections">
+        @if (equipment) {
+          @if (activeTab === 'general') {
+            <div class="detail-section card">
+              <div class="section-header">
+                <h3>Resumen Principal</h3>
+              </div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Estado Actual</label>
+                  <div class="value-with-icon" [ngClass]="getStatusClass(equipment?.estado ?? '')">
+                    <i [class]="getStatusIcon(equipment?.estado ?? '')"></i>
+                    <span class="value">{{ equipment?.estado }}</span>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label>Tipo de Equipo</label>
+                  <p class="value">
+                    {{ equipment?.tipo_equipo_nombre || equipment?.categoria || '-' }}
+                  </p>
+                </div>
+                <div class="info-item">
+                  <label>Categoría PRD</label>
+                  <div class="value">
+                    @if (equipment?.categoria_prd) {
+                      <span
+                        class="cat-badge"
+                        [class]="getCategoriaPrdClass(equipment!.categoria_prd!)"
+                      >
+                        {{ getCategoriaPrdLabel(equipment!.categoria_prd!) }}
+                      </span>
+                    } @else {
+                      <span>-</span>
+                    }
+                  </div>
+                </div>
+                <div class="info-item">
+                  <label>Propiedad</label>
+                  <div class="value">
+                    <span
+                      class="badge"
+                      [ngClass]="
+                        equipment?.es_propio || equipment?.tipo_proveedor === 'PROPIO'
+                          ? 'badge-propio'
+                          : 'badge-tercero'
+                      "
+                    >
+                      {{
+                        equipment?.es_propio || equipment?.tipo_proveedor === 'PROPIO'
+                          ? 'Propio'
+                          : 'Tercero'
+                      }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-section card mt-24">
+              <div class="section-header">
+                <h3>Especificaciones Técnicas</h3>
+              </div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Marca / Modelo</label>
+                  <p class="value">{{ equipment?.marca || '' }} {{ equipment?.modelo || '' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Número de Serie</label>
+                  <p class="value">{{ equipment?.numero_serie_equipo || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Número de Chasis</label>
+                  <p class="value">{{ equipment?.numero_chasis || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Serie Motor</label>
+                  <p class="value">{{ equipment?.numero_serie_motor || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Año de Fabricación</label>
+                  <p class="value">{{ equipment?.anio_fabricacion || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Placa / Código Externo</label>
+                  <p class="value">{{ equipment?.placa || equipment?.codigo_externo || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Tipo de Medición</label>
+                  <p class="value highlight project-link">
+                    {{ equipment?.tipo_medicion || equipment?.medidor_uso || '-' }}
+                  </p>
+                </div>
+                <div class="info-item">
+                  <label>Tipo de Motor</label>
+                  <p class="value">{{ equipment?.tipo_motor || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Potencia Neta</label>
+                  <p class="value">
+                    {{ equipment?.net_power ? equipment?.net_power + ' HP' : '-' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-section card mt-24">
+              <div class="section-header">
+                <h3>Asignación Actual</h3>
+              </div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Proyecto / Ubicación</label>
+                  <p class="value highlight project-link">
+                    {{ equipment?.proyecto_nombre || 'Sin Asignar' }}
+                  </p>
+                </div>
+                <div class="info-item">
+                  <label>Fecha de Asignación</label>
+                  <p class="value">
+                    {{
+                      equipment?.fecha_asignacion
+                        ? (equipment?.fecha_asignacion | date: 'dd/MM/yyyy')
+                        : '-'
+                    }}
+                  </p>
+                </div>
+                <div class="info-item">
+                  <label>Operador Asignado</label>
+                  <p class="value">{{ equipment?.operador_nombre || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <label>Horómetro / Kilometraje Actual</label>
+                  <p class="value highlight project-link">
+                    {{ equipment?.horometro_actual || equipment?.kilometraje_actual || '0.0' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+          @if (activeTab === 'maintenance') {
+            <div class="detail-section card">
+              <div class="section-header">
+                <h3>Historial de Mantenimiento</h3>
+                <button class="btn btn-primary btn-sm" (click)="scheduleMaintenance()">
+                  <i class="fa-solid fa-plus"></i> Programar
+                </button>
+              </div>
+
+              <aero-table
+                [columns]="maintenanceColumns"
+                [data]="maintenanceHistory"
+                [loading]="false"
+                emptyMessage="No hay registros de mantenimiento para este equipo."
+              ></aero-table>
+            </div>
+          }
+          @if (activeTab === 'contracts') {
+            <div class="detail-section card">
+              <div class="section-header">
+                <h3>Contratos Asociados</h3>
+              </div>
+
+              <aero-table
+                [columns]="contractColumns"
+                [data]="contracts"
+                [loading]="false"
+                [templates]="{ numero_contrato: contractCodeTemplate }"
+                emptyMessage="No hay contratos asociados a este equipo."
+                (rowClick)="router.navigate(['/equipment/contracts', $event.id])"
+              ></aero-table>
+
+              <ng-template #contractCodeTemplate let-row>
+                <a
+                  [routerLink]="['/equipment/contracts', row.id]"
+                  class="link-primary"
+                  (click)="$event.stopPropagation()"
+                >
+                  {{ row.numero_contrato || '#' + row.id }}
+                </a>
+              </ng-template>
+            </div>
+          }
+          @if (activeTab === 'reports') {
+            <div class="detail-section card">
+              <div class="section-header">
+                <h3>Partes Diarios Recientes</h3>
+              </div>
+
+              <aero-table
+                [columns]="reportColumns"
+                [data]="dailyReports"
+                [loading]="false"
+                [templates]="{ codigo: reportCodeTemplate }"
+                emptyMessage="No se han registrado partes diarios para este equipo recientemente."
+                (rowClick)="router.navigate(['/daily-reports', $event.id])"
+              ></aero-table>
+
+              <ng-template #reportCodeTemplate let-row>
+                <span class="code-badge">{{ row.codigo || row.id }}</span>
+              </ng-template>
+            </div>
+          }
+          @if (activeTab === 'solicitudes') {
+            <div class="detail-section card">
+              <div class="section-header">
+                <h3>Solicitudes de Equipo</h3>
+              </div>
+
+              <aero-table
+                [columns]="solicitudColumns"
+                [data]="solicitudes"
+                [loading]="false"
+                [templates]="{ codigo: solicitudCodeTemplate }"
+                emptyMessage="No hay solicitudes pendientes para este tipo de equipo."
+              ></aero-table>
+
+              <ng-template #solicitudCodeTemplate let-row>
+                <span class="code-badge">{{ row.codigo || row.id }}</span>
+              </ng-template>
+            </div>
+          }
+          @if (activeTab === 'inoperatividad' && equipment) {
+            <div class="detail-section card" style="padding: 0;">
+              <app-periodo-inoperatividad-list
+                [equipoId]="equipment.id"
+              ></app-periodo-inoperatividad-list>
+            </div>
+          }
+        }
+      </div>
+
+      <ng-container entity-sidebar-actions>
+        <button class="btn btn-secondary btn-block" (click)="editEquipment()">
+          <i class="fa-solid fa-pen-to-square"></i> Editar Equipo
+        </button>
+
+        <button class="btn btn-primary btn-block" (click)="assignToProject()">
+          <i class="fa-solid fa-location-dot"></i> Asignar a Proyecto
+        </button>
+
+        <button class="btn btn-secondary btn-block" (click)="scheduleMaintenance()">
+          <i class="fa-solid fa-screwdriver-wrench"></i> Programar Mantenimiento
+        </button>
+
+        <button class="btn btn-warning btn-block" (click)="registrarInoperatividad()">
+          <i class="fa-solid fa-triangle-exclamation"></i> Registrar Inoperatividad
+        </button>
+
+        <button class="btn btn-secondary btn-block" (click)="viewHistory()">
+          <i class="fa-solid fa-clock-rotate-left"></i> Ver Historial
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button class="btn btn-danger btn-block" (click)="deleteEquipment()">
+          <i class="fa-solid fa-trash"></i> Eliminar Equipo
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <button class="btn btn-ghost btn-block" routerLink="/equipment">
+          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+        </button>
+      </ng-container>
+    </entity-detail-shell>
   `,
   styles: [
     `
       @use 'detail-layout' as *;
 
-      /* Equipment specific custom styles */
-      .text-subtitle {
-        font-size: 16px;
-        color: var(--grey-600);
-        margin-top: -4px;
-      }
-
-      .tabs-header {
+      .detail-tabs {
         display: flex;
-        gap: var(--s-24);
-        border-bottom: 2px solid var(--grey-100);
+        gap: 8px;
+        margin-bottom: var(--s-24);
+        border-bottom: 1px solid var(--grey-200);
+
+        .tab-link {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          border: none;
+          background: none;
+          color: var(--grey-500);
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border-bottom: 3px solid transparent;
+          font-size: 0.9rem;
+          height: 48px;
+
+          i {
+            opacity: 0.6;
+            font-size: 1.1em;
+          }
+
+          &:hover {
+            color: var(--primary-600);
+            background: var(--primary-50);
+          }
+
+          &.active {
+            color: var(--primary-600);
+            border-bottom-color: var(--primary-600);
+            background: rgba(59, 130, 246, 0.05);
+            i {
+              opacity: 1;
+            }
+          }
+        }
       }
 
-      .tab-btn {
-        padding: var(--s-12) var(--s-4);
-        background: none;
-        border: none;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--grey-500);
-        cursor: pointer;
-        transition: all 0.2s;
-
-        &:hover {
-          color: var(--primary-600);
-        }
-
-        &.active {
-          color: var(--primary-600);
-          border-bottom-color: var(--primary-600);
-        }
+      .sidebar-divider {
+        height: 1px;
+        background: var(--grey-100);
+        margin: var(--s-16) 0;
       }
 
-      .doc-status-item {
+      .btn-block {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-top: 4px;
+        justify-content: flex-start;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        border-radius: 10px;
+
+        i {
+          width: 20px;
+          text-align: center;
+          font-size: 1.1em;
+        }
       }
 
-      .doc-tag {
+      .detail-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-24);
+      }
+
+      .detail-section {
+        padding: var(--s-24);
+        border-radius: 16px;
+
+        h3 {
+          font-size: 0.75rem;
+          margin: 0;
+          color: var(--grey-600);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+        }
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--s-20);
+
+        h3 {
+          font-size: 0.75rem;
+          margin: 0;
+          color: var(--grey-600);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+        }
+
+        .btn-sm {
+          padding: 6px 14px;
+          font-size: 0.8rem;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px 40px;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        label {
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--grey-500);
+          font-weight: 700;
+          margin-bottom: 4px;
+          display: block;
+        }
+
+        .value {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--grey-900);
+          margin: 0;
+          line-height: 1.4;
+
+          &.highlight {
+            color: var(--primary-700);
+            font-weight: 700;
+            font-size: 1.05rem;
+          }
+        }
+
+        .value-with-icon {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 700;
+          font-size: 0.95rem;
+
+          i {
+            font-size: 0.9rem;
+          }
+        }
+
+        &.status-APROBADO {
+          .value,
+          .value-with-icon {
+            color: var(--semantic-green-600);
+          }
+        }
+        &.status-PENDIENTE {
+          .value,
+          .value-with-icon {
+            color: var(--semantic-orange-600);
+          }
+        }
+      }
+
+      .link-primary {
+        color: var(--primary-600);
+        text-decoration: none;
+        font-weight: 600;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .code-badge {
+        background: var(--grey-50);
+        border: 1px solid var(--grey-200);
         padding: 2px 8px;
-        border-radius: 999px;
+        border-radius: 4px;
+        font-family: var(--font-family-mono);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--grey-700);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .badge-propio {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .badge-tercero {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+
+      .cat-badge {
+        display: inline-block;
         font-size: 11px;
         font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 10px;
         text-transform: uppercase;
+        letter-spacing: 0.3px;
       }
-
-      .doc-expired {
+      .badge-cat-maquinaria {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-cat-pesado {
         background: #fee2e2;
         color: #991b1b;
       }
-
-      .doc-critical {
-        background: #ffedd5;
-        color: #9a3412;
+      .badge-cat-liviano {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-cat-menor {
+        background: #d1fae5;
+        color: #065f46;
       }
 
-      .doc-warning {
-        background: #fef9c3;
-        color: #854d0e;
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
       }
-
-      .doc-ok {
-        background: #dcfce7;
-        color: #166534;
-      }
-
-      .mt-6 {
-        margin-top: 1.5rem;
-      }
-      .flex {
-        display: flex;
-      }
-      .justify-between {
-        justify-content: space-between;
-      }
-      .items-center {
-        align-items: center;
-      }
-      .font-medium {
-        font-weight: 500;
-      }
-      .text-right {
-        text-align: right;
-      }
-
-      .empty-state-section {
-        text-align: center;
-        padding: var(--s-32);
-        color: var(--grey-500);
-        background: var(--grey-50);
-        border-radius: var(--radius-md);
-
-        i {
-          font-size: 32px;
-          margin-bottom: var(--s-12);
-          color: var(--grey-300);
-        }
-
-        p {
-          margin: 0;
-          font-size: 14px;
-        }
-      }
-
-      .mb-4 {
-        margin-bottom: 1rem;
+      .mt-24 {
+        margin-top: 24px;
       }
     `,
   ],
@@ -492,182 +587,315 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   private dailyReportService = inject(DailyReportService);
   private contractService = inject(ContractService);
   private maintenanceService = inject(MaintenanceScheduleService);
+  private solicitudService = inject(SolicitudEquipoService);
   private destroy$ = new Subject<void>();
 
+  loading = true;
   equipment: Equipment | null = null;
+  activeTab = 'general';
   dailyReports: any[] = [];
   contracts: any[] = [];
-  maintenanceSchedules: any[] = [];
-  loading = true;
-  activeTab = 'general';
-  statItems: StatItem[] = [];
+  maintenanceHistory: any[] = [];
+  solicitudes: SolicitudEquipo[] = [];
 
-  ngOnInit() {
-    const id = this.route.snapshot.params['id'];
-    if (id) {
-      this.loadData(id);
-    }
+  tabConfigs: TabConfig[] = [
+    { id: 'general', label: 'General', icon: 'fa-solid fa-circle-info' },
+    { id: 'maintenance', label: 'Mantenimiento', icon: 'fa-solid fa-screwdriver-wrench' },
+    { id: 'contracts', label: 'Contratos', icon: 'fa-solid fa-file-contract' },
+    { id: 'reports', label: 'Partes Diarios', icon: 'fa-solid fa-clipboard-list' },
+    { id: 'solicitudes', label: 'Solicitudes', icon: 'fa-solid fa-file-invoice' },
+    { id: 'inoperatividad', label: 'Inoperatividad', icon: 'fa-solid fa-triangle-exclamation' },
+  ];
+
+  maintenanceColumns: TableColumn[] = [
+    { key: 'fechaProgramada', label: 'Fecha Prog.', type: 'date' },
+    { key: 'tipoMantenimiento', label: 'Tipo', type: 'text' },
+    { key: 'descripcion', label: 'Descripción', type: 'text' },
+    { key: 'tecnicoResponsable', label: 'Técnico', type: 'text' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        PROGRAMADO: {
+          label: 'Programado',
+          class: 'status-badge status-PENDIENTE',
+          icon: 'fa-clock',
+        },
+        EN_PROCESO: {
+          label: 'En Proceso',
+          class: 'status-badge status-EN_OPERACION',
+          icon: 'fa-wrench',
+        },
+        COMPLETADO: {
+          label: 'Completado',
+          class: 'status-badge status-APROBADO',
+          icon: 'fa-check',
+        },
+        CANCELADO: { label: 'Cancelado', class: 'status-badge status-CANCELADO', icon: 'fa-xmark' },
+      },
+    },
+  ];
+
+  contractColumns: TableColumn[] = [
+    { key: 'numero_contrato', label: 'N° Contrato', type: 'template' },
+    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' },
+    { key: 'fecha_inicio', label: 'Fecha Inicio', type: 'date' },
+    { key: 'fecha_fin', label: 'Fecha Fin', type: 'date' },
+    { key: 'tarifa', label: 'Tarifa', type: 'currency' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        ACTIVO: { label: 'Activo', class: 'status-badge status-APROBADO', icon: 'fa-check' },
+        VENCIDO: { label: 'Vencido', class: 'status-badge status-CANCELADO', icon: 'fa-clock' },
+        FINALIZADO: {
+          label: 'Finalizado',
+          class: 'status-badge status-CANCELADO',
+          icon: 'fa-check',
+        },
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-PENDIENTE' },
+      },
+    },
+  ];
+
+  reportColumns: TableColumn[] = [
+    { key: 'codigo', label: 'Código', type: 'template' },
+    { key: 'fecha_parte', label: 'Fecha', type: 'date' },
+    { key: 'proyecto_nombre', label: 'Proyecto', type: 'text' },
+    { key: 'horometro_inicial', label: 'H. Inicial', type: 'text' },
+    { key: 'horometro_final', label: 'H. Final', type: 'text' },
+    { key: 'horas_trabajadas', label: 'Horas', type: 'text' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-PENDIENTE' },
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-PENDIENTE', icon: 'fa-clock' },
+        APROBADO: { label: 'Aprobado', class: 'status-badge status-APROBADO', icon: 'fa-check' },
+        RECHAZADO: { label: 'Rechazado', class: 'status-badge status-CANCELADO', icon: 'fa-xmark' },
+      },
+    },
+  ];
+
+  solicitudColumns: TableColumn[] = [
+    { key: 'codigo', label: 'Código', type: 'template' },
+    { key: 'fecha_requerida', label: 'Fecha Req.', type: 'date' },
+    { key: 'tipo_equipo', label: 'Tipo de Equipo', type: 'text' },
+    { key: 'cantidad', label: 'Cant.', type: 'text' },
+    {
+      key: 'prioridad',
+      label: 'Prioridad',
+      type: 'badge',
+      badgeConfig: {
+        BAJA: { label: 'Baja', class: 'status-badge status-PENDIENTE' },
+        MEDIA: { label: 'Media', class: 'status-badge status-EN_OPERACION' },
+        ALTA: { label: 'Alta', class: 'status-badge status-CANCELADO' },
+      },
+    },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-PENDIENTE' },
+        ENVIADO: {
+          label: 'Enviado',
+          class: 'status-badge status-EN_OPERACION',
+          icon: 'fa-paper-plane',
+        },
+        APROBADO: { label: 'Aprobado', class: 'status-badge status-APROBADO', icon: 'fa-check' },
+        RECHAZADO: { label: 'Rechazado', class: 'status-badge status-CANCELADO', icon: 'fa-xmark' },
+      },
+    },
+  ];
+
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-truck-monster',
+      title: this.equipment?.codigo_equipo || 'Detalle de Equipo',
+      codeBadge: this.equipment?.placa || '',
+      subtitle: `${this.equipment?.marca || ''} ${this.equipment?.modelo || ''}`,
+      statusLabel: this.equipment?.estado || 'Desconocido',
+      statusClass: this.getStatusClass(this.equipment?.estado || ''),
+    };
   }
 
-  ngOnDestroy() {
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        {
+          label: 'Creado por',
+          date: this.equipment?.created_at,
+        },
+        {
+          label: 'Última actualización',
+          date: this.equipment?.updated_at,
+        },
+      ],
+    };
+  }
+
+  get notFoundConfig(): NotFoundConfig {
+    return {
+      icon: 'fa-solid fa-search',
+      title: 'Equipo no encontrado',
+      message: 'El equipo que está buscando no existe o ha sido eliminado.',
+      backLabel: 'Volver a equipos',
+      backRoute: '/equipment',
+    };
+  }
+
+  ngOnInit(): void {
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const id = params['id'];
+      if (id) {
+        this.loadEquipmentDetail(id);
+      }
+    });
+
+    // Check query params for active tab (e.g., ?tab=inoperatividad)
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  loadData(id: number) {
+  loadEquipmentDetail(id: string): void {
     this.loading = true;
-    this.equipmentService
-      .getById(id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.equipment = data;
-          this.calculateStatItems();
-          this.loadRelatedData(id);
-        },
-        error: (err) => {
-          console.error('Error loading equipment', err);
-          this.router.navigate(['/equipment']);
-          this.loading = false;
-        },
-      });
+    this.equipmentService.getById(id).subscribe({
+      next: (equipment) => {
+        this.equipment = equipment;
+        this.loading = false;
+        this.loadRelatedData(id);
+      },
+      error: () => {
+        this.loading = false;
+        this.equipment = null;
+      },
+    });
   }
 
-  calculateStatItems() {
-    if (!this.equipment) return;
-
-    const statusMap: Record<
-      string,
-      { color: 'success' | 'warning' | 'danger' | 'info' | 'primary'; icon: string }
-    > = {
-      DISPONIBLE: { color: 'success', icon: 'fa-check-circle' },
-      EN_USO: { color: 'primary', icon: 'fa-person-digging' },
-      MANTENIMIENTO: { color: 'warning', icon: 'fa-wrench' },
-      RETIRADO: { color: 'danger', icon: 'fa-ban' },
-      AVAILABLE: { color: 'success', icon: 'fa-check-circle' },
-      IN_USE: { color: 'primary', icon: 'fa-person-digging' },
-      MAINTENANCE: { color: 'warning', icon: 'fa-wrench' },
-      RETIRED: { color: 'danger', icon: 'fa-ban' },
-    };
-
-    const statusStyle = statusMap[this.equipment.estado?.toUpperCase()] || {
-      color: 'info',
-      icon: 'fa-info-circle',
-    };
-
-    this.statItems = [
-      {
-        label: 'Estado Actual',
-        value: this.equipment.estado || 'Unknown',
-        icon: statusStyle.icon,
-        color: statusStyle.color,
-        testId: 'equipment-status',
-      },
-      {
-        label: 'Tipo Medidor',
-        value: this.equipment.medidor_uso || 'N/A',
-        icon: 'fa-clock',
-        color: 'info',
-        testId: 'meter-type',
-      },
-      {
-        label: 'Categoría',
-        value: this.equipment.categoria || 'No asignado',
-        icon: 'fa-tractor',
-        color: 'primary',
-        testId: 'equipment-category',
-      },
-      {
-        label: 'Proveedor',
-        value: this.equipment.proveedor_nombre || 'N/A',
-        icon: 'fa-handshake',
-        color: 'warning',
-        testId: 'equipment-provider',
-      },
-    ];
+  loadRelatedData(id: string): void {
+    this.dailyReportService.getAll({ equipo_id: id }).subscribe((data: any) => {
+      this.dailyReports = Array.isArray(data) ? data : data.data || [];
+    });
+    this.contractService.getAll({ equipmentId: id }).subscribe((data: any) => {
+      this.contracts = Array.isArray(data) ? data : data.data || [];
+    });
+    this.maintenanceService.getAll({ equipoId: id }).subscribe((data: any) => {
+      this.maintenanceHistory = Array.isArray(data) ? data : data.data || [];
+    });
+    this.solicitudService.listar({ estado: 'APROBADO' }).subscribe((data) => {
+      // For now, we filter locally if the API doesn't support equipo_id yet,
+      // but ideally the backend should handle this filtering.
+      this.solicitudes = data.data || [];
+    });
   }
 
-  loadRelatedData(id: number) {
-    this.dailyReportService
-      .getAll({ equipo_id: id })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (reports) => {
-          this.dailyReports = reports;
-          this.checkLoading();
-        },
-        error: () => this.checkLoading(),
-      });
-
-    this.contractService
-      .getAll({ equipmentId: id })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (contracts) => {
-          this.contracts = contracts;
-          this.checkLoading();
-        },
-        error: () => this.checkLoading(),
-      });
-
-    this.maintenanceService
-      .getAll({ equipo_id: id })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (schedules) => {
-          this.maintenanceSchedules = Array.isArray(schedules) ? schedules : [];
-          this.checkLoading();
-        },
-        error: () => this.checkLoading(),
-      });
-  }
-
-  checkLoading() {
-    this.loading = false;
-  }
-
-  editEquipment() {
-    if (this.equipment && this.equipment.id) {
+  editEquipment(): void {
+    if (this.equipment) {
       this.router.navigate(['/equipment', this.equipment.id, 'edit']);
     }
   }
 
-  viewReport(id: string) {
-    this.router.navigate(['/daily-reports', id]);
+  assignToProject(): void {
+    alert('Asignar a Proyecto - ¡Próximamente!');
   }
 
-  viewContract(id: string) {
-    this.router.navigate(['/equipment/contracts', id]);
+  scheduleMaintenance(): void {
+    alert('Programar Mantenimiento - ¡Próximamente!');
   }
 
-  createContract() {
-    this.router.navigate(['/equipment/contracts/new'], {
-      queryParams: { equipmentId: this.equipment?.id },
-    });
+  viewHistory(): void {
+    alert('Ver Historial - ¡Próximamente!');
   }
 
-  goToMaintenance() {
-    this.router.navigate(['/equipment/maintenance'], {
-      queryParams: { equipo_id: this.equipment?.id },
-    });
+  deleteEquipment(): void {
+    if (
+      confirm(
+        `¿Estás seguro de que quieres eliminar este equipo? esta acción no se puede deshacer.`
+      )
+    ) {
+      this.confirmDelete();
+    }
   }
 
-  getDocExpiry(dateStr: string): string {
-    if (!dateStr) return 'none';
-    const expDate = new Date(dateStr);
-    const today = new Date();
-    const days = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    if (days < 0) return 'expired';
-    if (days <= 7) return 'critical';
-    if (days <= 30) return 'warning';
-    return 'ok';
+  confirmDelete(): void {
+    if (this.equipment) {
+      this.equipmentService.delete(this.equipment.id).subscribe({
+        next: () => {
+          this.router.navigate(['/equipment']);
+        },
+        error: (error) => {
+          console.error('Failed to delete equipment:', error);
+        },
+      });
+    }
   }
 
-  getDocExpiryLabel(dateStr: string): string {
-    const status = this.getDocExpiry(dateStr);
-    if (status === 'expired') return 'Vencido';
-    if (status === 'critical') return 'Critico';
-    if (status === 'warning') return 'Por vencer';
-    return 'Vigente';
+  registrarInoperatividad(): void {
+    if (this.equipment) {
+      this.router.navigate(['/equipment/inoperatividad/new'], {
+        queryParams: { equipo_id: this.equipment.id },
+      });
+    }
+  }
+
+  getCategoriaPrdLabel(cat: string): string {
+    const labels: Record<string, string> = {
+      MAQUINARIA_PESADA: 'Maquinaria Pesada',
+      VEHICULOS_PESADOS: 'Vehículos Pesados',
+      VEHICULOS_LIVIANOS: 'Vehículos Livianos',
+      EQUIPOS_MENORES: 'Equipos Menores',
+    };
+    return labels[cat] ?? cat;
+  }
+
+  getCategoriaPrdClass(cat: string): string {
+    const classes: Record<string, string> = {
+      MAQUINARIA_PESADA: 'badge-cat-maquinaria',
+      VEHICULOS_PESADOS: 'badge-cat-pesado',
+      VEHICULOS_LIVIANOS: 'badge-cat-liviano',
+      EQUIPOS_MENORES: 'badge-cat-menor',
+    };
+    return classes[cat] ?? '';
+  }
+
+  getStatusClass(estado: string): string {
+    switch (estado?.toUpperCase()) {
+      case 'DISPONIBLE':
+        return 'status-APROBADO';
+      case 'EN_USO':
+      case 'MANTENIMIENTO':
+        return 'status-PENDIENTE';
+      case 'RETIRADO':
+        return 'status-CANCELADO';
+      default:
+        return 'status-BORRADOR';
+    }
+  }
+
+  getStatusIcon(estado: string): string {
+    switch (estado?.toUpperCase()) {
+      case 'DISPONIBLE':
+        return 'fa-solid fa-check-circle';
+      case 'EN_USO':
+        return 'fa-solid fa-truck-moving';
+      case 'MANTENIMIENTO':
+        return 'fa-solid fa-wrench';
+      case 'RETIRADO':
+        return 'fa-solid fa-ban';
+      default:
+        return 'fa-solid fa-circle-info';
+    }
   }
 }

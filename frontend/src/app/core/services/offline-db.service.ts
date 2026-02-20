@@ -21,10 +21,15 @@ export interface OfflineDailyReport {
   location?: string;
   departure_location?: string;
   arrival_location?: string;
+  lugar_salida?: string;
   work_description?: string;
-  observations?: string;
+  observaciones?: string;
   notes?: string;
   weather_conditions?: string;
+  combustible_inicial?: number;
+  gps_latitude?: number;
+  gps_longitude?: number;
+  gps_accuracy?: number;
   photos?: string[];
   status: 'BORRADOR' | 'ENVIADO' | 'SINCRONIZADO' | 'FALLIDO';
   synced: boolean;

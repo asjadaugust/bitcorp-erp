@@ -427,7 +427,7 @@ export class AeroTableComponent {
   @Output() pageSizeChange = new EventEmitter<number>();
 
   // Pagination properties
-  pageSize = 10;
+  @Input() pageSize = 10;
   currentPage = 1;
 
   pageSizeOptions: DropdownOption[] = [

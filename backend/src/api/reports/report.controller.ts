@@ -221,6 +221,45 @@ export class ReportController {
     }
   }
 
+  async firmarResidente(req: AuthRequest, res: Response) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const { id } = req.params;
+      const { firma_residente } = req.body;
+
+      if (!id) {
+        return sendError(res, 400, 'INVALID_ID', 'ID de reporte es requerido');
+      }
+
+      const report = await reportService.firmarResidente(tenantId, id, firma_residente);
+
+      sendSuccess(res, report);
+    } catch (error: any) {
+      Logger.error('Error al registrar firma del residente', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: req.params.id,
+        context: 'ReportController.firmarResidente',
+      });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message, error.metadata);
+      }
+
+      if (error instanceof ValidationError) {
+        return sendError(res, 422, error.name, error.message, error.metadata);
+      }
+
+      return sendError(
+        res,
+        500,
+        'FIRMA_RESIDENTE_FAILED',
+        'No se pudo registrar la firma',
+        error.message
+      );
+    }
+  }
+
   async deleteReport(req: AuthRequest, res: Response) {
     try {
       // Get tenantId from JWT token (multi-tenant context)
@@ -324,6 +363,44 @@ export class ReportController {
       }
 
       return sendError(res, 500, 'PDF_GENERATION_FAILED', 'Failed to generate PDF', error.message);
+    }
+  }
+
+  async getInspectionTracking(req: AuthRequest, res: Response) {
+    try {
+      const { fecha_desde, fecha_hasta, solo_abiertas } = req.query;
+      const soloAbiertas = solo_abiertas === 'true';
+      const resultado = await reportService.getInspectionTracking(
+        fecha_desde as string | undefined,
+        fecha_hasta as string | undefined,
+        soloAbiertas
+      );
+      return sendSuccess(res, resultado);
+    } catch (error: any) {
+      Logger.error('Error fetching inspection tracking', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ReportController.getInspectionTracking',
+      });
+      return sendError(res, 500, 'INSPECTION_FETCH_FAILED', 'Failed to fetch inspection tracking');
+    }
+  }
+
+  async resolverObservacion(req: AuthRequest, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return sendError(res, 400, 'INVALID_ID', 'Invalid observation ID');
+      const { observacion_resolucion } = req.body;
+      await reportService.resolverObservacion(id, observacion_resolucion);
+      return sendSuccess(res, { id, resuelta: true });
+    } catch (error: any) {
+      Logger.error('Error resolving observation', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ReportController.resolverObservacion',
+      });
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message);
+      }
+      return sendError(res, 500, 'RESOLVE_FAILED', 'Failed to resolve observation');
     }
   }
 }

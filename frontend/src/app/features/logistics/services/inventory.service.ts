@@ -69,9 +69,7 @@ export class InventoryService {
   }
 
   getProduct(id: string | number): Observable<Product> {
-    return this.http
-      .get<{ data: Product }>(`${this.apiUrl}/products/${id}`)
-      .pipe(map((response) => response.data));
+    return this.http.get<Product>(`${this.apiUrl}/products/${id}`);
   }
 
   getProductById(id: string | number): Observable<Product> {
@@ -79,15 +77,11 @@ export class InventoryService {
   }
 
   createProduct(product: Partial<Product>): Observable<Product> {
-    return this.http
-      .post<{ data: Product }>(`${this.apiUrl}/products`, product)
-      .pipe(map((response) => response.data));
+    return this.http.post<Product>(`${this.apiUrl}/products`, product);
   }
 
   updateProduct(id: string | number, product: Partial<Product>): Observable<Product> {
-    return this.http
-      .put<{ data: Product }>(`${this.apiUrl}/products/${id}`, product)
-      .pipe(map((response) => response.data));
+    return this.http.put<Product>(`${this.apiUrl}/products/${id}`, product);
   }
 
   getMovements(): Observable<Movement[]> {
@@ -97,18 +91,22 @@ export class InventoryService {
   }
 
   getMovementById(id: number): Observable<Movement> {
-    return this.http
-      .get<{ data: Movement }>(`${this.apiUrl}/movements/${id}`)
-      .pipe(map((response) => response.data));
+    return this.http.get<Movement>(`${this.apiUrl}/movements/${id}`);
   }
 
   createMovement(movement: Partial<Movement>): Observable<Movement> {
-    return this.http
-      .post<{ data: Movement }>(`${this.apiUrl}/movements`, movement)
-      .pipe(map((response) => response.data));
+    return this.http.post<Movement>(`${this.apiUrl}/movements`, movement);
   }
 
   getStock(productId: string): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/products/${productId}/stock`);
+  }
+
+  getProductMovements(productId: string | number): Observable<Movement[]> {
+    return this.http
+      .get<{ data: Movement[] }>(`${this.apiUrl}/movements`, {
+        params: { producto_id: productId.toString() },
+      })
+      .pipe(map((response) => response.data || []));
   }
 }

@@ -109,28 +109,34 @@ export class SyncService {
 
   private async syncSingleReport(report: OfflineDailyReport): Promise<void> {
     const reportData = {
-      fecha_parte: report.fecha_parte,
-      trabajador_id: report.trabajador_id,
-      equipo_id: report.equipo_id,
-      proyecto_id: report.proyecto_id,
+      fecha: report.fecha_parte,
+      trabajador_id: Number(report.trabajador_id),
+      equipo_id: Number(report.equipo_id),
+      proyecto_id: report.proyecto_id ? Number(report.proyecto_id) : null,
       hora_inicio: report.hora_inicio,
       hora_fin: report.hora_fin,
-      horometro_inicial: report.horometro_inicial,
-      horometro_final: report.horometro_final,
-      odometro_inicial: report.odometro_inicial,
-      odometro_final: report.odometro_final,
-      diesel_gallons: report.fuel_start || report.diesel_gallons,
-      gasoline_gallons: report.fuel_end || report.gasoline_gallons,
-      departure_location: report.location || report.departure_location,
-      observations: report.work_description || report.observations,
-      estado: report.status === 'BORRADOR' ? 'BORRADOR' : 'ENVIADO',
+      horometro_inicial: Number(report.horometro_inicial),
+      horometro_final: Number(report.horometro_final),
+      odometro_inicial: report.odometro_inicial ? Number(report.odometro_inicial) : null,
+      odometro_final: report.odometro_final ? Number(report.odometro_final) : null,
+      combustible_inicial: Number(report.fuel_start || report.combustible_inicial || 0),
+      // Map PWA names to backend names
+      lugar_salida: report.location || report.lugar_salida || 'Obra',
+      observaciones: report.work_description || report.observaciones || 'Sin observaciones',
+      estado: report.status === 'BORRADOR' ? 'BORRADOR' : 'PENDIENTE',
+      gps_latitude: report.gps_latitude ? Number(report.gps_latitude) : null,
+      gps_longitude: report.gps_longitude ? Number(report.gps_longitude) : null,
+      weather_conditions: report.weather_conditions || null,
     };
 
     return new Promise((resolve, reject) => {
       this.dailyReportService.create(reportData as any).subscribe({
         next: async (response) => {
-          if ((response as any).success && (response as any).data) {
-            await this.offlineDB.markAsSynced(report.localId, (response as any).data.id);
+          // Check for success property or data property as common in this project's API responses
+          const res = response as any;
+          if (res && (res.id || (res.data && res.data.id))) {
+            const serverId = res.id || res.data.id;
+            await this.offlineDB.markAsSynced(report.localId, serverId);
           }
           resolve();
         },

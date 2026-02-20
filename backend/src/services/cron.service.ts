@@ -10,6 +10,7 @@ import { OperatorDocument } from '../models/operator-document.entity';
 import { Valorizacion, EstadoValorizacion } from '../models/valuation.model';
 import { AccountsPayable, AccountsPayableStatus } from '../models/accounts-payable.model';
 import { NotificationService } from './notification.service';
+import { emailService } from './email.service';
 import logger from '../config/logger.config';
 import { DatabaseError, DatabaseErrorType } from '../errors';
 
@@ -655,6 +656,52 @@ export class CronService {
         }
       }
 
+      // Send consolidated email digest to users with valid emails
+      const recipientEmails = targetUsers.map((u) => u.email).filter(Boolean);
+      if (recipientEmails.length > 0) {
+        const emailItems = equipment
+          .map((equip) => {
+            const documentos: Array<{ tipo: string; fecha_vencimiento: string; estado: string }> =
+              [];
+            for (const { field, label } of docFields) {
+              const date = equip[field];
+              if (!date) continue;
+              const expiryDate = typeof date === 'string' ? new Date(date) : date;
+              const daysUntil = Math.ceil(
+                (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              if (daysUntil <= 30) {
+                documentos.push({
+                  tipo: label,
+                  fecha_vencimiento: expiryDate.toLocaleDateString('es-PE'),
+                  estado:
+                    daysUntil < 0
+                      ? 'VENCIDO'
+                      : `vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`,
+                });
+              }
+            }
+            return {
+              codigo_equipo: equip.codigoEquipo,
+              marca: equip.marca || undefined,
+              modelo: equip.modelo || undefined,
+              documentos,
+              link: `/equipment/${equip.id}`,
+            };
+          })
+          .filter((item) => item.documentos.length > 0);
+
+        if (emailItems.length > 0) {
+          try {
+            await emailService.sendDocumentExpiryAlert({ items: emailItems }, recipientEmails);
+          } catch (emailError) {
+            logger.error('Failed to send document expiry email alert', {
+              error: emailError instanceof Error ? emailError.message : String(emailError),
+            });
+          }
+        }
+      }
+
       logger.info('Equipment document check complete', {
         equipment_with_expiring_docs: equipment.length,
         notifications_sent: notificationsSent,
@@ -758,6 +805,35 @@ export class CronService {
         }
       }
 
+      // Send consolidated email digest
+      const recipientEmails = targetUsers.map((u) => u.email).filter(Boolean);
+      if (recipientEmails.length > 0) {
+        try {
+          const emailItems = overdueValuations.map((val) => {
+            const [year, month] = (val.periodo || '').split('-').map(Number);
+            const deadlineMonth = month === 12 ? 1 : month + 1;
+            const deadlineYear = month === 12 ? year + 1 : year;
+            const deadline = new Date(deadlineYear, deadlineMonth - 1, 10);
+            const daysOverdue = Math.ceil(
+              (today.getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            return {
+              numero_valorizacion: val.numeroValorizacion || `VAL-${val.id}`,
+              periodo: val.periodo,
+              estado: val.estado,
+              contrato: val.contrato?.numeroContrato,
+              dias_vencidos: daysOverdue,
+              link: `/equipment/valuations/${val.id}`,
+            };
+          });
+          await emailService.sendValuationDeadlineAlert({ items: emailItems }, recipientEmails);
+        } catch (emailError) {
+          logger.error('Failed to send valuation deadline email alert', {
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+          });
+        }
+      }
+
       logger.info('Valuation deadline check complete', {
         overdue_valuations: overdueValuations.length,
         notifications_sent: notificationsSent,
@@ -843,6 +919,33 @@ export class CronService {
         }
       }
 
+      // Send consolidated email digest
+      const recipientEmails = targetUsers.map((u) => u.email).filter(Boolean);
+      if (recipientEmails.length > 0) {
+        try {
+          const emailItems = overduePayments.map((payment) => {
+            const dueDate =
+              typeof payment.due_date === 'string' ? new Date(payment.due_date) : payment.due_date;
+            const daysOverdue = Math.ceil(
+              (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            return {
+              numero_documento: payment.document_number,
+              proveedor: payment.provider?.razonSocial || 'Proveedor desconocido',
+              fecha_vencimiento: dueDate.toLocaleDateString('es-PE'),
+              dias_vencidos: daysOverdue,
+              monto_pendiente: Number(payment.balance || payment.amount),
+              moneda: payment.currency || 'S/',
+            };
+          });
+          await emailService.sendOverduePaymentAlert({ items: emailItems }, recipientEmails);
+        } catch (emailError) {
+          logger.error('Failed to send overdue payment email alert', {
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+          });
+        }
+      }
+
       logger.info('Overdue payments check complete', {
         overdue_count: overduePayments.length,
         notifications_sent: notificationsSent,
@@ -855,6 +958,64 @@ export class CronService {
 
       throw new DatabaseError('Failed to check overdue payments', DatabaseErrorType.QUERY, error, {
         operation: 'checkOverduePayments',
+      });
+    }
+  }
+
+  /**
+   * Check all active inoperability periods and flag those exceeding the SLA threshold.
+   * PRD Clause 7.6: lessor has 5 days to repair or replace equipment.
+   * Sends notifications to JEFE_EQUIPO + ADMIN users for newly exceeded periods.
+   */
+  async checkInoperabilidadVencida(): Promise<void> {
+    try {
+      const { PeriodoInoperatividadService } = await import('./periodo-inoperatividad.service');
+      const { PeriodoInoperatividad } = await import('../models/periodo-inoperatividad.model');
+      const periodoService = new PeriodoInoperatividadService();
+      const { actualizados, nuevosExcedidos } = await periodoService.verificarVencimientos();
+
+      if (nuevosExcedidos === 0) {
+        logger.info('Inoperabilidad check: no new exceeded periods', { actualizados });
+        return;
+      }
+
+      // Notify JEFE_EQUIPO and ADMIN users
+      const targetUsers = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.rol', 'rol')
+        .where('rol.code IN (:...roles)', { roles: ['JEFE_EQUIPO', 'ADMIN'] })
+        .getMany();
+
+      const exceededPeriods = await AppDataSource.getRepository(PeriodoInoperatividad).find({
+        where: { estado: 'ACTIVO', excedePlazo: true },
+      });
+
+      let notificationsSent = 0;
+      for (const period of exceededPeriods) {
+        const title = `Inoperatividad Excedida — Equipo #${period.equipoId}`;
+        const message = `El equipo lleva ${period.diasInoperativo} días inoperativo, superando el plazo de ${period.diasPlazo} días establecido en la Cláusula 7.6. Motivo: ${period.motivo}`;
+        for (const user of targetUsers) {
+          try {
+            await this.notificationService.notifyWarning(String(user.id), title, message, {
+              link: `/equipment/${period.equipoId}`,
+            });
+            notificationsSent++;
+          } catch {
+            // continue notifying other users
+          }
+        }
+      }
+
+      logger.info('Inoperabilidad check completed', {
+        actualizados,
+        nuevosExcedidos,
+        notificationsSent,
+        operation: 'checkInoperabilidadVencida',
+      });
+    } catch (error) {
+      logger.error('Error checking inoperabilidad vencida', {
+        error: error instanceof Error ? error.message : String(error),
+        operation: 'checkInoperabilidadVencida',
       });
     }
   }
@@ -921,13 +1082,24 @@ export class CronService {
         }
       });
 
+      const inoperabilidadJob = cron.schedule('0 8 * * *', async () => {
+        try {
+          await this.checkInoperabilidadVencida();
+        } catch (error) {
+          logger.error('Inoperabilidad cron job failed', {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      });
+
       this.jobs.push(
         maintenanceJob,
         contractJob,
         certificationJob,
         equipmentDocJob,
         valuationDeadlineJob,
-        overduePaymentsJob
+        overduePaymentsJob,
+        inoperabilidadJob
       );
 
       logger.info('All cron jobs started successfully', {
@@ -939,6 +1111,7 @@ export class CronService {
           'Equipment Documents: 8:00 AM daily',
           'Valuation Deadlines: 8:00 AM daily',
           'Overdue Payments: 8:00 AM daily',
+          'Inoperabilidad: 8:00 AM daily',
         ],
       });
     } catch (error) {

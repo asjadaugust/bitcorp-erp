@@ -11,6 +11,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { OperatorService } from '../../core/services/operator.service';
+import {
+  TipoEquipoService,
+  TipoEquipo,
+  CategoriaPrd,
+  CATEGORIA_PRD_LABELS,
+} from '../../core/services/tipo-equipo.service';
 import { Equipment } from '../../core/models/equipment.model';
 import { Provider } from '../../core/models/provider.model';
 import { Operator } from '../../core/models/operator.model';
@@ -42,11 +48,10 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       [subtitle]="
         isEditMode ? 'Actualizar información del equipo' : 'Registrar un nuevo equipo en el sistema'
       "
-      [icon]="isEditMode ? 'fa-pen' : 'fa-plus'"
+      [icon]="isEditMode ? 'fa-pen' : 'fa-truck-monster'"
       [loading]="loading"
       [disableSubmit]="equipmentForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Equipo'"
-      [backUrl]="'/equipment'"
       (onSubmit)="onSubmit()"
       (onCancel)="cancel()"
     >
@@ -74,7 +79,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       <form [formGroup]="equipmentForm" class="form-grid">
         <!-- Section 1: Basic Information -->
         <div class="form-section full-width">
-          <h3>Información Básica</h3>
+          <h3 class="section-title"><i class="fa-solid fa-tag"></i> Información Básica</h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="codigo_equipo">Código Interno *</label>
@@ -90,23 +95,33 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
             <!-- Name removed -->
 
+            <!-- Categoría PRD (filter) + Tipo de Equipo (valor real) -->
             <div class="form-group">
-              <label for="categoria">Categoría *</label>
+              <label>Categoría PRD</label>
               <app-dropdown
-                formControlName="categoria"
-                [options]="[
-                  { label: 'Excavadora', value: 'Excavadora' },
-                  { label: 'Tractor de Oruga', value: 'Tractor de Oruga' },
-                  { label: 'Cargador Frontal', value: 'Cargador Frontal' },
-                  { label: 'Camión Volquete', value: 'Camión Volquete' },
-                  { label: 'Motoniveladora', value: 'Motoniveladora' },
-                  { label: 'Rodillo Compactador', value: 'Rodillo Compactador' },
-                  { label: 'Camioneta', value: 'Camioneta' },
-                ]"
-                [placeholder]="'Seleccionar Categoría'"
-                [searchable]="true"
+                [options]="categoriaPrdOptions"
+                [placeholder]="'Seleccionar categoría'"
+                [(ngModel)]="selectedCategoriaPrd"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onCategoriaPrdChange($event)"
+                [searchable]="false"
               ></app-dropdown>
-              <div class="error-msg" *ngIf="hasError('categoria')">Categoría es requerida</div>
+            </div>
+
+            <div class="form-group">
+              <label for="tipo_equipo_id">Tipo de Equipo *</label>
+              <app-dropdown
+                formControlName="tipo_equipo_id"
+                [options]="tipoEquipoOptions"
+                [placeholder]="
+                  selectedCategoriaPrd ? 'Seleccionar tipo' : 'Primero seleccione categoría'
+                "
+                [searchable]="true"
+                (ngModelChange)="onTipoEquipoChange($event)"
+              ></app-dropdown>
+              <div class="error-msg" *ngIf="hasError('tipo_equipo_id')">
+                Tipo de equipo es requerido
+              </div>
             </div>
 
             <div class="form-group">
@@ -159,7 +174,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
         <!-- Section 2: Operational Details -->
         <div class="form-section full-width">
-          <h3>Detalles Operativos</h3>
+          <h3 class="section-title"><i class="fa-solid fa-gear"></i> Detalles Operativos</h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="estado">Estado *</label>
@@ -220,7 +235,9 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
         <!-- Section 3: Technical Specs -->
         <div class="form-section full-width">
-          <h3>Especificaciones Técnicas</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-microchip"></i> Especificaciones Técnicas
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="potencia_neta">Potencia (HP)</label>
@@ -250,8 +267,10 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
         <!-- Section 4: Document Expiry Dates -->
         <div class="form-section full-width">
-          <h3>Fechas de Vencimiento de Documentos</h3>
-          <div class="section-grid section-grid-3">
+          <h3 class="section-title">
+            <i class="fa-solid fa-calendar-check"></i> Fechas de Vencimiento de Documentos
+          </h3>
+          <div class="section-grid">
             <div class="form-group">
               <label for="fecha_venc_soat">SOAT</label>
               <input
@@ -309,7 +328,9 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         <!-- Section 5: Additional Documents (Table Format) -->
         <div class="form-section full-width">
           <div class="section-header">
-            <h3>Documentación Adicional</h3>
+            <h3 class="section-title">
+              <i class="fa-solid fa-folder-open"></i> Documentación Adicional
+            </h3>
             <button type="button" class="btn btn-sm btn-secondary" (click)="addDocument()">
               <i class="fa-solid fa-plus"></i> Agregar Documento
             </button>
@@ -383,101 +404,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
   `,
   styles: [
     `
-      .form-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .form-section h3 {
-        font-size: 16px;
-        color: var(--primary-800);
-        border-bottom: 1px solid var(--grey-200);
-        padding-bottom: 0.5rem;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-      }
-
-      .section-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-      }
-
-      .section-grid-3 {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .full-width {
-        grid-column: 1 / -1;
-      }
-
-      /* Form Controls */
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-700);
-      }
-
-      .form-control,
-      .form-select {
-        padding: 0.625rem;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .form-control:focus,
-      .form-select:focus {
-        border-color: var(--primary-500);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--primary-100);
-      }
-
-      textarea.form-control {
-        resize: vertical;
-      }
-
-      .error-msg {
-        color: var(--semantic-red-600);
-        font-size: 12px;
-      }
-
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-
-      .status-vigente {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-por_vencer {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-vencido {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-      }
-      .status-sin_fecha {
-        background: var(--grey-100);
-        color: var(--grey-600);
-      }
-
-      /* Section Header */
+      /* Section Header (Specific to this form table) */
       .section-header {
         display: flex;
         justify-content: space-between;
@@ -493,7 +420,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         padding: 0;
       }
 
-      /* Table Styles */
+      /* Table Styles (Specific to this form) */
       .table-container {
         border: 1px solid var(--grey-200);
         border-radius: 8px;
@@ -584,6 +511,8 @@ export class EquipmentFormComponent implements OnInit {
   loading = false;
   equipmentId: string | null = null;
 
+  private tipoEquipoService = inject(TipoEquipoService);
+
   providers: Provider[] = [];
   providerOptions: { label: string; value: any }[] = [];
   operators: Operator[] = [];
@@ -591,6 +520,17 @@ export class EquipmentFormComponent implements OnInit {
   validationErrors: ValidationError[] = [];
   errorMessage = '';
   successMessage = '';
+
+  // Tipo de equipo / categoría PRD
+  allTiposEquipo: TipoEquipo[] = [];
+  selectedCategoriaPrd: CategoriaPrd | null = null;
+  tipoEquipoOptions: { label: string; value: any }[] = [];
+  categoriaPrdOptions: { label: string; value: string }[] = [
+    { label: 'Maquinaria Pesada', value: 'MAQUINARIA_PESADA' },
+    { label: 'Vehículos Pesados', value: 'VEHICULOS_PESADOS' },
+    { label: 'Vehículos Livianos', value: 'VEHICULOS_LIVIANOS' },
+    { label: 'Equipos Menores', value: 'EQUIPOS_MENORES' },
+  ];
 
   documentTypeOptions = [
     { label: 'Póliza de Seguro', value: 'poliza' },
@@ -607,6 +547,7 @@ export class EquipmentFormComponent implements OnInit {
     modelo: 'Modelo',
     placa: 'Placa',
     categoria: 'Categoría',
+    tipo_equipo_id: 'Tipo de Equipo',
     estado: 'Estado',
     tipo_proveedor: 'Tipo de Proveedor',
     proveedor_id: 'Proveedor',
@@ -630,7 +571,8 @@ export class EquipmentFormComponent implements OnInit {
       marca: ['', Validators.required],
       modelo: ['', Validators.required],
       estado: ['DISPONIBLE', Validators.required],
-      categoria: ['', Validators.required],
+      categoria: [null],
+      tipo_equipo_id: [null, Validators.required],
       tipo_proveedor: ['PROPIO', Validators.required],
       proveedor_id: [null],
 
@@ -653,6 +595,7 @@ export class EquipmentFormComponent implements OnInit {
   ngOnInit(): void {
     this.loadProviders();
     this.loadOperators();
+    this.loadTiposEquipo();
 
     this.route.params.subscribe((params) => {
       const id = params['id'];
@@ -680,6 +623,39 @@ export class EquipmentFormComponent implements OnInit {
     this.operatorService.getAll().subscribe((operators) => {
       this.operators = operators;
     });
+  }
+
+  loadTiposEquipo(): void {
+    this.tipoEquipoService.listar().subscribe((tipos) => {
+      this.allTiposEquipo = tipos;
+      // If we already have a categoriaPrd selected (from edit mode), filter
+      if (this.selectedCategoriaPrd) {
+        this.filterTipoOptions(this.selectedCategoriaPrd);
+      }
+    });
+  }
+
+  filterTipoOptions(categoriaPrd: CategoriaPrd | null): void {
+    const filtered = categoriaPrd
+      ? this.allTiposEquipo.filter((t) => t.categoria_prd === categoriaPrd)
+      : this.allTiposEquipo;
+    this.tipoEquipoOptions = filtered.map((t) => ({ label: t.nombre, value: t.id }));
+  }
+
+  onCategoriaPrdChange(categoriaPrd: CategoriaPrd): void {
+    this.selectedCategoriaPrd = categoriaPrd;
+    this.filterTipoOptions(categoriaPrd);
+    // Clear tipo selection when category changes
+    this.equipmentForm.get('tipo_equipo_id')?.setValue(null);
+    this.equipmentForm.get('categoria')?.setValue(null);
+  }
+
+  onTipoEquipoChange(tipoId: number): void {
+    const tipo = this.allTiposEquipo.find((t) => t.id === tipoId);
+    if (tipo) {
+      // Keep categoria synced with tipo nombre for backwards compatibility
+      this.equipmentForm.get('categoria')?.setValue(tipo.nombre);
+    }
   }
 
   // Document handling methods
@@ -747,6 +723,12 @@ export class EquipmentFormComponent implements OnInit {
       next: (equipment) => {
         // Map API response (Spanish snake_case) to form fields
         this.equipmentForm.patchValue(equipment);
+
+        // Restore PRD category filter for edit mode
+        if (equipment.categoria_prd) {
+          this.selectedCategoriaPrd = equipment.categoria_prd as CategoriaPrd;
+          this.filterTipoOptions(this.selectedCategoriaPrd);
+        }
 
         // Ensure validation rules are applied based on loaded data
         this.onTipoProveedorChange();

@@ -275,6 +275,25 @@ export class DailyReportModel {
   }
 
   /**
+   * Record resident signature on daily report
+   * Sets firma_residente field with the provided signature value (name or base64)
+   */
+  static async firmarResidente(
+    id: string,
+    firmaResidente: string
+  ): Promise<DailyReportRawRow | null> {
+    const repository = this.getRepository();
+    const dailyReport = await repository.findOne({ where: { id: parseInt(id) } });
+
+    if (!dailyReport) return null;
+
+    dailyReport.firmaResidente = firmaResidente;
+
+    await repository.save(dailyReport);
+    return this.findById(id);
+  }
+
+  /**
    * Hard delete daily report
    * Migrated from raw DELETE to TypeORM remove
    */

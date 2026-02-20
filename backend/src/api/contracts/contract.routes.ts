@@ -15,6 +15,9 @@ router.get('/stats/count', ContractController.getActiveCount);
 // GET /api/contracts/numero/:numero - Get contract by numero
 router.get('/numero/:numero', ContractController.getByNumero);
 
+// GET /api/contracts/:id/pdf - Generate contract PDF
+router.get('/:id/pdf', ContractController.downloadPdf);
+
 // GET /api/contracts/:id - Get contract by ID
 router.get('/:id', ContractController.getById);
 
@@ -41,5 +44,10 @@ router.put('/:id/annexes/:tipo', ContractController.saveAnnexes);
 router.get('/:id/required-documents', ContractController.getRequiredDocuments);
 router.post('/:id/required-documents/initialize', ContractController.initializeRequiredDocuments);
 router.put('/required-documents/:docId', ContractController.updateRequiredDocument);
+
+// ─── Lifecycle routes (WS-16) ───
+router.post('/:id/resolver', ContractController.resolver);
+router.get('/:id/liquidation-check', ContractController.liquidationCheck);
+router.post('/:id/liquidar', ContractController.liquidar);
 
 export default router;

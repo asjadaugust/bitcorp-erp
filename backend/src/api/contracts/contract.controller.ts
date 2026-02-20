@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { ContractService } from '../../services/contract.service';
+import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
 import Logger from '../../utils/logger';
 import {
   sendSuccess,
@@ -414,6 +415,97 @@ export class ContractController {
   }
 
   /**
+   * GET /api/contracts/:id/pdf
+   * Genera el PDF del contrato CORP-GEM-F-001
+   */
+  static async downloadPdf(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+
+      const contrato = await contractService.findById(id);
+
+      const datos = {
+        contrato: {
+          numero_contrato: contrato.numero_contrato,
+          tipo: contrato.tipo,
+          estado: contrato.estado,
+          fecha_contrato: contrato.fecha_contrato,
+          fecha_inicio: contrato.fecha_inicio,
+          fecha_fin: contrato.fecha_fin,
+          modalidad: contrato.modalidad || '—',
+          moneda: contrato.moneda,
+          tipo_tarifa: contrato.tipo_tarifa || '—',
+          tarifa: contrato.tarifa,
+          horas_incluidas: contrato.horas_incluidas,
+          penalidad_exceso: contrato.penalidad_exceso,
+          incluye_motor: contrato.incluye_motor,
+          incluye_operador: contrato.incluye_operador,
+          costo_adicional_motor: contrato.costo_adicional_motor,
+          minimo_por: contrato.minimo_por,
+          documento_acredita: contrato.documento_acredita || '—',
+          jurisdiccion: contrato.jurisdiccion,
+          plazo_texto: contrato.plazo_texto,
+          motivo_resolucion: contrato.motivo_resolucion,
+          fecha_resolucion: contrato.fecha_resolucion,
+          monto_liquidacion: contrato.monto_liquidacion,
+          condiciones_especiales: contrato.condiciones_especiales,
+        },
+        proveedor: {
+          razon_social: contrato.proveedor_razon_social || '—',
+          ruc: '—',
+          representante: '—',
+          direccion: '—',
+          telefono: '—',
+        },
+        equipo: {
+          codigo: contrato.equipo_codigo || '—',
+          marca: contrato.equipo_marca || '—',
+          modelo: contrato.equipo_modelo || '—',
+          placa: contrato.equipo_placa || '—',
+          numero_serie: '—',
+          numero_chasis: '—',
+          numero_motor: '—',
+          anio_fabricacion: '—',
+        },
+        arrendatario: {
+          razon_social: 'CCECC PERU S.A.C.',
+          ruc: '20601234567',
+          representante: '—',
+          domicilio: '—',
+        },
+        fechaGeneracion: new Date().toLocaleDateString('es-PE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }),
+      };
+
+      const pdf = await puppeteerPdfService.generateContratoPdf(datos);
+      const filename = `contrato-${contrato.numero_contrato.replace(/\//g, '-')}.pdf`;
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdf.length);
+      res.send(pdf);
+    } catch (error: any) {
+      Logger.error('Error generating contract PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        contractId: req.params.id,
+        context: 'ContractController.downloadPdf',
+      });
+      if (error.message === 'Contract not found') {
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', 'Contract not found');
+        return;
+      }
+      sendError(res, 500, 'PDF_GENERATION_FAILED', 'Failed to generate PDF', error.message);
+    }
+  }
+
+  /**
    * GET /api/contracts/stats/count
    * Get active contract count
    */
@@ -429,6 +521,102 @@ export class ContractController {
         context: 'ContractController.getActiveCount',
       });
       sendError(res, 500, 'COUNT_FETCH_FAILED', 'Failed to fetch count', error.message);
+    }
+  }
+
+  /** POST /api/contracts/:id/resolver — Formal resolution (PRD §12) */
+  static async resolver(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de contrato inválido');
+        return;
+      }
+
+      const { causal_resolucion, motivo_resolucion, fecha_resolucion, monto_liquidacion } =
+        req.body;
+      const usuarioId = (req as any).user?.id_usuario;
+
+      const dto = await contractService.resolver(id, {
+        causal_resolucion,
+        motivo_resolucion,
+        fecha_resolucion,
+        monto_liquidacion,
+        usuarioId,
+      });
+
+      sendSuccess(res, dto);
+    } catch (error: any) {
+      Logger.error('Error resolving contract', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ContractController.resolver',
+      });
+      if (error.name === 'NotFoundError') {
+        sendError(res, 404, 'NOT_FOUND', error.message);
+      } else if (error.name === 'ConflictError' || error.name === 'ValidationError') {
+        sendError(res, 422, error.name.toUpperCase(), error.message);
+      } else {
+        sendError(res, 500, 'RESOLVER_FAILED', 'Error al resolver el contrato', error.message);
+      }
+    }
+  }
+
+  /** GET /api/contracts/:id/liquidation-check — Prerequisites check */
+  static async liquidationCheck(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de contrato inválido');
+        return;
+      }
+
+      const result = await contractService.verificarLiquidacion(id);
+      sendSuccess(res, result);
+    } catch (error: any) {
+      Logger.error('Error checking liquidation', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ContractController.liquidationCheck',
+      });
+      if (error.name === 'NotFoundError') {
+        sendError(res, 404, 'NOT_FOUND', error.message);
+      } else {
+        sendError(res, 500, 'CHECK_FAILED', 'Error al verificar liquidación', error.message);
+      }
+    }
+  }
+
+  /** POST /api/contracts/:id/liquidar — Final liquidation (Feature #42) */
+  static async liquidar(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de contrato inválido');
+        return;
+      }
+
+      const { fecha_liquidacion, monto_liquidacion, observaciones_liquidacion } = req.body;
+      const usuarioId = (req as any).user?.id_usuario;
+
+      const dto = await contractService.liquidar(id, {
+        fecha_liquidacion,
+        monto_liquidacion,
+        observaciones_liquidacion,
+        usuarioId,
+      });
+
+      sendSuccess(res, dto);
+    } catch (error: any) {
+      Logger.error('Error liquidating contract', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ContractController.liquidar',
+      });
+      if (error.name === 'NotFoundError') {
+        sendError(res, 404, 'NOT_FOUND', error.message);
+      } else if (error.name === 'BusinessRuleError' || error.name === 'ConflictError') {
+        sendError(res, 422, error.name.toUpperCase(), error.message);
+      } else {
+        sendError(res, 500, 'LIQUIDAR_FAILED', 'Error al liquidar el contrato', error.message);
+      }
     }
   }
 }

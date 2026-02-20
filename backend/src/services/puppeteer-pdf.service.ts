@@ -378,7 +378,9 @@ export class PuppeteerPdfService {
         templateName,
         context: 'PuppeteerPdfService.generatePage',
       });
-      throw new Error(`Failed to generate ${templateName} PDF: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to generate ${templateName} PDF: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -500,6 +502,43 @@ export class PuppeteerPdfService {
         context: 'PuppeteerPdfService.generateDailyReportPdf',
       });
       throw new Error('Failed to generate daily report PDF');
+    }
+  }
+
+  /**
+   * Generate contract PDF (CORP-GEM-F-001)
+   */
+  async generateContratoPdf(datos: {
+    contrato: Record<string, unknown>;
+    proveedor: Record<string, unknown>;
+    equipo: Record<string, unknown>;
+    arrendatario: Record<string, unknown>;
+    fechaGeneracion: string;
+  }): Promise<Buffer> {
+    const browser = await this.initBrowser();
+    const page: Page = await browser.newPage();
+    try {
+      const template = await this.loadTemplate('contrato');
+      const styles = await this.loadStyles('contrato');
+      const logo = await this.loadLogo();
+
+      const html = template({ ...datos, styles, logo });
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      const pdfBytes = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '15mm', right: '20mm', bottom: '15mm', left: '20mm' },
+      });
+
+      await page.close();
+      return Buffer.from(pdfBytes);
+    } catch (error) {
+      Logger.error('Error generating contract PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'PuppeteerPdfService.generateContratoPdf',
+      });
+      throw new Error('Failed to generate contract PDF');
     }
   }
 

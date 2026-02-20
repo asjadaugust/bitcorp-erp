@@ -38,6 +38,9 @@ help:
 	@echo "════════════════════════════════════════════════"
 
 # Docker commands
+colima-start:
+	@./scripts/colima-start.sh
+
 run-docker:
 	@echo "🐳 Building and starting Docker containers..."
 	@docker-compose down || true

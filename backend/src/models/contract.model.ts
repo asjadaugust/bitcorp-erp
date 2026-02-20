@@ -13,7 +13,26 @@ import { User } from './user.model';
 import { Provider } from './provider.model';
 
 export type TipoContrato = 'CONTRATO' | 'ADENDA';
-export type EstadoContrato = 'ACTIVO' | 'VENCIDO' | 'CANCELADO' | 'BORRADOR';
+export type EstadoContrato =
+  | 'ACTIVO'
+  | 'VENCIDO'
+  | 'CANCELADO'
+  | 'BORRADOR'
+  | 'RESUELTO'
+  | 'LIQUIDADO';
+
+/** PRD §12 causales de resolución */
+export type CausalResolucion =
+  | 'MUTUO_ACUERDO'
+  | 'INCUMPLIMIENTO_ARRENDADOR'
+  | 'INCUMPLIMIENTO_ARRENDATARIO'
+  | 'FUERZA_MAYOR'
+  | 'VENCIMIENTO'
+  | 'DECISION_UNILATERAL'
+  | 'QUIEBRA'
+  | 'INCAPACIDAD'
+  | 'JUDICIAL'
+  | 'OTRO';
 
 @Entity('contrato_adenda', { schema: 'equipo' })
 export class Contract {
@@ -122,6 +141,22 @@ export class Contract {
 
   @Column({ name: 'monto_liquidacion', type: 'decimal', precision: 12, scale: 2, nullable: true })
   montoLiquidacion?: number;
+
+  // WS-16: Resolution & Liquidation lifecycle fields
+  @Column({ name: 'causal_resolucion', type: 'varchar', length: 30, nullable: true })
+  causalResolucion?: CausalResolucion;
+
+  @Column({ name: 'resuelto_por', type: 'integer', nullable: true })
+  resueltoPor?: number;
+
+  @Column({ name: 'fecha_liquidacion', type: 'date', nullable: true })
+  fechaLiquidacion?: Date;
+
+  @Column({ name: 'liquidado_por', type: 'integer', nullable: true })
+  liquidadoPor?: number;
+
+  @Column({ name: 'observaciones_liquidacion', type: 'text', nullable: true })
+  observacionesLiquidacion?: string;
 
   @Column({ name: 'condiciones_especiales', type: 'text', nullable: true })
   condicionesEspeciales?: string;

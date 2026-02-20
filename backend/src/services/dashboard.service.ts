@@ -510,6 +510,8 @@ export class DashboardService {
           const date = equip[field];
           if (!date) continue;
           const expiryDate = typeof date === 'string' ? new Date(date) : date;
+          if (!expiryDate || isNaN(expiryDate.getTime())) continue;
+
           const daysUntil = Math.ceil(
             (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
           );
@@ -557,6 +559,9 @@ export class DashboardService {
           typeof doc.fechaVencimiento === 'string'
             ? new Date(doc.fechaVencimiento)
             : doc.fechaVencimiento;
+
+        if (!expiryDate || isNaN(expiryDate.getTime())) continue;
+
         const daysUntil = Math.ceil(
           (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
         );
@@ -595,6 +600,9 @@ export class DashboardService {
           typeof doc.fechaVencimiento === 'string'
             ? new Date(doc.fechaVencimiento)
             : doc.fechaVencimiento;
+
+        if (isNaN(expiryDate.getTime())) continue;
+
         const daysUntil = Math.ceil(
           (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
         );

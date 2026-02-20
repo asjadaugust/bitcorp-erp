@@ -28,6 +28,15 @@ export class DailyReportMechanicalDelay {
   @Column({ type: 'text', nullable: true })
   descripcion?: string;
 
+  @Column({ name: 'resuelta', type: 'boolean', default: false })
+  resuelta!: boolean;
+
+  @Column({ name: 'fecha_resolucion', type: 'date', nullable: true })
+  fechaResolucion?: Date;
+
+  @Column({ name: 'observacion_resolucion', type: 'text', nullable: true })
+  observacionResolucion?: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

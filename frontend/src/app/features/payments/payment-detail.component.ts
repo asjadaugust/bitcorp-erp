@@ -1,326 +1,279 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, NgIf, DatePipe } from '@angular/common';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { PaymentService } from '../../core/services/payment.service';
 import { PaymentRecordDetail } from '../../core/models/payment-record.model';
+import {
+  EntityDetailShellComponent,
+  EntityDetailSidebarCardComponent,
+  EntityDetailHeader,
+  AuditInfo,
+} from '../../shared/components/entity-detail';
 
 @Component({
   selector: 'app-payment-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EntityDetailShellComponent,
+    EntityDetailSidebarCardComponent,
+  ],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/payments" class="breadcrumb-link"> ← Volver a Registro de Pagos </a>
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="payment"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      loadingText="Cargando detalles del pago..."
+    >
+      <!-- ── BELOW HEADER: amount section ────────────────────── -->
+      <div entity-header-below class="amount-section-premium">
+        <div class="amount-card">
+          <div class="amount-label">Monto Pagado</div>
+          <div class="amount-value">
+            {{
+              paymentService.formatCurrency(payment?.monto_pagado || 0, payment?.moneda || 'PEN')
+            }}
+          </div>
+          @if (payment?.tipo_cambio && payment?.moneda === 'USD') {
+            <div class="amount-details">
+              Tipo de Cambio: S/ {{ payment?.tipo_cambio }} <br />
+              Equivalente: S/
+              {{ ((payment?.monto_pagado || 0) * (payment?.tipo_cambio || 0)).toFixed(2) }}
+            </div>
+          }
         </div>
 
-        <div *ngIf="loading" class="loading">
-          <div class="spinner"></div>
-          <p>Cargando detalles del pago...</p>
-        </div>
-
-        <div *ngIf="!loading && payment" class="detail-grid">
-          <div class="detail-main card">
-            <div class="detail-header">
-              <div>
-                <h1>{{ payment.numero_pago }}</h1>
-                <p class="detail-subtitle">
-                  Valorización: {{ payment.numero_valorizacion || 'N/A' }}
-                </p>
-              </div>
-              <div>
-                <span
-                  [class]="'badge badge-' + paymentService.getPaymentStatusColor(payment.estado)"
-                >
-                  {{ paymentService.getPaymentStatusLabel(payment.estado) }}
-                </span>
-                <span *ngIf="payment.conciliado" class="badge badge-success ml-2">
-                  <i class="fa-solid fa-check-double"></i> Conciliado
-                </span>
-              </div>
-            </div>
-
-            <!-- Payment Amount -->
-            <div class="amount-section">
-              <div class="amount-label">Monto Pagado</div>
-              <div class="amount-value">
-                {{ paymentService.formatCurrency(payment.monto_pagado, payment.moneda) }}
-              </div>
-              <div class="amount-details" *ngIf="payment.tipo_cambio && payment.moneda === 'USD'">
-                Tipo de Cambio: S/ {{ payment.tipo_cambio }} <br />
-                Equivalente: S/ {{ (payment.monto_pagado * payment.tipo_cambio).toFixed(2) }}
-              </div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="tabs">
-              <button
-                class="tab"
-                [class.active]="activeTab === 'general'"
-                (click)="activeTab = 'general'"
-              >
-                Información General
-              </button>
-              <button
-                class="tab"
-                [class.active]="activeTab === 'bank'"
-                (click)="activeTab = 'bank'"
-              >
-                Detalles Bancarios
-              </button>
-              <button
-                class="tab"
-                [class.active]="activeTab === 'receipt'"
-                (click)="activeTab = 'receipt'"
-              >
-                Comprobante
-              </button>
-              <button
-                class="tab"
-                [class.active]="activeTab === 'audit'"
-                (click)="activeTab = 'audit'"
-              >
-                Auditoría
-              </button>
-            </div>
-
-            <!-- Tab Content: General -->
-            <div *ngIf="activeTab === 'general'" class="tab-content">
-              <section class="detail-section">
-                <h2>Información General</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Número de Pago</label>
-                    <p>{{ payment.numero_pago }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha de Pago</label>
-                    <p>{{ payment.fecha_pago | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Método de Pago</label>
-                    <p>
-                      <span class="badge badge-secondary">
-                        {{ paymentService.getPaymentMethodLabel(payment.metodo_pago) }}
-                      </span>
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>Estado</label>
-                    <p>
-                      <span
-                        [class]="
-                          'badge badge-' + paymentService.getPaymentStatusColor(payment.estado)
-                        "
-                      >
-                        {{ paymentService.getPaymentStatusLabel(payment.estado) }}
-                      </span>
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>Moneda</label>
-                    <p>
-                      {{
-                        payment.moneda === 'PEN'
-                          ? 'Soles (PEN)'
-                          : payment.moneda === 'USD'
-                            ? 'Dólares (USD)'
-                            : payment.moneda
-                      }}
-                    </p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.referencia_interna">
-                    <label>Referencia Interna</label>
-                    <p>{{ payment.referencia_interna }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section" *ngIf="payment.observaciones">
-                <h2>Observaciones</h2>
-                <p class="observaciones-text">{{ payment.observaciones }}</p>
-              </section>
-            </div>
-
-            <!-- Tab Content: Bank Details -->
-            <div *ngIf="activeTab === 'bank'" class="tab-content">
-              <section class="detail-section">
-                <h2>Información Bancaria</h2>
-                <div class="info-grid">
-                  <div class="info-item" *ngIf="payment.banco_origen">
-                    <label>Banco Origen</label>
-                    <p>{{ payment.banco_origen }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.cuenta_origen">
-                    <label>Cuenta Origen</label>
-                    <p class="code-text">{{ payment.cuenta_origen }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.banco_destino">
-                    <label>Banco Destino</label>
-                    <p>{{ payment.banco_destino }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.cuenta_destino">
-                    <label>Cuenta Destino</label>
-                    <p class="code-text">{{ payment.cuenta_destino }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.numero_operacion">
-                    <label>Número de Operación</label>
-                    <p class="code-text highlight">{{ payment.numero_operacion }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.numero_cheque">
-                    <label>Número de Cheque</label>
-                    <p class="code-text">{{ payment.numero_cheque }}</p>
-                  </div>
-                </div>
-
-                <div
-                  *ngIf="
-                    !payment.banco_origen && !payment.numero_operacion && !payment.numero_cheque
-                  "
-                  class="empty-state"
-                >
-                  <p class="text-muted">No hay información bancaria registrada</p>
-                </div>
-              </section>
-
-              <!-- Reconciliation Info -->
-              <section class="detail-section" *ngIf="payment.conciliado">
-                <h2>Información de Conciliación</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Estado de Conciliación</label>
-                    <p>
-                      <span class="badge badge-success">
-                        <i class="fa-solid fa-check-double"></i> Conciliado
-                      </span>
-                    </p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.fecha_conciliacion">
-                    <label>Fecha de Conciliación</label>
-                    <p>{{ payment.fecha_conciliacion | date: 'dd/MM/yyyy HH:mm' }}</p>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            <!-- Tab Content: Receipt -->
-            <div *ngIf="activeTab === 'receipt'" class="tab-content">
-              <section class="detail-section">
-                <h2>Información del Comprobante</h2>
-                <div class="info-grid">
-                  <div class="info-item" *ngIf="payment.comprobante_tipo">
-                    <label>Tipo de Comprobante</label>
-                    <p>{{ payment.comprobante_tipo }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.comprobante_numero">
-                    <label>Número de Comprobante</label>
-                    <p class="code-text highlight">{{ payment.comprobante_numero }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.comprobante_fecha">
-                    <label>Fecha de Comprobante</label>
-                    <p>{{ payment.comprobante_fecha | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                </div>
-
-                <div
-                  *ngIf="!payment.comprobante_tipo && !payment.comprobante_numero"
-                  class="empty-state"
-                >
-                  <p class="text-muted">No hay comprobante registrado</p>
-                </div>
-              </section>
-            </div>
-
-            <!-- Tab Content: Audit -->
-            <div *ngIf="activeTab === 'audit'" class="tab-content">
-              <section class="detail-section">
-                <h2>Información de Auditoría</h2>
-                <div class="info-grid">
-                  <div class="info-item" *ngIf="payment.registrado_por_nombre">
-                    <label>Registrado Por</label>
-                    <p>{{ payment.registrado_por_nombre }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha de Registro</label>
-                    <p>{{ payment.fecha_registro | date: 'dd/MM/yyyy HH:mm' }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.aprobado_por_nombre">
-                    <label>Aprobado Por</label>
-                    <p>{{ payment.aprobado_por_nombre }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="payment.fecha_aprobacion">
-                    <label>Fecha de Aprobación</label>
-                    <p>{{ payment.fecha_aprobacion | date: 'dd/MM/yyyy HH:mm' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Última Actualización</label>
-                    <p>{{ payment.updated_at | date: 'dd/MM/yyyy HH:mm' }}</p>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-
-          <!-- Sidebar -->
-          <div class="detail-sidebar">
-            <!-- Actions -->
-            <div class="card">
-              <h3>Acciones</h3>
-              <div class="action-buttons">
-                <button
-                  *ngIf="payment.estado !== 'ANULADO'"
-                  class="btn btn-primary btn-block"
-                  (click)="editPayment()"
-                >
-                  <i class="fa-solid fa-pen"></i> Editar Pago
-                </button>
-                <button
-                  *ngIf="payment.estado === 'CONFIRMADO' && !payment.conciliado"
-                  class="btn btn-success btn-block"
-                  (click)="reconcilePayment()"
-                >
-                  <i class="fa-solid fa-check-double"></i> Conciliar Pago
-                </button>
-                <button
-                  *ngIf="payment.estado !== 'ANULADO'"
-                  class="btn btn-danger btn-block"
-                  (click)="cancelPayment()"
-                >
-                  <i class="fa-solid fa-ban"></i> Anular Pago
-                </button>
-                <button
-                  class="btn btn-secondary btn-block"
-                  (click)="viewValuation()"
-                  *ngIf="payment.valorizacion_id"
-                >
-                  <i class="fa-solid fa-file-invoice"></i> Ver Valorización
-                </button>
-              </div>
-            </div>
-
-            <!-- Related Info -->
-            <div class="card">
-              <h3>Información Relacionada</h3>
-              <div class="info-list">
-                <div class="info-list-item">
-                  <label>ID Valorización</label>
-                  <p>{{ payment.valorizacion_id }}</p>
-                </div>
-                <div class="info-list-item" *ngIf="payment.contrato_id">
-                  <label>ID Contrato</label>
-                  <p>{{ payment.contrato_id }}</p>
-                </div>
-                <div class="info-list-item" *ngIf="payment.proyecto_id">
-                  <label>ID Proyecto</label>
-                  <p>{{ payment.proyecto_id }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="tabs-header-premium">
+          <button
+            class="tab-link"
+            [class.active]="activeTab === 'general'"
+            (click)="activeTab = 'general'"
+          >
+            General
+          </button>
+          <button
+            class="tab-link"
+            [class.active]="activeTab === 'bank'"
+            (click)="activeTab = 'bank'"
+          >
+            Banco
+          </button>
+          <button
+            class="tab-link"
+            [class.active]="activeTab === 'receipt'"
+            (click)="activeTab = 'receipt'"
+          >
+            Comprobante
+          </button>
+          <button
+            class="tab-link"
+            [class.active]="activeTab === 'audit'"
+            (click)="activeTab = 'audit'"
+          >
+            Auditoría
+          </button>
         </div>
       </div>
-    </div>
+
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div entity-main-content class="tab-content">
+        <!-- GENERAL TAB -->
+        @if (activeTab === 'general') {
+          <section class="detail-section">
+            <h2>Información General</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Número de Pago</label>
+                <p>{{ payment?.numero_pago }}</p>
+              </div>
+              <div class="info-item">
+                <label>Fecha de Pago</label>
+                <p>{{ payment?.fecha_pago | date: 'dd/MM/yyyy' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Método de Pago</label>
+                <p>
+                  <span class="badge badge-secondary">
+                    {{ paymentService.getPaymentMethodLabel(payment?.metodo_pago || '') }}
+                  </span>
+                </p>
+              </div>
+              <div class="info-item">
+                <label>Estado</label>
+                <p>
+                  <span
+                    [class]="
+                      'badge badge-' + paymentService.getPaymentStatusColor(payment?.estado || '')
+                    "
+                  >
+                    {{ paymentService.getPaymentStatusLabel(payment?.estado || '') }}
+                  </span>
+                </p>
+              </div>
+              <div class="info-item">
+                <label>Moneda</label>
+                <p>
+                  {{
+                    payment?.moneda === 'PEN'
+                      ? 'Soles (PEN)'
+                      : payment?.moneda === 'USD'
+                        ? 'Dólares (USD)'
+                        : payment?.moneda
+                  }}
+                </p>
+              </div>
+              <div class="info-item" *ngIf="payment?.referencia_interna">
+                <label>Referencia Interna</label>
+                <p>{{ payment?.referencia_interna }}</p>
+              </div>
+            </div>
+          </section>
+
+          @if (payment?.observaciones) {
+            <section class="detail-section">
+              <h2>Observaciones</h2>
+              <p class="observaciones-text">{{ payment?.observaciones }}</p>
+            </section>
+          }
+        }
+
+        <!-- BANK DETAILS TAB -->
+        @if (activeTab === 'bank') {
+          <section class="detail-section">
+            <h2>Información Bancaria</h2>
+            <div class="info-grid">
+              <div class="info-item" *ngIf="payment?.banco_origen">
+                <label>Banco Origen</label>
+                <p>{{ payment?.banco_origen }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.cuenta_origen">
+                <label>Cuenta Origen</label>
+                <p class="code-text">{{ payment?.cuenta_origen }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.banco_destino">
+                <label>Banco Destino</label>
+                <p>{{ payment?.banco_destino }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.cuenta_destino">
+                <label>Cuenta Destino</label>
+                <p class="code-text">{{ payment?.cuenta_destino }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.numero_operacion">
+                <label>Número de Operación</label>
+                <p class="code-text highlight">{{ payment?.numero_operacion }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.numero_cheque">
+                <label>Número de Cheque</label>
+                <p class="code-text">{{ payment?.numero_cheque }}</p>
+              </div>
+            </div>
+          </section>
+
+          @if (payment?.conciliado) {
+            <section class="detail-section">
+              <h2>Conciliación</h2>
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Estado</label>
+                  <p>
+                    <span class="badge badge-success">
+                      <i class="fa-solid fa-check-double"></i> Conciliado
+                    </span>
+                  </p>
+                </div>
+                <div class="info-item" *ngIf="payment?.fecha_conciliacion">
+                  <label>Fecha</label>
+                  <p>{{ payment?.fecha_conciliacion | date: 'dd/MM/yyyy HH:mm' }}</p>
+                </div>
+              </div>
+            </section>
+          }
+        }
+
+        <!-- RECEIPT TAB -->
+        @if (activeTab === 'receipt') {
+          <section class="detail-section">
+            <h2>Comprobante</h2>
+            <div class="info-grid">
+              <div class="info-item" *ngIf="payment?.comprobante_tipo">
+                <label>Tipo</label>
+                <p>{{ payment?.comprobante_tipo }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.comprobante_numero">
+                <label>Número</label>
+                <p class="code-text highlight">{{ payment?.comprobante_numero }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.comprobante_fecha">
+                <label>Fecha</label>
+                <p>{{ payment?.comprobante_fecha | date: 'dd/MM/yyyy' }}</p>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- AUDIT TAB -->
+        @if (activeTab === 'audit') {
+          <section class="detail-section">
+            <h2>Auditoría</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Registrado Por</label>
+                <p>{{ payment?.registrado_por_nombre || '-' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Fecha Registro</label>
+                <p>{{ payment?.fecha_registro | date: 'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.aprobado_por_nombre">
+                <label>Aprobado Por</label>
+                <p>{{ payment?.aprobado_por_nombre }}</p>
+              </div>
+              <div class="info-item" *ngIf="payment?.fecha_aprobacion">
+                <label>Fecha Aprobación</label>
+                <p>{{ payment?.fecha_aprobacion | date: 'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          </section>
+        }
+      </div>
+
+      <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        <button
+          *ngIf="payment?.estado !== 'ANULADO'"
+          class="btn btn-primary btn-block"
+          (click)="editPayment()"
+        >
+          <i class="fa-solid fa-pen"></i> Editar Pago
+        </button>
+        <button
+          *ngIf="payment?.estado === 'CONFIRMADO' && !payment?.conciliado"
+          class="btn btn-success btn-block"
+          (click)="reconcilePayment()"
+        >
+          <i class="fa-solid fa-check-double"></i> Conciliar Pago
+        </button>
+        <button
+          *ngIf="payment?.estado !== 'ANULADO'"
+          class="btn btn-danger btn-block"
+          (click)="cancelPayment()"
+        >
+          <i class="fa-solid fa-ban"></i> Anular Pago
+        </button>
+        <button
+          class="btn btn-ghost btn-block"
+          (click)="viewValuation()"
+          *ngIf="payment?.valorizacion_id"
+        >
+          <i class="fa-solid fa-file-invoice"></i> Ver Valorización
+        </button>
+        <button class="btn btn-ghost btn-block" routerLink="/payments">
+          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+        </button>
+      </ng-container>
+    </entity-detail-shell>
   `,
   styles: [
     `
@@ -615,6 +568,27 @@ export class PaymentDetailComponent implements OnInit {
   loading = false;
   activeTab = 'general';
 
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-money-bill-transfer',
+      title: this.payment?.numero_pago || 'Pago',
+      subtitle: this.payment?.numero_valorizacion
+        ? `Valorización: ${this.payment.numero_valorizacion}`
+        : 'Registro de Pago',
+      statusLabel: this.paymentService.getPaymentStatusLabel(this.payment?.estado || ''),
+      statusClass: `badge-${this.paymentService.getPaymentStatusColor(this.payment?.estado || '')}`,
+    };
+  }
+
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        { date: this.payment?.updated_at, label: 'Última actualización' },
+        { date: this.payment?.fecha_registro, label: 'Pago registrado' },
+      ],
+    };
+  }
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -625,11 +599,11 @@ export class PaymentDetailComponent implements OnInit {
   loadPayment(id: number) {
     this.loading = true;
     this.paymentService.getPaymentById(id).subscribe({
-      next: (payment) => {
+      next: (payment: PaymentRecordDetail) => {
         this.payment = payment;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading payment:', error);
         this.loading = false;
         alert('Error al cargar el pago');
@@ -660,7 +634,7 @@ export class PaymentDetailComponent implements OnInit {
             alert('Pago conciliado exitosamente');
             this.loadPayment(this.payment!.id);
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Error reconciling payment:', error);
             alert('Error al conciliar el pago');
           },
@@ -679,7 +653,7 @@ export class PaymentDetailComponent implements OnInit {
             alert('Pago anulado exitosamente');
             this.router.navigate(['/payments']);
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Error canceling payment:', error);
             alert('Error al anular el pago');
           },

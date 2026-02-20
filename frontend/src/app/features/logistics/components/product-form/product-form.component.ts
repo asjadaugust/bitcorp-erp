@@ -42,10 +42,9 @@ import {
           ? 'Actualiza la información del producto'
           : 'Registra un nuevo producto en el catálogo'
       "
-      [icon]="isEditMode ? 'fa-edit' : 'fa-plus'"
+      [icon]="isEditMode ? 'fa-pen' : 'fa-box'"
       [loading]="loading || submitting"
       [disableSubmit]="submitting || (productForm && productForm.invalid)"
-      [backUrl]="'/logistics/products'"
       (onSubmit)="onSubmit()"
       (onCancel)="cancel()"
     >
@@ -69,80 +68,77 @@ import {
       <form [formGroup]="productForm" (ngSubmit)="onSubmit()" id="standardForm">
         <!-- General Info Section -->
         <div class="form-section">
-          <h2 class="section-title">Información General</h2>
+          <h3 class="section-title"><i class="fa-solid fa-box"></i> Información General</h3>
 
-          <div class="form-grid">
+          <div class="section-grid">
             <div class="form-group">
               <label for="codigo">Código <span class="required">*</span></label>
               <input
                 id="codigo"
                 type="text"
                 formControlName="codigo"
-                [class.error]="isFieldInvalid('codigo')"
+                class="form-control"
                 placeholder="Ej. PROD-001"
               />
-              <div class="error-message" *ngIf="isFieldInvalid('codigo')">
-                El código es requerido
-              </div>
             </div>
 
-            <div class="form-group span-2">
-              <label for="nombre">Nombre del Producto <span class="required">*</span></label>
+            <div class="form-group">
+              <label for="nombre">Nombre del Producto</label>
               <input
                 id="nombre"
                 type="text"
                 formControlName="nombre"
-                [class.error]="isFieldInvalid('nombre')"
+                class="form-control"
                 placeholder="Nombre descriptivo del producto"
               />
-              <div class="error-message" *ngIf="isFieldInvalid('nombre')">
-                El nombre es requerido
-              </div>
             </div>
 
             <div class="form-group">
               <label for="categoria">Categoría</label>
-              <app-dropdown
-                formControlName="categoria"
-                [options]="categoryOptions"
-                [placeholder]="'Seleccionar Categoría'"
-                [searchable]="true"
-              ></app-dropdown>
+              <select id="categoria" formControlName="categoria" class="form-control">
+                <option value="">Seleccione categoría...</option>
+                <option *ngFor="let cat of categoryOptions" [value]="cat.value">
+                  {{ cat.label }}
+                </option>
+              </select>
             </div>
 
             <div class="form-group">
-              <label for="unidad_medida">Unidad de Medida <span class="required">*</span></label>
-              <app-dropdown
-                formControlName="unidad_medida"
-                [options]="unitOptions"
-                [placeholder]="'Seleccionar Unidad'"
-                [searchable]="true"
-              ></app-dropdown>
-              <div class="error-message" *ngIf="isFieldInvalid('unidad_medida')">
-                La unidad es requerida
-              </div>
+              <label for="unidad_medida">Unidad de Medida</label>
+              <select id="unidad_medida" formControlName="unidad_medida" class="form-control">
+                <option value="">Seleccione unidad...</option>
+                <option *ngFor="let unit of unitOptions" [value]="unit.value">
+                  {{ unit.label }}
+                </option>
+              </select>
             </div>
-          </div>
 
-          <div class="form-group full-width">
-            <label for="descripcion">Descripción</label>
-            <textarea
-              id="descripcion"
-              formControlName="descripcion"
-              rows="3"
-              placeholder="Detalles adicionales del producto..."
-            ></textarea>
+            <div class="form-group span-full">
+              <label for="descripcion">Descripción</label>
+              <textarea
+                id="descripcion"
+                formControlName="descripcion"
+                class="form-control"
+                rows="3"
+                placeholder="Detalles adicionales del producto..."
+              ></textarea>
+            </div>
           </div>
         </div>
 
         <!-- Inventory Info Section -->
         <div class="form-section">
-          <h2 class="section-title">Inventario y Costos</h2>
-
+          <h3>Inventario y Costos</h3>
           <div class="form-grid">
             <div class="form-group">
               <label for="stock_actual">Stock Inicial</label>
-              <input id="stock_actual" type="number" formControlName="stock_actual" min="0" />
+              <input
+                id="stock_actual"
+                type="number"
+                formControlName="stock_actual"
+                class="form-control"
+                min="0"
+              />
               <div class="hint">Solo editable al crear. Use movimientos para ajustar después.</div>
             </div>
 
@@ -152,6 +148,7 @@ import {
                 id="precio_unitario"
                 type="number"
                 formControlName="precio_unitario"
+                class="form-control"
                 min="0"
                 step="0.01"
               />
