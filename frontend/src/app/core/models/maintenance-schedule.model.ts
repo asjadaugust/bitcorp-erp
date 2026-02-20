@@ -30,6 +30,9 @@ export interface MaintenanceSchedule {
   tecnicoResponsable?: string;
   estado: EstadoMantenimiento;
   observaciones?: string;
+  intervalValue?: number;
+  intervalType?: string;
+  nextDueHours?: number;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -89,6 +89,7 @@ import {
         [templates]="{
           codigo_equipo: codeTemplate,
           brand_model: brandModelTemplate,
+          categoria: categoriaTemplate,
         }"
         (rowClick)="viewDetails($event)"
       >
@@ -101,8 +102,19 @@ import {
 
       <ng-template #brandModelTemplate let-row>
         <div class="brand-model">
-          <span>{{ row.marca }}</span>
-          <small>{{ row.modelo }}</small>
+          <span>{{ row?.marca || '' }}</span>
+          <small>{{ row?.modelo || '' }}</small>
+        </div>
+      </ng-template>
+
+      <ng-template #categoriaTemplate let-row>
+        <div class="cat-cell">
+          <span class="tipo-nombre">{{ row.tipo_equipo_nombre || row.categoria || '-' }}</span>
+          @if (row.categoria_prd) {
+            <span class="cat-badge" [class]="getCategoriaPrdClass(row.categoria_prd)">
+              {{ getCategoriaPrdLabel(row.categoria_prd) }}
+            </span>
+          }
         </div>
       </ng-template>
 
@@ -402,6 +414,44 @@ import {
         gap: var(--s-8);
         align-items: center;
       }
+
+      /* Category PRD badges */
+      .cat-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .tipo-nombre {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--grey-800);
+      }
+      .cat-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 1px 6px;
+        border-radius: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        width: fit-content;
+      }
+      .badge-cat-maquinaria {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-cat-pesado {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-cat-liviano {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-cat-menor {
+        background: #d1fae5;
+        color: #065f46;
+      }
     `,
   ],
 })
@@ -419,15 +469,18 @@ export class EquipmentListComponent implements OnInit {
   statistics: any = null;
   statItems: StatItem[] = [];
 
-  filters = { status: '', search: '' };
+  filters = { status: '', search: '', categoria_prd: '', marca: '' };
 
   tabs: TabItem[] = [
+    { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
     { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
+    { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
+    { label: 'Órdenes', route: '/equipment/ordenes-alquiler', icon: 'fa-file-contract' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
     { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar' },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
     { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
+    { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-file-signature' },
   ];
 
   filterConfig: FilterConfig[] = [
@@ -438,14 +491,14 @@ export class EquipmentListComponent implements OnInit {
       placeholder: 'Buscar por nombre, código, marca...',
     },
     {
-      key: 'categoria',
-      label: 'Categoría',
+      key: 'categoria_prd',
+      label: 'Categoría PRD',
       type: 'select',
       options: [
         { label: 'Maquinaria Pesada', value: 'MAQUINARIA_PESADA' },
-        { label: 'Maquinaria Liviana', value: 'MAQUINARIA_LIVIANA' },
-        { label: 'Vehículos', value: 'VEHICULOS' },
-        { label: 'Herramientas', value: 'HERRAMIENTAS' },
+        { label: 'Vehículos Pesados', value: 'VEHICULOS_PESADOS' },
+        { label: 'Vehículos Livianos', value: 'VEHICULOS_LIVIANOS' },
+        { label: 'Equipos Menores', value: 'EQUIPOS_MENORES' },
       ],
     },
     {
@@ -470,7 +523,7 @@ export class EquipmentListComponent implements OnInit {
   columns: TableColumn[] = [
     { key: 'codigo_equipo', label: 'Código', type: 'template' },
     { key: 'brand_model', label: 'Marca / Modelo', type: 'template' },
-    { key: 'categoria', label: 'Categoría', type: 'text' },
+    { key: 'categoria', label: 'Tipo / Categoría', type: 'template' },
     { key: 'placa', label: 'Placa', type: 'text' },
     { key: 'tipo_proveedor', label: 'Tipo Proveedor', type: 'text' },
     {
@@ -538,6 +591,8 @@ export class EquipmentListComponent implements OnInit {
   onFilterChange(filters: Record<string, any>): void {
     this.filters.search = filters['search'] || '';
     this.filters.status = filters['status'] || '';
+    this.filters.categoria_prd = filters['categoria_prd'] || '';
+    this.filters.marca = filters['marca'] || '';
     this.loadEquipment();
   }
 
@@ -625,5 +680,25 @@ export class EquipmentListComponent implements OnInit {
         },
       });
     }
+  }
+
+  getCategoriaPrdLabel(cat: string): string {
+    const labels: Record<string, string> = {
+      MAQUINARIA_PESADA: 'Maq. Pesada',
+      VEHICULOS_PESADOS: 'Veh. Pesado',
+      VEHICULOS_LIVIANOS: 'Veh. Liviano',
+      EQUIPOS_MENORES: 'Eq. Menor',
+    };
+    return labels[cat] ?? cat;
+  }
+
+  getCategoriaPrdClass(cat: string): string {
+    const classes: Record<string, string> = {
+      MAQUINARIA_PESADA: 'badge-cat-maquinaria',
+      VEHICULOS_PESADOS: 'badge-cat-pesado',
+      VEHICULOS_LIVIANOS: 'badge-cat-liviano',
+      EQUIPOS_MENORES: 'badge-cat-menor',
+    };
+    return classes[cat] ?? '';
   }
 }

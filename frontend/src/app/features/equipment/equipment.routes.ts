@@ -1,6 +1,94 @@
 import { Routes } from '@angular/router';
 
 export const EQUIPMENT_ROUTES: Routes = [
+  // Períodos de Inoperatividad (WS-17)
+  {
+    path: 'inoperatividad',
+    loadComponent: () =>
+      import('./periodo-inoperatividad-list.component').then(
+        (m) => m.PeriodoInoperatividadListComponent
+      ),
+  },
+  {
+    path: 'inoperatividad/new',
+    loadComponent: () =>
+      import('./periodo-inoperatividad-form.component').then(
+        (m) => m.PeriodoInoperatividadFormComponent
+      ),
+  },
+  // Equipment Manager Dashboard
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./equipment-dashboard.component').then((m) => m.EquipmentDashboardComponent),
+  },
+
+  // Equipment Requests Module
+  {
+    path: 'solicitudes',
+    loadComponent: () =>
+      import('./solicitud-equipo-list.component').then((m) => m.SolicitudEquipoListComponent),
+  },
+  {
+    path: 'solicitudes/new',
+    loadComponent: () =>
+      import('./solicitud-equipo-form.component').then((m) => m.SolicitudEquipoFormComponent),
+  },
+  {
+    path: 'solicitudes/:id',
+    loadComponent: () =>
+      import('./solicitud-equipo-detail.component').then((m) => m.SolicitudEquipoDetailComponent),
+  },
+  {
+    path: 'solicitudes/:id/edit',
+    loadComponent: () =>
+      import('./solicitud-equipo-form.component').then((m) => m.SolicitudEquipoFormComponent),
+  },
+
+  // Órdenes de Alquiler
+  {
+    path: 'ordenes-alquiler',
+    loadComponent: () =>
+      import('./orden-alquiler-list.component').then((m) => m.OrdenAlquilerListComponent),
+  },
+  {
+    path: 'ordenes-alquiler/new',
+    loadComponent: () =>
+      import('./orden-alquiler-form.component').then((m) => m.OrdenAlquilerFormComponent),
+  },
+  {
+    path: 'ordenes-alquiler/:id',
+    loadComponent: () =>
+      import('./orden-alquiler-detail.component').then((m) => m.OrdenAlquilerDetailComponent),
+  },
+  {
+    path: 'ordenes-alquiler/:id/edit',
+    loadComponent: () =>
+      import('./orden-alquiler-form.component').then((m) => m.OrdenAlquilerFormComponent),
+  },
+
+  // Actas de Devolución / Desmovilización
+  {
+    path: 'actas-devolucion',
+    loadComponent: () =>
+      import('./acta-devolucion-list.component').then((m) => m.ActaDevolucionListComponent),
+  },
+  {
+    path: 'actas-devolucion/new',
+    loadComponent: () =>
+      import('./acta-devolucion-form.component').then((m) => m.ActaDevolucionFormComponent),
+  },
+  {
+    path: 'actas-devolucion/:id',
+    loadComponent: () =>
+      import('./acta-devolucion-detail.component').then((m) => m.ActaDevolucionDetailComponent),
+  },
+  {
+    path: 'actas-devolucion/:id/edit',
+    loadComponent: () =>
+      import('./acta-devolucion-form.component').then((m) => m.ActaDevolucionFormComponent),
+  },
+
   {
     path: '',
     loadComponent: () => import('./equipment-list.component').then((m) => m.EquipmentListComponent),
@@ -10,7 +98,7 @@ export const EQUIPMENT_ROUTES: Routes = [
     loadComponent: () => import('./equipment-form.component').then((m) => m.EquipmentFormComponent),
   },
 
-  // Sub-modules (MUST BE BEFORE :id)
+  // Sub-modules
   {
     path: 'daily-reports',
     loadComponent: () =>

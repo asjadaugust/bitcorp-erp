@@ -7,6 +7,8 @@ import { Equipment } from '../../models/equipment.model';
 import { Proyecto } from '../../models/project.model';
 import { Trabajador } from '../../models/trabajador.model';
 import { User } from '../../models/user.model';
+import { SolicitudEquipo } from '../../models/solicitud-equipo.model';
+import { ActaDevolucion } from '../../models/acta-devolucion.model';
 
 /**
  * Seeds equipment-related entities: contracts, daily reports, valuations, maintenance schedules
@@ -479,13 +481,147 @@ export class EquipmentSeeder extends BaseSeeder {
       ]);
     }
 
+    // 5. Equipment Requests (Solicitudes de Equipo)
+    const solicitudesRepo = this.dataSource.getRepository(SolicitudEquipo);
+    const existingSolicitudes = await solicitudesRepo.count();
+
+    if (existingSolicitudes === 0) {
+      const today = new Date();
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+      const nextMonth = new Date(today);
+      nextMonth.setMonth(today.getMonth() + 1);
+
+      await solicitudesRepo.save([
+        solicitudesRepo.create({
+          codigo: 'SOL-2025-001',
+          proyectoId: projects[0].id,
+          tipoEquipo: 'Excavadora sobre Orugas',
+          descripcion: 'Excavadora de 30tn para movimiento de tierras en sector sur.',
+          cantidad: 1,
+          fechaRequerida: nextWeek,
+          justificacion: 'Requerido para inicio de excavación masiva según cronograma.',
+          prioridad: 'ALTA',
+          estado: 'APROBADO',
+          aprobadoPor: admin.id,
+          fechaAprobacion: new Date(),
+          creadoPor: admin.id,
+        }),
+        solicitudesRepo.create({
+          codigo: 'SOL-2025-002',
+          proyectoId: projects[0].id,
+          tipoEquipo: 'Camión Volquete 15m3',
+          descripcion: 'Transporte de material excedente.',
+          cantidad: 3,
+          fechaRequerida: nextWeek,
+          justificacion: 'Apoyo a excavadora SOL-001.',
+          prioridad: 'MEDIA',
+          estado: 'ENVIADO',
+          creadoPor: admin.id,
+        }),
+        solicitudesRepo.create({
+          codigo: 'SOL-2025-003',
+          proyectoId: projects[1].id,
+          tipoEquipo: 'Retroexcavadora',
+          descripcion: 'Para trabajos de servicios y zanjas menores.',
+          cantidad: 1,
+          fechaRequerida: nextMonth,
+          justificacion: 'Mantenimiento de vías internas.',
+          prioridad: 'BAJA',
+          estado: 'BORRADOR',
+          creadoPor: admin.id,
+        }),
+        solicitudesRepo.create({
+          codigo: 'SOL-2025-004',
+          proyectoId: projects[1].id,
+          tipoEquipo: 'Cargador Frontal',
+          descripcion: 'Cargador de gran capacidad para cantera.',
+          cantidad: 1,
+          fechaRequerida: today,
+          justificacion: 'Solicitud urgente por falla de equipo propio.',
+          prioridad: 'ALTA',
+          estado: 'RECHAZADO',
+          observaciones: 'No hay disponibilidad presupuestal para alquiler adicional este mes.',
+          creadoPor: admin.id,
+        }),
+      ]);
+    }
+
+    // 6. Return Acts (Actas de Devolución)
+    const actasRepo = this.dataSource.getRepository(ActaDevolucion);
+    const existingActas = await actasRepo.count();
+
+    if (existingActas === 0) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const lastWeek = new Date();
+      lastWeek.setDate(lastWeek.getDate() - 7);
+
+      await actasRepo.save([
+        actasRepo.create({
+          codigo: 'ACT-2025-001',
+          equipoId: equipment[0].id,
+          proyectoId: projects[0].id,
+          fechaDevolucion: lastWeek,
+          tipo: 'DEVOLUCION',
+          estado: 'FIRMADO',
+          condicionEquipo: 'BUENO',
+          observaciones: 'Equipo devuelto en perfectas condiciones después de finalizar contrato.',
+          horometroDevolucion: 4600.5,
+          creadoPor: admin.id,
+          recibidoPor: trabajadores[0]?.id,
+          entregadoPor: trabajadores[1]?.id,
+          fechaFirma: lastWeek,
+        }),
+        actasRepo.create({
+          codigo: 'ACT-2025-002',
+          equipoId: equipment[1].id,
+          proyectoId: projects[1].id,
+          fechaDevolucion: yesterday,
+          tipo: 'DESMOBILIZACION',
+          estado: 'PENDIENTE',
+          condicionEquipo: 'REGULAR',
+          observaciones:
+            'Desmovilización por cambio de fase en proyecto. Pendiente firma de receptor.',
+          horometroDevolucion: 2200.0,
+          creadoPor: admin.id,
+          entregadoPor: trabajadores[0]?.id,
+        }),
+        actasRepo.create({
+          codigo: 'ACT-2025-003',
+          equipoId: equipment[2].id,
+          proyectoId: projects[0].id,
+          fechaDevolucion: new Date(),
+          tipo: 'TRANSFERENCIA',
+          estado: 'BORRADOR',
+          condicionEquipo: 'BUENO',
+          observaciones: 'Transferencia interna programada para mañana.',
+          kilometrajeDevolucion: 45800.0,
+          creadoPor: admin.id,
+        }),
+        actasRepo.create({
+          codigo: 'ACT-2025-004',
+          equipoId: equipment[0].id,
+          proyectoId: projects[1].id,
+          fechaDevolucion: lastWeek,
+          tipo: 'DEVOLUCION',
+          estado: 'ANULADO',
+          condicionEquipo: 'MALO',
+          observaciones: 'Acta anulada por error en ingreso de datos.',
+          creadoPor: admin.id,
+        }),
+      ]);
+    }
+
     const contractCount = await contractsRepo.count();
     const reportCount = await dailyReportsRepo.count();
     const valuationCount = await valuationsRepo.count();
     const maintenanceCount = await maintenanceRepo.count();
+    const solicitudesCount = await solicitudesRepo.count();
+    const actasCount = await actasRepo.count();
 
     console.log(
-      `     ✓ Created ${contractCount} contracts, ${reportCount} daily reports, ${valuationCount} valuations, ${maintenanceCount} maintenance schedules`
+      `     ✓ Created ${contractCount} contracts, ${reportCount} daily reports, ${valuationCount} valuations, ${maintenanceCount} maintenance schedules, ${solicitudesCount} requests, ${actasCount} return acts`
     );
   }
 }

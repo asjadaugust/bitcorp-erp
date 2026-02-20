@@ -49,7 +49,9 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       <form [formGroup]="maintenanceForm" class="form-grid">
         <!-- Section 1: Basic Information -->
         <div class="form-section full-width">
-          <h3>Detalles del Mantenimiento</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-wrench"></i> Detalles del Mantenimiento
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="equipment">Equipo *</label>
@@ -92,7 +94,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
         <!-- Section 2: Execution & Cost -->
         <div class="form-section full-width">
-          <h3>Ejecución y Costos</h3>
+          <h3 class="section-title"><i class="fa-solid fa-coins"></i> Ejecución y Costos</h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="start_date">Fecha Programada *</label>
@@ -158,7 +160,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         </div>
 
         <div class="form-section full-width">
-          <h3>Observaciones</h3>
+          <h3 class="section-title"><i class="fa-solid fa-clipboard"></i> Observaciones</h3>
           <div class="section-grid">
             <div class="form-group full-width">
               <textarea

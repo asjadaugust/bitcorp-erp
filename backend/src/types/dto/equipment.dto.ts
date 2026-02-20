@@ -25,11 +25,15 @@ export interface EquipmentListDto {
   id: number;
   codigo_equipo: string;
   categoria: string | null;
+  tipo_equipo_id: number | null;
+  tipo_equipo_nombre: string | null;
+  categoria_prd: string | null;
   marca: string | null;
   modelo: string | null;
   placa: string | null;
   estado: string;
   tipo_proveedor: string | null;
+  es_propio: boolean; // true when tipo_proveedor === 'PROPIO'
   proveedor_id: number | null;
   proveedor_nombre: string | null; // From join
   is_active: boolean;
@@ -44,10 +48,13 @@ export interface EquipmentDetailDto {
   legacy_id: string | null;
   codigo_equipo: string;
   tipo_equipo_id: number | null;
+  tipo_equipo_nombre: string | null;
+  categoria_prd: string | null;
   proveedor_id: number | null;
   proveedor_nombre: string | null; // From join
   proveedor_ruc: string | null; // From join
   tipo_proveedor: string | null;
+  es_propio: boolean; // true when tipo_proveedor === 'PROPIO'
   categoria: string | null;
   placa: string | null;
   marca: string | null;
@@ -154,11 +161,15 @@ export function toEquipmentListDto(entity: any): EquipmentListDto {
     id: entity.id,
     codigo_equipo: entity.codigoEquipo || entity.codigo_equipo,
     categoria: entity.categoria || null,
+    tipo_equipo_id: entity.tipoEquipoId || entity.tipo_equipo_id || null,
+    tipo_equipo_nombre: entity.tipoEquipo?.nombre || entity.tipo_equipo_nombre || null,
+    categoria_prd: entity.tipoEquipo?.categoriaPrd || entity.categoria_prd || null,
     marca: entity.marca || null,
     modelo: entity.modelo || null,
     placa: entity.placa || null,
     estado: entity.estado?.toUpperCase() || 'DISPONIBLE',
     tipo_proveedor: entity.tipoProveedor || entity.tipo_proveedor || null,
+    es_propio: (entity.tipoProveedor || entity.tipo_proveedor) === 'PROPIO',
     proveedor_id: entity.proveedorId || entity.proveedor_id || null,
     proveedor_nombre: entity.provider?.razonSocial || null,
     is_active: entity.isActive !== undefined ? entity.isActive : entity.is_active,
@@ -188,10 +199,13 @@ export function toEquipmentDetailDto(entity: any): EquipmentDetailDto {
     legacy_id: entity.legacyId || entity.legacy_id || null,
     codigo_equipo: entity.codigoEquipo || entity.codigo_equipo,
     tipo_equipo_id: entity.tipoEquipoId || entity.tipo_equipo_id || null,
+    tipo_equipo_nombre: entity.tipoEquipo?.nombre || entity.tipo_equipo_nombre || null,
+    categoria_prd: entity.tipoEquipo?.categoriaPrd || entity.categoria_prd || null,
     proveedor_id: entity.proveedorId || entity.proveedor_id || null,
     proveedor_nombre: entity.provider?.razonSocial || null,
     proveedor_ruc: entity.provider?.ruc || null,
     tipo_proveedor: entity.tipoProveedor || entity.tipo_proveedor || null,
+    es_propio: (entity.tipoProveedor || entity.tipo_proveedor) === 'PROPIO',
     categoria: entity.categoria || null,
     placa: entity.placa || null,
     marca: entity.marca || null,
@@ -261,7 +275,8 @@ export function fromEquipmentDto(dto: Partial<EquipmentDetailDto>): any {
   if (dto.estado !== undefined) entity.estado = dto.estado;
 
   // Document and Certification Fields
-  if (dto.documento_acreditacion !== undefined) entity.documentoAcreditacion = dto.documento_acreditacion;
+  if (dto.documento_acreditacion !== undefined)
+    entity.documentoAcreditacion = dto.documento_acreditacion;
   if (dto.fecha_acreditacion !== undefined) entity.fechaAcreditacion = dto.fecha_acreditacion;
   if (dto.codigo_externo !== undefined) entity.codigoExterno = dto.codigo_externo;
   if (dto.fecha_venc_poliza !== undefined) entity.fechaVencPoliza = dto.fecha_venc_poliza;

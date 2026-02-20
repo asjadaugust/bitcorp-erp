@@ -57,6 +57,8 @@ export type UpdateEquipmentDto = Partial<CreateEquipmentDto>;
 export interface EquipmentFilter {
   estado?: string;
   categoria?: string;
+  categoria_prd?: string;
+  marca?: string;
   equipmentTypeId?: number;
   providerId?: number;
   search?: string;
@@ -290,6 +292,7 @@ export class EquipmentService {
         const queryBuilder = this.repository
           .createQueryBuilder('e')
           .leftJoinAndSelect('e.provider', 'p')
+          .leftJoinAndSelect('e.tipoEquipo', 'te')
           .where('e.isActive = :isActive', { isActive: filter?.isActive ?? true })
           .andWhere(
             '(e.codigoEquipo ILIKE :search OR e.marca ILIKE :search OR e.modelo ILIKE :search OR e.placa ILIKE :search OR e.categoria ILIKE :search)',
@@ -304,6 +307,16 @@ export class EquipmentService {
           queryBuilder.andWhere('e.categoria = :categoria', { categoria: filter.categoria });
         }
 
+        if (filter?.categoria_prd) {
+          queryBuilder.andWhere('te.categoriaPrd = :categoriaPrd', {
+            categoriaPrd: filter.categoria_prd,
+          });
+        }
+
+        if (filter?.marca) {
+          queryBuilder.andWhere('e.marca ILIKE :marca', { marca: `%${filter.marca}%` });
+        }
+
         if (filter?.providerId) {
           queryBuilder.andWhere('e.proveedor_id = :providerId', { providerId: filter.providerId });
         }
@@ -315,17 +328,17 @@ export class EquipmentService {
         const sortBy = filter?.sort_by || 'codigo_equipo';
         const sortOrder = filter?.sort_order || 'ASC';
         const validSortFields: Record<string, string> = {
-          codigo_equipo: 'e.codigo_equipo',
+          codigo_equipo: 'e.codigoEquipo',
           categoria: 'e.categoria',
           marca: 'e.marca',
           modelo: 'e.modelo',
           placa: 'e.placa',
           estado: 'e.estado',
-          anio_fabricacion: 'e.anio_fabricacion',
-          created_at: 'e.created_at',
-          updated_at: 'e.updated_at',
+          anio_fabricacion: 'e.anioFabricacion',
+          created_at: 'e.createdAt',
+          updated_at: 'e.updatedAt',
         };
-        queryBuilder.orderBy(validSortFields[sortBy] || 'e.codigo_equipo', sortOrder);
+        queryBuilder.orderBy(validSortFields[sortBy] || 'e.codigoEquipo', sortOrder);
         queryBuilder.skip((page - 1) * limit).take(limit);
 
         const [equipment, total] = await queryBuilder.getManyAndCount();
@@ -343,7 +356,58 @@ export class EquipmentService {
         };
       }
 
-      // For non-search queries, use simple findAndCount (avoid QueryBuilder databaseName issue)
+      // For non-search queries, use QueryBuilder so we can join tipoEquipo for categoria_prd filter
+      const needsJoin = !!filter?.categoria_prd || !!filter?.marca;
+
+      if (needsJoin) {
+        const queryBuilder = this.repository
+          .createQueryBuilder('e')
+          .leftJoinAndSelect('e.provider', 'p')
+          .leftJoinAndSelect('e.tipoEquipo', 'te')
+          .where('e.isActive = :isActive', { isActive: filter?.isActive ?? true });
+
+        if (filter?.estado) {
+          queryBuilder.andWhere('e.estado = :estado', { estado: filter.estado });
+        }
+        if (filter?.categoria) {
+          queryBuilder.andWhere('e.categoria = :categoria', { categoria: filter.categoria });
+        }
+        if (filter?.categoria_prd) {
+          queryBuilder.andWhere('te.categoriaPrd = :categoriaPrd', {
+            categoriaPrd: filter.categoria_prd,
+          });
+        }
+        if (filter?.marca) {
+          queryBuilder.andWhere('e.marca ILIKE :marca', { marca: `%${filter.marca}%` });
+        }
+        if (filter?.providerId) {
+          queryBuilder.andWhere('e.proveedorId = :providerId', { providerId: filter.providerId });
+        }
+        if (filter?.equipmentTypeId) {
+          queryBuilder.andWhere('e.tipoEquipoId = :typeId', { typeId: filter.equipmentTypeId });
+        }
+
+        const sortBy = filter?.sort_by || 'codigo_equipo';
+        const sortOrder = filter?.sort_order || 'ASC';
+        const validSortFields: Record<string, string> = {
+          codigo_equipo: 'e.codigoEquipo',
+          categoria: 'e.categoria',
+          marca: 'e.marca',
+          modelo: 'e.modelo',
+          placa: 'e.placa',
+          estado: 'e.estado',
+          anio_fabricacion: 'e.anioFabricacion',
+          created_at: 'e.createdAt',
+          updated_at: 'e.updatedAt',
+        };
+        queryBuilder.orderBy(validSortFields[sortBy] || 'e.codigoEquipo', sortOrder);
+        queryBuilder.skip((page - 1) * limit).take(limit);
+
+        const [equipment, total] = await queryBuilder.getManyAndCount();
+        return { data: toEquipmentListDtoArray(equipment), total };
+      }
+
+      // For simple filters (no join needed), use findAndCount
       const where: any = {
         isActive: filter?.isActive ?? true,
       };
@@ -382,7 +446,7 @@ export class EquipmentService {
 
       const [equipment, total] = await this.repository.findAndCount({
         where,
-        relations: ['provider'],
+        relations: ['provider', 'tipoEquipo'],
         order: { [validSortFields[sortBy] || 'codigoEquipo']: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
@@ -440,7 +504,7 @@ export class EquipmentService {
       // where: { id, tenant_id: tenantId }
       const equipment = await this.repository.findOne({
         where: { id },
-        relations: ['provider'],
+        relations: ['provider', 'tipoEquipo'],
       });
 
       if (!equipment) {

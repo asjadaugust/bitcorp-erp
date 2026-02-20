@@ -63,13 +63,25 @@ export class EquipmentController {
 
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { status, equipment_type, search, is_active, page, limit, sort_by, sort_order } =
-        req.query;
+      const {
+        status,
+        equipment_type,
+        search,
+        is_active,
+        page,
+        limit,
+        sort_by,
+        sort_order,
+        categoria_prd,
+        marca,
+      } = req.query;
 
       const filters = {
         status: is_active === 'false' ? 'inactive' : (status as string), // If is_active is 'false', set status to 'inactive', otherwise use the provided status
         equipment_type: equipment_type as string,
         search: search as string,
+        categoria_prd: categoria_prd as string,
+        marca: marca as string,
         sort_by: sort_by as string,
         sort_order:
           (sort_order as string)?.toUpperCase() === 'DESC' ? ('DESC' as const) : ('ASC' as const),
@@ -89,6 +101,10 @@ export class EquipmentController {
   findById = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       const equipment = await this.equipmentService.findById(id);
 
       if (!equipment) {
@@ -125,6 +141,10 @@ export class EquipmentController {
   update = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       // Frontend now sends Spanish snake_case fields directly
       // Clean empty strings to undefined to avoid DB type errors
       const data: UpdateEquipmentDto = {
@@ -161,6 +181,10 @@ export class EquipmentController {
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       await this.equipmentService.delete(id);
       res.status(204).send();
     } catch (error: any) {
@@ -171,6 +195,10 @@ export class EquipmentController {
   updateStatus = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       const { status } = req.body;
       const equipment = await this.equipmentService.updateStatus(id, status);
       res.json({ success: true, data: equipment });
@@ -186,6 +214,10 @@ export class EquipmentController {
   updateHourmeter = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateHourmeter(id, reading);
       res.json({ success: true, data: equipment });
@@ -197,6 +229,10 @@ export class EquipmentController {
   updateOdometer = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateOdometer(id, reading);
       res.json({ success: true, data: equipment });
@@ -342,6 +378,10 @@ export class EquipmentController {
   assignEquipment = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       const { project_id, site_id, assignment_date, notes } = req.body;
       const user_id = (req as any).user?.id || 1;
 
@@ -370,6 +410,10 @@ export class EquipmentController {
   transferEquipment = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       const { from_project_id, to_project_id, to_site_id, transfer_date, reason, notes } = req.body;
       const user_id = (req as any).user?.id || 1;
 
@@ -425,6 +469,10 @@ export class EquipmentController {
   getAssignmentHistory = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
+        return;
+      }
       const history = await this.equipmentService.getAssignmentHistory(id);
       res.json({ success: true, data: history });
     } catch (error: any) {

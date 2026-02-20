@@ -42,6 +42,12 @@ export interface MaintenanceDto {
   updated_at: string; // ISO datetime string
 
   // Computed relation fields
+  equipo?: {
+    id: number;
+    codigo_equipo: string;
+    marca: string;
+    modelo: string;
+  };
   equipo_codigo?: string | null;
   equipo_descripcion?: string | null;
 }
@@ -120,6 +126,14 @@ export function toMaintenanceDto(entity: MaintenanceSchedule): MaintenanceDto {
     updated_at: toDateTimeString(entity.updatedAt),
 
     // Relation fields (if loaded)
+    equipo: entity.equipo
+      ? {
+          id: entity.equipo.id,
+          codigo_equipo: entity.equipo.codigoEquipo,
+          marca: entity.equipo.marca || '',
+          modelo: entity.equipo.modelo || '',
+        }
+      : undefined,
     equipo_codigo: entity.equipo?.codigoEquipo || null,
     equipo_descripcion:
       entity.equipo?.marca && entity.equipo?.modelo

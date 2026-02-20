@@ -3,190 +3,129 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MaintenanceService } from '../../core/services/maintenance.service';
 import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
+import {
+  EntityDetailShellComponent,
+  EntityDetailHeader,
+  AuditInfo,
+  NotFoundConfig,
+} from '../../shared/components/entity-detail';
 
 @Component({
   selector: 'app-maintenance-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div *ngIf="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Cargando detalles del mantenimiento...</p>
-        </div>
-
-        <div *ngIf="!loading && record" class="detail-grid">
-          <div class="detail-main card">
-            <!-- Header (Inside Main Card) -->
-            <div class="detail-header">
-              <div>
-                <h1>{{ record.maintenanceType }}</h1>
-                <p class="text-subtitle">
-                  <i class="fa-solid fa-truck-front mr-1"></i>
-                  {{ record.equipmentCode }} - {{ record.equipmentName }}
-                </p>
-              </div>
-              <div class="detail-status">
-                <span
-                  class="status-badge"
-                  [class.status-APROBADO]="record.status === 'COMPLETO'"
-                  [class.status-PENDIENTE]="
-                    record.status === 'PENDIENTE' || record.status === 'EN_PROCESO'
-                  "
-                  [class.status-CANCELADO]="record.status === 'CANCELADO'"
-                >
-                  {{ record.status }}
-                </span>
-              </div>
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="record"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      [notFound]="notFoundConfig"
+      loadingText="Cargando detalles del mantenimiento..."
+    >
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div entity-main-content class="detail-sections">
+        <section class="detail-section">
+          <h2>Detalles del Trabajo</h2>
+          <div class="info-grid three-cols">
+            <div class="info-item">
+              <label>Tipo de Mantenimiento</label>
+              <p>{{ record?.tipoMantenimiento }}</p>
             </div>
-
-            <div class="detail-sections mt-6">
-              <!-- Work Details Section -->
-              <section class="detail-section">
-                <h2>Detalles del Trabajo</h2>
-                <div class="info-grid three-cols">
-                  <div class="info-item">
-                    <label>Tipo de Mantenimiento</label>
-                    <p>{{ record.maintenanceType }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Proveedor</label>
-                    <p>
-                      <a
-                        [routerLink]="['/providers', record.providerId]"
-                        class="text-primary-600 hover:underline"
-                      >
-                        {{ record.providerName || 'N/A' }}
-                      </a>
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>Costo Total</label>
-                    <p class="font-medium">
-                      {{ record.cost | currency: 'USD' }}
-                    </p>
-                  </div>
-
-                  <div class="info-item">
-                    <label>Fecha Programada</label>
-                    <p>{{ record.scheduledDate | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha Realización</label>
-                    <p>
-                      {{
-                        record.completionDate ? (record.completionDate | date: 'dd/MM/yyyy') : '-'
-                      }}
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>Kilometraje / Horas</label>
-                    <p>{{ record.usageReading || '-' }}</p>
-                  </div>
-                </div>
-
-                <div class="mt-4">
-                  <label class="block text-sm font-medium text-grey-700 mb-1"
-                    >Descripción / Observaciones</label
-                  >
-                  <div class="bg-grey-50 p-4 rounded-md text-grey-800 text-sm whitespace-pre-wrap">
-                    {{ record.notes || 'Sin observaciones registradas.' }}
-                  </div>
-                </div>
-              </section>
-
-              <!-- Spare Parts / Items Used (Placeholder for future) -->
-              <section class="detail-section">
-                <h2>Repuestos y Servicios</h2>
-                <div class="empty-state-section">
-                  <i class="fa-solid fa-box-open"></i>
-                  <p>No hay detalles de items disponibles.</p>
-                </div>
-              </section>
+            <div class="info-item">
+              <label>Técnico Responsable</label>
+              <p>{{ record?.tecnicoResponsable || 'No asignado' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Costo</label>
+              <p class="font-medium">
+                {{ record?.costoReal || record?.costoEstimado | currency: 'USD' }}
+              </p>
+            </div>
+            <div class="info-item">
+              <label>Fecha Programada</label>
+              <p>{{ record?.fechaProgramada | date: 'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Fecha Realización</label>
+              <p>
+                {{ record?.fechaRealizada ? (record!.fechaRealizada | date: 'dd/MM/yyyy') : '-' }}
+              </p>
             </div>
           </div>
 
-          <!-- Sidebar -->
-          <div class="detail-sidebar">
-            <div class="card">
-              <h3 class="sidebar-card-title">Acciones</h3>
-              <div class="quick-actions">
-                <button class="btn btn-primary btn-block" (click)="editMaintenance()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button
-                  *ngIf="record.status !== 'COMPLETO' && record.status !== 'CANCELADO'"
-                  class="btn btn-success btn-block"
-                  (click)="completeMaintenance()"
-                >
-                  <i class="fa-solid fa-check"></i> Marcar Completado
-                </button>
-                <button class="btn btn-ghost btn-block" (click)="goBack()">
-                  <i class="fa-solid fa-arrow-left"></i> Volver a Equipo
-                </button>
-              </div>
-            </div>
-
-            <div class="card">
-              <h3 class="sidebar-card-title">Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ record.completionDate | date: 'short' }}</div>
-                  <div class="timeline-content">Fecha de finalización</div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ record.scheduledDate | date: 'short' }}</div>
-                  <div class="timeline-content">Fecha programada</div>
-                </div>
-              </div>
+          <div class="notes-block">
+            <label class="notes-label">Descripción / Observaciones</label>
+            <div class="notes-content">
+              {{ record?.descripcion || record?.observaciones || 'Sin observaciones registradas.' }}
             </div>
           </div>
-        </div>
+        </section>
 
-        <div *ngIf="!loading && !record" class="empty-state-card mt-6">
-          <i class="fa-solid fa-wrench"></i>
-          <h3>Registro no encontrado</h3>
-          <p>El registro que buscas no existe o ha sido eliminado.</p>
-          <button type="button" class="btn btn-primary mt-4" routerLink="/equipment/maintenance">
-            Volver a la lista
+        <section class="detail-section">
+          <h2>Repuestos y Servicios</h2>
+          <div class="empty-state-section">
+            <i class="fa-solid fa-box-open"></i>
+            <p>No hay detalles de items disponibles.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        <button class="btn btn-primary btn-block" (click)="editMaintenance()">
+          <i class="fa-solid fa-pen"></i> Editar
+        </button>
+        @if (record?.estado !== 'COMPLETADO' && record?.estado !== 'CANCELADO') {
+          <button class="btn btn-success btn-block" (click)="completeMaintenance()">
+            <i class="fa-solid fa-check"></i> Marcar Completado
           </button>
+        }
+        <button class="btn btn-ghost btn-block" (click)="goBack()">
+          <i class="fa-solid fa-arrow-left"></i> Volver a Equipo
+        </button>
+      </ng-container>
+    </entity-detail-shell>
+
+    <!-- Delete Modal -->
+    @if (showDeleteModal) {
+      <div class="modal" (click)="showDeleteModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Confirmar Eliminación</h2>
+            <button type="button" class="btn btn-icon" (click)="showDeleteModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro de que deseas eliminar este registro de mantenimiento?</p>
+            <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+              Eliminar Registro
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div *ngIf="showDeleteModal" class="modal" (click)="showDeleteModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Confirmar Eliminación</h2>
-          <button type="button" class="btn btn-icon" (click)="showDeleteModal = false">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>¿Estás seguro de que deseas eliminar este registro de mantenimiento?</p>
-          <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
-            Cancelar
-          </button>
-          <button type="button" class="btn btn-danger" (click)="confirmDelete()">
-            Eliminar Registro
-          </button>
-        </div>
-      </div>
-    </div>
+    }
   `,
   styles: [
     `
-      /* Local overrides */
-      .breadcrumb {
-        margin-bottom: var(--s-24);
+      @use 'detail-layout' as *;
+
+      .detail-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-32);
+        margin-top: var(--s-8);
       }
 
-      .breadcrumb-link {
-        color: var(--primary-500);
+      .link-primary {
+        color: var(--primary-600);
         text-decoration: none;
         font-weight: 500;
 
@@ -195,27 +134,52 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
         }
       }
 
-      .detail-header-card {
-        padding-bottom: var(--s-24);
+      .font-medium {
+        font-weight: 500;
       }
 
-      .detail-header {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
+      .notes-block {
+        margin-top: var(--s-16);
       }
 
-      .full-width {
-        grid-column: 1 / -1;
+      .notes-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--grey-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: var(--s-8);
       }
 
-      .notes {
+      .notes-content {
         background: var(--grey-50);
         padding: var(--s-16);
-        border-radius: var(--radius-sm);
-        border-left: 4px solid var(--primary-500);
+        border-radius: var(--radius-md);
+        color: var(--grey-800);
+        font-size: 14px;
+        white-space: pre-wrap;
         line-height: 1.6;
-        margin: 0;
+      }
+
+      .empty-state-section {
+        text-align: center;
+        padding: var(--s-32);
+        color: var(--grey-500);
+        background: var(--grey-50);
+        border-radius: var(--radius-md);
+
+        i {
+          font-size: 32px;
+          margin-bottom: var(--s-12);
+          color: var(--grey-300);
+          display: block;
+        }
+
+        p {
+          margin: 0;
+          font-size: 14px;
+        }
       }
     `,
   ],
@@ -228,6 +192,35 @@ export class MaintenanceDetailComponent implements OnInit {
   record: MaintenanceRecord | null = null;
   loading = true;
   showDeleteModal = false;
+
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-screwdriver-wrench',
+      title: this.record?.tipoMantenimiento ?? 'Mantenimiento',
+      subtitle: this.record?.equipo
+        ? `${this.record.equipo.codigo_equipo} - ${this.record.equipo.marca} ${this.record.equipo.modelo}`
+        : undefined,
+      statusLabel: this.getStatusLabel(this.record?.estado ?? ''),
+      statusClass: this.getStatusClass(this.record?.estado ?? ''),
+    };
+  }
+
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        { date: this.record?.fechaRealizada, label: 'Fecha de finalización' },
+        { date: this.record?.fechaProgramada, label: 'Fecha programada' },
+      ],
+    };
+  }
+
+  notFoundConfig: NotFoundConfig = {
+    icon: 'fa-solid fa-wrench',
+    title: 'Registro no encontrado',
+    message: 'El registro que buscas no existe o ha sido eliminado.',
+    backLabel: 'Volver a la lista',
+    backRoute: '/equipment/maintenance',
+  };
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -251,25 +244,27 @@ export class MaintenanceDetailComponent implements OnInit {
     });
   }
 
-  editRecord(): void {
+  editMaintenance(): void {
     if (this.record) {
       this.router.navigate(['edit'], { relativeTo: this.route });
     }
   }
 
-  deleteRecord(): void {
-    this.showDeleteModal = true;
+  completeMaintenance(): void {
+    // Placeholder — implement status transition when backend supports it
+    alert('Marcar como completado — próximamente');
   }
 
-  getStatusLabel(estado: string): string {
-    const map: Record<string, string> = {
-      PROGRAMADO: 'Programado',
-      EN_PROCESO: 'En Proceso',
-      COMPLETADO: 'Completado',
-      CANCELADO: 'Cancelado',
-      PENDIENTE: 'Pendiente',
-    };
-    return map[estado] || estado;
+  goBack(): void {
+    if (this.record?.equipoId) {
+      this.router.navigate(['/equipment', this.record.equipoId]);
+    } else {
+      this.router.navigate(['/equipment/maintenance']);
+    }
+  }
+
+  deleteRecord(): void {
+    this.showDeleteModal = true;
   }
 
   confirmDelete(): void {
@@ -283,6 +278,34 @@ export class MaintenanceDetailComponent implements OnInit {
           this.showDeleteModal = false;
         },
       });
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      PROGRAMADO: 'Programado',
+      EN_PROCESO: 'En Proceso',
+      COMPLETO: 'Completado',
+      COMPLETADO: 'Completado',
+      CANCELADO: 'Cancelado',
+      PENDIENTE: 'Pendiente',
+    };
+    return map[status] || status;
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'COMPLETO':
+      case 'COMPLETADO':
+        return 'status-APROBADO';
+      case 'PENDIENTE':
+      case 'EN_PROCESO':
+      case 'PROGRAMADO':
+        return 'status-PENDIENTE';
+      case 'CANCELADO':
+        return 'status-CANCELADO';
+      default:
+        return 'status-BORRADOR';
     }
   }
 }

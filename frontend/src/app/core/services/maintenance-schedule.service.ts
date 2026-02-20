@@ -101,6 +101,9 @@ export class MaintenanceScheduleService {
       estado: data.estado,
       observaciones: data.observaciones,
       descripcion: data.descripcion,
+      intervalValue: data.interval_value,
+      intervalType: data.interval_type,
+      nextDueHours: data.next_due_hours,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
