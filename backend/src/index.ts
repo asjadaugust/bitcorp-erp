@@ -32,6 +32,7 @@ import actasDevolucionRoutes from './api/actas-devolucion/actas-devolucion.route
 import ordenesAlquilerRoutes from './api/ordenes-alquiler/ordenes-alquiler.routes';
 import periodosInoperatividadRoutes from './api/periodos-inoperatividad/periodos-inoperatividad.routes';
 import tiposEquipoRoutes from './api/tipos-equipo/tipos-equipo.routes';
+import precalentamientoConfigRoutes from './api/precalentamiento-config/precalentamiento-config.routes';
 import analyticsRoutes from './api/analytics';
 import testErrorRoutes from './api/test-errors/test-errors.routes';
 import paymentRoutes from './api/payments/payment-record.routes';
@@ -91,6 +92,7 @@ app.use('/api/actas-devolucion', actasDevolucionRoutes);
 app.use('/api/ordenes-alquiler', ordenesAlquilerRoutes);
 app.use('/api/periodos-inoperatividad', periodosInoperatividadRoutes);
 app.use('/api/tipos-equipo', tiposEquipoRoutes);
+app.use('/api/precalentamiento-config', precalentamientoConfigRoutes);
 app.use('/api/logistics/movements', movementRoutes);
 app.use('/api/logistics/products', productRoutes);
 app.use('/api/hr', hrRoutes);

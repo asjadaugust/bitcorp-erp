@@ -77,6 +77,9 @@ export interface DailyReportDto {
   gps_latitude?: number | null;
   gps_longitude?: number | null;
   weather_conditions?: string | null;
+
+  // Pre-warming hours (auto-populated from precalentamiento_config)
+  horas_precalentamiento?: number | null;
 }
 
 import { DailyReportRawRow } from '../daily-report-raw.interface';
@@ -122,6 +125,7 @@ export function toDailyReportDto(entity: DailyReportRawRow): DailyReportDto {
     firma_residente: entity.firma_residente || entity.firmaResidente,
     firma_planeamiento_control:
       entity.firma_planeamiento_control || entity.firmaPlaneamientoControl,
+    horas_precalentamiento: entity.horas_precalentamiento ?? 0,
   };
 }
 
@@ -157,6 +161,8 @@ export function fromDailyReportDto(dto: Partial<DailyReportDto>): any {
   if (dto.gps_latitude !== undefined) entity.gps_latitude = dto.gps_latitude;
   if (dto.gps_longitude !== undefined) entity.gps_longitude = dto.gps_longitude;
   if (dto.weather_conditions !== undefined) entity.clima = dto.weather_conditions;
+  if (dto.horas_precalentamiento !== undefined)
+    entity.horas_precalentamiento = dto.horas_precalentamiento;
 
   return entity;
 }

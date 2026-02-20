@@ -30,6 +30,9 @@ export interface DailyReportRawRow {
   combustible_final: number | null;
   combustible_consumido: number | null;
 
+  // Pre-warming (precalentamiento)
+  horas_precalentamiento?: number | null;
+
   // Metadata
   observaciones: string | null;
   estado: string; // 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO'

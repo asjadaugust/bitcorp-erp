@@ -1,6 +1,15 @@
 import { Routes } from '@angular/router';
 
 export const EQUIPMENT_ROUTES: Routes = [
+  // Config. Precalentamiento (WS-19)
+  {
+    path: 'precalentamiento-config',
+    loadComponent: () =>
+      import('./precalentamiento-config-list.component').then(
+        (m) => m.PrecalentamientoConfigListComponent
+      ),
+  },
+
   // Períodos de Inoperatividad (WS-17)
   {
     path: 'inoperatividad',

@@ -289,6 +289,12 @@ export class SidebarComponent {
       icon: 'fa-solid fa-triangle-exclamation',
     },
     {
+      label: 'Precalentamiento',
+      route: '/equipment/precalentamiento-config',
+      icon: 'fa-solid fa-fire-flame-curved',
+      roles: ['ADMIN'],
+    },
+    {
       label: 'Solicitudes de Equipo',
       route: '/equipment/solicitudes',
       icon: 'fa-solid fa-clipboard-list',

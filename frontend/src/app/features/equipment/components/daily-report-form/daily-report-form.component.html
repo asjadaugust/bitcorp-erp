@@ -107,6 +107,46 @@
         </div>
       </div>
 
+      <!-- Section 2.5: Precalentamiento -->
+      <div class="form-section full-width" data-testid="precalentamiento-section">
+        <h3>Precalentamiento</h3>
+        <div class="section-grid">
+          <div class="form-group">
+            <label for="horas_precalentamiento">
+              Horas de Precalentamiento
+              <span class="field-hint">(auto-calculado por tipo de equipo)</span>
+            </label>
+            <div class="precalentamiento-row">
+              <input
+                id="horas_precalentamiento"
+                type="number"
+                formControlName="horas_precalentamiento"
+                class="form-control"
+                min="0"
+                max="24"
+                step="0.25"
+                [attr.readonly]="!precalentamientoOverride ? true : null"
+                data-testid="horas-precalentamiento-input"
+              />
+              <button
+                type="button"
+                class="btn btn-sm btn-ghost override-toggle"
+                (click)="togglePrecalentamientoOverride()"
+                data-testid="precalentamiento-override-btn"
+                [title]="precalentamientoOverride ? 'Bloquear valor automático' : 'Editar manualmente'"
+              >
+                <i class="fa-solid" [class.fa-lock]="!precalentamientoOverride" [class.fa-lock-open]="precalentamientoOverride"></i>
+                {{ precalentamientoOverride ? 'Bloquear' : 'Editar' }}
+              </button>
+            </div>
+            <div class="field-hint-block" *ngIf="precalentamientoTipoNombre">
+              <i class="fa-solid fa-circle-info"></i>
+              Valor configurado para <strong>{{ precalentamientoTipoNombre }}</strong> según PRD Anexo B.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Section 3: Odometer (Optional) -->
       <div class="form-section full-width">
         <h3>Odómetro (Opcional - Solo Vehículos)</h3>

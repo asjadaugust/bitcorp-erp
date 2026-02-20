@@ -69,6 +69,13 @@ describe('DailyReportDto Transformations', () => {
         creado_por: 10,
         aprobado_por: null,
         aprobado_en: null,
+        horas_precalentamiento: 0,
+        firma_operador: undefined,
+        firma_supervisor: undefined,
+        firma_jefe_equipos: undefined,
+        firma_residente: undefined,
+        firma_planeamiento_control: undefined,
+        numero_vale_combustible: undefined,
       });
     });
 

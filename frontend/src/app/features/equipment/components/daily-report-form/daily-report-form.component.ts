@@ -9,6 +9,7 @@ import { EquipmentService } from '../../../../core/services/equipment.service';
 import { OperatorService } from '../../../../core/services/operator.service';
 import { DailyReportService } from '../../../../core/services/daily-report.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PrecalentamientoConfigService } from '../../../../core/services/precalentamiento-config.service';
 import {
   DropdownComponent,
   DropdownOption,
@@ -57,6 +58,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   filteredEquipment: any[] = [];
   equipmentOptions: DropdownOption[] = [];
   operatorOptions: DropdownOption[] = [];
+
+  // Precalentamiento auto-fill
+  precalentamientoOverride = false;
+  precalentamientoTipoNombre = '';
   weatherOptions: DropdownOption[] = [
     { label: '☀️ Soleado', value: 'soleado' },
     { label: '⛅ Parcialmente Nublado', value: 'parcialmente_nublado' },
@@ -79,6 +84,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     private operatorService: OperatorService,
     private dailyReportService: DailyReportService,
     private authService: AuthService,
+    private precalentamientoService: PrecalentamientoConfigService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -127,6 +133,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       weather_conditions: [''],
       gps_latitude: [''],
       gps_longitude: [''],
+      horas_precalentamiento: [0, [Validators.min(0)]],
     });
   }
 
@@ -163,6 +170,36 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       .get('hora_inicio')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.validateTimeRange());
+
+    // Auto-fill horas_precalentamiento when equipo changes
+    this.reportForm
+      .get('equipo_id')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((equipoId: any) => this.onEquipoChange(equipoId));
+  }
+
+  onEquipoChange(equipoId: any): void {
+    if (!equipoId || this.precalentamientoOverride) return;
+    const equipo = this.equipment.find((e: any) => e.id === Number(equipoId));
+    if (!equipo?.tipo_equipo_id) {
+      this.precalentamientoTipoNombre = '';
+      return;
+    }
+    this.precalentamientoTipoNombre = equipo.tipo_equipo_nombre || equipo.categoria || '';
+    this.precalentamientoService.obtenerHoras(equipo.tipo_equipo_id).subscribe({
+      next: (data: any) => {
+        if (!this.precalentamientoOverride) {
+          this.reportForm.patchValue({ horas_precalentamiento: data.horas_precalentamiento ?? 0 });
+        }
+      },
+      error: () => {
+        // Non-critical: leave existing value
+      },
+    });
+  }
+
+  togglePrecalentamientoOverride(): void {
+    this.precalentamientoOverride = !this.precalentamientoOverride;
   }
 
   loadData(): void {
@@ -244,6 +281,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
           weather_conditions: report.weather_conditions, // Might not exist in backend yet
           gps_latitude: report.gps_latitude, // Might not exist in backend yet
           gps_longitude: report.gps_longitude, // Might not exist in backend yet
+          horas_precalentamiento: report.horas_precalentamiento ?? 0,
         });
         this.loading = false;
       },
@@ -402,6 +440,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       gps_latitude: formValue.gps_latitude ? Number(formValue.gps_latitude) : null,
       gps_longitude: formValue.gps_longitude ? Number(formValue.gps_longitude) : null,
       weather_conditions: formValue.weather_conditions || null,
+      horas_precalentamiento: Number(formValue.horas_precalentamiento) || 0,
     };
   }
 

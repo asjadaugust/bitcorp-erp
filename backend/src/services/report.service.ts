@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/database.config';
 import { DailyReport } from '../models/daily-report-typeorm.model';
 import { DailyReportMechanicalDelay } from '../models/daily-report-mechanical-delay.model';
 import { Equipment } from '../models/equipment.model';
+import { PrecalentamientoConfigService } from './precalentamiento-config.service';
 import { transformToDailyReportPdfDto } from '../utils/daily-report-pdf-transformer';
 import { DailyReportPdfDto } from '../types/dto/daily-report-pdf.dto';
 import {
@@ -61,9 +62,11 @@ export interface EquipmentReceptionStatus {
  */
 export class ReportService {
   private dashboardService: DashboardService;
+  private precalentamientoService: PrecalentamientoConfigService;
 
   constructor() {
     this.dashboardService = new DashboardService();
+    this.precalentamientoService = new PrecalentamientoConfigService();
   }
 
   /**
@@ -327,6 +330,32 @@ export class ReportService {
 
       // TODO: Add tenant_id to entity when column exists
       // entity.tenant_id = tenantId;
+
+      // Auto-apply precalentamiento config when not explicitly provided
+      if (entity.horas_precalentamiento === undefined || entity.horas_precalentamiento === null) {
+        const equipoId = entity.equipo_id || dtoData.equipo_id;
+        if (equipoId) {
+          try {
+            const equipoRepo = AppDataSource.getRepository(Equipment);
+            const equipo = await equipoRepo.findOne({
+              where: { id: equipoId },
+              select: ['id', 'tipoEquipoId'],
+            });
+            if (equipo?.tipoEquipoId) {
+              entity.horas_precalentamiento = await this.precalentamientoService.obtenerHoras(
+                equipo.tipoEquipoId
+              );
+            }
+          } catch (precalErr) {
+            // Non-critical: log and continue without auto-apply
+            Logger.warn('No se pudo auto-aplicar precalentamiento', {
+              equipoId,
+              error: precalErr instanceof Error ? precalErr.message : String(precalErr),
+              context: 'ReportService.createReport',
+            });
+          }
+        }
+      }
 
       // Persist
       const created: DailyReportRawRow = await DailyReportModel.create(entity);

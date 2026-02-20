@@ -66,6 +66,9 @@ export interface DailyReport {
   gps_accuracy?: number;
   gps_captured_at?: string;
   weather_conditions?: string;
+
+  // Pre-warming hours (auto-populated from precalentamiento_config)
+  horas_precalentamiento?: number;
 }
 
 export interface ProductionRow {
