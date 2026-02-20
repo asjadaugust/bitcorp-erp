@@ -62,17 +62,22 @@ export interface ContractDto {
   jurisdiccion?: string | null;
   plazo_texto?: string | null;
 
-  // Termination (Cláusula 12)
+  // Termination (Cláusula 12) — Resolution & Liquidation
   motivo_resolucion?: string | null;
   fecha_resolucion?: string | null;
   monto_liquidacion?: number | null;
+  causal_resolucion?: string | null;
+  resuelto_por?: number | null;
+  fecha_liquidacion?: string | null;
+  liquidado_por?: number | null;
+  observaciones_liquidacion?: string | null;
 
   // Additional info
   condiciones_especiales?: string | null;
   documento_url?: string | null;
 
   // Status and metadata
-  estado: 'ACTIVO' | 'VENCIDO' | 'CANCELADO' | 'BORRADOR';
+  estado: 'ACTIVO' | 'VENCIDO' | 'CANCELADO' | 'BORRADOR' | 'RESUELTO' | 'LIQUIDADO';
   created_at: string;
   updated_at: string;
   creado_por?: number | null;
@@ -127,6 +132,13 @@ export function toContractDto(entity: any): ContractDto {
       ? new Date(entity.fechaResolucion).toISOString().split('T')[0]
       : null,
     monto_liquidacion: entity.montoLiquidacion || null,
+    causal_resolucion: entity.causalResolucion || null,
+    resuelto_por: entity.resueltoPor || null,
+    fecha_liquidacion: entity.fechaLiquidacion
+      ? new Date(entity.fechaLiquidacion).toISOString().split('T')[0]
+      : null,
+    liquidado_por: entity.liquidadoPor || null,
+    observaciones_liquidacion: entity.observacionesLiquidacion || null,
     condiciones_especiales: entity.condicionesEspeciales,
     documento_url: entity.documentoUrl,
     estado: entity.estado,

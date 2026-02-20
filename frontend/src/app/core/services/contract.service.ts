@@ -190,6 +190,46 @@ export class ContractService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  resolver(
+    id: string,
+    data: {
+      causal_resolucion: string;
+      motivo_resolucion: string;
+      fecha_resolucion: string;
+      monto_liquidacion?: number;
+    }
+  ): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/resolver`, data)
+      .pipe(map((res) => res?.data || res));
+  }
+
+  liquidationCheck(id: string): Observable<{
+    puede_liquidar: boolean;
+    contrato_estado: string;
+    valorizaciones_pendientes: number;
+    total_valorizaciones: number;
+    tiene_acta_devolucion: boolean;
+    observaciones: string[];
+  }> {
+    return this.http
+      .get<any>(`${this.apiUrl}/${id}/liquidation-check`)
+      .pipe(map((res) => res?.data || res));
+  }
+
+  liquidar(
+    id: string,
+    data: {
+      fecha_liquidacion: string;
+      monto_liquidacion?: number;
+      observaciones_liquidacion?: string;
+    }
+  ): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/liquidar`, data)
+      .pipe(map((res) => res?.data || res));
+  }
+
   getAddendums(contractId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${contractId}/addendums`).pipe(
       map((response: any) => {

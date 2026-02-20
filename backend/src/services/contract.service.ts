@@ -1062,6 +1062,157 @@ export class ContractService {
   }
 
   /**
+   * Formal contract resolution — PRD §12
+   *
+   * Transitions contract from ACTIVO → RESUELTO with documented causal and motivo.
+   * Does NOT validate valorizaciones; that is done in liquidar().
+   */
+  async resolver(
+    id: number,
+    dto: {
+      causal_resolucion: string;
+      motivo_resolucion: string;
+      fecha_resolucion: string;
+      monto_liquidacion?: number;
+      usuarioId: number;
+    }
+  ): Promise<ContractDto> {
+    const contract = await this.contractRepository.findOne({ where: { id } });
+    if (!contract) throw new NotFoundError('Contract', id);
+
+    if (!['ACTIVO', 'VENCIDO'].includes(contract.estado)) {
+      throw new ConflictError(
+        `No se puede resolver un contrato en estado ${contract.estado}. Solo contratos ACTIVO o VENCIDO.`
+      );
+    }
+
+    if (!dto.causal_resolucion) throw new ValidationError('La causal de resolución es requerida');
+    if (!dto.motivo_resolucion?.trim())
+      throw new ValidationError('El motivo de resolución es requerido');
+    if (!dto.fecha_resolucion) throw new ValidationError('La fecha de resolución es requerida');
+
+    await this.contractRepository.update(id, {
+      estado: 'RESUELTO' as any,
+      causalResolucion: dto.causal_resolucion as any,
+      motivoResolucion: dto.motivo_resolucion.trim(),
+      fechaResolucion: new Date(dto.fecha_resolucion),
+      montoLiquidacion: dto.monto_liquidacion,
+      resueltoPor: dto.usuarioId,
+    });
+
+    const updated = await this.contractRepository.findOne({ where: { id } });
+    logger.info('Contract resolved', {
+      id,
+      causal: dto.causal_resolucion,
+      numero: contract.numeroContrato,
+    });
+    return toContractDto(updated);
+  }
+
+  /**
+   * Check prerequisites for contract liquidation (Feature #42)
+   *
+   * Verifies:
+   * 1. Contract is in RESUELTO state
+   * 2. All linked valorizaciones are PAGADO
+   * 3. An Acta de Devolución exists for the equipment
+   */
+  async verificarLiquidacion(id: number): Promise<{
+    puede_liquidar: boolean;
+    contrato_estado: string;
+    valorizaciones_pendientes: number;
+    total_valorizaciones: number;
+    tiene_acta_devolucion: boolean;
+    observaciones: string[];
+  }> {
+    const contract = await this.contractRepository.findOne({ where: { id } });
+    if (!contract) throw new NotFoundError('Contract', id);
+
+    const observaciones: string[] = [];
+
+    // Check 1: Contract must be in RESUELTO state
+    if (contract.estado !== 'RESUELTO') {
+      observaciones.push(`El contrato debe estar en estado RESUELTO (actual: ${contract.estado})`);
+    }
+
+    // Check 2: Valorizaciones — all must be PAGADO
+    const valuationRows = await AppDataSource.query(
+      `SELECT
+        COUNT(*) FILTER (WHERE estado != 'PAGADO') AS pendientes,
+        COUNT(*) AS total
+       FROM equipo.valorizacion_equipo
+       WHERE contrato_id = $1`,
+      [id]
+    );
+    const pendientes = parseInt(valuationRows[0]?.pendientes || '0');
+    const total = parseInt(valuationRows[0]?.total || '0');
+
+    if (pendientes > 0) {
+      observaciones.push(`Existen ${pendientes} valorización(es) sin pagar (de ${total} total)`);
+    }
+
+    // Check 3: Acta de Devolución for this equipment
+    const actaRows = await AppDataSource.query(
+      `SELECT COUNT(*) AS cnt
+       FROM equipo.acta_devolucion
+       WHERE equipo_id = $1 AND is_active = true`,
+      [contract.equipoId]
+    );
+    const tieneActa = parseInt(actaRows[0]?.cnt || '0') > 0;
+    if (!tieneActa) {
+      observaciones.push('No existe Acta de Devolución registrada para el equipo');
+    }
+
+    const puede = observaciones.length === 0;
+    return {
+      puede_liquidar: puede,
+      contrato_estado: contract.estado,
+      valorizaciones_pendientes: pendientes,
+      total_valorizaciones: total,
+      tiene_acta_devolucion: tieneActa,
+      observaciones,
+    };
+  }
+
+  /**
+   * Formal contract liquidation — Feature #42
+   *
+   * Transitions contract from RESUELTO → LIQUIDADO.
+   * Validates prerequisites via verificarLiquidacion() before proceeding.
+   */
+  async liquidar(
+    id: number,
+    dto: {
+      fecha_liquidacion: string;
+      monto_liquidacion?: number;
+      observaciones_liquidacion?: string;
+      usuarioId: number;
+    }
+  ): Promise<ContractDto> {
+    const check = await this.verificarLiquidacion(id);
+    if (!check.puede_liquidar) {
+      throw new BusinessRuleError(
+        `No se puede liquidar el contrato: ${check.observaciones.join('; ')}`,
+        'LIQUIDACION_PREREQUISITES_NOT_MET'
+      );
+    }
+
+    await this.contractRepository.update(id, {
+      estado: 'LIQUIDADO' as any,
+      fechaLiquidacion: new Date(dto.fecha_liquidacion),
+      liquidadoPor: dto.usuarioId,
+      ...(dto.monto_liquidacion !== undefined && { montoLiquidacion: dto.monto_liquidacion }),
+      ...(dto.observaciones_liquidacion && {
+        observacionesLiquidacion: dto.observaciones_liquidacion,
+      }),
+    });
+
+    const contract = await this.contractRepository.findOne({ where: { id } });
+    logger.info('Contract liquidated', { id, numero: contract?.numeroContrato });
+    return toContractDto(contract);
+  }
+
+  /**
    * Get expiring contracts
    *
    * Retrieves contracts expiring within the specified number of days.

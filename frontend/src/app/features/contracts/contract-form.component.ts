@@ -67,7 +67,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       <form [formGroup]="contractForm" class="form-grid">
         <!-- Section 1: Basic Information -->
         <div class="form-section full-width">
-          <h3>Información del Contrato</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-file-contract"></i> Información del Contrato
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="numero_contrato">Número de Contrato *</label>
@@ -137,7 +139,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
         <!-- Section: Ownership Proof & Jurisdiction -->
         <div class="form-section full-width">
-          <h3>Propiedad del Equipo y Jurisdicción</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-shield-halved"></i> Propiedad del Equipo y Jurisdicción
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="documento_acredita">Documento que Acredita Propiedad</label>
@@ -186,7 +190,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
         <!-- Section 2: Financial & Dates -->
         <div class="form-section full-width">
-          <h3>Detalles Financieros y Fechas</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-dollar-sign"></i> Detalles Financieros y Fechas
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="fecha_inicio">Fecha de Inicio *</label>
@@ -295,7 +301,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
         <!-- Section: ANEXO A - Tariff Inclusions -->
         <div class="form-section full-width" *ngIf="isEditMode">
-          <h3>ANEXO A — Inclusiones de Tarifa</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-list-check"></i> Anexo A — Inclusiones de Tarifa
+          </h3>
           <div class="annex-editor">
             <div class="annex-row annex-header">
               <span class="annex-concept">Concepto</span>
@@ -348,7 +356,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
         <!-- Section: ANEXO B - Valuation Conditions -->
         <div class="form-section full-width" *ngIf="isEditMode">
-          <h3>ANEXO B — Condiciones de Valorización</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-calculator"></i> Anexo B — Condiciones de Valorización
+          </h3>
           <div class="annex-editor">
             <div class="annex-row annex-header">
               <span class="annex-concept">Concepto</span>
@@ -401,7 +411,9 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 
         <!-- Section 3: Document Attachment -->
         <div class="form-section full-width">
-          <h3>Documento del Contrato</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-paperclip"></i> Documento del Contrato
+          </h3>
           <div class="section-grid">
             <div class="form-group full-width">
               <label>Adjuntar Contrato Firmado</label>
@@ -489,33 +501,6 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         gap: 0.5rem;
         cursor: pointer;
         font-size: 14px;
-      }
-
-      label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-700);
-      }
-
-      .form-control,
-      .form-select {
-        padding: 0.625rem;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .form-control:focus,
-      .form-select:focus {
-        border-color: var(--primary-500);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--primary-100);
-      }
-
-      .error-msg {
-        color: var(--semantic-red-600);
-        font-size: 12px;
       }
 
       @media (max-width: 768px) {

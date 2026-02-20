@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ContractService } from '../../core/services/contract.service';
 import { Contract } from '../../core/models/contract.model';
@@ -14,523 +15,500 @@ import {
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
 
+import {
+  EntityDetailShellComponent,
+  EntityDetailSidebarCardComponent,
+  EntityDetailHeader,
+  AuditInfo,
+  NotFoundConfig,
+} from '../../shared/components/entity-detail';
+
 @Component({
   selector: 'app-contract-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatDialogModule, AeroTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatDialogModule,
+    AeroTableComponent,
+    EntityDetailShellComponent,
+    EntityDetailSidebarCardComponent,
+  ],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div *ngIf="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Cargando detalles del contrato...</p>
-        </div>
-
-        <div *ngIf="!loading && contract" class="detail-grid">
-          <div class="detail-main card">
-            <div class="detail-header">
-              <div>
-                <h1>Contrato {{ contract.numero_contrato }}</h1>
-                <p class="text-subtitle">
-                  {{ contract.proveedor_razon_social || 'Proveedor no especificado' }}
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="contract"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      [notFound]="notFoundConfig"
+      loadingText="Cargando detalles del contrato..."
+    >
+      <!-- ── MAIN CONTENT ────────────────────────────────────── -->
+      <div entity-main-content class="detail-sections">
+        <!-- Resolution Alert -->
+        @if (contract?.estado === 'RESUELTO' || contract?.estado === 'LIQUIDADO') {
+          <div
+            class="alert"
+            [class.alert-warning]="contract?.estado === 'RESUELTO'"
+            [class.alert-success]="contract?.estado === 'LIQUIDADO'"
+          >
+            <i
+              class="fa-solid"
+              [class.fa-scale-balanced]="contract?.estado === 'RESUELTO'"
+              [class.fa-circle-check]="contract?.estado === 'LIQUIDADO'"
+            ></i>
+            <div>
+              <strong>{{
+                contract?.estado === 'LIQUIDADO' ? 'Contrato Liquidado' : 'Contrato Resuelto'
+              }}</strong>
+              @if (contract?.fecha_resolucion) {
+                <p>
+                  Resuelto el {{ contract!.fecha_resolucion | date: 'dd/MM/yyyy' }}.
+                  @if (contract?.causal_resolucion) {
+                    Causal: {{ causalLabel(contract!.causal_resolucion!) }}
+                  }
                 </p>
-              </div>
-              <div class="detail-status">
+              }
+              @if (contract?.fecha_liquidacion) {
+                <p>Liquidado el {{ contract!.fecha_liquidacion | date: 'dd/MM/yyyy' }}.</p>
+              }
+              @if (contract?.motivo_resolucion) {
+                <p>
+                  <em>{{ contract!.motivo_resolucion }}</em>
+                </p>
+              }
+            </div>
+          </div>
+        }
+
+        <section class="detail-section">
+          <h2>Información General</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Fecha Inicio</label>
+              <p>{{ contract?.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Fecha Fin</label>
+              <p>{{ contract?.fecha_fin | date: 'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Tarifa</label>
+              <p class="highlight">
+                {{ contract?.tarifa | currency: contract?.moneda || 'USD' }}
+              </p>
+            </div>
+            <div class="info-item">
+              <label>Tipo</label>
+              <p>{{ contract?.tipo || 'Alquiler' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <h2>Equipo Asignado</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Codigo Equipo</label>
+              <p>
+                <a [routerLink]="['/equipment', contract?.equipo_id]" class="link-primary">
+                  {{ contract?.equipo_codigo || 'N/A' }}
+                </a>
+              </p>
+            </div>
+            <div class="info-item">
+              <label>Marca/Modelo</label>
+              <p>{{ contract?.equipo_marca || '-' }} {{ contract?.equipo_modelo || '' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Serie</label>
+              <p>{{ contract?.equipo_placa || '-' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Ubicación</label>
+              <p>{{ contract?.plazo_texto || 'No especificada' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Historial de Valorizaciones -->
+        @if (valuations.length > 0) {
+          <section class="detail-section">
+            <h2>Historial de Valorizaciones</h2>
+            <aero-table
+              [columns]="valuationColumns"
+              [data]="valuations"
+              [loading]="false"
+              [templates]="{
+                numero_valorizacion: valCodeTemplate,
+                total_valorizado: amountTemplate,
+              }"
+              (rowClick)="router.navigate(['/equipment/valuations', $event.id])"
+            >
+            </aero-table>
+
+            <ng-template #valCodeTemplate let-row>
+              <a
+                [routerLink]="['/equipment/valuations', row.id]"
+                class="code-badge link-primary"
+                (click)="$event.stopPropagation()"
+              >
+                {{ row.numeroValorizacion || '#' + row.id }}
+              </a>
+            </ng-template>
+
+            <ng-template #amountTemplate let-row>
+              <span class="font-mono">
+                {{ row.totalValorizado | currency: 'PEN' : 'S/ ' }}
+              </span>
+            </ng-template>
+          </section>
+        }
+
+        <!-- Annex A -->
+        @if (annexA.length > 0) {
+          <section class="detail-section">
+            <h2>ANEXO A — Inclusiones de Tarifa</h2>
+            <aero-table
+              [columns]="annexColumns"
+              [data]="annexA"
+              [loading]="false"
+              [templates]="{ incluido: incluidoTemplate }"
+            >
+            </aero-table>
+
+            <ng-template #incluidoTemplate let-row>
+              <span [class]="row.incluido ? 'text-success' : 'text-danger'" style="font-weight:600">
+                {{ row.incluido ? 'Sí' : 'No' }}
+              </span>
+            </ng-template>
+          </section>
+        }
+
+        <!-- Propiedad y Jurisdicción -->
+        @if (contract?.documento_acredita || contract?.jurisdiccion) {
+          <section class="detail-section">
+            <h2>Propiedad y Jurisdicción</h2>
+            <div class="info-grid">
+              @if (contract?.documento_acredita) {
+                <div class="info-item">
+                  <label>Documento que Acredita</label>
+                  <p>{{ contract?.documento_acredita }}</p>
+                </div>
+              }
+              @if (contract?.fecha_acreditada) {
+                <div class="info-item">
+                  <label>Fecha Acreditada</label>
+                  <p>{{ contract?.fecha_acreditada | date: 'dd/MM/yyyy' }}</p>
+                </div>
+              }
+              @if (contract?.jurisdiccion) {
+                <div class="info-item">
+                  <label>Jurisdicción</label>
+                  <p>{{ contract?.jurisdiccion }}</p>
+                </div>
+              }
+            </div>
+          </section>
+        }
+      </div>
+
+      <!-- ── SIDEBAR ACTIONS ─────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
+          <button class="btn btn-secondary btn-block" (click)="editContract()">
+            <i class="fa-solid fa-pen"></i> Editar
+          </button>
+        }
+        <button class="btn btn-secondary btn-block" (click)="viewAddendums()">
+          <i class="fa-solid fa-file-signature"></i> Ver Adendas
+        </button>
+        <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
+          <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+        </button>
+        @if (['ACTIVO', 'VENCIDO'].includes(contract?.estado || '')) {
+          <button class="btn btn-warning btn-block" (click)="showResolverModal = true">
+            <i class="fa-solid fa-scale-balanced"></i> Resolver Contrato
+          </button>
+        }
+        @if (contract?.estado === 'RESUELTO') {
+          <button class="btn btn-primary btn-block" (click)="abrirLiquidacion()">
+            <i class="fa-solid fa-circle-check"></i> Liquidar Contrato
+          </button>
+        }
+        @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
+          <button class="btn btn-danger btn-block" (click)="deleteContract()">
+            <i class="fa-solid fa-trash"></i> Cancelar
+          </button>
+        }
+        <button type="button" class="btn btn-ghost btn-block" routerLink="/equipment/contracts">
+          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+        </button>
+      </ng-container>
+
+      <!-- ── SIDEBAR AFTER (extra cards below audit) ─────────── -->
+
+      <!-- Detalles de Vigencia -->
+      <entity-detail-sidebar-card entity-sidebar-after title="Detalles de Vigencia">
+        <div class="info-column">
+          <div class="info-item">
+            <label>Cons. Contrato</label>
+            <p>{{ contract?.fecha_contrato | date: 'dd/MM/yyyy' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Inicio Vigencia</label>
+            <p>{{ contract?.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Fin Vigencia</label>
+            <p>{{ contract?.fecha_fin | date: 'dd/MM/yyyy' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Días Restantes</label>
+            <p [class.text-danger]="getDaysRemaining(contract?.fecha_fin) <= 30" class="font-bold">
+              {{ getDaysRemaining(contract?.fecha_fin) }} días
+            </p>
+          </div>
+        </div>
+      </entity-detail-sidebar-card>
+
+      <!-- Documentos Requeridos -->
+      @if (requiredDocs.length > 0) {
+        <entity-detail-sidebar-card entity-sidebar-after title="Documentos Requeridos">
+          <div class="doc-list">
+            @for (doc of requiredDocs; track doc.tipo_documento) {
+              <div class="doc-item">
+                <span class="doc-name">{{ translateDocType(doc.tipo_documento) }}</span>
                 <span
-                  class="status-badge"
-                  [class.status-ACTIVO]="contract.estado === 'ACTIVO'"
-                  [class.status-PENDIENTE]="
-                    contract.estado === 'PENDIENTE' || contract.estado === 'BORRADOR'
-                  "
-                  [class.status-APROBADO]="contract.estado === 'ACTIVO'"
-                  [class.status-CANCELADO]="
-                    contract.estado === 'FINALIZADO' || contract.estado === 'RESCINDIDO'
-                  "
-                  [class.status-VENCIDO]="contract.estado === 'VENCIDO'"
+                  class="badge"
+                  [class.badge-success]="doc.estado === 'CARGADO'"
+                  [class.badge-warning]="doc.estado === 'PENDIENTE'"
                 >
-                  {{ getStatusLabel(contract.estado) }}
+                  {{ doc.estado }}
                 </span>
               </div>
+            }
+          </div>
+        </entity-detail-sidebar-card>
+      }
+    </entity-detail-shell>
+
+    <!-- ── MODAL: Resolver Contrato ──────────────────────────── -->
+    @if (showResolverModal) {
+      <div class="modal" (click)="showResolverModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2><i class="fa-solid fa-scale-balanced"></i> Resolver Contrato</h2>
+            <button type="button" class="close" (click)="showResolverModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p class="modal-desc">
+              La resolución formal registra la terminación anticipada del contrato según PRD §12.
+            </p>
+            <div class="form-group">
+              <label>Causal de Resolución <span class="required">*</span></label>
+              <select class="form-select" [(ngModel)]="resolverForm.causal_resolucion">
+                <option value="">Seleccionar causal...</option>
+                <option value="MUTUO_ACUERDO">§12.1 — Mutuo acuerdo</option>
+                <option value="INCUMPLIMIENTO_ARRENDADOR">
+                  §12.2 — Incumplimiento del arrendador
+                </option>
+                <option value="INCUMPLIMIENTO_ARRENDATARIO">
+                  §12.3 — Incumplimiento del arrendatario
+                </option>
+                <option value="FUERZA_MAYOR">§12.4 — Caso fortuito o fuerza mayor</option>
+                <option value="VENCIMIENTO">§12.5 — Vencimiento de plazo</option>
+                <option value="DECISION_UNILATERAL">
+                  §12.6 — Decisión unilateral (con preaviso)
+                </option>
+                <option value="QUIEBRA">§12.7 — Quiebra / insolvencia</option>
+                <option value="INCAPACIDAD">§12.8 — Muerte o incapacidad del arrendador</option>
+                <option value="JUDICIAL">§12.9 — Intervención judicial</option>
+                <option value="OTRO">§12.10 — Otras causas previstas</option>
+              </select>
             </div>
-
-            <div class="detail-sections">
-              <!-- Termination Alert -->
-              <div
-                *ngIf="contract.fecha_resolucion"
-                class="alert alert-warning"
-                style="margin-bottom: var(--s-24)"
-              >
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <div>
-                  <strong>Contrato Rescindido</strong>
-                  <p>
-                    Este contrato fue rescindido el
-                    {{ contract.fecha_resolucion | date: 'dd/MM/yyyy' }}.
-                    <span *ngIf="contract.motivo_resolucion">
-                      Motivo: {{ contract.motivo_resolucion }}
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              <section class="detail-section">
-                <h2>Información General</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Fecha Inicio</label>
-                    <p>{{ contract.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha Fin</label>
-                    <p>{{ contract.fecha_fin | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tarifa</label>
-                    <p class="highlight">
-                      {{ contract.tarifa | currency: contract.moneda || 'USD' }}
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tipo</label>
-                    <p>{{ contract.tipo || 'Alquiler' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Equipo Asignado</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Codigo Equipo</label>
-                    <p>
-                      <a
-                        [routerLink]="['/equipment', contract.equipo_id]"
-                        style="color: var(--primary-500); text-decoration: none; font-weight: 500;"
-                      >
-                        {{ contract.equipo_codigo || 'N/A' }}
-                      </a>
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>Marca/Modelo</label>
-                    <p>{{ contract.equipo_marca || '-' }} {{ contract.equipo_modelo || '' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Serie</label>
-                    <p>{{ contract.equipo_placa || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Ubicación</label>
-                    <p>{{ contract.plazo_texto || 'No especificada' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Historial de Valorizaciones -->
-              <section class="detail-section" *ngIf="valuations.length > 0">
-                <h2>Historial de Valorizaciones</h2>
-                <aero-table
-                  [columns]="valuationColumns"
-                  [data]="valuations"
-                  [loading]="false"
-                  [templates]="{
-                    numero_valorizacion: valCodeTemplate,
-                    total_valorizado: amountTemplate,
-                  }"
-                  (rowClick)="router.navigate(['/equipment/valuations', $event.id])"
-                >
-                </aero-table>
-
-                <!-- Custom Column Templates -->
-                <ng-template #valCodeTemplate let-row>
-                  <a
-                    [routerLink]="['/equipment/valuations', row.id]"
-                    class="code-badge"
-                    style="color: var(--primary-500); text-decoration: none;"
-                    (click)="$event.stopPropagation()"
-                  >
-                    {{ row.numeroValorizacion || '#' + row.id }}
-                  </a>
-                </ng-template>
-
-                <ng-template #amountTemplate let-row>
-                  <span class="font-mono">
-                    {{ row.totalValorizado | currency: 'PEN' : 'S/ ' }}
-                  </span>
-                </ng-template>
-              </section>
-
-              <!-- Annex A -->
-              <section class="detail-section" *ngIf="annexA.length > 0">
-                <h2>ANEXO A — Inclusiones de Tarifa</h2>
-                <aero-table
-                  [columns]="annexColumns"
-                  [data]="annexA"
-                  [loading]="false"
-                  [templates]="{
-                    incluido: incluidoTemplate,
-                  }"
-                >
-                </aero-table>
-
-                <ng-template #incluidoTemplate let-row>
-                  <span
-                    [class]="row.incluido ? 'text-success' : 'text-danger'"
-                    style="font-weight: 600;"
-                  >
-                    {{ row.incluido ? 'Sí' : 'No' }}
-                  </span>
-                </ng-template>
-              </section>
-
-              <!-- Propiedad y Jurisdicción -->
-              <section
-                class="detail-section"
-                *ngIf="contract.documento_acredita || contract.jurisdiccion"
-              >
-                <h2>Propiedad y Jurisdicción</h2>
-                <div class="info-grid">
-                  <div class="info-item" *ngIf="contract.documento_acredita">
-                    <label>Documento que Acredita</label>
-                    <p>{{ contract.documento_acredita }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="contract.fecha_acreditada">
-                    <label>Fecha Acreditada</label>
-                    <p>{{ contract.fecha_acreditada | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="contract.jurisdiccion">
-                    <label>Jurisdicción</label>
-                    <p>{{ contract.jurisdiccion }}</p>
-                  </div>
-                </div>
-              </section>
+            <div class="form-group">
+              <label>Motivo Detallado <span class="required">*</span></label>
+              <textarea
+                class="form-control"
+                rows="3"
+                [(ngModel)]="resolverForm.motivo_resolucion"
+                placeholder="Describa las circunstancias de la resolución..."
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label>Fecha de Resolución <span class="required">*</span></label>
+              <input type="date" class="form-control" [(ngModel)]="resolverForm.fecha_resolucion" />
+            </div>
+            <div class="form-group">
+              <label>Monto de Liquidación Acordado <span class="optional">(opcional)</span></label>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="resolverForm.monto_liquidacion"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+              />
             </div>
           </div>
-
-          <div class="detail-sidebar">
-            <!-- Acciones Card -->
-            <div class="card">
-              <h3 class="sidebar-card-title">Acciones</h3>
-              <div class="workflow-actions">
-                <button class="btn btn-secondary btn-block" (click)="editContract()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button class="btn btn-secondary btn-block" (click)="viewAddendums()">
-                  <i class="fa-solid fa-file-signature"></i> Ver Adendas
-                </button>
-                <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
-                  <i class="fa-solid fa-file-pdf"></i> Descargar PDF
-                </button>
-                <button class="btn btn-danger btn-block" (click)="deleteContract()">
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-block mt-2"
-                  routerLink="/equipment/contracts"
-                >
-                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-                </button>
-              </div>
-            </div>
-
-            <!-- Detalles de Vigencia Card -->
-            <div class="card">
-              <h3>Detalles de Vigencia</h3>
-              <div class="info-column">
-                <div class="info-item">
-                  <label>Cons. Contrato</label>
-                  <p>{{ contract.fecha_contrato | date: 'dd/MM/yyyy' }}</p>
-                </div>
-                <div class="info-item">
-                  <label>Inicio Vigencia</label>
-                  <p>{{ contract.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
-                </div>
-                <div class="info-item">
-                  <label>Fin Vigencia</label>
-                  <p>{{ contract.fecha_fin | date: 'dd/MM/yyyy' }}</p>
-                </div>
-                <div class="info-item">
-                  <label>Días Restantes</label>
-                  <p
-                    [class.text-danger]="getDaysRemaining(contract.fecha_fin) <= 30"
-                    style="font-weight: 600;"
-                  >
-                    {{ getDaysRemaining(contract.fecha_fin) }} días
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Documentos Card -->
-            <div class="card" *ngIf="requiredDocs.length > 0">
-              <h3>Documentos Requeridos</h3>
-              <div class="doc-list" style="display: flex; flex-direction: column; gap: 12px;">
-                <div
-                  *ngFor="let doc of requiredDocs"
-                  style="padding: 8px; border: 1px solid var(--grey-100); border-radius: 6px;"
-                >
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 13px; font-weight: 500;">{{
-                      translateDocType(doc.tipo_documento)
-                    }}</span>
-                    <span
-                      class="badge"
-                      [class.badge-success]="doc.estado === 'CARGADO'"
-                      [class.badge-warning]="doc.estado === 'PENDIENTE'"
-                      >{{ doc.estado }}</span
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Auditoría Card -->
-            <div class="card">
-              <h3>Auditoría</h3>
-              <div class="info-column">
-                <div class="info-item">
-                  <label>Actualizado:</label>
-                  <p style="font-size: 13px;">
-                    {{ contract.updated_at | date: 'dd/MM/yyyy HH:mm' }}
-                  </p>
-                </div>
-                <div class="info-item">
-                  <label>Creado:</label>
-                  <p style="font-size: 13px;">
-                    {{ contract.created_at | date: 'dd/MM/yyyy HH:mm' }}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showResolverModal = false">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-warning"
+              (click)="confirmarResolucion()"
+              [disabled]="
+                savingLifecycle ||
+                !resolverForm.causal_resolucion ||
+                !resolverForm.motivo_resolucion ||
+                !resolverForm.fecha_resolucion
+              "
+            >
+              @if (savingLifecycle) {
+                Guardando...
+              } @else {
+                Registrar Resolución
+              }
+            </button>
           </div>
-        </div>
-
-        <!-- Empty State -->
-        <div *ngIf="!loading && !contract" class="empty-state card">
-          <i
-            class="fa-solid fa-file-circle-xmark"
-            style="font-size: 48px; color: var(--grey-300); margin-bottom: 16px;"
-          ></i>
-          <h3>Contrato no encontrado</h3>
-          <p>La información solicitada no está disponible actualmente.</p>
-          <button
-            class="btn btn-primary"
-            routerLink="/equipment/contracts"
-            style="margin-top: 16px;"
-          >
-            Ver Todos los Contratos
-          </button>
         </div>
       </div>
-    </div>
+    }
+
+    <!-- ── MODAL: Liquidar Contrato ───────────────────────────── -->
+    @if (showLiquidarModal) {
+      <div class="modal" (click)="showLiquidarModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2><i class="fa-solid fa-circle-check"></i> Liquidar Contrato</h2>
+            <button type="button" class="close" (click)="showLiquidarModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Prerequisites check -->
+            @if (liquidationCheck) {
+              <div
+                class="prereq-panel"
+                [class.prereq-ok]="liquidationCheck.puede_liquidar"
+                [class.prereq-fail]="!liquidationCheck.puede_liquidar"
+              >
+                <h4>Verificación de Requisitos</h4>
+                <ul class="prereq-list">
+                  <li [class.ok]="liquidationCheck.valorizaciones_pendientes === 0">
+                    <i
+                      class="fa-solid"
+                      [class.fa-check]="liquidationCheck.valorizaciones_pendientes === 0"
+                      [class.fa-xmark]="liquidationCheck.valorizaciones_pendientes > 0"
+                    ></i>
+                    Valorizaciones pagadas ({{
+                      liquidationCheck.total_valorizaciones -
+                        liquidationCheck.valorizaciones_pendientes
+                    }}/{{ liquidationCheck.total_valorizaciones }})
+                  </li>
+                  <li [class.ok]="liquidationCheck.tiene_acta_devolucion">
+                    <i
+                      class="fa-solid"
+                      [class.fa-check]="liquidationCheck.tiene_acta_devolucion"
+                      [class.fa-xmark]="!liquidationCheck.tiene_acta_devolucion"
+                    ></i>
+                    Acta de Devolución registrada
+                  </li>
+                </ul>
+                @if (!liquidationCheck.puede_liquidar) {
+                  <p class="prereq-warning">
+                    No se puede liquidar hasta resolver los requisitos anteriores.
+                  </p>
+                }
+              </div>
+            }
+            @if (liquidationCheck?.puede_liquidar) {
+              <div class="form-group">
+                <label>Fecha de Liquidación <span class="required">*</span></label>
+                <input
+                  type="date"
+                  class="form-control"
+                  [(ngModel)]="liquidarForm.fecha_liquidacion"
+                />
+              </div>
+              <div class="form-group">
+                <label>Monto Final de Liquidación <span class="optional">(opcional)</span></label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="liquidarForm.monto_liquidacion"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+              <div class="form-group">
+                <label>Observaciones de Cierre <span class="optional">(opcional)</span></label>
+                <textarea
+                  class="form-control"
+                  rows="3"
+                  [(ngModel)]="liquidarForm.observaciones_liquidacion"
+                  placeholder="Notas sobre saldos, ajustes o condiciones de cierre..."
+                ></textarea>
+              </div>
+            }
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showLiquidarModal = false">
+              Cancelar
+            </button>
+            @if (liquidationCheck?.puede_liquidar) {
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="confirmarLiquidacion()"
+                [disabled]="savingLifecycle || !liquidarForm.fecha_liquidacion"
+              >
+                @if (savingLifecycle) {
+                  Guardando...
+                } @else {
+                  Confirmar Liquidación
+                }
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: [
     `
-      .detail-container {
-        min-height: calc(100vh - 64px);
-        background-color: var(--grey-50);
-        padding: var(--s-32) 0;
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 var(--s-24);
-      }
-
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: var(--s-24);
-        align-items: start;
-
-        @media (max-width: 900px) {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .card {
-        background: white;
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        padding: var(--s-24);
-        border: 1px solid var(--grey-100);
-      }
+      @use 'detail-layout' as *;
 
       .detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: var(--s-32);
-        padding-bottom: var(--s-24);
         border-bottom: 1px solid var(--grey-100);
-
-        h1 {
-          margin: 0;
-          font-size: 24px;
-          font-weight: 700;
-          color: var(--grey-900);
-        }
-
-        .text-subtitle {
-          margin: var(--s-4) 0 0;
-          font-size: 14px;
-          color: var(--grey-500);
-        }
+        margin-bottom: var(--s-24);
+        padding-bottom: var(--s-24);
       }
 
       .detail-sections {
         display: flex;
         flex-direction: column;
-        gap: var(--s-48);
+        gap: var(--s-32);
+        margin-top: var(--s-8);
       }
 
-      .detail-section h2 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--grey-900);
-        margin: 0 0 var(--s-24);
-        text-transform: none;
-        letter-spacing: normal;
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: var(--s-24);
-      }
-
-      .info-item label {
-        display: block;
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-bottom: var(--s-4);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-      }
-
-      .info-item p {
-        margin: 0;
-        font-size: 14px;
-        color: var(--grey-900);
-        font-weight: 500;
-      }
-
-      .highlight {
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        color: var(--primary-500) !important;
-      }
-
-      .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-transform: uppercase;
-
-        &::before {
-          content: '';
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-        }
-      }
-
-      .status-ACTIVO,
-      .status-APROBADO {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-        &::before {
-          background: var(--semantic-green-500);
-        }
-      }
-
-      .status-PENDIENTE,
-      .status-BORRADOR {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-        &::before {
-          background: var(--semantic-yellow-500);
-        }
-      }
-
-      .status-VENCIDO,
-      .status-CANCELADO,
-      .status-RECHAZADO {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-        &::before {
-          background: var(--semantic-red-500);
-        }
-      }
-
-      .detail-sidebar {
+      .alert-row {
         display: flex;
-        flex-direction: column;
-        gap: var(--s-24);
-
-        h3 {
-          font-size: 14px;
-          font-weight: 600;
-          color: var(--grey-900);
-          margin: 0 0 var(--s-16);
-        }
-      }
-
-      .sidebar-card-title {
-        margin-bottom: var(--s-16) !important;
-      }
-
-      .workflow-actions {
-        display: flex;
-        flex-direction: column;
         gap: var(--s-12);
-      }
-
-      .btn {
-        display: flex;
-        align-items: center;
-        .btn-block {
-          width: 100%;
-        }
-
-        .mt-2 {
-          margin-top: 8px;
-        }
-
-        .info-column {
-          display: flex;
-          flex-direction: column;
-          gap: var(--s-16);
-        }
-
-        .text-danger {
-          color: var(--semantic-red-500) !important;
-        }
-
-        .text-success {
-          color: var(--semantic-green-700) !important;
-        }
-
-        .info-column {
-          display: flex;
-          flex-direction: column;
-          gap: var(--s-16);
-        }
-        display: flex;
-        gap: 12px;
-        padding: 16px;
-        border-radius: 8px;
-        font-size: 14px;
+        padding: var(--s-16);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--s-8);
 
         i {
           font-size: 18px;
+          margin-top: 2px;
         }
 
         strong {
@@ -540,6 +518,7 @@ import {
 
         p {
           margin: 0;
+          font-size: 14px;
         }
       }
 
@@ -549,8 +528,58 @@ import {
         border: 1px solid var(--semantic-yellow-200);
       }
 
+      .link-primary {
+        color: var(--primary-500);
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .font-mono {
+        font-family: var(--font-family-mono);
+      }
+
+      .font-bold {
+        font-weight: 700;
+      }
+
+      .text-danger {
+        color: var(--semantic-red-500) !important;
+      }
+
+      .text-success {
+        color: var(--semantic-green-700);
+      }
+
+      /* Sidebar extras */
+      .info-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-16);
+      }
+
+      .doc-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-8);
+      }
+
+      .doc-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--s-8);
+        border: 1px solid var(--grey-100);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
       .badge {
-        padding: 4px 8px;
+        padding: 2px 8px;
         border-radius: 4px;
         font-size: 11px;
         font-weight: 600;
@@ -566,40 +595,177 @@ import {
         color: var(--semantic-yellow-700);
       }
 
-      .loading-state {
+      /* Lifecycle modals */
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 48px;
+        z-index: 1000;
       }
 
-      .spinner {
-        border: 3px solid var(--grey-200);
-        border-top: 3px solid var(--primary-500);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin-bottom: 16px;
+      .modal-content {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        width: 520px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
       }
 
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--s-16) var(--s-24);
+        border-bottom: 1px solid var(--grey-100);
+
+        h2 {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--grey-900);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0;
         }
-        100% {
-          transform: rotate(360deg);
+
+        .close {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--grey-400);
+          padding: 4px;
+          border-radius: 4px;
+          &:hover {
+            color: var(--grey-700);
+          }
         }
       }
 
-      .empty-state {
+      .modal-body {
+        padding: var(--s-24);
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 64px;
-        text-align: center;
+        gap: var(--s-16);
+      }
+
+      .modal-desc {
+        font-size: 13px;
+        color: var(--grey-600);
+        margin: 0;
+        padding: 10px 12px;
+        background: var(--grey-50);
+        border-radius: var(--radius-md);
+      }
+
+      .modal-footer {
+        display: flex;
+        gap: var(--s-8);
+        justify-content: flex-end;
+        padding: var(--s-16) var(--s-24);
+        border-top: 1px solid var(--grey-100);
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        label {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--grey-700);
+        }
+
+        .required {
+          color: var(--semantic-red-500);
+          margin-left: 2px;
+        }
+        .optional {
+          font-size: 11px;
+          color: var(--grey-400);
+        }
+      }
+
+      .form-control,
+      .form-select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--grey-200);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        color: var(--grey-900);
+        background: var(--white);
+        &:focus {
+          outline: 2px solid var(--primary-300);
+          border-color: var(--primary-500);
+        }
+      }
+
+      .prereq-panel {
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        margin-bottom: 4px;
+
+        h4 {
+          font-size: 13px;
+          font-weight: 600;
+          margin: 0 0 10px;
+        }
+
+        &.prereq-ok {
+          background: #dcfce7;
+          border: 1px solid #86efac;
+        }
+        &.prereq-fail {
+          background: #fef2f2;
+          border: 1px solid #fca5a5;
+        }
+      }
+
+      .prereq-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        li {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          color: var(--grey-600);
+
+          &.ok {
+            color: #15803d;
+          }
+
+          i.fa-check {
+            color: #22c55e;
+          }
+          i.fa-xmark {
+            color: #ef4444;
+          }
+        }
+      }
+
+      .prereq-warning {
+        font-size: 12px;
+        color: #b91c1c;
+        margin: 8px 0 0;
+        font-style: italic;
+      }
+
+      .alert-success {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+        border: 1px solid var(--semantic-green-200);
       }
     `,
   ],
@@ -619,6 +785,73 @@ export class ContractDetailComponent implements OnInit {
   annexB: any[] = [];
   requiredDocs: any[] = [];
 
+  // WS-16: Lifecycle modals
+  showResolverModal = false;
+  showLiquidarModal = false;
+  savingLifecycle = false;
+  liquidationCheck: {
+    puede_liquidar: boolean;
+    contrato_estado: string;
+    valorizaciones_pendientes: number;
+    total_valorizaciones: number;
+    tiene_acta_devolucion: boolean;
+    observaciones: string[];
+  } | null = null;
+
+  resolverForm = {
+    causal_resolucion: '',
+    motivo_resolucion: '',
+    fecha_resolucion: new Date().toISOString().split('T')[0],
+    monto_liquidacion: undefined as number | undefined,
+  };
+
+  liquidarForm = {
+    fecha_liquidacion: new Date().toISOString().split('T')[0],
+    monto_liquidacion: undefined as number | undefined,
+    observaciones_liquidacion: '',
+  };
+
+  readonly causalLabels: Record<string, string> = {
+    MUTUO_ACUERDO: 'Mutuo acuerdo (§12.1)',
+    INCUMPLIMIENTO_ARRENDADOR: 'Incumplimiento del arrendador (§12.2)',
+    INCUMPLIMIENTO_ARRENDATARIO: 'Incumplimiento del arrendatario (§12.3)',
+    FUERZA_MAYOR: 'Fuerza mayor (§12.4)',
+    VENCIMIENTO: 'Vencimiento de plazo (§12.5)',
+    DECISION_UNILATERAL: 'Decisión unilateral (§12.6)',
+    QUIEBRA: 'Quiebra / insolvencia (§12.7)',
+    INCAPACIDAD: 'Incapacidad del arrendador (§12.8)',
+    JUDICIAL: 'Intervención judicial (§12.9)',
+    OTRO: 'Otras causas (§12.10)',
+  };
+
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-file-contract',
+      title: `Contrato ${this.contract?.numero_contrato ?? ''}`,
+      subtitle: this.contract?.proveedor_razon_social || 'Proveedor no especificado',
+      codeBadge: this.contract?.numero_contrato,
+      statusLabel: this.getStatusLabel(this.contract?.estado ?? 'BORRADOR'),
+      statusClass: this.getStatusClass(this.contract?.estado ?? 'BORRADOR'),
+    };
+  }
+
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        { date: this.contract?.updated_at, label: 'Última actualización' },
+        { date: this.contract?.created_at, label: 'Contrato registrado' },
+      ],
+    };
+  }
+
+  notFoundConfig: NotFoundConfig = {
+    icon: 'fa-solid fa-file-circle-xmark',
+    title: 'Contrato no encontrado',
+    message: 'La información solicitada no está disponible actualmente.',
+    backLabel: 'Ver Todos los Contratos',
+    backRoute: '/equipment/contracts',
+  };
+
   valuationColumns: TableColumn[] = [
     { key: 'numero_valorizacion', label: 'N° Valorización', type: 'template' },
     { key: 'periodo', label: 'Periodo', type: 'text' },
@@ -630,16 +863,8 @@ export class ContractDetailComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        BORRADOR: {
-          label: 'Borrador',
-          class: 'status-badge status-BORRADOR',
-          icon: 'fa-pencil',
-        },
-        PENDIENTE: {
-          label: 'Pendiente',
-          class: 'status-badge status-PENDIENTE',
-          icon: 'fa-clock',
-        },
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-BORRADOR', icon: 'fa-pencil' },
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-PENDIENTE', icon: 'fa-clock' },
         EN_REVISION: {
           label: 'En Revisión',
           class: 'status-badge status-PENDIENTE',
@@ -650,11 +875,7 @@ export class ContractDetailComponent implements OnInit {
           class: 'status-badge status-PENDIENTE',
           icon: 'fa-clipboard-check',
         },
-        APROBADO: {
-          label: 'Aprobado',
-          class: 'status-badge status-APROBADO',
-          icon: 'fa-check',
-        },
+        APROBADO: { label: 'Aprobado', class: 'status-badge status-APROBADO', icon: 'fa-check' },
         PAGADO: {
           label: 'Pagado',
           class: 'status-badge status-APROBADO',
@@ -743,7 +964,6 @@ export class ContractDetailComponent implements OnInit {
         },
         error: (error) => {
           console.error('Failed to delete contract:', error);
-          this.showDeleteModal = false;
         },
       });
     }
@@ -774,7 +994,7 @@ export class ContractDetailComponent implements OnInit {
       if (result && this.contract) {
         this.contractService.createAddendum(this.contract.id.toString(), result).subscribe({
           next: () => {
-            this.loadContract(this.contract!.id.toString()); // Reload to show updated end date
+            this.loadContract(this.contract!.id.toString());
             alert('Adenda creada exitosamente');
           },
           error: (err) => console.error('Error creating addendum', err),
@@ -802,16 +1022,7 @@ export class ContractDetailComponent implements OnInit {
     });
   }
 
-  isExpiring(dateStr: string): boolean {
-    if (!dateStr) return false;
-    const endDate = new Date(dateStr);
-    const today = new Date();
-    const diffTime = endDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 && diffDays <= 30;
-  }
-
-  getDaysRemaining(dateStr: string): number {
+  getDaysRemaining(dateStr: string | undefined): number {
     if (!dateStr) return 0;
     const endDate = new Date(dateStr);
     const today = new Date();
@@ -819,15 +1030,96 @@ export class ContractDetailComponent implements OnInit {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
+  causalLabel(causal: string): string {
+    return this.causalLabels[causal] || causal;
+  }
+
+  abrirLiquidacion(): void {
+    if (!this.contract) return;
+    this.liquidationCheck = null;
+    this.contractService.liquidationCheck(this.contract.id.toString()).subscribe({
+      next: (check: any) => {
+        this.liquidationCheck = check;
+        this.showLiquidarModal = true;
+      },
+      error: (err: any) =>
+        alert('Error verificando requisitos: ' + (err.error?.error?.message || err.message)),
+    });
+  }
+
+  confirmarResolucion(): void {
+    if (!this.contract) return;
+    this.savingLifecycle = true;
+    this.contractService
+      .resolver(this.contract.id.toString(), {
+        causal_resolucion: this.resolverForm.causal_resolucion,
+        motivo_resolucion: this.resolverForm.motivo_resolucion,
+        fecha_resolucion: this.resolverForm.fecha_resolucion,
+        monto_liquidacion: this.resolverForm.monto_liquidacion,
+      })
+      .subscribe({
+        next: () => {
+          this.savingLifecycle = false;
+          this.showResolverModal = false;
+          this.loadContract(this.contract!.id.toString());
+        },
+        error: (err: any) => {
+          this.savingLifecycle = false;
+          alert('Error: ' + (err.error?.error?.message || err.message));
+        },
+      });
+  }
+
+  confirmarLiquidacion(): void {
+    if (!this.contract) return;
+    this.savingLifecycle = true;
+    this.contractService
+      .liquidar(this.contract.id.toString(), {
+        fecha_liquidacion: this.liquidarForm.fecha_liquidacion,
+        monto_liquidacion: this.liquidarForm.monto_liquidacion,
+        observaciones_liquidacion: this.liquidarForm.observaciones_liquidacion || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.savingLifecycle = false;
+          this.showLiquidarModal = false;
+          this.loadContract(this.contract!.id.toString());
+        },
+        error: (err: any) => {
+          this.savingLifecycle = false;
+          alert('Error: ' + (err.error?.error?.message || err.message));
+        },
+      });
+  }
+
   getStatusLabel(estado: string): string {
-    const labelMap: { [key: string]: string } = {
+    const labelMap: Record<string, string> = {
       BORRADOR: 'Borrador',
       ACTIVO: 'Activo',
       VENCIDO: 'Vencido',
       CANCELADO: 'Cancelado',
-      FINALIZADO: 'Finalizado',
-      RESCINDIDO: 'Rescindido',
+      RESUELTO: 'Resuelto',
+      LIQUIDADO: 'Liquidado',
     };
     return labelMap[estado] || estado;
+  }
+
+  getStatusClass(estado: string): string {
+    switch (estado) {
+      case 'ACTIVO':
+        return 'status-APROBADO';
+      case 'PENDIENTE':
+      case 'BORRADOR':
+        return 'status-PENDIENTE';
+      case 'RESUELTO':
+        return 'status-EN_REVISION';
+      case 'LIQUIDADO':
+        return 'status-VALIDADO';
+      case 'VENCIDO':
+      case 'CANCELADO':
+        return 'status-CANCELADO';
+      default:
+        return 'status-BORRADOR';
+    }
   }
 }

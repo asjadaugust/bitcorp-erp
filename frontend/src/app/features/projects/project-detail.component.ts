@@ -3,151 +3,86 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProjectService } from '../../core/services/project.service';
 import { Project } from '../../core/models/project.model';
+import {
+  EntityDetailShellComponent,
+  EntityDetailHeader,
+  AuditInfo,
+} from '../../shared/components/entity-detail';
 
 @Component({
   selector: 'app-project-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div *ngIf="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Cargando detalles del proyecto...</p>
-        </div>
-
-        <div *ngIf="!loading && project" class="detail-grid">
-          <div class="detail-main card">
-            <div class="detail-header">
-              <div>
-                <h1>{{ project.nombre }}</h1>
-                <p class="text-subtitle">{{ project.codigo_proyecto }}</p>
-              </div>
-              <div class="detail-status">
-                <span
-                  class="status-badge"
-                  [class.status-APROBADO]="
-                    project.estado === 'ACTIVO' || project.estado === 'COMPLETADO'
-                  "
-                  [class.status-PENDIENTE]="project.estado === 'EN_PAUSA'"
-                  [class.status-CANCELADO]="project.estado === 'CANCELADO'"
-                >
-                  {{ getStatusLabel(project.estado) }}
-                </span>
-              </div>
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="project"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      loadingText="Cargando detalles del proyecto..."
+    >
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div entity-main-content class="tab-content">
+        <section class="detail-section">
+          <h2>Información del Proyecto</h2>
+          <div class="info-grid">
+            <div class="info-item" *ngIf="project?.ubicacion">
+              <label>Ubicación</label>
+              <p>{{ project?.ubicacion }}</p>
             </div>
-
-            <div class="detail-sections">
-              <section class="detail-section">
-                <h2>Información General</h2>
-                <div class="info-grid three-cols">
-                  <div class="info-item">
-                    <label>Cliente</label>
-                    <p>{{ project.cliente || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Ubicación</label>
-                    <p>{{ project.ubicacion || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Presupuesto Total</label>
-                    <p class="highlight text-primary">
-                      {{ project.presupuesto_total | currency: 'PEN' : 'S/ ' }}
-                    </p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Fechas y Plazos</h2>
-                <div class="info-grid three-cols">
-                  <div class="info-item">
-                    <label>Fecha de Inicio</label>
-                    <p>{{ project.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha Fin Estimada</label>
-                    <p>{{ project.fecha_fin_estimada | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha Fin Real</label>
-                    <p>{{ (project.fecha_fin_real | date: 'dd/MM/yyyy') || '-' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section" *ngIf="project.descripcion">
-                <h2>Descripción</h2>
-                <p class="notes">{{ project.descripcion }}</p>
-              </section>
+            <div class="info-item" *ngIf="project?.cliente">
+              <label>Cliente</label>
+              <p>{{ project?.cliente }}</p>
+            </div>
+            <div class="info-item" *ngIf="project?.fechaInicio">
+              <label>Fecha Inicio</label>
+              <p>{{ project?.fechaInicio | date: 'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="info-item" *ngIf="project?.fechaFin">
+              <label>Fecha Fin</label>
+              <p>{{ project?.fechaFin | date: 'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="info-item" *ngIf="project?.presupuesto">
+              <label>Presupuesto</label>
+              <p>{{ project?.presupuesto | currency: 'PEN' }}</p>
             </div>
           </div>
+        </section>
 
-          <div class="detail-sidebar">
-            <div class="card">
-              <h3 class="sidebar-card-title">Acciones</h3>
-              <div class="quick-actions">
-                <button type="button" class="btn btn-primary btn-block" (click)="editProject()">
-                  <i class="fa-solid fa-pen"></i> Editar Proyecto
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-block"
-                  (click)="navigateTo('/projects')"
-                >
-                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-                </button>
-                <button type="button" class="btn btn-danger btn-block" (click)="deleteProject()">
-                  <i class="fa-solid fa-trash"></i> Eliminar Proyecto
-                </button>
-              </div>
-            </div>
-
-            <div class="card">
-              <h3 class="sidebar-card-title">Gestión</h3>
-              <div class="quick-actions">
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-block"
-                  (click)="assignResources()"
-                >
-                  <i class="fa-solid fa-users"></i> Asignar Recursos
-                </button>
-                <button type="button" class="btn btn-secondary btn-block" (click)="viewReports()">
-                  <i class="fa-solid fa-file-alt"></i> Ver Reportes
-                </button>
-                <button type="button" class="btn btn-secondary btn-block" (click)="viewBudget()">
-                  <i class="fa-solid fa-chart-line"></i> Ver Presupuesto
-                </button>
-              </div>
-            </div>
-
-            <div class="card">
-              <h3 class="sidebar-card-title">Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ project.updated_at | date: 'short' }}</div>
-                  <div class="timeline-content">Última actualización</div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ project.created_at | date: 'short' }}</div>
-                  <div class="timeline-content">Proyecto creado</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="!loading && !project" class="empty-state-card mt-6">
-          <i class="fa-solid fa-project-diagram"></i>
-          <h3>Proyecto no encontrado</h3>
-          <p>El proyecto que buscas no existe o ha sido eliminado.</p>
-          <button type="button" class="btn btn-primary mt-4" (click)="navigateTo('/projects')">
-            Volver a la lista
-          </button>
-        </div>
+        <section class="detail-section" *ngIf="project?.descripcion">
+          <h2>Descripción</h2>
+          <p class="notes">{{ project?.descripcion }}</p>
+        </section>
       </div>
-    </div>
+
+      <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        <button type="button" class="btn btn-primary btn-block" (click)="editProject()">
+          <i class="fa-solid fa-pen"></i>
+          Editar Proyecto
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" (click)="assignResources()">
+          <i class="fa-solid fa-users"></i>
+          Asignar Recursos
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" (click)="viewReports()">
+          <i class="fa-solid fa-file-alt"></i>
+          Ver Reportes
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" (click)="viewBudget()">
+          <i class="fa-solid fa-chart-line"></i>
+          Ver Presupuesto
+        </button>
+        <button type="button" class="btn btn-ghost btn-block" (click)="navigateTo('/projects')">
+          <i class="fa-solid fa-arrow-left"></i>
+          Volver a Lista
+        </button>
+        <button type="button" class="btn btn-danger btn-block" (click)="deleteProject()">
+          <i class="fa-solid fa-trash"></i>
+          Eliminar Proyecto
+        </button>
+      </ng-container>
+    </entity-detail-shell>
 
     <div *ngIf="showDeleteModal" class="modal" (click)="showDeleteModal = false">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -301,6 +236,25 @@ export class ProjectDetailComponent implements OnInit {
   project: Project | null = null;
   loading = true;
   showDeleteModal = false;
+
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-folder-open',
+      title: this.project?.nombre || 'Proyecto',
+      subtitle: this.project?.codigo || 'Detalle de Proyecto',
+      statusLabel: this.getStatusLabel(this.project?.estado || ''),
+      statusClass: `status-${this.getStatusClass(this.project?.estado || '')}`,
+    };
+  }
+
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        { date: this.project?.updatedAt, label: 'Última actualización' },
+        { date: this.project?.createdAt, label: 'Proyecto creado' },
+      ],
+    };
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];

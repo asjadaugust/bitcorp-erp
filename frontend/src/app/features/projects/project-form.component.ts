@@ -67,7 +67,7 @@ import {
       <form [formGroup]="projectForm" class="form-grid">
         <!-- Section 1: Basic Information -->
         <div class="form-section full-width">
-          <h3>Información Básica</h3>
+          <h3 class="section-title"><i class="fa-solid fa-folder-open"></i> Información Básica</h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="codigo">Código del Proyecto *</label>
@@ -117,7 +117,9 @@ import {
 
         <!-- Section 2: Location & Client -->
         <div class="form-section full-width">
-          <h3>Ubicación y Cliente</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-map-marker-alt"></i> Ubicación y Cliente
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="cliente">Cliente</label>
@@ -145,7 +147,9 @@ import {
 
         <!-- Section 3: Dates & Budget -->
         <div class="form-section full-width">
-          <h3>Fechas y Presupuesto</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-calendar-days"></i> Fechas y Presupuesto
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="fechaInicio">Fecha de Inicio</label>

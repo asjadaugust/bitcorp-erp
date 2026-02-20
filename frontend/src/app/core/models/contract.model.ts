@@ -44,10 +44,15 @@ export interface Contract {
   jurisdiccion?: string;
   plazo_texto?: string;
 
-  // Termination (Cláusula 12)
+  // Termination (Cláusula 12) — Resolution & Liquidation
   motivo_resolucion?: string;
   fecha_resolucion?: string;
   monto_liquidacion?: number;
+  causal_resolucion?: string;
+  resuelto_por?: number;
+  fecha_liquidacion?: string;
+  liquidado_por?: number;
+  observaciones_liquidacion?: string;
 
   // Additional info
   condiciones_especiales?: string;
