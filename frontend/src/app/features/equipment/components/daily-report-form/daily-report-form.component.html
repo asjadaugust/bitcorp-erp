@@ -18,6 +18,17 @@
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
+      <button
+        *ngIf="reportId"
+        class="btn btn-secondary"
+        (click)="descargarPdf()"
+        [disabled]="downloadingPdf"
+        title="Descargar PDF"
+        data-testid="btn-download-pdf"
+      >
+        <i class="fa-solid" [class.fa-file-pdf]="!downloadingPdf" [class.fa-spinner]="downloadingPdf" [class.fa-spin]="downloadingPdf"></i>
+        {{ downloadingPdf ? 'Descargando...' : 'Descargar PDF' }}
+      </button>
       <button class="btn btn-secondary" (click)="saveAsDraft()" [disabled]="saving || loading" *ngIf="!reportId">
         <i class="fa-solid fa-save"></i> Guardar Borrador
       </button>

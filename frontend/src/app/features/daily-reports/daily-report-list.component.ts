@@ -133,6 +133,21 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
             >
               <i class="fa-solid fa-eye"></i>
             </button>
+            <button
+              type="button"
+              class="report-card__btn report-card__btn--pdf"
+              (click)="descargarPdf($event, report)"
+              [disabled]="downloadingPdfId === report.id"
+              title="Descargar PDF"
+              [attr.data-testid]="'btn-download-pdf-' + report.id"
+            >
+              <i
+                class="fa-solid"
+                [class.fa-file-pdf]="downloadingPdfId !== report.id"
+                [class.fa-spinner]="downloadingPdfId === report.id"
+                [class.fa-spin]="downloadingPdfId === report.id"
+              ></i>
+            </button>
           </div>
         </app-aero-card>
       </div>
@@ -407,6 +422,21 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         color: white;
       }
 
+      .report-card__btn--pdf {
+        background: #fff3e0;
+        color: #e65100;
+      }
+
+      .report-card__btn--pdf:hover {
+        background: #e65100;
+        color: white;
+      }
+
+      .report-card__btn--pdf:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
       /* Empty State */
       .empty-state {
         text-align: center;
@@ -488,6 +518,7 @@ export class DailyReportListComponent implements OnInit {
 
   reports: DailyReport[] = [];
   loading = false;
+  downloadingPdfId: number | null = null;
 
   tabs: TabItem[] = [
     { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
@@ -671,6 +702,29 @@ export class DailyReportListComponent implements OnInit {
   editReport(event: Event, report: DailyReport): void {
     event.stopPropagation();
     this.router.navigate(['/equipment/daily-reports', report.id, 'edit']);
+  }
+
+  descargarPdf(event: Event, report: DailyReport): void {
+    event.stopPropagation();
+    if (this.downloadingPdfId !== null) return;
+    this.downloadingPdfId = report.id;
+    this.dailyReportService.downloadPdf(report.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `parte-diario-${report.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.downloadingPdfId = null;
+      },
+      error: (err) => {
+        console.error('Error al descargar PDF:', err);
+        this.downloadingPdfId = null;
+      },
+    });
   }
 
   createNewReport(): void {

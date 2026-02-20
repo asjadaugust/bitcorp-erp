@@ -50,6 +50,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   reportForm!: FormGroup;
   loading = false;
   saving = false;
+  downloadingPdf = false;
   isOffline = false;
   reportId?: string;
 
@@ -60,8 +61,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   operatorOptions: DropdownOption[] = [];
 
   // Precalentamiento auto-fill
+  showPrecalentamiento = false;
   precalentamientoOverride = false;
   precalentamientoTipoNombre = '';
+  horasPrecalentamientoSugeridas = 0;
   weatherOptions: DropdownOption[] = [
     { label: '☀️ Soleado', value: 'soleado' },
     { label: '⛅ Parcialmente Nublado', value: 'parcialmente_nublado' },
@@ -179,23 +182,47 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   onEquipoChange(equipoId: any): void {
-    if (!equipoId || this.precalentamientoOverride) return;
-    const equipo = this.equipment.find((e: any) => e.id === Number(equipoId));
-    if (!equipo?.tipo_equipo_id) {
-      this.precalentamientoTipoNombre = '';
+    console.log('Equipment changed:', equipoId);
+    if (!equipoId || this.precalentamientoOverride) {
+      if (!equipoId) {
+        this.precalentamientoTipoNombre = '';
+        this.reportForm.patchValue({ horas_precalentamiento: 0 });
+      }
       return;
     }
-    this.precalentamientoTipoNombre = equipo.tipo_equipo_nombre || equipo.categoria || '';
-    this.precalentamientoService.obtenerHoras(equipo.tipo_equipo_id).subscribe({
-      next: (data: any) => {
-        if (!this.precalentamientoOverride) {
-          this.reportForm.patchValue({ horas_precalentamiento: data.horas_precalentamiento ?? 0 });
-        }
-      },
-      error: () => {
-        // Non-critical: leave existing value
-      },
-    });
+
+    const equipo = this.equipment.find((e: any) => e.id === Number(equipoId));
+    if (equipo) {
+      console.log('Selected equipment details:', equipo);
+      if (!equipo.tipo_equipo_id) {
+        this.precalentamientoTipoNombre = '';
+        this.showPrecalentamiento = false;
+        this.reportForm.patchValue({ horas_precalentamiento: 0 });
+        return;
+      }
+      this.precalentamientoTipoNombre = equipo.tipo_equipo_nombre || equipo.categoria || '';
+      this.precalentamientoService.obtenerHoras(equipo.tipo_equipo_id).subscribe({
+        next: (data: any) => {
+          if (data && data.horas_precalentamiento > 0) {
+            this.showPrecalentamiento = true;
+            if (!this.precalentamientoOverride) {
+              this.reportForm.patchValue({ horas_precalentamiento: data.horas_precalentamiento });
+            }
+          } else {
+            this.showPrecalentamiento = false;
+            this.reportForm.patchValue({ horas_precalentamiento: 0 });
+          }
+        },
+        error: () => {
+          this.showPrecalentamiento = false;
+        },
+      });
+    } else {
+      console.warn('Equipment not found in local list:', equipoId);
+      this.precalentamientoTipoNombre = '';
+      this.showPrecalentamiento = false;
+      this.reportForm.patchValue({ horas_precalentamiento: 0 });
+    }
   }
 
   togglePrecalentamientoOverride(): void {
@@ -213,6 +240,9 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ([equipmentRes, operators]: [any, any]) => {
           const equipment = Array.isArray(equipmentRes) ? equipmentRes : equipmentRes?.data || [];
+          this.equipment = equipment;
+          this.filteredEquipment = equipment;
+          console.log('Equipment loaded into component:', this.equipment.length);
 
           this.equipmentOptions = equipment
             .filter((eq: any) => eq && (eq.codigo_equipo || eq.id))
@@ -507,6 +537,32 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         console.error('Error uploading photos:', error);
         this.showWarning('Error al subir fotos, pero el reporte fue guardado');
+      },
+    });
+  }
+
+  descargarPdf(): void {
+    if (!this.reportId || this.downloadingPdf) return;
+    this.downloadingPdf = true;
+    this.dailyReportService.downloadPdf(this.reportId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `parte-diario-${this.reportId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.downloadingPdf = false;
+      },
+      error: (err) => {
+        console.error('Error al descargar PDF:', err);
+        this.snackBar.open('No se pudo descargar el PDF', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error'],
+        });
+        this.downloadingPdf = false;
       },
     });
   }

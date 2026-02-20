@@ -42,6 +42,9 @@ export interface DailyReportPdfDto {
   num_vale_combustible?: string; // Fuel voucher number (N° Vale Combustible)
   horometro_kilometraje?: string; // Reading at refueling (Horómetro / Kilometraje)
 
+  // Pre-warming hours (Anexo B, per tipo_equipo)
+  horas_precalentamiento?: number; // From precalentamiento_config or manual override
+
   // Location section (right boxes)
   lugar_salida?: string; // Departure location (Lugar de Salida)
   lugar_llegada?: string; // Arrival location (Lugar de Llegada)

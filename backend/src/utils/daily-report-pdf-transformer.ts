@@ -154,6 +154,11 @@ export function transformToDailyReportPdfDto(
     num_vale_combustible: report.numValeCombustible || undefined,
     horometro_kilometraje: report.horometroKilometraje || undefined,
 
+    // Pre-warming hours (WS-19: auto-populated from precalentamiento_config)
+    horas_precalentamiento: report.horasPrecalentamiento
+      ? Number(report.horasPrecalentamiento)
+      : undefined,
+
     // Location section
     lugar_salida: report.lugarSalida || undefined,
     lugar_llegada: report.lugarLlegada || undefined,
