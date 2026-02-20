@@ -1693,10 +1693,24 @@ export class ValuationService {
   private async sumDiscountEvents(
     valuationId: number
   ): Promise<{ totalDiscountHours: number; totalDiscountDays: number }> {
+    // When subtipo is set and aplica_descuento is true, use the PRD-computed values.
+    // Otherwise fall back to the manually entered horas_descuento / dias_descuento.
     const result = await AppDataSource.query(
       `SELECT
-        COALESCE(SUM(horas_descuento), 0)::numeric AS total_horas,
-        COALESCE(SUM(dias_descuento), 0)::numeric AS total_dias
+        COALESCE(SUM(
+          CASE
+            WHEN subtipo IS NOT NULL AND aplica_descuento = true THEN COALESCE(descuento_calculado_horas, horas_descuento)
+            WHEN subtipo IS NOT NULL AND aplica_descuento = false THEN 0
+            ELSE horas_descuento
+          END
+        ), 0)::numeric AS total_horas,
+        COALESCE(SUM(
+          CASE
+            WHEN subtipo IS NOT NULL AND aplica_descuento = true THEN COALESCE(descuento_calculado_dias, dias_descuento)
+            WHEN subtipo IS NOT NULL AND aplica_descuento = false THEN 0
+            ELSE dias_descuento
+          END
+        ), 0)::numeric AS total_dias
       FROM equipo.evento_descuento
       WHERE valorizacion_id = $1`,
       [valuationId]
@@ -3029,8 +3043,10 @@ export class ValuationService {
     valorizacionId: number;
     fecha: Date;
     tipo: string;
+    subtipo?: string;
     horasDescuento?: number;
     diasDescuento?: number;
+    horasHorometroMecanica?: number;
     descripcion?: string;
   }): Promise<DiscountEvent> {
     // Verify valuation exists and is in editable state
@@ -3045,6 +3061,35 @@ export class ValuationService {
       );
     }
 
+    // Apply PRD Annex B discount rules when subtipo is provided
+    let aplicaDescuento: boolean | undefined;
+    let descuentoCalculadoHoras: number | undefined;
+    let descuentoCalculadoDias: number | undefined;
+
+    if (data.subtipo) {
+      const { calcularDescuento } = await import('../utils/discount-rules');
+      // Resolve tipoTarifa from the linked contract
+      let tipoTarifa: 'HORA' | 'DIA' | 'MES' = 'HORA';
+      if (valuation.contratoId) {
+        const contract = await this.contractRepository.findOne({
+          where: { id: valuation.contratoId },
+        });
+        if (contract?.tipoTarifa) {
+          tipoTarifa = contract.tipoTarifa.toUpperCase() as 'HORA' | 'DIA' | 'MES';
+        }
+      }
+      const resultado = calcularDescuento({
+        tipo: data.tipo as import('../models/discount-event.model').TipoEventoDescuento,
+        subtipo: data.subtipo as import('../models/discount-event.model').SubtipoEventoDescuento,
+        horasDescuento: data.horasDescuento,
+        horasHorometroMecanica: data.horasHorometroMecanica,
+        tipoTarifa,
+      });
+      aplicaDescuento = resultado.aplicaDescuento;
+      descuentoCalculadoHoras = resultado.descuentoCalculadoHoras;
+      descuentoCalculadoDias = resultado.descuentoCalculadoDias;
+    }
+
     const repo = AppDataSource.getRepository(DiscountEvent);
     const event = new DiscountEvent();
     event.valorizacionId = data.valorizacionId;
@@ -3053,6 +3098,18 @@ export class ValuationService {
     event.horasDescuento = data.horasDescuento || 0;
     event.diasDescuento = data.diasDescuento || 0;
     event.descripcion = data.descripcion;
+    if (data.subtipo !== undefined) {
+      event.subtipo =
+        data.subtipo as import('../models/discount-event.model').SubtipoEventoDescuento;
+    }
+    if (data.horasHorometroMecanica !== undefined) {
+      event.horasHorometroMecanica = data.horasHorometroMecanica;
+    }
+    if (aplicaDescuento !== undefined) {
+      event.aplicaDescuento = aplicaDescuento;
+      event.descuentoCalculadoHoras = descuentoCalculadoHoras;
+      event.descuentoCalculadoDias = descuentoCalculadoDias;
+    }
     return repo.save(event);
   }
 

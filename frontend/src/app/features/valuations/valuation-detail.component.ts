@@ -11,1102 +11,987 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
+import {
+  EntityDetailShellComponent,
+  EntityDetailSidebarCardComponent,
+  EntityDetailHeader,
+  AuditInfo,
+  NotFoundConfig,
+} from '../../shared/components/entity-detail';
 
 @Component({
   selector: 'app-valuation-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, DropdownComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    DropdownComponent,
+    EntityDetailShellComponent,
+    EntityDetailSidebarCardComponent,
+  ],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div *ngIf="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Cargando detalles de la valorización...</p>
+    <entity-detail-shell
+      [loading]="loading"
+      [entity]="valuation"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      [notFound]="notFoundConfig"
+      loadingText="Cargando detalles de la valorización..."
+    >
+      <!-- ── BELOW HEADER: deadline timeline ──────────────────── -->
+      <!-- ── BELOW HEADER: deadline timeline ──────────────────── -->
+      @if (valuation?.deadlines) {
+        <div entity-header-below class="deadline-section-compact">
+          <div class="deadline-tracker">
+            <div
+              class="tracker-step"
+              [class.done]="isDeadlinePassed(valuation!.deadlines!.parcial)"
+              [class.active]="
+                !isDeadlinePassed(valuation!.deadlines!.parcial) &&
+                !isDeadlineMissed(valuation!.deadlines!.parcial, valuation!.estado)
+              "
+              [class.overdue]="isDeadlineMissed(valuation!.deadlines!.parcial, valuation!.estado)"
+            >
+              <div class="tracker-dot"></div>
+              <div class="tracker-label">Parcial (Día 5)</div>
+              <div class="tracker-date">{{ valuation!.deadlines!.parcial | date: 'dd/MM' }}</div>
+            </div>
+            <div class="tracker-line"></div>
+            <div
+              class="tracker-step"
+              [class.done]="isDeadlinePassed(valuation!.deadlines!.gasto_obra)"
+              [class.active]="
+                isDeadlinePassed(valuation!.deadlines!.parcial) &&
+                !isDeadlinePassed(valuation!.deadlines!.gasto_obra)
+              "
+              [class.overdue]="
+                isDeadlineMissed(valuation!.deadlines!.gasto_obra, valuation!.estado)
+              "
+            >
+              <div class="tracker-dot"></div>
+              <div class="tracker-label">Gasto Obra (Día 10)</div>
+              <div class="tracker-date">{{ valuation!.deadlines!.gasto_obra | date: 'dd/MM' }}</div>
+            </div>
+            <div class="tracker-line"></div>
+            <div
+              class="tracker-step"
+              [class.done]="isDeadlinePassed(valuation!.deadlines!.cierre)"
+              [class.active]="
+                isDeadlinePassed(valuation!.deadlines!.gasto_obra) &&
+                !isDeadlinePassed(valuation!.deadlines!.cierre)
+              "
+              [class.overdue]="isDeadlineMissed(valuation!.deadlines!.cierre, valuation!.estado)"
+            >
+              <div class="tracker-dot"></div>
+              <div class="tracker-label">Cierre (Día 15)</div>
+              <div class="tracker-date">{{ valuation!.deadlines!.cierre | date: 'dd/MM' }}</div>
+            </div>
+          </div>
+          @if (valuation!.deadlines!.alerta_vencimiento) {
+            <div class="tracker-alert">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              {{ valuation!.deadlines!.alerta_vencimiento }}
+            </div>
+          }
         </div>
+      }
 
-        <div *ngIf="!loading && valuation" class="detail-grid">
-          <div class="detail-main card">
-            <div class="detail-header">
-              <div>
-                <h1>Valorización {{ valuation.numeroValorizacion || '#' + valuation.id }}</h1>
-                <p class="text-subtitle">
-                  {{ valuation.cliente_nombre }} - {{ valuation.codigo_equipo }}
-                </p>
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div entity-main-content class="detail-sections">
+        <!-- INFORMACIÓN GENERAL -->
+        <section class="detail-section">
+          <h2>Información General</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Período</label>
+              <p>{{ valuation?.periodo }}</p>
+            </div>
+            <div class="info-item">
+              <label>Equipo</label>
+              <p>
+                <a [routerLink]="['/equipment', valuation?.equipmentId]" class="link-primary">
+                  {{ valuation?.codigo_equipo }}
+                </a>
+              </p>
+            </div>
+            <div class="info-item">
+              <label>Contrato</label>
+              <p>
+                @if (valuation?.contractId) {
+                  <a
+                    [routerLink]="['/equipment/contracts', valuation?.contractId]"
+                    class="link-primary"
+                  >
+                    {{ valuation?.contrato_numero || 'Ver Contrato' }}
+                  </a>
+                } @else {
+                  <span>Sin contrato</span>
+                }
+              </p>
+            </div>
+            <div class="info-item">
+              <label>Cliente</label>
+              <p>{{ valuation?.cliente_nombre || '-' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Proveedor</label>
+              <p>{{ valuation?.proveedor_nombre || '-' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Tipo de Tarifa</label>
+              <p>{{ valuation?.tipoTarifa || '-' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- RESUMEN FINANCIERO -->
+        <section class="detail-section">
+          <h2>Resumen Financiero</h2>
+          <div class="financial-table-container">
+            <table class="financial-table">
+              <thead>
+                <tr>
+                  <th>Concepto</th>
+                  <th class="text-right">Cantidad</th>
+                  <th class="text-right">Tarifa</th>
+                  <th class="text-right">Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Hours worked -->
+                @if (valuationSummary?.horas_trabajadas != null) {
+                  <tr class="row-header">
+                    <td colspan="4"><strong>Horas Trabajadas</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Horas en operación</td>
+                    <td class="text-right">{{ valuationSummary?.horas_trabajadas }}</td>
+                    <td class="text-right">{{ valuation?.tarifa | currency: 'USD' }}</td>
+                    <td class="text-right">
+                      {{ valuationSummary?.monto_horas | currency: 'USD' }}
+                    </td>
+                  </tr>
+                }
+                <!-- Stand-by / included hours -->
+                @if (
+                  valuationSummary?.horas_stand_by != null && valuationSummary!.horas_stand_by! > 0
+                ) {
+                  <tr>
+                    <td>Horas Stand By</td>
+                    <td class="text-right">{{ valuationSummary?.horas_stand_by }}</td>
+                    <td class="text-right">
+                      {{ valuationSummary?.tarifa_stand_by | currency: 'USD' }}
+                    </td>
+                    <td class="text-right">
+                      {{ valuationSummary?.monto_stand_by | currency: 'USD' }}
+                    </td>
+                  </tr>
+                }
+                <!-- Penalty -->
+                @if (
+                  valuationSummary?.penalidad_exceso != null &&
+                  valuationSummary!.penalidad_exceso! > 0
+                ) {
+                  <tr>
+                    <td>Penalidad por exceso</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right text-danger">
+                      -{{ valuationSummary?.penalidad_exceso | currency: 'USD' }}
+                    </td>
+                  </tr>
+                }
+                <!-- Discounts -->
+                @if (valuationSummary?.descuentos != null && valuationSummary!.descuentos! > 0) {
+                  <tr>
+                    <td>Descuentos (Anexo B)</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right text-danger">
+                      -{{ valuationSummary?.descuentos | currency: 'USD' }}
+                    </td>
+                  </tr>
+                }
+                <!-- Subtotal -->
+                <tr class="row-total">
+                  <td colspan="3"><strong>Subtotal</strong></td>
+                  <td class="text-right">
+                    <strong>{{ valuationSummary?.subtotal | currency: 'USD' }}</strong>
+                  </td>
+                </tr>
+                <!-- IGV -->
+                @if (valuationSummary?.igv != null) {
+                  <tr>
+                    <td colspan="3">IGV (18%)</td>
+                    <td class="text-right">{{ valuationSummary?.igv | currency: 'USD' }}</td>
+                  </tr>
+                }
+                <!-- Total -->
+                <tr class="row-grand-total">
+                  <td colspan="3"><strong>Total</strong></td>
+                  <td class="text-right">
+                    <strong>{{ valuationSummary?.total | currency: 'USD' }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- DETALLES DEL PERÍODO -->
+        <section class="detail-section">
+          <h2>Detalles del Período</h2>
+          <div class="info-grid-2col">
+            <div class="info-column">
+              <div class="info-item">
+                <label>Fecha Inicio</label>
+                <p>{{ valuation?.fechaInicio | date: 'dd/MM/yyyy' }}</p>
               </div>
-              <div class="detail-status">
-                <span
-                  class="status-badge"
-                  [class.status-BORRADOR]="valuation.estado === 'BORRADOR'"
-                  [class.status-PENDIENTE]="
-                    valuation.estado === 'PENDIENTE' ||
-                    valuation.estado === 'EN_REVISION' ||
-                    valuation.estado === 'VALIDADO'
-                  "
-                  [class.status-APROBADO]="
-                    valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'
-                  "
-                  [class.status-CANCELADO]="
-                    valuation.estado === 'RECHAZADO' || valuation.estado === 'ELIMINADO'
-                  "
-                >
-                  {{ getEstadoLabel(valuation.estado) }}
+              <div class="info-item">
+                <label>Fecha Fin</label>
+                <p>{{ valuation?.fechaFin | date: 'dd/MM/yyyy' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Días Trabajados</label>
+                <p>{{ valuation?.diasTrabajados || '-' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Horas Totales</label>
+                <p>{{ valuation?.horasTotales || '-' }}</p>
+              </div>
+            </div>
+            <div class="info-column">
+              <div class="info-item">
+                <label>Tarifa Base</label>
+                <p class="highlight">{{ valuation?.tarifa | currency: 'USD' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Monto Bruto</label>
+                <p>{{ valuation?.montoBruto | currency: 'USD' }}</p>
+              </div>
+              <div class="info-item">
+                <label>Monto Neto</label>
+                <p class="highlight">{{ valuation?.montoNeto | currency: 'USD' }}</p>
+              </div>
+            </div>
+          </div>
+          @if (valuation?.observaciones) {
+            <div class="observaciones-block">
+              <label>Observaciones</label>
+              <div class="observaciones-text">{{ valuation?.observaciones }}</div>
+            </div>
+          }
+        </section>
+
+        <!-- PAGOS -->
+        <section class="detail-section payments-section">
+          <div class="section-header">
+            <h2>Pagos Registrados</h2>
+            @if (valuation?.estado === 'APROBADO' || valuation?.estado === 'PAGADO') {
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                (click)="navigateToCreatePayment()"
+              >
+                <i class="fa-solid fa-plus"></i> Registrar Pago
+              </button>
+            }
+          </div>
+
+          <!-- Payment summary widget -->
+          @if (paymentSummary) {
+            <div class="payment-summary-widget">
+              <div class="summary-row">
+                <span class="summary-label">Total Valorización</span>
+                <span class="summary-value">{{
+                  paymentSummary.totalValorizacion | currency: 'USD'
+                }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Total Pagado</span>
+                <span class="summary-value text-success">
+                  {{ paymentSummary.totalPagado | currency: 'USD' }}
                 </span>
               </div>
-            </div>
-
-            <!-- Deadline Timeline -->
-            <div class="deadline-section" *ngIf="valuation.deadlines">
-              <h3 class="deadline-title">
-                <i class="fa-solid fa-calendar-check"></i> Plazos de Entrega (CORP-GEM-P-002)
-              </h3>
-              <div class="deadline-timeline">
-                <div
-                  class="deadline-item"
-                  [class.done]="isDeadlinePassed(valuation.deadlines.parcial)"
-                  [class.overdue]="isDeadlineMissed(valuation.deadlines.parcial, valuation.estado)"
+              <div class="summary-row">
+                <span class="summary-label">Saldo Pendiente</span>
+                <span
+                  class="summary-value"
+                  [class.text-warning]="paymentSummary.saldoPendiente > 0"
                 >
-                  <div class="deadline-dot"></div>
-                  <div class="deadline-info">
-                    <span class="deadline-label">Día 5 - Valorización Parcial</span>
-                    <span class="deadline-date">{{
-                      valuation.deadlines.parcial | date: 'dd/MM/yyyy'
-                    }}</span>
-                  </div>
-                </div>
-                <div
-                  class="deadline-item"
-                  [class.done]="isDeadlinePassed(valuation.deadlines.gasto_obra)"
-                  [class.overdue]="
-                    isDeadlineMissed(valuation.deadlines.gasto_obra, valuation.estado)
-                  "
-                >
-                  <div class="deadline-dot"></div>
-                  <div class="deadline-info">
-                    <span class="deadline-label">Día 7 - Informe Gastos / Adelantos</span>
-                    <span class="deadline-date">{{
-                      valuation.deadlines.gasto_obra | date: 'dd/MM/yyyy'
-                    }}</span>
-                  </div>
-                </div>
-                <div
-                  class="deadline-item"
-                  [class.done]="isDeadlinePassed(valuation.deadlines.final)"
-                  [class.overdue]="isDeadlineMissed(valuation.deadlines.final, valuation.estado)"
-                >
-                  <div class="deadline-dot"></div>
-                  <div class="deadline-info">
-                    <span class="deadline-label">Día 10 - Valorización Final</span>
-                    <span class="deadline-date">{{
-                      valuation.deadlines.final | date: 'dd/MM/yyyy'
-                    }}</span>
-                  </div>
-                </div>
+                  {{ paymentSummary.saldoPendiente | currency: 'USD' }}
+                </span>
               </div>
-              <div class="deadline-alert" *ngIf="valuation.deadlines.is_overdue">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                Esta valorización ha superado el plazo de entrega
-              </div>
-            </div>
-
-            <div class="detail-sections">
-              <section class="detail-section">
-                <h2>Información del Contrato</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Contrato</label>
-                    <p>{{ valuation.contrato?.codigo || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Proyecto</label>
-                    <p>{{ valuation.contrato?.nombre_proyecto || 'N/A' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Equipo y Proveedor (from PDF summary) -->
-              <section class="detail-section" *ngIf="valuationSummary">
-                <h2>Equipo y Proveedor</h2>
-                <div class="info-grid info-grid-2col">
-                  <div class="info-column">
-                    <div class="info-item">
-                      <label>Codigo Equipo</label>
-                      <p>{{ valuationSummary.equipo.codigo_equipo || 'N/A' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Equipo</label>
-                      <p>{{ valuationSummary.equipo.nombre || 'N/A' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Placa</label>
-                      <p>{{ valuationSummary.equipo.placa || 'N/A' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Marca</label>
-                      <p>{{ valuationSummary.equipo.marca || 'N/A' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Modelo</label>
-                      <p>{{ valuationSummary.equipo.modelo || 'N/A' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Tipo Medidor</label>
-                      <p>{{ valuationSummary.equipo.tipo_medidor || 'N/A' }}</p>
-                    </div>
-                  </div>
-                  <div class="info-column">
-                    <div class="info-item">
-                      <label>RUC</label>
-                      <p>{{ valuationSummary.proveedor.ruc || 'N/A' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Razon Social</label>
-                      <p>{{ valuationSummary.proveedor.razon_social || 'N/A' }}</p>
-                    </div>
-                    <div class="info-item">
-                      <label>Direccion</label>
-                      <p>{{ valuationSummary.proveedor.direccion || 'N/A' }}</p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Datos del Contrato Detallado (from PDF summary) -->
-              <section class="detail-section" *ngIf="valuationSummary">
-                <h2>Datos del Contrato (Detallado)</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>N° Contrato</label>
-                    <p>{{ valuationSummary.contrato.numero_contrato || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tipo Documento</label>
-                    <p>{{ valuationSummary.contrato.tipo_documento || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Modalidad</label>
-                    <p>{{ valuationSummary.contrato.modalidad || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tipo Tarifa</label>
-                    <p>{{ valuationSummary.contrato.tipo_tarifa || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tarifa</label>
-                    <p>{{ valuationSummary.contrato.tarifa | number: '1.2-2' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Moneda</label>
-                    <p>{{ valuationSummary.contrato.moneda || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tipo Cambio</label>
-                    <p>{{ valuationSummary.valorizacion.tipo_cambio | number: '1.2-4' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Minimo Por</label>
-                    <p>{{ valuationSummary.contrato.minimo_por || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Cantidad Minima</label>
-                    <p>{{ valuationSummary.contrato.cantidad_minima }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Resumen Financiero (from PDF summary) -->
-              <section class="detail-section" *ngIf="valuationSummary">
-                <h2>Resumen Financiero</h2>
-                <div class="financial-table-container">
-                  <table class="financial-table">
-                    <thead>
-                      <tr>
-                        <th>Descripcion</th>
-                        <th class="text-right">Cantidad</th>
-                        <th>Unid</th>
-                        <th class="text-right">P.U.</th>
-                        <th class="text-right">Importe</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <!-- VALORIZACIÓN -->
-                      <tr class="row-header">
-                        <td colspan="5"><strong>VALORIZACION</strong></td>
-                      </tr>
-                      <tr>
-                        <td>Cantidad a Valorizar</td>
-                        <td class="text-right">
-                          {{ valuationSummary.financiero.cantidad | number: '1.2-2' }}
-                        </td>
-                        <td>{{ valuationSummary.financiero.unidad_medida }}</td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.precio_unitario | number: '1.2-2' }}
-                        </td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.valorizacion_bruta | number: '1.2-2' }}
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td>Horas en Exceso</td>
-                        <td></td>
-                        <td></td>
-                        <td class="text-right"></td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.cargos_adicionales | number: '1.2-2' }}
-                        </td>
-                      </tr>
-
-                      <!-- DESCUENTOS -->
-                      <tr class="row-header">
-                        <td colspan="5"><strong>DESCUENTOS</strong></td>
-                      </tr>
-                      <tr>
-                        <td>Combustible</td>
-                        <td class="text-right">
-                          {{ valuationSummary.financiero.cantidad_combustible | number: '1.2-2' }}
-                        </td>
-                        <td>gln</td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.precio_combustible | number: '1.2-2' }}
-                        </td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.importe_combustible | number: '1.2-2' }}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Manipuleo de Combustible</td>
-                        <td class="text-right">
-                          {{ valuationSummary.financiero.cantidad_combustible | number: '1.2-2' }}
-                        </td>
-                        <td>gln</td>
-                        <td class="text-right">
-                          S/
-                          {{
-                            valuationSummary.financiero.precio_manipuleo_combustible
-                              | number: '1.2-2'
-                          }}
-                        </td>
-                        <td class="text-right">
-                          S/
-                          {{
-                            valuationSummary.financiero.importe_manipuleo_combustible
-                              | number: '1.2-2'
-                          }}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Gastos en Obra</td>
-                        <td class="text-right"></td>
-                        <td></td>
-                        <td class="text-right"></td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.importe_gasto_obra | number: '1.2-2' }}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Amortizacion por Adelantos</td>
-                        <td class="text-right"></td>
-                        <td></td>
-                        <td class="text-right"></td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.importe_adelanto | number: '1.2-2' }}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Exceso de Combustible</td>
-                        <td class="text-right"></td>
-                        <td></td>
-                        <td class="text-right"></td>
-                        <td class="text-right">
-                          S/
-                          {{
-                            valuationSummary.financiero.importe_exceso_combustible | number: '1.2-2'
-                          }}
-                        </td>
-                      </tr>
-
-                      <!-- NETA -->
-                      <tr class="row-total">
-                        <td><strong>VALORIZACION NETA</strong></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td class="text-right">
-                          <strong
-                            >S/
-                            {{
-                              valuationSummary.financiero.valorizacion_neta | number: '1.2-2'
-                            }}</strong
-                          >
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>I.G.V. 18%</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td class="text-right">
-                          S/ {{ valuationSummary.financiero.igv | number: '1.2-2' }}
-                        </td>
-                      </tr>
-                      <tr class="row-total row-grand-total">
-                        <td><strong>NETO A FACTURAR</strong></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td class="text-right">
-                          <strong
-                            >S/
-                            {{
-                              valuationSummary.financiero.neto_facturar | number: '1.2-2'
-                            }}</strong
-                          >
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Detalles Financieros</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Monto Total</label>
-                    <p class="highlight">
-                      {{ valuation.totalValorizado | currency: 'PEN' : 'S/ ' }}
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <label>N° Valorización</label>
-                    <p>{{ valuation.numeroValorizacion || 'Pendiente' }}</p>
-                  </div>
-                  <div class="info-item" *ngIf="valuation.aprobadoEn">
-                    <label>Fecha Aprobación</label>
-                    <p>{{ valuation.aprobadoEn | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Periodo</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Periodo</label>
-                    <p>{{ valuation.periodo }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha Inicio</label>
-                    <p>{{ valuation.fechaInicio | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Fecha Fin</label>
-                    <p>{{ valuation.fechaFin | date: 'dd/MM/yyyy' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="detail-section" *ngIf="valuation.observaciones">
-                <h2>Observaciones</h2>
-                <p class="observaciones-text">{{ valuation.observaciones }}</p>
-              </section>
-
-              <!-- Payments Section -->
-              <section class="detail-section payments-section">
-                <div class="section-header">
-                  <h2>Pagos ({{ paymentCount }})</h2>
-                  <button
-                    *ngIf="valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'"
-                    class="btn btn-primary"
-                    (click)="navigateToCreatePayment()"
-                  >
-                    <i class="fa-solid fa-plus"></i> Registrar Pago
-                  </button>
-                </div>
-
-                <!-- Payment Summary Widget -->
-                <div *ngIf="paymentSummary" class="payment-summary-widget">
-                  <div class="summary-row">
-                    <span class="summary-label">Total Valorización:</span>
-                    <strong class="summary-value">{{
-                      paymentService.formatCurrency(paymentSummary.monto_total_valorizacion, 'PEN')
-                    }}</strong>
-                  </div>
-                  <div class="summary-row">
-                    <span class="summary-label">Total Pagado:</span>
-                    <strong class="summary-value text-success">{{
-                      paymentService.formatCurrency(paymentSummary.total_pagado, 'PEN')
-                    }}</strong>
-                  </div>
-                  <div class="summary-row">
-                    <span class="summary-label">Saldo Pendiente:</span>
-                    <strong class="summary-value text-warning">{{
-                      paymentService.formatCurrency(paymentSummary.saldo_pendiente, 'PEN')
-                    }}</strong>
-                  </div>
-                  <div class="summary-row">
-                    <span class="summary-label">Estado:</span>
-                    <span
-                      [class]="
-                        'payment-status-badge status-' +
-                        paymentService.getSummaryStatusColor(paymentSummary.estado_pago)
-                      "
-                    >
-                      {{ paymentService.getSummaryStatusLabel(paymentSummary.estado_pago) }}
-                    </span>
-                  </div>
-
-                  <!-- Progress Bar -->
-                  <div class="progress-bar-container">
-                    <div
-                      class="progress-bar-fill"
-                      [style.width.%]="
-                        (paymentSummary.total_pagado / paymentSummary.monto_total_valorizacion) *
-                        100
-                      "
-                    ></div>
-                  </div>
-                  <div class="progress-label">
-                    {{
-                      (
-                        (paymentSummary.total_pagado / paymentSummary.monto_total_valorizacion) *
-                        100
-                      ).toFixed(1)
-                    }}% pagado
-                  </div>
-                </div>
-
-                <!-- Loading State -->
-                <div *ngIf="loadingPayments" class="loading-payments">
-                  <div class="spinner-small"></div>
-                  <p>Cargando pagos...</p>
-                </div>
-
-                <!-- Payments Table -->
+              <div class="progress-bar-container">
                 <div
-                  *ngIf="!loadingPayments && payments.length > 0"
-                  class="payments-table-container"
-                >
-                  <table class="payments-table">
-                    <thead>
-                      <tr>
-                        <th>N° Pago</th>
-                        <th>Fecha</th>
-                        <th>Monto</th>
-                        <th>Método</th>
-                        <th>Estado</th>
-                        <th>Conciliado</th>
-                        <th>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let payment of payments">
-                        <td>
-                          <a [routerLink]="['/payments', payment.id_pago]" class="payment-link">
-                            {{ payment.numero_pago }}
-                          </a>
-                        </td>
-                        <td>{{ payment.fecha_pago | date: 'dd/MM/yyyy' }}</td>
-                        <td class="amount-cell">
-                          {{ paymentService.formatCurrency(payment.monto_pagado, payment.moneda) }}
-                        </td>
-                        <td>
-                          <span class="badge badge-secondary">{{
-                            paymentService.getPaymentMethodLabel(payment.metodo_pago)
-                          }}</span>
-                        </td>
-                        <td>
-                          <span
-                            [class]="
-                              'status-badge status-' +
-                              paymentService.getPaymentStatusColor(payment.estado)
-                            "
-                          >
-                            <i
-                              [class]="
-                                payment.estado === 'PENDIENTE'
-                                  ? 'fa-solid fa-clock'
-                                  : payment.estado === 'PAGADO'
-                                    ? 'fa-solid fa-check-circle'
-                                    : payment.estado === 'ANULADO'
-                                      ? 'fa-solid fa-ban'
-                                      : 'fa-solid fa-circle'
-                              "
-                            ></i>
-                            {{ paymentService.getPaymentStatusLabel(payment.estado) }}
-                          </span>
-                        </td>
-                        <td>
-                          <span *ngIf="payment.conciliado" class="status-badge status-completed">
-                            <i class="fa-solid fa-check-double"></i> Sí
-                          </span>
-                          <span *ngIf="!payment.conciliado" class="status-badge status-pending">
-                            <i class="fa-solid fa-clock"></i> No
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            class="btn-action btn-action-primary"
-                            (click)="viewPayment(payment.id_pago)"
-                            title="Ver detalles"
-                          >
-                            <i class="fa-solid fa-eye"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Empty State -->
-                <div *ngIf="!loadingPayments && payments.length === 0" class="empty-state-payments">
-                  <i class="fa-solid fa-money-bill-wave empty-icon"></i>
-                  <p class="empty-text">No hay pagos registrados para esta valorización</p>
-                  <button
-                    *ngIf="valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'"
-                    class="btn btn-primary"
-                    (click)="navigateToCreatePayment()"
-                  >
-                    <i class="fa-solid fa-plus"></i> Registrar Primer Pago
-                  </button>
-                </div>
-              </section>
+                  class="progress-bar-fill"
+                  [style.width.%]="paymentSummary.porcentajePagado"
+                ></div>
+              </div>
+              <p class="progress-label">
+                {{ paymentSummary.porcentajePagado | number: '1.0-0' }}% pagado
+              </p>
             </div>
-          </div>
+          }
 
-          <div class="detail-sidebar">
-            <!-- Combined Actions Card -->
-            <div class="card">
-              <h3 class="sidebar-card-title">Acciones</h3>
-              <div class="workflow-actions">
-                <!-- Submit Draft: BORRADOR → PENDIENTE -->
-                <button
-                  *ngIf="valuation.estado === 'BORRADOR'"
-                  class="btn btn-primary btn-block"
-                  (click)="submitDraft()"
-                  [disabled]="processingWorkflow"
-                >
-                  <i class="fa-solid fa-arrow-right"></i>
-                  {{ processingWorkflow ? 'Enviando...' : 'Marcar como Pendiente' }}
-                </button>
-
-                <!-- Submit for Review: PENDIENTE → EN_REVISION (requires conformidad) -->
-                <button
-                  *ngIf="valuation.estado === 'PENDIENTE'"
-                  class="btn btn-primary btn-block"
-                  (click)="submitReview()"
-                  [disabled]="processingWorkflow || !conformidadFile"
-                >
-                  <i class="fa-solid fa-file-signature"></i>
-                  {{ processingWorkflow ? 'Enviando...' : 'Enviar a Revisión' }}
-                </button>
-
-                <!-- Approve: EN_REVISION → APROBADO -->
-                <button
-                  *ngIf="
-                    valuation.estado === 'EN_REVISION' &&
-                    (userRole === 'admin' || userRole === 'approver')
-                  "
-                  class="btn btn-success btn-block"
-                  (click)="approveValuation()"
-                  [disabled]="processingWorkflow"
-                >
-                  <i class="fa-solid fa-check"></i> Aprobar Valorización
-                </button>
-
-                <!-- Validate: VALIDADO (intermediate step if used) -->
-                <button
-                  *ngIf="
-                    valuation.estado === 'VALIDADO' &&
-                    (userRole === 'admin' || userRole === 'approver')
-                  "
-                  class="btn btn-success btn-block"
-                  (click)="approveValuation()"
-                  [disabled]="processingWorkflow"
-                >
-                  <i class="fa-solid fa-check-double"></i>
-                  {{ processingWorkflow ? 'Procesando...' : 'Autorizar Pago' }}
-                </button>
-
-                <!-- Reject: Any active state → RECHAZADO -->
-                <button
-                  *ngIf="
-                    (valuation.estado === 'PENDIENTE' ||
-                      valuation.estado === 'EN_REVISION' ||
-                      valuation.estado === 'VALIDADO') &&
-                    (userRole === 'admin' || userRole === 'approver')
-                  "
-                  class="btn btn-danger btn-block"
-                  (click)="rejectValuation()"
-                  [disabled]="processingWorkflow"
-                >
-                  <i class="fa-solid fa-xmark"></i>
-                  {{ processingWorkflow ? 'Rechazando...' : 'Rechazar' }}
-                </button>
-
-                <!-- Reopen: RECHAZADO → BORRADOR -->
-                <button
-                  *ngIf="valuation.estado === 'RECHAZADO'"
-                  class="btn btn-secondary btn-block"
-                  (click)="confirmReopen()"
-                  [disabled]="processingWorkflow"
-                >
-                  <i class="fa-solid fa-rotate-left"></i>
-                  {{ processingWorkflow ? 'Reabriendo...' : 'Reabrir para Corrección' }}
-                </button>
-
-                <!-- Mark as Paid: APROBADO → PAGADO -->
-                <button
-                  *ngIf="valuation.estado === 'APROBADO' && canMarkAsPaid()"
-                  class="btn btn-secondary btn-block"
-                  (click)="showMarkPaidModal = true"
-                  [disabled]="processingWorkflow"
-                >
-                  <i class="fa-solid fa-money-bill"></i> Marcar como Pagado
-                </button>
-
-                <p class="workflow-hint" *ngIf="getWorkflowHint()">
-                  {{ getWorkflowHint() }}
-                </p>
-
-                <!-- Print / Download -->
-                <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
-                  <i class="fa-solid fa-file-pdf"></i> Descargar PDF
-                </button>
-
-                <!-- Edit (Draft or Pending) -->
-                <button
-                  class="btn btn-secondary btn-block"
-                  (click)="editValuation()"
-                  *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
-                >
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-
-                <!-- Cancel / Delete (Draft only) -->
-                <button
-                  *ngIf="valuation.estado === 'BORRADOR'"
-                  class="btn btn-danger btn-block"
-                  (click)="deleteValuation()"
-                >
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
-
-                <!-- Navigation (Back) -->
+          @if (loadingPayments) {
+            <div class="loading-payments">
+              <div class="spinner-small"></div>
+              <span>Cargando pagos...</span>
+            </div>
+          } @else if (payments.length > 0) {
+            <div class="payments-table-container">
+              <table class="payments-table">
+                <thead>
+                  <tr>
+                    <th>N° Pago</th>
+                    <th>Fecha</th>
+                    <th>Método</th>
+                    <th>Referencia</th>
+                    <th class="text-right">Monto</th>
+                    <th>Estado</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (payment of payments; track payment.id) {
+                    <tr>
+                      <td>
+                        <a
+                          class="payment-link"
+                          (click)="viewPayment(payment.id)"
+                          style="cursor:pointer"
+                        >
+                          {{ payment.numero_pago || '#' + payment.id }}
+                        </a>
+                      </td>
+                      <td>{{ payment.fecha_pago | date: 'dd/MM/yyyy' }}</td>
+                      <td>{{ payment.metodo_pago }}</td>
+                      <td>{{ payment.referencia_pago }}</td>
+                      <td class="text-right amount-cell">{{ payment.monto | currency: 'USD' }}</td>
+                      <td>
+                        <span
+                          class="badge"
+                          [class.badge-success]="payment.estado === 'APROBADO'"
+                          [class.badge-warning]="payment.estado === 'PENDIENTE'"
+                          [class.badge-danger]="payment.estado === 'RECHAZADO'"
+                          [class.badge-secondary]="payment.estado === 'PAGADO'"
+                          >{{ payment.estado }}</span
+                        >
+                      </td>
+                      <td>
+                        @if (payment.conciliado) {
+                          <span class="conciliado-badge badge badge-success">
+                            <i class="fa-solid fa-check"></i> Conciliado
+                          </span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="empty-state-payments">
+              <i class="fa-solid fa-money-bill-wave empty-icon"></i>
+              <p class="empty-text">No hay pagos registrados para esta valorización.</p>
+              @if (valuation?.estado === 'APROBADO') {
                 <button
                   type="button"
-                  class="btn btn-ghost btn-block mt-2"
-                  routerLink="/equipment/valuations"
+                  class="btn btn-primary btn-sm"
+                  (click)="navigateToCreatePayment()"
                 >
-                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
+                  <i class="fa-solid fa-plus"></i> Registrar Primer Pago
                 </button>
-              </div>
+              }
             </div>
+          }
+        </section>
+      </div>
 
-            <!-- Provider Conformity Card -->
-            <div class="card">
-              <h3>Conformidad del Proveedor</h3>
-              <div *ngIf="valuation.conformidadProveedor" class="conformidad-status conformidad-ok">
-                <i class="fa-solid fa-check-circle"></i>
-                <div>
-                  <strong>Conformidad Registrada</strong>
-                  <p *ngIf="valuation.conformidadFecha">
-                    {{ valuation.conformidadFecha | date: 'dd/MM/yyyy' }}
-                  </p>
-                  <p *ngIf="valuation.conformidadObservaciones" class="conformidad-obs">
-                    {{ valuation.conformidadObservaciones }}
-                  </p>
-                </div>
-              </div>
-              <div
-                *ngIf="!valuation.conformidadProveedor"
-                class="conformidad-status conformidad-pending"
-              >
-                <i class="fa-solid fa-clock"></i>
-                <div>
-                  <strong>Pendiente de Conformidad</strong>
-                  <p>Se requiere antes de enviar a revisión</p>
-                </div>
-              </div>
-              <button
-                *ngIf="
-                  !valuation.conformidadProveedor &&
-                  (valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE')
-                "
-                class="btn btn-primary btn-block"
-                style="margin-top: 12px"
-                (click)="showConformidadModal = true"
-                [disabled]="processingWorkflow"
-              >
-                <i class="fa-solid fa-handshake"></i> Registrar Conformidad
-              </button>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="card">
-              <h3>Acciones Rápidas</h3>
-              <div class="quick-actions">
-                <button
-                  *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
-                  class="btn btn-primary btn-block"
-                  (click)="recalculate()"
-                  [disabled]="recalculating"
-                >
-                  <i class="fa-solid fa-calculator"></i>
-                  {{ recalculating ? 'Recalculando...' : 'Recalcular' }}
-                </button>
-                <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
-                  <i class="fa-solid fa-file-pdf"></i> Descargar PDF
-                </button>
-                <button
-                  class="btn btn-secondary btn-block"
-                  (click)="editValuation()"
-                  *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
-                >
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-              </div>
-            </div>
-
-            <!-- Discount Events (Anexo B) -->
-            <div
-              class="card"
-              *ngIf="valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE'"
+      <!-- ── SIDEBAR: WORKFLOW ACTIONS ─────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        @if (valuation) {
+          <!-- BORRADOR -->
+          @if (valuation.estado === 'BORRADOR') {
+            <button
+              type="button"
+              class="btn btn-primary btn-block"
+              (click)="submitDraft()"
+              [disabled]="processingWorkflow"
             >
-              <h3>Eventos de Descuento</h3>
-              <p class="section-hint">
-                Averías, stand-by o clima que reducen el mínimo contractual.
-              </p>
-              <div class="discount-events-list">
-                <div class="discount-event-item" *ngFor="let evt of discountEvents">
+              <i class="fa-solid fa-paper-plane"></i>
+              {{ processingWorkflow ? 'Procesando...' : 'Marcar como Pendiente' }}
+            </button>
+            <button type="button" class="btn btn-secondary btn-block" (click)="editValuation()">
+              <i class="fa-solid fa-pen"></i> Editar Valorización
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline btn-block"
+              (click)="recalculate()"
+              [disabled]="recalculating"
+            >
+              <i class="fa-solid fa-calculator"></i>
+              {{ recalculating ? 'Recalculando...' : 'Recalcular' }}
+            </button>
+          }
+
+          <!-- PENDIENTE -->
+          @if (valuation.estado === 'PENDIENTE') {
+            <button
+              type="button"
+              class="btn btn-primary btn-block"
+              (click)="submitForReview()"
+              [disabled]="processingWorkflow || !valuation.conformidadProveedor"
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+              {{ processingWorkflow ? 'Procesando...' : 'Enviar a Revisión' }}
+            </button>
+          }
+
+          <!-- EN_REVISION -->
+          @if (valuation.estado === 'EN_REVISION' && canValidate()) {
+            <button
+              type="button"
+              class="btn btn-success btn-block"
+              (click)="confirmValidate()"
+              [disabled]="processingWorkflow"
+            >
+              <i class="fa-solid fa-check-double"></i>
+              {{ processingWorkflow ? 'Procesando...' : 'Validar' }}
+            </button>
+          }
+
+          <!-- VALIDADO -->
+          @if (valuation.estado === 'VALIDADO' && canApprove()) {
+            <button
+              type="button"
+              class="btn btn-success btn-block"
+              (click)="showApproveModal = true"
+              [disabled]="processingWorkflow"
+            >
+              <i class="fa-solid fa-circle-check"></i> Aprobar Valorización
+            </button>
+          }
+
+          <!-- APROBADO + canMarkAsPaid -->
+          @if (valuation.estado === 'APROBADO' && canMarkAsPaid()) {
+            <button
+              type="button"
+              class="btn btn-success btn-block"
+              (click)="showMarkPaidModal = true"
+              [disabled]="processingWorkflow"
+            >
+              <i class="fa-solid fa-money-check-dollar"></i> Marcar como Pagada
+            </button>
+          }
+
+          <!-- RECHAZADO -->
+          @if (valuation.estado === 'RECHAZADO') {
+            <button
+              type="button"
+              class="btn btn-secondary btn-block"
+              (click)="confirmReopen()"
+              [disabled]="processingWorkflow"
+            >
+              <i class="fa-solid fa-rotate-left"></i>
+              {{ processingWorkflow ? 'Procesando...' : 'Reabrir Valorización' }}
+            </button>
+          }
+
+          <!-- Reject (multi-state) -->
+          @if (canRejectCurrentState() && canReject()) {
+            <button
+              type="button"
+              class="btn btn-danger btn-block"
+              (click)="showRejectModal = true"
+              [disabled]="processingWorkflow"
+            >
+              <i class="fa-solid fa-ban"></i>
+              Rechazar
+            </button>
+          }
+
+          <!-- Workflow hint -->
+          @if (getWorkflowHint()) {
+            <p class="workflow-hint">{{ getWorkflowHint() }}</p>
+          }
+
+          <hr style="border:none;border-top:1px solid var(--grey-100);margin:var(--s-8) 0" />
+
+          <!-- Common actions -->
+          <button type="button" class="btn btn-secondary btn-block" (click)="downloadPDF()">
+            <i class="fa-solid fa-file-pdf"></i>
+            Descargar PDF
+          </button>
+          <button type="button" class="btn btn-ghost btn-block" (click)="editValuation()">
+            <i class="fa-solid fa-pen-to-square"></i>
+            Editar Detalles
+          </button>
+          <button type="button" class="btn btn-ghost btn-block" routerLink="/equipment/valuations">
+            <i class="fa-solid fa-arrow-left-long"></i>
+            Volver a Lista
+          </button>
+          <button type="button" class="btn btn-danger btn-block" (click)="deleteValuation()">
+            <i class="fa-solid fa-trash-can"></i>
+            Eliminar
+          </button>
+        }
+      </ng-container>
+
+      <!-- ── SIDEBAR: EXTRA CARDS ───────────────────────────────── -->
+
+      <!-- Conformidad del Proveedor -->
+      @if (valuation) {
+        <entity-detail-sidebar-card entity-sidebar-after title="Conformidad del Proveedor">
+          @if (valuation.conformidadProveedor) {
+            <div class="conformidad-status conformidad-ok">
+              <i class="fa-solid fa-circle-check"></i>
+              <div>
+                <strong>Conformidad registrada</strong>
+                <p>{{ valuation.conformidadProveedor.fecha | date: 'dd/MM/yyyy' }}</p>
+                @if (valuation.conformidadProveedor.observaciones) {
+                  <p class="conformidad-obs">{{ valuation.conformidadProveedor.observaciones }}</p>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="conformidad-status conformidad-pending">
+              <i class="fa-solid fa-clock"></i>
+              <div>
+                <strong>Pendiente de conformidad</strong>
+                <p>El proveedor aún no ha dado su conformidad.</p>
+              </div>
+            </div>
+            @if (valuation.estado === 'PENDIENTE') {
+              <button
+                type="button"
+                class="btn btn-secondary btn-block mt-8"
+                (click)="showConformidadModal = true"
+              >
+                <i class="fa-solid fa-signature"></i> Registrar Conformidad
+              </button>
+            }
+          }
+        </entity-detail-sidebar-card>
+      }
+
+      <!-- Descuentos (Anexo B) -->
+      @if (valuation && (valuation.estado === 'BORRADOR' || discountEvents.length > 0)) {
+        <entity-detail-sidebar-card entity-sidebar-after title="Descuentos (Anexo B)">
+          <p class="section-hint">Eventos de descuento aplicados a la valorización.</p>
+          @if (discountEvents.length > 0) {
+            <div class="discount-events-list">
+              @for (event of discountEvents; track event.id) {
+                <div class="discount-event-item">
                   <div class="discount-event-header">
-                    <span class="discount-event-type">{{ evt.tipo }}</span>
-                    <span class="discount-event-date">{{ evt.fecha | date: 'dd/MM/yyyy' }}</span>
+                    <span class="discount-event-type">
+                      {{ event.tipo }}
+                      @if (event.subtipo) {
+                        · {{ event.subtipo }}
+                      }
+                    </span>
+                    <span class="discount-event-date">{{ event.fecha | date: 'dd/MM/yy' }}</span>
                   </div>
                   <div class="discount-event-values">
-                    <span *ngIf="evt.horas_descuento > 0">{{ evt.horas_descuento }}h desc.</span>
-                    <span *ngIf="evt.dias_descuento > 0">{{ evt.dias_descuento }}d desc.</span>
+                    @if (event.aplica_descuento === false && event.subtipo) {
+                      <span class="no-discount-badge">Sin descuento</span>
+                    } @else if (event.aplica_descuento === true) {
+                      @if (event.descuento_calculado_horas) {
+                        <span class="calc-badge"
+                          >{{ event.descuento_calculado_horas }}h calculado</span
+                        >
+                      }
+                      @if (event.descuento_calculado_dias) {
+                        <span class="calc-badge"
+                          >{{ event.descuento_calculado_dias }}d calculado</span
+                        >
+                      }
+                    } @else {
+                      @if (event.horas_descuento) {
+                        <span>{{ event.horas_descuento }}h descuento</span>
+                      }
+                      @if (event.dias_descuento) {
+                        <span>{{ event.dias_descuento }}d descuento</span>
+                      }
+                    }
                   </div>
-                  <div class="discount-event-desc" *ngIf="evt.descripcion">
-                    {{ evt.descripcion }}
-                  </div>
-                  <button
-                    class="btn-action btn-action-danger"
-                    (click)="removeDiscountEvent(evt.id)"
-                    title="Eliminar"
-                  >
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
+                  @if (event.descripcion) {
+                    <p class="discount-event-desc">{{ event.descripcion }}</p>
+                  }
+                  @if (valuation.estado === 'BORRADOR') {
+                    <button
+                      type="button"
+                      class="btn-action btn-action-danger"
+                      (click)="removeDiscountEvent(event.id)"
+                      title="Eliminar evento"
+                    >
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  }
                 </div>
-                <div *ngIf="discountEvents.length === 0" class="empty-docs">
-                  No hay eventos de descuento
-                </div>
-              </div>
-              <button
-                class="btn btn-secondary btn-block"
-                style="margin-top: 12px"
-                (click)="showAddDiscountModal = true"
-              >
-                <i class="fa-solid fa-plus"></i> Agregar Evento
-              </button>
+              }
             </div>
-
-            <!-- Payment Documents (Cláusula 6.1) -->
-            <div
-              class="card"
-              *ngIf="valuation.estado === 'APROBADO' || valuation.estado === 'PAGADO'"
+          } @else {
+            <p class="empty-docs">Sin descuentos registrados.</p>
+          }
+          @if (valuation.estado === 'BORRADOR') {
+            <button
+              type="button"
+              class="btn btn-secondary btn-block mt-8"
+              (click)="showAddDiscountModal = true"
             >
-              <h3>Documentos de Pago</h3>
-              <div class="payment-docs-list">
-                <div class="pay-doc-item" *ngFor="let doc of paymentDocs">
-                  <div class="pay-doc-header">
-                    <span class="pay-doc-type">{{ translatePayDocType(doc.tipo_documento) }}</span>
-                    <span [class]="'pay-doc-badge pay-doc-' + doc.estado?.toLowerCase()">
-                      {{ doc.estado }}
-                    </span>
-                  </div>
-                  <div class="pay-doc-meta" *ngIf="doc.numero">N° {{ doc.numero }}</div>
+              <i class="fa-solid fa-plus"></i> Agregar Descuento
+            </button>
+          }
+        </entity-detail-sidebar-card>
+      }
+
+      <!-- Documentos de Pago -->
+      @if (paymentDocs.length > 0) {
+        <entity-detail-sidebar-card entity-sidebar-after title="Documentos de Pago">
+          <div class="payment-docs-list">
+            @for (doc of paymentDocs; track doc.id) {
+              <div class="pay-doc-item">
+                <div class="pay-doc-header">
+                  <span class="pay-doc-type">{{ translatePayDocType(doc.tipo) }}</span>
+                  <span
+                    class="pay-doc-badge"
+                    [class.pay-doc-pendiente]="doc.estado === 'PENDIENTE'"
+                    [class.pay-doc-presentado]="doc.estado === 'PRESENTADO'"
+                    [class.pay-doc-aprobado]="doc.estado === 'APROBADO'"
+                    [class.pay-doc-rechazado]="doc.estado === 'RECHAZADO'"
+                    >{{ doc.estado }}</span
+                  >
                 </div>
-                <div *ngIf="paymentDocs.length === 0" class="empty-docs">
-                  No hay documentos registrados
-                </div>
+                @if (doc.numero || doc.fecha_vencimiento) {
+                  <p class="pay-doc-meta">
+                    @if (doc.numero) {
+                      {{ doc.numero }}
+                    }
+                    @if (doc.fecha_vencimiento) {
+                      · Vence: {{ doc.fecha_vencimiento | date: 'dd/MM/yy' }}
+                    }
+                  </p>
+                }
               </div>
-            </div>
-
-            <!-- Timeline -->
-            <div class="card">
-              <h3>Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item" *ngIf="valuation.aprobadoEn">
-                  <div class="timeline-date">{{ valuation.aprobadoEn | date: 'short' }}</div>
-                  <div class="timeline-content">Aprobado</div>
-                </div>
-
-                <div class="timeline-item" *ngIf="valuation.validadoEn">
-                  <div class="timeline-date">{{ valuation.validadoEn | date: 'short' }}</div>
-                  <div class="timeline-content">Validado</div>
-                </div>
-
-                <div class="timeline-item" *ngIf="valuation.conformidadFecha">
-                  <div class="timeline-date">{{ valuation.conformidadFecha | date: 'short' }}</div>
-                  <div class="timeline-content">Conformidad del Proveedor</div>
-                </div>
-
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ valuation.updatedAt | date: 'short' }}</div>
-                  <div class="timeline-content">Última actualización</div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ valuation.createdAt | date: 'short' }}</div>
-                  <div class="timeline-content">Valorización creada</div>
-                </div>
-              </div>
-            </div>
+            }
           </div>
-        </div>
+        </entity-detail-sidebar-card>
+      }
+    </entity-detail-shell>
 
-        <div *ngIf="!loading && !valuation" class="empty-state card">
-          <h3>Valorización no encontrada</h3>
-          <p>La valorización que buscas no existe o ha sido eliminada.</p>
-          <button class="btn btn-primary" routerLink="/equipment/valuations">
-            Volver a la lista
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- ── MODALS ──────────────────────────────────────────────── -->
 
-    <!-- Approve Confirmation Modal -->
-    <div *ngIf="showApproveModal" class="modal" (click)="showApproveModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Confirmar Aprobación</h2>
-          <button class="close" (click)="showApproveModal = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>¿Estás seguro de que deseas aprobar esta valorización?</p>
-          <div class="approval-summary">
-            <p><strong>N° Valorización:</strong> {{ valuation?.numeroValorizacion || 'N/A' }}</p>
-            <p>
-              <strong>Total:</strong> {{ valuation?.totalValorizado | currency: 'PEN' : 'S/ ' }}
-            </p>
-            <p>
-              <strong>Periodo:</strong> {{ valuation?.fechaInicio | date: 'dd/MM/yyyy' }} -
-              {{ valuation?.fechaFin | date: 'dd/MM/yyyy' }}
+    <!-- Approve Modal -->
+    @if (showApproveModal) {
+      <div class="modal" (click)="showApproveModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Confirmar Aprobación</h2>
+            <button type="button" class="close" (click)="showApproveModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>¿Confirmas la aprobación final de esta valorización?</p>
+            @if (valuation) {
+              <div class="approval-summary">
+                <p><strong>Valorización:</strong> {{ valuation.numeroValorizacion }}</p>
+                <p><strong>Monto Total:</strong> {{ valuation.montoNeto | currency: 'USD' }}</p>
+                <p><strong>Período:</strong> {{ valuation.periodo }}</p>
+              </div>
+            }
+            <p class="alert alert-warning">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              Esta acción es definitiva y pasará la valorización a estado APROBADO.
             </p>
           </div>
-          <p class="alert alert-info">
-            Una vez aprobada, la valorización podrá ser marcada como pagada.
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showApproveModal = false">Cancelar</button>
-          <button
-            class="btn btn-success"
-            (click)="confirmApprove()"
-            [disabled]="processingWorkflow"
-          >
-            {{ processingWorkflow ? 'Procesando...' : 'Aprobar' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Reject Modal with Reason -->
-    <div *ngIf="showRejectModal" class="modal" (click)="showRejectModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Rechazar Valorización</h2>
-          <button class="close" (click)="showRejectModal = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>Indica el motivo del rechazo:</p>
-          <div class="form-group">
-            <label>Razón del Rechazo <span class="required">*</span></label>
-            <textarea
-              [(ngModel)]="rejectReason"
-              class="form-control"
-              rows="4"
-              placeholder="Ej: Datos incorrectos en reporte de combustible..."
-              required
-            ></textarea>
-            <p class="form-hint" *ngIf="!rejectReason">Este campo es obligatorio</p>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showApproveModal = false">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              (click)="confirmApprove()"
+              [disabled]="processingWorkflow"
+            >
+              {{ processingWorkflow ? 'Aprobando...' : 'Confirmar Aprobación' }}
+            </button>
           </div>
-          <p class="alert alert-warning">
-            El motivo del rechazo será registrado en las observaciones.
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showRejectModal = false">Cancelar</button>
-          <button
-            class="btn btn-danger"
-            (click)="confirmReject()"
-            [disabled]="!rejectReason || processingWorkflow"
-          >
-            {{ processingWorkflow ? 'Procesando...' : 'Rechazar' }}
-          </button>
         </div>
       </div>
-    </div>
+    }
+
+    <!-- Reject Modal -->
+    @if (showRejectModal) {
+      <div class="modal" (click)="showRejectModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Rechazar Valorización</h2>
+            <button type="button" class="close" (click)="showRejectModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="rejectReason"> Motivo de Rechazo <span class="required">*</span> </label>
+              <textarea
+                id="rejectReason"
+                class="form-control"
+                rows="4"
+                [(ngModel)]="rejectReason"
+                placeholder="Ingrese el motivo del rechazo..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showRejectModal = false">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              (click)="confirmReject()"
+              [disabled]="processingWorkflow || !rejectReason"
+            >
+              {{ processingWorkflow ? 'Rechazando...' : 'Confirmar Rechazo' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- Mark as Paid Modal -->
-    <div *ngIf="showMarkPaidModal" class="modal" (click)="showMarkPaidModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Marcar como Pagado</h2>
-          <button class="close" (click)="showMarkPaidModal = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>Registra los detalles del pago:</p>
-          <div class="form-group">
-            <label>Fecha de Pago <span class="required">*</span></label>
-            <input type="date" [(ngModel)]="paymentData.fecha_pago" class="form-control" required />
+    @if (showMarkPaidModal) {
+      <div class="modal" (click)="showMarkPaidModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Registrar Pago</h2>
+            <button type="button" class="close" (click)="showMarkPaidModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
           </div>
-          <div class="form-group">
-            <label>Método de Pago <span class="required">*</span></label>
-            <app-dropdown
-              [(ngModel)]="paymentData.metodo_pago"
-              [options]="paymentMethodOptions"
-              [placeholder]="'Seleccionar...'"
-              [required]="true"
-            ></app-dropdown>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Fecha de Pago <span class="required">*</span></label>
+              <input type="date" class="form-control" [(ngModel)]="paymentData.fecha_pago" />
+            </div>
+            <div class="form-group">
+              <label>Método de Pago <span class="required">*</span></label>
+              <app-dropdown
+                [options]="paymentMethodOptions"
+                [placeholder]="'Seleccionar método'"
+                [(value)]="paymentData.metodo_pago"
+              ></app-dropdown>
+            </div>
+            <div class="form-group">
+              <label>Referencia / Número de Operación <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="paymentData.referencia_pago"
+                placeholder="Ej: TRF-2024-001"
+              />
+            </div>
           </div>
-          <div class="form-group">
-            <label>Referencia de Pago <span class="required">*</span></label>
-            <input
-              type="text"
-              [(ngModel)]="paymentData.referencia_pago"
-              class="form-control"
-              placeholder="Ej: TRF-2026-001 o CHEQUE-12345"
-              required
-            />
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showMarkPaidModal = false">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              (click)="confirmMarkAsPaid()"
+              [disabled]="processingWorkflow || !isPaymentDataValid()"
+            >
+              {{ processingWorkflow ? 'Guardando...' : 'Confirmar Pago' }}
+            </button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showMarkPaidModal = false">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="confirmMarkAsPaid()"
-            [disabled]="!isPaymentDataValid() || processingWorkflow"
-          >
-            {{ processingWorkflow ? 'Procesando...' : 'Marcar como Pagado' }}
-          </button>
         </div>
       </div>
-    </div>
+    }
+
     <!-- Add Discount Event Modal -->
-    <div *ngIf="showAddDiscountModal" class="modal" (click)="showAddDiscountModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Agregar Evento de Descuento</h2>
-          <button class="close" (click)="showAddDiscountModal = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Fecha <span class="required">*</span></label>
-            <input type="date" [(ngModel)]="newDiscountEvent.fecha" class="form-control" required />
+    @if (showAddDiscountModal) {
+      <div class="modal" (click)="showAddDiscountModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Agregar Evento de Descuento</h2>
+            <button type="button" class="close" (click)="showAddDiscountModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
           </div>
-          <div class="form-group">
-            <label>Tipo <span class="required">*</span></label>
-            <app-dropdown
-              [(ngModel)]="newDiscountEvent.tipo"
-              [options]="discountTypeOptions"
-              [placeholder]="'Seleccionar tipo...'"
-              [required]="true"
-            ></app-dropdown>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Fecha <span class="required">*</span></label>
+              <input type="date" class="form-control" [(ngModel)]="newDiscountEvent.fecha" />
+            </div>
+            <div class="form-group">
+              <label>Tipo de Descuento <span class="required">*</span></label>
+              <app-dropdown
+                [options]="discountTypeOptions"
+                [placeholder]="'Seleccionar tipo'"
+                [(value)]="newDiscountEvent.tipo"
+                (valueChange)="onDiscountTipoChange()"
+              ></app-dropdown>
+            </div>
+            @if (currentSubtipoOptions.length > 0) {
+              <div class="form-group">
+                <label>Subtipo <span class="required">*</span></label>
+                <app-dropdown
+                  [options]="currentSubtipoOptions"
+                  [placeholder]="'Seleccionar subtipo'"
+                  [(value)]="newDiscountEvent.subtipo"
+                  (valueChange)="onDiscountSubtipoChange()"
+                ></app-dropdown>
+                <small class="form-hint"
+                  >Define la regla de descuento aplicable (PRD Anexo B)</small
+                >
+              </div>
+
+              @if (discountRuleBadge) {
+                <div class="alert" [ngClass]="discountRuleBadge.cls">
+                  <i class="fa-solid" [ngClass]="discountRuleBadge.icon"></i>
+                  {{ discountRuleBadge.text }}
+                </div>
+              }
+            }
+            @if (showHorasHorometro) {
+              <div class="form-group">
+                <label>Horas Horómetro (Mecánica) <span class="required">*</span></label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="newDiscountEvent.horas_horometro_mecanica"
+                  min="0"
+                  step="0.5"
+                  placeholder="Horas registradas en horómetro"
+                />
+                <small class="form-hint">Se calcularán días proporcionales: h / 8</small>
+              </div>
+            }
+            @if (showHorasDescuento) {
+              <div class="form-group">
+                <label>Horas de Paralización</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="newDiscountEvent.horas_descuento"
+                  min="0"
+                  step="0.5"
+                  (input)="onHorasDescuentoChange()"
+                />
+                @if (
+                  newDiscountEvent.tipo === 'AVERIA' && newDiscountEvent.subtipo === 'ARRENDADOR'
+                ) {
+                  <small class="form-hint">
+                    @if ((newDiscountEvent.horas_descuento || 0) >= 5) {
+                      <span class="rule-enforced"
+                        ><i class="fa-solid fa-check-circle"></i> ≥5h → 1 día completo
+                        aplicado</span
+                      >
+                    } @else {
+                      <span>Regla: &lt;5h proporcional / ≥5h = 1 día completo</span>
+                    }
+                  </small>
+                }
+              </div>
+            }
+            @if (!newDiscountEvent.subtipo) {
+              <div class="form-group">
+                <label>Días de Descuento (manual)</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="newDiscountEvent.dias_descuento"
+                  min="0"
+                  step="0.5"
+                />
+              </div>
+            }
+            <div class="form-group">
+              <label>Descripción</label>
+              <textarea
+                class="form-control"
+                rows="3"
+                [(ngModel)]="newDiscountEvent.descripcion"
+                placeholder="Descripción del evento..."
+              ></textarea>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Horas Descuento</label>
-            <input
-              type="number"
-              [(ngModel)]="newDiscountEvent.horas_descuento"
-              class="form-control"
-              step="0.5"
-              min="0"
-            />
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showAddDiscountModal = false">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="confirmAddDiscountEvent()"
+              [disabled]="!newDiscountEvent.fecha || !newDiscountEvent.tipo"
+            >
+              Agregar Descuento
+            </button>
           </div>
-          <div class="form-group">
-            <label>Días Descuento</label>
-            <input
-              type="number"
-              [(ngModel)]="newDiscountEvent.dias_descuento"
-              class="form-control"
-              step="0.5"
-              min="0"
-            />
-          </div>
-          <div class="form-group">
-            <label>Descripción</label>
-            <textarea
-              [(ngModel)]="newDiscountEvent.descripcion"
-              class="form-control"
-              rows="2"
-              placeholder="Descripción opcional..."
-            ></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showAddDiscountModal = false">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="confirmAddDiscountEvent()"
-            [disabled]="!newDiscountEvent.fecha || !newDiscountEvent.tipo"
-          >
-            Agregar
-          </button>
         </div>
       </div>
-    </div>
+    }
 
     <!-- Conformidad Modal -->
-    <div *ngIf="showConformidadModal" class="modal" (click)="showConformidadModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Registrar Conformidad del Proveedor</h2>
-          <button class="close" (click)="showConformidadModal = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>Registra la conformidad del proveedor para esta valorización.</p>
-          <div class="form-group">
-            <label>Fecha de Conformidad <span class="required">*</span></label>
-            <input type="date" [(ngModel)]="conformidadData.fecha" class="form-control" required />
+    @if (showConformidadModal) {
+      <div class="modal" (click)="showConformidadModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Registrar Conformidad del Proveedor</h2>
+            <button type="button" class="close" (click)="showConformidadModal = false">
+              <i class="fa-solid fa-times"></i>
+            </button>
           </div>
-          <div class="form-group">
-            <label>Observaciones</label>
-            <textarea
-              [(ngModel)]="conformidadData.observaciones"
-              class="form-control"
-              rows="3"
-              placeholder="Observaciones opcionales..."
-            ></textarea>
+          <div class="modal-body">
+            <p class="alert alert-info">
+              <i class="fa-solid fa-circle-info"></i>
+              Registra la fecha en que el proveedor dio su conformidad a esta valorización.
+            </p>
+            <div class="form-group">
+              <label>Fecha de Conformidad <span class="required">*</span></label>
+              <input type="date" class="form-control" [(ngModel)]="conformidadData.fecha" />
+            </div>
+            <div class="form-group">
+              <label>Observaciones (opcional)</label>
+              <textarea
+                class="form-control"
+                rows="3"
+                [(ngModel)]="conformidadData.observaciones"
+                placeholder="Observaciones del proveedor..."
+              ></textarea>
+            </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showConformidadModal = false">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="confirmConformidad()"
-            [disabled]="!conformidadData.fecha || processingWorkflow"
-          >
-            {{ processingWorkflow ? 'Procesando...' : 'Registrar Conformidad' }}
-          </button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showConformidadModal = false">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="confirmConformidad()"
+              [disabled]="processingWorkflow || !conformidadData.fecha"
+            >
+              {{ processingWorkflow ? 'Guardando...' : 'Registrar Conformidad' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    }
   `,
   styles: [
     `
-      .detail-container {
-        min-height: 100vh;
-        background: #f5f5f5;
-        padding: var(--s-24) 0;
-      }
+      @use 'detail-layout' as *;
 
-      .breadcrumb {
-        margin-bottom: var(--s-24);
-      }
-
-      .breadcrumb-link {
-        color: var(--primary-500);
+      .link-primary {
+        color: var(--primary-600);
         text-decoration: none;
         font-weight: 500;
 
@@ -1115,89 +1000,23 @@ import {
         }
       }
 
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: var(--s-24);
-
-        @media (max-width: 968px) {
-          grid-template-columns: 1fr;
-        }
+      .highlight {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--primary-600);
       }
 
-      .detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: var(--s-32);
-        padding-bottom: var(--s-24);
-        border-bottom: 1px solid var(--grey-100);
+      .observaciones-block {
+        margin-top: var(--s-16);
 
-        h1 {
-          margin: 0;
-          font-size: 24px;
-          font-weight: 700;
-          color: var(--grey-900);
-        }
-
-        .code-badge {
-          font-family: monospace;
-          background: var(--grey-100);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 14px;
-          color: var(--grey-700);
-          font-weight: 600;
-          display: inline-block;
-        }
-      }
-
-      .detail-status {
-        margin-bottom: var(--s-24);
-      }
-
-      .detail-sections {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-32);
-      }
-
-      .detail-section {
-        h2 {
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-24);
-      }
-
-      .info-item {
         label {
           display: block;
           font-size: 12px;
           font-weight: 500;
-          color: var(--grey-500);
+          color: var(--grey-700);
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          margin-bottom: var(--s-4);
-        }
-
-        p {
-          font-size: 16px;
-          color: #333;
-          margin: 0;
-
-          &.highlight {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--primary-500);
-          }
+          margin-bottom: var(--s-8);
         }
       }
 
@@ -1211,473 +1030,183 @@ import {
         line-height: 1.6;
       }
 
-      .detail-sidebar {
+      .detail-sections {
         display: flex;
         flex-direction: column;
-        gap: var(--s-24);
+        gap: var(--s-32);
+        margin-top: var(--s-8);
+      }
 
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
+      /* Deadline timeline */
+      .deadline-section {
+        margin-bottom: var(--s-8);
+        padding: var(--s-16);
+        background: var(--grey-50);
+        border-radius: var(--s-8);
+        border: 1px solid var(--grey-200);
+      }
+
+      .deadline-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--grey-700);
+        margin-bottom: var(--s-16);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .deadline-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-left: 8px;
+      }
+
+      .deadline-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        padding-left: 20px;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 7px;
+          top: 20px;
+          bottom: -16px;
+          width: 2px;
+          background: var(--grey-300);
+        }
+
+        &:last-child::before {
+          display: none;
         }
       }
 
-      .workflow-actions,
-      .quick-actions {
+      /* Deadline Tracker (Compact) */
+      .deadline-section-compact {
+        background: var(--grey-50);
+        padding: 12px 20px;
+        border-radius: 8px;
+        border-bottom: 4px solid var(--grey-100);
+      }
+
+      .deadline-tracker {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .tracker-step {
         display: flex;
         flex-direction: column;
-        gap: var(--s-8);
+        align-items: center;
+        text-align: center;
+        position: relative;
+        flex: 1;
+
+        .tracker-dot {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid var(--grey-300);
+          z-index: 1;
+          transition: all 0.3s ease;
+        }
+
+        .tracker-label {
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--grey-500);
+          margin-top: 6px;
+        }
+
+        .tracker-date {
+          font-size: 10px;
+          color: var(--grey-400);
+          font-family: monospace;
+        }
+
+        &.done {
+          .tracker-dot {
+            background: var(--semantic-green-500);
+            border-color: var(--semantic-green-600);
+            box-shadow: 0 0 0 4px var(--semantic-green-50);
+          }
+          .tracker-label {
+            color: var(--semantic-green-700);
+          }
+        }
+
+        &.active {
+          .tracker-dot {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 4px var(--primary-50);
+          }
+          .tracker-label {
+            color: var(--primary-600);
+          }
+        }
+
+        &.overdue {
+          .tracker-dot {
+            background: var(--semantic-red-500);
+            border-color: var(--semantic-red-600);
+            box-shadow: 0 0 0 4px var(--semantic-red-50);
+          }
+          .tracker-label {
+            color: var(--semantic-red-700);
+          }
+        }
       }
 
-      .workflow-hint {
+      .tracker-line {
+        flex: 1;
+        height: 2px;
+        background: var(--grey-200);
+        margin-top: -24px;
+      }
+
+      .tracker-alert {
+        margin-top: 12px;
+        padding: 6px 12px;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        border-radius: 6px;
         font-size: 12px;
-        color: var(--grey-500);
-        margin-top: var(--s-8);
-        font-style: italic;
-      }
-
-      /* Button variants managed globally in _buttons.scss */
-      .btn-block {
-        width: 100%;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         justify-content: center;
       }
 
-      .timeline {
+      /* Info grids */
+      .info-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-24);
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .info-column {
         display: flex;
         flex-direction: column;
         gap: var(--s-16);
       }
 
-      .timeline-item {
-        position: relative;
-        padding-left: var(--s-24);
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--primary-500);
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 3px;
-          top: 14px;
-          width: 2px;
-          height: calc(100% + var(--s-16));
-          background: #e0e0e0;
-        }
-
-        &:last-child::after {
-          display: none;
-        }
-      }
-
-      .timeline-date {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-bottom: var(--s-4);
-      }
-
-      .timeline-content {
-        font-size: 14px;
-        color: #333;
-      }
-
-      /* Payment Documents */
-      .payment-docs-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .pay-doc-item {
-        padding: 8px;
-        border: 1px solid var(--grey-200);
-        border-radius: 6px;
-      }
-
-      .pay-doc-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .pay-doc-type {
-        font-size: 13px;
-        font-weight: 500;
-      }
-
-      .pay-doc-badge {
-        font-size: 11px;
-        padding: 2px 6px;
-        border-radius: 10px;
-        font-weight: 500;
-      }
-
-      .pay-doc-pendiente {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-
-      .pay-doc-presentado {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-
-      .pay-doc-aprobado {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-
-      .pay-doc-rechazado {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-      }
-
-      .pay-doc-meta {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-top: 4px;
-      }
-
-      .empty-docs {
-        font-size: 13px;
-        color: var(--grey-500);
-        text-align: center;
-        padding: 8px;
-      }
-
-      /* Status Badges */
-      .status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .status-badge::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-
-      .status-pending {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-pending::before {
-        background: var(--semantic-yellow-500);
-      }
-
-      .status-under_review {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-under_review::before {
-        background: var(--semantic-blue-500);
-      }
-
-      .status-approved {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-approved::before {
-        background: var(--semantic-green-500);
-      }
-
-      .status-rejected {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-      }
-      .status-rejected::before {
-        background: var(--semantic-red-500);
-      }
-
-      .status-BORRADOR {
-        background: var(--grey-100);
-        color: var(--grey-600);
-      }
-      .status-BORRADOR::before {
-        background: var(--grey-400);
-      }
-
-      .status-PENDIENTE {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-      .status-PENDIENTE::before {
-        background: var(--semantic-yellow-500);
-      }
-
-      .status-EN_REVISION {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-EN_REVISION::before {
-        background: var(--semantic-blue-500);
-      }
-
-      .status-VALIDADO {
-        background: #e8f5e9;
-        color: #2e7d32;
-      }
-      .status-VALIDADO::before {
-        background: #4caf50;
-      }
-
-      .status-APROBADO {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-APROBADO::before {
-        background: var(--semantic-green-500);
-      }
-
-      .status-RECHAZADO {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-      }
-      .status-RECHAZADO::before {
-        background: var(--semantic-red-500);
-      }
-
-      .status-PAGADO {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-      .status-PAGADO::before {
-        background: var(--grey-400);
-      }
-
-      .status-paid {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-      .status-paid::before {
-        background: var(--grey-400);
-      }
-
-      /* Conformidad card */
-      .conformidad-status {
-        display: flex;
-        align-items: flex-start;
-        gap: var(--s-12);
-        padding: var(--s-12);
-        border-radius: var(--radius-sm);
-      }
-
-      .conformidad-ok {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-
-      .conformidad-ok i {
-        font-size: 20px;
-        margin-top: 2px;
-      }
-
-      .conformidad-pending {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-      }
-
-      .conformidad-pending i {
-        font-size: 20px;
-        margin-top: 2px;
-      }
-
-      .conformidad-status strong {
-        display: block;
-        margin-bottom: 4px;
-      }
-
-      .conformidad-status p {
-        font-size: 12px;
-        margin: 0;
-      }
-
-      .conformidad-obs {
-        font-style: italic;
-        margin-top: 4px !important;
-      }
-
-      /* Modal */
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-      }
-
-      .modal-content {
-        background: white;
-        padding: 0;
-        border-radius: var(--radius-md);
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-lg);
-      }
-
-      .modal-header {
-        padding: var(--s-16) var(--s-24);
-        border-bottom: 1px solid var(--grey-200);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        h2 {
-          margin: 0;
-          font-size: 18px;
-        }
-
-        .close {
-          background: none;
-          border: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: var(--grey-500);
-        }
-      }
-
-      .modal-body {
-        padding: var(--s-24);
-
-        p {
-          margin-bottom: var(--s-16);
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
-      }
-
-      .modal-footer {
-        padding: var(--s-16) var(--s-24);
-        border-top: 1px solid var(--grey-200);
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--s-8);
-      }
-
-      .approval-summary {
-        background: var(--grey-50);
-        padding: var(--s-16);
-        border-radius: var(--radius-sm);
-        margin: var(--s-16) 0;
-
-        p {
-          margin-bottom: var(--s-8);
-          font-size: 14px;
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
-      }
-
-      .form-group {
-        margin-bottom: var(--s-16);
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: var(--s-8);
-        font-weight: 500;
-        color: var(--grey-700);
-        font-size: 14px;
-      }
-
-      .required {
-        color: var(--semantic-red-500);
-      }
-
-      .form-control {
-        width: 100%;
-        padding: var(--s-8) var(--s-12);
-        border: 1px solid var(--grey-300);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-      }
-
-      .form-hint {
-        margin-top: var(--s-4);
-        font-size: 12px;
-        color: var(--grey-500);
-      }
-
-      .alert {
-        padding: var(--s-12);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-        margin-top: var(--s-16);
-      }
-
-      .alert-warning {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-        border: 1px solid var(--semantic-yellow-200);
-      }
-
-      .alert-info {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-        border: 1px solid var(--semantic-blue-200);
-      }
-
-      .loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: var(--s-48);
-      }
-
-      .spinner {
-        border: 3px solid var(--grey-200);
-        border-top: 3px solid var(--primary-500);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin-bottom: var(--s-16);
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Payments Section Styles */
+      /* Payments section */
       .payments-section {
         margin-top: var(--s-32);
         padding-top: var(--s-32);
-        border-top: 2px solid #e0e0e0;
+        border-top: 2px solid var(--grey-200);
       }
 
       .section-header {
@@ -1692,7 +1221,7 @@ import {
       }
 
       .payment-summary-widget {
-        background: var(--neutral-0);
+        background: var(--neutral-0, white);
         border: 1px solid var(--grey-200);
         padding: var(--s-24);
         border-radius: var(--radius-md);
@@ -1714,18 +1243,16 @@ import {
         font-size: 14px;
         color: var(--grey-600);
       }
-
       .summary-value {
         font-size: 18px;
         font-weight: 600;
         color: var(--grey-900);
       }
-
-      .payment-status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
+      .text-success {
+        color: var(--semantic-green-700) !important;
+      }
+      .text-warning {
+        color: var(--semantic-yellow-700) !important;
       }
 
       .progress-bar-container {
@@ -1750,83 +1277,6 @@ import {
         color: var(--grey-600);
       }
 
-      .text-success {
-        color: var(--semantic-green-700) !important;
-      }
-
-      .text-warning {
-        color: var(--semantic-yellow-700) !important;
-      }
-
-      /* Two-column info grid */
-      .info-grid-2col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--s-24);
-
-        @media (max-width: 600px) {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .info-column {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-16);
-      }
-
-      /* Financial summary table */
-      .financial-table-container {
-        overflow-x: auto;
-      }
-
-      .financial-table {
-        width: 100%;
-        border-collapse: collapse;
-
-        th {
-          background: var(--grey-50);
-          padding: var(--s-12) var(--s-16);
-          text-align: left;
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--grey-700);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          border-bottom: 2px solid var(--grey-200);
-        }
-
-        td {
-          padding: var(--s-8) var(--s-16);
-          border-bottom: 1px solid var(--grey-100);
-          font-size: 14px;
-          color: var(--grey-900);
-        }
-
-        .text-right {
-          text-align: right;
-          font-family: monospace;
-        }
-
-        .row-header td {
-          background: var(--grey-50);
-          padding-top: var(--s-12);
-          padding-bottom: var(--s-8);
-          border-bottom: 1px solid var(--grey-200);
-        }
-
-        .row-total td {
-          border-top: 2px solid var(--grey-300);
-          padding-top: var(--s-12);
-        }
-
-        .row-grand-total td {
-          background: var(--grey-50);
-          border-top: 2px solid var(--grey-400);
-          font-size: 15px;
-        }
-      }
-
       .loading-payments {
         display: flex;
         align-items: center;
@@ -1842,6 +1292,15 @@ import {
         width: 20px;
         height: 20px;
         animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       .payments-table-container {
@@ -1893,6 +1352,9 @@ import {
         font-weight: 600;
         font-family: monospace;
       }
+      .text-right {
+        text-align: right;
+      }
 
       .badge {
         padding: 4px 8px;
@@ -1907,17 +1369,14 @@ import {
         background: var(--grey-100);
         color: var(--grey-700);
       }
-
       .badge-success {
         background: var(--semantic-green-50);
         color: var(--semantic-green-700);
       }
-
       .badge-warning {
         background: var(--semantic-yellow-50);
         color: var(--semantic-yellow-700);
       }
-
       .badge-danger {
         background: var(--semantic-red-50);
         color: var(--semantic-red-700);
@@ -1929,26 +1388,74 @@ import {
         gap: 4px;
       }
 
-      .btn-action {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--radius-sm);
-        transition: background 0.2s ease;
-        font-size: 14px;
+      .empty-state-payments {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--s-48) var(--s-24);
+        text-align: center;
+        background: var(--grey-50);
+        border-radius: var(--radius-md);
+      }
 
-        &:hover {
-          background: var(--grey-100);
+      .empty-icon {
+        font-size: 48px;
+        color: var(--grey-300);
+        margin-bottom: var(--s-16);
+      }
+      .empty-text {
+        font-size: 14px;
+        color: var(--grey-500);
+        margin-bottom: var(--s-16);
+      }
+
+      /* Workflow hint */
+      .workflow-hint {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-top: var(--s-8);
+        font-style: italic;
+        text-align: center;
+      }
+
+      .mt-8 {
+        margin-top: var(--s-8);
+      }
+
+      /* Conformidad */
+      .conformidad-status {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--s-12);
+        padding: var(--s-12);
+        border-radius: var(--radius-sm);
+
+        i {
+          font-size: 20px;
+          margin-top: 2px;
+        }
+        strong {
+          display: block;
+          margin-bottom: 4px;
+        }
+        p {
+          font-size: 12px;
+          margin: 0;
         }
       }
 
-      .btn-action-primary {
-        color: var(--primary-500);
-
-        &:hover {
-          background: var(--primary-50);
-        }
+      .conformidad-ok {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .conformidad-pending {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
+      .conformidad-obs {
+        font-style: italic;
+        margin-top: 4px !important;
       }
 
       /* Discount events */
@@ -2006,10 +1513,42 @@ import {
         font-style: italic;
       }
 
+      .no-discount-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: var(--grey-100);
+        color: var(--grey-500);
+        font-weight: 600;
+      }
+
+      .calc-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-weight: 600;
+      }
+
       .discount-event-item .btn-action {
         position: absolute;
         top: 4px;
         right: 4px;
+      }
+
+      .btn-action {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--s-4) var(--s-8);
+        border-radius: var(--radius-sm);
+        transition: background 0.2s ease;
+        font-size: 14px;
+
+        &:hover {
+          background: var(--grey-100);
+        }
       }
 
       .btn-action-danger {
@@ -2020,129 +1559,189 @@ import {
         }
       }
 
-      .empty-state-payments {
+      .empty-docs {
+        font-size: 13px;
+        color: var(--grey-500);
+        text-align: center;
+        padding: 8px;
+      }
+
+      /* Payment docs */
+      .payment-docs-list {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: var(--s-48) var(--s-24);
-        text-align: center;
-        background: var(--grey-50);
-        border-radius: var(--radius-md);
-      }
-
-      .empty-icon {
-        font-size: 48px;
-        color: var(--grey-300);
-        margin-bottom: var(--s-16);
-      }
-
-      .empty-text {
-        font-size: 14px;
-        color: var(--grey-500);
-        margin-bottom: var(--s-16);
-      }
-
-      /* Deadline Timeline */
-      .deadline-section {
-        margin-bottom: var(--s-24);
-        padding: var(--s-16);
-        background: var(--grey-50);
-        border-radius: var(--s-8);
-        border: 1px solid var(--grey-200);
-      }
-
-      .deadline-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--grey-700);
-        margin-bottom: var(--s-16);
-        display: flex;
-        align-items: center;
         gap: 8px;
       }
 
-      .deadline-timeline {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding-left: 8px;
+      .pay-doc-item {
+        padding: 8px;
+        border: 1px solid var(--grey-200);
+        border-radius: 6px;
       }
 
-      .deadline-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        position: relative;
-        padding-left: 20px;
-      }
-
-      .deadline-item::before {
-        content: '';
-        position: absolute;
-        left: 7px;
-        top: 20px;
-        bottom: -16px;
-        width: 2px;
-        background: var(--grey-300);
-      }
-
-      .deadline-item:last-child::before {
-        display: none;
-      }
-
-      .deadline-dot {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: var(--grey-300);
-        position: absolute;
-        left: 0;
-        flex-shrink: 0;
-      }
-
-      .deadline-item.done .deadline-dot {
-        background: var(--semantic-green-500);
-      }
-
-      .deadline-item.overdue .deadline-dot {
-        background: var(--semantic-red-500);
-      }
-
-      .deadline-info {
+      .pay-doc-header {
         display: flex;
         justify-content: space-between;
-        flex: 1;
+        align-items: center;
       }
 
-      .deadline-label {
+      .pay-doc-type {
         font-size: 13px;
-        color: var(--grey-700);
         font-weight: 500;
       }
 
-      .deadline-date {
-        font-size: 13px;
-        color: var(--grey-500);
-        font-family: monospace;
+      .pay-doc-badge {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: 500;
       }
 
-      .deadline-item.overdue .deadline-label {
-        color: var(--semantic-red-700);
-        font-weight: 600;
+      .pay-doc-pendiente {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
-
-      .deadline-alert {
-        margin-top: var(--s-12);
-        padding: 8px 12px;
+      .pay-doc-presentado {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
+      }
+      .pay-doc-aprobado {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .pay-doc-rechazado {
         background: var(--semantic-red-50);
         color: var(--semantic-red-700);
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
+      }
+
+      .pay-doc-meta {
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-top: 4px;
+      }
+
+      /* Modals */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
         display: flex;
+        justify-content: center;
         align-items: center;
-        gap: 8px;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 0;
+        border-radius: var(--radius-md);
+        width: 90%;
+        max-width: 500px;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .modal-header {
+        padding: var(--s-16) var(--s-24);
+        border-bottom: 1px solid var(--grey-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h2 {
+          margin: 0;
+          font-size: 18px;
+        }
+
+        .close {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: var(--grey-500);
+        }
+      }
+
+      .modal-body {
+        padding: var(--s-24);
+
+        p {
+          margin-bottom: var(--s-16);
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      .modal-footer {
+        padding: var(--s-16) var(--s-24);
+        border-top: 1px solid var(--grey-200);
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--s-8);
+      }
+
+      .approval-summary {
+        background: var(--grey-50);
+        padding: var(--s-16);
+        border-radius: var(--radius-sm);
+        margin: var(--s-16) 0;
+
+        p {
+          margin-bottom: var(--s-8);
+          font-size: 14px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      .form-group {
+        margin-bottom: var(--s-16);
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        label {
+          display: block;
+          margin-bottom: var(--s-8);
+          font-weight: 500;
+          color: var(--grey-700);
+          font-size: 14px;
+        }
+      }
+
+      .required {
+        color: var(--semantic-red-500);
+      }
+
+      .form-control {
+        width: 100%;
+        padding: var(--s-8) var(--s-12);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+      }
+
+      .alert {
+        padding: var(--s-12);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        margin-top: var(--s-16);
+      }
+
+      .alert-warning {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+        border: 1px solid var(--semantic-yellow-200);
+      }
+
+      .alert-info {
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
+        border: 1px solid var(--semantic-blue-200);
       }
     `,
   ],
@@ -2152,7 +1751,7 @@ export class ValuationDetailComponent implements OnInit {
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  paymentService = inject(PaymentService); // Made public for template access
+  paymentService = inject(PaymentService); // public for template access
 
   valuation: Valuation | null = null;
   valuationSummary: ValuationSummary | null = null;
@@ -2170,11 +1769,21 @@ export class ValuationDetailComponent implements OnInit {
   recalculating = false;
   discountEvents: any[] = [];
   showAddDiscountModal = false;
-  newDiscountEvent = {
+  newDiscountEvent: {
+    fecha: string;
+    tipo: string;
+    subtipo: string;
+    horas_descuento: number;
+    dias_descuento: number;
+    horas_horometro_mecanica: number | null;
+    descripcion: string;
+  } = {
     fecha: new Date().toISOString().split('T')[0],
     tipo: '',
+    subtipo: '',
     horas_descuento: 0,
     dias_descuento: 0,
+    horas_horometro_mecanica: null,
     descripcion: '',
   };
   discountTypeOptions: DropdownOption[] = [
@@ -2183,6 +1792,114 @@ export class ValuationDetailComponent implements OnInit {
     { label: 'Climático', value: 'CLIMATICO' },
     { label: 'Otro', value: 'OTRO' },
   ];
+  discountSubtipoMap: Record<string, DropdownOption[]> = {
+    STAND_BY: [
+      { label: 'Domingo (sin descuento)', value: 'DOMINGO' },
+      { label: 'Feriado (1 día completo)', value: 'FERIADO' },
+      { label: 'Falta de frente (sin descuento)', value: 'FALTA_DE_FRENTE' },
+    ],
+    AVERIA: [
+      { label: 'Por arrendador (<5h proporcional, ≥5h día completo)', value: 'ARRENDADOR' },
+      { label: 'Por arrendatario (sin descuento)', value: 'ARRENDATARIO' },
+      { label: 'Mecánica (proporcional por horómetro)', value: 'MECANICA' },
+    ],
+    CLIMATICO: [
+      { label: 'Total (1 día completo)', value: 'TOTAL' },
+      { label: 'Parcial (proporcional)', value: 'PARCIAL' },
+    ],
+  };
+
+  get currentSubtipoOptions(): DropdownOption[] {
+    return this.discountSubtipoMap[this.newDiscountEvent.tipo] || [];
+  }
+
+  get showHorasHorometro(): boolean {
+    return this.newDiscountEvent.tipo === 'AVERIA' && this.newDiscountEvent.subtipo === 'MECANICA';
+  }
+
+  get showHorasDescuento(): boolean {
+    const { tipo, subtipo } = this.newDiscountEvent;
+    if (
+      tipo === 'STAND_BY' &&
+      (subtipo === 'FERIADO' || subtipo === 'DOMINGO' || subtipo === 'FALTA_DE_FRENTE')
+    )
+      return false;
+    if (tipo === 'CLIMATICO' && subtipo === 'TOTAL') return false;
+    if (tipo === 'AVERIA' && (subtipo === 'ARRENDATARIO' || subtipo === 'MECANICA')) return false;
+    return true;
+  }
+
+  onDiscountTipoChange(): void {
+    this.newDiscountEvent.subtipo = '';
+    this.newDiscountEvent.horas_horometro_mecanica = null;
+    this.newDiscountEvent.horas_descuento = 0;
+    this.newDiscountEvent.dias_descuento = 0;
+  }
+
+  onDiscountSubtipoChange(): void {
+    const { tipo, subtipo } = this.newDiscountEvent;
+    // SIN DESCUENTO subtypes — lock to 0
+    const sinDescuento =
+      (tipo === 'STAND_BY' && (subtipo === 'DOMINGO' || subtipo === 'FALTA_DE_FRENTE')) ||
+      (tipo === 'AVERIA' && subtipo === 'ARRENDATARIO');
+    // 1 DÍA COMPLETO subtypes — auto-set to 1
+    const unDiaCompleto =
+      (tipo === 'STAND_BY' && subtipo === 'FERIADO') ||
+      (tipo === 'CLIMATICO' && subtipo === 'TOTAL');
+
+    if (sinDescuento) {
+      this.newDiscountEvent.dias_descuento = 0;
+      this.newDiscountEvent.horas_descuento = 0;
+    } else if (unDiaCompleto) {
+      this.newDiscountEvent.dias_descuento = 1;
+      this.newDiscountEvent.horas_descuento = 0;
+    } else {
+      this.newDiscountEvent.dias_descuento = 0;
+    }
+    this.newDiscountEvent.horas_horometro_mecanica = null;
+  }
+
+  onHorasDescuentoChange(): void {
+    const { tipo, subtipo, horas_descuento } = this.newDiscountEvent;
+    // AVERIA:ARRENDADOR — auto-apply ≥5h = 1 día completo rule
+    if (tipo === 'AVERIA' && subtipo === 'ARRENDADOR') {
+      if ((horas_descuento || 0) >= 5) {
+        this.newDiscountEvent.dias_descuento = 1;
+      } else {
+        this.newDiscountEvent.dias_descuento = 0;
+      }
+    }
+  }
+
+  get discountRuleBadge(): { text: string; cls: string; icon: string } | null {
+    const { tipo, subtipo } = this.newDiscountEvent;
+    if (!subtipo) return null;
+    const sinDescuento =
+      (tipo === 'STAND_BY' && (subtipo === 'DOMINGO' || subtipo === 'FALTA_DE_FRENTE')) ||
+      (tipo === 'AVERIA' && subtipo === 'ARRENDATARIO');
+    const unDiaCompleto =
+      (tipo === 'STAND_BY' && subtipo === 'FERIADO') ||
+      (tipo === 'CLIMATICO' && subtipo === 'TOTAL');
+    if (sinDescuento)
+      return {
+        text: 'Sin descuento aplicable — no afecta la valorización',
+        cls: 'alert-info',
+        icon: 'fa-info-circle',
+      };
+    if (unDiaCompleto)
+      return {
+        text: '1 día completo de descuento aplicado automáticamente',
+        cls: 'alert-warning',
+        icon: 'fa-calendar-day',
+      };
+    if (tipo === 'AVERIA' && subtipo === 'ARRENDADOR')
+      return {
+        text: 'Regla: < 5h proporcional / ≥ 5h = 1 día completo',
+        cls: 'alert-info',
+        icon: 'fa-ruler',
+      };
+    return null;
+  }
 
   // Modal states
   showApproveModal = false;
@@ -2209,6 +1926,34 @@ export class ValuationDetailComponent implements OnInit {
     fecha_pago: new Date().toISOString().split('T')[0],
     metodo_pago: '',
     referencia_pago: '',
+  };
+
+  get header(): EntityDetailHeader {
+    return {
+      icon: 'fa-solid fa-file-invoice-dollar',
+      title:
+        'Valorización ' + (this.valuation?.numeroValorizacion || '#' + (this.valuation?.id || '')),
+      subtitle: this.valuation?.periodo || 'Período no definido',
+      statusLabel: this.valuation?.estado || 'BORRADOR',
+      statusClass: this.getStatusClass(this.valuation?.estado || 'BORRADOR'),
+    };
+  }
+
+  get auditInfo(): AuditInfo {
+    return {
+      entries: [
+        { date: this.valuation?.updatedAt, label: 'Última actualización' },
+        { date: this.valuation?.createdAt, label: 'Valorización creada' },
+      ],
+    };
+  }
+
+  notFoundConfig: NotFoundConfig = {
+    icon: 'fa-solid fa-file-invoice-dollar',
+    title: 'Valorización no encontrada',
+    message: 'La valorización que buscas no existe o ha sido eliminada.',
+    backLabel: 'Volver a la lista',
+    backRoute: '/equipment/valuations',
   };
 
   ngOnInit(): void {
@@ -2287,14 +2032,11 @@ export class ValuationDetailComponent implements OnInit {
     });
   }
 
-  // Permission checks based on user role
   private getUserRoles(): string[] {
     const user = this.authService.currentUser;
-    // Return roles array (normalized by AuthService)
     if (user?.roles && Array.isArray(user.roles)) {
       return user.roles;
     }
-    // Fallback: if single rol exists, return as array
     if (user?.rol) {
       return [user.rol];
     }
@@ -2344,6 +2086,23 @@ export class ValuationDetailComponent implements OnInit {
       ELIMINADO: 'Eliminado',
     };
     return labels[estado] || estado;
+  }
+
+  getStatusClass(estado: string): string {
+    switch (estado) {
+      case 'APROBADO':
+      case 'PAGADO':
+        return 'status-APROBADO';
+      case 'PENDIENTE':
+      case 'EN_REVISION':
+      case 'VALIDADO':
+        return 'status-PENDIENTE';
+      case 'RECHAZADO':
+      case 'ELIMINADO':
+        return 'status-CANCELADO';
+      default:
+        return 'status-BORRADOR';
+    }
   }
 
   getWorkflowHint(): string | null {
@@ -2400,7 +2159,6 @@ export class ValuationDetailComponent implements OnInit {
 
   submitForReview(): void {
     if (!this.valuation || this.processingWorkflow) return;
-
     if (!confirm('¿Deseas enviar esta valorización a revisión?')) return;
 
     this.processingWorkflow = true;
@@ -2543,8 +2301,6 @@ export class ValuationDetailComponent implements OnInit {
     };
   }
 
-  // ─── Recalculate & Discount Events ───
-
   recalculate(): void {
     if (!this.valuation || this.recalculating) return;
     this.recalculating = true;
@@ -2596,8 +2352,10 @@ export class ValuationDetailComponent implements OnInit {
     this.newDiscountEvent = {
       fecha: new Date().toISOString().split('T')[0],
       tipo: '',
+      subtipo: '',
       horas_descuento: 0,
       dias_descuento: 0,
+      horas_horometro_mecanica: null,
       descripcion: '',
     };
   }
@@ -2627,7 +2385,6 @@ export class ValuationDetailComponent implements OnInit {
     });
   }
 
-  // Payment navigation methods
   navigateToCreatePayment(): void {
     if (this.valuation) {
       this.router.navigate(['/payments/create'], {
@@ -2649,6 +2406,7 @@ export class ValuationDetailComponent implements OnInit {
     if (!dateStr) return false;
     return this.isDeadlinePassed(dateStr) && ['BORRADOR', 'PENDIENTE'].includes(estado);
   }
+
   deleteValuation(): void {
     if (!this.valuation) return;
     if (confirm('¿Está seguro de eliminar esta valorización?')) {

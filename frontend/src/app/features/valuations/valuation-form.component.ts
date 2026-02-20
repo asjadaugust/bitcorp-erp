@@ -57,7 +57,9 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       <form [formGroup]="valuationForm" class="form-grid">
         <!-- Section 1: Contract & Equipment Information -->
         <div class="form-section full-width">
-          <h3>Información General</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Información General
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="contract">Contrato</label>
@@ -93,7 +95,9 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
         <!-- Section 2: Period & Financial Details -->
         <div class="form-section full-width">
-          <h3>Periodo y Detalles Financieros</h3>
+          <h3 class="section-title">
+            <i class="fa-solid fa-calendar-days"></i> Periodo y Detalles Financieros
+          </h3>
           <div class="section-grid">
             <div class="form-group">
               <label for="periodo">Periodo *</label>

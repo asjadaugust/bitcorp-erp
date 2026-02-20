@@ -148,8 +148,25 @@ export class ValuationService {
       creador: data.creador,
       aprobador: data.aprobador,
       validador: data.validador,
-      cliente_nombre: data.cliente_nombre,
-      codigo_equipo: data.codigo_equipo,
+
+      // Shorthand and joined fields for better template access
+      cliente_nombre: data.cliente_nombre || data.contrato?.proveedor?.razon_social,
+      proveedor_nombre: data.proveedor_nombre || data.contrato?.proveedor?.razon_social,
+      codigo_equipo: data.codigo_equipo || data.equipo?.codigo,
+      contrato_numero: data.contrato_numero || data.contrato?.codigo,
+
+      // Flattened financial metrics for quick access
+      tipoTarifa: data.tipoTarifa || data.contrato?.tipo_tarifa,
+      tarifa: data.tarifa || data.contrato?.tarifa,
+      horasTotales: data.horasTotales || data.horas_trabajadas,
+      montoBruto: data.montoBruto || data.total_valorizado,
+      montoNeto: data.montoNeto || data.total_con_igv,
+
+      // Ids
+      equipmentId: data.equipo_id || data.equipoId,
+      contractId: data.contrato_id || data.contratoId,
+
+      deadlines: data.deadlines,
     } as any;
   }
 
@@ -168,9 +185,29 @@ export class ValuationService {
   }
 
   getSummary(id: number | string): Observable<ValuationSummary> {
-    return this.http
-      .get<any>(`${this.apiUrl}/${id}/summary`)
-      .pipe(map((response) => response?.data || response));
+    return this.http.get<any>(`${this.apiUrl}/${id}/summary`).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        // Flatten for template compatibility
+        return {
+          ...data,
+          horas_trabajadas: data.financiero?.cantidad || 0,
+          monto_horas: data.financiero?.valorizacion_bruta || 0,
+          horas_stand_by: 0,
+          tarifa_stand_by: 0,
+          monto_stand_by: 0,
+          penalidad_exceso: data.financiero?.importe_exceso_combustible || 0,
+          descuentos:
+            (data.financiero?.importe_combustible || 0) +
+            (data.financiero?.importe_manipuleo_combustible || 0) +
+            (data.financiero?.importe_gasto_obra || 0) +
+            (data.financiero?.importe_adelanto || 0),
+          subtotal: data.financiero?.valorizacion_neta || 0,
+          igv: data.financiero?.igv || 0,
+          total: data.financiero?.neto_facturar || 0,
+        };
+      })
+    );
   }
 
   downloadPdf(id: number | string): Observable<Blob> {
@@ -337,8 +374,10 @@ export class ValuationService {
     data: {
       fecha: string;
       tipo: string;
+      subtipo?: string;
       horas_descuento?: number;
       dias_descuento?: number;
+      horas_horometro_mecanica?: number | null;
       descripcion?: string;
     }
   ): Observable<any> {

@@ -53,10 +53,27 @@ export interface Valuation {
   conformidadObservaciones?: string;
   createdAt?: string;
   updatedAt: string;
+  tipoTarifa?: string;
+  horasTotales?: number;
+  tarifa?: number;
+  montoBruto?: number;
+  montoNeto?: number;
 
   // Shorthand for header display
+  equipmentId?: number; // Alias for equipoId
+  contractId?: number; // Alias for contratoId
   cliente_nombre?: string;
+  proveedor_nombre?: string;
   codigo_equipo?: string;
+  contrato_numero?: string;
+  deadlines?: {
+    parcial: string;
+    gasto_obra: string;
+    adelantos: string;
+    final: string;
+    is_overdue: boolean;
+    days_until_final: number;
+  } | null;
 
   // Relations (populated by backend joins)
   equipo?: {
@@ -138,6 +155,18 @@ export interface ValuationSummary {
   contrato: ValuationSummaryContract;
   valorizacion: ValuationSummaryHeader;
   financiero: ValuationSummaryFinancial;
+
+  // Flat properties for template compatibility
+  horas_trabajadas?: number;
+  monto_horas?: number;
+  horas_stand_by?: number;
+  tarifa_stand_by?: number;
+  monto_stand_by?: number;
+  penalidad_exceso?: number;
+  descuentos?: number;
+  subtotal?: number;
+  igv?: number;
+  total?: number;
 }
 
 export interface PaymentData {

@@ -391,12 +391,14 @@ export class ValuationListComponent implements OnInit {
   ];
 
   tabs: TabItem[] = [
+    { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
     { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
+    { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
     { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar' },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
     { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
+    { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-file-signature' },
   ];
 
   filterConfig: FilterConfig[] = [
