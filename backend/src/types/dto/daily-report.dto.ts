@@ -44,6 +44,7 @@ export interface DailyReportDto {
   // Fuel (optional)
   combustible_inicial?: number | null;
   combustible_consumido?: number | null;
+  numero_vale_combustible?: string | null;
 
   // Location and work description
   lugar_salida: string;
@@ -51,12 +52,31 @@ export interface DailyReportDto {
   observaciones_correcciones?: string | null; // Additional notes
 
   // Status and metadata
-  estado: 'BORRADOR' | 'PENDIENTE' | 'APROBADO_SUPERVISOR' | 'REVISADO_COSTOS' | 'APROBADO' | 'RECHAZADO';
+  estado:
+    | 'BORRADOR'
+    | 'PENDIENTE'
+    | 'ENVIADO'
+    | 'APROBADO_SUPERVISOR'
+    | 'REVISADO_COSTOS'
+    | 'APROBADO'
+    | 'RECHAZADO';
   created_at: string;
   updated_at: string;
   creado_por?: number | null;
   aprobado_por?: number | null;
   aprobado_en?: string | null;
+
+  // Signatures
+  firma_operador?: string;
+  firma_supervisor?: string;
+  firma_jefe_equipos?: string;
+  firma_residente?: string;
+  firma_planeamiento_control?: string;
+
+  // Additional information (from PWA/frontend)
+  gps_latitude?: number | null;
+  gps_longitude?: number | null;
+  weather_conditions?: string | null;
 }
 
 import { DailyReportRawRow } from '../daily-report-raw.interface';
@@ -86,6 +106,7 @@ export function toDailyReportDto(entity: DailyReportRawRow): DailyReportDto {
     km_recorridos: entity.km_recorridos ?? undefined,
     combustible_inicial: entity.combustible_inicial ?? undefined,
     combustible_consumido: entity.combustible_consumido ?? undefined,
+    numero_vale_combustible: entity.num_vale_combustible,
     lugar_salida: entity.lugar_salida ?? '',
     observaciones: entity.observaciones ?? '',
     observaciones_correcciones: entity.observaciones_correcciones,
@@ -95,6 +116,12 @@ export function toDailyReportDto(entity: DailyReportRawRow): DailyReportDto {
     creado_por: entity.creado_por,
     aprobado_por: entity.aprobado_por,
     aprobado_en: entity.aprobado_en,
+    firma_operador: entity.firma_operador || entity.firmaOperador,
+    firma_supervisor: entity.firma_supervisor || entity.firmaSupervisor,
+    firma_jefe_equipos: entity.firma_jefe_equipos || entity.firmaJefeEquipos,
+    firma_residente: entity.firma_residente || entity.firmaResidente,
+    firma_planeamiento_control:
+      entity.firma_planeamiento_control || entity.firmaPlaneamientoControl,
   };
 }
 
@@ -120,11 +147,16 @@ export function fromDailyReportDto(dto: Partial<DailyReportDto>): any {
     entity.combustible_inicial = dto.combustible_inicial || null;
   if (dto.combustible_consumido !== undefined)
     entity.combustible_consumido = dto.combustible_consumido || null;
+  if (dto.numero_vale_combustible !== undefined)
+    entity.num_vale_combustible = dto.numero_vale_combustible;
   if (dto.lugar_salida !== undefined) entity.lugar_salida = dto.lugar_salida;
   if (dto.observaciones !== undefined) entity.observaciones = dto.observaciones;
   if (dto.observaciones_correcciones !== undefined)
     entity.observaciones_correcciones = dto.observaciones_correcciones;
   if (dto.estado !== undefined) entity.estado = dto.estado;
+  if (dto.gps_latitude !== undefined) entity.gps_latitude = dto.gps_latitude;
+  if (dto.gps_longitude !== undefined) entity.gps_longitude = dto.gps_longitude;
+  if (dto.weather_conditions !== undefined) entity.clima = dto.weather_conditions;
 
   return entity;
 }
@@ -183,6 +215,11 @@ export class DailyReportCreateDto {
   @Min(0, { message: 'Combustible consumido debe ser mayor o igual a 0' })
   combustible_consumido?: number;
 
+  @IsOptional()
+  @IsString({ message: 'Número de vale de combustible debe ser texto' })
+  @MaxLength(50, { message: 'Número de vale de combustible no puede exceder 50 caracteres' })
+  numero_vale_combustible?: string;
+
   @IsString({ message: 'Lugar de salida debe ser texto' })
   @MaxLength(200, { message: 'Lugar de salida no puede exceder 200 caracteres' })
   lugar_salida!: string;
@@ -195,10 +232,34 @@ export class DailyReportCreateDto {
   observaciones_correcciones?: string;
 
   @IsOptional()
-  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO_SUPERVISOR', 'REVISADO_COSTOS', 'APROBADO', 'RECHAZADO'], {
-    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO_SUPERVISOR, REVISADO_COSTOS, APROBADO o RECHAZADO',
-  })
-  estado?: 'BORRADOR' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  @IsIn(
+    [
+      'BORRADOR',
+      'PENDIENTE',
+      'ENVIADO',
+      'APROBADO_SUPERVISOR',
+      'REVISADO_COSTOS',
+      'APROBADO',
+      'RECHAZADO',
+    ],
+    {
+      message:
+        'Estado debe ser BORRADOR, PENDIENTE, ENVIADO, APROBADO_SUPERVISOR, REVISADO_COSTOS, APROBADO o RECHAZADO',
+    }
+  )
+  estado?: 'BORRADOR' | 'PENDIENTE' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO';
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Latitud GPS debe ser un número' })
+  gps_latitude?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Longitud GPS debe ser un número' })
+  gps_longitude?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Condiciones climáticas debe ser texto' })
+  weather_conditions?: string;
 }
 
 /**
@@ -263,6 +324,11 @@ export class DailyReportUpdateDto {
   combustible_consumido?: number;
 
   @IsOptional()
+  @IsString({ message: 'Número de vale de combustible debe ser texto' })
+  @MaxLength(50, { message: 'Número de vale de combustible no puede exceder 50 caracteres' })
+  numero_vale_combustible?: string;
+
+  @IsOptional()
   @IsString({ message: 'Lugar de salida debe ser texto' })
   @MaxLength(200, { message: 'Lugar de salida no puede exceder 200 caracteres' })
   lugar_salida?: string;
@@ -276,8 +342,32 @@ export class DailyReportUpdateDto {
   observaciones_correcciones?: string;
 
   @IsOptional()
-  @IsIn(['BORRADOR', 'PENDIENTE', 'APROBADO_SUPERVISOR', 'REVISADO_COSTOS', 'APROBADO', 'RECHAZADO'], {
-    message: 'Estado debe ser BORRADOR, PENDIENTE, APROBADO_SUPERVISOR, REVISADO_COSTOS, APROBADO o RECHAZADO',
-  })
-  estado?: 'BORRADOR' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  @IsIn(
+    [
+      'BORRADOR',
+      'PENDIENTE',
+      'ENVIADO',
+      'APROBADO_SUPERVISOR',
+      'REVISADO_COSTOS',
+      'APROBADO',
+      'RECHAZADO',
+    ],
+    {
+      message:
+        'Estado debe ser BORRADOR, PENDIENTE, ENVIADO, APROBADO_SUPERVISOR, REVISADO_COSTOS, APROBADO o RECHAZADO',
+    }
+  )
+  estado?: 'BORRADOR' | 'PENDIENTE' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO';
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Latitud GPS debe ser un número' })
+  gps_latitude?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Longitud GPS debe ser un número' })
+  gps_longitude?: number;
+
+  @IsOptional()
+  @IsString({ message: 'Condiciones climáticas debe ser texto' })
+  weather_conditions?: string;
 }

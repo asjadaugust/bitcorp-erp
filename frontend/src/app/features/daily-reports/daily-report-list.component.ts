@@ -106,6 +106,16 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
               <i class="fa-solid fa-xmark"></i>
             </button>
             <button
+              *ngIf="puedeFirearResidente(report)"
+              type="button"
+              class="report-card__btn report-card__btn--sign"
+              (click)="firmarResidente($event, report)"
+              title="Firmar como Residente"
+              data-testid="btn-firmar-residente"
+            >
+              <i class="fa-solid fa-signature"></i>
+            </button>
+            <button
               type="button"
               class="report-card__btn report-card__btn--edit"
               (click)="editReport($event, report)"
@@ -387,6 +397,16 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         color: white;
       }
 
+      .report-card__btn--sign {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .report-card__btn--sign:hover {
+        background: #2e7d32;
+        color: white;
+      }
+
       /* Empty State */
       .empty-state {
         text-align: center;
@@ -470,12 +490,15 @@ export class DailyReportListComponent implements OnInit {
   loading = false;
 
   tabs: TabItem[] = [
+    { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
     { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
+    { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
+    { label: 'Órdenes', route: '/equipment/ordenes-alquiler', icon: 'fa-file-contract' },
     { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
     { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Programación', route: '/equipment/maintenance/schedule', icon: 'fa-calendar' },
     { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
     { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
+    { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-file-signature' },
   ];
 
   filters = {
@@ -601,6 +624,45 @@ export class DailyReportListComponent implements OnInit {
       this.dailyReportService.reject(report.id, reason).subscribe({
         next: () => {
           this.loadReports();
+        },
+      });
+    }
+  }
+
+  puedeFirearResidente(report: DailyReport): boolean {
+    const userRole = this.authService.getCurrentUserRole();
+    if (!userRole) return false;
+
+    // Admin, Director, or Residente can sign
+    const hasPermission =
+      userRole === 'ADMIN' ||
+      userRole === 'DIRECTOR' ||
+      userRole === 'RESIDENTE' ||
+      userRole === 'SUPERVISOR';
+
+    // Valid states: Sent by operator, partially approved, or fully approved but missing signature
+    const validState = ['ENVIADO', 'APROBADO_SUPERVISOR', 'REVISADO_COSTOS', 'APROBADO'].includes(
+      report.estado
+    );
+    const missingSignature = !report.firma_residente;
+
+    return hasPermission && validState && missingSignature;
+  }
+
+  firmarResidente(event: Event, report: DailyReport): void {
+    event.stopPropagation();
+    const user = this.authService.currentUser;
+    const nombreResidente = user
+      ? user.nombre_completo ||
+        `${user.nombres || ''} ${user.apellidos || ''}`.trim() ||
+        'Residente'
+      : 'Residente';
+    if (confirm(`¿Confirma su firma como Residente en el parte #${report.id}?`)) {
+      this.dailyReportService.firmarResidente(report.id, nombreResidente).subscribe({
+        next: () => this.loadReports(),
+        error: (err) => {
+          console.error('Error al firmar como residente', err);
+          alert('Error al registrar la firma.');
         },
       });
     }

@@ -19,6 +19,28 @@ export interface EquipmentReceptionStatus {
   fechas_faltantes: string[];
 }
 
+export interface InspectionObservacion {
+  id: number;
+  parte_diario_id: number;
+  fecha: string | null;
+  codigo: string;
+  descripcion: string | null;
+  resuelta: boolean;
+  fecha_resolucion: string | null;
+  observacion_resolucion: string | null;
+}
+
+export interface EquipmentInspectionTracking {
+  equipo_id: number;
+  codigo_equipo: string;
+  marca: string | null;
+  modelo: string | null;
+  total_observaciones: number;
+  observaciones_abiertas: number;
+  observaciones_resueltas: number;
+  observaciones: InspectionObservacion[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class DailyReportService {
   private http = inject(HttpClient);
@@ -124,6 +146,15 @@ export class DailyReportService {
       .pipe(map((r) => this.mapToFrontend(r)));
   }
 
+  /**
+   * Register resident signature on a daily report
+   */
+  firmarResidente(id: string | number, firma_residente: string): Observable<DailyReport> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${id}/firmar-residente`, { firma_residente })
+      .pipe(map((r) => this.mapToFrontend(r?.data || r)));
+  }
+
   downloadPdf(id: string | number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }
@@ -175,6 +206,34 @@ export class DailyReportService {
 
   private mapStatusToEstado(status: string): string {
     return status;
+  }
+
+  /**
+   * Get inspection tracking: equipment with mechanical delay observations
+   */
+  getInspectionTracking(
+    fechaDesde?: string,
+    fechaHasta?: string,
+    soloAbiertas?: boolean
+  ): Observable<EquipmentInspectionTracking[]> {
+    let params = new HttpParams();
+    if (fechaDesde) params = params.set('fecha_desde', fechaDesde);
+    if (fechaHasta) params = params.set('fecha_hasta', fechaHasta);
+    if (soloAbiertas) params = params.set('solo_abiertas', 'true');
+    return this.http
+      .get<any>(`${this.apiUrl}/inspection-tracking`, { params })
+      .pipe(map((r) => r?.data ?? r));
+  }
+
+  /**
+   * Resolve a mechanical delay observation
+   */
+  resolverObservacion(id: number, observacion_resolucion?: string): Observable<any> {
+    return this.http
+      .patch<any>(`${this.apiUrl}/observaciones/${id}/resolver`, {
+        observacion_resolucion,
+      })
+      .pipe(map((r) => r?.data ?? r));
   }
 
   /**

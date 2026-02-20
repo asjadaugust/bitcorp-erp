@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { EquipmentService } from '../../../../core/services/equipment.service';
@@ -27,6 +27,7 @@ export interface DailyReportFormData {
   odometro_final?: number;
   fuel_start?: number;
   fuel_end?: number;
+  numero_vale_combustible?: string;
   location: string;
   work_description: string;
   notes?: string;
@@ -119,6 +120,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       fuel_start: ['', Validators.min(0)],
       fuel_end: ['', Validators.min(0)],
       fuel_consumed: [{ value: '', disabled: true }],
+      numero_vale_combustible: [''],
       location: ['', Validators.required],
       work_description: ['', [Validators.required, Validators.maxLength(500)]],
       notes: ['', Validators.maxLength(1000)],
@@ -166,47 +168,47 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   loadData(): void {
     this.loading = true;
 
-    // Load equipment
-    this.equipmentService.getAll().subscribe({
-      next: (response: any) => {
-        this.equipment = response.data;
-        this.filteredEquipment = response.data;
-        this.equipmentOptions = this.filteredEquipment.map((eq) => ({
-          label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
-          value: eq.id,
-        }));
-        this.loading = false;
-      },
-      error: (error: any) => {
-        console.error('Error loading equipment:', error);
-        this.showError('Error al cargar equipos');
-        this.loading = false;
-      },
-    });
+    const equipment$ = this.equipmentService.getAll();
+    const operators$ = this.operatorService.getAll();
 
-    // Load operators
-    this.operatorService.getAll().subscribe({
-      next: (data: any) => {
-        this.operators = data;
-        this.operatorOptions = this.operators.map((op) => ({
-          label: `${op.nombres} ${op.apellido_paterno}`,
-          value: op.id,
-        }));
+    forkJoin([equipment$, operators$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ([equipmentRes, operators]: [any, any]) => {
+          const equipment = Array.isArray(equipmentRes) ? equipmentRes : equipmentRes?.data || [];
 
-        // Auto-select current user if they're an operator
-        const currentUser = this.authService.currentUser;
-        if (currentUser) {
-          const currentOperator = this.operators.find((op) => op.user_id === currentUser.id);
-          if (currentOperator) {
-            this.reportForm.patchValue({ trabajador_id: currentOperator.id });
+          this.equipmentOptions = equipment
+            .filter((eq: any) => eq && (eq.codigo_equipo || eq.id))
+            .map((eq: any) => ({
+              label: `${eq.codigo_equipo || 'S/C'} - ${eq.marca || ''} ${eq.modelo || ''}`.trim(),
+              value: eq.id,
+            }));
+
+          this.operators = operators || [];
+          this.operatorOptions = this.operators
+            .filter((op: any) => op && op.id)
+            .map((op: any) => ({
+              label:
+                `${op.nombres || ''} ${op.apellido_paterno || ''}`.trim() || `Operador ${op.id}`,
+              value: op.id,
+            }));
+
+          // Auto-select current user if they're an operator
+          const currentUser = this.authService.currentUser;
+          if (currentUser) {
+            const currentOperator = this.operators.find((op) => op.user_id === currentUser.id);
+            if (currentOperator) {
+              this.reportForm.patchValue({ trabajador_id: currentOperator.id });
+            }
           }
-        }
-      },
-      error: (error: any) => {
-        console.error('Error loading operators:', error);
-        this.showError('Error al cargar operadores');
-      },
-    });
+          this.loading = false;
+        },
+        error: (error: any) => {
+          console.error('Error loading form data:', error);
+          this.showError('Error al cargar datos del formulario');
+          this.loading = false;
+        },
+      });
   }
 
   loadReport(id: string | number): void {
@@ -376,15 +378,6 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   private toCreateDto(status: 'BORRADOR' | 'PENDIENTE'): any {
     const formValue = this.reportForm.getRawValue();
 
-    // Append extra info to observaciones if not supported by backend
-    let observaciones = formValue.work_description;
-    if (formValue.weather_conditions) {
-      observaciones += `\n[Clima: ${formValue.weather_conditions}]`;
-    }
-    if (formValue.gps_latitude && formValue.gps_longitude) {
-      observaciones += `\n[GPS: ${formValue.gps_latitude}, ${formValue.gps_longitude}]`;
-    }
-
     return {
       fecha: formValue.fecha_parte,
       trabajador_id: Number(formValue.trabajador_id),
@@ -401,10 +394,14 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         formValue.fuel_start && formValue.fuel_end
           ? Number((formValue.fuel_start - formValue.fuel_end).toFixed(2))
           : null,
-      lugar_salida: formValue.location,
-      observaciones: observaciones,
-      observaciones_correcciones: formValue.notes,
+      numero_vale_combustible: formValue.numero_vale_combustible || null,
+      lugar_salida: formValue.location || 'Obra',
+      observaciones: formValue.work_description || 'Sin observaciones',
+      observaciones_correcciones: formValue.notes || null,
       estado: status,
+      gps_latitude: formValue.gps_latitude ? Number(formValue.gps_latitude) : null,
+      gps_longitude: formValue.gps_longitude ? Number(formValue.gps_longitude) : null,
+      weather_conditions: formValue.weather_conditions || null,
     };
   }
 

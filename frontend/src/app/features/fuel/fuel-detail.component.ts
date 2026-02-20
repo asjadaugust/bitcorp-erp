@@ -3,390 +3,355 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FuelService } from '../../core/services/fuel.service';
 import { FuelRecord } from '../../core/models/fuel-record.model';
+import { EntityDetailShellComponent } from '../../shared/components/entity-detail/entity-detail-shell.component';
+import {
+  EntityDetailHeader,
+  AuditInfo,
+  AuditEntry,
+  TabConfig,
+} from '../../shared/components/entity-detail/entity-detail.types';
 
 @Component({
   selector: 'app-fuel-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/logistics/fuel" class="breadcrumb-link">← Volver a Combustible</a>
-        </div>
+    <entity-detail-shell
+      [header]="header"
+      [entity]="record"
+      [loading]="loading"
+      [auditInfo]="auditInfo"
+      loadingText="Cargando detalles del consumo..."
+    >
+      <!-- ── TABS NAVIGATION ──────────────────────────────────── -->
+      <div entity-header-below class="detail-tabs">
+        <button
+          *ngFor="let tab of tabConfigs"
+          class="tab-link"
+          [class.active]="activeTab === tab.id"
+          (click)="onTabChange(tab.id)"
+        >
+          <i [class]="tab.icon"></i>
+          {{ tab.label }}
+        </button>
+      </div>
 
-        <div *ngIf="loading" class="loading">
-          <div class="spinner"></div>
-          <p>Cargando detalles del registro...</p>
-        </div>
-
-        <div *ngIf="!loading && record" class="detail-grid">
-          <div class="detail-main card">
-            <div class="detail-header">
-              <div>
-                <h1>Registro de Combustible</h1>
-                <p class="code-badge">{{ record.fecha | date: 'dd/MM/yyyy' }}</p>
+      <!-- ── MAIN CONTENT ────────────────────────────────────── -->
+      <div entity-main-content class="detail-content">
+        <!-- Tab: General -->
+        <div *ngIf="activeTab === 'general'" class="tab-pane animate-fade-in">
+          <div class="detail-sections">
+            <section class="detail-section card">
+              <div class="section-header">
+                <h3>Información de Consumo</h3>
               </div>
-              <div class="detail-actions">
-                <button class="btn btn-primary" (click)="editRecord()">
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-                <button class="btn btn-danger" (click)="deleteRecord()">
-                  <i class="fa-solid fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-
-            <div class="detail-sections">
-              <section class="detail-section">
-                <h2>Información General</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Valorización ID</label>
-                    <p>{{ record.valorizacion_id || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Periodo</label>
-                    <p>{{ record.valorizacion_periodo || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Proveedor</label>
-                    <p>{{ record.proveedor || 'N/A' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Tipo Combustible</label>
-                    <p>{{ record.tipo_combustible || 'N/A' }}</p>
-                  </div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="label">Proveedor</span>
+                  <span class="value">{{ record?.proveedor || 'N/A' }}</span>
                 </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Consumo y Costos</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Cantidad</label>
-                    <p class="highlight">{{ record.cantidad | number: '1.2-2' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Precio Unitario</label>
-                    <p>{{ record.precio_unitario | currency: 'PEN' : 'S/ ' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Monto Total</label>
-                    <p class="highlight">{{ record.monto_total | currency: 'PEN' : 'S/ ' }}</p>
-                  </div>
+                <div class="info-item">
+                  <span class="label">Tipo Combustible</span>
+                  <span class="value">{{ record?.tipo_combustible || 'N/A' }}</span>
                 </div>
-              </section>
-
-              <section class="detail-section">
-                <h2>Documento</h2>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <label>Número de Documento</label>
-                    <p>{{ record.numero_documento || '-' }}</p>
-                  </div>
-                  <div class="info-item">
-                    <label>Observaciones</label>
-                    <p>{{ record.observaciones || '-' }}</p>
-                  </div>
+                <div class="info-item">
+                  <span class="label">Cantidad (Gl.)</span>
+                  <span class="value highlight">{{ record?.cantidad | number: '1.2-2' }}</span>
                 </div>
-              </section>
-            </div>
-          </div>
-
-          <div class="detail-sidebar">
-            <div class="card">
-              <h3>Información del Sistema</h3>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-date">{{ record.created_at | date: 'short' }}</div>
-                  <div class="timeline-content">Registro creado</div>
+                <div class="info-item">
+                  <span class="label">Valorización ID</span>
+                  <span class="value">{{ record?.valorizacion_id || 'N/A' }}</span>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section class="detail-section card">
+              <div class="section-header">
+                <h3>Costos y Precios</h3>
+              </div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="label">Precio Unitario</span>
+                  <span class="value price"
+                    >S/ {{ record?.precio_unitario | number: '1.2-2' }}</span
+                  >
+                </div>
+                <div class="info-item">
+                  <span class="label">Monto Total</span>
+                  <span class="value price total"
+                    >S/ {{ record?.monto_total | number: '1.2-2' }}</span
+                  >
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
-        <div *ngIf="!loading && !record" class="empty-state card">
-          <h3>Registro no encontrado</h3>
-          <p>El registro que buscas no existe o ha sido eliminado.</p>
-          <button class="btn btn-primary" routerLink="/logistics/fuel">Volver a la lista</button>
+        <!-- Tab: Document -->
+        <div *ngIf="activeTab === 'document'" class="tab-pane animate-fade-in">
+          <div class="detail-sections">
+            <section class="detail-section card">
+              <div class="section-header">
+                <h3>Detalle de Documento</h3>
+              </div>
+              <div class="info-grid single-col">
+                <div class="info-item">
+                  <span class="label">Número de Documento</span>
+                  <span class="value">{{ record?.numero_documento || 'No especificado' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Observaciones</span>
+                  <p class="value observations">
+                    {{ record?.observaciones || 'Sin observaciones' }}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div *ngIf="showDeleteModal" class="modal" (click)="showDeleteModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+      <!-- ── SIDEBAR ACTIONS ───────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        <button type="button" class="btn btn-primary btn-block" (click)="editRecord()">
+          <i class="fa-solid fa-pen-to-square"></i>
+          Editar Registro
+        </button>
+        <button type="button" class="btn btn-ghost btn-block" routerLink="/logistics/fuel">
+          <i class="fa-solid fa-arrow-left"></i>
+          Volver a Lista
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-block" (click)="deleteRecord()">
+          <i class="fa-solid fa-trash-can"></i>
+          Eliminar Registro
+        </button>
+      </ng-container>
+    </entity-detail-shell>
+
+    <!-- Delete Confirmation Modal -->
+    <div *ngIf="showDeleteModal" class="modal-backdrop" (click)="showDeleteModal = false">
+      <div class="modal-content animate-scale-in" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Confirmar Eliminación</h2>
-          <button class="close" (click)="showDeleteModal = false">&times;</button>
+          <h3>Eliminar Registro</h3>
+          <button class="btn-close" (click)="showDeleteModal = false">&times;</button>
         </div>
         <div class="modal-body">
-          <p>¿Estás seguro de que deseas eliminar este registro de combustible?</p>
-          <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
+          <p>¿Está seguro de que desea eliminar este registro de combustible?</p>
+          <div class="alert alert-danger-light">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Esta acción es permanente y no se puede deshacer.
+          </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancelar</button>
-          <button class="btn btn-danger" (click)="confirmDelete()">Eliminar Registro</button>
+          <button class="btn btn-ghost" (click)="showDeleteModal = false">Cancelar</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Eliminar Permanentemente</button>
         </div>
       </div>
     </div>
   `,
   styles: [
     `
-      .detail-container {
-        min-height: 100vh;
-        background: #f5f5f5;
-        padding: var(--s-24) 0;
-      }
-
-      .breadcrumb {
-        margin-bottom: var(--s-24);
-      }
-
-      .breadcrumb-link {
-        color: var(--primary-500);
-        text-decoration: none;
-        font-weight: 500;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
-
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: var(--s-24);
-
-        @media (max-width: 968px) {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .detail-header {
+      .detail-tabs {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: var(--s-24);
-        padding-bottom: var(--s-24);
-        border-bottom: 2px solid #e0e0e0;
+        gap: 8px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--grey-200);
+        padding-bottom: 0;
 
-        h1 {
-          font-size: 28px;
-          color: var(--primary-900);
-          margin-bottom: var(--s-4);
-        }
+        .tab-link {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
+          border: none;
+          background: none;
+          color: var(--grey-500);
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border-bottom: 3px solid transparent;
+          font-size: 0.95rem;
 
-        .code-badge {
-          font-family: monospace;
-          background: var(--grey-100);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 14px;
-          color: var(--grey-700);
-          font-weight: 600;
-          display: inline-block;
-        }
-
-        @media (max-width: 768px) {
-          flex-direction: column;
-          gap: var(--s-16);
-        }
-      }
-
-      .detail-actions {
-        display: flex;
-        gap: var(--s-8);
-
-        @media (max-width: 768px) {
-          width: 100%;
-
-          .btn {
-            flex: 1;
+          i {
+            opacity: 0.7;
+            font-size: 1.1em;
           }
+
+          &:hover {
+            color: var(--primary-600);
+            background: var(--primary-50);
+          }
+          &.active {
+            color: var(--primary-600);
+            border-bottom: 3px solid var(--primary-600);
+            background: rgba(var(--primary-600-rgb, 59, 130, 246), 0.05);
+            i {
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      .btn-block {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 10px 16px;
+        width: 100%;
+        text-align: left;
+        font-weight: 500;
+        i {
+          width: 16px;
+          text-align: center;
         }
       }
 
       .detail-sections {
         display: flex;
         flex-direction: column;
-        gap: var(--s-32);
+        gap: 24px;
       }
 
       .detail-section {
-        h2 {
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid var(--grey-100);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+
+        .section-header {
+          margin-bottom: 20px;
+          h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--grey-800);
+          }
         }
       }
 
       .info-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-24);
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px 32px;
+
+        &.single-col {
+          grid-template-columns: 1fr;
+        }
       }
 
       .info-item {
-        label {
-          display: block;
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--grey-500);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .label {
+          font-size: 0.75rem;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: var(--s-4);
+          letter-spacing: 0.05em;
+          color: var(--grey-500);
+          font-weight: 600;
         }
 
-        p {
-          font-size: 16px;
-          color: #333;
-          margin: 0;
+        .value {
+          font-size: 1rem;
+          color: var(--grey-800);
+          font-weight: 500;
 
           &.highlight {
-            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-700);
+            font-size: 1.25rem;
+          }
+          &.price {
+            color: var(--primary-700);
             font-weight: 600;
-            color: var(--primary-500);
+          }
+          &.total {
+            font-size: 1.25rem;
+            font-weight: 800;
+            border-top: 1px dashed var(--grey-200);
+            padding-top: 8px;
+            margin-top: 4px;
+          }
+          &.observations {
+            line-height: 1.6;
+            color: var(--grey-700);
+            white-space: pre-line;
           }
         }
       }
 
-      .detail-sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-24);
-
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
-      }
-
-      .timeline {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-16);
-      }
-
-      .timeline-item {
-        position: relative;
-        padding-left: var(--s-24);
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--primary-500);
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 3px;
-          top: 14px;
-          width: 2px;
-          height: calc(100% + var(--s-16));
-          background: #e0e0e0;
-        }
-
-        &:last-child::after {
-          display: none;
-        }
-      }
-
-      .timeline-date {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-bottom: var(--s-4);
-      }
-
-      .timeline-content {
-        font-size: 14px;
-        color: #333;
-      }
-
-      /* Modal */
-      .modal {
+      /* Modals */
+      .modal-backdrop {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
         display: flex;
-        justify-content: center;
         align-items: center;
-        z-index: 1000;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
       }
 
       .modal-content {
         background: white;
-        padding: 0;
-        border-radius: var(--radius-md);
-        width: 90%;
+        width: 100%;
         max-width: 500px;
-        box-shadow: var(--shadow-lg);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
       }
 
       .modal-header {
-        padding: var(--s-16) var(--s-24);
-        border-bottom: 1px solid var(--grey-200);
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--grey-100);
         display: flex;
         justify-content: space-between;
         align-items: center;
-
-        h2 {
+        h3 {
           margin: 0;
-          font-size: 18px;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--grey-900);
         }
-
-        .close {
-          background: none;
+        .btn-close {
           border: none;
+          background: none;
           font-size: 24px;
           cursor: pointer;
-          color: var(--grey-500);
+          color: var(--grey-400);
         }
       }
 
       .modal-body {
-        padding: var(--s-24);
-
+        padding: 24px;
         p {
-          margin-bottom: var(--s-16);
-
-          &:last-child {
-            margin-bottom: 0;
-          }
+          color: var(--grey-600);
+          margin: 0 0 16px;
         }
       }
 
       .modal-footer {
-        padding: var(--s-16) var(--s-24);
-        border-top: 1px solid var(--grey-200);
+        padding: 16px 24px;
+        background: var(--grey-50);
         display: flex;
         justify-content: flex-end;
-        gap: var(--s-8);
+        gap: 12px;
       }
 
-      .alert {
-        padding: var(--s-12);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-      }
-
-      .alert-warning {
-        background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
-        border: 1px solid var(--semantic-yellow-200);
+      .alert-danger-light {
+        background: #fee2e2;
+        color: #b91c1c;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        i {
+          font-size: 1.1rem;
+        }
       }
     `,
   ],
@@ -399,6 +364,22 @@ export class FuelDetailComponent implements OnInit {
   record: FuelRecord | null = null;
   loading = true;
   showDeleteModal = false;
+  activeTab = 'general';
+
+  tabConfigs: TabConfig[] = [
+    { id: 'general', label: 'Resumen', icon: 'fa-solid fa-circle-info' },
+    { id: 'document', label: 'Documento y Notas', icon: 'fa-solid fa-file-invoice' },
+  ];
+
+  header: EntityDetailHeader = {
+    title: 'Registro de Combustible',
+    statusLabel: '',
+    statusClass: '',
+  };
+
+  auditInfo: AuditInfo = {
+    entries: [],
+  };
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
@@ -408,14 +389,42 @@ export class FuelDetailComponent implements OnInit {
   loadRecord(id: number): void {
     this.loading = true;
     this.fuelService.getById(id).subscribe({
-      next: (data) => {
+      next: (data: FuelRecord) => {
         this.record = data;
+        this.updateHeaderAndAudit();
         this.loading = false;
       },
-      error: () => {
+      error: (error: any) => {
         this.loading = false;
       },
     });
+  }
+
+  private updateHeaderAndAudit(): void {
+    if (!this.record) return;
+
+    this.header = {
+      icon: 'fa-solid fa-gas-pump',
+      title: 'Registro de Combustible',
+      subtitle: this.record.fecha ? new Date(this.record.fecha).toLocaleDateString() : undefined,
+      statusLabel: 'REGISTRADO',
+      statusClass: 'status-completado',
+    };
+
+    const entries: AuditEntry[] = [];
+
+    if (this.record.created_at) {
+      entries.push({
+        label: 'Fecha de creación',
+        date: this.record.created_at,
+      });
+    }
+
+    this.auditInfo = { entries };
+  }
+
+  onTabChange(tabId: string): void {
+    this.activeTab = tabId;
   }
 
   editRecord(): void {

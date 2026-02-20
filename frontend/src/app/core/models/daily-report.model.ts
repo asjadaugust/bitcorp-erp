@@ -39,6 +39,7 @@ export interface DailyReport {
   estado:
     | 'BORRADOR'
     | 'PENDIENTE'
+    | 'ENVIADO'
     | 'APROBADO_SUPERVISOR'
     | 'REVISADO_COSTOS'
     | 'APROBADO'
@@ -52,11 +53,19 @@ export interface DailyReport {
   created_at: string;
   updated_at: string;
 
+  // Signature fields
+  firma_operador?: string;
+  firma_supervisor?: string;
+  firma_jefe_equipos?: string;
+  firma_residente?: string;
+  firma_planeamiento_control?: string;
+
   // GPS fields
   gps_latitude?: number;
   gps_longitude?: number;
   gps_accuracy?: number;
   gps_captured_at?: string;
+  weather_conditions?: string;
 }
 
 export interface ProductionRow {
@@ -125,4 +134,5 @@ export interface CreateDailyReportDto {
   gps_longitude?: number;
   gps_accuracy?: number;
   gps_captured_at?: string;
+  weather_conditions?: string;
 }

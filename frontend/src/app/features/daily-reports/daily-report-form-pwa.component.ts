@@ -799,6 +799,9 @@ export class DailyReportFormPWAComponent implements OnInit {
     location: '',
     work_description: '',
     status: 'BORRADOR',
+    weather_conditions: '',
+    fuel_start: 100,
+    fuel_end: 100,
   };
 
   equipment = signal<Equipment[]>([]);
@@ -983,8 +986,22 @@ export class DailyReportFormPWAComponent implements OnInit {
   async submitReport(): Promise<void> {
     this.saving.set(true);
     this.report.estado = 'PENDIENTE';
+
+    // Ensure numeric fields are numbers and handle empty strings
+    const sanitizedReport = {
+      ...this.report,
+      trabajador_id: Number(this.report.trabajador_id),
+      equipo_id: Number(this.report.equipo_id),
+      horometro_inicial: Number(this.report.horometro_inicial || 0),
+      horometro_final: Number(this.report.horometro_final || 0),
+      fuel_start: Number(this.report.fuel_start || 0),
+      fuel_end: Number(this.report.fuel_end || 0),
+      gps_latitude: this.report.gps_latitude ? Number(this.report.gps_latitude) : null,
+      gps_longitude: this.report.gps_longitude ? Number(this.report.gps_longitude) : null,
+    };
+
     try {
-      await this.syncService.saveReportOffline(this.report);
+      await this.syncService.saveReportOffline(sanitizedReport);
       this.successMessage.set('Reporte guardado. Se sincronizará automáticamente.');
       setTimeout(() => this.router.navigate(['/daily-reports']), 2000);
     } catch (error) {

@@ -67,4 +67,11 @@ export interface DailyReportRawRow {
   firma_jefe_equipos?: string | null;
   firma_residente?: string | null;
   firma_planeamiento_control?: string | null;
+
+  // camelCase fields for TypeORM entities compatibility
+  firmaOperador?: string | null;
+  firmaSupervisor?: string | null;
+  firmaJefeEquipos?: string | null;
+  firmaResidente?: string | null;
+  firmaPlaneamientoControl?: string | null;
 }

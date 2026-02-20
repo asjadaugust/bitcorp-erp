@@ -142,6 +142,20 @@
             <i class="fa-solid fa-gas-pump"></i>
             <strong>Combustible Consumido:</strong> {{ fuelConsumed | number:'1.2-2' }} L
           </div>
+
+          <div class="form-group full-width">
+            <label for="numero_vale_combustible">
+              N° Vale Combustible
+              <span class="field-hint">(CORP-LA-F-004 — opcional)</span>
+            </label>
+            <input
+              id="numero_vale_combustible"
+              type="text"
+              formControlName="numero_vale_combustible"
+              class="form-control"
+              placeholder="Ej. V-2025-001234"
+            />
+          </div>
         </div>
       </div>
 
