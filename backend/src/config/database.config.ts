@@ -71,6 +71,8 @@ import { ActaDevolucion } from '../models/acta-devolucion.model';
 import { OrdenAlquiler } from '../models/orden-alquiler.model';
 import { PeriodoInoperatividad } from '../models/periodo-inoperatividad.model';
 import { TipoEquipo } from '../models/tipo-equipo.model';
+import { PrecalentamientoConfig } from '../models/precalentamiento-config.model';
+import { ContractObligacion } from '../models/contract-obligacion.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -151,6 +153,8 @@ export const AppDataSource = new DataSource({
     OrdenAlquiler,
     PeriodoInoperatividad,
     TipoEquipo,
+    PrecalentamientoConfig,
+    ContractObligacion,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

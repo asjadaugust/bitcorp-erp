@@ -467,3 +467,31 @@ export class ContractUpdateDto {
   })
   estado?: 'ACTIVO' | 'VENCIDO' | 'CANCELADO' | 'BORRADOR';
 }
+
+// ─── Obligaciones del Arrendador DTOs (WS-21) ───────────────────────────────
+
+export interface ContractObligacionDto {
+  id: number;
+  contrato_id: number;
+  tipo_obligacion: string;
+  estado: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA';
+  fecha_compromiso?: string | null;
+  observaciones?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toContractObligacionDto(entity: any): ContractObligacionDto {
+  return {
+    id: entity.id,
+    contrato_id: entity.contratoId,
+    tipo_obligacion: entity.tipoObligacion,
+    estado: entity.estado,
+    fecha_compromiso: entity.fechaCompromiso
+      ? new Date(entity.fechaCompromiso).toISOString().split('T')[0]
+      : null,
+    observaciones: entity.observaciones ?? null,
+    created_at: entity.createdAt ? new Date(entity.createdAt).toISOString() : '',
+    updated_at: entity.updatedAt ? new Date(entity.updatedAt).toISOString() : '',
+  };
+}

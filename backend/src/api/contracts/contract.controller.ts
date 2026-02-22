@@ -505,6 +505,90 @@ export class ContractController {
     }
   }
 
+  // ─── Obligaciones del Arrendador (WS-21) ───
+
+  /**
+   * GET /api/contracts/:id/obligaciones
+   */
+  static async getObligaciones(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+      const items = await contractService.getObligaciones(contractId);
+      sendSuccess(res, items);
+    } catch (error: any) {
+      Logger.error('Error in getObligaciones', {
+        error: error.message,
+        context: 'ContractController.getObligaciones',
+      });
+      sendError(res, 500, 'OBLIGACION_FETCH_FAILED', 'Failed to fetch obligaciones', error.message);
+    }
+  }
+
+  /**
+   * POST /api/contracts/:id/obligaciones/initialize
+   */
+  static async initializeObligaciones(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+      const items = await contractService.initializeObligaciones(contractId);
+      sendSuccess(res, items);
+    } catch (error: any) {
+      Logger.error('Error in initializeObligaciones', {
+        error: error.message,
+        context: 'ContractController.initializeObligaciones',
+      });
+      if (error.message?.includes('not found')) {
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', error.message);
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'OBLIGACION_INIT_FAILED',
+        'Failed to initialize obligaciones',
+        error.message
+      );
+    }
+  }
+
+  /**
+   * PUT /api/contracts/obligaciones/:obligacionId
+   */
+  static async updateObligacion(req: Request, res: Response): Promise<void> {
+    try {
+      const obligacionId = parseInt(req.params.obligacionId);
+      if (isNaN(obligacionId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid obligacion ID');
+        return;
+      }
+      const { estado, fecha_compromiso, observaciones } = req.body;
+      const item = await contractService.updateObligacion(obligacionId, {
+        estado,
+        fechaCompromiso: fecha_compromiso,
+        observaciones,
+      });
+      sendSuccess(res, item);
+    } catch (error: any) {
+      Logger.error('Error in updateObligacion', {
+        error: error.message,
+        context: 'ContractController.updateObligacion',
+      });
+      if (error.message?.includes('not found')) {
+        sendError(res, 404, 'OBLIGACION_NOT_FOUND', error.message);
+        return;
+      }
+      sendError(res, 500, 'OBLIGACION_UPDATE_FAILED', 'Failed to update obligacion', error.message);
+    }
+  }
+
   /**
    * GET /api/contracts/stats/count
    * Get active contract count

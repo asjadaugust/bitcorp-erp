@@ -3,8 +3,19 @@ import { AppDataSource } from '../config/database.config';
 import { Contract, Addendum } from '../models/contract.model';
 import { ContractAnnex } from '../models/contract-annex.model';
 import { ContractRequiredDocument } from '../models/contract-required-document.model';
+import {
+  ContractObligacion,
+  TipoObligacionArrendador,
+  OBLIGACION_LABELS,
+} from '../models/contract-obligacion.model';
 import { Repository, Between } from 'typeorm';
-import { ContractDto, toContractDto, fromContractDto } from '../types/dto/contract.dto';
+import {
+  ContractDto,
+  ContractObligacionDto,
+  toContractDto,
+  toContractObligacionDto,
+  fromContractDto,
+} from '../types/dto/contract.dto';
 import {
   NotFoundError,
   ValidationError,
@@ -1780,6 +1791,118 @@ export class ContractService {
       });
       throw new DatabaseError(
         'Failed to count active contracts',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  // ─── Obligaciones del Arrendador (WS-21 — CORP-GEM-F-001 Cláusula 7) ───
+
+  private get obligacionRepository(): Repository<ContractObligacion> {
+    return AppDataSource.getRepository(ContractObligacion);
+  }
+
+  async getObligaciones(contratoId: number): Promise<ContractObligacionDto[]> {
+    try {
+      const items = await this.obligacionRepository.find({
+        where: { contratoId },
+        order: { tipoObligacion: 'ASC' },
+      });
+      logger.info('Retrieved obligaciones', { contratoId, count: items.length });
+      return items.map(toContractObligacionDto);
+    } catch (error) {
+      logger.error('Error fetching obligaciones', {
+        error: error instanceof Error ? error.message : String(error),
+        contratoId,
+        context: 'ContractService.getObligaciones',
+      });
+      throw new DatabaseError(
+        'Failed to retrieve obligaciones',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async initializeObligaciones(contratoId: number): Promise<ContractObligacionDto[]> {
+    try {
+      await this.findById(contratoId);
+
+      const existing = await this.obligacionRepository.find({ where: { contratoId } });
+      if (existing.length > 0) {
+        return existing.map(toContractObligacionDto);
+      }
+
+      const defaultTypes: TipoObligacionArrendador[] = [
+        'CONDICIONES_OPERATIVAS',
+        'REPRESENTANTE_FRENTE',
+        'POLIZA_TREC',
+        'NORMAS_SEGURIDAD',
+        'SOAT',
+        'REPARACION_REEMPLAZO',
+        'KIT_ANTIDERRAME',
+        'DOCUMENTOS_VALIDOS',
+        'REEMPLAZO_OPERADOR',
+      ];
+
+      const entities = defaultTypes.map((tipo) =>
+        this.obligacionRepository.create({
+          contratoId,
+          tipoObligacion: tipo,
+          estado: 'PENDIENTE' as const,
+        })
+      );
+
+      const saved = await this.obligacionRepository.save(entities);
+      logger.info('Initialized obligaciones', { contratoId, count: saved.length });
+      return saved.map(toContractObligacionDto);
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      logger.error('Error initializing obligaciones', {
+        error: error instanceof Error ? error.message : String(error),
+        contratoId,
+        context: 'ContractService.initializeObligaciones',
+      });
+      throw new DatabaseError(
+        'Failed to initialize obligaciones',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  async updateObligacion(
+    id: number,
+    data: {
+      estado?: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA';
+      fechaCompromiso?: string | null;
+      observaciones?: string | null;
+    }
+  ): Promise<ContractObligacionDto> {
+    try {
+      const item = await this.obligacionRepository.findOne({ where: { id } });
+      if (!item) {
+        throw new NotFoundError('ContractObligacion', id);
+      }
+
+      if (data.estado !== undefined) item.estado = data.estado;
+      if (data.fechaCompromiso !== undefined)
+        item.fechaCompromiso = data.fechaCompromiso ? new Date(data.fechaCompromiso) : undefined;
+      if (data.observaciones !== undefined) item.observaciones = data.observaciones ?? undefined;
+
+      const saved = await this.obligacionRepository.save(item);
+      logger.info('Updated obligacion', { id, estado: saved.estado });
+      return toContractObligacionDto(saved);
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      logger.error('Error updating obligacion', {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+        context: 'ContractService.updateObligacion',
+      });
+      throw new DatabaseError(
+        'Failed to update obligacion',
         DatabaseErrorType.QUERY,
         error as Error
       );

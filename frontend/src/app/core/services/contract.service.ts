@@ -303,4 +303,33 @@ export class ContractService {
       .put<any>(`${this.apiUrl}/required-documents/${docId}`, data)
       .pipe(map((response) => response?.data || response));
   }
+
+  // ─── Obligaciones del Arrendador (WS-21) ───
+
+  getObligaciones(contractId: string): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/${contractId}/obligaciones`).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  initializeObligaciones(contractId: string): Observable<any[]> {
+    return this.http.post<any>(`${this.apiUrl}/${contractId}/obligaciones/initialize`, {}).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  updateObligacion(
+    obligacionId: number,
+    data: { estado?: string; fecha_compromiso?: string | null; observaciones?: string | null }
+  ): Observable<any> {
+    return this.http
+      .put<any>(`${this.apiUrl}/obligaciones/${obligacionId}`, data)
+      .pipe(map((response) => response?.data || response));
+  }
 }

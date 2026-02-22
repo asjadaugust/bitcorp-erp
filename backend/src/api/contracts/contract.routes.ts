@@ -45,6 +45,11 @@ router.get('/:id/required-documents', ContractController.getRequiredDocuments);
 router.post('/:id/required-documents/initialize', ContractController.initializeRequiredDocuments);
 router.put('/required-documents/:docId', ContractController.updateRequiredDocument);
 
+// ─── Obligaciones del Arrendador routes (WS-21) ───
+router.get('/:id/obligaciones', ContractController.getObligaciones);
+router.post('/:id/obligaciones/initialize', ContractController.initializeObligaciones);
+router.put('/obligaciones/:obligacionId', ContractController.updateObligacion);
+
 // ─── Lifecycle routes (WS-16) ───
 router.post('/:id/resolver', ContractController.resolver);
 router.get('/:id/liquidation-check', ContractController.liquidationCheck);
