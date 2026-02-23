@@ -11,10 +11,7 @@ import {
 import { DashboardApiService, DocumentAlertsSummary } from '../../core/services/dashboard.service';
 import { EquipmentService } from '../../core/services/equipment.service';
 
-import {
-  PageLayoutComponent,
-  TabItem,
-} from '../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   StatsGridComponent,
   StatItem,
@@ -34,7 +31,6 @@ import {
         { label: 'Dashboard' },
       ]"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <!-- Stats summary (Moved from actions to top of content) -->
       <div class="stats-section">
@@ -740,18 +736,6 @@ export class EquipmentDashboardComponent implements OnInit {
   selectedMonth: string = this.getCurrentMonth();
 
   summaryStats: StatItem[] = [];
-
-  tabs: TabItem[] = [
-    { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
-    { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
-    { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
-    { label: 'Órdenes', route: '/equipment/ordenes-alquiler', icon: 'fa-file-contract' },
-    { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
-    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
-    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
-    { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-file-signature' },
-  ];
 
   ngOnInit(): void {
     this.loadDashboard();

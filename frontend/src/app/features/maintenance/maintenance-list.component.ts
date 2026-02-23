@@ -13,7 +13,6 @@ import {
 import {
   PageLayoutComponent,
   Breadcrumb,
-  TabItem,
 } from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
@@ -45,7 +44,6 @@ import { forkJoin } from 'rxjs';
       icon="fa-wrench"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
@@ -212,18 +210,6 @@ export class MaintenanceListComponent implements OnInit {
     { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Mantenimiento' },
-  ];
-
-  tabs: TabItem[] = [
-    { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
-    { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
-    { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
-    { label: 'Órdenes', route: '/equipment/ordenes-alquiler', icon: 'fa-file-contract' },
-    { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
-    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
-    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
-    { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-file-signature' },
   ];
 
   filterConfig: FilterConfig[] = [

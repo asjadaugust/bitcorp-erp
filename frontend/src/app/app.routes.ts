@@ -192,75 +192,9 @@ export const routes: Routes = [
       // Administration Module
       {
         path: 'administracion',
-        loadComponent: () =>
-          import('./features/administration/components/cost-center-list/cost-center-list.component').then(
-            (m) => m.CostCenterListComponent
-          ),
-        data: { title: 'Administración' },
-      },
-      {
-        path: 'administracion/cost-centers',
-        loadComponent: () =>
-          import('./features/administration/components/cost-center-list/cost-center-list.component').then(
-            (m) => m.CostCenterListComponent
-          ),
-      },
-      {
-        path: 'administracion/cost-centers/new',
-        loadComponent: () =>
-          import('./features/administration/components/cost-center-form/cost-center-form.component').then(
-            (m) => m.CostCenterFormComponent
-          ),
-      },
-      {
-        path: 'administracion/cost-centers/:id/edit',
-        loadComponent: () =>
-          import('./features/administration/components/cost-center-form/cost-center-form.component').then(
-            (m) => m.CostCenterFormComponent
-          ),
-      },
-      // Accounts Payable
-      {
-        path: 'administracion/accounts-payable',
-        loadComponent: () =>
-          import('./features/administration/components/accounts-payable-list/accounts-payable-list.component').then(
-            (m) => m.AccountsPayableListComponent
-          ),
-      },
-      {
-        path: 'administracion/accounts-payable/new',
-        loadComponent: () =>
-          import('./features/administration/components/accounts-payable-form/accounts-payable-form.component').then(
-            (m) => m.AccountsPayableFormComponent
-          ),
-      },
-      {
-        path: 'administracion/accounts-payable/:id/edit',
-        loadComponent: () =>
-          import('./features/administration/components/accounts-payable-form/accounts-payable-form.component').then(
-            (m) => m.AccountsPayableFormComponent
-          ),
-      },
-      // Payment Schedules
-      {
-        path: 'administracion/payment-schedules',
-        loadComponent: () =>
-          import('./features/administration/components/payment-schedule-list/payment-schedule-list.component').then(
-            (m) => m.PaymentScheduleListComponent
-          ),
-      },
-      {
-        path: 'administracion/payment-schedules/new',
-        loadComponent: () =>
-          import('./features/administration/components/payment-schedule-form/payment-schedule-form.component').then(
-            (m) => m.PaymentScheduleFormComponent
-          ),
-      },
-      {
-        path: 'administracion/payment-schedules/:id/edit',
-        loadComponent: () =>
-          import('./features/administration/components/payment-schedule-form/payment-schedule-form.component').then(
-            (m) => m.PaymentScheduleFormComponent
+        loadChildren: () =>
+          import('./features/administration/administracion.routes').then(
+            (m) => m.ADMINISTRACION_ROUTES
           ),
       },
       {

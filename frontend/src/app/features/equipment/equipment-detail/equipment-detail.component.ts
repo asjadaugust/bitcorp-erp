@@ -334,39 +334,49 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
 
       .detail-tabs {
         display: flex;
-        gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
         margin-bottom: var(--s-24);
-        border-bottom: 1px solid var(--grey-200);
+        border-bottom: 2px solid var(--grey-200);
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
 
         .tab-link {
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 12px 24px;
+          gap: 6px;
+          padding: 10px 14px;
           border: none;
           background: none;
           color: var(--grey-500);
-          font-weight: 600;
+          font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          border-bottom: 3px solid transparent;
-          font-size: 0.9rem;
-          height: 48px;
+          transition:
+            color 0.15s,
+            border-color 0.15s,
+            background 0.15s;
+          border-bottom: 2px solid transparent;
+          margin-bottom: -2px;
+          font-size: 13px;
+          white-space: nowrap;
+          flex-shrink: 0;
 
           i {
-            opacity: 0.6;
-            font-size: 1.1em;
+            opacity: 0.7;
+            font-size: 13px;
           }
 
           &:hover {
-            color: var(--primary-600);
-            background: var(--primary-50);
+            color: var(--primary-700);
+            background: var(--grey-50);
           }
 
           &.active {
-            color: var(--primary-600);
-            border-bottom-color: var(--primary-600);
-            background: rgba(59, 130, 246, 0.05);
+            color: var(--primary-700);
+            border-bottom-color: var(--primary-500);
+            font-weight: 600;
             i {
               opacity: 1;
             }

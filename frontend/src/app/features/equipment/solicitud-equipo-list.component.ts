@@ -9,7 +9,6 @@ import {
 import {
   PageLayoutComponent,
   Breadcrumb,
-  TabItem,
 } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import {
@@ -44,7 +43,6 @@ import {
       icon="fa-file-invoice"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" routerLink="new">
@@ -262,18 +260,6 @@ export class SolicitudEquipoListComponent implements OnInit {
     { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Solicitudes' },
-  ];
-
-  tabs: TabItem[] = [
-    { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
-    { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
-    { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
-    { label: 'Órdenes', route: '/equipment/ordenes-alquiler', icon: 'fa-file-contract' },
-    { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
-    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
-    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
-    { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-file-signature' },
   ];
 
   filterConfig: FilterConfig[] = [
