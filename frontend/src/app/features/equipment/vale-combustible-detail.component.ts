@@ -1,0 +1,441 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import {
+  ValeCombustibleService,
+  ValeCombustible,
+} from '../../core/services/vale-combustible.service';
+import {
+  EntityDetailShellComponent,
+  EntityDetailHeader,
+  AuditInfo,
+} from '../../shared/components/entity-detail';
+
+@Component({
+  selector: 'app-vale-combustible-detail',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent],
+  template: `
+    <entity-detail-shell
+      [header]="header"
+      [entity]="vale"
+      [loading]="loading"
+      [auditInfo]="auditInfo"
+      loadingText="Cargando vale de combustible..."
+    >
+      <!-- ── ACTIONS ─────────────────────────────────── -->
+      <ng-container entity-sidebar-actions>
+        <button
+          *ngIf="vale?.estado === 'PENDIENTE'"
+          type="button"
+          class="btn btn-outline"
+          [routerLink]="['edit']"
+          data-testid="btn-edit"
+        >
+          <i class="fa-solid fa-pen-to-square"></i> Editar
+        </button>
+        <button
+          *ngIf="vale?.estado === 'PENDIENTE'"
+          type="button"
+          class="btn btn-success"
+          (click)="registrar()"
+          [disabled]="actioning"
+          data-testid="btn-registrar"
+        >
+          <i class="fa-solid fa-check"></i> Registrar
+        </button>
+        <button
+          *ngIf="vale?.estado !== 'ANULADO'"
+          type="button"
+          class="btn btn-danger"
+          (click)="anular()"
+          [disabled]="actioning"
+          data-testid="btn-anular"
+        >
+          <i class="fa-solid fa-ban"></i> Anular
+        </button>
+      </ng-container>
+
+      <!-- ── MAIN CONTENT ──────────────────────────── -->
+      <div entity-main-content class="detail-content" *ngIf="vale">
+        <!-- Estado strip -->
+        <div
+          class="estado-strip"
+          [ngClass]="'strip-' + vale.estado.toLowerCase()"
+          data-testid="estado-strip"
+        >
+          <i class="fa-solid" [ngClass]="getStatusIcon(vale.estado)"></i>
+          <span>{{ estadoLabel(vale.estado) }}</span>
+        </div>
+
+        <!-- Datos del Vale -->
+        <section class="detail-section" data-testid="section-datos-vale">
+          <h2>Datos del Vale</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Código</label>
+              <p class="mono-value" data-testid="vale-codigo">{{ vale.codigo }}</p>
+            </div>
+            <div class="info-item">
+              <label>Número de Vale</label>
+              <p data-testid="vale-numero">{{ vale.numero_vale }}</p>
+            </div>
+            <div class="info-item">
+              <label>Fecha</label>
+              <p data-testid="vale-fecha">{{ vale.fecha | date: 'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Tipo de Combustible</label>
+              <p>
+                <span
+                  class="fuel-badge fuel-{{ vale.tipo_combustible | lowercase }}"
+                  data-testid="vale-tipo"
+                >
+                  {{ formatTipo(vale.tipo_combustible) }}
+                </span>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Consumo y Costos -->
+        <section class="detail-section" data-testid="section-consumo">
+          <h2>Consumo y Costos</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Cantidad (galones)</label>
+              <p data-testid="vale-cantidad">{{ vale.cantidad_galones | number: '1.2-2' }} gal</p>
+            </div>
+            <div class="info-item">
+              <label>Precio Unitario</label>
+              <p data-testid="vale-precio">
+                <span *ngIf="vale.precio_unitario"
+                  >S/ {{ vale.precio_unitario | number: '1.2-2' }}</span
+                >
+                <span *ngIf="!vale.precio_unitario" class="text-muted">—</span>
+              </p>
+            </div>
+            <div class="info-item highlight-total">
+              <label>Monto Total</label>
+              <p class="value-large" data-testid="vale-monto-total">
+                <span *ngIf="vale.monto_total">S/ {{ vale.monto_total | number: '1.2-2' }}</span>
+                <span *ngIf="!vale.monto_total" class="text-muted">—</span>
+              </p>
+            </div>
+            <div class="info-item" *ngIf="vale.proveedor">
+              <label>Proveedor / Grifo</label>
+              <p data-testid="vale-proveedor">{{ vale.proveedor }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Referencias -->
+        <section
+          class="detail-section"
+          *ngIf="vale.equipo_id || vale.parte_diario_id || vale.proyecto_id"
+        >
+          <h2>Referencias</h2>
+          <div class="info-grid">
+            <div class="info-item" *ngIf="vale.equipo_id">
+              <label>Equipo</label>
+              <p>
+                <a
+                  [routerLink]="['/equipment', vale.equipo_id]"
+                  class="link-primary"
+                  data-testid="link-equipo"
+                >
+                  <i
+                    class="fa-solid fa-arrow-up-right-from-square"
+                    style="font-size:0.75em;margin-right:4px;"
+                  ></i>
+                  Equipo #{{ vale.equipo_id }}
+                </a>
+              </p>
+            </div>
+            <div class="info-item" *ngIf="vale.parte_diario_id">
+              <label>Parte Diario</label>
+              <p>
+                <a
+                  [routerLink]="['/equipment/daily-reports', vale.parte_diario_id]"
+                  class="link-primary"
+                  data-testid="link-parte-diario"
+                >
+                  <i
+                    class="fa-solid fa-arrow-up-right-from-square"
+                    style="font-size:0.75em;margin-right:4px;"
+                  ></i>
+                  Parte Diario #{{ vale.parte_diario_id }}
+                </a>
+              </p>
+            </div>
+            <div class="info-item" *ngIf="vale.proyecto_id">
+              <label>Proyecto</label>
+              <p>
+                <a
+                  [routerLink]="['/projects', vale.proyecto_id]"
+                  class="link-primary"
+                  data-testid="link-proyecto"
+                >
+                  <i
+                    class="fa-solid fa-arrow-up-right-from-square"
+                    style="font-size:0.75em;margin-right:4px;"
+                  ></i>
+                  Proyecto #{{ vale.proyecto_id }}
+                </a>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Observaciones -->
+        <section class="detail-section" *ngIf="vale.observaciones">
+          <h2>Observaciones</h2>
+          <p class="obs-text" data-testid="vale-observaciones">{{ vale.observaciones }}</p>
+        </section>
+
+        <!-- Error message -->
+        <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
+          <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
+        </div>
+      </div>
+    </entity-detail-shell>
+  `,
+  styles: [
+    `
+      .detail-content {
+        padding: 0 var(--s-24) var(--s-24);
+      }
+      .detail-section {
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--grey-200);
+        padding-bottom: 16px;
+      }
+      .detail-section:last-child {
+        border-bottom: none;
+      }
+      .detail-section h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--grey-700);
+        margin-bottom: 12px;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+      }
+      .info-item label {
+        font-size: 0.8rem;
+        color: var(--grey-500);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 4px;
+      }
+      .info-item p {
+        font-size: 0.95rem;
+        color: var(--grey-900);
+        margin: 0;
+      }
+      .mono-value {
+        font-family: monospace;
+        background: var(--grey-100);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+        display: inline-block;
+      }
+      .value-large {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-900);
+      }
+      .highlight-total label {
+        color: var(--primary-700);
+      }
+      .text-muted {
+        color: var(--grey-400);
+      }
+      .obs-text {
+        color: var(--grey-700);
+        line-height: 1.5;
+      }
+      .link-primary {
+        color: var(--primary-700);
+        text-decoration: none;
+      }
+      .link-primary:hover {
+        text-decoration: underline;
+      }
+      .fuel-badge {
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 0.82em;
+        font-weight: 600;
+      }
+      .fuel-diesel {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .fuel-gasolina_90 {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .fuel-gasolina_95 {
+        background: #bbf7d0;
+        color: #14532d;
+      }
+      .fuel-glp {
+        background: #fef9c3;
+        color: #713f12;
+      }
+      .fuel-gnv {
+        background: #f3e8ff;
+        color: #6b21a8;
+      }
+      .estado-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: var(--radius-md);
+        margin-bottom: 20px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+      .strip-pendiente {
+        background: #fef9c3;
+        color: #713f12;
+      }
+      .strip-registrado {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .strip-anulado {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+    `,
+  ],
+})
+export class ValeCombustibleDetailComponent implements OnInit {
+  private svc = inject(ValeCombustibleService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  vale: ValeCombustible | null = null;
+  loading = false;
+  actioning = false;
+  errorMsg = '';
+
+  get header(): EntityDetailHeader {
+    return {
+      title: this.vale ? `Vale ${this.vale.codigo}` : 'Vale de Combustible',
+      subtitle: this.vale
+        ? `${this.formatTipo(this.vale.tipo_combustible)} — ${this.vale.fecha}`
+        : '',
+      icon: 'fa-gas-pump',
+      statusLabel: this.vale ? this.estadoLabel(this.vale.estado) : '',
+      statusClass: this.vale ? this.getEstadoBadgeClass(this.vale.estado) : '',
+    };
+  }
+
+  get auditInfo(): AuditInfo | undefined {
+    if (!this.vale) return undefined;
+    return {
+      entries: [
+        { label: 'Creado', date: this.vale.created_at },
+        { label: 'Actualizado', date: this.vale.updated_at },
+      ],
+    };
+  }
+
+  ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) this.cargar(Number(id));
+  }
+
+  cargar(id: number) {
+    this.loading = true;
+    this.svc.obtener(id).subscribe({
+      next: (vale) => {
+        this.vale = vale;
+        this.loading = false;
+      },
+      error: () => (this.loading = false),
+    });
+  }
+
+  registrar() {
+    if (!this.vale || !confirm(`¿Confirmar el registro del vale ${this.vale.codigo}?`)) return;
+    this.actioning = true;
+    this.svc.registrar(this.vale.id).subscribe({
+      next: (vale) => {
+        this.vale = vale;
+        this.actioning = false;
+      },
+      error: (err) => {
+        this.actioning = false;
+        this.errorMsg = err?.error?.error?.message || 'Error al registrar el vale.';
+      },
+    });
+  }
+
+  anular() {
+    if (
+      !this.vale ||
+      !confirm(`¿Anular el vale ${this.vale.codigo}? Esta acción no se puede deshacer.`)
+    )
+      return;
+    this.actioning = true;
+    this.svc.anular(this.vale.id).subscribe({
+      next: (vale) => {
+        this.vale = vale;
+        this.actioning = false;
+      },
+      error: (err) => {
+        this.actioning = false;
+        this.errorMsg = err?.error?.error?.message || 'Error al anular el vale.';
+      },
+    });
+  }
+
+  formatTipo(tipo: string): string {
+    const map: Record<string, string> = {
+      DIESEL: 'Diesel',
+      GASOLINA_90: 'Gasolina 90',
+      GASOLINA_95: 'Gasolina 95',
+      GLP: 'GLP',
+      GNV: 'GNV',
+    };
+    return map[tipo] || tipo;
+  }
+
+  getStatusIcon(estado: string): string {
+    const map: Record<string, string> = {
+      PENDIENTE: 'fa-clock',
+      REGISTRADO: 'fa-check-circle',
+      ANULADO: 'fa-ban',
+    };
+    return map[estado] || 'fa-circle';
+  }
+
+  estadoLabel(estado: string): string {
+    const map: Record<string, string> = {
+      PENDIENTE: 'Pendiente de Registro',
+      REGISTRADO: 'Registrado',
+      ANULADO: 'Anulado',
+    };
+    return map[estado] || estado;
+  }
+
+  getEstadoBadgeClass(estado: string): string {
+    const map: Record<string, string> = {
+      PENDIENTE: 'badge-warning',
+      REGISTRADO: 'badge-success',
+      ANULADO: 'badge-danger',
+    };
+    return map[estado] || 'badge-secondary';
+  }
+}

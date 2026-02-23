@@ -33,6 +33,7 @@ import ordenesAlquilerRoutes from './api/ordenes-alquiler/ordenes-alquiler.route
 import periodosInoperatividadRoutes from './api/periodos-inoperatividad/periodos-inoperatividad.routes';
 import tiposEquipoRoutes from './api/tipos-equipo/tipos-equipo.routes';
 import precalentamientoConfigRoutes from './api/precalentamiento-config/precalentamiento-config.routes';
+import valesCombustibleRoutes from './api/vales-combustible/vales-combustible.routes';
 import analyticsRoutes from './api/analytics';
 import testErrorRoutes from './api/test-errors/test-errors.routes';
 import paymentRoutes from './api/payments/payment-record.routes';
@@ -46,6 +47,36 @@ import Logger from './utils/logger';
 import { performanceMetrics } from './utils/performance-metrics.service';
 import { performanceConfig } from './config/performance.config';
 import { CronService } from './services/cron.service';
+import swaggerUi from 'swagger-ui-express';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Load auto-generated swagger documentation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let swaggerSpec: any;
+try {
+  const swaggerPath = path.resolve(process.cwd(), 'swagger-api.json');
+  Logger.debug('Loading Swagger documentation', { path: swaggerPath, context: 'Server.startup' });
+  if (fs.existsSync(swaggerPath)) {
+    const content = fs.readFileSync(swaggerPath, 'utf8');
+    if (content && content.trim()) {
+      swaggerSpec = JSON.parse(content);
+      Logger.info('Swagger documentation loaded successfully', { context: 'Server.startup' });
+    } else {
+      Logger.warn('Swagger documentation file is empty', { context: 'Server.startup' });
+    }
+  } else {
+    Logger.warn('Swagger documentation file not found', {
+      path: swaggerPath,
+      context: 'Server.startup',
+    });
+  }
+} catch (error) {
+  Logger.error('Error loading swagger-api.json', {
+    error: error instanceof Error ? error.message : String(error),
+    context: 'Server.startup',
+  });
+}
 
 // Setup process-level error handlers
 setupProcessErrorHandlers();
@@ -69,7 +100,27 @@ app.use(express.urlencoded({ extended: true }));
 // Request logging with correlation IDs
 app.use(requestLogger);
 
-// Health check
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns the status of the server and the current timestamp
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: OK
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
@@ -93,6 +144,7 @@ app.use('/api/ordenes-alquiler', ordenesAlquilerRoutes);
 app.use('/api/periodos-inoperatividad', periodosInoperatividadRoutes);
 app.use('/api/tipos-equipo', tiposEquipoRoutes);
 app.use('/api/precalentamiento-config', precalentamientoConfigRoutes);
+app.use('/api/vales-combustible', valesCombustibleRoutes);
 app.use('/api/logistics/movements', movementRoutes);
 app.use('/api/logistics/products', productRoutes);
 app.use('/api/hr', hrRoutes);
@@ -110,6 +162,11 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cache', cacheRoutes);
+
+// Swagger Documentation
+if (swaggerSpec) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 // Cron job management endpoints (development/staging only)
 if (process.env.NODE_ENV !== 'production') {
@@ -205,6 +262,7 @@ const startServer = async () => {
         port,
         environment: process.env.NODE_ENV || 'development',
         healthCheck: `http://localhost:${port}/health`,
+        swaggerDocs: `http://localhost:${port}/api-docs`,
         authEndpoint: `http://localhost:${port}/api/auth`,
         performanceMonitoring: {
           enabled: performanceConfig.metrics.enabled,

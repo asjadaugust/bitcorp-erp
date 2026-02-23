@@ -106,6 +106,30 @@ export const EQUIPMENT_ROUTES: Routes = [
           import('./acta-devolucion-form.component').then((m) => m.ActaDevolucionFormComponent),
       },
 
+      // Vales de Combustible (WS-23)
+      {
+        path: 'vales-combustible',
+        loadComponent: () =>
+          import('./vale-combustible-list.component').then((m) => m.ValeCombustibleListComponent),
+      },
+      {
+        path: 'vales-combustible/new',
+        loadComponent: () =>
+          import('./vale-combustible-form.component').then((m) => m.ValeCombustibleFormComponent),
+      },
+      {
+        path: 'vales-combustible/:id',
+        loadComponent: () =>
+          import('./vale-combustible-detail.component').then(
+            (m) => m.ValeCombustibleDetailComponent
+          ),
+      },
+      {
+        path: 'vales-combustible/:id/edit',
+        loadComponent: () =>
+          import('./vale-combustible-form.component').then((m) => m.ValeCombustibleFormComponent),
+      },
+
       // Equipment List (index)
       {
         path: '',
