@@ -3,7 +3,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Contract } from '../models/contract.model';
+import {
+  Contract,
+  ContractObligacion,
+  ContractObligacionArrendatario,
+} from '../models/contract.model';
 
 @Injectable({
   providedIn: 'root',
@@ -306,7 +310,7 @@ export class ContractService {
 
   // ─── Obligaciones del Arrendador (WS-21) ───
 
-  getObligaciones(contractId: string): Observable<any[]> {
+  getObligaciones(contractId: string): Observable<ContractObligacion[]> {
     return this.http.get<any>(`${this.apiUrl}/${contractId}/obligaciones`).pipe(
       map((response) => {
         const data = response?.data || response;
@@ -315,7 +319,7 @@ export class ContractService {
     );
   }
 
-  initializeObligaciones(contractId: string): Observable<any[]> {
+  initializeObligaciones(contractId: string): Observable<ContractObligacion[]> {
     return this.http.post<any>(`${this.apiUrl}/${contractId}/obligaciones/initialize`, {}).pipe(
       map((response) => {
         const data = response?.data || response;
@@ -327,9 +331,42 @@ export class ContractService {
   updateObligacion(
     obligacionId: number,
     data: { estado?: string; fecha_compromiso?: string | null; observaciones?: string | null }
-  ): Observable<any> {
+  ): Observable<ContractObligacion> {
     return this.http
       .put<any>(`${this.apiUrl}/obligaciones/${obligacionId}`, data)
+      .pipe(map((response) => response?.data || response));
+  }
+
+  // ─── Obligaciones del Arrendatario (WS-22) ───
+
+  getObligacionesArrendatario(contractId: string): Observable<ContractObligacionArrendatario[]> {
+    return this.http.get<any>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario`).pipe(
+      map((response) => {
+        const data = response?.data || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  initializeObligacionesArrendatario(
+    contractId: string
+  ): Observable<ContractObligacionArrendatario[]> {
+    return this.http
+      .post<any>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario/initialize`, {})
+      .pipe(
+        map((response) => {
+          const data = response?.data || response;
+          return Array.isArray(data) ? data : [];
+        })
+      );
+  }
+
+  updateObligacionArrendatario(
+    obligacionId: number,
+    data: { estado?: string; fecha_compromiso?: string | null; observaciones?: string | null }
+  ): Observable<ContractObligacionArrendatario> {
+    return this.http
+      .put<any>(`${this.apiUrl}/obligaciones-arrendatario/${obligacionId}`, data)
       .pipe(map((response) => response?.data || response));
   }
 }

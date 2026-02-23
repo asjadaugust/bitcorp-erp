@@ -495,3 +495,33 @@ export function toContractObligacionDto(entity: any): ContractObligacionDto {
     updated_at: entity.updatedAt ? new Date(entity.updatedAt).toISOString() : '',
   };
 }
+
+// ─── Obligaciones del Arrendatario DTOs (WS-22) ──────────────────────────────
+
+export interface ContractObligacionArrendatarioDto {
+  id: number;
+  contrato_id: number;
+  tipo_obligacion: string;
+  estado: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA';
+  fecha_compromiso?: string | null;
+  observaciones?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toContractObligacionArrendatarioDto(
+  entity: any
+): ContractObligacionArrendatarioDto {
+  return {
+    id: entity.id,
+    contrato_id: entity.contratoId,
+    tipo_obligacion: entity.tipoObligacion,
+    estado: entity.estado,
+    fecha_compromiso: entity.fechaCompromiso
+      ? new Date(entity.fechaCompromiso).toISOString().split('T')[0]
+      : null,
+    observaciones: entity.observaciones ?? null,
+    created_at: entity.createdAt ? new Date(entity.createdAt).toISOString() : '',
+    updated_at: entity.updatedAt ? new Date(entity.updatedAt).toISOString() : '',
+  };
+}

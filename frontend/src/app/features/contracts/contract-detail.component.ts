@@ -3,7 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ContractService } from '../../core/services/contract.service';
-import { Contract } from '../../core/models/contract.model';
+import {
+  Contract,
+  ContractObligacion,
+  ContractObligacionArrendatario,
+  OBLIGACION_LABELS,
+  OBLIGACION_ARRENDATARIO_LABELS,
+} from '../../core/models/contract.model';
 import { ValuationService } from '../../core/services/valuation.service';
 import { Valuation } from '../../core/models/valuation.model';
 
@@ -286,6 +292,84 @@ import {
               </span>
               <span class="badge badge-danger">
                 {{ countObligaciones('INCUMPLIDA') }} incumplidas
+              </span>
+            </div>
+          }
+        </section>
+
+        <!-- Obligaciones del Arrendatario (WS-22 — CORP-GEM-F-001 Cláusula 8) -->
+        <section class="detail-section" data-testid="obligaciones-arrendatario-section">
+          <div class="section-header-row">
+            <h2>Obligaciones del Arrendatario — Cláusula 8</h2>
+            @if (obligacionesArrendatario.length === 0) {
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary"
+                (click)="initObligacionesArrendatario()"
+                [disabled]="savingObligacionArrendatario"
+                data-testid="btn-init-obligaciones-arrendatario"
+              >
+                <i class="fa-solid fa-list-check"></i> Inicializar Lista
+              </button>
+            }
+          </div>
+
+          @if (obligacionesArrendatario.length === 0) {
+            <p class="empty-hint">
+              <i class="fa-solid fa-circle-info"></i>
+              Presione "Inicializar Lista" para crear las 4 obligaciones según Cláusula 8.
+            </p>
+          }
+
+          @if (obligacionesArrendatario.length > 0) {
+            <div class="obligaciones-list" data-testid="obligaciones-arrendatario-list">
+              @for (ob of obligacionesArrendatario; track ob.id) {
+                <div
+                  class="obligacion-row"
+                  [class.obligacion-cumplida]="ob.estado === 'CUMPLIDA'"
+                  [class.obligacion-incumplida]="ob.estado === 'INCUMPLIDA'"
+                  [attr.data-testid]="'obligacion-arrendatario-' + ob.tipo_obligacion"
+                >
+                  <div class="obligacion-info">
+                    <span class="obligacion-label">{{
+                      translateObligacionArrendatario(ob.tipo_obligacion)
+                    }}</span>
+                    @if (ob.observaciones) {
+                      <span class="obligacion-obs">{{ ob.observaciones }}</span>
+                    }
+                    @if (ob.fecha_compromiso) {
+                      <span class="obligacion-fecha">
+                        <i class="fa-regular fa-calendar"></i>
+                        {{ ob.fecha_compromiso | date: 'dd/MM/yyyy' }}
+                      </span>
+                    }
+                  </div>
+                  <div class="obligacion-controls">
+                    <select
+                      class="form-select form-select-sm"
+                      [value]="ob.estado"
+                      (change)="onObligacionArrendatarioEstadoChange(ob, $event)"
+                      [disabled]="savingObligacionArrendatario"
+                      [attr.data-testid]="'select-estado-arrendatario-' + ob.tipo_obligacion"
+                    >
+                      <option value="PENDIENTE">Pendiente</option>
+                      <option value="CUMPLIDA">Cumplida</option>
+                      <option value="INCUMPLIDA">Incumplida</option>
+                    </select>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="obligaciones-summary">
+              <span class="badge badge-success">
+                {{ countObligacionesArrendatario('CUMPLIDA') }} cumplidas
+              </span>
+              <span class="badge badge-warning">
+                {{ countObligacionesArrendatario('PENDIENTE') }} pendientes
+              </span>
+              <span class="badge badge-danger">
+                {{ countObligacionesArrendatario('INCUMPLIDA') }} incumplidas
               </span>
             </div>
           }
@@ -960,8 +1044,12 @@ export class ContractDetailComponent implements OnInit {
   requiredDocs: any[] = [];
 
   // WS-21: Obligaciones del Arrendador
-  obligaciones: any[] = [];
+  obligaciones: ContractObligacion[] = [];
   savingObligacion = false;
+
+  // WS-22: Obligaciones del Arrendatario
+  obligacionesArrendatario: ContractObligacionArrendatario[] = [];
+  savingObligacionArrendatario = false;
 
   // WS-16: Lifecycle modals
   showResolverModal = false;
@@ -1089,6 +1177,7 @@ export class ContractDetailComponent implements OnInit {
         this.loadAnnexes(id);
         this.loadRequiredDocs(id);
         this.loadObligaciones(id);
+        this.loadObligacionesArrendatario(id);
       },
       error: () => {
         this.loading = false;
@@ -1162,20 +1251,58 @@ export class ContractDetailComponent implements OnInit {
     return this.obligaciones.filter((o) => o.estado === estado).length;
   }
 
-  readonly obligacionLabels: Record<string, string> = {
-    CONDICIONES_OPERATIVAS: 'Equipo en condiciones operativas (§7.1)',
-    REPRESENTANTE_FRENTE: 'Representante en frente de trabajo (§7.2)',
-    POLIZA_TREC: 'Póliza TREC vigente (§7.3)',
-    NORMAS_SEGURIDAD: 'Cumplimiento de normas de seguridad (§7.4)',
-    SOAT: 'SOAT vigente (§7.5)',
-    REPARACION_REEMPLAZO: 'Reparación/reemplazo en máximo 5 días (§7.6)',
-    KIT_ANTIDERRAME: 'Kit anti-derrame y dispositivos de seguridad (§7.7)',
-    DOCUMENTOS_VALIDOS: 'Documentos válidos — CITV y licencia operador (§7.8)',
-    REEMPLAZO_OPERADOR: 'Reemplazo de operador por renuncia (§7.9)',
-  };
-
   translateObligacion(tipo: string): string {
-    return this.obligacionLabels[tipo] || tipo;
+    return OBLIGACION_LABELS[tipo] || tipo;
+  }
+
+  // ─── WS-22: Obligaciones del Arrendatario ───────────────────────────────
+
+  loadObligacionesArrendatario(id: string): void {
+    this.contractService
+      .getObligacionesArrendatario(id)
+      .subscribe({ next: (items) => (this.obligacionesArrendatario = items) });
+  }
+
+  initObligacionesArrendatario(): void {
+    if (!this.contract) return;
+    this.savingObligacionArrendatario = true;
+    this.contractService.initializeObligacionesArrendatario(this.contract.id.toString()).subscribe({
+      next: (items) => {
+        this.obligacionesArrendatario = items;
+        this.savingObligacionArrendatario = false;
+      },
+      error: (err) => {
+        console.error('Error initializing obligaciones arrendatario', err);
+        this.savingObligacionArrendatario = false;
+      },
+    });
+  }
+
+  onObligacionArrendatarioEstadoChange(ob: ContractObligacionArrendatario, event: Event): void {
+    const estado = (event.target as HTMLSelectElement).value as
+      | 'PENDIENTE'
+      | 'CUMPLIDA'
+      | 'INCUMPLIDA';
+    this.savingObligacionArrendatario = true;
+    this.contractService.updateObligacionArrendatario(ob.id, { estado }).subscribe({
+      next: (updated) => {
+        const idx = this.obligacionesArrendatario.findIndex((o) => o.id === ob.id);
+        if (idx !== -1) this.obligacionesArrendatario[idx] = updated;
+        this.savingObligacionArrendatario = false;
+      },
+      error: (err) => {
+        console.error('Error updating obligacion arrendatario', err);
+        this.savingObligacionArrendatario = false;
+      },
+    });
+  }
+
+  countObligacionesArrendatario(estado: string): number {
+    return this.obligacionesArrendatario.filter((o) => o.estado === estado).length;
+  }
+
+  translateObligacionArrendatario(tipo: string): string {
+    return OBLIGACION_ARRENDATARIO_LABELS[tipo] || tipo;
   }
 
   translateDocType(tipo: string): string {

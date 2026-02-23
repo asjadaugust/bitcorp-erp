@@ -589,6 +589,102 @@ export class ContractController {
     }
   }
 
+  // ─── Obligaciones del Arrendatario (WS-22) ───
+
+  /**
+   * GET /api/contracts/:id/obligaciones-arrendatario
+   */
+  static async getObligacionesArrendatario(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+      const items = await contractService.getObligacionesArrendatario(contractId);
+      sendSuccess(res, items);
+    } catch (error: any) {
+      Logger.error('Error in getObligacionesArrendatario', {
+        error: error.message,
+        context: 'ContractController.getObligacionesArrendatario',
+      });
+      sendError(
+        res,
+        500,
+        'OBLIGACION_ARRENDATARIO_FETCH_FAILED',
+        'Failed to fetch obligaciones arrendatario',
+        error.message
+      );
+    }
+  }
+
+  /**
+   * POST /api/contracts/:id/obligaciones-arrendatario/initialize
+   */
+  static async initializeObligacionesArrendatario(req: Request, res: Response): Promise<void> {
+    try {
+      const contractId = parseInt(req.params.id);
+      if (isNaN(contractId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
+        return;
+      }
+      const items = await contractService.initializeObligacionesArrendatario(contractId);
+      sendSuccess(res, items);
+    } catch (error: any) {
+      Logger.error('Error in initializeObligacionesArrendatario', {
+        error: error.message,
+        context: 'ContractController.initializeObligacionesArrendatario',
+      });
+      if (error.message?.includes('not found')) {
+        sendError(res, 404, 'CONTRACT_NOT_FOUND', error.message);
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'OBLIGACION_ARRENDATARIO_INIT_FAILED',
+        'Failed to initialize obligaciones arrendatario',
+        error.message
+      );
+    }
+  }
+
+  /**
+   * PUT /api/contracts/obligaciones-arrendatario/:obligacionId
+   */
+  static async updateObligacionArrendatario(req: Request, res: Response): Promise<void> {
+    try {
+      const obligacionId = parseInt(req.params.obligacionId);
+      if (isNaN(obligacionId)) {
+        sendError(res, 400, 'INVALID_ID', 'Invalid obligacion ID');
+        return;
+      }
+      const { estado, fecha_compromiso, observaciones } = req.body;
+      const item = await contractService.updateObligacionArrendatario(obligacionId, {
+        estado,
+        fechaCompromiso: fecha_compromiso,
+        observaciones,
+      });
+      sendSuccess(res, item);
+    } catch (error: any) {
+      Logger.error('Error in updateObligacionArrendatario', {
+        error: error.message,
+        context: 'ContractController.updateObligacionArrendatario',
+      });
+      if (error.message?.includes('not found')) {
+        sendError(res, 404, 'OBLIGACION_ARRENDATARIO_NOT_FOUND', error.message);
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'OBLIGACION_ARRENDATARIO_UPDATE_FAILED',
+        'Failed to update obligacion arrendatario',
+        error.message
+      );
+    }
+  }
+
   /**
    * GET /api/contracts/stats/count
    * Get active contract count

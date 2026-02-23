@@ -6,7 +6,31 @@ import { ContractCreateDto, ContractUpdateDto } from '../../types/dto/contract.d
 
 const router = Router();
 
-// GET /api/contracts - Get all contracts (with optional filters)
+/**
+ * @openapi
+ * /api/contracts:
+ *   get:
+ *     tags:
+ *       - Contracts
+ *     summary: Get all contracts
+ *     description: Retrieve a list of all contracts with optional filters and pagination.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of contracts retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
 router.get('/', ContractController.getAll);
 
 // GET /api/contracts/stats/count - Get active contracts count
@@ -18,7 +42,27 @@ router.get('/numero/:numero', ContractController.getByNumero);
 // GET /api/contracts/:id/pdf - Generate contract PDF
 router.get('/:id/pdf', ContractController.downloadPdf);
 
-// GET /api/contracts/:id - Get contract by ID
+/**
+ * @openapi
+ * /api/contracts/{id}:
+ *   get:
+ *     tags:
+ *       - Contracts
+ *     summary: Get contract by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Contract found
+ *       404:
+ *         description: Contract not found
+ */
 router.get('/:id', ContractController.getById);
 
 // POST /api/contracts - Create new contract
@@ -45,10 +89,79 @@ router.get('/:id/required-documents', ContractController.getRequiredDocuments);
 router.post('/:id/required-documents/initialize', ContractController.initializeRequiredDocuments);
 router.put('/required-documents/:docId', ContractController.updateRequiredDocument);
 
-// ─── Obligaciones del Arrendador routes (WS-21) ───
+/**
+ * @openapi
+ * /api/contracts/{id}/obligaciones:
+ *   get:
+ *     tags:
+ *       - Contracts
+ *     summary: Get contract obligations (WS-21)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of obligations
+ */
 router.get('/:id/obligaciones', ContractController.getObligaciones);
+
+/**
+ * @openapi
+ * /api/contracts/{id}/obligaciones/initialize:
+ *   post:
+ *     tags:
+ *       - Contracts
+ *     summary: Initialize default obligations (WS-21)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Obligations initialized
+ */
 router.post('/:id/obligaciones/initialize', ContractController.initializeObligaciones);
+
+/**
+ * @openapi
+ * /api/contracts/obligaciones/{obligacionId}:
+ *   put:
+ *     tags:
+ *       - Contracts
+ *     summary: Update an obligation (WS-21)
+ *     parameters:
+ *       - in: path
+ *         name: obligacionId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Obligation updated
+ */
 router.put('/obligaciones/:obligacionId', ContractController.updateObligacion);
+
+// ─── Obligaciones del Arrendatario routes (WS-22) ───
+router.get('/:id/obligaciones-arrendatario', ContractController.getObligacionesArrendatario);
+router.post(
+  '/:id/obligaciones-arrendatario/initialize',
+  ContractController.initializeObligacionesArrendatario
+);
+router.put(
+  '/obligaciones-arrendatario/:obligacionId',
+  ContractController.updateObligacionArrendatario
+);
 
 // ─── Lifecycle routes (WS-16) ───
 router.post('/:id/resolver', ContractController.resolver);
