@@ -70,12 +70,14 @@ tester.run('dto-spanish-snake-case', rule, {
       filename: 'equipment.dto.ts',
       code: `interface Foo { start_date: string; }`,
       errors: [{ messageId: 'notDomainWord' }],
+      output: `interface Foo { start_date: string; }`,
     },
     // Multiple segments, one invalid
     {
       filename: 'report.dto.ts',
       code: `interface Foo { fecha_deadline: string; }`,
       errors: [{ messageId: 'notDomainWord' }],
+      output: `interface Foo { fecha_deadline: string; }`,
     },
     // TSPropertySignature in type alias
     {
@@ -83,6 +85,14 @@ tester.run('dto-spanish-snake-case', rule, {
       code: `type Foo = { startDate: string; };`,
       errors: [{ messageId: 'notSnakeCase' }],
       output: `type Foo = { start_date: string; };`,
+    },
+    // Allowlist does NOT bypass Phase 1 casing check — camelCase still fails even if in allowlist
+    {
+      filename: 'auth.dto.ts',
+      code: `interface Foo { accessToken: string; }`,
+      options: [{ allowlist: ['access', 'token', 'accessToken'] }],
+      errors: [{ messageId: 'notSnakeCase' }],
+      output: `interface Foo { access_token: string; }`,
     },
   ],
 });
