@@ -21,7 +21,8 @@
     "db:reset": "npm run migrate:revert && npm run migrate && npm run seed:typeorm",
     "migrate:prod": "typeorm migration:run -d dist/config/database.config.js",
     "schema:drop:prod": "typeorm schema:drop -d dist/config/database.config.js",
-    "swagger:generate": "ts-node --transpile-only src/config/swagger/swagger-generator.ts"
+    "swagger:generate": "ts-node --transpile-only src/config/swagger/swagger-generator.ts",
+    "generate:eslint-words": "node eslint-rules/scripts/generate-word-list.js"
   },
   "dependencies": {
     "@types/multer": "^2.0.0",
