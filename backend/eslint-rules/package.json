@@ -1,0 +1,7 @@
+{
+  "name": "eslint-plugin-bitcorp",
+  "version": "1.0.0",
+  "description": "ESLint rules for BitCorp ERP Spanish naming conventions",
+  "main": "index.js",
+  "private": true
+}
