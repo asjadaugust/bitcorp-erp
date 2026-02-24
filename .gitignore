@@ -92,9 +92,15 @@ logs.txt
 
 # AI Tool specific directories
 .claude/
-.serena/
+!.serena/
+.serena/*
+!.serena/project.yml
 .playwright-mcp/
 .gemini/
 
 # Swagger artifact
 backend/swagger-api.json
+
+# Documentation
+!docs/
+!docs/logs/
