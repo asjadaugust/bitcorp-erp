@@ -12,6 +12,7 @@ import {
 } from '../../core/models/contract.model';
 import { ValuationService } from '../../core/services/valuation.service';
 import { Valuation } from '../../core/models/valuation.model';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ContractAddendumDialogComponent } from './components/contract-addendum-dialog/contract-addendum-dialog.component';
@@ -29,7 +30,10 @@ import {
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { DropdownComponent, DropdownOption } from '../../shared/components/dropdown/dropdown.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
 
 @Component({
@@ -469,9 +473,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             @for (doc of requiredDocs; track doc.tipo_documento) {
               <div class="doc-item">
                 <span class="doc-name">{{ translateDocType(doc.tipo_documento) }}</span>
-                <aero-badge
-                  [variant]="doc.estado === 'CARGADO' ? 'success' : 'warning'"
-                >
+                <aero-badge [variant]="doc.estado === 'CARGADO' ? 'success' : 'warning'">
                   {{ doc.estado }}
                 </aero-badge>
               </div>
@@ -1035,6 +1037,7 @@ export class ContractDetailComponent implements OnInit {
   private contractService = inject(ContractService);
   private valuationService = inject(ValuationService);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
   router = inject(Router);
   private dialog = inject(MatDialog);
 
@@ -1259,7 +1262,10 @@ export class ContractDetailComponent implements OnInit {
     return OBLIGACION_LABELS[tipo] || tipo;
   }
 
-  updateObligacionEstado(ob: ContractObligacion, nuevoEstado: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA'): void {
+  updateObligacionEstado(
+    ob: ContractObligacion,
+    nuevoEstado: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA'
+  ): void {
     if (!ob || !nuevoEstado) return;
     this.savingObligacion = true;
     this.contractService.updateObligacion(ob.id, { estado: nuevoEstado }).subscribe({
@@ -1362,13 +1368,13 @@ export class ContractDetailComponent implements OnInit {
   }
 
   deleteContract(): void {
-    if (
-      confirm(
-        '¿Estás seguro de que deseas eliminar este contrato? Esta acción no se puede deshacer.'
-      )
-    ) {
-      this.confirmDelete();
-    }
+    this.confirmSvc
+      .confirmDelete(`el contrato ${this.contract?.numero_contrato}`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.confirmDelete();
+        }
+      });
   }
 
   viewAddendums(): void {

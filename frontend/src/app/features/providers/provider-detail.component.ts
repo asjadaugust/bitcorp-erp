@@ -12,6 +12,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-provider-detail',
@@ -196,35 +197,7 @@ import {
       </ng-container>
     </entity-detail-shell>
 
-    <!-- Delete Modal -->
-    @if (showDeleteModal) {
-      <div class="modal" (click)="showDeleteModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h2>Confirmar Eliminación</h2>
-            <button type="button" class="close" (click)="showDeleteModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              ¿Estás seguro de que deseas eliminar el proveedor
-              <strong>{{ provider?.razon_social }}</strong
-              >?
-            </p>
-            <p class="alert-warning p-3 rounded">Esta acción no se puede deshacer.</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
-              Cancelar
-            </button>
-            <button type="button" class="btn btn-danger" (click)="confirmDelete()">
-              Eliminar Proveedor
-            </button>
-          </div>
-        </div>
-      </div>
-    }
+    </entity-detail-shell>
   `,
   styles: [
     `
@@ -319,11 +292,11 @@ import {
 export class ProviderDetailComponent implements OnInit {
   private providerService = inject(ProviderService);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
   router = inject(Router);
 
   provider: Provider | null = null;
   loading = true;
-  showDeleteModal = false;
   activeTab: 'general' | 'contacts' | 'documents' | 'history' | 'financial' | 'equipment' =
     'general';
 
@@ -387,21 +360,22 @@ export class ProviderDetailComponent implements OnInit {
   }
 
   deleteProvider(): void {
-    this.showDeleteModal = true;
-  }
+    if (!this.provider) return;
 
-  confirmDelete(): void {
-    if (this.provider) {
-      this.providerService.delete(this.provider.id).subscribe({
-        next: () => {
-          this.router.navigate(['/providers']);
-        },
-        error: (error) => {
-          console.error('Failed to delete provider:', error);
-          this.showDeleteModal = false;
-        },
+    this.confirmSvc
+      .confirmDelete(`el proveedor ${this.provider.razon_social}`)
+      .subscribe((confirmed) => {
+        if (confirmed && this.provider) {
+          this.providerService.delete(this.provider.id).subscribe({
+            next: () => {
+              this.router.navigate(['/providers']);
+            },
+            error: (error) => {
+              console.error('Failed to delete provider:', error);
+            },
+          });
+        }
       });
-    }
   }
 
   viewContracts(): void {

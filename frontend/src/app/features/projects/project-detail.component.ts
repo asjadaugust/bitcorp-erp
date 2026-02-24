@@ -8,6 +8,7 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-project-detail',
@@ -84,31 +85,7 @@ import {
       </ng-container>
     </entity-detail-shell>
 
-    <div *ngIf="showDeleteModal" class="modal" (click)="showDeleteModal = false">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Confirmar Eliminación</h2>
-          <button type="button" class="btn btn-icon" (click)="showDeleteModal = false">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>
-            ¿Estás seguro de que deseas eliminar el proyecto <strong>{{ project?.nombre }}</strong
-            >?
-          </p>
-          <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
-            Cancelar
-          </button>
-          <button type="button" class="btn btn-danger" (click)="confirmDelete()">
-            Eliminar Proyecto
-          </button>
-        </div>
-      </div>
-    </div>
+    </entity-detail-shell>
   `,
   styles: [
     `
@@ -150,76 +127,6 @@ import {
         color: var(--grey-700);
       }
 
-      /* Modal */
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-      }
-
-      .modal-content {
-        background: white;
-        padding: 0;
-        border-radius: var(--radius-md);
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-lg);
-      }
-
-      .modal-header {
-        padding: var(--s-16) var(--s-24);
-        border-bottom: 1px solid var(--grey-200);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        h2 {
-          margin: 0;
-          font-size: 18px;
-        }
-
-        .close {
-          background: none;
-          border: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: var(--grey-500);
-        }
-      }
-
-      .modal-body {
-        padding: var(--s-24);
-
-        p {
-          margin-bottom: var(--s-16);
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
-      }
-
-      .modal-footer {
-        padding: var(--s-16) var(--s-24);
-        border-top: 1px solid var(--grey-200);
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--s-8);
-      }
-
-      .alert {
-        padding: var(--s-12);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-      }
-
       .alert-warning {
         background: var(--semantic-yellow-50);
         color: var(--semantic-yellow-700);
@@ -232,10 +139,10 @@ export class ProjectDetailComponent implements OnInit {
   private projectService = inject(ProjectService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
 
   project: Project | null = null;
   loading = true;
-  showDeleteModal = false;
 
   get header(): EntityDetailHeader {
     return {
@@ -281,21 +188,20 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   deleteProject(): void {
-    this.showDeleteModal = true;
-  }
+    if (!this.project) return;
 
-  confirmDelete(): void {
-    if (this.project) {
-      this.projectService.delete(String(this.project.id)).subscribe({
-        next: () => {
-          this.router.navigate(['/projects']);
-        },
-        error: (error) => {
-          console.error('Failed to delete project:', error);
-          this.showDeleteModal = false;
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete(`el proyecto ${this.project.nombre}`).subscribe((confirmed) => {
+      if (confirmed && this.project) {
+        this.projectService.delete(String(this.project.id)).subscribe({
+          next: () => {
+            this.router.navigate(['/projects']);
+          },
+          error: (error) => {
+            console.error('Failed to delete project:', error);
+          },
+        });
+      }
+    });
   }
 
   assignResources(): void {
