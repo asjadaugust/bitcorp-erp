@@ -1,7 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ValuationService } from '../../core/services/valuation.service';
 import { Valuation, PaymentData, ValuationSummary } from '../../core/models/valuation.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -1751,6 +1753,8 @@ export class ValuationDetailComponent implements OnInit {
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
   paymentService = inject(PaymentService); // public for template access
 
   valuation: Valuation | null = null;
@@ -2141,38 +2145,66 @@ export class ValuationDetailComponent implements OnInit {
   // Workflow actions
   submitDraft(): void {
     if (!this.valuation || this.processingWorkflow) return;
-    if (!confirm('¿Deseas marcar esta valorización como pendiente?')) return;
-
-    this.processingWorkflow = true;
-    this.valuationService.submitDraft(this.valuation.id).subscribe({
-      next: () => {
-        this.processingWorkflow = false;
-        alert('Valorización marcada como pendiente');
-        this.loadValuation(this.valuation!.id);
-      },
-      error: (err) => {
-        this.processingWorkflow = false;
-        alert('Error: ' + (err.error?.error?.message || err.message));
-      },
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Marcar como Pendiente',
+        message: '¿Deseas marcar esta valorización como pendiente para iniciar el proceso?',
+        icon: 'fa-circle-question',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.processingWorkflow = true;
+          this.valuationService.submitDraft(this.valuation!.id).subscribe({
+            next: () => {
+              this.processingWorkflow = false;
+              this.snackBar.open('Valorización marcada como pendiente', 'Cerrar', {
+                duration: 3000,
+              });
+              this.loadValuation(this.valuation!.id);
+            },
+            error: (err) => {
+              this.processingWorkflow = false;
+              this.snackBar.open(
+                'Error: ' + (err.error?.error?.message || err.message),
+                'Cerrar',
+                { duration: 5000 }
+              );
+            },
+          });
+        }
+      });
   }
 
   submitForReview(): void {
     if (!this.valuation || this.processingWorkflow) return;
-    if (!confirm('¿Deseas enviar esta valorización a revisión?')) return;
-
-    this.processingWorkflow = true;
-    this.valuationService.submitForReview(this.valuation.id).subscribe({
-      next: () => {
-        this.processingWorkflow = false;
-        alert('Valorización enviada a revisión exitosamente');
-        this.loadValuation(this.valuation!.id);
-      },
-      error: (err) => {
-        this.processingWorkflow = false;
-        alert('Error al enviar a revisión: ' + (err.error?.error?.message || err.message));
-      },
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Enviar a Revisión',
+        message: '¿Deseas enviar esta valorización a revisión?',
+        icon: 'fa-paper-plane',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.processingWorkflow = true;
+          this.valuationService.submitForReview(this.valuation!.id).subscribe({
+            next: () => {
+              this.processingWorkflow = false;
+              this.snackBar.open('Valorización enviada a revisión exitosamente', 'Cerrar', {
+                duration: 3000,
+              });
+              this.loadValuation(this.valuation!.id);
+            },
+            error: (err) => {
+              this.processingWorkflow = false;
+              this.snackBar.open(
+                'Error al enviar a revisión: ' + (err.error?.error?.message || err.message),
+                'Cerrar',
+                { duration: 5000 }
+              );
+            },
+          });
+        }
+      });
   }
 
   confirmApprove(): void {
@@ -2183,12 +2215,14 @@ export class ValuationDetailComponent implements OnInit {
       next: () => {
         this.processingWorkflow = false;
         this.showApproveModal = false;
-        alert('Valorización aprobada exitosamente');
+        this.snackBar.open('Valorización aprobada exitosamente', 'Cerrar', { duration: 3000 });
         this.loadValuation(this.valuation!.id);
       },
       error: (err) => {
         this.processingWorkflow = false;
-        alert('Error al aprobar: ' + (err.error?.error?.message || err.message));
+        this.snackBar.open('Error al aprobar: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+          duration: 5000,
+        });
       },
     });
   }
@@ -2202,12 +2236,14 @@ export class ValuationDetailComponent implements OnInit {
         this.processingWorkflow = false;
         this.showRejectModal = false;
         this.rejectReason = '';
-        alert('Valorización rechazada');
+        this.snackBar.open('Valorización rechazada', 'Cerrar', { duration: 3000 });
         this.loadValuation(this.valuation!.id);
       },
       error: (err) => {
         this.processingWorkflow = false;
-        alert('Error al rechazar: ' + (err.error?.error?.message || err.message));
+        this.snackBar.open('Error al rechazar: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+          duration: 5000,
+        });
       },
     });
   }
@@ -2221,50 +2257,82 @@ export class ValuationDetailComponent implements OnInit {
         this.processingWorkflow = false;
         this.showMarkPaidModal = false;
         this.resetPaymentData();
-        alert('Valorización marcada como pagada exitosamente');
+        this.snackBar.open('Valorización marcada como pagada exitosamente', 'Cerrar', {
+          duration: 3000,
+        });
         this.loadValuation(this.valuation!.id);
       },
       error: (err) => {
         this.processingWorkflow = false;
-        alert('Error al marcar como pagado: ' + (err.error?.error?.message || err.message));
+        this.snackBar.open(
+          'Error al marcar como pagado: ' + (err.error?.error?.message || err.message),
+          'Cerrar',
+          { duration: 5000 }
+        );
       },
     });
   }
 
   confirmValidate(): void {
     if (!this.valuation || this.processingWorkflow) return;
-    if (!confirm('¿Deseas validar esta valorización?')) return;
-
-    this.processingWorkflow = true;
-    this.valuationService.validate(this.valuation.id).subscribe({
-      next: () => {
-        this.processingWorkflow = false;
-        alert('Valorización validada exitosamente');
-        this.loadValuation(this.valuation!.id);
-      },
-      error: (err) => {
-        this.processingWorkflow = false;
-        alert('Error al validar: ' + (err.error?.error?.message || err.message));
-      },
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Validar Valorización',
+        message: '¿Deseas validar esta valorización?',
+        icon: 'fa-clipboard-check',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.processingWorkflow = true;
+          this.valuationService.validate(this.valuation!.id).subscribe({
+            next: () => {
+              this.processingWorkflow = false;
+              this.snackBar.open('Valorización validada exitosamente', 'Cerrar', { duration: 3000 });
+              this.loadValuation(this.valuation!.id);
+            },
+            error: (err) => {
+              this.processingWorkflow = false;
+              this.snackBar.open(
+                'Error al validar: ' + (err.error?.error?.message || err.message),
+                'Cerrar',
+                { duration: 5000 }
+              );
+            },
+          });
+        }
+      });
   }
 
   confirmReopen(): void {
     if (!this.valuation || this.processingWorkflow) return;
-    if (!confirm('¿Deseas reabrir esta valorización para corrección?')) return;
-
-    this.processingWorkflow = true;
-    this.valuationService.reopen(this.valuation.id).subscribe({
-      next: () => {
-        this.processingWorkflow = false;
-        alert('Valorización reabierta como borrador');
-        this.loadValuation(this.valuation!.id);
-      },
-      error: (err) => {
-        this.processingWorkflow = false;
-        alert('Error al reabrir: ' + (err.error?.error?.message || err.message));
-      },
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Reabrir Valorización',
+        message: '¿Deseas reabrir esta valorización para corrección? Volverá al estado Borrador.',
+        icon: 'fa-rotate-left',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.processingWorkflow = true;
+          this.valuationService.reopen(this.valuation!.id).subscribe({
+            next: () => {
+              this.processingWorkflow = false;
+              this.snackBar.open('Valorización reabierta como borrador', 'Cerrar', {
+                duration: 3000,
+              });
+              this.loadValuation(this.valuation!.id);
+            },
+            error: (err) => {
+              this.processingWorkflow = false;
+              this.snackBar.open(
+                'Error al reabrir: ' + (err.error?.error?.message || err.message),
+                'Cerrar',
+                { duration: 5000 }
+              );
+            },
+          });
+        }
+      });
   }
 
   confirmConformidad(): void {
@@ -2275,12 +2343,14 @@ export class ValuationDetailComponent implements OnInit {
       next: () => {
         this.processingWorkflow = false;
         this.showConformidadModal = false;
-        alert('Conformidad del proveedor registrada');
+        this.snackBar.open('Conformidad del proveedor registrada', 'Cerrar', { duration: 3000 });
         this.loadValuation(this.valuation!.id);
       },
       error: (err) => {
         this.processingWorkflow = false;
-        alert('Error: ' + (err.error?.error?.message || err.message));
+        this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+          duration: 5000,
+        });
       },
     });
   }
@@ -2309,11 +2379,15 @@ export class ValuationDetailComponent implements OnInit {
         this.valuation = updated;
         this.recalculating = false;
         this.loadSummary(this.valuation!.id);
-        alert('Valorización recalculada exitosamente');
+        this.snackBar.open('Valorización recalculada exitosamente', 'Cerrar', { duration: 3000 });
       },
       error: (err) => {
         this.recalculating = false;
-        alert('Error al recalcular: ' + (err.error?.error?.message || err.message));
+        this.snackBar.open(
+          'Error al recalcular: ' + (err.error?.error?.message || err.message),
+          'Cerrar',
+          { duration: 5000 }
+        );
       },
     });
   }
@@ -2333,18 +2407,28 @@ export class ValuationDetailComponent implements OnInit {
         this.loadDiscountEvents(this.valuation!.id);
       },
       error: (err) => {
-        alert('Error: ' + (err.error?.error?.message || err.message));
+        this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+          duration: 5000,
+        });
       },
     });
   }
 
   removeDiscountEvent(eventId: number): void {
-    if (!confirm('¿Eliminar este evento de descuento?')) return;
-    this.valuationService.deleteDiscountEvent(eventId).subscribe({
-      next: () => this.loadDiscountEvents(this.valuation!.id),
-      error: (err) => {
-        alert('Error: ' + (err.error?.error?.message || err.message));
-      },
+    this.confirmSvc.confirmDelete('este evento de descuento').subscribe((confirmed) => {
+      if (confirmed) {
+        this.valuationService.deleteDiscountEvent(eventId).subscribe({
+          next: () => {
+            this.loadDiscountEvents(this.valuation!.id);
+            this.snackBar.open('Evento eliminado', 'Cerrar', { duration: 3000 });
+          },
+          error: (err) => {
+            this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+              duration: 5000,
+            });
+          },
+        });
+      }
     });
   }
 
@@ -2380,7 +2464,7 @@ export class ValuationDetailComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error downloading PDF', err);
-        alert('Error al descargar el PDF');
+        this.snackBar.open('Error al descargar el PDF', 'Cerrar', { duration: 5000 });
       },
     });
   }
@@ -2409,16 +2493,23 @@ export class ValuationDetailComponent implements OnInit {
 
   deleteValuation(): void {
     if (!this.valuation) return;
-    if (confirm('¿Está seguro de eliminar esta valorización?')) {
-      this.valuationService.delete(this.valuation.id).subscribe({
-        next: () => {
-          this.router.navigate(['/equipment/valuations']);
-        },
-        error: (err) => {
-          console.error('Error deleting valuation', err);
-          alert('Error al eliminar la valorización: ' + (err.error?.error?.message || err.message));
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete(`la valorización ${this.valuation.numeroValorizacion}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.valuationService.delete(this.valuation!.id).subscribe({
+          next: () => {
+            this.router.navigate(['/equipment/valuations']);
+            this.snackBar.open('Valorización eliminada', 'Cerrar', { duration: 3000 });
+          },
+          error: (err) => {
+            console.error('Error deleting valuation', err);
+            this.snackBar.open(
+              'Error al eliminar: ' + (err.error?.error?.message || err.message),
+              'Cerrar',
+              { duration: 5000 }
+            );
+          },
+        });
+      }
+    });
   }
 }

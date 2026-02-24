@@ -1,7 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ValuationService } from '../../core/services/valuation.service';
 import { Valuation } from '../../core/models/valuation.model';
 import { ExcelExportService } from '../../core/services/excel-export.service';
@@ -355,6 +357,8 @@ export class ValuationListComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private excelService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   valuations: Valuation[] = [];
   loading = false;
@@ -499,18 +503,21 @@ export class ValuationListComponent implements OnInit {
   }
 
   deleteValuation(val: Valuation): void {
-    if (confirm('¿Está seguro de eliminar esta valorización?')) {
-      this.loading = true;
-      this.valuationService.delete(val.id).subscribe({
-        next: () => {
-          this.loadValuations();
-        },
-        error: (err) => {
-          this.loading = false;
-          alert('Error al eliminar: ' + err.message);
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete(`la valorización ${val.numeroValorizacion}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.loading = true;
+        this.valuationService.delete(val.id).subscribe({
+          next: () => {
+            this.loadValuations();
+            this.snackBar.open('Valorización eliminada correctamente', 'Cerrar', { duration: 3000 });
+          },
+          error: (err) => {
+            this.loading = false;
+            this.snackBar.open('Error al eliminar: ' + err.message, 'Cerrar', { duration: 3000 });
+          },
+        });
+      }
+    });
   }
 
   createValuation(): void {
@@ -547,11 +554,15 @@ export class ValuationListComponent implements OnInit {
           this.closeGenerationModal();
           this.loadValuations();
           const count = Array.isArray(res) ? res.length : res?.data?.length || 0;
-          alert(`Se generaron/actualizaron ${count} valorizaciones.`);
+          this.snackBar.open(`Se generaron/actualizaron ${count} valorizaciones.`, 'Cerrar', {
+            duration: 5000,
+          });
         },
         error: (err) => {
           this.generating = false;
-          alert('Error al generar valorizaciones: ' + err.message);
+          this.snackBar.open('Error al generar valorizaciones: ' + err.message, 'Cerrar', {
+            duration: 5000,
+          });
         },
       });
   }
@@ -596,7 +607,7 @@ export class ValuationListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.valuations.length === 0) {
-      alert('No hay valorizaciones para exportar');
+      this.snackBar.open('No hay valorizaciones para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -622,7 +633,7 @@ export class ValuationListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.valuations.length === 0) {
-      alert('No hay valorizaciones para exportar');
+      this.snackBar.open('No hay valorizaciones para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

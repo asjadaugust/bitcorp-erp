@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ValuationService } from '../../core/services/valuation.service';
@@ -11,6 +12,7 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 import {
@@ -39,6 +41,7 @@ import {
       icon="fa-file-invoice-dollar"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"></app-export-dropdown>
@@ -312,10 +315,12 @@ export class ValuationRegistryComponent implements OnInit {
   private valuationService = inject(ValuationService);
   private router = inject(Router);
   private excelService = inject(ExcelExportService);
+  private snackBar = inject(MatSnackBar);
 
   registryData: any[] = [];
   summary: any = null;
   loading = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   totalRecords = 0;
 
   breadcrumbs = [
@@ -459,7 +464,7 @@ export class ValuationRegistryComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.registryData.length === 0) {
-      alert('No hay datos para exportar');
+      this.snackBar.open('No hay datos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
     this.excelService.exportToExcel(this.getExportData(), {
@@ -470,7 +475,7 @@ export class ValuationRegistryComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.registryData.length === 0) {
-      alert('No hay datos para exportar');
+      this.snackBar.open('No hay datos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
     this.excelService.exportToCSV(this.getExportData(), 'registro-valorizaciones');

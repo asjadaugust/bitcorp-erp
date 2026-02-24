@@ -1,7 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ValuationService } from '../../core/services/valuation.service';
 import { ContractService } from '../../core/services/contract.service';
 import { EquipmentService } from '../../core/services/equipment.service';
@@ -326,6 +328,8 @@ export class ValuationFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private errorHandler = inject(FormErrorHandlerService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   valuationForm: FormGroup;
   isEditMode = false;
@@ -512,7 +516,9 @@ export class ValuationFormComponent implements OnInit {
     const fechaInicio = this.valuationForm.get('fechaInicio')?.value;
 
     if (!contractId || !fechaInicio) {
-      alert('Seleccione un contrato y fecha de inicio para calcular');
+      this.snackBar.open('Seleccione un contrato y fecha de inicio para calcular', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -527,21 +533,25 @@ export class ValuationFormComponent implements OnInit {
           this.valuationForm.patchValue({
             totalValorizado: response.data.total_estimated,
           });
-          alert(
-            `Cálculo completado:\n` +
+          this.confirmSvc.alert({
+            title: 'Cálculo completado',
+            message:
               `Horas: ${response.data.total_hours}\n` +
               `Días: ${response.data.total_days}\n` +
               `Combustible: ${response.data.total_fuel}\n` +
               `Costo Base: ${response.data.base_cost}\n` +
-              `Exceso: ${response.data.excess_cost}`
-          );
+              `Exceso: ${response.data.excess_cost}`,
+            icon: 'fa-circle-check',
+          });
         }
         this.loading = false;
       },
       error: (err) => {
         console.error('Error calculating', err);
-        alert(
-          'Error al calcular valorización. Verifique que existan partes diarios aprobados para este periodo.'
+        this.snackBar.open(
+          'Error al calcular valorización. Verifique que existan partes diarios aprobados para este periodo.',
+          'Cerrar',
+          { duration: 5000 }
         );
         this.loading = false;
       },
