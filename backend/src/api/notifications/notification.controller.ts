@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import { NotificationService } from '../../services/notification.service';
 import { sendSuccess, sendError } from '../../utils/api-response';
+import { toNotificacionDto } from '../../types/dto/notificacion.dto';
 
 export class NotificationController {
   private notificationService = new NotificationService();
@@ -9,12 +10,12 @@ export class NotificationController {
   getUserNotifications = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = (req as any).user.id_usuario;
-      const notifications = await this.notificationService.getUserNotifications(userId);
-      const unreadCount = await this.notificationService.getUnreadCount(userId);
+      const notificaciones = await this.notificationService.getUserNotifications(userId);
+      const totalNoLeidas = await this.notificationService.getUnreadCount(userId);
 
       sendSuccess(res, {
-        notifications,
-        unreadCount,
+        notificaciones: notificaciones.map(toNotificacionDto),
+        total_no_leidas: totalNoLeidas,
       });
     } catch (error: any) {
       sendError(

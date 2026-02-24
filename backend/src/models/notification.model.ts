@@ -14,6 +14,19 @@ export type NotificationType =
   | 'SCHEDULE_ASSIGNMENT'
   | 'SYSTEM';
 
+export const TIPOS_NOTIFICACION: NotificationType[] = [
+  'info',
+  'warning',
+  'error',
+  'success',
+  'approval_required',
+  'approval_completed',
+  'CONTRACT_EXPIRY',
+  'MAINTENANCE_DUE',
+  'SCHEDULE_ASSIGNMENT',
+  'SYSTEM',
+];
+
 @Entity('notificaciones', { schema: 'public' })
 export class Notification extends BaseModel {
   @Column({ name: 'usuario_id' })

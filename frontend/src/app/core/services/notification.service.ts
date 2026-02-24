@@ -1,21 +1,39 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable, tap } from 'rxjs';
+import { tap } from 'rxjs';
 
-export interface Notification {
+export interface Notificacion {
   id: number;
-  type:
+  usuario_id: number;
+  tipo:
+    | 'info'
+    | 'warning'
+    | 'error'
+    | 'success'
+    | 'approval_required'
+    | 'approval_completed'
     | 'CONTRACT_EXPIRY'
     | 'MAINTENANCE_DUE'
     | 'SCHEDULE_ASSIGNMENT'
-    | 'SYSTEM'
-    | 'CERTIFICATION_EXPIRY';
-  title: string;
-  message: string;
-  read: boolean;
+    | 'SYSTEM';
+  titulo: string;
+  mensaje: string;
+  url: string | null;
+  leido: boolean;
+  leido_at: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: Record<string, any> | null;
   created_at: string;
-  data?: any;
+  updated_at: string;
+}
+
+interface NotificacionesResponse {
+  success: boolean;
+  data: {
+    notificaciones: Notificacion[];
+    total_no_leidas: number;
+  };
 }
 
 @Injectable({
@@ -25,57 +43,83 @@ export class NotificationService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/notifications`;
 
-  // Signals for reactive state
-  notifications = signal<Notification[]>([]);
-  unreadCount = signal<number>(0);
+  /** Lista reactiva de notificaciones (Signal) */
+  notificaciones = signal<Notificacion[]>([]);
+  /** Cantidad de notificaciones no leídas (Signal) */
+  totalNoLeidas = signal<number>(0);
+
+  // Alias para compatibilidad con main-nav existente
+  get unreadCount() {
+    return this.totalNoLeidas;
+  }
+  get notifications() {
+    return this.notificaciones;
+  }
 
   constructor() {
-    // Start polling
-    this.startPolling();
+    this.iniciarPolling();
   }
 
-  private startPolling() {
-    this.fetchNotifications();
-    setInterval(() => {
-      this.fetchNotifications();
-    }, 60000); // Poll every 60 seconds
+  private iniciarPolling() {
+    this.obtenerNotificaciones();
+    setInterval(() => this.obtenerNotificaciones(), 60_000);
   }
 
+  obtenerNotificaciones() {
+    this.http.get<NotificacionesResponse>(this.apiUrl).subscribe({
+      next: (res) => {
+        if (res?.data) {
+          this.notificaciones.set(res.data.notificaciones ?? []);
+          this.totalNoLeidas.set(res.data.total_no_leidas ?? 0);
+        }
+      },
+      error: (err) => console.error('Error al obtener notificaciones:', err),
+    });
+  }
+
+  // Alias para compatibilidad con componentes existentes
   fetchNotifications() {
-    this.http
-      .get<{
-        success: boolean;
-        data: { notifications: Notification[]; unreadCount: number };
-      }>(this.apiUrl)
-      .subscribe({
-        next: (res) => {
-          if (res && res.data) {
-            this.notifications.set(res.data.notifications || []);
-            this.unreadCount.set(res.data.unreadCount || 0);
-          }
-        },
-        error: (err) => console.error('Error fetching notifications:', err),
-      });
+    this.obtenerNotificaciones();
   }
 
-  markAsRead(id: number) {
+  marcarLeida(id: number) {
     return this.http.patch(`${this.apiUrl}/${id}/read`, {}).pipe(
       tap(() => {
-        // Optimistic update
-        this.notifications.update((list) =>
-          list.map((n) => (n.id === id ? { ...n, read: true } : n))
+        this.notificaciones.update((lista) =>
+          lista.map((n) => (n.id === id ? { ...n, leido: true } : n))
         );
-        this.unreadCount.update((count) => Math.max(0, count - 1));
+        this.totalNoLeidas.update((count) => Math.max(0, count - 1));
       })
     );
   }
 
-  markAllAsRead() {
+  // Alias para compatibilidad con componentes existentes
+  markAsRead(id: number) {
+    return this.marcarLeida(id);
+  }
+
+  marcarTodasLeidas() {
     return this.http.patch(`${this.apiUrl}/read-all`, {}).pipe(
       tap(() => {
-        // Optimistic update
-        this.notifications.update((list) => list.map((n) => ({ ...n, read: true })));
-        this.unreadCount.set(0);
+        this.notificaciones.update((lista) => lista.map((n) => ({ ...n, leido: true })));
+        this.totalNoLeidas.set(0);
+      })
+    );
+  }
+
+  // Alias para compatibilidad con componentes existentes
+  markAllAsRead() {
+    return this.marcarTodasLeidas();
+  }
+
+  eliminar(id: number) {
+    return this.http.delete(`${this.apiUrl}/${id}`).pipe(
+      tap(() => {
+        const notif = this.notificaciones().find((n) => n.id === id);
+        this.notificaciones.update((lista) => lista.filter((n) => n.id !== id));
+        if (notif && !notif.leido) {
+          this.totalNoLeidas.update((count) => Math.max(0, count - 1));
+        }
       })
     );
   }

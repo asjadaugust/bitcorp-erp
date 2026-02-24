@@ -272,6 +272,14 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/checklists/checklists.routes').then((m) => m.checklistRoutes),
       },
+      // Notifications
+      {
+        path: 'notificaciones',
+        loadComponent: () =>
+          import('./features/notificaciones/notificaciones-list.component').then(
+            (m) => m.NotificacionesListComponent
+          ),
+      },
     ],
   },
 

@@ -22,7 +22,11 @@ interface NavItem {
       <div class="sidebar-content">
         <ul class="nav-list">
           <li *ngFor="let item of mainNavItems" class="nav-item">
-            <div class="nav-link-wrapper" [class.has-children]="item.children && item.children.length > 0" [class.active]="isParentActive(item)">
+            <div
+              class="nav-link-wrapper"
+              [class.has-children]="item.children && item.children.length > 0"
+              [class.active]="isParentActive(item)"
+            >
               <a
                 [routerLink]="item.route"
                 routerLinkActive="active"
@@ -35,17 +39,24 @@ interface NavItem {
                 <i [class]="item.icon"></i>
                 <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
               </a>
-              <button 
-                *ngIf="item.children && item.children.length > 0 && !collapsed" 
+              <button
+                *ngIf="item.children && item.children.length > 0 && !collapsed"
                 class="expand-btn"
                 (click)="toggleExpand(item, $event)"
               >
-                <i class="fa-solid" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
+                <i
+                  class="fa-solid"
+                  [class.fa-chevron-down]="!item.expanded"
+                  [class.fa-chevron-up]="item.expanded"
+                ></i>
               </button>
             </div>
 
             <!-- Children List -->
-            <ul *ngIf="item.children && (item.expanded || isParentActive(item)) && !collapsed" class="children-list">
+            <ul
+              *ngIf="item.children && (item.expanded || isParentActive(item)) && !collapsed"
+              class="children-list"
+            >
               <li *ngFor="let child of item.children" class="child-item">
                 <a
                   [routerLink]="child.route"
@@ -221,7 +232,7 @@ interface NavItem {
         height: 100%;
         display: flex;
         align-items: center;
-        
+
         &:hover {
           color: var(--primary-700);
         }
@@ -365,18 +376,18 @@ export class SidebarComponent {
 
     // Nivel 3
     { label: 'SST', route: '/sst', icon: 'fa-solid fa-user-shield' },
-    { 
-      label: 'Administración', 
-      route: '/administracion', 
-      icon: 'fa-solid fa-briefcase'
+    {
+      label: 'Administración',
+      route: '/administracion',
+      icon: 'fa-solid fa-briefcase',
     },
     { label: 'RRHH', route: '/rrhh', icon: 'fa-solid fa-users-gear' },
     { label: 'Logística', route: '/logistics', icon: 'fa-solid fa-boxes-stacked' },
     { label: 'Proveedores', route: '/providers', icon: 'fa-solid fa-handshake' },
-    { 
-      label: 'Equipo Mecánico', 
-      route: '/equipment', 
-      icon: 'fa-solid fa-tractor'
+    {
+      label: 'Equipo Mecánico',
+      route: '/equipment',
+      icon: 'fa-solid fa-tractor',
     },
     { label: 'Operadores', route: '/operators', icon: 'fa-solid fa-id-card' },
     { label: 'Checklists', route: '/checklists', icon: 'fa-solid fa-clipboard-check' },
@@ -385,6 +396,11 @@ export class SidebarComponent {
 
   // Settings items (bottom of sidebar)
   settingsNavItems: NavItem[] = [
+    {
+      label: 'Notificaciones',
+      route: '/notificaciones',
+      icon: 'fa-solid fa-bell',
+    },
     {
       label: 'Usuarios',
       route: '/users',
@@ -408,7 +424,7 @@ export class SidebarComponent {
   isParentActive(item: NavItem): boolean {
     if (!item.children) return false;
     const currentRoute = window.location.pathname;
-    return item.children.some(child => currentRoute.startsWith(child.route));
+    return item.children.some((child) => currentRoute.startsWith(child.route));
   }
 
   hasAccess(item: NavItem): boolean {
