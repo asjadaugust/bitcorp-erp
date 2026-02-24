@@ -109,4 +109,8 @@ export class InventoryService {
       })
       .pipe(map((response) => response.data || []));
   }
+
+  deleteProduct(id: string | number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
+  }
 }

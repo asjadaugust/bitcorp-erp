@@ -18,15 +18,10 @@
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-      <button
-        *ngIf="reportId"
-        class="btn btn-secondary"
-        (click)="descargarPdf()"
-        [disabled]="downloadingPdf"
-        title="Descargar PDF"
-        data-testid="btn-download-pdf"
-      >
-        <i class="fa-solid" [class.fa-file-pdf]="!downloadingPdf" [class.fa-spinner]="downloadingPdf" [class.fa-spin]="downloadingPdf"></i>
+      <button *ngIf="!!reportId" class="btn btn-secondary" (click)="descargarPdf()" [disabled]="downloadingPdf"
+        title="Descargar PDF" data-testid="btn-download-pdf">
+        <i class="fa-solid" [class.fa-file-pdf]="!downloadingPdf" [class.fa-spinner]="downloadingPdf"
+          [class.fa-spin]="downloadingPdf"></i>
         {{ downloadingPdf ? 'Descargando...' : 'Descargar PDF' }}
       </button>
       <button class="btn btn-secondary" (click)="saveAsDraft()" [disabled]="saving || loading" *ngIf="!reportId">
@@ -128,25 +123,14 @@
               <span class="field-hint">(auto-calculado por tipo de equipo)</span>
             </label>
             <div class="precalentamiento-row">
-              <input
-                id="horas_precalentamiento"
-                type="number"
-                formControlName="horas_precalentamiento"
-                class="form-control"
-                min="0"
-                max="24"
-                step="0.25"
-                [attr.readonly]="!precalentamientoOverride ? true : null"
-                data-testid="horas-precalentamiento-input"
-              />
-              <button
-                type="button"
-                class="btn btn-sm btn-ghost override-toggle"
-                (click)="togglePrecalentamientoOverride()"
-                data-testid="precalentamiento-override-btn"
-                [title]="precalentamientoOverride ? 'Bloquear valor automático' : 'Editar manualmente'"
-              >
-                <i class="fa-solid" [class.fa-lock]="!precalentamientoOverride" [class.fa-lock-open]="precalentamientoOverride"></i>
+              <input id="horas_precalentamiento" type="number" formControlName="horas_precalentamiento"
+                class="form-control" min="0" max="24" step="0.25"
+                [attr.readonly]="!precalentamientoOverride ? true : null" data-testid="horas-precalentamiento-input" />
+              <button type="button" class="btn btn-sm btn-ghost override-toggle"
+                (click)="togglePrecalentamientoOverride()" data-testid="precalentamiento-override-btn"
+                [title]="precalentamientoOverride ? 'Bloquear valor automático' : 'Editar manualmente'">
+                <i class="fa-solid" [class.fa-lock]="!precalentamientoOverride"
+                  [class.fa-lock-open]="precalentamientoOverride"></i>
                 {{ precalentamientoOverride ? 'Bloquear' : 'Editar' }}
               </button>
             </div>
@@ -199,13 +183,8 @@
               N° Vale Combustible
               <span class="field-hint">(CORP-LA-F-004 — opcional)</span>
             </label>
-            <input
-              id="numero_vale_combustible"
-              type="text"
-              formControlName="numero_vale_combustible"
-              class="form-control"
-              placeholder="Ej. V-2025-001234"
-            />
+            <input id="numero_vale_combustible" type="text" formControlName="numero_vale_combustible"
+              class="form-control" placeholder="Ej. V-2025-001234" />
           </div>
         </div>
       </div>

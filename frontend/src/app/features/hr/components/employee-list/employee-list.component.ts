@@ -18,6 +18,8 @@ import {
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import { ConfirmService } from '../../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-employee-list',
@@ -153,6 +155,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 export class EmployeeListComponent implements OnInit {
   private employeeService = inject(EmployeeService);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   employees: Employee[] = [];
   loading = false;
@@ -200,6 +204,7 @@ export class EmployeeListComponent implements OnInit {
       error: (err) => {
         console.error('Error loading employees', err);
         this.loading = false;
+        this.snackBar.open('Error al cargar empleados', 'Cerrar', { duration: 3000 });
       },
     });
   }
@@ -218,13 +223,21 @@ export class EmployeeListComponent implements OnInit {
   }
 
   deleteEmployee(employee: Employee): void {
-    if (confirm(`¿Está seguro de eliminar a ${employee.nombres} ${employee.apellido_paterno}?`)) {
-      this.employeeService.deleteEmployee(employee.dni).subscribe({
-        next: () => {
-          this.loadEmployees();
-        },
-        error: (err) => console.error('Error deleting employee', err),
+    this.confirmSvc
+      .confirmDelete(`${employee.nombres} ${employee.apellido_paterno}`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.employeeService.deleteEmployee(employee.dni).subscribe({
+            next: () => {
+              this.loadEmployees();
+              this.snackBar.open('Empleado eliminado correctamente', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+              console.error('Error deleting employee', err);
+              this.snackBar.open('Error al eliminar empleado', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 }

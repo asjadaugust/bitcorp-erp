@@ -14,6 +14,7 @@ import {
 } from '../../core/services/solicitud-equipo.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-solicitud-equipo-form',
@@ -193,6 +194,7 @@ export class SolicitudEquipoFormComponent implements OnInit {
   private service = inject(SolicitudEquipoService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
 
   solicitudForm: FormGroup;
   isEdit = false;
@@ -246,7 +248,23 @@ export class SolicitudEquipoFormComponent implements OnInit {
   }
 
   cancelar() {
-    this.router.navigate(['/equipment/solicitudes']);
+    if (this.solicitudForm.dirty) {
+      this.confirmSvc
+        .confirm({
+          title: 'Confirmar Cancelación',
+          message: '¿Está seguro de cancelar? Los cambios no guardados se perderán.',
+          icon: 'fa-triangle-exclamation',
+          confirmLabel: 'Salir sin guardar',
+          isDanger: true,
+        })
+        .subscribe((confirmed) => {
+          if (confirmed) {
+            this.router.navigate(['/equipment/solicitudes']);
+          }
+        });
+    } else {
+      this.router.navigate(['/equipment/solicitudes']);
+    }
   }
 
   guardar() {

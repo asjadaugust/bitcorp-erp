@@ -10,16 +10,76 @@ const router = Router();
 const authController = new AuthController();
 
 /**
- * @route   POST /api/auth/login
- * @desc    Login user and get tokens (Simple version bypassing TypeORM)
- * @access  Public
+ * @openapi
+ * /api/auth/login:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Login user
+ *     description: Authenticate user with username and password to receive access and refresh tokens.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: admin
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: admin123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     access_token:
+ *                       type: string
+ *                     refresh_token:
+ *                       type: string
+ *                     user:
+ *                       type: object
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/login', validateDto(LoginDto), simpleLogin);
 
 /**
- * @route   GET /api/auth/me
- * @desc    Get current user info (Simple version)
- * @access  Public (token verification included)
+ * @openapi
+ * /api/auth/me:
+ *   get:
+ *     tags:
+ *       - Auth
+ *     summary: Get current user
+ *     description: Retrieve information about the currently authenticated user.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
  */
 router.get('/me', simpleMe);
 

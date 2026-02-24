@@ -17,6 +17,8 @@ import {
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import { ConfirmService } from '../../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-user-list',
@@ -364,6 +366,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 export class UserListComponent implements OnInit {
   private userService = inject(UserManagementService);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   users: ManagedUser[] = [];
   loading = false;
@@ -489,19 +493,37 @@ export class UserListComponent implements OnInit {
   }
 
   toggleActive(user: ManagedUser): void {
-    this.userService.toggleActive(user.id).subscribe({
-      next: (updated) => {
-        const idx = this.users.findIndex((u) => u.id === user.id);
-        if (idx >= 0) {
-          this.users[idx] = updated;
-          this.users = [...this.users];
+    const action = user.is_active ? 'desactivar' : 'activar';
+    this.confirmSvc
+      .confirm({
+        title: 'Confirmar Acción',
+        message: `¿Está seguro de que desea ${action} al usuario ${user.username}?`,
+        icon: user.is_active ? 'fa-ban' : 'fa-check',
+        confirmLabel: user.is_active ? 'Desactivar' : 'Activar',
+        isDanger: user.is_active,
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.userService.toggleActive(user.id).subscribe({
+            next: (updated) => {
+              const idx = this.users.findIndex((u) => u.id === user.id);
+              if (idx >= 0) {
+                this.users[idx] = updated;
+                this.users = [...this.users];
+              }
+              this.snackBar.open(
+                `Usuario ${action === 'desactivar' ? 'desactivado' : 'activado'} correctamente`,
+                'Cerrar',
+                { duration: 3000 }
+              );
+            },
+            error: (err) => {
+              const msg = err.error?.error?.message || `Error al ${action} el usuario`;
+              this.snackBar.open(msg, 'Cerrar', { duration: 3000 });
+            },
+          });
         }
-      },
-      error: (err) => {
-        const msg = err.error?.error?.message || 'Error al cambiar estado del usuario';
-        alert(msg);
-      },
-    });
+      });
   }
 
   openPasswordReset(user: ManagedUser): void {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ActaDevolucionService, ActaDevolucion } from '../../core/services/acta-devolucion.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Breadcrumb } from '../../shared/components/page-layout/page-layout.component';
 import {
   EntityDetailShellComponent,
@@ -262,40 +263,40 @@ import {
 
       .detail-tabs {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
         margin-bottom: var(--s-24);
-        border-bottom: 1px solid var(--grey-200);
 
         .tab-link {
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 12px 24px;
-          border: none;
-          background: none;
-          color: var(--grey-500);
-          font-weight: 600;
+          gap: 6px;
+          padding: 8px 16px;
+          border-radius: 20px;
+          border: 1px solid var(--grey-200);
+          background: var(--neutral-0);
+          color: var(--grey-600);
+          font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          border-bottom: 3px solid transparent;
-          font-size: 0.9rem;
-          height: 48px;
-          margin-bottom: -1px;
+          transition: all 0.2s;
+          font-size: 13px;
 
           i {
-            opacity: 0.6;
-            font-size: 1.1em;
+            opacity: 0.7;
+            font-size: 13px;
           }
 
           &:hover {
-            color: var(--primary-600);
-            background: var(--primary-50);
+            background: var(--grey-50);
+            border-color: var(--grey-300);
+            color: var(--primary-700);
           }
 
           &.active {
-            color: var(--primary-600);
-            border-bottom-color: var(--primary-600);
-            background: rgba(59, 130, 246, 0.05);
+            background: var(--primary-50);
+            border-color: var(--primary-200);
+            color: var(--primary-700);
+            font-weight: 600;
             i {
               opacity: 1;
             }
@@ -520,9 +521,10 @@ import {
   ],
 })
 export class ActaDevolucionDetailComponent implements OnInit {
-  private service = inject(ActaDevolucionService);
+  private svc = inject(ActaDevolucionService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
 
   acta: ActaDevolucion | null = null;
   loading = false;
@@ -560,7 +562,7 @@ export class ActaDevolucionDetailComponent implements OnInit {
 
   cargar(id: number) {
     this.loading = true;
-    this.service.obtener(id).subscribe({
+    this.svc.obtener(id).subscribe({
       next: (a) => {
         this.acta = a;
         this.updateHeaderAndAudit();
@@ -597,18 +599,28 @@ export class ActaDevolucionDetailComponent implements OnInit {
 
   enviarParaFirma() {
     if (!this.acta) return;
-    if (!confirm(`¿Enviar el acta ${this.acta.codigo} para firma?`)) return;
-    this.service.enviarParaFirma(this.acta.id).subscribe({
-      next: (a) => {
-        this.acta = a;
-        this.updateHeaderAndAudit();
-      },
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Enviar para Firma',
+        message: `¿Desea enviar el acta ${this.acta.codigo} para firma?`,
+        icon: 'fa-paper-plane',
+        confirmLabel: 'Enviar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.svc.enviarParaFirma(this.acta!.id).subscribe({
+            next: (a) => {
+              this.acta = a;
+              this.updateHeaderAndAudit();
+            },
+          });
+        }
+      });
   }
 
   firmar() {
     if (!this.acta) return;
-    this.service.firmar(this.acta.id, this.firmaDto).subscribe({
+    this.svc.firmar(this.acta.id, this.firmaDto).subscribe({
       next: (a) => {
         this.acta = a;
         this.mostrarFirma = false;
@@ -621,12 +633,24 @@ export class ActaDevolucionDetailComponent implements OnInit {
     if (!this.acta) return;
     const obs = prompt('Motivo de anulación:');
     if (!obs) return;
-    this.service.anular(this.acta.id, obs).subscribe({
-      next: (a) => {
-        this.acta = a;
-        this.updateHeaderAndAudit();
-      },
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Anular Acta',
+        message: `¿Está seguro de anular el acta ${this.acta.codigo}? Esta acción no se puede deshacer.`,
+        icon: 'fa-ban',
+        confirmLabel: 'Anular',
+        isDanger: true,
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.svc.anular(this.acta!.id, obs).subscribe({
+            next: (a) => {
+              this.acta = a;
+              this.updateHeaderAndAudit();
+            },
+          });
+        }
+      });
   }
 
   tipoLabel(tipo: string): string {

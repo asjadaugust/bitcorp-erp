@@ -1,7 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ContractService } from '../../core/services/contract.service';
 import { Contract } from '../../core/models/contract.model';
 
@@ -20,6 +22,7 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
 
 @Component({
   selector: 'app-contract-list',
@@ -40,6 +43,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       icon="fa-file-contract"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown [disabled]="contracts.length === 0" (export)="handleExport($event)">
@@ -99,11 +103,11 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           </button>
           <button
             type="button"
-            class="btn-icon"
-            (click)="editContract(row); $event.stopPropagation()"
-            title="Editar"
+            class="btn-icon text-danger"
+            (click)="deleteContract(row); $event.stopPropagation()"
+            title="Eliminar"
           >
-            <i class="fa-solid fa-pen"></i>
+            <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       </ng-template>
@@ -180,6 +184,11 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         border-radius: var(--s-4);
       }
 
+      .btn-icon.text-danger:hover {
+        background: var(--error-100);
+        color: var(--error-600);
+      }
+
       .text-warning {
         color: #f59e0b;
       }
@@ -191,9 +200,12 @@ export class ContractListComponent implements OnInit {
   private excelService = inject(ExcelExportService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   contracts: Contract[] = [];
   loading = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   filters = { estado: '', search: '' };
 
   breadcrumbs = [
@@ -312,6 +324,24 @@ export class ContractListComponent implements OnInit {
     this.router.navigate(['new'], { relativeTo: this.route });
   }
 
+  deleteContract(contract: Contract): void {
+    this.confirmSvc
+      .confirmDelete(`el contrato ${contract.numero_contrato}`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.contractService.delete(contract.id.toString()).subscribe({
+            next: () => {
+              this.loadContracts();
+              this.snackBar.open('Contrato eliminado correctamente', 'Cerrar', { duration: 3000 });
+            },
+            error: () => {
+              this.snackBar.open('Error al eliminar contrato', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
+      });
+  }
+
   isExpiring(dateStr: string): boolean {
     if (!dateStr) return false;
     const endDate = new Date(dateStr);
@@ -331,7 +361,7 @@ export class ContractListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.contracts.length === 0) {
-      alert('No hay contratos para exportar');
+      this.snackBar.open('No hay contratos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -365,7 +395,7 @@ export class ContractListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.contracts.length === 0) {
-      alert('No hay contratos para exportar');
+      this.snackBar.open('No hay contratos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

@@ -6,6 +6,7 @@ import {
   SolicitudEquipoService,
   SolicitudEquipo,
 } from '../../core/services/solicitud-equipo.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -23,6 +24,7 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 @Component({
   selector: 'app-solicitud-equipo-list',
@@ -43,6 +45,7 @@ import {
       icon="fa-file-invoice"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" routerLink="new">
@@ -110,7 +113,7 @@ import {
             *ngIf="row.estado === 'BORRADOR'"
             class="btn-icon text-success"
             title="Enviar para aprobación"
-            (click)="enviar(row)"
+            (click)="enviarAprobacion($event, row)"
           >
             <i class="fa-solid fa-paper-plane"></i>
           </button>
@@ -243,11 +246,13 @@ import {
   ],
 })
 export class SolicitudEquipoListComponent implements OnInit {
-  private service = inject(SolicitudEquipoService);
+  private svc = inject(SolicitudEquipoService);
+  private confirmSvc = inject(ConfirmService);
   private router = inject(Router);
 
   solicitudes: SolicitudEquipo[] = [];
   loading = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   filtroEstado = '';
   page = 1;
   limit = 20;
@@ -301,7 +306,7 @@ export class SolicitudEquipoListComponent implements OnInit {
     const filters: any = { page: this.page, limit: this.limit };
     if (this.filtroEstado) filters.estado = this.filtroEstado;
 
-    this.service.listar(filters).subscribe({
+    this.svc.listar(filters).subscribe({
       next: (res) => {
         this.solicitudes = res.data ?? [];
         this.total = res.pagination?.total ?? 0;
@@ -372,20 +377,51 @@ export class SolicitudEquipoListComponent implements OnInit {
     this.router.navigate(['/equipment/solicitudes', id]);
   }
 
-  enviar(s: SolicitudEquipo) {
-    if (!confirm(`¿Enviar la solicitud ${s.codigo} para aprobación?`)) return;
-    this.service.enviar(s.id).subscribe({ next: () => this.cargar() });
+  enviarAprobacion(event: Event, s: SolicitudEquipo) {
+    event.stopPropagation();
+    this.confirmSvc
+      .confirm({
+        title: 'Enviar Solicitud',
+        message: `¿Desea enviar la solicitud ${s.codigo} para aprobación?`,
+        icon: 'fa-paper-plane',
+        confirmLabel: 'Enviar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.svc.enviar(s.id).subscribe(() => this.cargar());
+        }
+      });
   }
 
   aprobar(s: SolicitudEquipo) {
-    const obs = prompt(`Observaciones para aprobación de ${s.codigo} (opcional):`);
-    if (obs === null) return;
-    this.service.aprobar(s.id, obs || undefined).subscribe({ next: () => this.cargar() });
+    this.confirmSvc
+      .prompt({
+        title: 'Aprobar Solicitud',
+        message: `Ingrese observaciones para la aprobación de la solicitud ${s.codigo} (opcional):`,
+        icon: 'fa-check-circle',
+        confirmLabel: 'Aprobar',
+      })
+      .subscribe((obs) => {
+        if (obs !== null) {
+          this.svc.aprobar(s.id, obs || undefined).subscribe({ next: () => this.cargar() });
+        }
+      });
   }
 
   rechazar(s: SolicitudEquipo) {
-    const obs = prompt(`Motivo de rechazo para ${s.codigo}:`);
-    if (!obs) return;
-    this.service.rechazar(s.id, obs).subscribe({ next: () => this.cargar() });
+    this.confirmSvc
+      .prompt({
+        title: 'Rechazar Solicitud',
+        message: `Ingrese el motivo de rechazo para la solicitud ${s.codigo}:`,
+        icon: 'fa-times-circle',
+        confirmLabel: 'Rechazar',
+        isDanger: true,
+        inputRequired: true,
+      })
+      .subscribe((obs) => {
+        if (obs) {
+          this.svc.rechazar(s.id, obs).subscribe({ next: () => this.cargar() });
+        }
+      });
   }
 }

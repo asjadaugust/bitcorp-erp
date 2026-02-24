@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
 import { ProjectService } from '../../core/services/project.service';
 import { Project } from '../../core/models/project.model';
@@ -22,6 +23,7 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-project-list',
@@ -110,6 +112,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           >
             <i class="fa-solid fa-pen"></i>
           </button>
+          <button
+            class="btn-icon delete-btn"
+            (click)="deleteProject(row); $event.stopPropagation()"
+            title="Eliminar"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -178,6 +187,11 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         font-size: 10px;
         color: var(--grey-400);
       }
+
+      .btn-icon.delete-btn:hover {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-600);
+      }
     `,
     `
       .actions-container {
@@ -192,6 +206,8 @@ export class ProjectListComponent implements OnInit {
   projectService = inject(ProjectService);
   private excelService = inject(ExcelExportService);
   private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private confirmSvc = inject(ConfirmService);
 
   projects: Project[] = [];
   loading = false;
@@ -305,6 +321,25 @@ export class ProjectListComponent implements OnInit {
     this.router.navigate(['/operaciones/projects/new']);
   }
 
+  deleteProject(project: Project): void {
+    this.confirmSvc.confirmDelete(`el proyecto ${project.nombre}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.loading = true;
+        this.projectService.delete(project.id.toString()).subscribe({
+          next: () => {
+            this.snackBar.open('Proyecto eliminado correctamente', 'Cerrar', { duration: 3000 });
+            this.loadProjects();
+          },
+          error: (err) => {
+            console.error('Error deleting project', err);
+            this.loading = false;
+            this.snackBar.open('Error al eliminar el proyecto', 'Cerrar', { duration: 3000 });
+          },
+        });
+      }
+    });
+  }
+
   handleExport(format: ExportFormat): void {
     if (format === 'excel') {
       this.exportToExcel();
@@ -315,7 +350,7 @@ export class ProjectListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.projects.length === 0) {
-      alert('No hay proyectos para exportar');
+      this.snackBar.open('No hay proyectos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -344,7 +379,7 @@ export class ProjectListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.projects.length === 0) {
-      alert('No hay proyectos para exportar');
+      this.snackBar.open('No hay proyectos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

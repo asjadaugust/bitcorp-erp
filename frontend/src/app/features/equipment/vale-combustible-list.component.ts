@@ -24,6 +24,7 @@ import {
 } from '../../shared/components/stats-grid/stats-grid.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-vale-combustible-list',
@@ -200,6 +201,7 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 export class ValeCombustibleListComponent implements OnInit {
   private svc = inject(ValeCombustibleService);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
 
   vales: ValeCombustible[] = [];
   loading = false;
@@ -308,14 +310,35 @@ export class ValeCombustibleListComponent implements OnInit {
 
   registrar(event: Event, vale: ValeCombustible) {
     event.stopPropagation();
-    if (!confirm(`¿Registrar vale ${vale.codigo}?`)) return;
-    this.svc.registrar(vale.id).subscribe(() => this.cargar());
+    this.confirmSvc
+      .confirm({
+        title: 'Registrar Vale',
+        message: `¿Desea confirmar el registro del vale ${vale.codigo}?`,
+        icon: 'fa-check-circle',
+        confirmLabel: 'Registrar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.svc.registrar(vale.id).subscribe(() => this.cargar());
+        }
+      });
   }
 
   anular(event: Event, vale: ValeCombustible) {
     event.stopPropagation();
-    if (!confirm(`¿Anular el vale ${vale.codigo}? Esta acción no se puede deshacer.`)) return;
-    this.svc.anular(vale.id).subscribe(() => this.cargar());
+    this.confirmSvc
+      .confirm({
+        title: 'Anular Vale',
+        message: `¿Está seguro de anular el vale ${vale.codigo}? Esta acción no se puede deshacer.`,
+        icon: 'fa-circle-exclamation',
+        confirmLabel: 'Anular',
+        isDanger: true,
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.svc.anular(vale.id).subscribe(() => this.cargar());
+        }
+      });
   }
 
   formatTipoCombustible(tipo: string): string {

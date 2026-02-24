@@ -1,7 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { Provider } from '../../core/models/provider.model';
 import {
@@ -121,6 +123,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
           >
             <i class="fa-solid fa-pen"></i>
           </button>
+          <button
+            class="btn-icon text-danger"
+            (click)="deleteProvider(row); $event.stopPropagation()"
+            title="Eliminar"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -189,6 +198,11 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         text-align: center;
       }
 
+      .btn-icon.text-danger:hover {
+        background: var(--error-100);
+        color: var(--error-600);
+      }
+
       .address-info {
         display: flex;
         align-items: center;
@@ -216,6 +230,8 @@ export class ProviderListComponent implements OnInit {
   providerService = inject(ProviderService);
   private excelService = inject(ExcelExportService);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   providers: Provider[] = [];
   loading = false;
@@ -313,6 +329,24 @@ export class ProviderListComponent implements OnInit {
     this.router.navigate(['/providers/new']);
   }
 
+  deleteProvider(provider: Provider): void {
+    this.confirmSvc
+      .confirmDelete(`el proveedor ${provider.razon_social}`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.providerService.delete(provider.id).subscribe({
+            next: () => {
+              this.loadProviders();
+              this.snackBar.open('Proveedor eliminado correctamente', 'Cerrar', { duration: 3000 });
+            },
+            error: () => {
+              this.snackBar.open('Error al eliminar proveedor', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
+      });
+  }
+
   handleExport(format: ExportFormat): void {
     if (format === 'excel') {
       this.exportToExcel();
@@ -323,7 +357,7 @@ export class ProviderListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.providers.length === 0) {
-      alert('No hay proveedores para exportar');
+      this.snackBar.open('No hay proveedores para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -351,7 +385,7 @@ export class ProviderListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.providers.length === 0) {
-      alert('No hay proveedores para exportar');
+      this.snackBar.open('No hay proveedores para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

@@ -9,6 +9,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-maintenance-detail',
@@ -86,32 +87,6 @@ import {
         </button>
       </ng-container>
     </entity-detail-shell>
-
-    <!-- Delete Modal -->
-    @if (showDeleteModal) {
-      <div class="modal" (click)="showDeleteModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h2>Confirmar Eliminación</h2>
-            <button type="button" class="btn btn-icon" (click)="showDeleteModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>¿Estás seguro de que deseas eliminar este registro de mantenimiento?</p>
-            <p class="alert alert-warning">Esta acción no se puede deshacer.</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showDeleteModal = false">
-              Cancelar
-            </button>
-            <button type="button" class="btn btn-danger" (click)="confirmDelete()">
-              Eliminar Registro
-            </button>
-          </div>
-        </div>
-      </div>
-    }
   `,
   styles: [
     `
@@ -187,11 +162,11 @@ import {
 export class MaintenanceDetailComponent implements OnInit {
   private maintenanceService = inject(MaintenanceService);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
   router = inject(Router);
 
   record: MaintenanceRecord | null = null;
   loading = true;
-  showDeleteModal = false;
 
   get header(): EntityDetailHeader {
     return {
@@ -264,21 +239,18 @@ export class MaintenanceDetailComponent implements OnInit {
   }
 
   deleteRecord(): void {
-    this.showDeleteModal = true;
-  }
-
-  confirmDelete(): void {
-    if (this.record) {
-      this.maintenanceService.delete(this.record.id).subscribe({
-        next: () => {
-          this.router.navigate(['../../'], { relativeTo: this.route });
-        },
-        error: (error) => {
-          console.error('Failed to delete record:', error);
-          this.showDeleteModal = false;
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete('este registro de mantenimiento').subscribe((confirmed) => {
+      if (confirmed && this.record) {
+        this.maintenanceService.delete(this.record.id).subscribe({
+          next: () => {
+            this.router.navigate(['../../'], { relativeTo: this.route });
+          },
+          error: (error) => {
+            console.error('Failed to delete record:', error);
+          },
+        });
+      }
+    });
   }
 
   getStatusLabel(status: string): string {

@@ -9,6 +9,7 @@ export interface TabItem {
   route: string;
   icon?: string;
   animate?: boolean;
+  exact?: boolean;
 }
 
 export interface Breadcrumb {
@@ -61,26 +62,29 @@ export interface Breadcrumb {
             </div>
           </div>
 
-          <div class="header-actions">
-            <ng-content select="[actions]"></ng-content>
+            <div class="header-actions">
+              <ng-content select="[actions]"></ng-content>
+            </div>
           </div>
         </div>
-      </div>
 
       <!-- Tab Navigation (Optional) -->
-      <nav class="tab-navigation" *ngIf="tabs && tabs.length > 0">
-        <a
-          *ngFor="let tab of tabs"
-          [routerLink]="tab.route"
-          routerLinkActive="active"
-          class="tab-item"
-          [@tabItemAnim]
-          [@.disabled]="!tab.animate"
-        >
-          <i *ngIf="tab.icon" [class]="'fa-solid ' + tab.icon"></i>
-          <span>{{ tab.label }}</span>
-        </a>
-      </nav>
+      <div class="nav-container" *ngIf="tabs && tabs.length > 0">
+        <nav class="tab-navigation">
+          <a
+            *ngFor="let tab of tabs"
+            [routerLink]="tab.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="tab.exact ? { exact: true } : { exact: false }"
+            class="tab-item"
+            [@tabItemAnim]
+            [@.disabled]="!tab.animate"
+          >
+            <i *ngIf="tab.icon" [class]="'fa-solid ' + tab.icon"></i>
+            <span>{{ tab.label }}</span>
+          </a>
+        </nav>
+      </div>
 
       <!-- Content Area with Loading Overlay -->
       <div class="content-wrapper">
@@ -95,16 +99,22 @@ export interface Breadcrumb {
     `
       .page-container {
         background: var(--grey-100);
-        min-height: calc(100vh - 72px); /* Full height minus nav */
+        min-height: calc(100vh - 72px);
         display: flex;
         flex-direction: column;
-        gap: var(--s-24);
+        gap: var(--s-16);
+        padding: var(--s-24) var(--s-32);
+      }
+
+      .nav-container {
+        padding: 0 54px;
+        background: transparent;
       }
 
       /* Header */
       .page-header {
         background: transparent;
-        margin-bottom: var(--s-8);
+        margin-bottom: 0;
       }
 
       .header-main {
@@ -137,7 +147,6 @@ export interface Breadcrumb {
       .title-content {
         display: flex;
         flex-direction: column;
-        gap: var(--s-4);
       }
 
       h1 {
@@ -188,7 +197,7 @@ export interface Breadcrumb {
         display: flex;
         gap: 0;
         border-bottom: 2px solid var(--grey-200);
-        margin-bottom: var(--s-24);
+        margin-bottom: var(--s-8);
         overflow-x: auto;
         overflow-y: clip; /* Changed from visible to clip */
         min-height: 48px;
@@ -196,6 +205,8 @@ export interface Breadcrumb {
         flex-wrap: nowrap;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* IE/Edge */
+        margin-top: var(--s-8);
+        padding: 0;
       }
 
       .tab-navigation::-webkit-scrollbar {
@@ -245,7 +256,7 @@ export interface Breadcrumb {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: var(--s-24);
+        gap: var(--s-16);
       }
 
       .loading-overlay {
@@ -293,8 +304,17 @@ export interface Breadcrumb {
           width: 100%;
         }
 
+        .page-container:has(.nav-container) {
+          padding-top: 0;
+        }
+
+        .nav-container {
+          padding: 0 var(--s-16);
+        }
+
         .tab-navigation {
           gap: var(--s-2);
+          margin-top: var(--s-4);
         }
 
         .tab-item {

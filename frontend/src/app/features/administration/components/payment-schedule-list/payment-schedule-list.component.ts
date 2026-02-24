@@ -1,6 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AdministrationService, PaymentSchedule } from '../../services/administration.service';
 import {
   AeroTableComponent,
@@ -189,6 +191,8 @@ export class PaymentScheduleListComponent implements OnInit {
   private adminService: AdministrationService = inject(AdministrationService);
   private router: Router = inject(Router);
   private excelService: ExcelExportService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
   loading = false;
   schedules: PaymentSchedule[] = [];
   filteredSchedules: PaymentSchedule[] = [];
@@ -307,54 +311,94 @@ export class PaymentScheduleListComponent implements OnInit {
   }
 
   deleteSchedule(schedule: PaymentSchedule): void {
-    if (confirm(`¿Está seguro de eliminar esta programación de pago?`)) {
-      this.adminService.deletePaymentSchedule(schedule.id).subscribe({
-        next: () => {
-          this.loadSchedules();
-        },
+    this.confirmSvc
+      .confirmDelete('esta programación de pago')
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.adminService.deletePaymentSchedule(schedule.id).subscribe({
+            next: () => {
+              this.loadSchedules();
+              this.snackBar.open('Programación eliminada', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+              this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   approveSchedule(schedule: PaymentSchedule): void {
-    if (confirm(`¿Aprobar esta programación de pago?`)) {
-      this.adminService.approvePaymentSchedule(schedule.id).subscribe({
-        next: () => {
-          this.loadSchedules();
-        },
-        error: (err: any) => {
-          alert(`Error: ${err.error?.error || 'No se pudo aprobar'}`);
-        },
+    this.confirmSvc
+      .confirm({
+        title: 'Aprobar Programación',
+        message: '¿Está seguro de aprobar esta programación de pago?',
+        icon: 'fa-check-circle',
+        confirmLabel: 'Aprobar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.adminService.approvePaymentSchedule(schedule.id).subscribe({
+            next: () => {
+              this.loadSchedules();
+              this.snackBar.open('Programación aprobada', 'Cerrar', { duration: 3000 });
+            },
+            error: (err: any) => {
+              const msg = err.error?.error || 'No se pudo aprobar';
+              this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   processSchedule(schedule: PaymentSchedule): void {
-    if (
-      confirm(`¿Procesar esta programación de pago? Esta acción marcará los pagos como realizados.`)
-    ) {
-      this.adminService.processPaymentSchedule(schedule.id).subscribe({
-        next: () => {
-          this.loadSchedules();
-        },
-        error: (err: any) => {
-          alert(`Error: ${err.error?.error || 'No se pudo procesar'}`);
-        },
+    this.confirmSvc
+      .confirm({
+        title: 'Procesar Programación',
+        message: '¿Procesar esta programación de pago? Esta acción marcará los pagos como realizados.',
+        icon: 'fa-play-circle',
+        confirmLabel: 'Procesar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.adminService.processPaymentSchedule(schedule.id).subscribe({
+            next: () => {
+              this.loadSchedules();
+              this.snackBar.open('Programación procesada correctamente', 'Cerrar', { duration: 3000 });
+            },
+            error: (err: any) => {
+              const msg = err.error?.error || 'No se pudo procesar';
+              this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   cancelSchedule(schedule: PaymentSchedule): void {
-    if (confirm(`¿Cancelar esta programación de pago?`)) {
-      this.adminService.cancelPaymentSchedule(schedule.id).subscribe({
-        next: () => {
-          this.loadSchedules();
-        },
-        error: (err: any) => {
-          alert(`Error: ${err.error?.error || 'No se pudo cancelar'}`);
-        },
+    this.confirmSvc
+      .confirm({
+        title: 'Cancelar Programación',
+        message: '¿Está seguro de cancelar esta programación de pago?',
+        icon: 'fa-ban',
+        confirmLabel: 'Cancelar',
+        isDanger: true,
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.adminService.cancelPaymentSchedule(schedule.id).subscribe({
+            next: () => {
+              this.loadSchedules();
+              this.snackBar.open('Programación cancelada', 'Cerrar', { duration: 3000 });
+            },
+            error: (err: any) => {
+              const msg = err.error?.error || 'No se pudo cancelar';
+              this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   handleExport(format: ExportFormat): void {
@@ -367,7 +411,7 @@ export class PaymentScheduleListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.schedules.length === 0) {
-      alert('No hay programaciones de pago para exportar');
+      this.snackBar.open('No hay programaciones de pago para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -396,7 +440,7 @@ export class PaymentScheduleListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.schedules.length === 0) {
-      alert('No hay programaciones de pago para exportar');
+      this.snackBar.open('No hay programaciones de pago para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

@@ -1,85 +1,17 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ModuleNavComponent, TabItem } from '../../shared/components/module-nav/module-nav.component';
 
 @Component({
   selector: 'app-equipment-module-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule, ModuleNavComponent],
   template: `
     <div class="module-shell">
-      <nav class="module-nav-bar">
-        <div class="module-nav-scroll">
-          <a routerLink="/equipment/dashboard" routerLinkActive="active" class="module-nav-tab">
-            <i class="fa-solid fa-chart-line"></i>
-            <span>Dashboard</span>
-          </a>
-          <a
-            routerLink="/equipment"
-            [routerLinkActiveOptions]="{ exact: true }"
-            routerLinkActive="active"
-            class="module-nav-tab"
-          >
-            <i class="fa-solid fa-list"></i>
-            <span>Equipos</span>
-          </a>
-          <a routerLink="/equipment/solicitudes" routerLinkActive="active" class="module-nav-tab">
-            <i class="fa-solid fa-file-invoice"></i>
-            <span>Solicitudes</span>
-          </a>
-          <a
-            routerLink="/equipment/ordenes-alquiler"
-            routerLinkActive="active"
-            class="module-nav-tab"
-          >
-            <i class="fa-solid fa-file-contract"></i>
-            <span>Órdenes</span>
-          </a>
-          <a routerLink="/equipment/daily-reports" routerLinkActive="active" class="module-nav-tab">
-            <i class="fa-solid fa-clipboard-list"></i>
-            <span>Partes Diarios</span>
-          </a>
-          <a routerLink="/equipment/maintenance" routerLinkActive="active" class="module-nav-tab">
-            <i class="fa-solid fa-wrench"></i>
-            <span>Mantenimiento</span>
-          </a>
-          <a routerLink="/equipment/contracts" routerLinkActive="active" class="module-nav-tab">
-            <i class="fa-solid fa-file-signature"></i>
-            <span>Contratos</span>
-          </a>
-          <a routerLink="/equipment/valuations" routerLinkActive="active" class="module-nav-tab">
-            <i class="fa-solid fa-dollar-sign"></i>
-            <span>Valorizaciones</span>
-          </a>
-          <a
-            routerLink="/equipment/actas-devolucion"
-            routerLinkActive="active"
-            class="module-nav-tab"
-          >
-            <i class="fa-solid fa-rotate-left"></i>
-            <span>Devoluciones</span>
-          </a>
-          <a
-            routerLink="/equipment/inoperatividad"
-            routerLinkActive="active"
-            class="module-nav-tab"
-          >
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span>Inoperatividad</span>
-          </a>
-          <a
-            *ngIf="isAdmin"
-            routerLink="/equipment/precalentamiento-config"
-            routerLinkActive="active"
-            class="module-nav-tab"
-          >
-            <i class="fa-solid fa-fire-flame-curved"></i>
-            <span>Precalentamiento</span>
-          </a>
-        </div>
-      </nav>
-      <router-outlet></router-outlet>
+      <div class="module-content">
+        <router-outlet></router-outlet>
+      </div>
     </div>
   `,
   styles: [
@@ -90,64 +22,48 @@ import { AuthService } from '../../core/services/auth.service';
         min-height: calc(100vh - 72px);
       }
 
-      .module-nav-bar {
-        background: var(--neutral-0);
-        border-bottom: 2px solid var(--grey-200);
-        overflow-x: auto;
-        scrollbar-width: none;
-        flex-shrink: 0;
-
-        &::-webkit-scrollbar {
-          display: none;
-        }
-      }
-
-      .module-nav-scroll {
+      .module-content {
+        flex: 1;
         display: flex;
-        white-space: nowrap;
-        padding: 0 var(--s-24);
-        min-width: min-content;
-      }
-
-      .module-nav-tab {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: var(--s-12) var(--s-16);
-        color: var(--grey-600);
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 500;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
-        transition:
-          color 0.15s,
-          border-color 0.15s;
-        white-space: nowrap;
-
-        i {
-          font-size: 13px;
-        }
-
-        &:hover {
-          color: var(--primary-800);
-          background: var(--grey-50);
-        }
-
-        &.active {
-          color: var(--primary-800);
-          border-bottom-color: var(--primary-500);
-          font-weight: 600;
-        }
+        flex-direction: column;
       }
     `,
   ],
 })
-export class EquipmentModuleLayoutComponent {
+export class EquipmentModuleLayoutComponent implements OnInit {
   private authService = inject(AuthService);
+  tabs: TabItem[] = [];
 
-  get isAdmin(): boolean {
-    const role = this.authService.getCurrentUserRole();
-    return role?.toUpperCase() === 'ADMIN';
+  ngOnInit(): void {
+    this.calculateTabs();
+  }
+
+  private get isAdmin(): boolean {
+    return this.authService.getCurrentUserRole()?.toUpperCase() === 'ADMIN';
+  }
+
+  private calculateTabs(): void {
+    const items: TabItem[] = [
+      { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
+      { label: 'Equipos', route: '/equipment', icon: 'fa-list', exact: true },
+      { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
+      { label: 'Órdenes', route: '/equipment/ordenes-alquiler', icon: 'fa-file-contract' },
+      { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
+      { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
+      { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-signature' },
+      { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
+      { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-rotate-left' },
+      { label: 'Inoperatividad', route: '/equipment/inoperatividad', icon: 'fa-triangle-exclamation' },
+    ];
+
+    if (this.isAdmin) {
+      items.push({
+        label: 'Precalentamiento',
+        route: '/equipment/precalentamiento-config',
+        icon: 'fa-fire-flame-curved',
+      });
+    }
+
+    this.tabs = items;
   }
 }

@@ -16,6 +16,7 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 @Component({
   selector: 'app-periodo-inoperatividad-list',
@@ -37,6 +38,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         icon="fa-triangle-exclamation"
         [breadcrumbs]="breadcrumbs"
         [loading]="loading"
+        [tabs]="moduleTabs"
       >
         <app-actions-container actions>
           <button type="button" class="btn btn-primary" (click)="irANuevo()">
@@ -470,6 +472,7 @@ export class PeriodoInoperatividadListComponent implements OnInit {
 
   loading = false;
   saving = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   periodos: PeriodoInoperatividad[] = [];
 
   showResolverModal = false;

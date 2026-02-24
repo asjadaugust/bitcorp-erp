@@ -9,6 +9,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 
 @Component({
@@ -267,6 +268,7 @@ export class UserFormComponent implements OnInit {
   private userService = inject(UserManagementService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
 
   userForm: FormGroup;
   isEditMode = false;
@@ -388,7 +390,23 @@ export class UserFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    if (this.userForm.dirty) {
+      this.confirmSvc
+        .confirm({
+          title: 'Confirmar Cancelación',
+          message: '¿Está seguro de cancelar? Los cambios no guardados se perderán.',
+          icon: 'fa-triangle-exclamation',
+          confirmLabel: 'Salir sin guardar',
+          isDanger: true,
+        })
+        .subscribe((confirmed) => {
+          if (confirmed) {
+            this.router.navigate(['/users']);
+          }
+        });
+    } else {
+      this.router.navigate(['/users']);
+    }
   }
 
   hasError(field: string): boolean {

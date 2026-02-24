@@ -9,6 +9,8 @@ interface NavItem {
   route: string;
   icon: string;
   roles?: Role[];
+  children?: NavItem[];
+  expanded?: boolean;
 }
 
 @Component({
@@ -20,17 +22,43 @@ interface NavItem {
       <div class="sidebar-content">
         <ul class="nav-list">
           <li *ngFor="let item of mainNavItems" class="nav-item">
-            <a
-              [routerLink]="item.route"
-              routerLinkActive="active"
-              class="nav-link"
-              *ngIf="hasAccess(item)"
-              [title]="collapsed ? item.label : ''"
-              (click)="onMobileLinkClick()"
-            >
-              <i [class]="item.icon"></i>
-              <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
-            </a>
+            <div class="nav-link-wrapper" [class.has-children]="item.children && item.children.length > 0" [class.active]="isParentActive(item)">
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.children ? true : false }"
+                class="nav-link"
+                *ngIf="hasAccess(item)"
+                [title]="collapsed ? item.label : ''"
+                (click)="onMobileLinkClick()"
+              >
+                <i [class]="item.icon"></i>
+                <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+              </a>
+              <button 
+                *ngIf="item.children && item.children.length > 0 && !collapsed" 
+                class="expand-btn"
+                (click)="toggleExpand(item, $event)"
+              >
+                <i class="fa-solid" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
+              </button>
+            </div>
+
+            <!-- Children List -->
+            <ul *ngIf="item.children && (item.expanded || isParentActive(item)) && !collapsed" class="children-list">
+              <li *ngFor="let child of item.children" class="child-item">
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="active"
+                  class="child-link"
+                  *ngIf="hasAccess(child)"
+                  (click)="onMobileLinkClick()"
+                >
+                  <i [class]="child.icon"></i>
+                  <span>{{ child.label }}</span>
+                </a>
+              </li>
+            </ul>
           </li>
         </ul>
 
@@ -167,10 +195,69 @@ interface NavItem {
         }
 
         i {
-          min-width: 20px; /* Ensure icon doesn't shrink */
+          min-width: 20px;
           width: 20px;
           text-align: center;
           font-size: 18px;
+        }
+      }
+
+      .nav-link-wrapper {
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        &.active {
+          background: var(--primary-50);
+        }
+      }
+
+      .expand-btn {
+        background: none;
+        border: none;
+        color: var(--grey-500);
+        padding: 0 var(--s-16);
+        cursor: pointer;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        
+        &:hover {
+          color: var(--primary-700);
+        }
+      }
+
+      .children-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background: var(--grey-50);
+      }
+
+      .child-link {
+        display: flex;
+        align-items: center;
+        gap: var(--s-12);
+        padding: var(--s-8) var(--s-24) var(--s-8) calc(var(--s-24) + 32px);
+        color: var(--grey-600);
+        text-decoration: none;
+        font-size: 13px;
+        transition: all 0.2s;
+
+        &:hover {
+          color: var(--primary-700);
+          background: var(--grey-100);
+        }
+
+        &.active {
+          color: var(--primary-700);
+          font-weight: 600;
+        }
+
+        i {
+          font-size: 12px;
+          width: 14px;
+          text-align: center;
         }
       }
 
@@ -278,11 +365,19 @@ export class SidebarComponent {
 
     // Nivel 3
     { label: 'SST', route: '/sst', icon: 'fa-solid fa-user-shield' },
-    { label: 'Administración', route: '/administracion', icon: 'fa-solid fa-briefcase' },
+    { 
+      label: 'Administración', 
+      route: '/administracion', 
+      icon: 'fa-solid fa-briefcase'
+    },
     { label: 'RRHH', route: '/rrhh', icon: 'fa-solid fa-users-gear' },
     { label: 'Logística', route: '/logistics', icon: 'fa-solid fa-boxes-stacked' },
     { label: 'Proveedores', route: '/providers', icon: 'fa-solid fa-handshake' },
-    { label: 'Equipo Mecánico', route: '/equipment', icon: 'fa-solid fa-tractor' },
+    { 
+      label: 'Equipo Mecánico', 
+      route: '/equipment', 
+      icon: 'fa-solid fa-tractor'
+    },
     { label: 'Operadores', route: '/operators', icon: 'fa-solid fa-id-card' },
     { label: 'Checklists', route: '/checklists', icon: 'fa-solid fa-clipboard-check' },
     // Note: Daily Reports, Contracts, and Valuations are accessed via tabs in Equipment module
@@ -303,6 +398,18 @@ export class SidebarComponent {
       roles: ['ADMIN'],
     },
   ];
+
+  toggleExpand(item: NavItem, event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    item.expanded = !item.expanded;
+  }
+
+  isParentActive(item: NavItem): boolean {
+    if (!item.children) return false;
+    const currentRoute = window.location.pathname;
+    return item.children.some(child => currentRoute.startsWith(child.route));
+  }
 
   hasAccess(item: NavItem): boolean {
     if (!item.roles) return true;

@@ -1,6 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AdministrationService, AccountsPayable } from '../../services/administration.service';
 import {
   AeroTableComponent,
@@ -167,6 +169,8 @@ export class AccountsPayableListComponent implements OnInit {
   private adminService = inject(AdministrationService);
   private router = inject(Router);
   private excelService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   records: AccountsPayable[] = [];
   filteredRecords: AccountsPayable[] = [];
@@ -296,13 +300,21 @@ export class AccountsPayableListComponent implements OnInit {
   }
 
   deleteRecord(record: AccountsPayable): void {
-    if (confirm(`¿Está seguro de eliminar la cuenta por pagar ${record.numero_factura}?`)) {
-      this.adminService.deleteAccountsPayable(record.id).subscribe({
-        next: () => {
-          this.loadRecords();
-        },
+    this.confirmSvc
+      .confirmDelete(`la cuenta por pagar ${record.numero_factura}`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.adminService.deleteAccountsPayable(record.id).subscribe({
+            next: () => {
+              this.loadRecords();
+              this.snackBar.open('Cuenta por pagar eliminada', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+              this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   handleExport(format: ExportFormat): void {
@@ -315,7 +327,7 @@ export class AccountsPayableListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.records.length === 0) {
-      alert('No hay cuentas por pagar para exportar');
+      this.snackBar.open('No hay cuentas por pagar para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -345,7 +357,7 @@ export class AccountsPayableListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.records.length === 0) {
-      alert('No hay cuentas por pagar para exportar');
+      this.snackBar.open('No hay cuentas por pagar para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

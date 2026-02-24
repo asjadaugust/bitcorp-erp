@@ -24,6 +24,8 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { forkJoin } from 'rxjs';
+import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-maintenance-list',
@@ -44,6 +46,7 @@ import { forkJoin } from 'rxjs';
       icon="fa-wrench"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
@@ -200,9 +203,11 @@ export class MaintenanceListComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private excelService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
 
   records: MaintenanceRecord[] = [];
   loading = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   filters = { status: '', type: '', search: '' };
   equipmentMap: Map<number, any> = new Map();
 
@@ -356,19 +361,20 @@ export class MaintenanceListComponent implements OnInit {
   }
 
   deleteRecord(record: MaintenanceRecord): void {
-    if (confirm('¿Está seguro de eliminar este registro de mantenimiento?')) {
-      this.loading = true;
-      this.maintenanceService.delete(record.id).subscribe({
-        next: () => {
-          this.loadRecords();
-        },
-        error: (err) => {
-          console.error('Error deleting record', err);
-          this.loading = false;
-          alert('Error al eliminar el registro');
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete('este registro de mantenimiento').subscribe((confirmed) => {
+      if (confirmed) {
+        this.loading = true;
+        this.maintenanceService.delete(record.id).subscribe({
+          next: () => {
+            this.loadRecords();
+          },
+          error: (err) => {
+            console.error('Error deleting record', err);
+            this.loading = false;
+          },
+        });
+      }
+    });
   }
 
   createMaintenance(): void {

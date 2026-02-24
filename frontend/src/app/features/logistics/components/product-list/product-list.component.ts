@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InventoryService, Product } from '../../services/inventory.service';
+import { WebMcpService } from '../../../../core/services/webmcp.service';
 import {
   AeroTableComponent,
   TableColumn,
@@ -27,6 +28,7 @@ import {
   StatItem,
 } from '../../../../shared/components/stats-grid/stats-grid.component';
 import { CurrencyPipe } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-product-list',
@@ -211,6 +213,8 @@ export class ProductListComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private router = inject(Router);
   private currencyPipe = inject(CurrencyPipe);
+  private webMcpService = inject(WebMcpService);
+  private snackBar = inject(MatSnackBar);
 
   products: Product[] = [];
   filteredProducts: Product[] = [];
@@ -295,6 +299,41 @@ export class ProductListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    this.registerWebMcpTools();
+  }
+
+  private registerWebMcpTools(): void {
+    this.webMcpService.registerTool({
+      name: 'search_products',
+      description: 'Searches the product list in logistics by name or code.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'The search term' }
+        },
+        required: ['query']
+      },
+      execute: async (args: { query: string }) => {
+        this.onFilterChange({ search: args.query });
+        return { success: true, message: `Searching products for: ${args.query}` };
+      }
+    });
+
+    this.webMcpService.registerTool({
+      name: 'view_product_details',
+      description: 'Views the details page for a specific product by its unique ID.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'The unique ID of the product' }
+        },
+        required: ['id']
+      },
+      execute: async (args: { id: string }) => {
+        await this.router.navigate(['/logistics/products', args.id]);
+        return { success: true, message: `Navigating to product details for ID: ${args.id}` };
+      }
+    });
   }
 
   loadProducts(): void {
@@ -409,7 +448,7 @@ export class ProductListComponent implements OnInit {
 
   handleExport(format: ExportFormat): void {
     if (this.products.length === 0) {
-      alert('No hay productos para exportar');
+      this.snackBar.open('No hay productos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

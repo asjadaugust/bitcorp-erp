@@ -12,6 +12,7 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-solicitud-equipo-detail',
@@ -311,9 +312,10 @@ import {
   ],
 })
 export class SolicitudEquipoDetailComponent implements OnInit {
-  private service = inject(SolicitudEquipoService);
+  private svc = inject(SolicitudEquipoService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
 
   solicitud: SolicitudEquipo | null = null;
   loading = false;
@@ -336,7 +338,7 @@ export class SolicitudEquipoDetailComponent implements OnInit {
 
   cargar(id: number) {
     this.loading = true;
-    this.service.obtener(id).subscribe({
+    this.svc.obtener(id).subscribe({
       next: (s) => {
         this.solicitud = s;
         this.updateHeader(s);
@@ -379,38 +381,68 @@ export class SolicitudEquipoDetailComponent implements OnInit {
     return icons[estado] || 'fa-info-circle';
   }
 
-  enviar() {
+  enviarAprobacion() {
     if (!this.solicitud) return;
-    if (!confirm(`¿Enviar la solicitud ${this.solicitud.codigo} para aprobación?`)) return;
-    this.service.enviar(this.solicitud.id).subscribe({
-      next: (s) => {
-        this.solicitud = s;
-        this.updateHeader(s);
-      },
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Enviar Solicitud',
+        message: `¿Desea enviar la solicitud ${this.solicitud.codigo} para aprobación?`,
+        icon: 'fa-paper-plane',
+        confirmLabel: 'Enviar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.svc.enviar(this.solicitud!.id).subscribe({
+            next: (s: SolicitudEquipo) => {
+              this.solicitud = s;
+              this.updateHeader(s);
+            },
+          });
+        }
+      });
   }
 
   aprobar() {
     if (!this.solicitud) return;
-    const obs = prompt('Observaciones (opcional):');
-    if (obs === null) return;
-    this.service.aprobar(this.solicitud.id, obs || undefined).subscribe({
-      next: (s) => {
-        this.solicitud = s;
-        this.updateHeader(s);
-      },
-    });
+    this.confirmSvc
+      .prompt({
+        title: 'Aprobar Solicitud',
+        message: `Ingrese observaciones para la aprobación de la solicitud ${this.solicitud.codigo} (opcional):`,
+        icon: 'fa-check-circle',
+        confirmLabel: 'Aprobar',
+      })
+      .subscribe((obs) => {
+        if (obs !== null) {
+          this.svc.aprobar(this.solicitud!.id, obs || undefined).subscribe({
+            next: (s: SolicitudEquipo) => {
+              this.solicitud = s;
+              this.updateHeader(s);
+            },
+          });
+        }
+      });
   }
 
   rechazar() {
     if (!this.solicitud) return;
-    const obs = prompt('Motivo de rechazo:');
-    if (!obs) return;
-    this.service.rechazar(this.solicitud.id, obs).subscribe({
-      next: (s) => {
-        this.solicitud = s;
-        this.updateHeader(s);
-      },
-    });
+    this.confirmSvc
+      .prompt({
+        title: 'Rechazar Solicitud',
+        message: `Ingrese el motivo de rechazo para la solicitud ${this.solicitud.codigo}:`,
+        icon: 'fa-times-circle',
+        confirmLabel: 'Rechazar',
+        isDanger: true,
+        inputRequired: true,
+      })
+      .subscribe((obs) => {
+        if (obs) {
+          this.svc.rechazar(this.solicitud!.id, obs).subscribe({
+            next: (s: SolicitudEquipo) => {
+              this.solicitud = s;
+              this.updateHeader(s);
+            },
+          });
+        }
+      });
   }
 }

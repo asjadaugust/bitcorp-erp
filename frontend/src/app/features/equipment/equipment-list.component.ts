@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { AuthService } from '../../core/services/auth.service';
+import { WebMcpService } from '../../core/services/webmcp.service';
 import { Equipment } from '../../core/models/equipment.model';
+import { ConfirmService } from '../../core/services/confirm.service'; // Added import
 
 import {
   AeroTableComponent,
@@ -20,6 +22,7 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 @Component({
   selector: 'app-equipment-list',
@@ -40,6 +43,7 @@ import {
       icon="fa-tractor"
       [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Equipos' }]"
       [loading]="loading"
+      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <div class="actions-group">
@@ -136,7 +140,7 @@ import {
           <button
             type="button"
             class="btn-icon delete-btn"
-            (click)="deleteEquipment(row); $event.stopPropagation()"
+            (click)="eliminar(row); $event.stopPropagation()"
             title="Eliminar"
           >
             <i class="fa-solid fa-trash"></i>
@@ -454,10 +458,13 @@ import {
 export class EquipmentListComponent implements OnInit {
   equipmentService = inject(EquipmentService);
   authService = inject(AuthService);
+  private webMcpService = inject(WebMcpService);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService); // Injected ConfirmService
 
   equipment: Equipment[] = [];
   loading = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   loadingStatistics = false;
   showStatistics = false;
   errorMessage = '';
@@ -556,6 +563,41 @@ export class EquipmentListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadEquipment();
+    this.registerWebMcpTools();
+  }
+
+  private registerWebMcpTools(): void {
+    this.webMcpService.registerTool({
+      name: 'search_equipment',
+      description: 'Searches the equipment list by name, code, or brand.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'The search term' }
+        },
+        required: ['query']
+      },
+      execute: async (args: { query: string }) => {
+        this.onFilterChange({ search: args.query });
+        return { success: true, message: `Searching for: ${args.query}` };
+      }
+    });
+
+    this.webMcpService.registerTool({
+      name: 'view_equipment_details',
+      description: 'Views the details page for a specific equipment by its unique ID.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'The unique ID of the equipment' }
+        },
+        required: ['id']
+      },
+      execute: async (args: { id: string }) => {
+        await this.router.navigate(['/equipment', args.id]);
+        return { success: true, message: `Navigating to details for ID: ${args.id}` };
+      }
+    });
   }
 
   loadEquipment(): void {
@@ -645,25 +687,24 @@ export class EquipmentListComponent implements OnInit {
     this.router.navigate(['/equipment', item.id]);
   }
 
-  deleteEquipment(item: Equipment): void {
-    if (confirm(`¿Está seguro de eliminar el equipo ${item.codigo_equipo}?`)) {
-      this.loading = true;
-      this.equipmentService.delete(item.id).subscribe({
-        next: () => {
-          this.successMessage = 'Equipo eliminado correctamente';
-          this.loadEquipment();
-          if (this.showStatistics) {
-            this.loadStatistics();
-          }
-          // Clear success message after 3 seconds
-          setTimeout(() => (this.successMessage = ''), 3000);
-        },
-        error: () => {
-          this.errorMessage = 'Error al eliminar el equipo';
-          this.loading = false;
-        },
-      });
-    }
+  eliminar(item: Equipment): void {
+    this.confirmSvc.confirmDelete(`el equipo ${item.codigo_equipo}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.loading = true;
+        this.equipmentService.delete(item.id).subscribe({
+          next: () => {
+            this.loadEquipment();
+            if (this.showStatistics) {
+              this.loadStatistics();
+            }
+          },
+          error: (err) => {
+            console.error('Error al eliminar equipo:', err);
+            this.loading = false;
+          },
+        });
+      }
+    });
   }
 
   getCategoriaPrdLabel(cat: string): string {

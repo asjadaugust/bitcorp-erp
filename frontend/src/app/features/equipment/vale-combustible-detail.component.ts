@@ -11,6 +11,7 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-vale-combustible-detail',
@@ -323,6 +324,7 @@ export class ValeCombustibleDetailComponent implements OnInit {
   private svc = inject(ValeCombustibleService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
 
   vale: ValeCombustible | null = null;
   loading = false;
@@ -368,37 +370,56 @@ export class ValeCombustibleDetailComponent implements OnInit {
   }
 
   registrar() {
-    if (!this.vale || !confirm(`¿Confirmar el registro del vale ${this.vale.codigo}?`)) return;
-    this.actioning = true;
-    this.svc.registrar(this.vale.id).subscribe({
-      next: (vale) => {
-        this.vale = vale;
-        this.actioning = false;
-      },
-      error: (err) => {
-        this.actioning = false;
-        this.errorMsg = err?.error?.error?.message || 'Error al registrar el vale.';
-      },
-    });
+    if (!this.vale) return;
+    this.confirmSvc
+      .confirm({
+        title: 'Registrar Vale',
+        message: `¿Desea confirmar el registro del vale ${this.vale.codigo}?`,
+        icon: 'fa-check-circle',
+        confirmLabel: 'Registrar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.actioning = true;
+          this.svc.registrar(this.vale!.id).subscribe({
+            next: (vale) => {
+              this.vale = vale;
+              this.actioning = false;
+            },
+            error: (err) => {
+              this.actioning = false;
+              this.errorMsg = err?.error?.error?.message || 'Error al registrar el vale.';
+            },
+          });
+        }
+      });
   }
 
   anular() {
-    if (
-      !this.vale ||
-      !confirm(`¿Anular el vale ${this.vale.codigo}? Esta acción no se puede deshacer.`)
-    )
-      return;
-    this.actioning = true;
-    this.svc.anular(this.vale.id).subscribe({
-      next: (vale) => {
-        this.vale = vale;
-        this.actioning = false;
-      },
-      error: (err) => {
-        this.actioning = false;
-        this.errorMsg = err?.error?.error?.message || 'Error al anular el vale.';
-      },
-    });
+    if (!this.vale) return;
+    this.confirmSvc
+      .confirm({
+        title: 'Anular Vale',
+        message: `¿Está seguro de anular el vale ${this.vale.codigo}? Esta acción no se puede deshacer.`,
+        icon: 'fa-circle-exclamation',
+        confirmLabel: 'Anular',
+        isDanger: true,
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.actioning = true;
+          this.svc.anular(this.vale!.id).subscribe({
+            next: (vale) => {
+              this.vale = vale;
+              this.actioning = false;
+            },
+            error: (err) => {
+              this.actioning = false;
+              this.errorMsg = err?.error?.error?.message || 'Error al anular el vale.';
+            },
+          });
+        }
+      });
   }
 
   formatTipo(tipo: string): string {

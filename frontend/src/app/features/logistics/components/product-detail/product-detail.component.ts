@@ -8,6 +8,8 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
+import { ConfirmService } from '../../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-product-detail',
@@ -371,6 +373,8 @@ export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inventoryService = inject(InventoryService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   product: Product | null = null;
   loading = true;
@@ -447,10 +451,20 @@ export class ProductDetailComponent implements OnInit {
   }
 
   deleteProduct(): void {
-    if (confirm('¿Está seguro de eliminar este producto?')) {
-      // Implement delete logic if needed
-      console.log('Delete product', this.product?.id);
-    }
+    this.confirmSvc.confirmDelete(`el producto ${this.product?.nombre}`).subscribe((confirmed) => {
+      if (confirmed && this.product) {
+        this.inventoryService.deleteProduct(this.product.id).subscribe({
+          next: () => {
+            this.snackBar.open('Producto eliminado correctamente', 'Cerrar', { duration: 3000 });
+            this.router.navigate(['/logistics/products']);
+          },
+          error: (err: any) => {
+            console.error('Error deleting product', err);
+            this.snackBar.open('Error al eliminar el producto', 'Cerrar', { duration: 3000 });
+          },
+        });
+      }
+    });
   }
 
   editProduct(): void {

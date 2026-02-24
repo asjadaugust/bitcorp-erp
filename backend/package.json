@@ -4,7 +4,7 @@
   "description": "Bitcorp ERP Backend - Node.js TypeScript API",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "npm run swagger:generate && ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "jest --passWithNoTests",
@@ -20,7 +20,8 @@
     "seed:typeorm": "ts-node src/database/seeders/index.ts",
     "db:reset": "npm run migrate:revert && npm run migrate && npm run seed:typeorm",
     "migrate:prod": "typeorm migration:run -d dist/config/database.config.js",
-    "schema:drop:prod": "typeorm schema:drop -d dist/config/database.config.js"
+    "schema:drop:prod": "typeorm schema:drop -d dist/config/database.config.js",
+    "swagger:generate": "ts-node --transpile-only src/config/swagger/swagger-generator.ts"
   },
   "dependencies": {
     "@types/multer": "^2.0.0",
@@ -30,6 +31,7 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "class-validator-jsonschema": "^5.1.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
@@ -49,6 +51,10 @@
     "pg": "^8.16.3",
     "puppeteer": "^24.34.0",
     "redis": "^4.7.1",
+    "reflect-metadata": "^0.2.2",
+    "swagger-autogen": "^2.23.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.27",
     "uuid": "^9.0.1",
     "winston": "^3.19.0",
@@ -67,6 +73,8 @@
     "@types/pg": "^8.15.6",
     "@types/puppeteer": "^5.4.7",
     "@types/supertest": "^6.0.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^6.17.0",
     "@typescript-eslint/parser": "^6.17.0",

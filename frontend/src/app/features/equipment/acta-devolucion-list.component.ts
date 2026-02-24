@@ -13,6 +13,8 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-acta-devolucion-list',
@@ -32,6 +34,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       icon="fa-file-signature"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" routerLink="new">
@@ -198,11 +201,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
   ],
 })
 export class ActaDevolucionListComponent implements OnInit {
-  private service = inject(ActaDevolucionService);
+  private svc = inject(ActaDevolucionService);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
 
   actas: ActaDevolucion[] = [];
   loading = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   filtroEstado = '';
   filtroTipo = '';
   search = '';
@@ -271,7 +276,7 @@ export class ActaDevolucionListComponent implements OnInit {
       search: this.search,
     };
 
-    this.service.listar(filters).subscribe({
+    this.svc.listar(filters).subscribe({
       next: (res) => {
         this.actas = res.data ?? [];
         this.total = res.pagination?.total ?? 0;
@@ -297,8 +302,18 @@ export class ActaDevolucionListComponent implements OnInit {
   }
 
   enviarParaFirma(a: ActaDevolucion) {
-    if (!confirm(`¿Enviar el acta ${a.codigo} para firma?`)) return;
-    this.service.enviarParaFirma(a.id).subscribe({ next: () => this.cargar() });
+    this.confirmSvc
+      .confirm({
+        title: 'Enviar para Firma',
+        message: `¿Desea enviar el acta ${a.codigo} para firma?`,
+        icon: 'fa-paper-plane',
+        confirmLabel: 'Enviar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.svc.enviarParaFirma(a.id).subscribe(() => this.cargar());
+        }
+      });
   }
 
   estadoClass(estado: string) {

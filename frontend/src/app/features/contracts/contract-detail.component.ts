@@ -28,6 +28,9 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { DropdownComponent, DropdownOption } from '../../shared/components/dropdown/dropdown.component';
+import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
 
 @Component({
   selector: 'app-contract-detail',
@@ -40,6 +43,9 @@ import {
     AeroTableComponent,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
+    ButtonComponent,
+    DropdownComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <entity-detail-shell
@@ -224,15 +230,15 @@ import {
           <div class="section-header-row">
             <h2>Obligaciones del Arrendador — Cláusula 7</h2>
             @if (obligaciones.length === 0) {
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary"
-                (click)="initObligaciones()"
+              <app-button
+                variant="secondary"
+                size="sm"
+                icon="fa-list-check"
+                label="Inicializar Lista"
+                (onClick)="initObligaciones()"
                 [disabled]="savingObligacion"
                 data-testid="btn-init-obligaciones"
-              >
-                <i class="fa-solid fa-list-check"></i> Inicializar Lista
-              </button>
+              />
             }
           </div>
 
@@ -267,32 +273,28 @@ import {
                     }
                   </div>
                   <div class="obligacion-controls">
-                    <select
-                      class="form-select form-select-sm"
-                      [value]="ob.estado"
-                      (change)="onObligacionEstadoChange(ob, $event)"
+                    <app-dropdown
+                      [options]="estadoOptions"
+                      [ngModel]="ob.estado"
+                      (selectionChange)="updateObligacionEstado(ob, $event)"
                       [disabled]="savingObligacion"
                       [attr.data-testid]="'select-estado-' + ob.tipo_obligacion"
-                    >
-                      <option value="PENDIENTE">Pendiente</option>
-                      <option value="CUMPLIDA">Cumplida</option>
-                      <option value="INCUMPLIDA">Incumplida</option>
-                    </select>
+                    />
                   </div>
                 </div>
               }
             </div>
 
             <div class="obligaciones-summary">
-              <span class="badge badge-success">
+              <aero-badge variant="success">
                 {{ countObligaciones('CUMPLIDA') }} cumplidas
-              </span>
-              <span class="badge badge-warning">
+              </aero-badge>
+              <aero-badge variant="warning">
                 {{ countObligaciones('PENDIENTE') }} pendientes
-              </span>
-              <span class="badge badge-danger">
+              </aero-badge>
+              <aero-badge variant="error">
                 {{ countObligaciones('INCUMPLIDA') }} incumplidas
-              </span>
+              </aero-badge>
             </div>
           }
         </section>
@@ -302,15 +304,15 @@ import {
           <div class="section-header-row">
             <h2>Obligaciones del Arrendatario — Cláusula 8</h2>
             @if (obligacionesArrendatario.length === 0) {
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary"
-                (click)="initObligacionesArrendatario()"
+              <app-button
+                variant="secondary"
+                size="sm"
+                icon="fa-list-check"
+                label="Inicializar Lista"
+                (onClick)="initObligacionesArrendatario()"
                 [disabled]="savingObligacionArrendatario"
                 data-testid="btn-init-obligaciones-arrendatario"
-              >
-                <i class="fa-solid fa-list-check"></i> Inicializar Lista
-              </button>
+              />
             }
           </div>
 
@@ -345,32 +347,28 @@ import {
                     }
                   </div>
                   <div class="obligacion-controls">
-                    <select
-                      class="form-select form-select-sm"
-                      [value]="ob.estado"
-                      (change)="onObligacionArrendatarioEstadoChange(ob, $event)"
+                    <app-dropdown
+                      [options]="estadoOptions"
+                      [ngModel]="ob.estado"
+                      (selectionChange)="updateObligacionArrendatarioEstado(ob, $event)"
                       [disabled]="savingObligacionArrendatario"
                       [attr.data-testid]="'select-estado-arrendatario-' + ob.tipo_obligacion"
-                    >
-                      <option value="PENDIENTE">Pendiente</option>
-                      <option value="CUMPLIDA">Cumplida</option>
-                      <option value="INCUMPLIDA">Incumplida</option>
-                    </select>
+                    />
                   </div>
                 </div>
               }
             </div>
 
             <div class="obligaciones-summary">
-              <span class="badge badge-success">
+              <aero-badge variant="success">
                 {{ countObligacionesArrendatario('CUMPLIDA') }} cumplidas
-              </span>
-              <span class="badge badge-warning">
+              </aero-badge>
+              <aero-badge variant="warning">
                 {{ countObligacionesArrendatario('PENDIENTE') }} pendientes
-              </span>
-              <span class="badge badge-danger">
+              </aero-badge>
+              <aero-badge variant="error">
                 {{ countObligacionesArrendatario('INCUMPLIDA') }} incumplidas
-              </span>
+              </aero-badge>
             </div>
           }
         </section>
@@ -379,34 +377,63 @@ import {
       <!-- ── SIDEBAR ACTIONS ─────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
         @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
-          <button class="btn btn-secondary btn-block" (click)="editContract()">
-            <i class="fa-solid fa-pen"></i> Editar
-          </button>
+          <app-button
+            variant="secondary"
+            fullWidth="true"
+            icon="fa-pen"
+            label="Editar"
+            (onClick)="editContract()"
+          />
         }
-        <button class="btn btn-secondary btn-block" (click)="viewAddendums()">
-          <i class="fa-solid fa-file-signature"></i> Ver Adendas
-        </button>
-        <button class="btn btn-secondary btn-block" (click)="downloadPDF()">
-          <i class="fa-solid fa-file-pdf"></i> Descargar PDF
-        </button>
+        <app-button
+          variant="secondary"
+          fullWidth="true"
+          icon="fa-file-signature"
+          label="Ver Adendas"
+          (onClick)="viewAddendums()"
+        />
+        <app-button
+          variant="secondary"
+          fullWidth="true"
+          icon="fa-file-pdf"
+          label="Descargar PDF"
+          (onClick)="downloadPDF()"
+        />
         @if (['ACTIVO', 'VENCIDO'].includes(contract?.estado || '')) {
-          <button class="btn btn-warning btn-block" (click)="showResolverModal = true">
-            <i class="fa-solid fa-scale-balanced"></i> Resolver Contrato
-          </button>
+          <app-button
+            variant="ghost"
+            fullWidth="true"
+            icon="fa-scale-balanced"
+            label="Resolver Contrato"
+            class="text-warning-important"
+            (onClick)="showResolverModal = true"
+          />
         }
         @if (contract?.estado === 'RESUELTO') {
-          <button class="btn btn-primary btn-block" (click)="abrirLiquidacion()">
-            <i class="fa-solid fa-circle-check"></i> Liquidar Contrato
-          </button>
+          <app-button
+            variant="primary"
+            fullWidth="true"
+            icon="fa-circle-check"
+            label="Liquidar Contrato"
+            (onClick)="abrirLiquidacion()"
+          />
         }
         @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
-          <button class="btn btn-danger btn-block" (click)="deleteContract()">
-            <i class="fa-solid fa-trash"></i> Cancelar
-          </button>
+          <app-button
+            variant="danger"
+            fullWidth="true"
+            icon="fa-trash"
+            label="Cancelar"
+            (onClick)="deleteContract()"
+          />
         }
-        <button type="button" class="btn btn-ghost btn-block" routerLink="/equipment/contracts">
-          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-        </button>
+        <app-button
+          variant="ghost"
+          fullWidth="true"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          routerLink="/equipment/contracts"
+        />
       </ng-container>
 
       <!-- ── SIDEBAR AFTER (extra cards below audit) ─────────── -->
@@ -442,13 +469,11 @@ import {
             @for (doc of requiredDocs; track doc.tipo_documento) {
               <div class="doc-item">
                 <span class="doc-name">{{ translateDocType(doc.tipo_documento) }}</span>
-                <span
-                  class="badge"
-                  [class.badge-success]="doc.estado === 'CARGADO'"
-                  [class.badge-warning]="doc.estado === 'PENDIENTE'"
+                <aero-badge
+                  [variant]="doc.estado === 'CARGADO' ? 'success' : 'warning'"
                 >
                   {{ doc.estado }}
-                </span>
+                </aero-badge>
               </div>
             }
           </div>
@@ -472,25 +497,11 @@ import {
             </p>
             <div class="form-group">
               <label>Causal de Resolución <span class="required">*</span></label>
-              <select class="form-select" [(ngModel)]="resolverForm.causal_resolucion">
-                <option value="">Seleccionar causal...</option>
-                <option value="MUTUO_ACUERDO">§12.1 — Mutuo acuerdo</option>
-                <option value="INCUMPLIMIENTO_ARRENDADOR">
-                  §12.2 — Incumplimiento del arrendador
-                </option>
-                <option value="INCUMPLIMIENTO_ARRENDATARIO">
-                  §12.3 — Incumplimiento del arrendatario
-                </option>
-                <option value="FUERZA_MAYOR">§12.4 — Caso fortuito o fuerza mayor</option>
-                <option value="VENCIMIENTO">§12.5 — Vencimiento de plazo</option>
-                <option value="DECISION_UNILATERAL">
-                  §12.6 — Decisión unilateral (con preaviso)
-                </option>
-                <option value="QUIEBRA">§12.7 — Quiebra / insolvencia</option>
-                <option value="INCAPACIDAD">§12.8 — Muerte o incapacidad del arrendador</option>
-                <option value="JUDICIAL">§12.9 — Intervención judicial</option>
-                <option value="OTRO">§12.10 — Otras causas previstas</option>
-              </select>
+              <app-dropdown
+                [options]="causalOptions"
+                [(ngModel)]="resolverForm.causal_resolucion"
+                placeholder="Seleccionar causal..."
+              />
             </div>
             <div class="form-group">
               <label>Motivo Detallado <span class="required">*</span></label>
@@ -518,26 +529,22 @@ import {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showResolverModal = false">
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-warning"
-              (click)="confirmarResolucion()"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (onClick)="showResolverModal = false"
+            />
+            <app-button
+              variant="warning"
+              [label]="savingLifecycle ? 'Guardando...' : 'Registrar Resolución'"
               [disabled]="
                 savingLifecycle ||
                 !resolverForm.causal_resolucion ||
                 !resolverForm.motivo_resolucion ||
                 !resolverForm.fecha_resolucion
               "
-            >
-              @if (savingLifecycle) {
-                Guardando...
-              } @else {
-                Registrar Resolución
-              }
-            </button>
+              (onClick)="confirmarResolucion()"
+            />
           </div>
         </div>
       </div>
@@ -622,22 +629,18 @@ import {
             }
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showLiquidarModal = false">
-              Cancelar
-            </button>
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (onClick)="showLiquidarModal = false"
+            />
             @if (liquidationCheck?.puede_liquidar) {
-              <button
-                type="button"
-                class="btn btn-primary"
-                (click)="confirmarLiquidacion()"
+              <app-button
+                variant="primary"
+                [label]="savingLifecycle ? 'Guardando...' : 'Confirmar Liquidación'"
                 [disabled]="savingLifecycle || !liquidarForm.fecha_liquidacion"
-              >
-                @if (savingLifecycle) {
-                  Guardando...
-                } @else {
-                  Confirmar Liquidación
-                }
-              </button>
+                (onClick)="confirmarLiquidacion()"
+              />
             }
           </div>
         </div>
@@ -1090,6 +1093,25 @@ export class ContractDetailComponent implements OnInit {
     OTRO: 'Otras causas (§12.10)',
   };
 
+  readonly estadoOptions: DropdownOption[] = [
+    { label: 'Pendiente', value: 'PENDIENTE' },
+    { label: 'Cumplida', value: 'CUMPLIDA' },
+    { label: 'Incumplida', value: 'INCUMPLIDA' },
+  ];
+
+  readonly causalOptions: DropdownOption[] = [
+    { label: '§12.1 — Mutuo acuerdo', value: 'MUTUO_ACUERDO' },
+    { label: '§12.2 — Incumplimiento del arrendador', value: 'INCUMPLIMIENTO_ARRENDADOR' },
+    { label: '§12.3 — Incumplimiento del arrendatario', value: 'INCUMPLIMIENTO_ARRENDATARIO' },
+    { label: '§12.4 — Caso fortuito o fuerza mayor', value: 'FUERZA_MAYOR' },
+    { label: '§12.5 — Vencimiento de plazo', value: 'VENCIMIENTO' },
+    { label: '§12.6 — Decisión unilateral (con preaviso)', value: 'DECISION_UNILATERAL' },
+    { label: '§12.7 — Quiebra / insolvencia', value: 'QUIEBRA' },
+    { label: '§12.8 — Muerte o incapacidad del arrendador', value: 'INCAPACIDAD' },
+    { label: '§12.9 — Intervención judicial', value: 'JUDICIAL' },
+    { label: '§12.10 — Otras causas previstas', value: 'OTRO' },
+  ];
+
   get header(): EntityDetailHeader {
     return {
       icon: 'fa-solid fa-file-contract',
@@ -1229,30 +1251,33 @@ export class ContractDetailComponent implements OnInit {
     });
   }
 
-  onObligacionEstadoChange(ob: any, event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const nuevoEstado = select.value as 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA';
-    this.savingObligacion = true;
-    this.contractService.updateObligacion(ob.id, { estado: nuevoEstado }).subscribe({
-      next: (updated) => {
-        const idx = this.obligaciones.findIndex((o) => o.id === ob.id);
-        if (idx !== -1) this.obligaciones[idx] = updated;
-        this.savingObligacion = false;
-      },
-      error: (err) => {
-        console.error('Error updating obligacion', err);
-        select.value = ob.estado; // revert on error
-        this.savingObligacion = false;
-      },
-    });
-  }
-
   countObligaciones(estado: string): number {
     return this.obligaciones.filter((o) => o.estado === estado).length;
   }
 
   translateObligacion(tipo: string): string {
     return OBLIGACION_LABELS[tipo] || tipo;
+  }
+
+  updateObligacionEstado(ob: ContractObligacion, nuevoEstado: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA'): void {
+    if (!ob || !nuevoEstado) return;
+    this.savingObligacion = true;
+    this.contractService.updateObligacion(ob.id, { estado: nuevoEstado }).subscribe({
+      next: (updated) => {
+        const idx = this.obligaciones.findIndex((o) => o.id === ob.id);
+        if (idx !== -1) {
+          this.obligaciones[idx] = updated;
+        }
+        this.savingObligacion = false;
+      },
+      error: (err) => {
+        console.error('Error updating obligacion', err);
+        this.savingObligacion = false;
+        // The dropdown component uses its own internal state,
+        // but since we use [ngModel], it should sync back if we force a re-render
+        // or we could add more complex state management if needed.
+      },
+    });
   }
 
   // ─── WS-22: Obligaciones del Arrendatario ───────────────────────────────
@@ -1278,16 +1303,17 @@ export class ContractDetailComponent implements OnInit {
     });
   }
 
-  onObligacionArrendatarioEstadoChange(ob: ContractObligacionArrendatario, event: Event): void {
-    const estado = (event.target as HTMLSelectElement).value as
-      | 'PENDIENTE'
-      | 'CUMPLIDA'
-      | 'INCUMPLIDA';
+  updateObligacionArrendatarioEstado(
+    ob: ContractObligacionArrendatario,
+    estado: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA'
+  ): void {
     this.savingObligacionArrendatario = true;
     this.contractService.updateObligacionArrendatario(ob.id, { estado }).subscribe({
       next: (updated) => {
         const idx = this.obligacionesArrendatario.findIndex((o) => o.id === ob.id);
-        if (idx !== -1) this.obligacionesArrendatario[idx] = updated;
+        if (idx !== -1) {
+          this.obligacionesArrendatario[idx] = updated;
+        }
         this.savingObligacionArrendatario = false;
       },
       error: (err) => {

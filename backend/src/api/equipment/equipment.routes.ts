@@ -17,14 +17,60 @@ const equipmentController = new EquipmentController();
 
 router.use(authenticate);
 
+/**
+ * @openapi
+ * /api/equipment:
+ *   get:
+ *     tags:
+ *       - Equipment
+ *     summary: Get all equipment
+ *     description: Retrieve a list of all equipment with optional filters and pagination.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of equipment retrieved
+ */
 router.get('/', equipmentController.findAll);
 router.get('/available', equipmentController.getAvailable);
 router.get('/types', equipmentController.getTypes);
+/**
+ * @openapi
+ * /api/equipment/statistics:
+ *   get:
+ *     tags:
+ *       - Equipment
+ *     summary: Get equipment statistics
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Statistics retrieved
+ */
 router.get(
   '/statistics',
   authorize(ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.ADMIN),
   equipmentController.getStatistics
 );
+/**
+ * @openapi
+ * /api/equipment/{id}:
+ *   get:
+ *     tags:
+ *       - Equipment
+ *     summary: Get equipment by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Equipment found
+ */
 router.get('/:id', equipmentController.findById);
 router.post(
   '/',

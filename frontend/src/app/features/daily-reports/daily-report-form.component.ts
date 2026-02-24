@@ -6,6 +6,7 @@ import { DailyReportService } from '../../core/services/daily-report.service';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { AuthService } from '../../core/services/auth.service';
 import { GpsService, GpsPosition } from '../../core/services/gps.service';
+import { WebMcpService } from '../../core/services/webmcp.service';
 import { CreateDailyReportDto } from '../../core/models/daily-report.model';
 import { Equipment } from '../../core/models/equipment.model';
 import {
@@ -383,6 +384,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           (click)="downloadPdf()"
           [disabled]="downloadingPdf"
           title="Descargar PDF"
+          data-testid="btn-download-pdf"
         >
           <i class="fa-solid fa-file-pdf"></i>
         </button>
@@ -552,6 +554,7 @@ export class DailyReportFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private errorHandler = inject(FormErrorHandlerService);
+  private webMcpService = inject(WebMcpService);
 
   report: CreateDailyReportDto = {
     fecha_parte: new Date().toISOString().split('T')[0],
@@ -617,6 +620,7 @@ export class DailyReportFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadEquipment();
+    this.registerWebMcpTools();
 
     const id = this.route.snapshot.params['id'];
     // Check if we are in edit mode or view mode
@@ -681,6 +685,35 @@ export class DailyReportFormComponent implements OnInit {
     if (user) {
       this.report.trabajador_id = Number(user.id);
     }
+  }
+
+  private registerWebMcpTools(): void {
+    this.webMcpService.registerTool({
+      name: 'fill_daily_report',
+      description: 'Pre-fills the daily report form with provided data such as hours, observations, and fuel.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          turno: { type: 'string', enum: ['DIA', 'NOCHE'] },
+          hora_inicio: { type: 'string', description: 'HH:MM format' },
+          hora_fin: { type: 'string', description: 'HH:MM format' },
+          horometro_inicial: { type: 'number' },
+          horometro_final: { type: 'number' },
+          lugar_salida: { type: 'string' },
+          observaciones: { type: 'string' },
+          diesel_gln: { type: 'number' },
+          gasolina_gln: { type: 'number' }
+        }
+      },
+      execute: async (args: Partial<CreateDailyReportDto>) => {
+        // Apply provided fields to the report model
+        this.report = {
+          ...this.report,
+          ...args
+        };
+        return { success: true, message: 'Daily report pre-filled successfully' };
+      }
+    });
   }
 
   onEquipmentChange(): void {

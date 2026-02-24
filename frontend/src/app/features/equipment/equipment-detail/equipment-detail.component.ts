@@ -8,6 +8,7 @@ import { Equipment } from '../../../core/models/equipment.model';
 import { DailyReportService } from '../../../core/services/daily-report.service';
 import { ContractService } from '../../../core/services/contract.service';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import {
   EntityDetailShellComponent,
   EntityDetailHeader,
@@ -334,34 +335,23 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
 
       .detail-tabs {
         display: flex;
-        overflow-x: auto;
-        scrollbar-width: none;
+        flex-wrap: wrap;
+        gap: 8px;
         margin-bottom: var(--s-24);
-        border-bottom: 2px solid var(--grey-200);
-
-        &::-webkit-scrollbar {
-          display: none;
-        }
 
         .tab-link {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 10px 14px;
-          border: none;
-          background: none;
-          color: var(--grey-500);
+          padding: 8px 16px;
+          border-radius: 20px;
+          border: 1px solid var(--grey-200);
+          background: var(--neutral-0);
+          color: var(--grey-600);
           font-weight: 500;
           cursor: pointer;
-          transition:
-            color 0.15s,
-            border-color 0.15s,
-            background 0.15s;
-          border-bottom: 2px solid transparent;
-          margin-bottom: -2px;
+          transition: all 0.2s;
           font-size: 13px;
-          white-space: nowrap;
-          flex-shrink: 0;
 
           i {
             opacity: 0.7;
@@ -369,13 +359,15 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
           }
 
           &:hover {
-            color: var(--primary-700);
             background: var(--grey-50);
+            border-color: var(--grey-300);
+            color: var(--primary-700);
           }
 
           &.active {
+            background: var(--primary-50);
+            border-color: var(--primary-200);
             color: var(--primary-700);
-            border-bottom-color: var(--primary-500);
             font-weight: 600;
             i {
               opacity: 1;
@@ -598,6 +590,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   private contractService = inject(ContractService);
   private maintenanceService = inject(MaintenanceScheduleService);
   private solicitudService = inject(SolicitudEquipoService);
+  private confirmSvc = inject(ConfirmService);
   private destroy$ = new Subject<void>();
 
   loading = true;
@@ -830,13 +823,12 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   }
 
   deleteEquipment(): void {
-    if (
-      confirm(
-        `¿Estás seguro de que quieres eliminar este equipo? esta acción no se puede deshacer.`
-      )
-    ) {
-      this.confirmDelete();
-    }
+    if (!this.equipment) return;
+    this.confirmSvc.confirmDelete(`el equipo ${this.equipment.codigo_equipo}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.confirmDelete();
+      }
+    });
   }
 
   confirmDelete(): void {

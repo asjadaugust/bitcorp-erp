@@ -7,6 +7,8 @@ import {
   PageLayoutComponent,
   Breadcrumb,
 } from '../../shared/components/page-layout/page-layout.component';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-acta-devolucion-form',
@@ -138,7 +140,7 @@ import {
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn btn-outline-secondary" routerLink="../">
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelar(f)">
               Cancelar
             </button>
             <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
@@ -192,6 +194,7 @@ export class ActaDevolucionFormComponent implements OnInit {
   private service = inject(ActaDevolucionService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
 
   isEdit = false;
   loading = false;
@@ -270,5 +273,25 @@ export class ActaDevolucionFormComponent implements OnInit {
         this.saving = false;
       },
     });
+  }
+
+  cancelar(f: NgForm) {
+    if (f.dirty) {
+      this.confirmSvc
+        .confirm({
+          title: 'Confirmar Cancelación',
+          message: '¿Está seguro de cancelar? Los cambios no guardados se perderán.',
+          icon: 'fa-triangle-exclamation',
+          confirmLabel: 'Salir sin guardar',
+          isDanger: true,
+        })
+        .subscribe((confirmed) => {
+          if (confirmed) {
+            this.router.navigate(['/equipment/actas-devolucion']);
+          }
+        });
+    } else {
+      this.router.navigate(['/equipment/actas-devolucion']);
+    }
   }
 }

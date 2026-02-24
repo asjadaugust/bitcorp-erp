@@ -2,11 +2,10 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import {
-  PrecalentamientoConfigService,
-  PrecalentamientoConfig,
-} from '../../core/services/precalentamiento-config.service';
+import { PrecalentamientoConfigService, PrecalentamientoConfig } from '../../core/services/precalentamiento-config.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
+import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
+import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 interface EditState {
   tipoEquipoId: number;
@@ -16,7 +15,7 @@ interface EditState {
 @Component({
   selector: 'app-precalentamiento-config-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent, AeroCardComponent],
   template: `
     <app-page-layout
       title="Config. de Precalentamiento"
@@ -24,128 +23,132 @@ interface EditState {
       icon="fa-fire-flame-curved"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="moduleTabs"
     >
-      <!-- Info banner -->
-      <div class="info-banner" data-testid="info-banner">
-        <i class="fa-solid fa-circle-info"></i>
-        <span>
-          Según el <strong>Anexo B</strong> del PRD: Maquinaria Pesada = 0.50 h, Vehículos Pesados =
-          0.25 h, Vehículos Livianos / Equipos Menores = 0.00 h. Estos valores se aplican
-          automáticamente al crear un parte diario.
-        </span>
-      </div>
-
-      <!-- Save / Error alerts -->
-      @if (saveSuccess) {
-        <div class="alert alert-success" data-testid="save-success-alert">
-          <i class="fa-solid fa-circle-check"></i> Configuración guardada correctamente.
+      <aero-card>
+        <!-- Info banner -->
+        <div class="info-banner" data-testid="info-banner">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>
+            Según el <strong>Anexo B</strong> del PRD: Maquinaria Pesada = 0.50 h, Vehículos Pesados =
+            0.25 h, Vehículos Livianos / Equipos Menores = 0.00 h. Estos valores se aplican
+            automáticamente al crear un parte diario.
+          </span>
         </div>
-      }
-      @if (saveError) {
-        <div class="alert alert-danger" data-testid="save-error-alert">
-          <i class="fa-solid fa-circle-xmark"></i> {{ saveError }}
-        </div>
-      }
 
-      <!-- Config table -->
-      <div class="config-table-wrapper" data-testid="config-table">
-        <table class="config-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Tipo de Equipo</th>
-              <th>Categoría PRD</th>
-              <th class="col-horas">Horas Precalentamiento</th>
-              <th class="col-actions">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (cfg of configs; track cfg.tipo_equipo_id) {
-              <tr [attr.data-testid]="'row-' + cfg.tipo_equipo_id">
-                <td>
-                  <span class="tipo-codigo" data-testid="tipo-codigo">{{
-                    cfg.tipo_equipo_codigo
-                  }}</span>
-                </td>
-                <td>
-                  <span class="tipo-nombre" data-testid="tipo-nombre">{{
-                    cfg.tipo_equipo_nombre
-                  }}</span>
-                </td>
-                <td>
-                  <span
-                    class="cat-badge"
-                    [ngClass]="getCatClass(cfg.categoria_prd)"
-                    data-testid="cat-badge"
-                    >{{ getCatLabel(cfg.categoria_prd) }}</span
-                  >
-                </td>
-                <td class="col-horas">
-                  @if (editState?.tipoEquipoId === cfg.tipo_equipo_id) {
-                    <input
-                      type="number"
-                      class="horas-input"
-                      [attr.data-testid]="'horas-input-' + cfg.tipo_equipo_id"
-                      [(ngModel)]="editState!.horas"
-                      min="0"
-                      max="24"
-                      step="0.25"
-                      (keydown.enter)="guardar()"
-                      (keydown.escape)="cancelar()"
-                    />
-                    <span class="unit-label">h</span>
-                  } @else {
-                    <span
-                      class="horas-value"
-                      [attr.data-testid]="'horas-value-' + cfg.tipo_equipo_id"
-                    >
-                      {{ cfg.horas_precalentamiento | number: '1.2-2' }} h
-                    </span>
-                  }
-                </td>
-                <td class="col-actions">
-                  @if (editState?.tipoEquipoId === cfg.tipo_equipo_id) {
-                    <button
-                      class="btn btn-sm btn-primary"
-                      [attr.data-testid]="'save-btn-' + cfg.tipo_equipo_id"
-                      [disabled]="saving"
-                      (click)="guardar()"
-                    >
-                      <i class="fa-solid fa-check"></i>
-                      {{ saving ? 'Guardando…' : 'Guardar' }}
-                    </button>
-                    <button
-                      class="btn btn-sm btn-ghost"
-                      [attr.data-testid]="'cancel-btn-' + cfg.tipo_equipo_id"
-                      (click)="cancelar()"
-                    >
-                      <i class="fa-solid fa-xmark"></i> Cancelar
-                    </button>
-                  } @else {
-                    <button
-                      class="btn btn-sm btn-ghost"
-                      [attr.data-testid]="'edit-btn-' + cfg.tipo_equipo_id"
-                      (click)="editar(cfg)"
-                    >
-                      <i class="fa-solid fa-pencil"></i> Editar
-                    </button>
-                  }
-                </td>
-              </tr>
-            } @empty {
+        <!-- Save / Error alerts -->
+        @if (saveSuccess) {
+          <div class="alert alert-success" data-testid="save-success-alert">
+            <i class="fa-solid fa-circle-check"></i> Configuración guardada correctamente.
+          </div>
+        }
+        @if (saveError) {
+          <div class="alert alert-danger" data-testid="save-error-alert">
+            <i class="fa-solid fa-circle-xmark"></i> {{ saveError }}
+          </div>
+        }
+
+        <!-- Config table -->
+        <div class="config-table-wrapper" data-testid="config-table">
+          <table class="config-table">
+            <thead>
               <tr>
-                <td colspan="5" class="empty-state" data-testid="empty-state">
-                  @if (loading) {
-                    <i class="fa-solid fa-spinner fa-spin"></i> Cargando…
-                  } @else {
-                    No hay configuraciones disponibles.
-                  }
-                </td>
+                <th>Código</th>
+                <th>Tipo de Equipo</th>
+                <th>Categoría PRD</th>
+                <th class="col-horas">Horas Precalentamiento</th>
+                <th class="col-actions">Acciones</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (cfg of configs; track cfg.tipo_equipo_id) {
+                <tr [attr.data-testid]="'row-' + cfg.tipo_equipo_id">
+                  <td>
+                    <span class="tipo-codigo" data-testid="tipo-codigo">{{
+                      cfg.tipo_equipo_codigo
+                    }}</span>
+                  </td>
+                  <td>
+                    <span class="tipo-nombre" data-testid="tipo-nombre">{{
+                      cfg.tipo_equipo_nombre
+                    }}</span>
+                  </td>
+                  <td>
+                    <span
+                      class="cat-badge"
+                      [ngClass]="getCatClass(cfg.categoria_prd)"
+                      data-testid="cat-badge"
+                      >{{ getCatLabel(cfg.categoria_prd) }}</span
+                    >
+                  </td>
+                  <td class="col-horas">
+                    @if (editState?.tipoEquipoId === cfg.tipo_equipo_id) {
+                      <input
+                        type="number"
+                        class="horas-input"
+                        [attr.data-testid]="'horas-input-' + cfg.tipo_equipo_id"
+                        [(ngModel)]="editState!.horas"
+                        min="0"
+                        max="24"
+                        step="0.25"
+                        (keydown.enter)="guardar()"
+                        (keydown.escape)="cancelar()"
+                      />
+                      <span class="unit-label">h</span>
+                    } @else {
+                      <span
+                        class="horas-value"
+                        [attr.data-testid]="'horas-value-' + cfg.tipo_equipo_id"
+                      >
+                        {{ cfg.horas_precalentamiento | number: '1.2-2' }} h
+                      </span>
+                    }
+                  </td>
+                  <td class="col-actions">
+                    @if (editState?.tipoEquipoId === cfg.tipo_equipo_id) {
+                      <button
+                        class="btn btn-sm btn-primary"
+                        [attr.data-testid]="'save-btn-' + cfg.tipo_equipo_id"
+                        [disabled]="saving"
+                        (click)="guardar()"
+                      >
+                        <i class="fa-solid fa-check"></i>
+                        {{ saving ? 'Guardando…' : 'Guardar' }}
+                      </button>
+                      <button
+                        class="btn btn-sm btn-ghost"
+                        [attr.data-testid]="'cancel-btn-' + cfg.tipo_equipo_id"
+                        (click)="cancelar()"
+                      >
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                      </button>
+                    } @else {
+                      <button
+                        class="btn-icon"
+                        [attr.data-testid]="'edit-btn-' + cfg.tipo_equipo_id"
+                        (click)="editar(cfg)"
+                        title="Editar"
+                      >
+                        <i class="fa-solid fa-pencil"></i>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="empty-state" data-testid="empty-state">
+                    @if (loading) {
+                      <i class="fa-solid fa-spinner fa-spin"></i> Cargando…
+                    } @else {
+                      No hay configuraciones disponibles.
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </aero-card>
     </app-page-layout>
   `,
   styles: [
@@ -194,7 +197,7 @@ interface EditState {
 
       .config-table-wrapper {
         overflow-x: auto;
-        border: 1px solid var(--grey-200);
+        border: 1px solid var(--grey-100);
         border-radius: var(--radius-md);
       }
 
@@ -205,20 +208,23 @@ interface EditState {
 
         thead tr {
           background: var(--grey-50);
-          border-bottom: 2px solid var(--grey-200);
+          border-bottom: 2px solid var(--grey-100);
         }
 
         th {
-          padding: 10px 14px;
+          padding: 12px 16px;
           text-align: left;
           font-weight: 600;
           color: var(--grey-700);
           white-space: nowrap;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
 
         td {
-          padding: 10px 14px;
-          border-bottom: 1px solid var(--grey-100);
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--grey-50);
           vertical-align: middle;
         }
 
@@ -226,7 +232,7 @@ interface EditState {
           border-bottom: none;
         }
         tbody tr:hover {
-          background: var(--grey-50);
+          background: var(--grey-25, #fcfcfd);
         }
       }
 
@@ -310,10 +316,27 @@ interface EditState {
         background: none;
         border: 1px solid var(--grey-300);
         color: var(--grey-600);
+        font-weight: 500;
 
         &:hover {
           background: var(--grey-100);
           color: var(--grey-800);
+        }
+      }
+
+      .btn-icon {
+        background: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        padding: var(--s-4) var(--s-8);
+        color: var(--grey-500);
+        border-radius: var(--radius-sm);
+        transition: all 0.2s;
+
+        &:hover {
+          background: var(--primary-50);
+          color: var(--primary-600);
         }
       }
 
@@ -344,6 +367,7 @@ export class PrecalentamientoConfigListComponent implements OnInit {
 
   configs: PrecalentamientoConfig[] = [];
   loading = false;
+  moduleTabs = EQUIPMENT_MODULE_TABS;
   saving = false;
   saveSuccess = false;
   saveError: string | null = null;

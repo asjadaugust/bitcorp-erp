@@ -44,7 +44,6 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         { label: 'Programación' },
       ]"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" (click)="createSchedule()">
@@ -201,15 +200,7 @@ export class MaintenanceScheduleListComponent implements OnInit {
     },
   ];
 
-  tabs: TabItem[] = [
-    { label: 'Dashboard', route: '/equipment/dashboard', icon: 'fa-chart-line' },
-    { label: 'Equipos', route: '/equipment', icon: 'fa-list' },
-    { label: 'Solicitudes', route: '/equipment/solicitudes', icon: 'fa-file-invoice' },
-    { label: 'Partes Diarios', route: '/equipment/daily-reports', icon: 'fa-clipboard-list' },
-    { label: 'Mantenimiento', route: '/equipment/maintenance', icon: 'fa-wrench' },
-    { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-contract' },
-    { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
-  ];
+
 
   currentFilters: any = {};
 

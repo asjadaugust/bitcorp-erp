@@ -10,6 +10,7 @@ import { OperatorService } from '../../../../core/services/operator.service';
 import { DailyReportService } from '../../../../core/services/daily-report.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PrecalentamientoConfigService } from '../../../../core/services/precalentamiento-config.service';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 import {
   DropdownComponent,
   DropdownOption,
@@ -40,7 +41,7 @@ export interface DailyReportFormData {
 }
 
 @Component({
-  selector: 'app-daily-report-form',
+  selector: 'app-equipment-daily-report-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, DropdownComponent],
   templateUrl: './daily-report-form.component.html',
@@ -88,7 +89,8 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     private dailyReportService: DailyReportService,
     private authService: AuthService,
     private precalentamientoService: PrecalentamientoConfigService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private confirmSvc: ConfirmService
   ) {}
 
   ngOnInit(): void {
@@ -100,9 +102,12 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     // Check if editing existing report
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const id = params.get('id');
+      console.log('DailyReportFormComponent - Route Param ID:', id);
       if (id) {
         this.reportId = id;
         this.loadReport(this.reportId);
+      } else {
+        this.reportId = undefined;
       }
     });
   }
@@ -569,9 +574,19 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   cancel(): void {
     if (this.reportForm.dirty) {
-      if (confirm('¿Está seguro de cancelar? Los cambios no guardados se perderán.')) {
-        this.router.navigate(['/equipment/daily-reports']);
-      }
+      this.confirmSvc
+        .confirm({
+          title: 'Confirmar Cancelación',
+          message: '¿Está seguro de cancelar? Los cambios no guardados se perderán.',
+          icon: 'fa-triangle-exclamation',
+          confirmLabel: 'Salir sin guardar',
+          isDanger: true,
+        })
+        .subscribe((confirmed) => {
+          if (confirmed) {
+            this.router.navigate(['/equipment/daily-reports']);
+          }
+        });
     } else {
       this.router.navigate(['/equipment/daily-reports']);
     }
