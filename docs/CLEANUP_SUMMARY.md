@@ -229,3 +229,58 @@ All removed files are available at:
 - No source code or essential configuration was lost
 - Project structure now matches habitsforgood best practices
 - Ready for clean Synology NAS deployment
+  Remaining P2 (High Priority)
+
+
+
+  ┌─────┬─────────────────────────────────────────┬─────────┬───────────────────────────────────────────────────────────────┐
+  │  #  │                 Feature                 │ Status  │                             Notes                             │
+  ├─────┼─────────────────────────────────────────┼─────────┼───────────────────────────────────────────────────────────────┤
+  │ 1   │ Requerimiento de Equipo (CORP-LA-F-001) │ Missing │ Full new module — formal approval flow for equipment requests │
+  ├─────┼─────────────────────────────────────────┼─────────┼───────────────────────────────────────────────────────────────┤
+  │ 5   │ Checklist Pre-Uso / Incorporación       │ Partial │ Checklists exist, but no incorporation gate                   │
+  └─────┴─────────────────────────────────────────┴─────────┴───────────────────────────────────────────────────────────────┘
+
+  Remaining P3 (Medium Priority) — Feasible
+
+  ┌─────┬───────────────────────────────────────────┬─────────┬────────────────────────────────────────────────┐
+  │  #  │                  Feature                  │ Status  │                     Effort                     │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 27  │ Tabla Precalentamiento Configurable       │ Partial │ Low — tipo_equipo table already exists (WS-18) │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 45  │ Acta Entrega Equipo PDF                   │ Missing │ Low — follows contract/valuation PDF pattern   │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 43  │ Reportes de Cumplimiento Normativo        │ Missing │ Medium — pure queries, no new entities         │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 15  │ Flujo Informe Gastos de Obra              │ Partial │ Medium — WorkExpense entity exists             │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 16  │ Flujo Informe Adelantos                   │ Partial │ Medium — AdvanceAmortization entity exists     │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 33  │ PDF Parte Diario formato exacto           │ Partial │ Medium — PDF exists, needs format alignment    │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 36  │ Tipo de Cambio Automático (USD contracts) │ Missing │ Medium — tipoCambio field exists in valuation  │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 25  │ Modalidades Servida (enum vs free text)   │ Partial │ Low — simple enum change in contract           │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 8   │ Legalización y Flujo Firmas Contrato      │ Missing │ High — new workflow states for contract        │
+  ├─────┼───────────────────────────────────────────┼─────────┼────────────────────────────────────────────────┤
+  │ 21  │ Tracking Obligaciones Arrendador          │ Missing │ Medium — checklist concept per contract        │
+  └─────┴───────────────────────────────────────────┴─────────┴────────────────────────────────────────────────┘
+
+
+
+
+
+
+
+  WS-19: #27 Precalentamiento Configurable — Low effort. Add config table equipo.precalentamiento_config with hours-per-tipo, use tipo_equipo from WS-18. Auto-apply to daily reports.
+
+  WS-20: #45 Acta de Entrega PDF — Low-medium. New entity acta_entrega + PDF generation following the pattern in WS-5. Links to equipment desmovilización.
+
+  WS-21: #1 Requerimiento de Equipo — Higher effort but P2 — full CRUD module following contract/order pattern.
+
+  WS-22: #36 Tipo de Cambio — Medium effort. Daily exchange rate management + auto-apply to valuations when contract currency is USD.
+
+  WS-23: #43 Reportes Cumplimiento — Medium. Queries against existing entities (equipment docs, operator docs, checklist completions) into a compliance dashboard.
+
+  
