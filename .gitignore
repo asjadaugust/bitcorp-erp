@@ -87,3 +87,6 @@ logs.txt
 .opencode/skill/frontend-design/
 # Keep custom skills committed:
 # !.opencode/skill/bitcorp-prd-analyzer/
+
+# dora code context index
+.dora/
