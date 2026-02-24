@@ -280,6 +280,14 @@ export const routes: Routes = [
             (m) => m.NotificacionesListComponent
           ),
       },
+      // Analytics
+      {
+        path: 'analytics',
+        loadComponent: () =>
+          import('./features/analytics/analytics-dashboard.component').then(
+            (m) => m.AnalyticsDashboardComponent
+          ),
+      },
     ],
   },
 

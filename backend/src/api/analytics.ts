@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Router, Request, Response } from 'express';
 import { equipmentAnalyticsService } from '../services/equipment-analytics.service';
+import {
+  toUtilizacionDto,
+  toTendenciaUtilizacionDto,
+  toFlotaUtilizacionDto,
+  toCombustibleDto,
+  toTendenciaCombustibleDto,
+} from '../types/dto/analitica.dto';
+import { sendSuccess, sendError } from '../utils/api-response';
 import { authenticate } from '../middleware/auth.middleware';
 import Logger from '../utils/logger';
 
@@ -15,7 +23,7 @@ router.get('/equipment/:id/utilization', authenticate, async (req: Request, res:
     const equipmentId = parseInt(req.params.id);
     const startDate = req.query.startDate
       ? new Date(req.query.startDate as string)
-      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default: last 30 days
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
     const metrics = await equipmentAnalyticsService.getEquipmentUtilization(
@@ -23,22 +31,19 @@ router.get('/equipment/:id/utilization', authenticate, async (req: Request, res:
       startDate,
       endDate
     );
-
-    res.json({
-      success: true,
-      data: metrics,
-    });
+    sendSuccess(res, toUtilizacionDto(metrics));
   } catch (error: any) {
     Logger.error('Error fetching equipment utilization', {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
       equipmentId: req.params.id,
       context: 'Analytics.equipmentUtilization',
     });
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to fetch equipment utilization',
-    });
+    sendError(
+      res,
+      'ANALYTICS_ERROR',
+      error.message || 'Error al obtener utilización del equipo',
+      500
+    );
   }
 });
 
@@ -62,22 +67,19 @@ router.get(
         startDate,
         endDate
       );
-
-      res.json({
-        success: true,
-        data: trend,
-      });
+      sendSuccess(res, trend.map(toTendenciaUtilizacionDto));
     } catch (error: any) {
       Logger.error('Error fetching utilization trend', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
         equipmentId: req.params.id,
         context: 'Analytics.utilizationTrend',
       });
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to fetch utilization trend',
-      });
+      sendError(
+        res,
+        'ANALYTICS_ERROR',
+        error.message || 'Error al obtener tendencia de utilización',
+        500
+      );
     }
   }
 );
@@ -99,21 +101,18 @@ router.get('/fleet/utilization', authenticate, async (req: Request, res: Respons
       endDate,
       projectId
     );
-
-    res.json({
-      success: true,
-      data: metrics,
-    });
+    sendSuccess(res, toFlotaUtilizacionDto(metrics));
   } catch (error: any) {
     Logger.error('Error fetching fleet utilization', {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
       context: 'Analytics.fleetUtilization',
     });
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to fetch fleet utilization',
-    });
+    sendError(
+      res,
+      'ANALYTICS_ERROR',
+      error.message || 'Error al obtener utilización de flota',
+      500
+    );
   }
 });
 
@@ -130,22 +129,19 @@ router.get('/equipment/:id/fuel', authenticate, async (req: Request, res: Respon
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
     const metrics = await equipmentAnalyticsService.getFuelMetrics(equipmentId, startDate, endDate);
-
-    res.json({
-      success: true,
-      data: metrics,
-    });
+    sendSuccess(res, toCombustibleDto(metrics));
   } catch (error: any) {
     Logger.error('Error fetching fuel metrics', {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
       equipmentId: req.params.id,
       context: 'Analytics.fuelMetrics',
     });
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to fetch fuel metrics',
-    });
+    sendError(
+      res,
+      'ANALYTICS_ERROR',
+      error.message || 'Error al obtener métricas de combustible',
+      500
+    );
   }
 });
 
@@ -162,22 +158,19 @@ router.get('/equipment/:id/fuel-trend', authenticate, async (req: Request, res: 
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
     const trend = await equipmentAnalyticsService.getFuelTrend(equipmentId, startDate, endDate);
-
-    res.json({
-      success: true,
-      data: trend,
-    });
+    sendSuccess(res, trend.map(toTendenciaCombustibleDto));
   } catch (error: any) {
     Logger.error('Error fetching fuel trend', {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
       equipmentId: req.params.id,
       context: 'Analytics.fuelTrend',
     });
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to fetch fuel trend',
-    });
+    sendError(
+      res,
+      'ANALYTICS_ERROR',
+      error.message || 'Error al obtener tendencia de combustible',
+      500
+    );
   }
 });
 
@@ -199,21 +192,19 @@ router.get('/equipment/:id/maintenance', authenticate, async (req: Request, res:
       endDate
     );
 
-    res.json({
-      success: true,
-      data: metrics,
-    });
+    sendSuccess(res, metrics);
   } catch (error: any) {
     Logger.error('Error fetching maintenance metrics', {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
       equipmentId: req.params.id,
       context: 'Analytics.maintenanceMetrics',
     });
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to fetch maintenance metrics',
-    });
+    sendError(
+      res,
+      'ANALYTICS_ERROR',
+      error.message || 'Error al obtener métricas de mantenimiento',
+      500
+    );
   }
 });
 

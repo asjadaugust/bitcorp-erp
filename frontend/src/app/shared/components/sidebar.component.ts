@@ -391,6 +391,12 @@ export class SidebarComponent {
     },
     { label: 'Operadores', route: '/operators', icon: 'fa-solid fa-id-card' },
     { label: 'Checklists', route: '/checklists', icon: 'fa-solid fa-clipboard-check' },
+    {
+      label: 'Analítica',
+      route: '/analytics',
+      icon: 'fa-solid fa-chart-line',
+      roles: ['ADMIN', 'DIRECTOR', 'JEFE_EQUIPO'],
+    },
     // Note: Daily Reports, Contracts, and Valuations are accessed via tabs in Equipment module
   ];
 
