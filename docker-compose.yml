@@ -13,6 +13,11 @@ services:
       - postgres_dev_data:/var/lib/postgresql/data
     networks:
       - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U bitcorp -d bitcorp_dev" ]
       interval: 10s
@@ -29,6 +34,11 @@ services:
     networks:
       - bitcorp-network
     command: redis-server --appendonly yes
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ 'CMD', 'redis-cli', 'ping' ]
       interval: 10s
@@ -59,6 +69,11 @@ services:
         condition: service_healthy
     networks:
       - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     tty: true
     command: npm run dev
 
@@ -81,6 +96,11 @@ services:
       - /app/node_modules
     networks:
       - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     tty: true
     command: [ 'sh', '-c', 'npm install && npm start' ]
 
@@ -97,6 +117,11 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     networks:
       - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - postgres
 
@@ -117,6 +142,11 @@ services:
         condition: service_started
     networks:
       - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     profiles:
       - test
 

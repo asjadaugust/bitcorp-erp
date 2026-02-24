@@ -157,7 +157,9 @@ export class PaymentRecordService {
           'p.paymentMethod',
           'p.status',
           'p.reconciled',
+          'p.operationNumber',
           'p.observations',
+          'p.createdAt',
         ]);
 
       // Apply filters
@@ -213,7 +215,9 @@ export class PaymentRecordService {
         metodo_pago: p.paymentMethod,
         estado: p.status,
         conciliado: p.reconciled,
+        numero_operacion: p.operationNumber || undefined,
         observaciones: p.observations || undefined,
+        created_at: p.createdAt.toISOString(),
       }));
 
       return {
@@ -251,7 +255,9 @@ export class PaymentRecordService {
         metodo_pago: p.paymentMethod,
         estado: p.status,
         conciliado: p.reconciled,
+        numero_operacion: p.operationNumber || undefined,
         observaciones: p.observations || undefined,
+        created_at: p.createdAt.toISOString(),
       }));
     } catch (error) {
       Logger.error(`Error fetching payments for valuation ${valuationId}:`, error);

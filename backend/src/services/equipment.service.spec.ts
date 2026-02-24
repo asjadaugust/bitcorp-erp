@@ -101,50 +101,50 @@ describe('EquipmentService', () => {
   });
 
   describe('Method Signatures', () => {
-    it('findAll should accept filter, page, and limit parameters', () => {
-      // Note: function.length only counts parameters before first default
-      // findAll(filter?, page = 1, limit = 10) has length 1 (filter has no default)
-      expect(service.findAll.length).toBe(1);
+    it('findAll should accept tenantId, filter, page, and limit parameters', () => {
+      // tenantId is required, filter is optional (no default counts toward length)
+      // findAll(tenantId: number, filter?, page = 1, limit = 10) has length 2
+      expect(service.findAll.length).toBe(2);
     });
 
-    it('findById should accept id parameter', () => {
-      expect(service.findById.length).toBe(1);
+    it('findById should accept tenantId and id parameters', () => {
+      expect(service.findById.length).toBe(2);
     });
 
-    it('findByCode should accept codigo parameter', () => {
-      expect(service.findByCode.length).toBe(1);
+    it('findByCode should accept tenantId and codigo parameters', () => {
+      expect(service.findByCode.length).toBe(2);
     });
 
-    it('create should accept data parameter', () => {
-      expect(service.create.length).toBe(1);
+    it('create should accept tenantId and data parameters', () => {
+      expect(service.create.length).toBe(2);
     });
 
-    it('update should accept id and data parameters', () => {
-      expect(service.update.length).toBe(2);
+    it('update should accept tenantId, id, and data parameters', () => {
+      expect(service.update.length).toBe(3);
     });
 
-    it('delete should accept id parameter', () => {
-      expect(service.delete.length).toBe(1);
+    it('delete should accept tenantId and id parameters', () => {
+      expect(service.delete.length).toBe(2);
     });
 
-    it('updateStatus should accept id and estado parameters', () => {
-      expect(service.updateStatus.length).toBe(2);
+    it('updateStatus should accept tenantId, id, and estado parameters', () => {
+      expect(service.updateStatus.length).toBe(3);
     });
 
-    it('updateHourmeter should accept id and reading parameters', () => {
-      expect(service.updateHourmeter.length).toBe(2);
+    it('updateHourmeter should accept tenantId, id, and reading parameters', () => {
+      expect(service.updateHourmeter.length).toBe(3);
     });
 
-    it('updateOdometer should accept id and reading parameters', () => {
-      expect(service.updateOdometer.length).toBe(2);
+    it('updateOdometer should accept tenantId, id, and reading parameters', () => {
+      expect(service.updateOdometer.length).toBe(3);
     });
 
-    it('getStatistics should accept no required parameters', () => {
-      expect(service.getStatistics.length).toBe(0);
+    it('getStatistics should accept tenantId parameter', () => {
+      expect(service.getStatistics.length).toBe(1);
     });
 
-    it('getEquipmentTypes should accept no required parameters', () => {
-      expect(service.getEquipmentTypes.length).toBe(0);
+    it('getEquipmentTypes should accept tenantId parameter', () => {
+      expect(service.getEquipmentTypes.length).toBe(1);
     });
 
     it('assignToProject should accept id and data parameters', () => {
@@ -159,8 +159,8 @@ describe('EquipmentService', () => {
       expect(service.getAvailability.length).toBe(3);
     });
 
-    it('getAvailableEquipment should accept no required parameters', () => {
-      expect(service.getAvailableEquipment.length).toBe(0);
+    it('getAvailableEquipment should accept tenantId parameter', () => {
+      expect(service.getAvailableEquipment.length).toBe(1);
     });
 
     it('getAssignmentHistory should accept equipmentId parameter', () => {

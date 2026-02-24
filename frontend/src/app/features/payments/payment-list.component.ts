@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { PaymentService } from '../../core/services/payment.service';
+import { ExcelExportService } from '../../core/services/excel-export.service';
 import {
   PaymentRecordList,
   PaymentRecordQuery,
@@ -24,7 +25,11 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <div class="container">
         <div class="page-header">
           <h1>Registro de Pagos</h1>
-          <button class="btn btn-primary" (click)="navigateToCreate()">
+          <button
+            class="btn btn-primary"
+            data-testid="btn-new-payment"
+            (click)="navigateToCreate()"
+          >
             <i class="fa-solid fa-plus"></i> Nuevo Pago
           </button>
         </div>
@@ -106,13 +111,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               size="sm"
               label="Exportar"
               icon="fa-file-excel"
+              data-testid="btn-export-excel"
               (onClick)="exportToExcel()"
             ></app-button>
           </div>
         </div>
 
         <!-- Loading State -->
-        <div *ngIf="loading" class="loading">
+        <div *ngIf="loading" class="loading" data-testid="loading-indicator">
           <div class="spinner"></div>
           <p>Cargando pagos...</p>
         </div>
@@ -135,7 +141,10 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let payment of payments">
+                <tr
+                  *ngFor="let payment of payments"
+                  [attr.data-testid]="'payment-row-' + payment.id"
+                >
                   <td>
                     <a [routerLink]="['/payments', payment.id]" class="link-primary">
                       {{ payment.numero_pago }}
@@ -197,6 +206,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                     <div class="action-buttons">
                       <button
                         class="btn btn-sm btn-primary"
+                        [attr.data-testid]="'btn-view-' + payment.id"
                         (click)="viewPayment(payment.id)"
                         title="Ver Detalle"
                       >
@@ -205,6 +215,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                       <button
                         *ngIf="payment.estado !== 'ANULADO'"
                         class="btn btn-sm btn-secondary"
+                        [attr.data-testid]="'btn-edit-' + payment.id"
                         (click)="editPayment(payment.id)"
                         title="Editar"
                       >
@@ -213,6 +224,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                       <button
                         *ngIf="payment.estado === 'CONFIRMADO' && !payment.conciliado"
                         class="btn btn-sm btn-success"
+                        [attr.data-testid]="'btn-reconcile-' + payment.id"
                         (click)="reconcilePayment(payment.id)"
                         title="Conciliar"
                       >
@@ -222,7 +234,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                   </td>
                 </tr>
 
-                <tr *ngIf="payments.length === 0">
+                <tr *ngIf="payments.length === 0" data-testid="empty-state">
                   <td colspan="9" class="text-center text-muted">
                     <p>No se encontraron pagos con los filtros aplicados</p>
                   </td>
@@ -433,6 +445,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 export class PaymentListComponent implements OnInit {
   paymentService = inject(PaymentService);
   private router = inject(Router);
+  private excelExportService = inject(ExcelExportService);
 
   payments: PaymentRecordList[] = [];
   loading = false;
@@ -557,7 +570,41 @@ export class PaymentListComponent implements OnInit {
   }
 
   exportToExcel() {
-    // TODO: Implement Excel export
-    alert('Funcionalidad de exportación próximamente');
+    this.loading = true;
+    // Fetch with current filters but higher limit for export
+    const exportFilters = { ...this.filters, limit: 1000, page: 1 };
+
+    this.paymentService.getPayments(exportFilters).subscribe({
+      next: (response) => {
+        const dataToExport = response.data.map((p) => ({
+          'N° Pago': p.numero_pago,
+          'N° Valorización': p.numero_valorizacion || 'N/A',
+          Fecha: this.formatDate(p.fecha_pago),
+          Monto: p.monto_pagado,
+          Moneda: p.moneda,
+          Método: this.paymentService.getPaymentMethodLabel(p.metodo_pago),
+          Estado: this.paymentService.getPaymentStatusLabel(p.estado),
+          Conciliado: p.conciliado ? 'Sí' : 'No',
+          'N° Operación': p.numero_operacion || '-',
+        }));
+
+        this.excelExportService.exportToExcel(dataToExport, {
+          filename: 'registro_pagos',
+          sheetName: 'Pagos',
+        });
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error exporting payments:', error);
+        this.loading = false;
+        alert('Error al exportar los datos');
+      },
+    });
+  }
+
+  private formatDate(dateStr: any): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-ES');
   }
 }

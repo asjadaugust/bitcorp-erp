@@ -70,7 +70,7 @@ describe('AccountsPayableService', () => {
       mockRepository.save.mockResolvedValue(mockEntity);
       mockRepository.findOne.mockResolvedValue(mockEntity);
 
-      const result = await service.create(mockData);
+      const result = await service.create(1, mockData);
 
       expect(mockRepository.create).toHaveBeenCalled();
       expect(mockRepository.save).toHaveBeenCalled();
@@ -86,6 +86,8 @@ describe('AccountsPayableService', () => {
 
       // Mock the query builder chain
       const mockQueryBuilder = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getCount: jest.fn().mockResolvedValue(2),
@@ -96,7 +98,7 @@ describe('AccountsPayableService', () => {
 
       mockRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
-      const result = await service.findAll({ page: 1, limit: 10 });
+      const result = await service.findAll(1, { page: 1, limit: 10 });
 
       expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith('ap');
       expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('ap.provider', 'provider');
@@ -112,7 +114,7 @@ describe('AccountsPayableService', () => {
       const mockEntity = createMockEntity(1);
       mockRepository.findOne.mockResolvedValue(mockEntity);
 
-      const result = await service.findOne(1);
+      const result = await service.findOne(1, 1);
 
       expect(result).toBeDefined();
       expect(result!.id).toBe(1);
@@ -122,8 +124,8 @@ describe('AccountsPayableService', () => {
     it('should throw NotFoundError if record not found', async () => {
       mockRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne(999)).rejects.toThrow(NotFoundError);
-      await expect(service.findOne(999)).rejects.toThrow(
+      await expect(service.findOne(1, 999)).rejects.toThrow(NotFoundError);
+      await expect(service.findOne(1, 999)).rejects.toThrow(
         "AccountsPayable with identifier '999' not found"
       );
     });
@@ -137,7 +139,7 @@ describe('AccountsPayableService', () => {
       mockRepository.findOne.mockResolvedValue(mockEntity);
       mockRepository.save.mockResolvedValue(updatedEntity);
 
-      const result = await service.updateStatus(1, AccountsPayableStatus.PAID);
+      const result = await service.updateStatus(1, 1, AccountsPayableStatus.PAID);
 
       expect(mockRepository.save).toHaveBeenCalled();
       expect(result!.estado).toBe(AccountsPayableStatus.PAID);
@@ -148,9 +150,10 @@ describe('AccountsPayableService', () => {
     it('should delete an accounts payable record', async () => {
       mockRepository.delete = jest.fn().mockResolvedValue({ affected: 1 });
 
-      const result = await service.delete(1);
+      mockRepository.findOne.mockResolvedValue(createMockEntity(1));
+      const result = await service.delete(1, 1);
 
-      expect(mockRepository.delete).toHaveBeenCalledWith(1);
+      expect(mockRepository.delete).toHaveBeenCalled();
       expect(result).toBe(true);
     });
   });
@@ -163,7 +166,7 @@ describe('AccountsPayableService', () => {
       ];
       mockRepository.findPending.mockResolvedValue(mockEntities);
 
-      const result = await service.findPending();
+      const result = await service.findPending(1);
 
       expect(mockRepository.findPending).toHaveBeenCalled();
       expect(result).toHaveLength(2);

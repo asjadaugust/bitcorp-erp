@@ -42,24 +42,24 @@ describe('MaintenanceService', () => {
   });
 
   describe('Method Signatures', () => {
-    it('getAllMaintenance should accept optional filters parameter', () => {
-      expect(service.getAllMaintenance.length).toBe(1);
+    it('getAllMaintenance should accept tenantId and optional filters parameters', () => {
+      expect(service.getAllMaintenance.length).toBe(2);
     });
 
-    it('getMaintenanceById should accept id parameter', () => {
-      expect(service.getMaintenanceById.length).toBe(1);
+    it('getMaintenanceById should accept tenantId and id parameters', () => {
+      expect(service.getMaintenanceById.length).toBe(2);
     });
 
-    it('createMaintenance should accept data and userId parameters', () => {
-      expect(service.createMaintenance.length).toBe(2);
+    it('createMaintenance should accept tenantId, data, and userId parameters', () => {
+      expect(service.createMaintenance.length).toBe(3);
     });
 
-    it('updateMaintenance should accept id, data, and userId parameters', () => {
-      expect(service.updateMaintenance.length).toBe(3);
+    it('updateMaintenance should accept tenantId, id, data, and userId parameters', () => {
+      expect(service.updateMaintenance.length).toBe(4);
     });
 
-    it('deleteMaintenance should accept id parameter', () => {
-      expect(service.deleteMaintenance.length).toBe(1);
+    it('deleteMaintenance should accept tenantId and id parameters', () => {
+      expect(service.deleteMaintenance.length).toBe(2);
     });
   });
 

@@ -16,7 +16,9 @@ export interface PaymentRecordListDTO {
   metodo_pago: string;
   estado: string;
   conciliado: boolean;
+  numero_operacion?: string;
   observaciones?: string;
+  created_at: string;
 }
 
 export interface PaymentRecordDetailDTO {
