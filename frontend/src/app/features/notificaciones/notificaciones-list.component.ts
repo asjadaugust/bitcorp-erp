@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -345,9 +345,6 @@ import {
 export class NotificacionesListComponent implements OnInit {
   svc = inject(NotificationService);
 
-  filtroActivo = false;
-  private filtros: Record<string, string> = {};
-
   breadcrumbs: Breadcrumb[] = [{ label: 'Notificaciones' }];
 
   filterConfig: FilterConfig[] = [
@@ -380,68 +377,73 @@ export class NotificacionesListComponent implements OnInit {
     },
   ];
 
-  notificacionesFiltradas = signal<Notificacion[]>([]);
+  // Filtros como señal para reactividad
+  tipoFiltro = signal<string>('');
+  estadoFiltro = signal<string>('');
 
-  statItems = signal<StatItem[]>([]);
-
-  ngOnInit() {
-    this.svc.obtenerNotificaciones();
-    this.actualizarVista();
-    // Reactivo: actualiza cuando el signal cambia
-    // (Angular Signals no tienen .subscribe pero se puede usar effect en el future)
-  }
-
-  private actualizarVista() {
+  // Notificaciones filtradas calculadas automáticamente
+  notificacionesFiltradas = computed(() => {
     const todas = this.svc.notificaciones();
-    this.actualizarFiltradas(todas);
-    this.actualizarStats(todas);
-  }
+    const tipo = this.tipoFiltro();
+    const estado = this.estadoFiltro();
 
-  private actualizarFiltradas(todas: Notificacion[]) {
     let lista = [...todas];
-    if (this.filtros['tipo']) {
-      lista = lista.filter((n) => n.tipo === this.filtros['tipo']);
+    if (tipo) {
+      lista = lista.filter((n) => n.tipo === tipo);
     }
-    if (this.filtros['leido'] !== undefined && this.filtros['leido'] !== '') {
-      const soloLeidas = this.filtros['leido'] === 'true';
+    if (estado !== '') {
+      const soloLeidas = estado === 'true';
       lista = lista.filter((n) => n.leido === soloLeidas);
     }
-    this.notificacionesFiltradas.set(lista);
-    this.filtroActivo = Object.values(this.filtros).some((v) => v !== '');
-  }
+    return lista;
+  });
 
-  private actualizarStats(todas: Notificacion[]) {
-    const noLeidas = todas.filter((n) => !n.leido).length;
+  // Estadísticas calculadas automáticamente
+  statItems = computed<StatItem[]>(() => {
+    const todas = this.svc.notificaciones();
+    // Usamos el total real del servicio para "No leídas"
+    const noLeidasTotal = this.svc.totalNoLeidas();
+
+    // Para alertas y aprobaciones, aproximamos con lo que tenemos cargado
+    // (O idealmente el backend debería devolver estos conteos también)
     const advertencias = todas.filter(
       (n) => n.tipo === 'warning' || n.tipo === 'CONTRACT_EXPIRY' || n.tipo === 'MAINTENANCE_DUE'
     ).length;
     const aprobaciones = todas.filter((n) => n.tipo === 'approval_required').length;
 
-    this.statItems.set([
-      { label: 'No leídas', value: noLeidas, icon: 'fa-bell', color: 'warning' },
+    return [
+      { label: 'No leídas', value: noLeidasTotal, icon: 'fa-bell', color: 'warning' },
       { label: 'Alertas', value: advertencias, icon: 'fa-triangle-exclamation', color: 'danger' },
       { label: 'Aprobaciones', value: aprobaciones, icon: 'fa-clock', color: 'info' },
       { label: 'Total', value: todas.length, icon: 'fa-list', color: 'info' },
-    ]);
+    ];
+  });
+
+  get filtroActivo() {
+    return this.tipoFiltro() !== '' || this.estadoFiltro() !== '';
+  }
+
+  ngOnInit() {
+    this.svc.obtenerNotificaciones();
   }
 
   onFiltroChange(filtros: Record<string, string>) {
-    this.filtros = filtros;
-    this.actualizarFiltradas(this.svc.notificaciones());
+    if (filtros['tipo'] !== undefined) this.tipoFiltro.set(filtros['tipo']);
+    if (filtros['leido'] !== undefined) this.estadoFiltro.set(filtros['leido']);
   }
 
   marcarLeida(n: Notificacion) {
     if (!n.leido) {
-      this.svc.marcarLeida(n.id).subscribe(() => this.actualizarVista());
+      this.svc.marcarLeida(n.id).subscribe();
     }
   }
 
   marcarTodasLeidas() {
-    this.svc.marcarTodasLeidas().subscribe(() => this.actualizarVista());
+    this.svc.marcarTodasLeidas().subscribe();
   }
 
   eliminar(id: number) {
-    this.svc.eliminar(id).subscribe(() => this.actualizarVista());
+    this.svc.eliminar(id).subscribe();
   }
 
   getIcono(tipo: string): string {

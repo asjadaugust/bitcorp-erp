@@ -16,58 +16,62 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import {
+  PageLayoutComponent,
+  Breadcrumb,
+} from '../../shared/components/page-layout/page-layout.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 type TabId = 'flota' | 'utilizacion' | 'combustible';
 
 @Component({
   selector: 'app-analytics-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, StatsGridComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    StatsGridComponent,
+    PageLayoutComponent,
+    DropdownComponent,
+  ],
   template: `
-    <div class="analytics-page" data-testid="analytics-dashboard">
-      <!-- Page Header -->
-      <div class="page-header">
-        <div class="page-header-left">
-          <i class="fa-solid fa-chart-line page-icon"></i>
-          <div>
-            <h1 class="page-title">Analítica de Flota</h1>
-            <nav class="breadcrumb" aria-label="breadcrumb">
-              <span>Analítica</span>
-            </nav>
-          </div>
+    <app-page-layout
+      title="Analítica de Flota"
+      icon="fa-chart-line"
+      [breadcrumbs]="breadcrumbs"
+      [loading]="false"
+    >
+      <!-- Standardized Period Selector -->
+      <div actions class="period-controls-wrapper">
+        <div class="period-group">
+          <label>Desde</label>
+          <input
+            type="date"
+            [(ngModel)]="fechaInicio"
+            (change)="onPeriodChange()"
+            class="standard-date-input"
+          />
         </div>
-        <!-- Period selector -->
-        <div class="period-controls" data-testid="period-controls">
-          <div class="period-group">
-            <label for="fecha-inicio">Desde</label>
-            <input
-              id="fecha-inicio"
-              type="date"
-              [(ngModel)]="fechaInicio"
-              (change)="onPeriodChange()"
-              data-testid="input-fecha-inicio"
-              class="date-input"
-            />
-          </div>
-          <div class="period-group">
-            <label for="fecha-fin">Hasta</label>
-            <input
-              id="fecha-fin"
-              type="date"
-              [(ngModel)]="fechaFin"
-              (change)="onPeriodChange()"
-              data-testid="input-fecha-fin"
-              class="date-input"
-            />
-          </div>
+        <div class="period-group">
+          <label>Hasta</label>
+          <input
+            type="date"
+            [(ngModel)]="fechaFin"
+            (change)="onPeriodChange()"
+            class="standard-date-input"
+          />
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs" data-testid="analytics-tabs">
+      <!-- Detail Tabs Structure -->
+      <div class="detail-tabs mb-24">
         <button
           *ngFor="let tab of tabs"
-          class="tab-btn"
+          class="tab-link"
           [class.active]="tabActivo() === tab.id"
           (click)="tabActivo.set(tab.id)"
           [attr.data-testid]="'tab-' + tab.id"
@@ -151,21 +155,17 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
 
       <!-- ══════════════════════════ TAB: UTILIZACIÓN ══════════════════════════ -->
       <div *ngIf="tabActivo() === 'utilizacion'" data-testid="panel-utilizacion">
-        <!-- Equipment selector -->
-        <div class="equipment-selector" data-testid="selector-equipo-utilizacion">
-          <label for="equipo-util">Equipo</label>
-          <select
-            id="equipo-util"
+        <!-- Equipment selector with app-dropdown -->
+        <div class="standard-selector-wrapper">
+          <label>Seleccionar Equipo</label>
+          <app-dropdown
+            [options]="equipmentOptions()"
             [(ngModel)]="equipoIdSeleccionado"
-            (change)="onEquipoChange()"
-            data-testid="select-equipo-utilizacion"
-            class="select-input"
-          >
-            <option value="">-- Seleccionar equipo --</option>
-            <option *ngFor="let eq of equipos()" [value]="eq.id">
-              {{ eq.codigo_equipo }} — {{ eq.marca || '' }} {{ eq.modelo || '' }}
-            </option>
-          </select>
+            (selectionChange)="onEquipoChange()"
+            placeholder="Buscar equipo..."
+            [searchable]="true"
+            class="selector-dropdown"
+          ></app-dropdown>
         </div>
 
         <div *ngIf="cargandoUtilizacion()" class="loading-state" data-testid="utilizacion-loading">
@@ -225,21 +225,17 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
 
       <!-- ══════════════════════════ TAB: COMBUSTIBLE ══════════════════════════ -->
       <div *ngIf="tabActivo() === 'combustible'" data-testid="panel-combustible">
-        <!-- Equipment selector -->
-        <div class="equipment-selector" data-testid="selector-equipo-combustible">
-          <label for="equipo-comb">Equipo</label>
-          <select
-            id="equipo-comb"
+        <!-- Equipment selector with app-dropdown -->
+        <div class="standard-selector-wrapper">
+          <label>Seleccionar Equipo</label>
+          <app-dropdown
+            [options]="equipmentOptions()"
             [(ngModel)]="equipoIdSeleccionado"
-            (change)="onEquipoChange()"
-            data-testid="select-equipo-combustible"
-            class="select-input"
-          >
-            <option value="">-- Seleccionar equipo --</option>
-            <option *ngFor="let eq of equipos()" [value]="eq.id">
-              {{ eq.codigo_equipo }} — {{ eq.marca || '' }} {{ eq.modelo || '' }}
-            </option>
-          </select>
+            (selectionChange)="onEquipoChange()"
+            placeholder="Buscar equipo..."
+            [searchable]="true"
+            class="selector-dropdown"
+          ></app-dropdown>
         </div>
 
         <div *ngIf="cargandoCombustible()" class="loading-state" data-testid="combustible-loading">
@@ -314,165 +310,152 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
           <p>Selecciona un equipo para ver su consumo de combustible</p>
         </div>
       </div>
-    </div>
+    </app-page-layout>
   `,
   styles: [
     `
-      .analytics-page {
-        padding: var(--s-24);
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      /* Header */
-      .page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: var(--s-16);
+      /* Layout adjustments */
+      .mb-24 {
         margin-bottom: var(--s-24);
-        flex-wrap: wrap;
-      }
-      .page-header-left {
-        display: flex;
-        align-items: center;
-        gap: var(--s-16);
-      }
-      .page-icon {
-        font-size: 2rem;
-        color: var(--primary-500);
-        background: var(--primary-50, #e8f0fe);
-        padding: var(--s-16);
-        border-radius: var(--radius-md);
-      }
-      .page-title {
-        font-size: var(--type-h3-size, 1.5rem);
-        font-weight: 700;
-        color: var(--primary-900);
-        margin: 0 0 4px 0;
-      }
-      .breadcrumb {
-        font-size: var(--type-bodySmall-size, 0.85rem);
-        color: var(--grey-500);
       }
 
-      /* Period controls */
-      .period-controls {
+      /* Period controls standardized */
+      .period-controls-wrapper {
         display: flex;
         gap: var(--s-16);
-        align-items: flex-end;
-        flex-wrap: wrap;
+        align-items: center;
       }
       .period-group {
         display: flex;
         flex-direction: column;
         gap: 4px;
         label {
-          font-size: var(--type-bodySmall-size, 0.8rem);
-          font-weight: 500;
-          color: var(--grey-700);
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--grey-500);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
       }
-      .date-input,
-      .select-input {
+      .standard-date-input {
         padding: 8px 12px;
-        border: 1.5px solid var(--grey-300);
-        border-radius: var(--radius-md);
-        font-size: var(--type-body-size, 0.9rem);
-        background: var(--neutral-0, #fff);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
         color: var(--grey-900);
-        cursor: pointer;
-        transition: border-color 0.15s;
+        background: white;
+        transition: all 0.2s;
+        height: 42px;
         &:focus {
-          outline: none;
           border-color: var(--primary-500);
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
         }
       }
 
-      /* Tabs */
-      .tabs {
+      /* Detail Tabs Structure (Standardized) */
+      .detail-tabs {
         display: flex;
-        gap: var(--s-8);
+        flex-wrap: wrap;
+        gap: 8px;
         border-bottom: 2px solid var(--grey-200);
-        margin-bottom: var(--s-24);
-      }
-      .tab-btn {
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-        padding: 10px var(--s-16);
-        border: none;
-        background: none;
-        cursor: pointer;
-        font-size: var(--type-body-size, 0.9rem);
-        font-weight: 500;
-        color: var(--grey-600);
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-        border-radius: var(--radius-md) var(--radius-md) 0 0;
-        transition: all 0.15s;
-        &:hover {
-          color: var(--primary-600);
-          background: var(--grey-50);
-        }
-        &.active {
-          color: var(--primary-900);
-          border-bottom-color: var(--primary-500);
-          background: var(--grey-50, #f9fafb);
-        }
-      }
+        padding-bottom: 2px;
 
-      /* Equipment selector */
-      .equipment-selector {
-        display: flex;
-        align-items: center;
-        gap: var(--s-12);
-        margin-bottom: var(--s-24);
-        label {
+        .tab-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 20px;
+          border: none;
+          background: transparent;
+          color: var(--grey-600);
           font-weight: 500;
-          color: var(--grey-700);
-          min-width: 50px;
-        }
-        select {
-          min-width: 280px;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-size: 14px;
+          position: relative;
+          border-bottom: 3px solid transparent;
+          margin-bottom: -2px;
+
+          i {
+            opacity: 0.7;
+            font-size: 14px;
+          }
+
+          &:hover {
+            color: var(--primary-700);
+            background: var(--grey-50);
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+          }
+
+          &.active {
+            color: var(--primary-800);
+            border-bottom-color: var(--primary-500);
+            font-weight: 600;
+            i {
+              opacity: 1;
+            }
+          }
         }
       }
 
-      /* Cards */
+      /* Equipment selector standardized */
+      .standard-selector-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: var(--s-24);
+        max-width: 400px;
+        label {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--grey-500);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+      }
+      .selector-dropdown {
+        width: 100%;
+      }
+
+      /* Cards Grid (Standardized gaps) */
       .cards-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: var(--s-24);
+        gap: var(--s-32);
         margin-top: var(--s-24);
       }
       .card {
-        background: var(--neutral-0, #fff);
+        background: white;
         border: 1px solid var(--grey-200);
-        border-radius: var(--radius-md);
+        border-radius: 16px;
         overflow: hidden;
+        box-shadow: var(--shadow-sm);
       }
       .card-header {
-        padding: var(--s-16);
-        border-bottom: 1px solid var(--grey-200);
+        padding: var(--s-20);
+        border-bottom: 1px solid var(--grey-100);
         h3 {
           margin: 0;
-          font-size: var(--type-bodyLarge-size, 1rem);
-          font-weight: 600;
-          color: var(--primary-900);
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--grey-600);
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
           display: flex;
           align-items: center;
-          gap: var(--s-8);
+          gap: 10px;
           i {
             color: var(--primary-500);
+            font-size: 1.1em;
           }
         }
       }
       .card-body {
-        padding: var(--s-16);
+        padding: var(--s-20);
       }
       .chart-card {
-        margin-top: var(--s-24);
+        margin-top: var(--s-32);
       }
 
       /* Rank items */
@@ -705,6 +688,8 @@ export class AnalyticsDashboardComponent implements OnInit {
   private analyticsSvc = inject(AnalyticsService);
   private equipmentSvc = inject(EquipmentService);
 
+  breadcrumbs: Breadcrumb[] = [{ label: 'Analítica' }];
+
   // ── Period ──────────────────────────────────────────────────────────────────
   fechaInicio: string;
   fechaFin: string;
@@ -720,6 +705,14 @@ export class AnalyticsDashboardComponent implements OnInit {
   // ── Equipment selector ──────────────────────────────────────────────────────
   equipos = signal<Equipment[]>([]);
   equipoIdSeleccionado = '';
+
+  equipmentOptions = computed<DropdownOption[]>(() => {
+    return this.equipos().map((eq) => ({
+      label: `${eq.codigo_equipo} — ${eq.marca || ''} ${eq.modelo || ''}`,
+      value: String(eq.id),
+      icon: 'fa-solid fa-tractor',
+    }));
+  });
 
   // ── Fleet data ──────────────────────────────────────────────────────────────
   flota = signal<FlotaUtilizacionDto | null>(null);

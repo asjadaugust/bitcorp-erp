@@ -29,11 +29,8 @@ export interface Notificacion {
 }
 
 interface NotificacionesResponse {
-  success: boolean;
-  data: {
-    notificaciones: Notificacion[];
-    total_no_leidas: number;
-  };
+  notificaciones: Notificacion[];
+  total_no_leidas: number;
 }
 
 @Injectable({
@@ -68,9 +65,9 @@ export class NotificationService {
   obtenerNotificaciones() {
     this.http.get<NotificacionesResponse>(this.apiUrl).subscribe({
       next: (res) => {
-        if (res?.data) {
-          this.notificaciones.set(res.data.notificaciones ?? []);
-          this.totalNoLeidas.set(res.data.total_no_leidas ?? 0);
+        if (res) {
+          this.notificaciones.set(res.notificaciones ?? []);
+          this.totalNoLeidas.set(res.total_no_leidas ?? 0);
         }
       },
       error: (err) => console.error('Error al obtener notificaciones:', err),
