@@ -11,6 +11,9 @@ const controller = new MaintenanceController();
 router.use(authenticate);
 
 router.get('/', controller.getAll);
+
+// GET /api/maintenance/stats - Get maintenance statistics
+router.get('/stats', controller.getStats);
 router.get('/:id', controller.getById);
 router.post('/', validateDto(MaintenanceCreateDto), controller.create);
 router.put('/:id', validateDto(MaintenanceUpdateDto), controller.update);

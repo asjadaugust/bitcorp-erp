@@ -406,4 +406,21 @@ export class ProjectController {
       res.status(500).json({ error: (error as Error).message });
     }
   };
+
+  getStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { startDate, endDate } = req.query;
+      const stats = await this.projectService.getStats({
+        startDate: startDate as string,
+        endDate: endDate as string,
+      });
+      sendSuccess(res, stats);
+    } catch (error) {
+      Logger.error('Error in getStats projects', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ProjectController.getStats',
+      });
+      sendError(res, 500, 'PROJECT_STATS_FAILED', 'Failed to fetch project statistics');
+    }
+  };
 }

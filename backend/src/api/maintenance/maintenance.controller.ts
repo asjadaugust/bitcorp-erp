@@ -148,4 +148,23 @@ export class MaintenanceController {
       );
     }
   };
+
+  getStats = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const stats = await this.maintenanceService.getStats({
+        startDate: startDate as string,
+        endDate: endDate as string,
+      });
+      sendSuccess(res, stats);
+    } catch (error: any) {
+      sendError(
+        res,
+        500,
+        'FETCH_MAINTENANCE_STATS_FAILED',
+        'No se pudieron obtener las estadísticas de mantenimiento',
+        error.message
+      );
+    }
+  };
 }

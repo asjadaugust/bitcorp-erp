@@ -11,6 +11,9 @@ const controller = new MovementController();
 router.use(authenticate);
 
 router.get('/', controller.getAll.bind(controller));
+
+// GET /api/logistics/movements/stats - Get movement statistics
+router.get('/stats', controller.getStats.bind(controller));
 router.get('/:id', controller.getById.bind(controller));
 router.post('/', validateDto(MovementCreateDto), controller.create.bind(controller));
 router.post('/:id/approve', controller.approve.bind(controller));

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { MaintenanceRecord } from '../models/maintenance-record.model';
+import { StatsSummary } from '../models/stats.model';
 
 @Injectable({
   providedIn: 'root',
@@ -53,6 +54,16 @@ export class MaintenanceService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getStats(filters?: { startDate?: string; endDate?: string }): Observable<StatsSummary> {
+    let params = new HttpParams();
+    if (filters?.startDate) params = params.set('startDate', filters.startDate);
+    if (filters?.endDate) params = params.set('endDate', filters.endDate);
+
+    return this.http
+      .get<any>(`${this.apiUrl}/stats`, { params })
+      .pipe(map((response) => response?.data || response));
   }
 
   private toSnakeCase(data: any): any {

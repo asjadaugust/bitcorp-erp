@@ -16,6 +16,7 @@ import {
 } from '../types/dto/maintenance.dto';
 import { NotFoundError, DatabaseError, DatabaseErrorType } from '../errors';
 import { Logger } from '../utils/logger';
+import { StatsSummaryDto } from '../types/dto/stats.dto';
 
 interface MaintenanceFilters {
   status?: EstadoMantenimiento;
@@ -605,6 +606,77 @@ export class MaintenanceService {
         DatabaseErrorType.QUERY,
         error instanceof Error ? error : undefined
       );
+    }
+  }
+
+  async getStats(filters?: { startDate?: string; endDate?: string }): Promise<StatsSummaryDto> {
+    try {
+      const query = this.repository
+        .createQueryBuilder('m')
+        .where('m.estado != :deleted', { deleted: 'ELIMINADO' });
+
+      if (filters?.startDate) {
+        query.andWhere('m.createdAt >= :startDate', { startDate: new Date(filters.startDate) });
+      }
+      if (filters?.endDate) {
+        query.andWhere('m.createdAt <= :endDate', { endDate: new Date(filters.endDate) });
+      }
+
+      const records = await query.getMany();
+
+      const summary = {
+        total: records.length,
+        completed: records.filter((r) => r.estado === 'COMPLETADO').length,
+        pending: records.filter((r) => r.estado === 'PROGRAMADO' || r.estado === 'PENDIENTE')
+          .length,
+        inProgress: records.filter((r) => r.estado === 'EN_PROCESO').length,
+        totalCost: records.reduce((acc, r) => acc + (Number(r.costoReal) || 0), 0),
+      };
+
+      const distribution = {
+        status: [
+          { label: 'Completado', value: summary.completed, color: '#10b981' },
+          { label: 'Pendiente', value: summary.pending, color: '#3b82f6' },
+          { label: 'En Proceso', value: summary.inProgress, color: '#f59e0b' },
+          {
+            label: 'Cancelado',
+            value: records.filter((r) => r.estado === 'CANCELADO').length,
+            color: '#ef4444',
+          },
+        ].filter((d) => d.value > 0),
+        type: [
+          {
+            label: 'Preventivo',
+            value: records.filter((r) => r.tipoMantenimiento === 'PREVENTIVO').length,
+            color: '#6366f1',
+          },
+          {
+            label: 'Correctivo',
+            value: records.filter((r) => r.tipoMantenimiento === 'CORRECTIVO').length,
+            color: '#f43f5e',
+          },
+          {
+            label: 'Predictivo',
+            value: records.filter((r) => r.tipoMantenimiento === 'PREDICTIVO').length,
+            color: '#8b5cf6',
+          },
+        ].filter((d) => d.value > 0),
+      };
+
+      return {
+        summary,
+        distribution,
+        metadata: {
+          ...filters,
+          generatedAt: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      Logger.error('Error getting maintenance stats', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'MaintenanceService.getStats',
+      });
+      throw new DatabaseError('Failed to get maintenance statistics');
     }
   }
 }

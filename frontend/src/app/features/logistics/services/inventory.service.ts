@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { StatsSummary } from '../../../core/models/stats.model';
 
 export interface Product {
   id: string | number;
@@ -112,5 +113,15 @@ export class InventoryService {
 
   deleteProduct(id: string | number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
+  }
+
+  getStats(filters?: { startDate?: string; endDate?: string }): Observable<StatsSummary> {
+    const params: any = {};
+    if (filters?.startDate) params.startDate = filters.startDate;
+    if (filters?.endDate) params.endDate = filters.endDate;
+
+    return this.http
+      .get<any>(`${this.apiUrl}/movements/stats`, { params })
+      .pipe(map((response) => response?.data || response));
   }
 }

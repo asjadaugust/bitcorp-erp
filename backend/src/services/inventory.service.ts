@@ -4,6 +4,7 @@ import { Movement, MovementDetail, TipoMovimiento } from '../models/movement.mod
 import { NotFoundError } from '../errors/http.errors';
 import { BusinessRuleError } from '../errors/business.error';
 import Logger from '../utils/logger';
+import { StatsSummaryDto } from '../types/dto/stats.dto';
 import {
   MovementDetailDto,
   MovementCreateDto,
@@ -250,6 +251,70 @@ export class InventoryService {
         tenantId,
         productId,
         context: 'InventoryService.getStock',
+      });
+      throw error;
+    }
+  }
+
+  async getStats(filters?: { startDate?: string; endDate?: string }): Promise<StatsSummaryDto> {
+    try {
+      const query = this.movementRepository
+        .createQueryBuilder('m')
+        .leftJoinAndSelect('m.details', 'd');
+
+      if (filters?.startDate) {
+        query.andWhere('m.fecha >= :startDate', { startDate: new Date(filters.startDate) });
+      }
+      if (filters?.endDate) {
+        query.andWhere('m.fecha <= :endDate', { endDate: new Date(filters.endDate) });
+      }
+
+      const movements = await query.getMany();
+
+      const summary = {
+        total: movements.length,
+        entradas: movements.filter((m) => m.tipoMovimiento === 'entrada').length,
+        salidas: movements.filter((m) => m.tipoMovimiento === 'salida').length,
+        pendientes: movements.filter((m) => m.estado === 'pendiente').length,
+      };
+
+      const distribution = {
+        tipo: [
+          { label: 'Entradas', value: summary.entradas, color: '#10b981' },
+          { label: 'Salidas', value: summary.salidas, color: '#f59e0b' },
+          {
+            label: 'Otros',
+            value: summary.total - (summary.entradas + summary.salidas),
+            color: '#94a3b8',
+          },
+        ].filter((d) => d.value > 0),
+        estado: [
+          { label: 'Pendiente', value: summary.pendientes, color: '#6366f1' },
+          {
+            label: 'Aprobado',
+            value: movements.filter((m) => m.estado === 'aprobado').length,
+            color: '#10b981',
+          },
+          {
+            label: 'Rechazado',
+            value: movements.filter((m) => m.estado === 'rechazado').length,
+            color: '#ef4444',
+          },
+        ].filter((d) => d.value > 0),
+      };
+
+      return {
+        summary,
+        distribution,
+        metadata: {
+          ...filters,
+          generatedAt: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      Logger.error('Error getting inventory stats', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'InventoryService.getStats',
       });
       throw error;
     }

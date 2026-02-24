@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Project } from '../models/project.model';
+import { StatsSummary } from '../models/stats.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -142,5 +143,15 @@ export class ProjectService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getStats(filters?: { startDate?: string; endDate?: string }): Observable<StatsSummary> {
+    let params = new HttpParams();
+    if (filters?.startDate) params = params.set('startDate', filters.startDate);
+    if (filters?.endDate) params = params.set('endDate', filters.endDate);
+
+    return this.http
+      .get<any>(`${this.apiUrl}/stats`, { params })
+      .pipe(map((response) => response?.data || response));
   }
 }

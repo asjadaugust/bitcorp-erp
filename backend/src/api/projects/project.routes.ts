@@ -18,6 +18,9 @@ router.use(authenticate);
 // GET /api/projects - Get all projects (optionally filtered by user)
 router.get('/', projectController.findAll);
 
+// GET /api/projects/stats - Get project statistics
+router.get('/stats', projectController.getStats);
+
 // GET /api/projects/code/:code - Get project by code
 router.get('/code/:code', projectController.findByCode);
 
