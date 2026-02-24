@@ -22,7 +22,8 @@
     "migrate:prod": "typeorm migration:run -d dist/config/database.config.js",
     "schema:drop:prod": "typeorm schema:drop -d dist/config/database.config.js",
     "swagger:generate": "ts-node --transpile-only src/config/swagger/swagger-generator.ts",
-    "generate:eslint-words": "node eslint-rules/scripts/generate-word-list.js"
+    "generate:eslint-words": "node eslint-rules/scripts/generate-word-list.js",
+    "test:eslint-rules": "node eslint-rules/tests/dto-spanish-snake-case.test.js && node eslint-rules/tests/entity-spanish-camel-case.test.js"
   },
   "dependencies": {
     "@types/multer": "^2.0.0",
