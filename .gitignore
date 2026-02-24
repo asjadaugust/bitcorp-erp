@@ -89,3 +89,12 @@ logs.txt
 
 # dora code context index
 .dora/
+
+# AI Tool specific directories
+.claude/
+.serena/
+.playwright-mcp/
+.gemini/
+
+# Swagger artifact
+backend/swagger-api.json

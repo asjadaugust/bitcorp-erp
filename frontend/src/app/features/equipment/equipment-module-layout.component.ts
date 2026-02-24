@@ -1,7 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { ModuleNavComponent, TabItem } from '../../shared/components/module-nav/module-nav.component';
+import {
+  ModuleNavComponent,
+  TabItem,
+} from '../../shared/components/module-nav/module-nav.component';
 
 @Component({
   selector: 'app-equipment-module-layout',
@@ -10,6 +13,7 @@ import { ModuleNavComponent, TabItem } from '../../shared/components/module-nav/
   template: `
     <div class="module-shell">
       <div class="module-content">
+        <app-module-nav [tabs]="tabs"></app-module-nav>
         <router-outlet></router-outlet>
       </div>
     </div>
@@ -53,7 +57,11 @@ export class EquipmentModuleLayoutComponent implements OnInit {
       { label: 'Contratos', route: '/equipment/contracts', icon: 'fa-file-signature' },
       { label: 'Valorizaciones', route: '/equipment/valuations', icon: 'fa-dollar-sign' },
       { label: 'Devoluciones', route: '/equipment/actas-devolucion', icon: 'fa-rotate-left' },
-      { label: 'Inoperatividad', route: '/equipment/inoperatividad', icon: 'fa-triangle-exclamation' },
+      {
+        label: 'Inoperatividad',
+        route: '/equipment/inoperatividad',
+        icon: 'fa-triangle-exclamation',
+      },
     ];
 
     if (this.isAdmin) {
