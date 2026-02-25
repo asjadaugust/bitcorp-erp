@@ -307,11 +307,21 @@ export function toCertificacionDto(e: CertificacionOperador): CertificacionDto {
     trabajador_id: e.trabajadorId,
     nombre_certificacion: e.nombreCertificacion,
     numero_certificacion: e.numeroCertificacion,
-    fecha_emision: e.fechaEmision ? String(e.fechaEmision).split('T')[0] : undefined,
-    fecha_vencimiento: e.fechaVencimiento ? String(e.fechaVencimiento).split('T')[0] : undefined,
+    fecha_emision: e.fechaEmision
+      ? (e.fechaEmision instanceof Date
+          ? e.fechaEmision.toISOString()
+          : String(e.fechaEmision)
+        ).slice(0, 10)
+      : undefined,
+    fecha_vencimiento: e.fechaVencimiento
+      ? (e.fechaVencimiento instanceof Date
+          ? e.fechaVencimiento.toISOString()
+          : String(e.fechaVencimiento)
+        ).slice(0, 10)
+      : undefined,
     entidad_emisora: e.entidadEmisora,
     estado: e.estado,
-    created_at: String(e.createdAt),
+    created_at: e.createdAt instanceof Date ? e.createdAt.toISOString() : String(e.createdAt),
   };
 }
 
@@ -342,9 +352,12 @@ export function toHabilidadDto(e: HabilidadOperador): HabilidadDto {
     nivel_habilidad: e.nivelHabilidad,
     anios_experiencia: Number(e.aniosExperiencia),
     ultima_verificacion: e.ultimaVerificacion
-      ? String(e.ultimaVerificacion).split('T')[0]
+      ? (e.ultimaVerificacion instanceof Date
+          ? e.ultimaVerificacion.toISOString()
+          : String(e.ultimaVerificacion)
+        ).slice(0, 10)
       : undefined,
-    created_at: String(e.createdAt),
+    created_at: e.createdAt instanceof Date ? e.createdAt.toISOString() : String(e.createdAt),
   };
 }
 
