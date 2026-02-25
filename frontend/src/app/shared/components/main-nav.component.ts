@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { NotificationDropdownComponent } from './notification-dropdown.component';
@@ -265,6 +267,17 @@ export class MainNavComponent {
   private router = inject(Router);
 
   showNotifications = false;
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed()
+      )
+      .subscribe(() => {
+        this.showNotifications = false;
+      });
+  }
 
   toggleNotifications() {
     this.showNotifications = !this.showNotifications;
