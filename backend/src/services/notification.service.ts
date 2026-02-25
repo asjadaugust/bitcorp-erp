@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { AppDataSource } from '../config/database.config';
 import { Notification, NotificationType } from '../models/notification.model';
 import Logger from '../utils/logger';
@@ -806,6 +806,33 @@ export class NotificationService {
         userId,
       });
     }
+  }
+
+  // --- Deduplication Helpers ---
+
+  /**
+   * Check if a notification with the same title was already sent to a user recently.
+   *
+   * Used by cron jobs to prevent duplicate daily notifications for the same unresolved
+   * issue. If the cron runs every day and the issue is never resolved, this guard ensures
+   * each user only receives one notification per 24-hour window.
+   *
+   * @param userId - Numeric user ID
+   * @param titulo - Exact notification title to match
+   * @param withinHours - Look-back window in hours (default: 24)
+   *
+   * @returns Promise<boolean> - true if a matching notification was found within the window
+   */
+  async wasNotifiedRecently(userId: number, titulo: string, withinHours = 24): Promise<boolean> {
+    const cutoff = new Date(Date.now() - withinHours * 3600 * 1000);
+    const count = await this.repository.count({
+      where: {
+        userId,
+        title: titulo,
+        createdAt: MoreThan(cutoff),
+      },
+    });
+    return count > 0;
   }
 
   // --- Notification Creation Helpers ---

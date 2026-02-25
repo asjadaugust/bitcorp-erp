@@ -199,6 +199,91 @@ describe('NotificationService — Centro de Notificaciones (WS-24)', () => {
     });
   });
 
+  // ─── wasNotifiedRecently — deduplicación de notificaciones de cron ────────
+
+  describe('wasNotifiedRecently — deduplicación de notificaciones de cron', () => {
+    it('debe tener el método wasNotifiedRecently', () => {
+      expect(service.wasNotifiedRecently).toBeDefined();
+      expect(typeof service.wasNotifiedRecently).toBe('function');
+    });
+
+    it('debe aceptar 3 parámetros (userId, titulo, withinHours)', () => {
+      // length reflects required params; withinHours has a default so length is 2
+      expect(service.wasNotifiedRecently.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('debe retornar false cuando el repositorio no encuentra notificaciones recientes', async () => {
+      // Mock the internal repository to simulate no recent notifications found
+      const mockRepo = {
+        count: jest.fn().mockResolvedValue(0),
+      };
+      // Access private property via casting to override the repository getter
+      Object.defineProperty(service, 'repository', { get: () => mockRepo, configurable: true });
+
+      const result = await service.wasNotifiedRecently(42, 'Mantenimiento Próximo - VOL-001');
+      expect(result).toBe(false);
+      expect(mockRepo.count).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe retornar true cuando existe una notificación reciente con el mismo título', async () => {
+      const mockRepo = {
+        count: jest.fn().mockResolvedValue(1),
+      };
+      Object.defineProperty(service, 'repository', { get: () => mockRepo, configurable: true });
+
+      const result = await service.wasNotifiedRecently(42, 'Mantenimiento Próximo - VOL-001');
+      expect(result).toBe(true);
+      expect(mockRepo.count).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe pasar userId y title al count del repositorio', async () => {
+      const mockRepo = {
+        count: jest.fn().mockResolvedValue(0),
+      };
+      Object.defineProperty(service, 'repository', { get: () => mockRepo, configurable: true });
+
+      await service.wasNotifiedRecently(99, 'Contrato por Vencer - CNT-001');
+
+      const callArg = mockRepo.count.mock.calls[0][0];
+      expect(callArg.where.userId).toBe(99);
+      expect(callArg.where.title).toBe('Contrato por Vencer - CNT-001');
+    });
+
+    it('debe usar un cutoff basado en withinHours (por defecto 24h)', async () => {
+      const beforeCall = Date.now();
+      const mockRepo = {
+        count: jest.fn().mockResolvedValue(0),
+      };
+      Object.defineProperty(service, 'repository', { get: () => mockRepo, configurable: true });
+
+      await service.wasNotifiedRecently(1, 'Test Title');
+
+      const callArg = mockRepo.count.mock.calls[0][0];
+      // TypeORM MoreThan stores the value in _value property
+      const cutoffDate: Date = new Date(callArg.where.createdAt._value);
+      const expectedCutoff = beforeCall - 24 * 3600 * 1000;
+      // Allow 1 second of tolerance
+      expect(cutoffDate.getTime()).toBeGreaterThanOrEqual(expectedCutoff - 1000);
+      expect(cutoffDate.getTime()).toBeLessThanOrEqual(expectedCutoff + 1000);
+    });
+
+    it('debe respetar un withinHours personalizado', async () => {
+      const beforeCall = Date.now();
+      const mockRepo = {
+        count: jest.fn().mockResolvedValue(0),
+      };
+      Object.defineProperty(service, 'repository', { get: () => mockRepo, configurable: true });
+
+      await service.wasNotifiedRecently(1, 'Test Title', 48);
+
+      const callArg = mockRepo.count.mock.calls[0][0];
+      const cutoffDate: Date = new Date(callArg.where.createdAt._value);
+      const expectedCutoff = beforeCall - 48 * 3600 * 1000;
+      expect(cutoffDate.getTime()).toBeGreaterThanOrEqual(expectedCutoff - 1000);
+      expect(cutoffDate.getTime()).toBeLessThanOrEqual(expectedCutoff + 1000);
+    });
+  });
+
   // ─── NotificacionDto — forma del contrato ─────────────────────────────────
 
   describe('NotificacionDto — contrato de datos del DTO', () => {

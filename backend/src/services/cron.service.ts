@@ -261,10 +261,16 @@ export class CronService {
 
         for (const user of targetUsers) {
           try {
-            await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/equipment/${equipoId}/maintenance`,
-            });
-            notificationsSent++;
+            const alreadyNotified = await this.notificationService.wasNotifiedRecently(
+              user.id,
+              title
+            );
+            if (!alreadyNotified) {
+              await this.notificationService.notifyWarning(String(user.id), title, message, {
+                link: `/equipment/${equipoId}/maintenance`,
+              });
+              notificationsSent++;
+            }
           } catch (error) {
             logger.error('Failed to create maintenance notification', {
               error: error instanceof Error ? error.message : String(error),
@@ -380,10 +386,16 @@ export class CronService {
 
         for (const user of targetUsers) {
           try {
-            await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/contracts/${contract.id}`,
-            });
-            notificationsSent++;
+            const alreadyNotified = await this.notificationService.wasNotifiedRecently(
+              user.id,
+              title
+            );
+            if (!alreadyNotified) {
+              await this.notificationService.notifyWarning(String(user.id), title, message, {
+                link: `/contracts/${contract.id}`,
+              });
+              notificationsSent++;
+            }
           } catch (error) {
             logger.error('Failed to create contract notification', {
               error: error instanceof Error ? error.message : String(error),
@@ -512,10 +524,16 @@ export class CronService {
 
         for (const user of targetUsers) {
           try {
-            await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/operators/${operator.id}`,
-            });
-            notificationsSent++;
+            const alreadyNotified = await this.notificationService.wasNotifiedRecently(
+              user.id,
+              title
+            );
+            if (!alreadyNotified) {
+              await this.notificationService.notifyWarning(String(user.id), title, message, {
+                link: `/operators/${operator.id}`,
+              });
+              notificationsSent++;
+            }
           } catch (error) {
             logger.error('Failed to create certification notification', {
               error: error instanceof Error ? error.message : String(error),
@@ -642,10 +660,16 @@ export class CronService {
 
         for (const user of targetUsers) {
           try {
-            await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/equipment/${equip.id}`,
-            });
-            notificationsSent++;
+            const alreadyNotified = await this.notificationService.wasNotifiedRecently(
+              user.id,
+              title
+            );
+            if (!alreadyNotified) {
+              await this.notificationService.notifyWarning(String(user.id), title, message, {
+                link: `/equipment/${equip.id}`,
+              });
+              notificationsSent++;
+            }
           } catch (error) {
             logger.error('Failed to create equipment document notification', {
               error: error instanceof Error ? error.message : String(error),
@@ -791,10 +815,16 @@ export class CronService {
 
         for (const user of targetUsers) {
           try {
-            await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/equipment/valuations/${val.id}`,
-            });
-            notificationsSent++;
+            const alreadyNotified = await this.notificationService.wasNotifiedRecently(
+              user.id,
+              title
+            );
+            if (!alreadyNotified) {
+              await this.notificationService.notifyWarning(String(user.id), title, message, {
+                link: `/equipment/valuations/${val.id}`,
+              });
+              notificationsSent++;
+            }
           } catch (error) {
             logger.error('Failed to create valuation deadline notification', {
               error: error instanceof Error ? error.message : String(error),
@@ -905,10 +935,16 @@ export class CronService {
 
         for (const user of targetUsers) {
           try {
-            await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/payments`,
-            });
-            notificationsSent++;
+            const alreadyNotified = await this.notificationService.wasNotifiedRecently(
+              user.id,
+              title
+            );
+            if (!alreadyNotified) {
+              await this.notificationService.notifyWarning(String(user.id), title, message, {
+                link: `/payments`,
+              });
+              notificationsSent++;
+            }
           } catch (error) {
             logger.error('Failed to create overdue payment notification', {
               error: error instanceof Error ? error.message : String(error),
@@ -996,10 +1032,16 @@ export class CronService {
         const message = `El equipo lleva ${period.diasInoperativo} días inoperativo, superando el plazo de ${period.diasPlazo} días establecido en la Cláusula 7.6. Motivo: ${period.motivo}`;
         for (const user of targetUsers) {
           try {
-            await this.notificationService.notifyWarning(String(user.id), title, message, {
-              link: `/equipment/${period.equipoId}`,
-            });
-            notificationsSent++;
+            const alreadyNotified = await this.notificationService.wasNotifiedRecently(
+              user.id,
+              title
+            );
+            if (!alreadyNotified) {
+              await this.notificationService.notifyWarning(String(user.id), title, message, {
+                link: `/equipment/${period.equipoId}`,
+              });
+              notificationsSent++;
+            }
           } catch {
             // continue notifying other users
           }
