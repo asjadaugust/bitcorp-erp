@@ -611,6 +611,7 @@ export class OperatorService {
     operadorId: number,
     data: HabilidadCreateDto
   ): Promise<HabilidadDto> {
+    await this.findById(tenantId, operadorId);
     const entity = this.habRepository.create({
       trabajadorId: operadorId,
       tenantId,
