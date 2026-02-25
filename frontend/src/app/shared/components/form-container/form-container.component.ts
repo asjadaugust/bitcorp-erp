@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BackButtonComponent } from '../back-button/back-button.component';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-form-container',
   standalone: true,
-  imports: [CommonModule, BackButtonComponent],
+  imports: [CommonModule, BackButtonComponent, ButtonComponent],
   template: `
     <div class="form-container">
       <!-- Header -->
@@ -21,19 +22,20 @@ import { BackButtonComponent } from '../back-button/back-button.component';
           </div>
         </div>
         <div class="header-actions">
-          <button type="button" class="btn btn-secondary" (click)="handleCancel()">
-            <i class="fa-solid fa-times"></i> Cancelar
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="handleSubmit()"
+          <app-button
+            variant="secondary"
+            icon="fa-times"
+            label="Cancelar"
+            (clicked)="handleCancel()"
+          ></app-button>
+          <app-button
+            variant="primary"
+            [icon]="submitIcon"
+            [label]="loading ? loadingText : submitLabel"
             [disabled]="disableSubmit"
-          >
-            <i *ngIf="!loading" class="fa-solid" [class]="submitIcon"></i>
-            <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
-            {{ loading ? loadingText : submitLabel }}
-          </button>
+            [loading]="loading"
+            (clicked)="handleSubmit()"
+          ></app-button>
         </div>
       </div>
 
@@ -44,19 +46,20 @@ import { BackButtonComponent } from '../back-button/back-button.component';
         <!-- Optional Footer Actions -->
         <div class="form-footer" *ngIf="showFooter">
           <div class="footer-actions">
-            <button type="button" class="btn btn-secondary" (click)="handleCancel()">
-              <i class="fa-solid fa-times"></i> Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="handleSubmit()"
+            <app-button
+              variant="secondary"
+              icon="fa-times"
+              label="Cancelar"
+              (clicked)="handleCancel()"
+            ></app-button>
+            <app-button
+              variant="primary"
+              [icon]="submitIcon"
+              [label]="loading ? loadingText : submitLabel"
               [disabled]="disableSubmit"
-            >
-              <i *ngIf="!loading" class="fa-solid" [class]="submitIcon"></i>
-              <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
-              {{ loading ? loadingText : submitLabel }}
-            </button>
+              [loading]="loading"
+              (clicked)="handleSubmit()"
+            ></app-button>
           </div>
         </div>
       </div>

@@ -25,6 +25,7 @@ import {
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
@@ -38,6 +39,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
+    FormSectionComponent,
     DropdownComponent,
   ],
   template: `
@@ -76,252 +78,240 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
       <form [formGroup]="equipmentForm" class="form-grid">
         <!-- Section 1: Basic Information -->
-        <div class="form-section full-width">
-          <h3 class="section-title"><i class="fa-solid fa-tag"></i> Información Básica</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <label for="codigo_equipo">Código Interno *</label>
-              <input
-                id="codigo_equipo"
-                type="text"
-                formControlName="codigo_equipo"
-                class="form-control"
-                placeholder="ej. EXC-001"
-              />
-              <div class="error-msg" *ngIf="hasError('codigo_equipo')">Código es requerido</div>
-            </div>
+        <app-form-section title="Información Básica" icon="fa-tag">
+          <div class="form-group">
+            <label for="codigo_equipo">Código Interno *</label>
+            <input
+              id="codigo_equipo"
+              type="text"
+              formControlName="codigo_equipo"
+              class="form-control"
+              placeholder="ej. EXC-001"
+            />
+            <div class="error-msg" *ngIf="hasError('codigo_equipo')">Código es requerido</div>
+          </div>
 
-            <!-- Name removed -->
+          <!-- Name removed -->
 
-            <!-- Categoría PRD (filter) + Tipo de Equipo (valor real) -->
-            <div class="form-group">
-              <span class="label">Categoría PRD</span>
-              <app-dropdown
-                [options]="categoriaPrdOptions"
-                [placeholder]="'Seleccionar categoría'"
-                [(ngModel)]="selectedCategoriaPrd"
-                [ngModelOptions]="{ standalone: true }"
-                (ngModelChange)="onCategoriaPrdChange($event)"
-                [searchable]="false"
-              ></app-dropdown>
-            </div>
+          <!-- Categoría PRD (filter) + Tipo de Equipo (valor real) -->
+          <div class="form-group">
+            <span class="label">Categoría PRD</span>
+            <app-dropdown
+              [options]="categoriaPrdOptions"
+              [placeholder]="'Seleccionar categoría'"
+              [(ngModel)]="selectedCategoriaPrd"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="onCategoriaPrdChange($event)"
+              [searchable]="false"
+            ></app-dropdown>
+          </div>
 
-            <div class="form-group">
-              <label for="tipo_equipo_id">Tipo de Equipo *</label>
-              <app-dropdown
-                formControlName="tipo_equipo_id"
-                [options]="tipoEquipoOptions"
-                [placeholder]="
-                  selectedCategoriaPrd ? 'Seleccionar tipo' : 'Primero seleccione categoría'
-                "
-                [searchable]="true"
-                (ngModelChange)="onTipoEquipoChange($event)"
-              ></app-dropdown>
-              <div class="error-msg" *ngIf="hasError('tipo_equipo_id')">
-                Tipo de equipo es requerido
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="marca">Marca *</label>
-              <input
-                id="marca"
-                type="text"
-                formControlName="marca"
-                class="form-control"
-                placeholder="ej. Caterpillar"
-              />
-              <div class="error-msg" *ngIf="hasError('marca')">Marca es requerida</div>
-            </div>
-
-            <div class="form-group">
-              <label for="modelo">Modelo *</label>
-              <input
-                id="modelo"
-                type="text"
-                formControlName="modelo"
-                class="form-control"
-                placeholder="ej. 336D2 L"
-              />
-              <div class="error-msg" *ngIf="hasError('modelo')">Modelo es requerido</div>
-            </div>
-
-            <div class="form-group">
-              <label for="anio_fabricacion">Año de Fabricación</label>
-              <input
-                id="anio_fabricacion"
-                type="number"
-                formControlName="anio_fabricacion"
-                class="form-control"
-                placeholder="ej. 2020"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="placa">Placa / Serie</label>
-              <input
-                id="placa"
-                type="text"
-                formControlName="placa"
-                class="form-control"
-                placeholder="ej. ABC-123"
-              />
+          <div class="form-group">
+            <label for="tipo_equipo_id">Tipo de Equipo *</label>
+            <app-dropdown
+              formControlName="tipo_equipo_id"
+              [options]="tipoEquipoOptions"
+              [placeholder]="
+                selectedCategoriaPrd ? 'Seleccionar tipo' : 'Primero seleccione categoría'
+              "
+              [searchable]="true"
+              (ngModelChange)="onTipoEquipoChange($event)"
+            ></app-dropdown>
+            <div class="error-msg" *ngIf="hasError('tipo_equipo_id')">
+              Tipo de equipo es requerido
             </div>
           </div>
-        </div>
+
+          <div class="form-group">
+            <label for="marca">Marca *</label>
+            <input
+              id="marca"
+              type="text"
+              formControlName="marca"
+              class="form-control"
+              placeholder="ej. Caterpillar"
+            />
+            <div class="error-msg" *ngIf="hasError('marca')">Marca es requerida</div>
+          </div>
+
+          <div class="form-group">
+            <label for="modelo">Modelo *</label>
+            <input
+              id="modelo"
+              type="text"
+              formControlName="modelo"
+              class="form-control"
+              placeholder="ej. 336D2 L"
+            />
+            <div class="error-msg" *ngIf="hasError('modelo')">Modelo es requerido</div>
+          </div>
+
+          <div class="form-group">
+            <label for="anio_fabricacion">Año de Fabricación</label>
+            <input
+              id="anio_fabricacion"
+              type="number"
+              formControlName="anio_fabricacion"
+              class="form-control"
+              placeholder="ej. 2020"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="placa">Placa / Serie</label>
+            <input
+              id="placa"
+              type="text"
+              formControlName="placa"
+              class="form-control"
+              placeholder="ej. ABC-123"
+            />
+          </div>
+        </app-form-section>
 
         <!-- Section 2: Operational Details -->
-        <div class="form-section full-width">
-          <h3 class="section-title"><i class="fa-solid fa-gear"></i> Detalles Operativos</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <label for="estado">Estado *</label>
-              <app-dropdown
-                formControlName="estado"
-                [options]="[
-                  { label: 'Disponible', value: 'DISPONIBLE' },
-                  { label: 'En Uso', value: 'EN_USO' },
-                  { label: 'Mantenimiento', value: 'MANTENIMIENTO' },
-                  { label: 'Retirado', value: 'RETIRADO' },
-                ]"
-                [placeholder]="'Seleccionar Estado'"
-              ></app-dropdown>
-            </div>
-
-            <div class="form-group">
-              <label for="medidor_uso">Tipo de Medidor</label>
-              <app-dropdown
-                formControlName="medidor_uso"
-                [options]="[
-                  { label: 'Horómetro', value: 'HOROMETRO' },
-                  { label: 'Odómetro', value: 'ODOMETRO' },
-                  { label: 'Ambos', value: 'AMBOS' },
-                ]"
-                [placeholder]="'Seleccionar Tipo'"
-              ></app-dropdown>
-            </div>
-
-            <div class="form-group">
-              <label for="tipo_proveedor">Tipo de Proveedor *</label>
-              <app-dropdown
-                formControlName="tipo_proveedor"
-                [options]="[
-                  { label: 'Propio', value: 'PROPIO' },
-                  { label: 'Tercero (Alquilado)', value: 'TERCERO' },
-                ]"
-                [placeholder]="'Seleccionar Tipo'"
-                (selectionChange)="onTipoProveedorChange()"
-              ></app-dropdown>
-            </div>
-
-            <div class="form-group" *ngIf="showProviderSelect">
-              <label for="proveedor_id">Proveedor *</label>
-              <app-dropdown
-                formControlName="proveedor_id"
-                [options]="providerOptions"
-                [placeholder]="'Seleccionar Proveedor'"
-                [searchable]="true"
-              ></app-dropdown>
-              <div class="error-msg" *ngIf="hasError('proveedor_id')">
-                Proveedor es requerido para equipos de terceros
-              </div>
-            </div>
-
-            <!-- Operator Removed -->
+        <app-form-section title="Detalles Operativos" icon="fa-gear">
+          <div class="form-group">
+            <label for="estado">Estado *</label>
+            <app-dropdown
+              formControlName="estado"
+              [options]="[
+                { label: 'Disponible', value: 'DISPONIBLE' },
+                { label: 'En Uso', value: 'EN_USO' },
+                { label: 'Mantenimiento', value: 'MANTENIMIENTO' },
+                { label: 'Retirado', value: 'RETIRADO' },
+              ]"
+              [placeholder]="'Seleccionar Estado'"
+            ></app-dropdown>
           </div>
-        </div>
+
+          <div class="form-group">
+            <label for="medidor_uso">Tipo de Medidor</label>
+            <app-dropdown
+              formControlName="medidor_uso"
+              [options]="[
+                { label: 'Horómetro', value: 'HOROMETRO' },
+                { label: 'Odómetro', value: 'ODOMETRO' },
+                { label: 'Ambos', value: 'AMBOS' },
+              ]"
+              [placeholder]="'Seleccionar Tipo'"
+            ></app-dropdown>
+          </div>
+
+          <div class="form-group">
+            <label for="tipo_proveedor">Tipo de Proveedor *</label>
+            <app-dropdown
+              formControlName="tipo_proveedor"
+              [options]="[
+                { label: 'Propio', value: 'PROPIO' },
+                { label: 'Tercero (Alquilado)', value: 'TERCERO' },
+              ]"
+              [placeholder]="'Seleccionar Tipo'"
+              (selectionChange)="onTipoProveedorChange()"
+            ></app-dropdown>
+          </div>
+
+          <div class="form-group" *ngIf="showProviderSelect">
+            <label for="proveedor_id">Proveedor *</label>
+            <app-dropdown
+              formControlName="proveedor_id"
+              [options]="providerOptions"
+              [placeholder]="'Seleccionar Proveedor'"
+              [searchable]="true"
+            ></app-dropdown>
+            <div class="error-msg" *ngIf="hasError('proveedor_id')">
+              Proveedor es requerido para equipos de terceros
+            </div>
+          </div>
+
+          <!-- Operator Removed -->
+        </app-form-section>
 
         <!-- Section 3: Technical Specs -->
-        <div class="form-section full-width">
-          <h3 class="section-title">
-            <i class="fa-solid fa-microchip"></i> Especificaciones Técnicas
-          </h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <label for="potencia_neta">Potencia (HP)</label>
-              <input
-                id="potencia_neta"
-                type="text"
-                formControlName="potencia_neta"
-                class="form-control"
-                placeholder="ej. 300 HP"
-              />
-            </div>
-
-            <!-- Removed capacity/weight/fuel as not in entity -->
-
-            <div class="form-group">
-              <label for="tipo_motor">Tipo de Motor</label>
-              <input
-                id="tipo_motor"
-                type="text"
-                formControlName="tipo_motor"
-                class="form-control"
-                placeholder="ej. Diesel"
-              />
-            </div>
+        <app-form-section title="Especificaciones Técnicas" icon="fa-microchip">
+          <div class="form-group">
+            <label for="potencia_neta">Potencia (HP)</label>
+            <input
+              id="potencia_neta"
+              type="text"
+              formControlName="potencia_neta"
+              class="form-control"
+              placeholder="ej. 300 HP"
+            />
           </div>
-        </div>
+
+          <!-- Removed capacity/weight/fuel as not in entity -->
+
+          <div class="form-group">
+            <label for="tipo_motor">Tipo de Motor</label>
+            <input
+              id="tipo_motor"
+              type="text"
+              formControlName="tipo_motor"
+              class="form-control"
+              placeholder="ej. Diesel"
+            />
+          </div>
+        </app-form-section>
 
         <!-- Section 4: Document Expiry Dates -->
-        <div class="form-section full-width">
-          <h3 class="section-title">
-            <i class="fa-solid fa-calendar-check"></i> Fechas de Vencimiento de Documentos
-          </h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <label for="fecha_venc_soat">SOAT</label>
-              <input
-                id="fecha_venc_soat"
-                type="date"
-                formControlName="fecha_venc_soat"
-                class="form-control"
-              />
-              <span
-                [class]="
-                  'status-badge status-' +
-                  getDocumentStatus(equipmentForm.get('fecha_venc_soat')?.value)
-                "
-              >
-                {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_soat')?.value) }}
-              </span>
-            </div>
-            <div class="form-group">
-              <label for="fecha_venc_poliza">Póliza TREC</label>
-              <input
-                id="fecha_venc_poliza"
-                type="date"
-                formControlName="fecha_venc_poliza"
-                class="form-control"
-              />
-              <span
-                [class]="
-                  'status-badge status-' +
-                  getDocumentStatus(equipmentForm.get('fecha_venc_poliza')?.value)
-                "
-              >
-                {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_poliza')?.value) }}
-              </span>
-            </div>
-            <div class="form-group">
-              <label for="fecha_venc_citv">CITV</label>
-              <input
-                id="fecha_venc_citv"
-                type="date"
-                formControlName="fecha_venc_citv"
-                class="form-control"
-              />
-              <span
-                [class]="
-                  'status-badge status-' +
-                  getDocumentStatus(equipmentForm.get('fecha_venc_citv')?.value)
-                "
-              >
-                {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_citv')?.value) }}
-              </span>
-            </div>
+        <app-form-section
+          title="Fechas de Vencimiento de Documentos"
+          icon="fa-calendar-check"
+          [columns]="3"
+        >
+          <div class="form-group">
+            <label for="fecha_venc_soat">SOAT</label>
+            <input
+              id="fecha_venc_soat"
+              type="date"
+              formControlName="fecha_venc_soat"
+              class="form-control"
+            />
+            <span
+              [class]="
+                'status-badge status-' +
+                getDocumentStatus(equipmentForm.get('fecha_venc_soat')?.value)
+              "
+            >
+              {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_soat')?.value) }}
+            </span>
           </div>
-        </div>
+          <div class="form-group">
+            <label for="fecha_venc_poliza">Póliza TREC</label>
+            <input
+              id="fecha_venc_poliza"
+              type="date"
+              formControlName="fecha_venc_poliza"
+              class="form-control"
+            />
+            <span
+              [class]="
+                'status-badge status-' +
+                getDocumentStatus(equipmentForm.get('fecha_venc_poliza')?.value)
+              "
+            >
+              {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_poliza')?.value) }}
+            </span>
+          </div>
+          <div class="form-group">
+            <label for="fecha_venc_citv">CITV</label>
+            <input
+              id="fecha_venc_citv"
+              type="date"
+              formControlName="fecha_venc_citv"
+              class="form-control"
+            />
+            <span
+              [class]="
+                'status-badge status-' +
+                getDocumentStatus(equipmentForm.get('fecha_venc_citv')?.value)
+              "
+            >
+              {{ getDocumentStatusLabel(equipmentForm.get('fecha_venc_citv')?.value) }}
+            </span>
+          </div>
+        </app-form-section>
 
         <!-- Section 5: Additional Documents (Table Format) -->
         <div class="form-section full-width">
@@ -402,7 +392,9 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
   `,
   styles: [
     `
-      /* Section Header (Specific to this form table) */
+      @use 'form-layout';
+
+      /* Section Header with action button (equipment-specific) */
       .section-header {
         display: flex;
         justify-content: space-between;
@@ -418,7 +410,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         padding: 0;
       }
 
-      /* Table Styles (Specific to this form) */
+      /* Document Table (equipment-specific) */
       .table-container {
         border: 1px solid var(--grey-200);
         border-radius: 8px;
@@ -461,13 +453,12 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         font-style: italic;
       }
 
-      /* File Input */
       .file-input-wrapper {
         position: relative;
         display: inline-block;
       }
 
-      .file-input {
+      .file-input-wrapper .file-input {
         position: absolute;
         left: 0;
         top: 0;
@@ -514,7 +505,12 @@ export class EquipmentFormComponent implements OnInit {
   providers: Provider[] = [];
   providerOptions: { label: string; value: string | number | null }[] = [];
   operators: Operator[] = [];
-  equipmentDocuments: { document_type: string; expiration_date: string; file_name: string; file: File | null }[] = [];
+  equipmentDocuments: {
+    document_type: string;
+    expiration_date: string;
+    file_name: string;
+    file: File | null;
+  }[] = [];
   validationErrors: ValidationError[] = [];
   errorMessage = '';
   successMessage = '';
