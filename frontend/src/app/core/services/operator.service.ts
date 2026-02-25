@@ -134,29 +134,11 @@ export class OperatorService {
   getPerformance(id: number, dias?: number): Observable<OperatorRendimiento> {
     let params = new HttpParams();
     if (dias !== undefined) params = params.set('dias', dias);
-    return this.http
-      .get<ApiResponse<OperatorRendimiento>>(`${this.apiUrl}/${id}/performance`, { params })
-      .pipe(
-        map((response) => {
-          if (response && typeof response === 'object' && 'data' in response) {
-            return response.data as OperatorRendimiento;
-          }
-          return response as unknown as OperatorRendimiento;
-        })
-      );
+    return this.http.get<OperatorRendimiento>(`${this.apiUrl}/${id}/performance`, { params });
   }
 
   getAvailability(id: number): Observable<OperatorDisponibilidad> {
-    return this.http
-      .get<ApiResponse<OperatorDisponibilidad>>(`${this.apiUrl}/${id}/availability`)
-      .pipe(
-        map((response) => {
-          if (response && typeof response === 'object' && 'data' in response) {
-            return response.data as OperatorDisponibilidad;
-          }
-          return response as unknown as OperatorDisponibilidad;
-        })
-      );
+    return this.http.get<OperatorDisponibilidad>(`${this.apiUrl}/${id}/availability`);
   }
 
   notify(operatorId: number, message: string): Observable<void> {

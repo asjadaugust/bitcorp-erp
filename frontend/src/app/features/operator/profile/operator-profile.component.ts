@@ -782,11 +782,16 @@ export class OperatorProfileComponent implements OnInit {
         this.currentOperatorId = routeId;
         this.loadProfile(routeId);
       } else {
-        // Fallback: try to use the current user's operador_id or default to 1
+        // Fallback: use the current user's operador_id; show error if not found
         const user = this.authService.currentUser;
-        const fallbackId =
-          ((user as unknown as Record<string, unknown>)?.['operador_id'] as number | undefined) ??
-          1;
+        const fallbackId = (user as unknown as Record<string, unknown>)?.['operador_id'] as
+          | number
+          | undefined;
+        if (!fallbackId) {
+          this.loading = false;
+          this.error = 'No se encontró un perfil de operador asociado a este usuario.';
+          return;
+        }
         this.currentOperatorId = fallbackId;
         this.loadProfile(fallbackId);
       }
