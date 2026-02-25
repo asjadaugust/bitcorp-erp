@@ -9,7 +9,15 @@ import {
   OperatorCreateDto,
   OperatorUpdateDto,
   OperatorFiltersDto,
+  CertificacionDto,
+  CertificacionCreateDto,
+  toCertificacionDto,
+  HabilidadDto,
+  HabilidadCreateDto,
+  toHabilidadDto,
 } from '../types/dto/operator.dto';
+import { CertificacionOperador } from '../models/operador-certificacion.model';
+import { HabilidadOperador } from '../models/operador-habilidad.model';
 import Logger from '../utils/logger';
 import { NotFoundError, ConflictError } from '../errors/http.errors';
 import { DashboardService } from './dashboard.service';
@@ -26,6 +34,16 @@ export class OperatorService {
       throw new Error('Database not initialized');
     }
     return AppDataSource.getRepository(Trabajador);
+  }
+
+  private get certRepository(): Repository<CertificacionOperador> {
+    if (!AppDataSource.isInitialized) throw new Error('Database not initialized');
+    return AppDataSource.getRepository(CertificacionOperador);
+  }
+
+  private get habRepository(): Repository<HabilidadOperador> {
+    if (!AppDataSource.isInitialized) throw new Error('Database not initialized');
+    return AppDataSource.getRepository(HabilidadOperador);
   }
 
   async findAll(
@@ -51,7 +69,7 @@ export class OperatorService {
       const queryBuilder = this.repository
         .createQueryBuilder('t')
         .where('t.tenantId = :tenantId', { tenantId })
-        .andWhere('t.isActive = :isActive', { isActive: filters?.isActive ?? true });
+        .andWhere('t.isActive = :isActive', { isActive: filters?.is_active ?? true });
 
       // Filter by cargo
       if (filters?.cargo) {
@@ -66,8 +84,10 @@ export class OperatorService {
       }
 
       // Filter by unidad operativa
-      if (filters?.unidadOperativaId) {
-        queryBuilder.andWhere('t.operating_unit_id = :unitId', { unitId: filters.unidadOperativaId });
+      if (filters?.unidad_operativa_id) {
+        queryBuilder.andWhere('t.operating_unit_id = :unitId', {
+          unitId: filters.unidad_operativa_id,
+        });
       }
 
       // Search across multiple fields
@@ -494,6 +514,62 @@ export class OperatorService {
       Logger.error('Error getting operator performance', { error, tenantId, id });
       throw error;
     }
+  }
+
+  async getCertifications(tenantId: number, operadorId: number): Promise<CertificacionDto[]> {
+    const certs = await this.certRepository.find({
+      where: { trabajadorId: operadorId, tenantId },
+      order: { fechaVencimiento: 'ASC' },
+    });
+    return certs.map(toCertificacionDto);
+  }
+
+  async addCertification(
+    tenantId: number,
+    operadorId: number,
+    data: CertificacionCreateDto
+  ): Promise<CertificacionDto> {
+    const entity = this.certRepository.create({
+      trabajadorId: operadorId,
+      tenantId,
+      nombreCertificacion: data.nombre_certificacion,
+      numeroCertificacion: data.numero_certificacion,
+      fechaEmision: data.fecha_emision ? new Date(data.fecha_emision) : undefined,
+      fechaVencimiento: data.fecha_vencimiento ? new Date(data.fecha_vencimiento) : undefined,
+      entidadEmisora: data.entidad_emisora,
+      estado: 'VIGENTE',
+    });
+    const saved = await this.certRepository.save(entity);
+    return toCertificacionDto(saved);
+  }
+
+  async deleteCertification(tenantId: number, certId: number): Promise<void> {
+    await this.certRepository.delete({ id: certId, tenantId });
+  }
+
+  async getSkills(tenantId: number, operadorId: number): Promise<HabilidadDto[]> {
+    const skills = await this.habRepository.find({
+      where: { trabajadorId: operadorId, tenantId },
+      order: { tipoEquipo: 'ASC' },
+    });
+    return skills.map(toHabilidadDto);
+  }
+
+  async addSkill(
+    tenantId: number,
+    operadorId: number,
+    data: HabilidadCreateDto
+  ): Promise<HabilidadDto> {
+    const entity = this.habRepository.create({
+      trabajadorId: operadorId,
+      tenantId,
+      tipoEquipo: data.tipo_equipo,
+      nivelHabilidad: data.nivel_habilidad ?? 'PRINCIPIANTE',
+      aniosExperiencia: data.anios_experiencia ?? 0,
+      ultimaVerificacion: data.ultima_verificacion ? new Date(data.ultima_verificacion) : undefined,
+    });
+    const saved = await this.habRepository.save(entity);
+    return toHabilidadDto(saved);
   }
 }
 
