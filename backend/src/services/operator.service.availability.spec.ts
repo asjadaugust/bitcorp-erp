@@ -31,7 +31,6 @@ describe('OperatorService — availability and performance', () => {
     };
 
     mockParteDiarioRepo = {
-      findOne: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnValue(mockQB),
     };
 

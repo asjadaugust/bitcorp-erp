@@ -37,17 +37,17 @@ router.get(
 );
 router.get(
   '/:id/availability',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
   OperatorController.getAvailability
 );
 router.get(
   '/:id/performance',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
   OperatorController.getPerformance
 );
 router.get(
   '/:id/certifications',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
   OperatorController.getCertifications
 );
 router.post(
@@ -56,13 +56,13 @@ router.post(
   OperatorController.addCertification
 );
 router.delete(
-  '/certifications/:certId',
+  '/:id/certifications/:certId',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   OperatorController.deleteCertification
 );
 router.get(
   '/:id/skills',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
   OperatorController.getSkills
 );
 router.post(
