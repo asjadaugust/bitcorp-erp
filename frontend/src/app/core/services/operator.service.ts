@@ -7,9 +7,18 @@ import {
   CreateOperatorDto,
   OperatorCertification,
   OperatorSkill,
+  OperatorDisponibilidad,
+  OperatorRendimiento,
 } from '../models/operator.model';
 
 import { environment } from '../../../environments/environment';
+
+// Generic API wrapper shape returned by the backend
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  pagination?: unknown;
+}
 
 @Injectable({ providedIn: 'root' })
 export class OperatorService {
@@ -20,31 +29,28 @@ export class OperatorService {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach((key) => {
-        if (filters[key]) params = params.set(key, filters[key]);
+        if (filters[key] !== undefined) params = params.set(key, String(filters[key]));
       });
     }
     // API returns paginated response: {success, data, pagination}
     // Interceptor does NOT unwrap when pagination exists, so we extract data here
-    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
+    return this.http.get<ApiResponse<Operator[]>>(this.apiUrl, { params }).pipe(
       map((response) => {
-        // Handle both paginated {data: [...]} and direct array responses
-        const data =
-          response && typeof response === 'object' && 'data' in response
-            ? response.data
-            : Array.isArray(response)
-              ? response
-              : [];
-        return data;
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data as Operator[];
+        }
+        return Array.isArray(response) ? (response as unknown as Operator[]) : [];
       })
     );
   }
 
   getById(id: number): Observable<Operator> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<ApiResponse<Operator>>(`${this.apiUrl}/${id}`).pipe(
       map((response) => {
-        return response && typeof response === 'object' && 'data' in response
-          ? response.data
-          : response;
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data as Operator;
+        }
+        return response as unknown as Operator;
       })
     );
   }
@@ -62,28 +68,27 @@ export class OperatorService {
   }
 
   getAvailable(): Observable<Operator[]> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/available`).pipe(
+    return this.http.get<ApiResponse<Operator[]>>(`${this.apiUrl}/available`).pipe(
       map((response) => {
-        const data =
-          response && typeof response === 'object' && 'data' in response
-            ? response.data
-            : Array.isArray(response)
-              ? response
-              : [];
-        return data;
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data as Operator[];
+        }
+        return Array.isArray(response) ? (response as unknown as Operator[]) : [];
       })
     );
   }
 
   getCertifications(operatorId: number): Observable<OperatorCertification[]> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${operatorId}/certifications`).pipe(
-      map((response) => {
-        if (response && typeof response === 'object' && 'data' in response) {
-          return response.data;
-        }
-        return Array.isArray(response) ? response : [];
-      })
-    );
+    return this.http
+      .get<ApiResponse<OperatorCertification[]>>(`${this.apiUrl}/${operatorId}/certifications`)
+      .pipe(
+        map((response) => {
+          if (response && typeof response === 'object' && 'data' in response) {
+            return response.data as OperatorCertification[];
+          }
+          return Array.isArray(response) ? (response as unknown as OperatorCertification[]) : [];
+        })
+      );
   }
 
   addCertification(
@@ -97,12 +102,12 @@ export class OperatorService {
   }
 
   getSkills(operatorId: number): Observable<OperatorSkill[]> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${operatorId}/skills`).pipe(
+    return this.http.get<ApiResponse<OperatorSkill[]>>(`${this.apiUrl}/${operatorId}/skills`).pipe(
       map((response) => {
         if (response && typeof response === 'object' && 'data' in response) {
-          return response.data;
+          return response.data as OperatorSkill[];
         }
-        return Array.isArray(response) ? response : [];
+        return Array.isArray(response) ? (response as unknown as OperatorSkill[]) : [];
       })
     );
   }
@@ -114,23 +119,44 @@ export class OperatorService {
   searchBySkill(skill: string, projectId?: number): Observable<Operator[]> {
     let params = new HttpParams().set('skill', skill);
     if (projectId) params = params.set('project_id', projectId);
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/search-by-skill`, { params }).pipe(
-      map((response) => {
-        const data =
-          response && typeof response === 'object' && 'data' in response
-            ? response.data
-            : Array.isArray(response)
-              ? response
-              : [];
-        return data;
-      })
-    );
+    return this.http
+      .get<ApiResponse<Operator[]>>(`${this.apiUrl}/search-by-skill`, { params })
+      .pipe(
+        map((response) => {
+          if (response && typeof response === 'object' && 'data' in response) {
+            return response.data as Operator[];
+          }
+          return Array.isArray(response) ? (response as unknown as Operator[]) : [];
+        })
+      );
   }
 
-  getPerformance(id: number, months?: number): Observable<unknown> {
+  getPerformance(id: number, dias?: number): Observable<OperatorRendimiento> {
     let params = new HttpParams();
-    if (months) params = params.set('months', months);
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/performance`, { params });
+    if (dias !== undefined) params = params.set('dias', dias);
+    return this.http
+      .get<ApiResponse<OperatorRendimiento>>(`${this.apiUrl}/${id}/performance`, { params })
+      .pipe(
+        map((response) => {
+          if (response && typeof response === 'object' && 'data' in response) {
+            return response.data as OperatorRendimiento;
+          }
+          return response as unknown as OperatorRendimiento;
+        })
+      );
+  }
+
+  getAvailability(id: number): Observable<OperatorDisponibilidad> {
+    return this.http
+      .get<ApiResponse<OperatorDisponibilidad>>(`${this.apiUrl}/${id}/availability`)
+      .pipe(
+        map((response) => {
+          if (response && typeof response === 'object' && 'data' in response) {
+            return response.data as OperatorDisponibilidad;
+          }
+          return response as unknown as OperatorDisponibilidad;
+        })
+      );
   }
 
   notify(operatorId: number, message: string): Observable<void> {

@@ -36,24 +36,43 @@ export interface PersonalDocument {
   updatedAt?: string;
 }
 
+// Snake_case fields matching the backend DTO (api response contract)
 export interface OperatorCertification {
   id: number;
-  trabajadorId: number;
-  nombreCertificacion: string;
-  numeroCertificacion: string;
-  fechaEmision: string;
-  fechaVencimiento: string;
-  entidadEmisora: string;
-  estado: 'vigente' | 'vencido' | 'por_vencer';
+  trabajador_id: number;
+  nombre_certificacion: string;
+  numero_certificacion?: string;
+  fecha_emision?: string;
+  fecha_vencimiento?: string;
+  entidad_emisora?: string;
+  estado: 'VIGENTE' | 'VENCIDO' | 'POR_VENCER';
 }
 
+// Snake_case fields matching the backend DTO (api response contract)
 export interface OperatorSkill {
   id: number;
-  trabajadorId: number;
-  tipoEquipo: string;
-  nivelHabilidad: 'principiante' | 'intermedio' | 'avanzado' | 'experto';
-  aniosExperiencia: number;
-  ultimaVerificacion?: string;
+  trabajador_id: number;
+  tipo_equipo: string;
+  nivel_habilidad: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZADO' | 'EXPERTO';
+  anios_experiencia: number;
+  ultima_verificacion?: string;
+}
+
+export interface OperatorDisponibilidad {
+  operador_id: number;
+  estado: 'DISPONIBLE' | 'ASIGNADO';
+  parte_diario_hoy: { id: number; fecha_parte: string; equipo_id: number } | null;
+}
+
+export interface OperatorRendimiento {
+  operador_id: number;
+  periodo_dias: number;
+  total_partes: number;
+  horas_totales: number;
+  partes_aprobados: number;
+  partes_rechazados: number;
+  partes_pendientes: number;
+  eficiencia: number; // 0-100 percentage
 }
 
 export interface CreateOperatorDto {
