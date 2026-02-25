@@ -381,6 +381,61 @@ export class OperatorController {
     }
   }
 
+  // --- Disponibilidad Programada ---
+
+  static async getDisponibilidadMensual(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const mes = req.query['mes'] as string;
+      if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
+        sendError(res, 400, 'INVALID_MES', 'El parámetro mes debe tener formato YYYY-MM');
+        return;
+      }
+      const records = await operatorService.getDisponibilidadMensual(tenantId, mes);
+      sendSuccess(res, records);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      sendError(
+        res,
+        500,
+        'FETCH_DISPONIBILIDAD_FAILED',
+        'Error al obtener disponibilidad mensual',
+        msg
+      );
+    }
+  }
+
+  static async setDisponibilidad(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const operadorId = parseInt(req.params['id']);
+      if (isNaN(operadorId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+      const { fecha, disponible, observacion } = req.body as {
+        fecha: string;
+        disponible: boolean;
+        observacion?: string;
+      };
+      if (!fecha || disponible === undefined || disponible === null) {
+        sendError(res, 400, 'MISSING_FIELDS', 'Los campos fecha y disponible son requeridos');
+        return;
+      }
+      const record = await operatorService.setDisponibilidad(
+        tenantId,
+        operadorId,
+        fecha,
+        disponible,
+        observacion
+      );
+      sendSuccess(res, record);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Error desconocido';
+      sendError(res, 500, 'SET_DISPONIBILIDAD_FAILED', 'Error al guardar disponibilidad', msg);
+    }
+  }
+
   static async exportExcel(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       // Get tenantId from JWT token (multi-tenant context)

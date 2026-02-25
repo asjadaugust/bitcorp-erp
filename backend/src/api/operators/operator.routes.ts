@@ -30,6 +30,12 @@ router.get(
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   OperatorController.exportCSV
 );
+// Programación mensual de disponibilidad
+router.get(
+  '/programacion',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.getDisponibilidadMensual
+);
 router.get(
   '/:id',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
@@ -69,6 +75,11 @@ router.post(
   '/:id/skills',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   OperatorController.addSkill
+);
+router.post(
+  '/:id/disponibilidad',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.setDisponibilidad
 );
 router.post(
   '/',
