@@ -90,30 +90,30 @@ export class InventoryService {
         }
 
         // Business validation: Non-negative price
-        if (detailData.precioUnitario < 0) {
+        if (detailData.precio_unitario < 0) {
           throw new BusinessRuleError(
             'Unit price cannot be negative',
             'INVALID_PRICE',
-            { precio: detailData.precioUnitario },
+            { precio: detailData.precio_unitario },
             'Ingrese un precio no negativo'
           );
         }
 
         // TODO: Add tenant_id filter when column exists in logistica.producto table
-        // where: { id: detailData.productId, tenant_id: tenantId }
+        // where: { id: detailData.product_id, tenant_id: tenantId }
         const product = await queryRunner.manager.findOne(Product, {
-          where: { id: detailData.productId },
+          where: { id: detailData.product_id },
         });
 
         if (!product) {
-          throw new NotFoundError('Product', detailData.productId);
+          throw new NotFoundError('Product', detailData.product_id);
         }
 
         // Create Detail with calculated total
         const detail = this.movementDetailRepository.create({
           ...detailData,
           movementId: savedMovement.id,
-          montoTotal: detailData.cantidad * detailData.precioUnitario,
+          montoTotal: detailData.cantidad * detailData.precio_unitario,
         });
         await queryRunner.manager.save(detail);
 
@@ -308,7 +308,7 @@ export class InventoryService {
         distribution,
         metadata: {
           ...filters,
-          generatedAt: new Date().toISOString(),
+          generated_at: new Date().toISOString(),
         },
       };
     } catch (error) {

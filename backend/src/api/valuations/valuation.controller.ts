@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { ValuationService } from '../../services/valuation.service';
 import { PdfService } from '../../services/pdf.service';
 import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
@@ -34,7 +35,8 @@ export class ValuationController {
         search: req.query.search as string,
       };
 
-      const result = await this.valuationService.getAllValuations(filters);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const result = await this.valuationService.getAllValuations(tenantId, filters);
 
       sendPaginatedSuccess(res, result.data, {
         page,
@@ -69,7 +71,8 @@ export class ValuationController {
         return;
       }
 
-      const record = await this.valuationService.getValuationById(id.toString());
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const record = await this.valuationService.getValuationById(tenantId, id.toString());
       if (!record) {
         sendError(res, 404, 'VALUATION_NOT_FOUND', 'Valorización no encontrada');
         return;
@@ -114,8 +117,13 @@ export class ValuationController {
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user.id_usuario;
-      const record = await this.valuationService.createValuation(req.body, userId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
+      const record = await this.valuationService.createValuation(
+        tenantId,
+        req.body,
+        String(userId)
+      );
       sendCreated(res, (record as any).id, 'Valorización creada exitosamente');
     } catch (error) {
       next(error);
@@ -130,8 +138,14 @@ export class ValuationController {
         return;
       }
 
-      const userId = (req as any).user.id_usuario;
-      const record = await this.valuationService.updateValuation(id.toString(), req.body, userId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
+      const record = await this.valuationService.updateValuation(
+        tenantId,
+        id.toString(),
+        req.body,
+        String(userId)
+      );
       if (!record) {
         sendError(res, 404, 'VALUATION_NOT_FOUND', 'Valorización no encontrada');
         return;
@@ -151,7 +165,8 @@ export class ValuationController {
         return;
       }
 
-      const success = await this.valuationService.deleteValuation(id.toString());
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const success = await this.valuationService.deleteValuation(tenantId, id.toString());
       if (!success) {
         sendError(res, 404, 'VALUATION_NOT_FOUND', 'Valorización no encontrada');
         return;
@@ -163,24 +178,31 @@ export class ValuationController {
     }
   };
 
-  calculate = async (req: Request, res: Response, next: NextFunction) => {
+  calculate = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { contract_id, month, year } = req.body;
       if (!contract_id || !month || !year) {
         sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: contract_id, month, year');
         return;
       }
-      const result = await this.valuationService.calculateValuation(contract_id, month, year);
+      const result = await this.valuationService.calculateValuation(
+        tenantId,
+        contract_id,
+        month,
+        year
+      );
       sendSuccess(res, result);
     } catch (error) {
       next(error);
     }
   };
 
-  generate = async (req: Request, res: Response, next: NextFunction) => {
+  generate = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { contract_id, month, year } = req.body;
-      const userId = (req as any).user.id_usuario;
+      const userId = String(req.user!.id_usuario);
 
       if (!month || !year) {
         sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: month, year');
@@ -190,13 +212,19 @@ export class ValuationController {
       let result;
       if (contract_id) {
         result = await this.valuationService.generateValuationForContract(
+          tenantId,
           contract_id,
           month,
           year,
           userId
         );
       } else {
-        result = await this.valuationService.generateValuationsForPeriod(month, year, userId);
+        result = await this.valuationService.generateValuationsForPeriod(
+          tenantId,
+          month,
+          year,
+          userId
+        );
       }
 
       sendSuccess(res, result);
@@ -327,7 +355,11 @@ export class ValuationController {
         res.send(pdf);
       } else {
         // Use legacy PDFKit-based generation
-        const record = await this.valuationService.getValuationDetailsForPdf(id);
+        const tenantId = (req as AuthRequest).user!.id_empresa;
+        const record = await this.valuationService.getValuationDetailsForPdf(
+          tenantId,
+          id.toString()
+        );
         if (!record) {
           return res.status(404).json({ success: false, message: 'Valuation not found' });
         }
@@ -357,7 +389,8 @@ export class ValuationController {
         limit: Math.min(parseInt(req.query.limit as string) || 50, 200),
       };
 
-      const result = await this.valuationService.getRegistry(filters);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const result = await this.valuationService.getRegistry(tenantId, filters);
 
       // Service already returns DTOs, so we don't need to map them again
       const responseData = {
@@ -675,7 +708,8 @@ export class ValuationController {
         return;
       }
 
-      const result = await this.valuationService.recalculateValuation(id);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const result = await this.valuationService.recalculateValuation(tenantId, id);
       sendSuccess(res, toValuationDto(result));
     } catch (error) {
       next(error);

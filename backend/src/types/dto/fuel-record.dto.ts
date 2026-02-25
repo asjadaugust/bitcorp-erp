@@ -58,7 +58,6 @@ export interface CreateFuelRecordDto {
   observaciones?: string;
 
   // English camelCase (backward compatibility)
-  valorizacion_id?: number;
   date?: string;
   amount?: number;
   unit_price?: number;
@@ -150,14 +149,14 @@ export function fromFuelRecordDto(dto: Partial<FuelRecordDto>): Partial<Registro
  */
 export function mapCreateFuelRecordDto(input: CreateFuelRecordDto): Partial<FuelRecordDto> {
   return {
-    valorizacion_id: input.valorizacion_id ?? input.valorizacionId,
+    valorizacion_id: input.valorizacion_id,
     fecha: input.fecha ?? input.date,
     cantidad: input.cantidad ?? input.amount,
-    precio_unitario: input.precio_unitario ?? input.unitPrice,
-    monto_total: input.monto_total ?? input.totalAmount,
-    tipo_combustible: input.tipo_combustible ?? input.fuelType,
+    precio_unitario: input.precio_unitario ?? input.unit_price,
+    monto_total: input.monto_total ?? input.total_amount,
+    tipo_combustible: input.tipo_combustible ?? input.fuel_type,
     proveedor: input.proveedor ?? input.provider,
-    numero_documento: input.numero_documento ?? input.documentNumber,
+    numero_documento: input.numero_documento ?? input.document_number,
     observaciones: input.observaciones ?? input.notes,
   };
 }

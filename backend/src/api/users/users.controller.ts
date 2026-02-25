@@ -24,7 +24,8 @@ export class UsersController {
         limit: parseInt(limit as string) || 10,
       };
 
-      const { data, total } = await this.userService.findAll(filters);
+      const tenantId = req.user!.id_empresa;
+      const { data, total } = await this.userService.findAll(tenantId, filters);
       sendPaginatedSuccess(res, data, {
         page: filters.page,
         limit: filters.limit,
@@ -43,7 +44,8 @@ export class UsersController {
         return;
       }
 
-      const user = await this.userService.findById(id);
+      const tenantId = req.user!.id_empresa;
+      const user = await this.userService.findById(tenantId, id);
       sendSuccess(res, user);
     } catch (error: any) {
       if (error.message === 'Usuario no encontrado') {
@@ -56,7 +58,8 @@ export class UsersController {
 
   create = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const user = await this.userService.create(req.body);
+      const tenantId = req.user!.id_empresa;
+      const user = await this.userService.create(tenantId, req.body);
       sendCreated(res, user);
     } catch (error: any) {
       if (error.message.includes('ya está en uso') || error.message.includes('no existe')) {
@@ -75,7 +78,8 @@ export class UsersController {
         return;
       }
 
-      const user = await this.userService.update(id, req.body);
+      const tenantId = req.user!.id_empresa;
+      const user = await this.userService.update(tenantId, id, req.body);
       sendSuccess(res, user);
     } catch (error: any) {
       if (error.message === 'Usuario no encontrado') {
@@ -97,7 +101,8 @@ export class UsersController {
       }
 
       const { new_password } = req.body;
-      await this.userService.changePassword(id, new_password);
+      const tenantId = req.user!.id_empresa;
+      await this.userService.changePassword(tenantId, id, new_password);
       sendSuccess(res, { message: 'Contraseña actualizada exitosamente' });
     } catch (error: any) {
       if (error.message === 'Usuario no encontrado') {
@@ -122,7 +127,8 @@ export class UsersController {
         return;
       }
 
-      const user = await this.userService.toggleActive(id, currentUserId);
+      const tenantId = req.user!.id_empresa;
+      const user = await this.userService.toggleActive(tenantId, id, currentUserId);
       sendSuccess(res, user);
     } catch (error: any) {
       if (error.message === 'Usuario no encontrado') {

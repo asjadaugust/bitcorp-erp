@@ -134,17 +134,17 @@ export class OperatorModel {
     const repository = this.getRepository();
 
     const worker = repository.create({
-      // Map legacy interface fields to entity fields
-      nombres: data.first_name || '',
-      apellidoPaterno: data.last_name || '',
+      // Map camelCase interface fields to entity fields
+      nombres: data.firstName || '',
+      apellidoPaterno: data.lastName || '',
       email: data.email,
       telefono: data.phone,
-      licenciaConducir: data.license_number,
-      fechaIngreso: data.employment_start_date ? new Date(data.employment_start_date) : undefined,
-      fechaCese: data.employment_end_date ? new Date(data.employment_end_date) : undefined,
-      tipoContrato: data.contract_type,
+      licenciaConducir: data.licenseNumber,
+      fechaIngreso: data.employmentStartDate ? new Date(data.employmentStartDate) : undefined,
+      fechaCese: data.employmentEndDate ? new Date(data.employmentEndDate) : undefined,
+      tipoContrato: data.contractType,
       dni: data.dni || '',
-      fechaNacimiento: data.date_of_birth ? new Date(data.date_of_birth) : undefined,
+      fechaNacimiento: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
       direccion: data.address,
       isActive: true,
     });
@@ -165,19 +165,18 @@ export class OperatorModel {
 
     if (!worker) return null;
 
-    // Map updated fields
-    if (data.first_name !== undefined) worker.nombres = data.first_name;
-    if (data.last_name !== undefined) worker.apellidoPaterno = data.last_name;
+    // Map updated fields (camelCase interface → entity properties)
+    if (data.firstName !== undefined) worker.nombres = data.firstName;
+    if (data.lastName !== undefined) worker.apellidoPaterno = data.lastName;
     if (data.email !== undefined) worker.email = data.email;
     if (data.phone !== undefined) worker.telefono = data.phone;
-    if (data.license_number !== undefined) worker.licenciaConducir = data.license_number;
-    if (data.employment_start_date !== undefined)
-      worker.fechaIngreso = new Date(data.employment_start_date);
-    if (data.employment_end_date !== undefined)
-      worker.fechaCese = new Date(data.employment_end_date);
-    if (data.contract_type !== undefined) worker.tipoContrato = data.contract_type;
+    if (data.licenseNumber !== undefined) worker.licenciaConducir = data.licenseNumber;
+    if (data.employmentStartDate !== undefined)
+      worker.fechaIngreso = new Date(data.employmentStartDate);
+    if (data.employmentEndDate !== undefined) worker.fechaCese = new Date(data.employmentEndDate);
+    if (data.contractType !== undefined) worker.tipoContrato = data.contractType;
     if (data.dni !== undefined) worker.dni = data.dni;
-    if (data.date_of_birth !== undefined) worker.fechaNacimiento = new Date(data.date_of_birth);
+    if (data.dateOfBirth !== undefined) worker.fechaNacimiento = new Date(data.dateOfBirth);
     if (data.address !== undefined) worker.direccion = data.address;
 
     const updated = await repository.save(worker);
@@ -235,21 +234,21 @@ export class OperatorModel {
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       id: worker.id as any, // Legacy interface expects string, entity uses number
-      first_name: worker.nombres,
-      last_name: worker.apellidoPaterno,
-      full_name: worker.nombreCompleto,
+      firstName: worker.nombres,
+      lastName: worker.apellidoPaterno,
+      fullName: worker.nombreCompleto,
       email: worker.email || '',
       phone: worker.telefono || '',
-      license_number: worker.licenciaConducir,
-      employment_start_date: worker.fechaIngreso?.toISOString() || '',
-      employment_end_date: worker.fechaCese?.toISOString(),
-      hourly_rate: 0, // Not in current schema
+      licenseNumber: worker.licenciaConducir,
+      employmentStartDate: worker.fechaIngreso?.toISOString() || '',
+      employmentEndDate: worker.fechaCese?.toISOString(),
+      hourlyRate: 0, // Not in current schema
       status: 'active', // Default value
       dni: worker.dni,
-      date_of_birth: worker.fechaNacimiento?.toISOString(),
-      hire_date: worker.fechaIngreso?.toISOString(),
+      dateOfBirth: worker.fechaNacimiento?.toISOString(),
+      hireDate: worker.fechaIngreso?.toISOString(),
       address: worker.direccion,
-      contract_type: worker.tipoContrato,
+      contractType: worker.tipoContrato,
       isActive: worker.isActive,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       createdAt: worker.createdAt.toISOString() as any,

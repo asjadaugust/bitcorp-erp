@@ -1615,7 +1615,7 @@ export class ProjectService {
         trend,
         metadata: {
           ...filters,
-          generatedAt: new Date().toISOString(),
+          generated_at: new Date().toISOString(),
         },
       };
     } catch (error) {

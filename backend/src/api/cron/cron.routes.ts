@@ -29,7 +29,7 @@ router.post('/trigger/:jobName', async (req: Request, res: Response) => {
 
     Logger.info('Manual cron job trigger requested', {
       jobName,
-      triggeredBy: req.user?.id || 'unknown',
+      triggeredBy: req.user?.id_usuario || 'unknown',
       context: 'CronController.trigger',
     });
 

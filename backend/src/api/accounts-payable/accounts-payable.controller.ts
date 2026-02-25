@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AccountsPayableService } from '../../services/accounts-payable.service';
 import {
   sendError,
@@ -8,6 +8,7 @@ import {
   sendCreated,
 } from '../../utils/api-response';
 import Logger from '../../utils/logger';
+import { AuthRequest } from '../../middleware/auth.middleware';
 
 export class AccountsPayableController {
   private service: AccountsPayableService;
@@ -16,10 +17,11 @@ export class AccountsPayableController {
     this.service = new AccountsPayableService();
   }
 
-  create = async (req: Request, res: Response): Promise<void> => {
+  create = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const data = req.body;
-      const result = await this.service.create(data);
+      const result = await this.service.create(tenantId, data);
       sendCreated(res, result);
     } catch (error) {
       Logger.error('Error creating accounts payable', {
@@ -37,8 +39,9 @@ export class AccountsPayableController {
     }
   };
 
-  findAll = async (req: Request, res: Response): Promise<void> => {
+  findAll = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       // Extract and validate pagination parameters
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
@@ -50,7 +53,7 @@ export class AccountsPayableController {
         sort_order: req.query.sort_order as 'ASC' | 'DESC',
       };
 
-      const result = await this.service.findAll(filters);
+      const result = await this.service.findAll(tenantId, filters);
       sendPaginatedSuccess(res, result.data, { page, limit, total: result.total });
     } catch (error) {
       Logger.error('Error fetching accounts payable', {
@@ -68,8 +71,9 @@ export class AccountsPayableController {
     }
   };
 
-  findOne = async (req: Request, res: Response): Promise<void> => {
+  findOne = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -77,7 +81,7 @@ export class AccountsPayableController {
         return;
       }
 
-      const result = await this.service.findOne(id);
+      const result = await this.service.findOne(tenantId, id);
       if (!result) {
         sendError(res, 404, 'ACCOUNTS_PAYABLE_NOT_FOUND', 'Cuenta por pagar no encontrada');
         return;
@@ -100,8 +104,9 @@ export class AccountsPayableController {
     }
   };
 
-  update = async (req: Request, res: Response): Promise<void> => {
+  update = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -110,7 +115,7 @@ export class AccountsPayableController {
       }
 
       const data = req.body;
-      const result = await this.service.update(id, data);
+      const result = await this.service.update(tenantId, id, data);
       if (!result) {
         sendError(res, 404, 'ACCOUNTS_PAYABLE_NOT_FOUND', 'Cuenta por pagar no encontrada');
         return;
@@ -133,8 +138,9 @@ export class AccountsPayableController {
     }
   };
 
-  remove = async (req: Request, res: Response): Promise<void> => {
+  remove = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -142,7 +148,7 @@ export class AccountsPayableController {
         return;
       }
 
-      const result = await this.service.delete(id);
+      const result = await this.service.delete(tenantId, id);
       if (!result) {
         sendError(res, 404, 'ACCOUNTS_PAYABLE_NOT_FOUND', 'Cuenta por pagar no encontrada');
         return;
@@ -165,9 +171,10 @@ export class AccountsPayableController {
     }
   };
 
-  findPending = async (req: Request, res: Response): Promise<void> => {
+  findPending = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const result = await this.service.findPending();
+      const tenantId = req.user!.id_empresa;
+      const result = await this.service.findPending(tenantId);
       sendSuccess(res, result);
     } catch (error) {
       Logger.error('Error fetching pending accounts payable', {

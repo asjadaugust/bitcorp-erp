@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { ContractService } from '../../services/contract.service';
 import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
 import Logger from '../../utils/logger';
@@ -97,11 +98,12 @@ export class ContractController {
    * GET /api/contracts/numero/:numero
    * Get contract by numero_contrato
    */
-  static async getByNumero(req: Request, res: Response): Promise<void> {
+  static async getByNumero(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const { numero } = req.params;
 
-      const contract = await contractService.findByNumero(numero);
+      const contract = await contractService.findByNumero(tenantId, numero);
 
       if (!contract) {
         sendError(res, 404, 'CONTRACT_NOT_FOUND', 'Contract not found');
@@ -124,9 +126,10 @@ export class ContractController {
    * POST /api/contracts
    * Create new contract
    */
-  static async create(req: Request, res: Response): Promise<void> {
+  static async create(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const contract = await contractService.create(req.body);
+      const tenantId = req.user!.id_empresa;
+      const contract = await contractService.create(tenantId, req.body);
 
       sendCreated(res, contract);
     } catch (error: any) {
@@ -241,9 +244,10 @@ export class ContractController {
    * POST /api/contracts/addendums
    * Create addendum for a contract
    */
-  static async createAddendum(req: Request, res: Response): Promise<void> {
+  static async createAddendum(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const addendum = await contractService.createAddendum(req.body);
+      const tenantId = req.user!.id_empresa;
+      const addendum = await contractService.createAddendum(tenantId, req.body);
 
       sendCreated(res, addendum);
     } catch (error: any) {
@@ -705,7 +709,7 @@ export class ContractController {
   }
 
   /** POST /api/contracts/:id/resolver — Formal resolution (PRD §12) */
-  static async resolver(req: Request, res: Response): Promise<void> {
+  static async resolver(req: AuthRequest, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -715,9 +719,10 @@ export class ContractController {
 
       const { causal_resolucion, motivo_resolucion, fecha_resolucion, monto_liquidacion } =
         req.body;
-      const usuarioId = (req as any).user?.id_usuario;
+      const tenantId = req.user!.id_empresa;
+      const usuarioId = Number(req.user!.id_usuario);
 
-      const dto = await contractService.resolver(id, {
+      const dto = await contractService.resolver(tenantId, id, {
         causal_resolucion,
         motivo_resolucion,
         fecha_resolucion,
@@ -742,7 +747,7 @@ export class ContractController {
   }
 
   /** GET /api/contracts/:id/liquidation-check — Prerequisites check */
-  static async liquidationCheck(req: Request, res: Response): Promise<void> {
+  static async liquidationCheck(req: AuthRequest, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -750,7 +755,8 @@ export class ContractController {
         return;
       }
 
-      const result = await contractService.verificarLiquidacion(id);
+      const tenantId = req.user!.id_empresa;
+      const result = await contractService.verificarLiquidacion(tenantId, id);
       sendSuccess(res, result);
     } catch (error: any) {
       Logger.error('Error checking liquidation', {
@@ -766,7 +772,7 @@ export class ContractController {
   }
 
   /** POST /api/contracts/:id/liquidar — Final liquidation (Feature #42) */
-  static async liquidar(req: Request, res: Response): Promise<void> {
+  static async liquidar(req: AuthRequest, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -775,9 +781,10 @@ export class ContractController {
       }
 
       const { fecha_liquidacion, monto_liquidacion, observaciones_liquidacion } = req.body;
-      const usuarioId = (req as any).user?.id_usuario;
+      const tenantId = req.user!.id_empresa;
+      const usuarioId = Number(req.user!.id_usuario);
 
-      const dto = await contractService.liquidar(id, {
+      const dto = await contractService.liquidar(tenantId, id, {
         fecha_liquidacion,
         monto_liquidacion,
         observaciones_liquidacion,

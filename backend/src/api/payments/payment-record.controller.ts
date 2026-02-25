@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { PaymentRecordService } from '../../services/payment-record.service';
 import {
   CreatePaymentRecordDTO,
@@ -22,9 +23,9 @@ export class PaymentRecordController {
    * POST /api/payments
    * Create a new payment record
    */
-  create = async (req: Request, res: Response): Promise<void> => {
+  create = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id_usuario;
 
       if (!userId) {
         sendError(res, 401, 'UNAUTHORIZED', 'User not authenticated');

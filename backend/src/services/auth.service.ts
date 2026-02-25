@@ -420,9 +420,9 @@ export class AuthService {
       const user = this.userRepository.create({
         username: data.username,
         email: data.email,
-        password_hash,
-        first_name: data.first_name,
-        last_name: data.last_name,
+        passwordHash: password_hash,
+        firstName: data.first_name,
+        lastName: data.last_name,
         roles: [operatorRole],
       });
 
@@ -498,7 +498,7 @@ export class AuthService {
       // Find user with password and roles
       const user = await this.userRepository
         .createQueryBuilder('user')
-        .addSelect('user.password_hash')
+        .addSelect('user.passwordHash')
         .leftJoinAndSelect('user.roles', 'roles')
         .leftJoinAndSelect('user.unidadOperativa', 'unidadOperativa')
         .where('user.username = :username', { username: data.username })
@@ -508,7 +508,7 @@ export class AuthService {
         logger.debug('User fetched from database', {
           username: user.username,
           roles: user.roles?.map((r) => r.code),
-          hasPassword: !!user.password_hash,
+          hasPassword: !!user.passwordHash,
         });
       }
 
@@ -522,7 +522,7 @@ export class AuthService {
       }
 
       // Verify password
-      const isValidPassword = await SecurityUtil.comparePassword(data.password, user.password_hash);
+      const isValidPassword = await SecurityUtil.comparePassword(data.password, user.passwordHash);
 
       logger.debug('Password verification completed', {
         username: user.username,
@@ -539,7 +539,7 @@ export class AuthService {
       }
 
       // Update last login
-      user.last_login = new Date();
+      user.lastLogin = new Date();
       await this.userRepository.save(user);
 
       logger.info('User logged in successfully', {

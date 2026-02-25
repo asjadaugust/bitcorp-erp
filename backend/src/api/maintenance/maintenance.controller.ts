@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { MaintenanceService } from '../../services/maintenance.service';
 import {
   sendSuccess,
@@ -7,6 +7,7 @@ import {
   sendCreated,
   sendError,
 } from '../../utils/api-response';
+import { AuthRequest } from '../../middleware/auth.middleware';
 
 export class MaintenanceController {
   private maintenanceService: MaintenanceService;
@@ -15,8 +16,9 @@ export class MaintenanceController {
     this.maintenanceService = new MaintenanceService();
   }
 
-  getAll = async (req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { status, type, search, page, limit, sort_by, sort_order } = req.query;
 
       const pageNum = parseInt(page as string) || 1;
@@ -33,7 +35,7 @@ export class MaintenanceController {
       if (type) filters.type = type;
       if (search) filters.search = search;
 
-      const result = await this.maintenanceService.getAllMaintenance(filters);
+      const result = await this.maintenanceService.getAllMaintenance(tenantId, filters);
 
       sendPaginatedSuccess(res, result.data, {
         page: pageNum,
@@ -51,15 +53,16 @@ export class MaintenanceController {
     }
   };
 
-  getById = async (req: Request, res: Response, next: NextFunction) => {
+  getById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de mantenimiento inválido');
         return;
       }
 
-      const record = await this.maintenanceService.getMaintenanceById(id);
+      const record = await this.maintenanceService.getMaintenanceById(tenantId, id);
 
       if (!record) {
         sendError(res, 404, 'MAINTENANCE_NOT_FOUND', 'Registro de mantenimiento no encontrado');
@@ -78,10 +81,11 @@ export class MaintenanceController {
     }
   };
 
-  create = async (req: Request, res: Response, next: NextFunction) => {
+  create = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user.id;
-      const record = await this.maintenanceService.createMaintenance(req.body, userId);
+      const tenantId = req.user!.id_empresa;
+      const userId = String(req.user!.id_usuario);
+      const record = await this.maintenanceService.createMaintenance(tenantId, req.body, userId);
       sendCreated(res, record);
     } catch (error: any) {
       sendError(
@@ -94,16 +98,22 @@ export class MaintenanceController {
     }
   };
 
-  update = async (req: Request, res: Response, next: NextFunction) => {
+  update = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de mantenimiento inválido');
         return;
       }
 
-      const userId = (req as any).user.id;
-      const record = await this.maintenanceService.updateMaintenance(id, req.body, userId);
+      const userId = String(req.user!.id_usuario);
+      const record = await this.maintenanceService.updateMaintenance(
+        tenantId,
+        id,
+        req.body,
+        userId
+      );
 
       if (!record) {
         sendError(res, 404, 'MAINTENANCE_NOT_FOUND', 'Registro de mantenimiento no encontrado');
@@ -122,15 +132,16 @@ export class MaintenanceController {
     }
   };
 
-  delete = async (req: Request, res: Response, next: NextFunction) => {
+  delete = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de mantenimiento inválido');
         return;
       }
 
-      const success = await this.maintenanceService.deleteMaintenance(id);
+      const success = await this.maintenanceService.deleteMaintenance(tenantId, id);
 
       if (!success) {
         sendError(res, 404, 'MAINTENANCE_NOT_FOUND', 'Registro de mantenimiento no encontrado');
@@ -149,10 +160,11 @@ export class MaintenanceController {
     }
   };
 
-  getStats = async (req: Request, res: Response, next: NextFunction) => {
+  getStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { startDate, endDate } = req.query;
-      const stats = await this.maintenanceService.getStats({
+      const stats = await this.maintenanceService.getStats(tenantId, {
         startDate: startDate as string,
         endDate: endDate as string,
       });

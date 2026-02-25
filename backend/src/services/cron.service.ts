@@ -895,13 +895,13 @@ export class CronService {
 
       for (const payment of overduePayments) {
         const dueDate =
-          typeof payment.due_date === 'string' ? new Date(payment.due_date) : payment.due_date;
+          typeof payment.dueDate === 'string' ? new Date(payment.dueDate) : payment.dueDate;
         const daysOverdue = Math.ceil(
           (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
         );
         const providerName = payment.provider?.razonSocial || 'Proveedor desconocido';
-        const title = `Pago Vencido - ${payment.document_number}`;
-        const message = `La factura ${payment.document_number} de ${providerName} venció hace ${daysOverdue} día${daysOverdue !== 1 ? 's' : ''} (${dueDate.toLocaleDateString('es-PE')}). Monto pendiente: S/ ${Number(payment.balance || payment.amount).toFixed(2)}`;
+        const title = `Pago Vencido - ${payment.documentNumber}`;
+        const message = `La factura ${payment.documentNumber} de ${providerName} venció hace ${daysOverdue} día${daysOverdue !== 1 ? 's' : ''} (${dueDate.toLocaleDateString('es-PE')}). Monto pendiente: S/ ${Number(payment.balance || payment.amount).toFixed(2)}`;
 
         for (const user of targetUsers) {
           try {
@@ -925,12 +925,12 @@ export class CronService {
         try {
           const emailItems = overduePayments.map((payment) => {
             const dueDate =
-              typeof payment.due_date === 'string' ? new Date(payment.due_date) : payment.due_date;
+              typeof payment.dueDate === 'string' ? new Date(payment.dueDate) : payment.dueDate;
             const daysOverdue = Math.ceil(
               (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
             );
             return {
-              numero_documento: payment.document_number,
+              numero_documento: payment.documentNumber,
               proveedor: payment.provider?.razonSocial || 'Proveedor desconocido',
               fecha_vencimiento: dueDate.toLocaleDateString('es-PE'),
               dias_vencidos: daysOverdue,

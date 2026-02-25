@@ -40,9 +40,9 @@ router.get('/equipment/:id/utilization', authenticate, async (req: Request, res:
     });
     sendError(
       res,
+      500,
       'ANALYTICS_ERROR',
-      error.message || 'Error al obtener utilización del equipo',
-      500
+      error.message || 'Error al obtener utilización del equipo'
     );
   }
 });
@@ -76,9 +76,9 @@ router.get(
       });
       sendError(
         res,
+        500,
         'ANALYTICS_ERROR',
-        error.message || 'Error al obtener tendencia de utilización',
-        500
+        error.message || 'Error al obtener tendencia de utilización'
       );
     }
   }
@@ -109,9 +109,9 @@ router.get('/fleet/utilization', authenticate, async (req: Request, res: Respons
     });
     sendError(
       res,
+      500,
       'ANALYTICS_ERROR',
-      error.message || 'Error al obtener utilización de flota',
-      500
+      error.message || 'Error al obtener utilización de flota'
     );
   }
 });
@@ -138,9 +138,9 @@ router.get('/equipment/:id/fuel', authenticate, async (req: Request, res: Respon
     });
     sendError(
       res,
+      500,
       'ANALYTICS_ERROR',
-      error.message || 'Error al obtener métricas de combustible',
-      500
+      error.message || 'Error al obtener métricas de combustible'
     );
   }
 });
@@ -167,9 +167,9 @@ router.get('/equipment/:id/fuel-trend', authenticate, async (req: Request, res: 
     });
     sendError(
       res,
+      500,
       'ANALYTICS_ERROR',
-      error.message || 'Error al obtener tendencia de combustible',
-      500
+      error.message || 'Error al obtener tendencia de combustible'
     );
   }
 });
@@ -201,9 +201,9 @@ router.get('/equipment/:id/maintenance', authenticate, async (req: Request, res:
     });
     sendError(
       res,
+      500,
       'ANALYTICS_ERROR',
-      error.message || 'Error al obtener métricas de mantenimiento',
-      500
+      error.message || 'Error al obtener métricas de mantenimiento'
     );
   }
 });
