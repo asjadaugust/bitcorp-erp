@@ -33,7 +33,7 @@ import {
     EntityDetailSidebarCardComponent,
   ],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="valuation"
       [header]="header"
@@ -549,7 +549,7 @@ import {
 
       <!-- Conformidad del Proveedor -->
       @if (valuation) {
-        <entity-detail-sidebar-card entity-sidebar-after title="Conformidad del Proveedor">
+        <app-entity-detail-sidebar-card entity-sidebar-after title="Conformidad del Proveedor">
           @if (valuation.conformidadProveedor) {
             <div class="conformidad-status conformidad-ok">
               <i class="fa-solid fa-circle-check"></i>
@@ -579,12 +579,12 @@ import {
               </button>
             }
           }
-        </entity-detail-sidebar-card>
+        </app-entity-detail-sidebar-card>
       }
 
       <!-- Descuentos (Anexo B) -->
       @if (valuation && (valuation.estado === 'BORRADOR' || discountEvents.length > 0)) {
-        <entity-detail-sidebar-card entity-sidebar-after title="Descuentos (Anexo B)">
+        <app-entity-detail-sidebar-card entity-sidebar-after title="Descuentos (Anexo B)">
           <p class="section-hint">Eventos de descuento aplicados a la valorización.</p>
           @if (discountEvents.length > 0) {
             <div class="discount-events-list">
@@ -650,12 +650,12 @@ import {
               <i class="fa-solid fa-plus"></i> Agregar Descuento
             </button>
           }
-        </entity-detail-sidebar-card>
+        </app-entity-detail-sidebar-card>
       }
 
       <!-- Documentos de Pago -->
       @if (paymentDocs.length > 0) {
-        <entity-detail-sidebar-card entity-sidebar-after title="Documentos de Pago">
+        <app-entity-detail-sidebar-card entity-sidebar-after title="Documentos de Pago">
           <div class="payment-docs-list">
             @for (doc of paymentDocs; track doc.id) {
               <div class="pay-doc-item">
@@ -683,16 +683,28 @@ import {
               </div>
             }
           </div>
-        </entity-detail-sidebar-card>
+        </app-entity-detail-sidebar-card>
       }
-    </entity-detail-shell>
+    </app-entity-detail-shell>
 
     <!-- ── MODALS ──────────────────────────────────────────────── -->
 
     <!-- Approve Modal -->
     @if (showApproveModal) {
-      <div class="modal" (click)="showApproveModal = false" (keydown.enter)="showApproveModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+      <div
+        class="modal"
+        (click)="showApproveModal = false"
+        (keydown.enter)="showApproveModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
           <div class="modal-header">
             <h2>Confirmar Aprobación</h2>
             <button type="button" class="close" (click)="showApproveModal = false">
@@ -732,8 +744,20 @@ import {
 
     <!-- Reject Modal -->
     @if (showRejectModal) {
-      <div class="modal" (click)="showRejectModal = false" (keydown.enter)="showRejectModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+      <div
+        class="modal"
+        (click)="showRejectModal = false"
+        (keydown.enter)="showRejectModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
           <div class="modal-header">
             <h2>Rechazar Valorización</h2>
             <button type="button" class="close" (click)="showRejectModal = false">
@@ -771,8 +795,20 @@ import {
 
     <!-- Mark as Paid Modal -->
     @if (showMarkPaidModal) {
-      <div class="modal" (click)="showMarkPaidModal = false" (keydown.enter)="showMarkPaidModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+      <div
+        class="modal"
+        (click)="showMarkPaidModal = false"
+        (keydown.enter)="showMarkPaidModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
           <div class="modal-header">
             <h2>Registrar Pago</h2>
             <button type="button" class="close" (click)="showMarkPaidModal = false">
@@ -793,7 +829,9 @@ import {
               ></app-dropdown>
             </div>
             <div class="form-group">
-              <span class="label">Referencia / Número de Operación<span class="required">*</span></span>
+              <span class="label"
+                >Referencia / Número de Operación<span class="required">*</span></span
+              >
               <input
                 type="text"
                 class="form-control"
@@ -821,8 +859,20 @@ import {
 
     <!-- Add Discount Event Modal -->
     @if (showAddDiscountModal) {
-      <div class="modal" (click)="showAddDiscountModal = false" (keydown.enter)="showAddDiscountModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+      <div
+        class="modal"
+        (click)="showAddDiscountModal = false"
+        (keydown.enter)="showAddDiscountModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
           <div class="modal-header">
             <h2>Agregar Evento de Descuento</h2>
             <button type="button" class="close" (click)="showAddDiscountModal = false">
@@ -946,8 +996,20 @@ import {
 
     <!-- Conformidad Modal -->
     @if (showConformidadModal) {
-      <div class="modal" (click)="showConformidadModal = false" (keydown.enter)="showConformidadModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+      <div
+        class="modal"
+        (click)="showConformidadModal = false"
+        (keydown.enter)="showConformidadModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
           <div class="modal-header">
             <h2>Registrar Conformidad del Proveedor</h2>
             <button type="button" class="close" (click)="showConformidadModal = false">
@@ -1784,14 +1846,14 @@ export class ValuationDetailComponent implements OnInit {
     horas_horometro_mecanica: number | null;
     descripcion: string;
   } = {
-      fecha: new Date().toISOString().split('T')[0],
-      tipo: '',
-      subtipo: '',
-      horas_descuento: 0,
-      dias_descuento: 0,
-      horas_horometro_mecanica: null,
-      descripcion: '',
-    };
+    fecha: new Date().toISOString().split('T')[0],
+    tipo: '',
+    subtipo: '',
+    horas_descuento: 0,
+    dias_descuento: 0,
+    horas_horometro_mecanica: null,
+    descripcion: '',
+  };
   discountTypeOptions: DropdownOption[] = [
     { label: 'Avería', value: 'AVERIA' },
     { label: 'Stand By', value: 'STAND_BY' },
@@ -2166,11 +2228,9 @@ export class ValuationDetailComponent implements OnInit {
             },
             error: (err) => {
               this.processingWorkflow = false;
-              this.snackBar.open(
-                'Error: ' + (err.error?.error?.message || err.message),
-                'Cerrar',
-                { duration: 5000 }
-              );
+              this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+                duration: 5000,
+              });
             },
           });
         }
@@ -2222,9 +2282,13 @@ export class ValuationDetailComponent implements OnInit {
       },
       error: (err) => {
         this.processingWorkflow = false;
-        this.snackBar.open('Error al aprobar: ' + (err.error?.error?.message || err.message), 'Cerrar', {
-          duration: 5000,
-        });
+        this.snackBar.open(
+          'Error al aprobar: ' + (err.error?.error?.message || err.message),
+          'Cerrar',
+          {
+            duration: 5000,
+          }
+        );
       },
     });
   }
@@ -2243,9 +2307,13 @@ export class ValuationDetailComponent implements OnInit {
       },
       error: (err) => {
         this.processingWorkflow = false;
-        this.snackBar.open('Error al rechazar: ' + (err.error?.error?.message || err.message), 'Cerrar', {
-          duration: 5000,
-        });
+        this.snackBar.open(
+          'Error al rechazar: ' + (err.error?.error?.message || err.message),
+          'Cerrar',
+          {
+            duration: 5000,
+          }
+        );
       },
     });
   }
@@ -2289,7 +2357,9 @@ export class ValuationDetailComponent implements OnInit {
           this.valuationService.validate(this.valuation!.id).subscribe({
             next: () => {
               this.processingWorkflow = false;
-              this.snackBar.open('Valorización validada exitosamente', 'Cerrar', { duration: 3000 });
+              this.snackBar.open('Valorización validada exitosamente', 'Cerrar', {
+                duration: 3000,
+              });
               this.loadValuation(this.valuation!.id);
             },
             error: (err) => {
@@ -2495,23 +2565,25 @@ export class ValuationDetailComponent implements OnInit {
 
   deleteValuation(): void {
     if (!this.valuation) return;
-    this.confirmSvc.confirmDelete(`la valorización ${this.valuation.numeroValorizacion}`).subscribe((confirmed) => {
-      if (confirmed) {
-        this.valuationService.delete(this.valuation!.id).subscribe({
-          next: () => {
-            this.router.navigate(['/equipment/valuations']);
-            this.snackBar.open('Valorización eliminada', 'Cerrar', { duration: 3000 });
-          },
-          error: (err) => {
-            console.error('Error deleting valuation', err);
-            this.snackBar.open(
-              'Error al eliminar: ' + (err.error?.error?.message || err.message),
-              'Cerrar',
-              { duration: 5000 }
-            );
-          },
-        });
-      }
-    });
+    this.confirmSvc
+      .confirmDelete(`la valorización ${this.valuation.numeroValorizacion}`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.valuationService.delete(this.valuation!.id).subscribe({
+            next: () => {
+              this.router.navigate(['/equipment/valuations']);
+              this.snackBar.open('Valorización eliminada', 'Cerrar', { duration: 3000 });
+            },
+            error: (err) => {
+              console.error('Error deleting valuation', err);
+              this.snackBar.open(
+                'Error al eliminar: ' + (err.error?.error?.message || err.message),
+                'Cerrar',
+                { duration: 5000 }
+              );
+            },
+          });
+        }
+      });
   }
 }

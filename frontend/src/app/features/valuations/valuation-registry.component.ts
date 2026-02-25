@@ -78,7 +78,7 @@ import {
           <aero-input
             label="Periodo Desde"
             type="month"
-            [(ngModel)]="filters.periodo_desde"
+            [(ngModel)]="filters['periodo_desde']"
             (ngModelChange)="loadRegistry()"
             inputId="filter-periodo-desde"
           ></aero-input>
@@ -86,7 +86,7 @@ import {
           <aero-input
             label="Periodo Hasta"
             type="month"
-            [(ngModel)]="filters.periodo_hasta"
+            [(ngModel)]="filters['periodo_hasta']"
             (ngModelChange)="loadRegistry()"
             inputId="filter-periodo-hasta"
           ></aero-input>
@@ -94,7 +94,7 @@ import {
           <div class="filter-group">
             <span class="aero-label">Estado</span>
             <app-dropdown
-              [(ngModel)]="filters.estado"
+              [(ngModel)]="filters['estado']"
               [options]="statusOptions"
               [placeholder]="'Todos'"
               (ngModelChange)="loadRegistry()"
@@ -104,7 +104,7 @@ import {
           <aero-input
             label="Proveedor"
             placeholder="RUC o razón social..."
-            [(ngModel)]="filters.proveedor"
+            [(ngModel)]="filters['proveedor']"
             (input)="onProveedorSearch()"
             inputId="filter-proveedor"
           ></aero-input>
@@ -344,7 +344,7 @@ export class ValuationRegistryComponent implements OnInit {
       label: 'N° Val',
       width: '100px',
       sticky: true,
-      customTemplate: (row) => row.numeroValorizacion || '-',
+      customTemplate: (row: any) => row.numeroValorizacion || '-',
     },
     { key: 'periodo', label: 'Periodo', width: '100px' },
     { key: 'equipo', label: 'Equipo', width: '180px', type: 'template' },
@@ -390,7 +390,7 @@ export class ValuationRegistryComponent implements OnInit {
   loadRegistry(): void {
     this.loading = true;
     this.valuationService.getRegistry(this.filters).subscribe({
-      next: (result) => {
+      next: (result: any) => {
         this.registryData = result.data || [];
         this.totalRecords = result.total || 0;
         this.summary = result.summary || null;
@@ -404,25 +404,25 @@ export class ValuationRegistryComponent implements OnInit {
   }
 
   onPageChange(page: number): void {
-    this.filters.page = page;
+    this.filters['page'] = page;
     this.loadRegistry();
   }
 
   onPageSizeChange(size: number): void {
-    this.filters.limit = size;
-    this.filters.page = 1;
+    this.filters['limit'] = size;
+    this.filters['page'] = 1;
     this.loadRegistry();
   }
 
   onProveedorSearch(): void {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
-      this.filters.page = 1;
+      this.filters['page'] = 1;
       this.loadRegistry();
     }, 400);
   }
 
-  viewDetail(row: Record<string, unknown>): void {
+  viewDetail(row: any): void {
     this.router.navigate(['/equipment/valuations', row.id]);
   }
 
@@ -449,12 +449,12 @@ export class ValuationRegistryComponent implements OnInit {
   }
 
   private getExportData() {
-    return this.registryData.map((row) => ({
+    return this.registryData.map((row: any) => ({
       'N° Valorización': row.numeroValorizacion || '',
       Periodo: row.periodo || '',
-      Equipo: row.equipo?.codigo || '',
-      Proveedor: row.contrato?.proveedor?.razon_social || '',
-      Contrato: row.contrato?.codigo || '',
+      Equipo: row?.equipo?.codigo || '',
+      Proveedor: row?.contrato?.proveedor?.razon_social || '',
+      Contrato: row?.contrato?.codigo || '',
       'Total Valorizado': row.totalValorizado || 0,
       IGV: row.igvMonto || 0,
       'Total con IGV': row.totalConIgv || 0,

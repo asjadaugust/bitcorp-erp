@@ -405,18 +405,18 @@ export class ProviderFormComponent implements OnInit {
   loadProvider(id: string | number): void {
     this.loading = true;
     this.providerService.getById(id).subscribe({
-      next: (provider: Record<string, unknown>) => {
+      next: (provider: any) => {
         this.providerForm.patchValue({
-          ruc: provider.ruc,
-          razon_social: provider.razon_social,
-          tipo_proveedor: provider.tipo_proveedor || '',
-          is_active: provider.is_active,
-          direccion: provider.direccion || '',
-          nombre_comercial: provider.nombre_comercial || '',
-          telefono: provider.telefono || '',
-          correo_electronico: provider.correo_electronico || '',
-          estado_contribuyente: provider.estado_contribuyente || '',
-          condicion_contribuyente: provider.condicion_contribuyente || '',
+          ruc: provider['ruc'],
+          razon_social: provider['razon_social'],
+          tipo_proveedor: provider['tipo_proveedor'] || '',
+          is_active: provider['is_active'],
+          direccion: provider['direccion'] || '',
+          nombre_comercial: provider['nombre_comercial'] || '',
+          telefono: provider['telefono'] || '',
+          correo_electronico: provider['correo_electronico'] || '',
+          estado_contribuyente: provider['estado_contribuyente'] || '',
+          condicion_contribuyente: provider['condicion_contribuyente'] || '',
         });
 
         // Bank accounts and contacts removed from form load as mapped to entity props not supported
@@ -486,15 +486,15 @@ export class ProviderFormComponent implements OnInit {
     this.loading = true;
     this.errorMessage = '';
     this.providerService.lookupRuc(ruc).subscribe({
-      next: (data) => {
+      next: (data: any) => {
         this.loading = false;
         if (data) {
           this.providerForm.patchValue({
-            razon_social: data.razon_social,
-            nombre_comercial: data.nombre_comercial || '',
-            direccion: data.direccion || '',
-            estado_contribuyente: data.estado_contribuyente || '',
-            condicion_contribuyente: data.condicion_contribuyente || '',
+            razon_social: data['razon_social'],
+            nombre_comercial: data['nombre_comercial'] || '',
+            direccion: data['direccion'] || '',
+            estado_contribuyente: data['estado_contribuyente'] || '',
+            condicion_contribuyente: data['condicion_contribuyente'] || '',
           });
           this.successMessage = 'Datos del RUC recuperados exitosamente';
         }

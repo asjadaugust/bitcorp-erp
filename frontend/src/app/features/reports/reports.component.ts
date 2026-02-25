@@ -310,7 +310,7 @@ export class ReportsComponent {
 
     request.subscribe({
       next: (res) => {
-        this.reportData = res.data;
+        this.reportData = (res as any).data;
         this.loading = false;
       },
       error: (err) => {
@@ -359,7 +359,7 @@ export class ReportsComponent {
     }
 
     request.subscribe({
-      next: (blob: Blob) => {
+      next: (blob: any) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;

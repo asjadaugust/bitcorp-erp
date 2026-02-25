@@ -27,7 +27,7 @@ export class SstService {
   getIncidents(): Observable<SafetyIncident[]> {
     return this.http.get<Record<string, unknown>>(`${this.apiUrl}/incidents`).pipe(
       map((response) => {
-        const dataArray = response?.data || response;
+        const dataArray = (response as any)?.data || response;
         if (Array.isArray(dataArray)) {
           return dataArray.map((item) => this.mapApiToIncident(item));
         }
@@ -39,7 +39,7 @@ export class SstService {
   getIncident(id: string): Observable<SafetyIncident> {
     return this.http.get<Record<string, unknown>>(`${this.apiUrl}/incidents/${id}`).pipe(
       map((response) => {
-        const data = response?.data || response;
+        const data = (response as any)?.data || response;
         return this.mapApiToIncident(data as Record<string, unknown>);
       })
     );
@@ -63,17 +63,19 @@ export class SstService {
   private mapApiToIncident(apiData: Record<string, unknown>): SafetyIncident {
     return {
       id: (apiData['id'] as number | undefined)?.toString() || (apiData['legacy_id'] as string),
-      date: new Date(((apiData['fecha_incidente'] || apiData['date'] || apiData['created_at']) as string)),
+      date: new Date(
+        (apiData['fecha_incidente'] || apiData['date'] || apiData['created_at']) as string
+      ),
       description: (apiData['descripcion'] as string) || (apiData['description'] as string) || '',
-      severity: this.mapSeverity(((apiData['severidad'] || apiData['severity']) as string)),
+      severity: this.mapSeverity((apiData['severidad'] || apiData['severity']) as string),
       location: (apiData['ubicacion'] as string) || (apiData['location'] as string) || '',
       reportedBy: apiData['reportado_por']
         ? {
-          firstName: 'Usuario',
-          lastName: `#${apiData['reportado_por']}`,
-        }
+            firstName: 'Usuario',
+            lastName: `#${apiData['reportado_por']}`,
+          }
         : undefined,
-      createdAt: new Date(((apiData['created_at'] || apiData['createdAt']) as string)),
+      createdAt: new Date((apiData['created_at'] || apiData['createdAt']) as string),
     };
   }
 

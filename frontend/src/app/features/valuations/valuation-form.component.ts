@@ -529,18 +529,19 @@ export class ValuationFormComponent implements OnInit {
     this.loading = true;
     this.valuationService.calculate({ contrato_id: contractId, month, year }).subscribe({
       next: (response) => {
-        if (response.success) {
+        const res = response as any;
+        if (res.success) {
           this.valuationForm.patchValue({
-            totalValorizado: response.data.total_estimated,
+            totalValorizado: res.data.total_estimated,
           });
           this.confirmSvc.alert({
             title: 'Cálculo completado',
             message:
-              `Horas: ${response.data.total_hours}\n` +
-              `Días: ${response.data.total_days}\n` +
-              `Combustible: ${response.data.total_fuel}\n` +
-              `Costo Base: ${response.data.base_cost}\n` +
-              `Exceso: ${response.data.excess_cost}`,
+              `Horas: ${res.data.total_hours}\n` +
+              `Días: ${res.data.total_days}\n` +
+              `Combustible: ${res.data.total_fuel}\n` +
+              `Costo Base: ${res.data.base_cost}\n` +
+              `Exceso: ${res.data.excess_cost}`,
             icon: 'fa-circle-check',
           });
         }

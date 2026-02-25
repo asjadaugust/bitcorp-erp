@@ -17,7 +17,7 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
   standalone: true,
   imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroTabsComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="project"
       [header]="header"
@@ -59,7 +59,9 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
                 </div>
                 <div class="info-item" *ngIf="project?.presupuesto">
                   <span class="label">Presupuesto</span>
-                  <p class="value highlight project-link">{{ project?.presupuesto | currency: 'PEN' }}</p>
+                  <p class="value highlight project-link">
+                    {{ project?.presupuesto | currency: 'PEN' }}
+                  </p>
                 </div>
               </div>
             </section>
@@ -133,7 +135,7 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
           Eliminar Proyecto
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `

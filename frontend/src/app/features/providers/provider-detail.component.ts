@@ -27,7 +27,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     EntityDetailShellComponent,
   ],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="provider"
       [header]="header"
@@ -195,7 +195,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           Eliminar Proveedor
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `

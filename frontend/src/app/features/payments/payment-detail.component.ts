@@ -12,13 +12,9 @@ import {
 @Component({
   selector: 'app-payment-detail',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    EntityDetailShellComponent,
-  ],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="payment"
       [header]="header"
@@ -271,7 +267,7 @@ import {
           <i class="fa-solid fa-arrow-left"></i> Volver a Lista
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `
