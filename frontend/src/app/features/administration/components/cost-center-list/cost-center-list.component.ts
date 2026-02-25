@@ -14,11 +14,20 @@ import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
 
 @Component({
   selector: 'app-cost-center-list',
   standalone: true,
-  imports: [CommonModule, AeroTableComponent, PageLayoutComponent, FilterBarComponent],
+  imports: [
+    CommonModule,
+    AeroTableComponent,
+    PageLayoutComponent,
+    FilterBarComponent,
+    ButtonComponent,
+    PageCardComponent,
+  ],
   template: `
     <app-page-layout
       title="Centros de Costo"
@@ -27,9 +36,12 @@ import {
       [loading]="loading"
     >
       <div actions>
-        <button class="btn btn-primary" (click)="createCostCenter()">
-          <i class="fa-solid fa-plus"></i> Nuevo Centro de Costo
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Centro de Costo"
+          (clicked)="createCostCenter()"
+        ></app-button>
       </div>
 
       <app-filter-bar
@@ -37,60 +49,30 @@ import {
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="filteredCostCenters"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="filteredCostCenters"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+        >
+        </aero-table>
+      </app-page-card>
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button class="btn-icon" (click)="editCostCenter(row)" title="Editar">
-            <i class="fa-solid fa-pen"></i>
-          </button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
+            (clicked)="editCostCenter(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
       .action-buttons {
         display: flex;
         justify-content: flex-end;

@@ -16,7 +16,11 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
-import { DropdownOption } from '../../../../shared/components/dropdown/dropdown.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../../../shared/components/dropdown/dropdown.component';
+import { AeroInputComponent } from '../../../../core/design-system/input/aero-input.component';
 
 @Component({
   selector: 'app-product-form',
@@ -29,6 +33,8 @@ import { DropdownOption } from '../../../../shared/components/dropdown/dropdown.
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
+    AeroInputComponent,
+    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -68,49 +74,45 @@ import { DropdownOption } from '../../../../shared/components/dropdown/dropdown.
 
           <div class="section-grid">
             <div class="form-group">
-              <label for="codigo">Código <span class="required">*</span></label>
-              <input
-                id="codigo"
-                type="text"
+              <aero-input
+                label="Código"
                 formControlName="codigo"
-                class="form-control"
                 placeholder="Ej. PROD-001"
-              />
+                [required]="true"
+                [error]="isFieldInvalid('codigo') ? 'Código es requerido' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="nombre">Nombre del Producto</label>
-              <input
-                id="nombre"
-                type="text"
+              <aero-input
+                label="Nombre del Producto"
                 formControlName="nombre"
-                class="form-control"
                 placeholder="Nombre descriptivo del producto"
-              />
+                [required]="true"
+                [error]="isFieldInvalid('nombre') ? 'Nombre es requerido' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="categoria">Categoría</label>
-              <select id="categoria" formControlName="categoria" class="form-control">
-                <option value="">Seleccione categoría...</option>
-                <option *ngFor="let cat of categoryOptions" [value]="cat.value">
-                  {{ cat.label }}
-                </option>
-              </select>
+              <label class="aero-label">Categoría</label>
+              <app-dropdown
+                formControlName="categoria"
+                [options]="categoryOptions"
+                placeholder="Seleccione categoría..."
+              ></app-dropdown>
             </div>
 
             <div class="form-group">
-              <label for="unidad_medida">Unidad de Medida</label>
-              <select id="unidad_medida" formControlName="unidad_medida" class="form-control">
-                <option value="">Seleccione unidad...</option>
-                <option *ngFor="let unit of unitOptions" [value]="unit.value">
-                  {{ unit.label }}
-                </option>
-              </select>
+              <label class="aero-label">Unidad de Medida <span class="required">*</span></label>
+              <app-dropdown
+                formControlName="unidad_medida"
+                [options]="unitOptions"
+                placeholder="Seleccione unidad..."
+              ></app-dropdown>
             </div>
 
             <div class="form-group span-full">
-              <label for="descripcion">Descripción</label>
+              <label for="descripcion" class="aero-label">Descripción</label>
               <textarea
                 id="descripcion"
                 formControlName="descripcion"
@@ -127,27 +129,20 @@ import { DropdownOption } from '../../../../shared/components/dropdown/dropdown.
           <h3>Inventario y Costos</h3>
           <div class="form-grid">
             <div class="form-group">
-              <label for="stock_actual">Stock Inicial</label>
-              <input
-                id="stock_actual"
+              <aero-input
+                label="Stock Inicial"
                 type="number"
                 formControlName="stock_actual"
-                class="form-control"
-                min="0"
-              />
-              <div class="hint">Solo editable al crear. Use movimientos para ajustar después.</div>
+                hint="Solo editable al crear. Use movimientos para ajustar después."
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="precio_unitario">Precio Unitario (PEN)</label>
-              <input
-                id="precio_unitario"
+              <aero-input
+                label="Precio Unitario (PEN)"
                 type="number"
                 formControlName="precio_unitario"
-                class="form-control"
-                min="0"
-                step="0.01"
-              />
+              ></aero-input>
             </div>
           </div>
         </div>

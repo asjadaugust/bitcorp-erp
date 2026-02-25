@@ -9,7 +9,7 @@ import { AuditInfo, EntityDetailHeader, NotFoundConfig } from './entity-detail.t
  * to project action buttons into the sidebar Actions card.
  */
 @Directive({ selector: '[appEntitySidebarActions]', standalone: true })
-export class EntitySidebarActionsDirective { }
+export class EntitySidebarActionsDirective {}
 
 /**
  * EntityDetailShellComponent
@@ -100,7 +100,7 @@ export class EntitySidebarActionsDirective { }
               <!-- Actions card -->
               <app-entity-detail-sidebar-card title="Acciones">
                 <div class="quick-actions">
-                  <ng-content select="[appEntitySidebarActions]" />
+                  <ng-content select="[entity-sidebar-actions]" />
                 </div>
               </app-entity-detail-sidebar-card>
 

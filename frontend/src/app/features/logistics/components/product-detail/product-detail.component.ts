@@ -8,13 +8,30 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
+import {
+  AeroBadgeComponent,
+  BadgeVariant,
+} from '../../../../core/design-system/badge/aero-badge.component';
+import { AeroCardComponent } from '../../../../core/design-system/card/aero-card.component';
+import { AeroTabsComponent } from '../../../../shared/components/aero-tabs/aero-tabs.component';
+import { TabItem } from '../../../../shared/components/page-layout/page-layout.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroTableComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EntityDetailShellComponent,
+    AeroTableComponent,
+    AeroBadgeComponent,
+    AeroCardComponent,
+    AeroTabsComponent,
+    ButtonComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -23,34 +40,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       loadingText="Cargando detalles del producto..."
     >
       <!-- ── BELOW HEADER: tab bar ───────────────────────────── -->
-      <div entity-header-below class="tabs-header-premium">
-        <button
-          type="button"
-          class="tab-link"
-          [class.active]="activeTab === 'general'"
-          (click)="activeTab = 'general'"
-        >
-          <i class="fa-solid fa-circle-info"></i>
-          General
-        </button>
-        <button
-          type="button"
-          class="tab-link"
-          [class.active]="activeTab === 'movements'"
-          (click)="activeTab = 'movements'"
-        >
-          <i class="fa-solid fa-right-left"></i>
-          Movimientos
-        </button>
-        <button
-          type="button"
-          class="tab-link"
-          [class.active]="activeTab === 'others'"
-          (click)="activeTab = 'others'"
-        >
-          <i class="fa-solid fa-gear"></i>
-          Otros
-        </button>
+      <div entity-header-below>
+        <app-aero-tabs
+          [tabs]="detailTabs"
+          [activeTabId]="activeTab"
+          (tabChange)="onTabChange($event)"
+        ></app-aero-tabs>
       </div>
 
       <!-- ── MAIN CONTENT: tabs ──────────────────────────────── -->
@@ -58,68 +53,53 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         <!-- GENERAL TAB -->
         @if (activeTab === 'general' && product) {
           <div class="product-info-grid">
-            <div class="info-card">
-              <div class="card-header">
-                <h3>Información Básica</h3>
+            <aero-card title="Información Básica">
+              <div class="detail-row">
+                <span class="label">Código</span>
+                <span class="value code">{{ product.codigo }}</span>
               </div>
-              <div class="card-body">
-                <div class="detail-row">
-                  <span class="label">Código</span>
-                  <span class="value code">{{ product.codigo }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">Categoría</span>
-                  <span class="value">{{ product.categoria || 'Sin categoría' }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">U. Medida</span>
-                  <span class="value">{{ product.unidad_medida }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">Ubicación</span>
-                  <span class="value font-medium">{{ product.ubicacion || '-' }}</span>
-                </div>
+              <div class="detail-row">
+                <span class="label">Categoría</span>
+                <span class="value">{{ product.categoria || 'Sin categoría' }}</span>
               </div>
-            </div>
+              <div class="detail-row">
+                <span class="label">U. Medida</span>
+                <span class="value">{{ product.unidad_medida }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Ubicación</span>
+                <span class="value font-medium">{{ product.ubicacion || '-' }}</span>
+              </div>
+            </aero-card>
 
-            <div class="info-card">
-              <div class="card-header">
-                <h3>Valores y Stock</h3>
+            <aero-card title="Valores y Stock">
+              <div class="detail-row">
+                <span class="label">Stock Actual</span>
+                <span class="value stock-badge" [class.low]="isLowStock()">
+                  {{ product.stock_actual }} {{ product.unidad_medida }}
+                </span>
               </div>
-              <div class="card-body">
-                <div class="detail-row">
-                  <span class="label">Stock Actual</span>
-                  <span class="value stock-badge" [class.low]="isLowStock()">
-                    {{ product.stock_actual }} {{ product.unidad_medida }}
-                  </span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">Stock Mínimo</span>
-                  <span class="value">{{ product.stock_minimo || 'N/A' }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">Precio Unit.</span>
-                  <span class="value price">{{ product.precio_unitario | currency: 'PEN' }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">Valor Total</span>
-                  <span class="value total-value">
-                    {{ getInventoryValue() | currency: 'PEN' }}
-                  </span>
-                </div>
+              <div class="detail-row">
+                <span class="label">Stock Mínimo</span>
+                <span class="value">{{ product.stock_minimo || 'N/A' }}</span>
               </div>
-            </div>
+              <div class="detail-row">
+                <span class="label">Precio Unit.</span>
+                <span class="value price">{{ product.precio_unitario | currency: 'PEN' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Valor Total</span>
+                <span class="value total-value">
+                  {{ getInventoryValue() | currency: 'PEN' }}
+                </span>
+              </div>
+            </aero-card>
 
-            <div class="info-card span-cols">
-              <div class="card-header">
-                <h3>Descripción</h3>
-              </div>
-              <div class="card-body">
-                <p class="description-text">
-                  {{ product.descripcion || 'No hay descripción adicional para este producto.' }}
-                </p>
-              </div>
-            </div>
+            <aero-card title="Descripción" class="span-cols">
+              <p class="description-text">
+                {{ product.descripcion || 'No hay descripción adicional para este producto.' }}
+              </p>
+            </aero-card>
           </div>
         }
 
@@ -142,13 +122,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             </ng-template>
 
             <ng-template #typeTemplate let-row>
-              <span
-                class="badge"
-                [class.badge-primary]="row.tipo_movimiento === 'entrada'"
-                [class.badge-danger]="row.tipo_movimiento === 'salida'"
-              >
+              <aero-badge [variant]="row.tipo_movimiento === 'entrada' ? 'success' : 'error'">
                 {{ row.tipo_movimiento | uppercase }}
-              </span>
+              </aero-badge>
             </ng-template>
           </div>
         }
@@ -168,9 +144,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
               <div class="meta-item">
                 <span class="label">Estado en Sistema:</span>
                 <span class="value">
-                  <span class="badge" [class.badge-primary]="product.esta_activo">
+                  <aero-badge [variant]="product.esta_activo ? 'success' : 'neutral'">
                     {{ product.esta_activo ? 'ACTIVO' : 'INACTIVO' }}
-                  </span>
+                  </aero-badge>
                 </span>
               </div>
             </div>
@@ -180,72 +156,39 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button type="button" class="btn btn-primary btn-block" (click)="editProduct()">
-          <i class="fa-solid fa-pen-to-square"></i>
-          Editar Detalles
-        </button>
-        <button type="button" class="btn btn-secondary btn-block" (click)="activeTab = 'movements'">
-          <i class="fa-solid fa-right-left"></i>
-          Ver Movimientos
-        </button>
-        <button type="button" class="btn btn-ghost btn-block" routerLink="/logistics/products">
-          <i class="fa-solid fa-arrow-left-long"></i>
-          Volver a Lista
-        </button>
-        <button type="button" class="btn btn-danger btn-block" (click)="deleteProduct()">
-          <i class="fa-solid fa-trash-can"></i>
-          Eliminar Producto
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-pen-to-square"
+          label="Editar Detalles"
+          [fullWidth]="true"
+          (clicked)="editProduct()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-right-left"
+          label="Ver Movimientos"
+          [fullWidth]="true"
+          (clicked)="activeTab = 'movements'"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left-long"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          (clicked)="navigateToList()"
+        ></app-button>
+        <app-button
+          variant="danger"
+          icon="fa-trash-can"
+          label="Eliminar Producto"
+          [fullWidth]="true"
+          (clicked)="deleteProduct()"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
   styles: [
     `
-      .tabs-header-premium {
-        display: flex;
-        gap: var(--s-8);
-        border-bottom: 2px solid var(--grey-100);
-        margin-top: var(--s-8);
-      }
-
-      .tab-link {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 20px;
-        background: none;
-        border: none;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--grey-500);
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border-radius: 8px 8px 0 0;
-
-        i {
-          font-size: 16px;
-          opacity: 0.7;
-        }
-
-        &:hover {
-          color: var(--primary-600);
-          background: var(--primary-50);
-          opacity: 1;
-        }
-
-        &.active {
-          color: var(--primary-600);
-          border-bottom: 3px solid var(--primary-600);
-          background: var(--primary-50);
-
-          i {
-            opacity: 1;
-          }
-        }
-      }
-
       .product-info-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -253,32 +196,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         padding: var(--s-24);
       }
 
-      .info-card {
-        background: white;
-        border: 1px solid var(--grey-200);
-        border-radius: 12px;
-        overflow: hidden;
-
-        .card-header {
-          padding: 16px 20px;
-          background: var(--grey-50);
-          border-bottom: 1px solid var(--grey-200);
-
-          h3 {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--primary-900);
-            margin: 0;
-          }
-        }
-
-        .card-body {
-          padding: 20px;
-        }
-
-        &.span-cols {
-          grid-column: span 2;
-        }
+      .span-cols {
+        grid-column: span 2;
       }
 
       .detail-row {
@@ -380,6 +299,12 @@ export class ProductDetailComponent implements OnInit {
   loading = true;
   activeTab: 'general' | 'movements' | 'others' = 'general';
 
+  detailTabs: (TabItem & { id: string })[] = [
+    { id: 'general', label: 'General', icon: 'fa-circle-info' },
+    { id: 'movements', label: 'Movimientos', icon: 'fa-right-left' },
+    { id: 'others', label: 'Otros', icon: 'fa-gear' },
+  ];
+
   // Movements data
   movements: Movement[] = [];
   loadingMovements = false;
@@ -465,6 +390,14 @@ export class ProductDetailComponent implements OnInit {
         });
       }
     });
+  }
+
+  onTabChange(tab: TabItem & { id?: string }): void {
+    this.activeTab = (tab.id as 'general' | 'movements' | 'others') || 'general';
+  }
+
+  navigateToList(): void {
+    this.router.navigate(['/logistics/products']);
   }
 
   editProduct(): void {

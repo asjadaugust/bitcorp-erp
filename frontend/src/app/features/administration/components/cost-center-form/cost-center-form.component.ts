@@ -14,6 +14,7 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { AeroInputComponent } from '../../../../core/design-system/input/aero-input.component';
 
 @Component({
   selector: 'app-cost-center-form',
@@ -26,6 +27,7 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
+    AeroInputComponent,
   ],
   template: `
     <app-form-container
@@ -62,27 +64,23 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
           </h3>
           <div class="section-grid">
             <div class="form-group">
-              <label for="codigo">Código *</label>
-              <input
-                id="codigo"
-                type="text"
+              <aero-input
+                label="Código"
                 formControlName="codigo"
-                class="form-control"
                 placeholder="ej. CC-001"
-              />
-              <div class="error-msg" *ngIf="hasError('codigo')">Código es requerido</div>
+                [required]="true"
+                [error]="hasError('codigo') ? 'Código es requerido' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="nombre">Nombre *</label>
-              <input
-                id="nombre"
-                type="text"
+              <aero-input
+                label="Nombre"
                 formControlName="nombre"
-                class="form-control"
                 placeholder="Nombre del centro de costo"
-              />
-              <div class="error-msg" *ngIf="hasError('nombre')">Nombre es requerido</div>
+                [required]="true"
+                [error]="hasError('nombre') ? 'Nombre es requerido' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">

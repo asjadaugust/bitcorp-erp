@@ -29,6 +29,9 @@ import {
 } from '../../../../shared/components/stats-grid/stats-grid.component';
 import { CurrencyPipe } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
+import { AeroBadgeComponent } from '../../../../core/design-system/badge/aero-badge.component';
 
 @Component({
   selector: 'app-product-list',
@@ -39,9 +42,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ActionsContainerComponent,
     StatsGridComponent,
     AeroTableComponent,
+    AeroBadgeComponent,
     PageLayoutComponent,
+    PageCardComponent,
     ExportDropdownComponent,
     FilterBarComponent,
+    ButtonComponent,
   ],
   providers: [CurrencyPipe],
   template: `
@@ -58,9 +64,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           [disabled]="loading || products.length === 0"
         >
         </app-export-dropdown>
-        <button class="btn btn-primary" (click)="navigateToCreate()">
-          <i class="fa-solid fa-plus"></i> Nuevo Producto
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Producto"
+          (clicked)="navigateToCreate()"
+        ></app-button>
       </app-actions-container>
 
       <app-stats-grid [items]="statItems" testId="product-stats"></app-stats-grid>
@@ -70,19 +79,21 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="filteredProducts"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          code: codeTemplate,
-          category: categoryTemplate,
-          stock: stockTemplate,
-          totalValue: totalValueTemplate,
-        }"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="filteredProducts"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            code: codeTemplate,
+            category: categoryTemplate,
+            stock: stockTemplate,
+            totalValue: totalValueTemplate,
+          }"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
@@ -90,7 +101,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       </ng-template>
 
       <ng-template #categoryTemplate let-row>
-        <span class="badge badge-fuel">{{ row.categoria || 'General' }}</span>
+        <aero-badge variant="neutral">{{ row.categoria || 'General' }}</aero-badge>
       </ng-template>
 
       <ng-template #stockTemplate let-row>
@@ -108,46 +119,24 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button class="btn-icon" (click)="viewDetails(row)" title="Ver Detalles">
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button class="btn-icon" (click)="editProduct(row)" title="Editar">
-            <i class="fa-solid fa-pen"></i>
-          </button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
+            (clicked)="viewDetails(row)"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
+            (clicked)="editProduct(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--primary-900);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-300);
-      }
-
-      /* Utilities */
       .equipment-code {
         color: var(--primary-500);
         font-weight: 600;
@@ -155,18 +144,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       .font-semibold {
         font-weight: 600;
       }
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: var(--type-label-size);
-        font-weight: 500;
-      }
-      .badge-fuel {
-        background: var(--grey-200);
-        color: var(--grey-900);
-      }
-      /* Removed obsolete badge-status-* classes as we use global status-badge now */
-
       .text-success {
         color: var(--semantic-success);
         font-weight: 700;
@@ -179,32 +156,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         color: var(--semantic-error);
         font-weight: 700;
       }
-
       .action-buttons {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-      }
-      .btn-icon {
-        background: none;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        padding: var(--s-4) var(--s-8);
-        color: var(--grey-500);
-      }
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-        transition: color 0.2s;
-      }
-    `,
-    `
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
       }
     `,
   ],

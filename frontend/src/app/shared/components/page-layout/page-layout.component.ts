@@ -6,7 +6,7 @@ import { AeroTabsComponent } from '../aero-tabs/aero-tabs.component';
 
 export interface TabItem {
   label: string;
-  route: string;
+  route?: string;
   icon?: string;
   animate?: boolean;
   exact?: boolean;
@@ -45,11 +45,11 @@ export interface Breadcrumb {
             </div>
           </div>
 
-            <div class="header-actions">
-              <ng-content select="[actions]"></ng-content>
-            </div>
+          <div class="header-actions">
+            <ng-content select="[actions]"></ng-content>
           </div>
         </div>
+      </div>
 
       <!-- Tab Navigation (Optional) -->
       <div class="nav-container" *ngIf="tabs && tabs.length > 0">
