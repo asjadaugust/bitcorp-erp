@@ -64,7 +64,7 @@ tester.run('entity-spanish-camel-case', rule, {
       filename: 'equipment.model.ts',
       code: `class Foo { startDate: Date; }`,
       errors: [{ messageId: 'notDomainWord' }],
-      output: `class Foo { startDate: Date; }`,
+      output: null,
     },
     // TSPropertySignature in interface
     {

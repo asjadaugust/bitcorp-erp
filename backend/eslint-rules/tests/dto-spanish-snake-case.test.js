@@ -70,14 +70,14 @@ tester.run('dto-spanish-snake-case', rule, {
       filename: 'equipment.dto.ts',
       code: `interface Foo { start_date: string; }`,
       errors: [{ messageId: 'notDomainWord' }],
-      output: `interface Foo { start_date: string; }`,
+      output: null,
     },
     // Multiple segments, one invalid
     {
       filename: 'report.dto.ts',
       code: `interface Foo { fecha_deadline: string; }`,
       errors: [{ messageId: 'notDomainWord' }],
-      output: `interface Foo { fecha_deadline: string; }`,
+      output: null,
     },
     // TSPropertySignature in type alias
     {

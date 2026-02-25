@@ -13,9 +13,12 @@ function splitCamel(name) {
   return name
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([a-z])([0-9])/g, '$1 $2')
+    .replace(/([0-9])([a-z])/g, '$1 $2')
     .toLowerCase()
     .split(' ')
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((seg) => !/^\d+$/.test(seg)); // skip pure-digit segments like '1', '2'
 }
 
 const CAMEL_RE = /^[a-z][a-zA-Z0-9]*$/;
