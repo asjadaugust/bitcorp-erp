@@ -12,6 +12,7 @@ import {
   OperatorDisponibilidad,
   OperatorRendimiento,
 } from '../../core/models/operator.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
   EntityDetailShellComponent,
@@ -19,11 +20,23 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import {
+  AeroBadgeComponent,
+  BadgeVariant,
+} from '../../core/design-system/badge/aero-badge.component';
 
 @Component({
   selector: 'app-operator-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, EntityDetailShellComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    EntityDetailShellComponent,
+    ButtonComponent,
+    AeroBadgeComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -92,13 +105,15 @@ import {
             <div class="info-item" data-testid="badge-disponibilidad">
               <span class="label">Estado Hoy</span>
               <p>
-                <span
-                  class="badge"
-                  [class.badge-success]="disponibilidad?.estado === 'DISPONIBLE'"
-                  [class.badge-info]="disponibilidad?.estado === 'ASIGNADO'"
-                >
-                  {{ disponibilidad?.estado ?? '—' }}
-                </span>
+                @if (disponibilidad?.estado) {
+                  <aero-badge
+                    [variant]="disponibilidad?.estado === 'DISPONIBLE' ? 'success' : 'info'"
+                  >
+                    {{ disponibilidad?.estado }}
+                  </aero-badge>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
               </p>
             </div>
             <div class="info-item" data-testid="stat-partes">
@@ -126,7 +141,7 @@ import {
           <div class="skills-list">
             <div *ngFor="let h of habilidades" class="skill-tag" data-testid="skill-item">
               <strong>{{ h.tipo_equipo }}</strong>
-              <span class="badge badge-info">{{ h.nivel_habilidad }}</span>
+              <aero-badge variant="info">{{ h.nivel_habilidad }}</aero-badge>
               <span class="text-muted">{{ h.anios_experiencia }}a exp.</span>
             </div>
           </div>
@@ -150,14 +165,9 @@ import {
                   · Vence: {{ cert.fecha_vencimiento }}
                 </span>
               </div>
-              <span
-                class="badge"
-                [class.badge-success]="cert.estado === 'VIGENTE'"
-                [class.badge-warning]="cert.estado === 'POR_VENCER'"
-                [class.badge-danger]="cert.estado === 'VENCIDO'"
-              >
+              <aero-badge [variant]="getCertBadgeVariant(cert.estado)">
                 {{ cert.estado }}
-              </span>
+              </aero-badge>
             </div>
           </div>
         </section>
@@ -165,125 +175,44 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button class="btn btn-secondary btn-block" (click)="editOperator()">
-          <i class="fa-solid fa-pen"></i> Editar
-        </button>
-        <button class="btn btn-primary btn-block" (click)="sendNotification()">
-          <i class="fa-solid fa-bell"></i> Notificar
-        </button>
-        <button class="btn btn-secondary btn-block" (click)="viewReports()">
-          <i class="fa-solid fa-clipboard-list"></i> Ver Reportes
-        </button>
-        <button class="btn btn-ghost btn-block" routerLink="/operators">
-          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-pen"
+          label="Editar"
+          [fullWidth]="true"
+          (clicked)="editOperator()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-bell"
+          label="Notificar"
+          [fullWidth]="true"
+          (clicked)="sendNotification()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-clipboard-list"
+          label="Ver Reportes"
+          [fullWidth]="true"
+          (clicked)="viewReports()"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left-long"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          (clicked)="navigateToList()"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
   styles: [
     `
-      .detail-container {
-        min-height: 100vh;
-        background: #f5f5f5;
-        padding: var(--s-24) 0;
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 var(--s-24);
-      }
-
-      .breadcrumb {
-        margin-bottom: var(--s-24);
-      }
-
-      .breadcrumb-link {
-        color: var(--primary-500);
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.2s;
-
-        &:hover {
-          text-decoration: underline;
-          color: var(--primary-700);
-        }
-      }
-
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: var(--s-24);
-
-        @media (max-width: 968px) {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .card {
-        background: white;
-        padding: var(--s-24);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--grey-200);
-      }
-
-      .detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: var(--s-24);
-        padding-bottom: var(--s-24);
-        border-bottom: 2px solid #e0e0e0;
-
-        h1 {
-          font-size: 28px;
-          color: var(--primary-900);
-          margin-bottom: var(--s-4);
-          line-height: 1.2;
-        }
-
-        .code-badge {
-          font-family: monospace;
-          background: var(--grey-100);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 14px;
-          color: var(--grey-700);
-          font-weight: 600;
-          display: inline-block;
-        }
-      }
-
-      .profile-intro {
-        display: flex;
-        gap: var(--s-16);
-        align-items: center;
-      }
-
-      .avatar-large {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        background: var(--primary-100);
-        color: var(--primary-700);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: 600;
-        border: 2px solid white;
-        box-shadow: var(--shadow-sm);
-      }
-
-      .detail-status {
-        margin-bottom: var(--s-24);
-      }
-
       .detail-sections {
         display: flex;
         flex-direction: column;
         gap: var(--s-32);
+        padding: var(--s-24);
       }
 
       .detail-section {
@@ -302,7 +231,7 @@ import {
       }
 
       .info-item {
-        label {
+        .label {
           display: block;
           font-size: 12px;
           font-weight: 500;
@@ -314,243 +243,49 @@ import {
 
         p {
           font-size: 16px;
-          color: #333;
+          color: var(--grey-900);
           margin: 0;
           word-break: break-word;
         }
       }
 
-      .detail-sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-24);
-
-        h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--primary-900);
-          margin-bottom: var(--s-16);
-        }
-      }
-
-      .quick-actions {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-12);
-      }
-
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-        text-decoration: none;
-      }
-
-      .btn-block {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover:not(:disabled) {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-700);
-      }
-      .btn-secondary:hover:not(:disabled) {
-        background: var(--grey-300);
-      }
-
-      .timeline {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-16);
-      }
-
-      .timeline-item {
-        position: relative;
-        padding-left: var(--s-24);
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--primary-500);
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          left: 3px;
-          top: 14px;
-          width: 2px;
-          height: calc(100% + var(--s-16));
-          background: #e0e0e0;
-        }
-
-        &:last-child::after {
-          display: none;
-        }
-      }
-
-      .timeline-date {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-bottom: var(--s-4);
-      }
-
-      .timeline-content {
-        font-size: 14px;
-        color: #333;
-      }
-
-      /* Status Badges */
-      .status-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .status-badge::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-
-      .status-active {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-      }
-      .status-active::before {
-        background: var(--semantic-green-500);
-      }
-
-      .status-inactive {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-      }
-      .status-inactive::before {
-        background: var(--semantic-red-500);
-      }
-
-      .loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 40px;
-        color: var(--grey-500);
-        gap: 16px;
-      }
-
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid var(--grey-200);
-        border-top-color: var(--primary-500);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 40px;
-
-        h3 {
-          margin-bottom: 8px;
-          color: var(--grey-900);
-        }
-
-        p {
-          color: var(--grey-500);
-          margin-bottom: 24px;
-        }
-      }
-
-      /* Performance, Skills, and Certifications */
-      .badge {
-        display: inline-block;
-        padding: 3px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-      .badge-success {
-        background: #d1fae5;
-        color: #059669;
-      }
-      .badge-info {
-        background: #dbeafe;
-        color: #1d4ed8;
-      }
-      .badge-warning {
-        background: #fef3c7;
-        color: #d97706;
-      }
-      .badge-danger {
-        background: #fee2e2;
-        color: #dc2626;
-      }
       .skills-list {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
       }
+
       .skill-tag {
         display: flex;
         align-items: center;
         gap: 8px;
         padding: 6px 12px;
-        background: #f3f4f6;
+        background: var(--grey-100);
         border-radius: 8px;
         font-size: 13px;
       }
+
       .cert-list {
         display: flex;
         flex-direction: column;
         gap: 10px;
       }
+
       .cert-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 10px 14px;
-        background: #f9fafb;
+        background: var(--grey-50, var(--grey-100));
         border-radius: 8px;
       }
+
       .cert-info {
         font-size: 13px;
       }
+
       .text-muted {
-        color: #6b7280;
+        color: var(--grey-500);
         font-size: 12px;
       }
     `,
@@ -560,6 +295,7 @@ export class OperatorDetailComponent implements OnInit {
   private operatorService = inject(OperatorService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
 
   operator: Operator | null = null;
   loading = true;
@@ -643,16 +379,32 @@ export class OperatorDetailComponent implements OnInit {
   }
 
   sendNotification(): void {
-    const message = prompt('Enter notification message:');
-    if (message && this.operator) {
-      this.operatorService.notify(this.operator.id, message).subscribe({
+    if (this.operator) {
+      this.operatorService.notify(this.operator.id, 'Notificación del sistema').subscribe({
         next: () => {
-          alert('Notification sent successfully!');
+          this.snackBar.open('Notificación enviada correctamente', 'Cerrar', { duration: 3000 });
         },
         error: () => {
-          alert('Failed to send notification');
+          this.snackBar.open('Error al enviar la notificación', 'Cerrar', { duration: 3000 });
         },
       });
+    }
+  }
+
+  navigateToList(): void {
+    this.router.navigate(['/operators']);
+  }
+
+  getCertBadgeVariant(estado: string): BadgeVariant {
+    switch (estado) {
+      case 'VIGENTE':
+        return 'success';
+      case 'POR_VENCER':
+        return 'warning';
+      case 'VENCIDO':
+        return 'error';
+      default:
+        return 'neutral';
     }
   }
 }

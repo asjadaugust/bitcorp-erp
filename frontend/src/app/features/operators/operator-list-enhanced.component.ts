@@ -5,6 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { OperatorService } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
 import { FormErrorHandlerService } from '../../core/services/form-error-handler.service';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   AeroTableComponent,
   TableColumn,
@@ -14,7 +16,8 @@ import {
   FilterBarComponent,
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
-import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 
 @Component({
   selector: 'app-operator-list-enhanced',
@@ -26,7 +29,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ActionsContainerComponent,
+    ButtonComponent,
+    PageCardComponent,
   ],
   template: `
     <app-page-layout
@@ -35,32 +39,35 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Operadores' }]"
       [loading]="loading"
     >
-      <app-actions-container actions>
-        <div class="action-buttons">
-          <button type="button" class="btn btn-primary" (click)="addOperator()">
-            <i class="fa-solid fa-plus"></i> Nuevo Operador
-          </button>
-        </div>
-      </app-actions-container>
+      <div actions>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Operador"
+          (clicked)="addOperator()"
+        ></app-button>
+      </div>
 
       <app-filter-bar
         [config]="filterConfig"
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="operators"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          nombre_completo: userTemplate,
-          contacto: contactTemplate,
-          licencia: licenseTemplate,
-        }"
-        (rowClick)="viewOperator($event)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="operators"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            nombre_completo: userTemplate,
+            contacto: contactTemplate,
+            licencia: licenseTemplate,
+          }"
+          (rowClick)="viewOperator($event)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #userTemplate let-row>
@@ -94,30 +101,24 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="editOperator(row); $event.stopPropagation()"
-            title="Editar"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="viewOperator(row); $event.stopPropagation()"
-            title="Ver Detalles"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            type="button"
-            class="btn-icon delete-btn"
-            (click)="deleteOperator(row); $event.stopPropagation()"
-            title="Desactivar"
-          >
-            <i class="fa-solid fa-user-slash"></i>
-          </button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
+            (clicked)="editOperator(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
+            (clicked)="viewOperator(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-user-slash"
+            (clicked)="deleteOperator(row); $event.stopPropagation()"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -201,9 +202,11 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
   ],
 })
 export class OperatorListEnhancedComponent implements OnInit {
-  operatorService = inject(OperatorService);
+  private operatorService = inject(OperatorService);
   private errorHandler = inject(FormErrorHandlerService);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   operators: Operator[] = [];
   loading = false;
@@ -300,20 +303,20 @@ export class OperatorListEnhancedComponent implements OnInit {
 
   deleteOperator(operator: Operator): void {
     const fullName = `${operator.nombres} ${operator.apellido_paterno}`;
-    if (
-      confirm(
-        `¿Desea desactivar al operador "${fullName}"? El operador no será eliminado permanentemente.`
-      )
-    ) {
-      this.operatorService.delete(operator.id).subscribe({
-        next: () => {
-          this.loadOperators();
-        },
-        error: (err) => {
-          console.error('Error deleting operator:', err);
-          this.errorMessage = this.errorHandler.getErrorMessage(err);
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete(`el operador ${fullName}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.operatorService.delete(operator.id).subscribe({
+          next: () => {
+            this.snackBar.open('Operador desactivado correctamente', 'Cerrar', { duration: 3000 });
+            this.loadOperators();
+          },
+          error: (err) => {
+            console.error('Error deleting operator:', err);
+            this.snackBar.open('Error al desactivar el operador', 'Cerrar', { duration: 3000 });
+            this.errorMessage = this.errorHandler.getErrorMessage(err);
+          },
+        });
+      }
+    });
   }
 }

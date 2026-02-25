@@ -14,6 +14,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
+import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 
 @Component({
   selector: 'app-operator-edit',
@@ -26,6 +27,7 @@ import {
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
+    AeroInputComponent,
   ],
   template: `
     <app-form-container
@@ -50,141 +52,114 @@ import {
         class="mb-4"
       ></app-validation-errors>
 
-      <form [formGroup]="operatorForm" class="form-grid">
+      <form [formGroup]="operatorForm" class="form-grid" id="standardForm">
         <!-- Section 1: Personal Information -->
         <div class="form-section">
-          <h3>Información Personal</h3>
-          <div class="form-grid">
+          <h3 class="section-title"><i class="fa-solid fa-user"></i> Información Personal</h3>
+          <div class="section-grid">
             <div class="form-group">
-              <label for="dni">DNI *</label>
-              <input
-                type="text"
-                id="dni"
+              <aero-input
+                label="DNI"
                 formControlName="dni"
-                class="form-control"
                 placeholder="Ej. 12345678"
-                maxlength="8"
-              />
-              <div class="error-msg" *ngIf="hasError('dni')">DNI es requerido (8 dígitos)</div>
+                [required]="true"
+                [error]="hasError('dni') ? 'DNI es requerido (8 dígitos)' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="nombres">Nombres *</label>
-              <input
-                type="text"
-                id="nombres"
+              <aero-input
+                label="Nombres"
                 formControlName="nombres"
-                class="form-control"
                 placeholder="Ej. Juan"
-              />
-              <div class="error-msg" *ngIf="hasError('nombres')">Nombres es requerido</div>
+                [required]="true"
+                [error]="hasError('nombres') ? 'Nombres es requerido' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="apellido_paterno">Apellido Paterno *</label>
-              <input
-                type="text"
-                id="apellido_paterno"
+              <aero-input
+                label="Apellido Paterno"
                 formControlName="apellido_paterno"
-                class="form-control"
                 placeholder="Ej. Pérez"
-              />
-              <div class="error-msg" *ngIf="hasError('apellido_paterno')">
-                Apellido Paterno es requerido
-              </div>
+                [required]="true"
+                [error]="hasError('apellido_paterno') ? 'Apellido Paterno es requerido' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="apellido_materno">Apellido Materno</label>
-              <input
-                type="text"
-                id="apellido_materno"
+              <aero-input
+                label="Apellido Materno"
                 formControlName="apellido_materno"
-                class="form-control"
                 placeholder="Ej. Gomez"
-              />
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="correo_electronico">Email</label>
-              <input
+              <aero-input
+                label="Email"
                 type="email"
-                id="correo_electronico"
                 formControlName="correo_electronico"
-                class="form-control"
                 placeholder="juan.perez@bitcorp.com"
-              />
-              <div class="error-msg" *ngIf="hasError('correo_electronico')">Email inválido</div>
+                [error]="hasError('correo_electronico') ? 'Email inválido' : ''"
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="telefono">Teléfono</label>
-              <input
-                type="tel"
-                id="telefono"
+              <aero-input
+                label="Teléfono"
                 formControlName="telefono"
-                class="form-control"
                 placeholder="+51 999 999 999"
-              />
+              ></aero-input>
             </div>
           </div>
         </div>
 
         <!-- Section 2: Employment Details -->
         <div class="form-section">
-          <h3>Información Laboral</h3>
-          <div class="form-grid">
+          <h3 class="section-title"><i class="fa-solid fa-briefcase"></i> Información Laboral</h3>
+          <div class="section-grid">
             <div class="form-group">
-              <label for="is_active">Estado *</label>
+              <label class="aero-label">Estado <span class="required">*</span></label>
               <app-dropdown formControlName="is_active" [options]="statusOptions"></app-dropdown>
             </div>
 
             <div class="form-group">
-              <label for="cargo">Cargo</label>
-              <input
-                type="text"
-                id="cargo"
+              <aero-input
+                label="Cargo"
                 formControlName="cargo"
-                class="form-control"
                 placeholder="Ej. Operador Maquinaria Pesada"
-              />
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="fecha_ingreso">Fecha de Ingreso</label>
-              <input
+              <aero-input
+                label="Fecha de Ingreso"
                 type="date"
-                id="fecha_ingreso"
                 formControlName="fecha_ingreso"
-                class="form-control"
-              />
+              ></aero-input>
             </div>
           </div>
         </div>
 
         <!-- Section 3: Driving License -->
         <div class="form-section">
-          <h3>Licencia de Conducir</h3>
-          <div class="form-grid">
+          <h3 class="section-title"><i class="fa-solid fa-id-card"></i> Licencia de Conducir</h3>
+          <div class="section-grid">
             <div class="form-group">
-              <label for="licencia_conducir">Nro. de Licencia</label>
-              <input
-                type="text"
-                id="licencia_conducir"
+              <aero-input
+                label="Nro. de Licencia"
                 formControlName="licencia_conducir"
-                class="form-control"
                 placeholder="A-12345678"
-              />
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="vencimiento_licencia">Vencimiento</label>
-              <input
+              <aero-input
+                label="Vencimiento"
                 type="date"
-                id="vencimiento_licencia"
                 formControlName="vencimiento_licencia"
-                class="form-control"
-              />
+              ></aero-input>
             </div>
           </div>
         </div>
