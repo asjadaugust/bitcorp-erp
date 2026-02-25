@@ -46,7 +46,8 @@
     "api:test:auth": "bash scripts/run-api-tests.sh auth",
     "api:test:shell": "bash scripts/run-api-tests.sh shell",
     "api:test:all": "bash scripts/run-api-tests.sh all",
-    "api:test:help": "bash scripts/run-api-tests.sh help"
+    "api:test:help": "bash scripts/run-api-tests.sh help",
+    "pack:ai": "npx repomix"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

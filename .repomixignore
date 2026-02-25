@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.angular/
+coverage/
+logs/
+*.spec.ts
+*.test.ts
+*.test.js
+swagger-api.json
+package-lock.json
+.playwright-mcp/
+frontend/.angular/
+backend/eslint-rules/tests/

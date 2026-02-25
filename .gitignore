@@ -104,3 +104,6 @@ backend/swagger-api.json
 # Documentation
 docs/
 docs/logs/
+
+# Repomix LLM context snapshot
+repomix-output.txt
