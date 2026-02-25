@@ -129,8 +129,8 @@ import {
     </entity-detail-shell>
 
     <!-- Delete Confirmation Modal -->
-    <div *ngIf="showDeleteModal" class="modal-backdrop" (click)="showDeleteModal = false">
-      <div class="modal-content animate-scale-in" (click)="$event.stopPropagation()">
+    <div *ngIf="showDeleteModal" class="modal-backdrop" (click)="showDeleteModal = false" (keydown.enter)="showDeleteModal = false" tabindex="0" role="button">
+      <div class="modal-content animate-scale-in" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
         <div class="modal-header">
           <h3>Eliminar Registro</h3>
           <button class="btn-close" (click)="showDeleteModal = false">&times;</button>
@@ -396,7 +396,7 @@ export class FuelDetailComponent implements OnInit {
         this.updateHeaderAndAudit();
         this.loading = false;
       },
-      error: (error: any) => {
+      error: (_error: unknown) => {
         this.loading = false;
       },
     });

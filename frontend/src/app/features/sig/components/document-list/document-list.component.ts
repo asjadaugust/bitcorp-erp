@@ -7,7 +7,6 @@ import {
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
 import {
-  PageLayoutComponent,
   Breadcrumb,
 } from '../../../../shared/components/page-layout/page-layout.component';
 import {
@@ -161,7 +160,7 @@ export class DocumentListComponent implements OnInit {
   loadDocuments() {
     this.loading = true;
     this.sigService.getDocuments().subscribe({
-      next: (response: any) => {
+      next: (response: unknown) => {
         // Handle paginated response { success, data, meta/pagination } or direct array
         if (response && typeof response === 'object' && 'data' in response) {
           this.documents = Array.isArray(response.data) ? response.data : [];
@@ -181,9 +180,9 @@ export class DocumentListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.category = filters['category'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.category = (filters['category'] as string) || '';
     this.applyFilters();
   }
 

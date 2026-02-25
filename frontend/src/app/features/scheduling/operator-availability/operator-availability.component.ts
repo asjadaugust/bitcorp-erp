@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OperatorService } from '../../../core/services/operator.service';
+import { Operator } from '../../../core/models/operator.model';
 import { ExcelExportService } from '../../../core/services/excel-export.service';
 import {
   ExportDropdownComponent,
@@ -51,6 +52,9 @@ import {
               [class.available]="isAvailable(op.id, day)"
               [class.unavailable]="!isAvailable(op.id, day)"
               (click)="toggleAvailability(op.id, day)"
+              (keydown.enter)="toggleAvailability(op.id, day)"
+              tabindex="0"
+              role="gridcell"
             ></div>
           </ng-container>
         </div>
@@ -165,7 +169,7 @@ export class OperatorAvailabilityComponent implements OnInit {
   currentMonthName = '';
   currentYear = 0;
   daysInMonth: number[] = [];
-  operators: any[] = [];
+  operators: Operator[] = [];
   availabilityMap = new Map<string, boolean>(); // key: "opId-day"
 
   ngOnInit() {
@@ -230,9 +234,9 @@ export class OperatorAvailabilityComponent implements OnInit {
       return;
     }
 
-    const exportData: any[] = [];
+    const exportData: Record<string, string | number>[] = [];
     this.operators.forEach((op) => {
-      const row: any = {
+      const row: Record<string, string | number> = {
         Operador: `${op.C05000_Nombre} ${op.C05000_Apellido}`,
         ID: op.id,
       };
@@ -254,9 +258,9 @@ export class OperatorAvailabilityComponent implements OnInit {
       return;
     }
 
-    const exportData: any[] = [];
+    const exportData: Record<string, string | number>[] = [];
     this.operators.forEach((op) => {
-      const row: any = {
+      const row: Record<string, string | number> = {
         Operador: `${op.C05000_Nombre} ${op.C05000_Apellido}`,
         ID: op.id,
       };

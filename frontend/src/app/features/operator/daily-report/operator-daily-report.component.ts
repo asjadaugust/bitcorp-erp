@@ -5,8 +5,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DailyReportService } from '../../../core/services/daily-report.service';
 import {
   PhotoUploadService,
-  PhotoUploadResult,
-  UploadProgress,
 } from '../../../core/services/photo-upload.service';
 import {
   GeolocationService,
@@ -50,7 +48,7 @@ import {
           <h2>Información General</h2>
           <div class="form-grid">
             <div class="form-field">
-              <label>Fecha <span class="required" *ngIf="!isViewMode">*</span></label>
+              <span class="label">Fecha <span class="required" *ngIf="!isViewMode">*</span></span>
               <input
                 type="date"
                 formControlName="date"
@@ -68,7 +66,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Proyecto <span class="required" *ngIf="!isViewMode">*</span></label>
+              <span class="label">Proyecto <span class="required" *ngIf="!isViewMode">*</span></span>
               <app-dropdown
                 formControlName="projectId"
                 [options]="projectOptions"
@@ -84,7 +82,7 @@ import {
           <h2>Equipo Utilizado</h2>
           <div class="form-grid">
             <div class="form-field full-width">
-              <label>Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></label>
+              <span class="label">Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></span>
               <app-dropdown
                 formControlName="equipmentId"
                 [options]="equipmentOptions"
@@ -96,7 +94,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Horómetro Inicial <span class="required" *ngIf="!isViewMode">*</span></label>
+              <span class="label">Horómetro Inicial <span class="required" *ngIf="!isViewMode">*</span></span>
               <input
                 type="number"
                 formControlName="horometerStart"
@@ -108,7 +106,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Horómetro Final <span class="required" *ngIf="!isViewMode">*</span></label>
+              <span class="label">Horómetro Final <span class="required" *ngIf="!isViewMode">*</span></span>
               <input
                 type="number"
                 formControlName="horometerEnd"
@@ -120,7 +118,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Horas Trabajadas</label>
+              <span class="label">Horas Trabajadas</span>
               <input type="text" [value]="calculateHours()" class="form-input readonly" readonly />
             </div>
           </div>
@@ -131,7 +129,7 @@ import {
           <h2>Horario de Trabajo</h2>
           <div class="form-grid">
             <div class="form-field">
-              <label>Hora Inicio <span class="required" *ngIf="!isViewMode">*</span></label>
+              <span class="label">Hora Inicio <span class="required" *ngIf="!isViewMode">*</span></span>
               <input
                 type="time"
                 formControlName="startTime"
@@ -141,7 +139,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Hora Fin <span class="required" *ngIf="!isViewMode">*</span></label>
+              <span class="label">Hora Fin <span class="required" *ngIf="!isViewMode">*</span></span>
               <input
                 type="time"
                 formControlName="endTime"
@@ -157,7 +155,7 @@ import {
           <h2>Consumo de Combustible</h2>
           <div class="form-grid">
             <div class="form-field">
-              <label>Tanque Inicial (%)</label>
+              <span class="label">Tanque Inicial (%)</span>
               <input
                 type="number"
                 formControlName="fuelStart"
@@ -170,7 +168,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Tanque Final (%)</label>
+              <span class="label">Tanque Final (%)</span>
               <input
                 type="number"
                 formControlName="fuelEnd"
@@ -183,7 +181,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Combustible Cargado (L)</label>
+              <span class="label">Combustible Cargado (L)</span>
               <input
                 type="number"
                 formControlName="fuelAdded"
@@ -195,7 +193,7 @@ import {
             </div>
 
             <div class="form-field">
-              <label>Consumo Total (L)</label>
+              <span class="label">Consumo Total (L)</span>
               <input
                 type="text"
                 [value]="calculateFuelConsumption()"
@@ -211,7 +209,7 @@ import {
           <h2>Ubicación</h2>
           <div class="form-grid">
             <div class="form-field full-width">
-              <label>Ubicación GPS</label>
+              <span class="label">Ubicación GPS</span>
               <div class="gps-field">
                 <input
                   type="text"
@@ -265,7 +263,7 @@ import {
             </div>
 
             <div class="form-field full-width">
-              <label>Ubicación Manual (Descripción)</label>
+              <span class="label">Ubicación Manual (Descripción)</span>
               <input
                 type="text"
                 formControlName="manualLocation"
@@ -284,8 +282,8 @@ import {
         <div class="form-section">
           <h2>Descripción del Trabajo</h2>
           <div class="form-field full-width">
-            <label
-              >Actividades Realizadas <span class="required" *ngIf="!isViewMode">*</span></label
+            <span class="label"
+              >Actividades Realizadas <span class="required" *ngIf="!isViewMode">*</span></span
             >
             <textarea
               formControlName="workDescription"
@@ -423,7 +421,7 @@ import {
           <h2>Firmas</h2>
           <div class="signatures-grid">
             <div class="signature-field">
-              <label>Firma Operador</label>
+              <span class="label">Firma Operador</span>
               <app-signature-pad
                 (signatureChange)="reportForm.patchValue({ firmaOperador: $event })"
                 [disabled]="isViewMode"
@@ -431,7 +429,7 @@ import {
             </div>
 
             <div class="signature-field">
-              <label>Firma Supervisor</label>
+              <span class="label">Firma Supervisor</span>
               <app-signature-pad
                 (signatureChange)="reportForm.patchValue({ firmaSupervisor: $event })"
                 [disabled]="isViewMode"
@@ -439,7 +437,7 @@ import {
             </div>
 
             <div class="signature-field">
-              <label>Firma Jefe de Equipos</label>
+              <span class="label">Firma Jefe de Equipos</span>
               <app-signature-pad
                 (signatureChange)="reportForm.patchValue({ firmaJefeEquipos: $event })"
                 [disabled]="isViewMode"
@@ -1106,7 +1104,7 @@ export class OperatorDailyReportComponent implements OnInit {
   reportForm: FormGroup;
   availableEquipment: Equipment[] = [];
   availableProjects: Project[] = [];
-  photos: Array<{
+  photos: {
     id?: string;
     url: string;
     thumbnail?: string;
@@ -1114,7 +1112,7 @@ export class OperatorDailyReportComponent implements OnInit {
     progress?: number;
     error?: string;
     file?: File;
-  }> = [];
+  }[] = [];
   capturingGPS = false;
   saving = false;
 
@@ -1355,11 +1353,11 @@ export class OperatorDailyReportComponent implements OnInit {
           horometerEnd: report.horometro_final,
           startTime: report.hora_inicio,
           endTime: report.hora_fin,
-          fuelStart: (report as any).fuel_start || report.diesel_gln,
-          fuelEnd: (report as any).fuel_end || report.gasolina_gln,
-          gpsLocation: (report as any).location || report.lugar_salida,
-          manualLocation: (report as any).location || report.lugar_llegada,
-          workDescription: (report as any).work_description || report.observaciones,
+          fuelStart: (report as Record<string, unknown>)['fuel_start'] || report.diesel_gln,
+          fuelEnd: (report as Record<string, unknown>)['fuel_end'] || report.gasolina_gln,
+          gpsLocation: (report as Record<string, unknown>)['location'] || report.lugar_salida,
+          manualLocation: (report as Record<string, unknown>)['location'] || report.lugar_llegada,
+          workDescription: (report as Record<string, unknown>)['work_description'] || report.observaciones,
         });
 
         if (this.isViewMode) {
@@ -1459,7 +1457,7 @@ export class OperatorDailyReportComponent implements OnInit {
   }
 
   formatLocationDisplay(result: LocationResult): string {
-    const { coords, dms } = result;
+    const { coords, dms: _dms } = result;
     const accuracy = this.geoService.getAccuracyLevel(coords.accuracy);
     return `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)} (±${coords.accuracy.toFixed(0)}m - ${accuracy})`;
   }
@@ -1612,7 +1610,7 @@ export class OperatorDailyReportComponent implements OnInit {
       };
 
       this.dailyReportService.create(reportData).subscribe({
-        next: (response) => {
+        next: (_response) => {
           this.saving = false;
           alert('Parte diario enviado correctamente');
           this.router.navigate(['/operator/history']);
@@ -1626,7 +1624,7 @@ export class OperatorDailyReportComponent implements OnInit {
     }
   }
 
-  getSelectedCheckboxes(checkboxGroup: any): any[] {
+  getSelectedCheckboxes(checkboxGroup: Record<string, boolean>): { codigo: string; checked: boolean }[] {
     if (!checkboxGroup) return [];
     return Object.keys(checkboxGroup)
       .filter((key) => checkboxGroup[key])

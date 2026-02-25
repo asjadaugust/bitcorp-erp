@@ -4,10 +4,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ChecklistService } from '../../../core/services/checklist.service';
 import {
-  ChecklistTemplate,
   ChecklistItem,
-  FrecuenciaChecklist,
-  TipoVerificacion,
 } from '../../../core/models/checklist.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import {
@@ -154,12 +151,12 @@ import {
 
               <div class="item-form-grid">
                 <div class="form-group">
-                  <label>Orden *</label>
+                  <span class="label">Orden *</span>
                   <input type="number" formControlName="orden" class="form-control" min="1" />
                 </div>
 
                 <div class="form-group span-2">
-                  <label>Categoría</label>
+                  <span class="label">Categoría</span>
                   <input
                     type="text"
                     formControlName="categoria"
@@ -169,7 +166,7 @@ import {
                 </div>
 
                 <div class="form-group full-width">
-                  <label>Descripción *</label>
+                  <span class="label">Descripción *</span>
                   <input
                     type="text"
                     formControlName="descripcion"
@@ -179,7 +176,7 @@ import {
                 </div>
 
                 <div class="form-group">
-                  <label>Tipo de Verificación *</label>
+                  <span class="label">Tipo de Verificación *</span>
                   <app-dropdown
                     formControlName="tipoVerificacion"
                     [options]="verificationTypeOptions"
@@ -188,7 +185,7 @@ import {
                 </div>
 
                 <div class="form-group span-2">
-                  <label>Valor Esperado</label>
+                  <span class="label">Valor Esperado</span>
                   <input
                     type="text"
                     formControlName="valorEsperado"
@@ -198,7 +195,7 @@ import {
                 </div>
 
                 <div class="form-group full-width">
-                  <label>Instrucciones</label>
+                  <span class="label">Instrucciones</span>
                   <textarea
                     formControlName="instrucciones"
                     class="form-control"
@@ -625,7 +622,7 @@ export class TemplateFormComponent implements OnInit {
     this.saving = true;
     const formValue = this.templateForm.value;
 
-    const template: any = {
+    const template: Record<string, unknown> = {
       codigo: formValue.codigo,
       nombre: formValue.nombre,
       tipoEquipo: formValue.tipoEquipo || null,

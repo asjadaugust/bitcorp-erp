@@ -67,23 +67,23 @@ import {
 
             <div class="info-grid">
               <div class="info-item">
-                <label>ID Movimiento</label>
+                <span class="label">ID Movimiento</span>
                 <p class="code">#{{ movement.id }}</p>
               </div>
               <div class="info-item">
-                <label>Fecha</label>
+                <span class="label">Fecha</span>
                 <p>{{ movement.fecha | date: 'medium' }}</p>
               </div>
               <div class="info-item">
-                <label>Proyecto</label>
+                <span class="label">Proyecto</span>
                 <p>{{ movement.proyecto_nombre || 'No aplica' }}</p>
               </div>
               <div class="info-item">
-                <label>Documento</label>
+                <span class="label">Documento</span>
                 <p class="font-medium">{{ movement.numero_documento || '-' }}</p>
               </div>
               <div class="info-item">
-                <label>Tipo</label>
+                <span class="label">Tipo</span>
                 <p>
                   <span
                     class="badge"
@@ -95,17 +95,17 @@ import {
                 </p>
               </div>
               <div class="info-item">
-                <label>Cant. Items</label>
+                <span class="label">Cant. Items</span>
                 <p>{{ movement.items_count || movement.detalles?.length || 0 }}</p>
               </div>
               <div class="info-item span-2">
-                <label>Monto Total</label>
+                <span class="label">Monto Total</span>
                 <p class="price-large">
                   S/ {{ movement.monto_total || calculateTotal() | number: '1.2-2' }}
                 </p>
               </div>
               <div class="info-item span-2">
-                <label>Observaciones</label>
+                <span class="label">Observaciones</span>
                 <p class="description-text">
                   {{ movement.observaciones || 'Sin observaciones registradas.' }}
                 </p>

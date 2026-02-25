@@ -1,10 +1,10 @@
 import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
-interface ApiResponse {
+interface _ApiResponse {
   success: boolean;
-  data: any;
-  pagination?: any;
+  data: unknown;
+  pagination?: unknown;
 }
 
 /**
@@ -37,7 +37,7 @@ export const apiResponseInterceptor: HttpInterceptorFn = (req, next) => {
     map((event) => {
       // Only process successful HTTP responses
       if (event instanceof HttpResponse && event.body) {
-        const body = event.body as any;
+        const body = event.body as Record<string, unknown>;
 
         // Check if response has the wrapper structure {success: true, data: ...}
         // BUT preserve pagination responses by NOT unwrapping them

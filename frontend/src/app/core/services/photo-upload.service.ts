@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpEventType, HttpEvent } from '@angular/common/http';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import imageCompression from 'browser-image-compression';
 import { environment } from '../../../environments/environment';
@@ -24,8 +24,7 @@ export interface UploadProgress {
 })
 export class PhotoUploadService {
   private readonly API_URL = environment.apiUrl || 'http://localhost:3400/api';
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   /**
    * Capture photo from camera
@@ -38,8 +37,8 @@ export class PhotoUploadService {
       input.accept = 'image/*';
       input.setAttribute('capture', 'environment'); // Use rear camera
 
-      input.onchange = (event: any) => {
-        const file = event.target.files?.[0];
+      input.onchange = (event: Event) => {
+        const file = (event.target as HTMLInputElement).files?.[0];
         resolve(file || null);
       };
 
@@ -90,12 +89,12 @@ export class PhotoUploadService {
     formData.append('photos', photoFile);
 
     return this.http
-      .post<any>(`${this.API_URL}/daily-reports/${reportId}/photos`, formData, {
+      .post<Record<string, unknown>>(`${this.API_URL}/daily-reports/${reportId}/photos`, formData, {
         reportProgress: true,
         observe: 'events',
       })
       .pipe(
-        map((event: HttpEvent<any>) => {
+        map((event: HttpEvent<Record<string, unknown>>) => {
           if (event.type === HttpEventType.UploadProgress) {
             const progress = event.total ? Math.round(100 * (event.loaded / event.total)) : 0;
             return {
@@ -162,7 +161,7 @@ export class PhotoUploadService {
   /**
    * Validate file size (max 50MB before compression)
    */
-  isValidSize(file: File, maxSizeMB: number = 50): boolean {
+  isValidSize(file: File, maxSizeMB = 50): boolean {
     return file.size <= maxSizeMB * 1024 * 1024;
   }
 }

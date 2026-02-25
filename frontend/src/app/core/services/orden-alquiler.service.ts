@@ -65,32 +65,32 @@ export class OrdenAlquilerService {
   }
 
   obtener(id: number): Observable<OrdenAlquiler> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
   }
 
   crear(dto: Partial<OrdenAlquiler>): Observable<OrdenAlquiler> {
-    return this.http.post<any>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
   }
 
   actualizar(id: number, dto: Partial<OrdenAlquiler>): Observable<OrdenAlquiler> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
+    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
   }
 
   enviar(id: number, enviadoA?: string): Observable<OrdenAlquiler> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/enviar`, { enviado_a: enviadoA })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/enviar`, { enviado_a: enviadoA })
       .pipe(map((r) => r.data ?? r));
   }
 
   confirmar(id: number, confirmadoPor?: string): Observable<OrdenAlquiler> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/confirmar`, { confirmado_por: confirmadoPor })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/confirmar`, { confirmado_por: confirmadoPor })
       .pipe(map((r) => r.data ?? r));
   }
 
   cancelar(id: number, motivoCancelacion?: string): Observable<OrdenAlquiler> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/cancelar`, { motivo_cancelacion: motivoCancelacion })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/cancelar`, { motivo_cancelacion: motivoCancelacion })
       .pipe(map((r) => r.data ?? r));
   }
 

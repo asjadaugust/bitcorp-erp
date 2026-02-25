@@ -22,7 +22,7 @@ import { MatDialogModule } from '@angular/material/dialog';
         <button
           type="button"
           class="aero-dialog__close"
-          (click)="onClose.emit()"
+          (click)="closed.emit()"
           aria-label="Cerrar"
         >
           <i class="fa-solid fa-xmark"></i>
@@ -43,7 +43,7 @@ import { MatDialogModule } from '@angular/material/dialog';
           <button
             type="button"
             class="btn btn-secondary"
-            (click)="onCancel.emit()"
+            (click)="cancelled.emit()"
             *ngIf="showCancel"
           >
             {{ cancelLabel }}
@@ -51,7 +51,7 @@ import { MatDialogModule } from '@angular/material/dialog';
           <button
             type="button"
             [class]="'btn ' + submitBtnClass"
-            (click)="onSubmit.emit()"
+            (click)="submitted.emit()"
             [disabled]="disableSubmit || loading"
             *ngIf="showSubmit"
           >
@@ -204,7 +204,7 @@ export class AeroDialogComponent {
   @Input() disableSubmit = false;
   @Input() loading = false;
 
-  @Output() onClose = new EventEmitter<void>();
-  @Output() onCancel = new EventEmitter<void>();
-  @Output() onSubmit = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
+  @Output() cancelled = new EventEmitter<void>();
+  @Output() submitted = new EventEmitter<void>();
 }

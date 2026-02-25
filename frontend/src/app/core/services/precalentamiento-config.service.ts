@@ -26,20 +26,20 @@ export class PrecalentamientoConfigService {
 
   /** Lista todas las configuraciones ordenadas por categoría */
   listar(): Observable<PrecalentamientoConfig[]> {
-    return this.http.get<any>(this.apiUrl).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(this.apiUrl).pipe(map((r) => r.data ?? r));
   }
 
   /** Obtiene la configuración para un tipo_equipo_id */
   obtenerPorTipoEquipo(tipoEquipoId: number): Observable<PrecalentamientoConfig> {
     return this.http
-      .get<any>(`${this.apiUrl}/tipo-equipo/${tipoEquipoId}`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/tipo-equipo/${tipoEquipoId}`)
       .pipe(map((r) => r.data ?? r));
   }
 
   /** Obtiene solo las horas de precalentamiento (endpoint ligero) */
   obtenerHoras(tipoEquipoId: number): Observable<HorasPrecalentamiento> {
     return this.http
-      .get<any>(`${this.apiUrl}/tipo-equipo/${tipoEquipoId}/horas`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/tipo-equipo/${tipoEquipoId}/horas`)
       .pipe(map((r) => r.data ?? r));
   }
 
@@ -49,7 +49,7 @@ export class PrecalentamientoConfigService {
     horasPrecalentamiento: number
   ): Observable<PrecalentamientoConfig> {
     return this.http
-      .put<any>(`${this.apiUrl}/tipo-equipo/${tipoEquipoId}`, {
+      .put<Record<string, unknown>>(`${this.apiUrl}/tipo-equipo/${tipoEquipoId}`, {
         horas_precalentamiento: horasPrecalentamiento,
       })
       .pipe(map((r) => r.data ?? r));

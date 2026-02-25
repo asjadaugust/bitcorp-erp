@@ -25,7 +25,7 @@ import { NgForm } from '@angular/forms';
         <form (ngSubmit)="guardar()" #f="ngForm">
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label required">ID Equipo</label>
+              <span class="form-label required">ID Equipo</span>
               <input
                 type="number"
                 class="form-control"
@@ -38,7 +38,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group">
-              <label class="form-label required">Fecha de Devolución</label>
+              <span class="form-label required">Fecha de Devolución</span>
               <input
                 type="date"
                 class="form-control"
@@ -49,7 +49,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group">
-              <label class="form-label">Tipo de Acta</label>
+              <span class="form-label">Tipo de Acta</span>
               <select class="form-select" [(ngModel)]="form.tipo" name="tipo">
                 <option value="DEVOLUCION">Devolución</option>
                 <option value="DESMOBILIZACION">Desmovilización</option>
@@ -58,7 +58,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group">
-              <label class="form-label">Condición del Equipo</label>
+              <span class="form-label">Condición del Equipo</span>
               <select
                 class="form-select"
                 [(ngModel)]="form.condicion_equipo"
@@ -72,7 +72,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group">
-              <label class="form-label">Horómetro (horas)</label>
+              <span class="form-label">Horómetro (horas)</span>
               <input
                 type="number"
                 class="form-control"
@@ -84,7 +84,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group">
-              <label class="form-label">Kilometraje (km)</label>
+              <span class="form-label">Kilometraje (km)</span>
               <input
                 type="number"
                 class="form-control"
@@ -96,7 +96,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group">
-              <label class="form-label">ID Contrato (opcional)</label>
+              <span class="form-label">ID Contrato (opcional)</span>
               <input
                 type="number"
                 class="form-control"
@@ -107,7 +107,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group">
-              <label class="form-label">ID Proyecto (opcional)</label>
+              <span class="form-label">ID Proyecto (opcional)</span>
               <input
                 type="number"
                 class="form-control"
@@ -118,7 +118,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group span-2">
-              <label class="form-label">Observaciones Generales</label>
+              <span class="form-label">Observaciones Generales</span>
               <textarea
                 class="form-control"
                 [(ngModel)]="form.observaciones"
@@ -128,7 +128,7 @@ import { NgForm } from '@angular/forms';
             </div>
 
             <div class="form-group span-2">
-              <label class="form-label">Observaciones Físicas / Daños</label>
+              <span class="form-label">Observaciones Físicas / Daños</span>
               <textarea
                 class="form-control"
                 [(ngModel)]="form.observaciones_fisicas"

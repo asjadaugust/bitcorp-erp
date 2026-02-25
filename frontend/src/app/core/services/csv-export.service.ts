@@ -17,7 +17,7 @@ export class CsvExportService {
    * @param data Array of objects to export
    * @param options Export configuration options
    */
-  exportToCsv(data: any[], options: CsvExportOptions = {}): void {
+  exportToCsv(data: Record<string, unknown>[], options: CsvExportOptions = {}): void {
     if (!data || data.length === 0) {
       console.warn('No data to export');
       return;
@@ -89,12 +89,12 @@ export class CsvExportService {
    * Transform data based on column headers and exclusions
    */
   private transformData(
-    data: any[],
+    data: Record<string, unknown>[],
     columnHeaders?: Record<string, string>,
     excludeColumns: string[] = []
-  ): any[] {
+  ): Record<string, unknown>[] {
     return data.map((row) => {
-      const transformedRow: any = {};
+      const transformedRow: Record<string, unknown> = {};
 
       Object.keys(row).forEach((key) => {
         // Skip excluded columns

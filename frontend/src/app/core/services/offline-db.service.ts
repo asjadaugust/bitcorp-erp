@@ -44,7 +44,7 @@ export interface SyncQueue {
   id?: number;
   reportLocalId: string;
   action: 'create' | 'update' | 'delete';
-  data: any;
+  data: Record<string, unknown>;
   createdAt: Date;
   attempts: number;
   lastAttempt?: Date;
@@ -140,7 +140,7 @@ export class OfflineDBService extends Dexie {
   async addToSyncQueue(
     reportLocalId: string,
     action: 'create' | 'update' | 'delete',
-    data: any
+    data: Record<string, unknown>
   ): Promise<number> {
     return await this.syncQueue.add({
       reportLocalId,

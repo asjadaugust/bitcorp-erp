@@ -58,19 +58,19 @@ export class ActaDevolucionService {
   }
 
   obtener(id: number): Observable<ActaDevolucion> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
   }
 
   crear(dto: Partial<ActaDevolucion>): Observable<ActaDevolucion> {
-    return this.http.post<any>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
   }
 
   actualizar(id: number, dto: Partial<ActaDevolucion>): Observable<ActaDevolucion> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
+    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
   }
 
   enviarParaFirma(id: number): Observable<ActaDevolucion> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/enviar`, {}).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/enviar`, {}).pipe(map((r) => r.data ?? r));
   }
 
   firmar(
@@ -82,12 +82,12 @@ export class ActaDevolucionService {
       entregado_por?: number;
     }
   ): Observable<ActaDevolucion> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/firmar`, dto).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/firmar`, dto).pipe(map((r) => r.data ?? r));
   }
 
   anular(id: number, observaciones?: string): Observable<ActaDevolucion> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/anular`, { observaciones })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/anular`, { observaciones })
       .pipe(map((r) => r.data ?? r));
   }
 

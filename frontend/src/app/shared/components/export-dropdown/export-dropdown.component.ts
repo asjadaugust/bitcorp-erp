@@ -28,7 +28,7 @@ export type ExportFormat = 'excel' | 'csv';
     </div>
 
     <!-- Backdrop to close dropdown -->
-    <div class="dropdown-backdrop" *ngIf="isOpen" (click)="closeDropdown()"></div>
+    <div class="dropdown-backdrop" *ngIf="isOpen" (click)="closeDropdown()" (keydown.enter)="closeDropdown()" tabindex="0" role="button"></div>
   `,
   styles: [
     `

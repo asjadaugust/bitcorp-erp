@@ -5,6 +5,8 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ScheduledTaskService } from '../../../core/services/scheduled-task.service';
 import { EquipmentService } from '../../../core/services/equipment.service';
 import { OperatorService } from '../../../core/services/operator.service';
+import { Equipment } from '../../../core/models/equipment.model';
+import { Operator } from '../../../core/models/operator.model';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { ValidationErrorsComponent } from '../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
@@ -295,8 +297,8 @@ export class ScheduledTaskFormComponent implements OnInit {
   isEditMode = false;
   taskId: number | null = null;
   loading = false;
-  equipmentList: any[] = [];
-  operators: any[] = [];
+  equipmentList: Equipment[] = [];
+  operators: Operator[] = [];
   validationErrors: ValidationError[] = [];
   errorMessage = '';
   successMessage = '';
@@ -372,15 +374,16 @@ export class ScheduledTaskFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.equipmentService.getAll().subscribe((res: any) => {
-      this.equipmentList = res.data;
+    this.equipmentService.getAll().subscribe((res: unknown) => {
+      const data = res as Record<string, unknown>;
+      this.equipmentList = (data.data as Equipment[]) || (res as Equipment[]);
       this.equipmentOptions = this.equipmentList.map((eq) => ({
         label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
         value: eq.id,
       }));
     });
-    this.operatorService.getAll().subscribe((res: any) => {
-      this.operators = res;
+    this.operatorService.getAll().subscribe((res: unknown) => {
+      this.operators = res as Operator[];
       this.operatorOptions = this.operators.map((op) => ({
         label: `${op.C05000_Nombre || op.nombres} ${op.C05000_Apellido || op.apellidos}`,
         value: op.id,
@@ -402,7 +405,7 @@ export class ScheduledTaskFormComponent implements OnInit {
         this.taskForm.patchValue(task);
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (_err: unknown) => {
         this.loading = false;
         this.errorMessage = 'No se pudo cargar la tarea';
         this.router.navigate(['/operaciones/scheduling/tasks']);
@@ -437,7 +440,7 @@ export class ScheduledTaskFormComponent implements OnInit {
           this.router.navigate(['/operaciones/scheduling/tasks']);
         }, 1500);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         this.loading = false;
         this.validationErrors = this.errorHandler.extractValidationErrors(err);
         this.errorMessage = this.errorHandler.getErrorMessage(err);

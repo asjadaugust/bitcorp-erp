@@ -30,25 +30,25 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <h2>Detalles del Trabajo</h2>
           <div class="info-grid three-cols">
             <div class="info-item">
-              <label>Tipo de Mantenimiento</label>
+              <span class="label">Tipo de Mantenimiento</span>
               <p>{{ record?.tipoMantenimiento }}</p>
             </div>
             <div class="info-item">
-              <label>Técnico Responsable</label>
+              <span class="label">Técnico Responsable</span>
               <p>{{ record?.tecnicoResponsable || 'No asignado' }}</p>
             </div>
             <div class="info-item">
-              <label>Costo</label>
+              <span class="label">Costo</span>
               <p class="font-medium">
                 {{ record?.costoReal || record?.costoEstimado | currency: 'USD' }}
               </p>
             </div>
             <div class="info-item">
-              <label>Fecha Programada</label>
+              <span class="label">Fecha Programada</span>
               <p>{{ record?.fechaProgramada | date: 'dd/MM/yyyy' }}</p>
             </div>
             <div class="info-item">
-              <label>Fecha Realización</label>
+              <span class="label">Fecha Realización</span>
               <p>
                 {{ record?.fechaRealizada ? (record!.fechaRealizada | date: 'dd/MM/yyyy') : '-' }}
               </p>
@@ -56,7 +56,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           </div>
 
           <div class="notes-block">
-            <label class="notes-label">Descripción / Observaciones</label>
+            <span class="notes-label">Descripción / Observaciones</span>
             <div class="notes-content">
               {{ record?.descripcion || record?.observaciones || 'Sin observaciones registradas.' }}
             </div>

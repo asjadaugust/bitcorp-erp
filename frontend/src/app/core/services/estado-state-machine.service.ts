@@ -83,7 +83,7 @@ export class EstadoStateMachineService {
    */
   getAvailableEstados(
     currentEstado?: EstadoLicitacion,
-    isEditMode: boolean = false
+    isEditMode = false
   ): EstadoOption[] {
     // Create mode: show all estados
     if (!isEditMode || !currentEstado) {

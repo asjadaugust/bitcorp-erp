@@ -131,10 +131,11 @@ export class CostCenterListComponent implements OnInit {
   loadCostCenters() {
     this.loading = true;
     this.adminService.getCostCenters().subscribe({
-      next: (response: any) => {
+      next: (response: unknown) => {
         // Handle paginated response { success, data, pagination } or direct array
-        if (response && typeof response === 'object' && 'data' in response) {
-          this.costCenters = Array.isArray(response.data) ? response.data : [];
+        const resp = response as Record<string, unknown>;
+        if (resp && typeof resp === 'object' && 'data' in resp) {
+          this.costCenters = Array.isArray(resp.data) ? resp.data as CostCenter[] : [];
         } else if (Array.isArray(response)) {
           this.costCenters = response;
         } else {
@@ -151,8 +152,8 @@ export class CostCenterListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
     this.applyFilters();
   }
 

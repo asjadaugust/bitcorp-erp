@@ -12,39 +12,39 @@ export class ScheduledTaskService {
   private apiUrl = `${environment.apiUrl}/scheduling/tasks`;
 
   // Interceptor unwraps { success: true, data: [...] } to just [...]
-  getAll(filters?: any): Observable<ScheduledTask[]> {
+  getAll(filters?: Record<string, string | number | undefined>): Observable<ScheduledTask[]> {
     let params = new HttpParams();
     if (filters) {
       const backendFilters = this.mapToBackend(filters);
       Object.keys(backendFilters).forEach((key) => {
         if (backendFilters[key]) {
-          params = params.set(key, backendFilters[key]);
+          params = params.set(key, String(backendFilters[key]));
         }
       });
     }
     return this.http
-      .get<any>(this.apiUrl, { params })
-      .pipe(map((res) => (res.data || res).map((task: any) => this.mapToFrontend(task))));
+      .get<Record<string, unknown>>(this.apiUrl, { params })
+      .pipe(map((res) => ((res['data'] || res) as Record<string, unknown>[]).map((task: Record<string, unknown>) => this.mapToFrontend(task))));
   }
 
   getById(id: number): Observable<ScheduledTask> {
     return this.http
-      .get<any>(`${this.apiUrl}/${id}`)
-      .pipe(map((res) => this.mapToFrontend(res.data || res)));
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
+      .pipe(map((res) => this.mapToFrontend((res['data'] as Record<string, unknown>) || res)));
   }
 
   create(task: Partial<ScheduledTask>): Observable<ScheduledTask> {
     const backendTask = this.mapToBackend(task);
     return this.http
-      .post<any>(this.apiUrl, backendTask)
-      .pipe(map((res) => this.mapToFrontend(res.data || res)));
+      .post<Record<string, unknown>>(this.apiUrl, backendTask)
+      .pipe(map((res) => this.mapToFrontend((res['data'] as Record<string, unknown>) || res)));
   }
 
   update(id: number, task: Partial<ScheduledTask>): Observable<ScheduledTask> {
     const backendTask = this.mapToBackend(task);
     return this.http
-      .put<any>(`${this.apiUrl}/${id}`, backendTask)
-      .pipe(map((res) => this.mapToFrontend(res.data || res)));
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, backendTask)
+      .pipe(map((res) => this.mapToFrontend((res['data'] as Record<string, unknown>) || res)));
   }
 
   delete(id: number): Observable<{ success: boolean; message: string }> {
@@ -53,8 +53,8 @@ export class ScheduledTaskService {
 
   assignOperator(id: number, operadorId: number): Observable<ScheduledTask> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/assign`, { operatorId: operadorId })
-      .pipe(map((res) => this.mapToFrontend(res.data || res)));
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/assign`, { operatorId: operadorId })
+      .pipe(map((res) => this.mapToFrontend((res['data'] as Record<string, unknown>) || res)));
   }
 
   complete(
@@ -66,58 +66,58 @@ export class ScheduledTaskService {
       maintenanceRecordId: data.registroMantenimientoId,
     };
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/complete`, backendData)
-      .pipe(map((res) => this.mapToFrontend(res.data || res)));
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/complete`, backendData)
+      .pipe(map((res) => this.mapToFrontend((res['data'] as Record<string, unknown>) || res)));
   }
 
   checkConflicts(
     operadorId: number,
     date: string,
     excludeTaskId?: number
-  ): Observable<{ hasConflicts: boolean; conflicts: any[] }> {
+  ): Observable<{ hasConflicts: boolean; conflicts: Record<string, unknown>[] }> {
     let params = new HttpParams().set('operatorId', operadorId.toString()).set('date', date);
 
     if (excludeTaskId) {
       params = params.set('excludeTaskId', excludeTaskId.toString());
     }
 
-    return this.http.get<{ hasConflicts: boolean; conflicts: any[] }>(
+    return this.http.get<{ hasConflicts: boolean; conflicts: Record<string, unknown>[] }>(
       `${this.apiUrl}/check-conflicts`,
       { params }
     );
   }
 
-  private mapToFrontend(task: any): ScheduledTask {
+  private mapToFrontend(task: Record<string, unknown>): ScheduledTask {
     if (!task) return task;
     return {
       ...task,
-      equipoId: task.equipmentId,
-      equipo: task.equipment,
-      operadorId: task.operatorId,
-      operador: task.operator,
-      tipoTarea: task.taskType,
-      titulo: task.title,
-      descripcion: task.description,
-      fechaInicio: task.startDate,
-      fechaFin: task.endDate,
-      horaInicio: task.startTime,
-      horaFin: task.endTime,
-      todoDia: task.allDay,
-      recurrencia: task.recurrence,
-      duracionMinutos: task.durationMinutes,
-      prioridad: task.priority,
-      estado: task.status,
-      fechaCompletado: task.completionDate,
-      notasCompletado: task.completionNotes,
-      registroMantenimientoId: task.maintenanceRecordId,
-      creadoPor: task.createdBy,
-      asignadoPor: task.assignedBy,
-    };
+      equipoId: task['equipmentId'],
+      equipo: task['equipment'],
+      operadorId: task['operatorId'],
+      operador: task['operator'],
+      tipoTarea: task['taskType'],
+      titulo: task['title'],
+      descripcion: task['description'],
+      fechaInicio: task['startDate'],
+      fechaFin: task['endDate'],
+      horaInicio: task['startTime'],
+      horaFin: task['endTime'],
+      todoDia: task['allDay'],
+      recurrencia: task['recurrence'],
+      duracionMinutos: task['durationMinutes'],
+      prioridad: task['priority'],
+      estado: task['status'],
+      fechaCompletado: task['completionDate'],
+      notasCompletado: task['completionNotes'],
+      registroMantenimientoId: task['maintenanceRecordId'],
+      creadoPor: task['createdBy'],
+      asignadoPor: task['assignedBy'],
+    } as unknown as ScheduledTask;
   }
 
-  private mapToBackend(task: any): any {
+  private mapToBackend(task: Record<string, unknown>): Record<string, unknown> {
     if (!task) return task;
-    const mapped: any = { ...task };
+    const mapped: Record<string, unknown> = { ...task };
 
     const fieldMap: Record<string, string> = {
       equipoId: 'equipmentId',

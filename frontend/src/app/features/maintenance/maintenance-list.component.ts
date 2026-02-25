@@ -209,7 +209,7 @@ export class MaintenanceListComponent implements OnInit {
   loading = false;
   moduleTabs = EQUIPMENT_MODULE_TABS;
   filters = { status: '', type: '', search: '' };
-  equipmentMap: Map<number, any> = new Map();
+  equipmentMap = new Map<number, Record<string, unknown>>();
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -305,10 +305,10 @@ export class MaintenanceListComponent implements OnInit {
 
         const equipmentList = Array.isArray(result.equipment)
           ? result.equipment
-          : (result.equipment as any).data || [];
+          : ((result.equipment as Record<string, unknown>)['data'] as Record<string, unknown>[]) || [];
 
-        equipmentList.forEach((eq: any) => {
-          this.equipmentMap.set(eq.id, eq);
+        (equipmentList as Record<string, unknown>[]).forEach((eq: Record<string, unknown>) => {
+          this.equipmentMap.set(eq['id'] as number, eq);
         });
 
         this.loading = false;
@@ -333,23 +333,23 @@ export class MaintenanceListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.type = filters['type'] || '';
-    this.filters.status = filters['status'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.type = (filters['type'] as string) || '';
+    this.filters.status = (filters['status'] as string) || '';
     this.loadRecords();
   }
 
   getEquipmentCode(id: number | undefined): string {
     if (!id) return 'N/A';
     const equip = this.equipmentMap.get(id);
-    return equip ? equip.codigo_equipo || equip.code : 'N/A';
+    return equip ? (equip['codigo_equipo'] as string) || (equip['code'] as string) : 'N/A';
   }
 
   getEquipmentModel(id: number | undefined): string {
     if (!id) return '';
     const equip = this.equipmentMap.get(id);
-    return equip ? `${equip.marca || ''} ${equip.modelo || ''}` : '';
+    return equip ? `${(equip['marca'] as string) || ''} ${(equip['modelo'] as string) || ''}` : '';
   }
 
   viewRecord(record: MaintenanceRecord): void {

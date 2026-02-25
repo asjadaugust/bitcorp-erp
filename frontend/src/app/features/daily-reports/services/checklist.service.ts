@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -39,8 +39,7 @@ export interface ChecklistResponse {
 export class ChecklistService {
   private apiUrl = `${environment.apiUrl}/checklists`;
   private templatesCache$ = new BehaviorSubject<ChecklistTemplate[]>([]);
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   // Templates
   getTemplates(): Observable<ChecklistTemplate[]> {

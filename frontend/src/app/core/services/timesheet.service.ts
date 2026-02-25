@@ -21,7 +21,7 @@ export class TimesheetService {
     estado?: string;
     periodo?: string;
   }): Observable<Timesheet[]> {
-    const params: any = {};
+    const params: Record<string, string> = {};
     if (filters) {
       if (filters.trabajador_id) params.trabajador_id = filters.trabajador_id.toString();
       if (filters.proyecto_id) params.proyecto_id = filters.proyecto_id;
@@ -29,7 +29,7 @@ export class TimesheetService {
       if (filters.periodo) params.periodo = filters.periodo;
     }
 
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         const dataArray = response?.data || response;
         return Array.isArray(dataArray) ? dataArray : [];
@@ -41,7 +41,7 @@ export class TimesheetService {
    * Get timesheet by ID
    */
   getById(id: string | number): Observable<Timesheet> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(
       map((response) => response?.data || response)
     );
   }
@@ -55,7 +55,7 @@ export class TimesheetService {
    * Create manual timesheet
    */
   create(data: Partial<Timesheet>): Observable<Timesheet> {
-    return this.http.post<any>(this.apiUrl, data).pipe(
+    return this.http.post<Record<string, unknown>>(this.apiUrl, data).pipe(
       map((response) => response?.data || response)
     );
   }
@@ -64,7 +64,7 @@ export class TimesheetService {
    * Update timesheet (draft only)
    */
   update(id: string | number, data: Partial<Timesheet>): Observable<Timesheet> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, data).pipe(
+    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, data).pipe(
       map((response) => response?.data || response)
     );
   }
@@ -78,7 +78,7 @@ export class TimesheetService {
    * Generate timesheet from daily reports
    */
   generateTimesheet(dto: GenerateTimesheetDto): Observable<Timesheet> {
-    return this.http.post<any>(`${this.apiUrl}/generate`, dto).pipe(
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/generate`, dto).pipe(
       map((response) => response?.data || response)
     );
   }
@@ -87,7 +87,7 @@ export class TimesheetService {
    * Submit timesheet for approval (BORRADOR → ENVIADO)
    */
   submitTimesheet(id: number): Observable<Timesheet> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/submit`, {}).pipe(
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/submit`, {}).pipe(
       map((response) => response?.data || response)
     );
   }
@@ -96,7 +96,7 @@ export class TimesheetService {
    * Approve timesheet (ENVIADO → APROBADO)
    */
   approveTimesheet(id: number): Observable<Timesheet> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/approve`, {}).pipe(
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/approve`, {}).pipe(
       map((response) => response?.data || response)
     );
   }
@@ -105,7 +105,7 @@ export class TimesheetService {
    * Reject timesheet (ENVIADO → RECHAZADO)
    */
   rejectTimesheet(id: number, reason: string): Observable<Timesheet> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/reject`, { reason }).pipe(
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/reject`, { reason }).pipe(
       map((response) => response?.data || response)
     );
   }

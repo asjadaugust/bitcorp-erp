@@ -79,7 +79,7 @@ import {
 
           <div class="form-grid">
             <div class="form-group">
-              <label>Tipo de Movimiento</label>
+              <span class="label">Tipo de Movimiento</span>
               <div class="static-value">
                 <span
                   [class]="
@@ -357,21 +357,21 @@ export class MovementFormComponent implements OnInit {
 
   loadDependencies(): void {
     this.projectService.getAll().subscribe({
-      next: (response: any) => {
-        const projects = response.data || response;
-        this.projectOptions = projects.map((p: any) => ({
-          label: p.nombre,
-          value: p.id,
+      next: (response: unknown) => {
+        const projects = (response as Record<string, unknown>)?.['data'] || response;
+        this.projectOptions = (projects as Record<string, unknown>[]).map((p) => ({
+          label: p['nombre'] as string,
+          value: p['id'] as number,
         }));
       },
     });
 
     this.providerService.getAll().subscribe({
-      next: (response: any) => {
-        const providers = response.data || response;
-        this.providerOptions = providers.map((p: any) => ({
-          label: p.razon_social,
-          value: p.id,
+      next: (response: unknown) => {
+        const providers = (response as Record<string, unknown>)?.['data'] || response;
+        this.providerOptions = (providers as Record<string, unknown>[]).map((p) => ({
+          label: p['razon_social'] as string,
+          value: p['id'] as number,
         }));
       },
     });
@@ -407,7 +407,7 @@ export class MovementFormComponent implements OnInit {
         }
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('Error loading movement', err);
         this.errorMessage = this.errorHandler.getErrorMessage(err);
         this.loading = false;
@@ -477,7 +477,7 @@ export class MovementFormComponent implements OnInit {
       tipo_documento: formValue.tipo_documento, // Might not be in DTO? Check backend.
       numero_documento: formValue.numero_documento,
       observaciones: formValue.observaciones,
-      items: formValue.items.map((item: any) => ({
+      items: formValue.items.map((item: Record<string, unknown>) => ({
         producto_id: Number(item.producto_id),
         cantidad: Number(item.cantidad),
         precio_unitario: Number(item.precio_unitario),
@@ -490,7 +490,7 @@ export class MovementFormComponent implements OnInit {
         this.submitting = false;
         this.router.navigate(['/logistics/movements']);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('Error saving movement', err);
         this.submitting = false;
         this.validationErrors = this.errorHandler.extractValidationErrors(err);

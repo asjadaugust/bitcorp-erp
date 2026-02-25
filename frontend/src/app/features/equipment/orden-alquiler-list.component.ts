@@ -93,7 +93,7 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
       </ng-template>
 
       <ng-template #actionsTemplate let-row>
-        <div class="action-buttons" (click)="$event.stopPropagation()">
+        <div class="action-buttons" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
           <button
             *ngIf="['BORRADOR', 'ENVIADO'].includes(row.estado)"
             class="btn-icon"
@@ -132,22 +132,19 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Modal: Enviar al proveedor -->
     @if (showEnviarModal && modalOrden) {
-      <div class="modal-overlay" (click)="cerrarModales()">
-        <div class="modal-panel" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-paper-plane"></i> Enviar Orden al Proveedor</h3>
+      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
+        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
             <button class="btn-close" (click)="cerrarModales()">
               <i class="fa-solid fa-xmark"></i>
             </button>
-          </div>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong> →
               {{ modalOrden.proveedor_nombre || 'Proveedor #' + modalOrden.proveedor_id }}
             </p>
             <div class="form-group">
-              <label
-                >Email de contacto del proveedor <span class="optional">(opcional)</span></label
+              <span class="label"
+                >Email de contacto del proveedor <span class="optional">(opcional)</span></span
               >
               <input
                 type="email"
@@ -169,22 +166,19 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Modal: Confirmar orden -->
     @if (showConfirmarModal && modalOrden) {
-      <div class="modal-overlay" (click)="cerrarModales()">
-        <div class="modal-panel" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-check-circle"></i> Confirmar Orden</h3>
+      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
+        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
             <button class="btn-close" (click)="cerrarModales()">
               <i class="fa-solid fa-xmark"></i>
             </button>
-          </div>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
             </p>
             <div class="form-group">
-              <label
+              <span class="label"
                 >¿Quién confirmó por parte del proveedor?
-                <span class="optional">(opcional)</span></label
+                <span class="optional">(opcional)</span></span
               >
               <input
                 type="text"
@@ -206,20 +200,17 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Modal: Cancelar orden -->
     @if (showCancelarModal && modalOrden) {
-      <div class="modal-overlay" (click)="cerrarModales()">
-        <div class="modal-panel" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-ban"></i> Cancelar Orden</h3>
+      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
+        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
             <button class="btn-close" (click)="cerrarModales()">
               <i class="fa-solid fa-xmark"></i>
             </button>
-          </div>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
             </p>
             <div class="form-group">
-              <label>Motivo de cancelación *</label>
+              <span class="label">Motivo de cancelación *</span>
               <textarea
                 class="form-control"
                 rows="3"
@@ -507,13 +498,13 @@ export class OrdenAlquilerListComponent implements OnInit {
 
   cargar() {
     this.loading = true;
-    const filters: any = { page: this.page, limit: this.limit };
+    const filters: Record<string, string | number> = { page: this.page, limit: this.limit };
     if (this.filtroEstado) filters.estado = this.filtroEstado;
 
     this.service.listar(filters).subscribe({
       next: (res) => {
         this.ordenes = res.data ?? [];
-        this.total = (res as any).total ?? res.pagination?.total ?? 0;
+        this.total = (res as Record<string, unknown>).total as number ?? res.pagination?.total ?? 0;
         this.loading = false;
       },
       error: () => {
@@ -522,8 +513,8 @@ export class OrdenAlquilerListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>) {
-    this.filtroEstado = filters['estado'] || '';
+  onFilterChange(filters: Record<string, unknown>) {
+    this.filtroEstado = (filters['estado'] as string) || '';
     this.page = 1;
     this.cargar();
   }

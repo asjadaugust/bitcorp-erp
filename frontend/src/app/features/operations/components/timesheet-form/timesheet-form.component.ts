@@ -124,11 +124,11 @@ import {
               </div>
               <div class="entry-fields">
                 <div class="form-group">
-                  <label>Fecha</label>
+                  <span class="label">Fecha</span>
                   <input type="date" formControlName="date" class="form-control" />
                 </div>
                 <div class="form-group">
-                  <label>Horas Regulares</label>
+                  <span class="label">Horas Regulares</span>
                   <input
                     type="number"
                     formControlName="regular_hours"
@@ -138,7 +138,7 @@ import {
                   />
                 </div>
                 <div class="form-group">
-                  <label>Horas Extra</label>
+                  <span class="label">Horas Extra</span>
                   <input
                     type="number"
                     formControlName="overtime_hours"
@@ -148,7 +148,7 @@ import {
                   />
                 </div>
                 <div class="form-group full-width-mobile">
-                  <label>Descripción</label>
+                  <span class="label">Descripción</span>
                   <input
                     type="text"
                     formControlName="description"
@@ -393,8 +393,8 @@ export class TimesheetFormComponent implements OnInit {
   loading = false;
   isEditMode = false;
   timesheetId?: string;
-  projects: any[] = [];
-  operators: any[] = [];
+  projects: Record<string, unknown>[] = [];
+  operators: Record<string, unknown>[] = [];
   projectOptions: DropdownOption[] = [];
   operatorOptions: DropdownOption[] = [];
   statusOptions: DropdownOption[] = [
@@ -458,15 +458,17 @@ export class TimesheetFormComponent implements OnInit {
   }
 
   loadDependencies() {
-    this.projectService.getAll().subscribe((res: any) => {
-      this.projects = res.data || res;
-      this.projectOptions = this.projects.map((p) => ({ label: p.nombre, value: p.id }));
+    this.projectService.getAll().subscribe((res: unknown) => {
+      const resData = res as Record<string, unknown>;
+      this.projects = (resData['data'] as Record<string, unknown>[]) || (res as Record<string, unknown>[]);
+      this.projectOptions = this.projects.map((p) => ({ label: p['nombre'] as string, value: p['id'] as number }));
     });
-    this.operatorService.getAll().subscribe((res: any) => {
-      this.operators = res.data || res;
+    this.operatorService.getAll().subscribe((res: unknown) => {
+      const resData = res as Record<string, unknown>;
+      this.operators = (resData['data'] as Record<string, unknown>[]) || (res as Record<string, unknown>[]);
       this.operatorOptions = this.operators.map((op) => ({
-        label: `${op.nombres} ${op.apellidos}`,
-        value: op.id,
+        label: `${op['nombres']} ${op['apellidos']}`,
+        value: op['id'] as number,
       }));
     });
   }
@@ -475,12 +477,13 @@ export class TimesheetFormComponent implements OnInit {
     if (!this.timesheetId) return;
     this.loading = true;
     this.timesheetService.getById(this.timesheetId).subscribe({
-      next: (res: any) => {
-        const data = res.data || res;
-        this.form.patchValue(data);
+      next: (res: unknown) => {
+        const resData = res as Record<string, unknown>;
+        const data = resData['data'] || res;
+        this.form.patchValue(data as Record<string, unknown>);
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (_err: unknown) => {
         this.loading = false;
         this.errorMessage = 'No se pudo cargar el parte de horas';
       },
@@ -523,7 +526,7 @@ export class TimesheetFormComponent implements OnInit {
           this.router.navigate(['/operaciones/timesheets']);
         }, 1500);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         this.loading = false;
         this.validationErrors = this.errorHandler.extractValidationErrors(err);
         this.errorMessage = this.errorHandler.getErrorMessage(err);

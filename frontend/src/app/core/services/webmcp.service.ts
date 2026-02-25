@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 export interface WebMcpTool {
   name: string;
   description: string;
-  inputSchema: any;
-  execute: (args: any) => Promise<any>;
+  inputSchema: Record<string, unknown>;
+  execute: (args: Record<string, unknown>) => Promise<unknown>;
 }
 
 @Injectable({
@@ -13,7 +13,7 @@ export interface WebMcpTool {
 })
 export class WebMcpService {
   private router = inject(Router);
-  private registeredTools: Map<string, any> = new Map();
+  private registeredTools = new Map<string, WebMcpTool>();
 
   constructor() {
     this.initGlobalTools();
@@ -33,12 +33,12 @@ export class WebMcpService {
     if (!this.isSupported) return;
 
     try {
-      // @ts-ignore - Experimental API
+      // @ts-expect-error - Experimental API
       navigator.modelContext.registerTool({
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
-        execute: async (args: any) => {
+        execute: async (args: Record<string, unknown>) => {
           console.log(`[WebMCP] Executing tool: ${tool.name}`, args);
           return await tool.execute(args);
         }
@@ -60,8 +60,8 @@ export class WebMcpService {
       inputSchema: {
         type: 'object',
         properties: {
-          module: { 
-            type: 'string', 
+          module: {
+            type: 'string',
             enum: ['equipment', 'logistics', 'administration', 'sig', 'hr', 'projects'],
             description: 'The module to navigate to'
           }

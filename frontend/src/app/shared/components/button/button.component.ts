@@ -154,7 +154,7 @@ export class ButtonComponent {
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() fullWidth = false;
 
-  @Output() onClick = new EventEmitter<Event>();
+  @Output() clicked = new EventEmitter<Event>();
 
   getClasses(): string {
     let classes = `btn btn-${this.variant}`;
@@ -172,7 +172,7 @@ export class ButtonComponent {
 
   handleClick(event: Event): void {
     if (!this.disabled && !this.loading) {
-      this.onClick.emit(event);
+      this.clicked.emit(event);
     }
   }
 }

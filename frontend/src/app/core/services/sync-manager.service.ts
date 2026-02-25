@@ -47,7 +47,7 @@ export class SyncManager {
   /**
    * Store a pending report offline
    */
-  async storePendingReport(reportData: any): Promise<number> {
+  async storePendingReport(reportData: Record<string, unknown>): Promise<number> {
     if (!this.db) await this.init();
 
     return new Promise((resolve, reject) => {
@@ -71,7 +71,7 @@ export class SyncManager {
   /**
    * Get all pending reports
    */
-  async getPendingReports(): Promise<any[]> {
+  async getPendingReports(): Promise<Record<string, unknown>[]> {
     if (!this.db) await this.init();
 
     return new Promise((resolve, reject) => {
@@ -188,7 +188,7 @@ export class SyncManager {
   /**
    * Get synced reports
    */
-  private async getSyncedReports(): Promise<any[]> {
+  private async getSyncedReports(): Promise<Record<string, unknown>[]> {
     if (!this.db) await this.init();
 
     return new Promise((resolve, reject) => {

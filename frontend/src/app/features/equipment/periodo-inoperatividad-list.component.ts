@@ -159,8 +159,8 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Resolve Modal -->
     @if (showResolverModal && selectedPeriodo) {
-      <div class="modal-overlay" (click)="cerrarModales()">
-        <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
+        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h3>Resolver Período de Inoperatividad</h3>
             <button class="btn-close" (click)="cerrarModales()">
@@ -173,11 +173,11 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
               <strong>{{ selectedPeriodo.fecha_inicio | date: 'dd/MM/yyyy' }}</strong>
             </p>
             <div class="form-group">
-              <label>Fecha de resolución *</label>
+              <span class="label">Fecha de resolución *</span>
               <input type="date" class="form-control" [(ngModel)]="resolverForm.fecha_fin" />
             </div>
             <div class="form-group">
-              <label>Observaciones</label>
+              <span class="label">Observaciones</span>
               <textarea
                 class="form-control"
                 rows="3"
@@ -203,8 +203,8 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Penalty Modal -->
     @if (showPenalidadModal && selectedPeriodo) {
-      <div class="modal-overlay" (click)="cerrarModales()">
-        <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
+        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h3>Aplicar Penalidad — Cláusula 7.6</h3>
             <button class="btn-close" (click)="cerrarModales()">
@@ -218,7 +218,7 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
               plazo de {{ selectedPeriodo.dias_plazo }} días (Cláusula 7.6).
             </div>
             <div class="form-group">
-              <label>Monto de penalidad (S/) *</label>
+              <span class="label">Monto de penalidad (S/) *</span>
               <input
                 type="number"
                 class="form-control"
@@ -229,7 +229,7 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
               />
             </div>
             <div class="form-group">
-              <label>Fundamento / Observaciones</label>
+              <span class="label">Fundamento / Observaciones</span>
               <textarea
                 class="form-control"
                 rows="3"
@@ -528,7 +528,7 @@ export class PeriodoInoperatividadListComponent implements OnInit {
     this.service
       .listar({
         equipo_id: this.equipoId,
-        estado: (this.filters['estado'] as any) || undefined,
+        estado: this.filters['estado'] || undefined,
         excede_plazo:
           this.filters['excede_plazo'] !== undefined && this.filters['excede_plazo'] !== ''
             ? this.filters['excede_plazo'] === 'true'

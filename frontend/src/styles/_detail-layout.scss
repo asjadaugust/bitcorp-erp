@@ -179,7 +179,9 @@
 }
 
 .info-item {
-  label {
+
+  label,
+  .label {
     display: block;
     font-size: 12px;
     font-weight: 500;

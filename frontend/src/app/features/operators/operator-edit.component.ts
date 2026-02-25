@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OperatorService } from '../../core/services/operator.service';
-import { Operator } from '../../core/models/operator.model';
-import { FormErrorHandlerService } from '../../core/services/form-error-handler.service';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../core/services/form-error-handler.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
@@ -204,7 +206,7 @@ export class OperatorEditComponent implements OnInit {
   operatorId: number | null = null;
   errorMessage = '';
   successMessage = '';
-  validationErrors: any[] = [];
+  validationErrors: ValidationError[] = [];
 
   fieldLabels: Record<string, string> = {
     dni: 'DNI',

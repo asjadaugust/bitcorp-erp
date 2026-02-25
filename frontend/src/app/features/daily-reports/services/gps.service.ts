@@ -15,9 +15,11 @@ export interface GPSCoordinates {
 export class GPSService {
   private lastKnownPosition: GPSCoordinates | null = null;
 
-  constructor() {}
+  constructor() {
+    // noop
+  }
 
-  getCurrentPosition(highAccuracy: boolean = true): Observable<GPSCoordinates> {
+  getCurrentPosition(highAccuracy = true): Observable<GPSCoordinates> {
     if (!('geolocation' in navigator)) {
       return of(this.getFallbackPosition());
     }

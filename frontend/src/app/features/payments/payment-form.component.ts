@@ -19,7 +19,6 @@ import {
   UpdatePaymentRecord,
   MetodoPago,
   TipoComprobante,
-  EstadoPago,
   PaymentSummary,
 } from '../../core/models/payment-record.model';
 import { Valuation } from '../../core/models/valuation.model';
@@ -803,11 +802,10 @@ export class PaymentFormComponent implements OnInit {
 
     if (this.isEditMode && this.paymentId) {
       // Update existing payment
-      const updateData: UpdatePaymentRecord = { ...formData };
-      delete (updateData as any).valorizacion_id; // Can't change valuation
-      delete (updateData as any).estado; // Can't change status via edit
+      const { valorizacion_id: _vid, estado: _est, ...updateData } = formData as Record<string, unknown>;
+      const updatePayload: UpdatePaymentRecord = updateData as UpdatePaymentRecord;
 
-      this.paymentService.updatePayment(this.paymentId, updateData).subscribe({
+      this.paymentService.updatePayment(this.paymentId, updatePayload).subscribe({
         next: () => {
           alert('Pago actualizado exitosamente');
           this.router.navigate(['/payments', this.paymentId]);

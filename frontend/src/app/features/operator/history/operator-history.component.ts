@@ -32,7 +32,7 @@ interface HistoryReport {
       <!-- Filters -->
       <div class="filters-bar">
         <div class="filter-group">
-          <label>Período:</label>
+          <span class="label">Período:</span>
           <app-dropdown
             [(ngModel)]="selectedPeriod"
             [options]="periodOptions"
@@ -41,7 +41,7 @@ interface HistoryReport {
         </div>
 
         <div class="filter-group">
-          <label>Estado:</label>
+          <span class="label">Estado:</span>
           <app-dropdown
             [(ngModel)]="selectedStatus"
             [options]="statusOptions"
@@ -459,17 +459,17 @@ export class OperatorHistoryComponent implements OnInit {
     this.dailyReportService.getAll().subscribe({
       next: (reports) => {
         // Map API response to local interface
-        this.allReports = reports.map((report: any) => ({
+        this.allReports = reports.map((report: Record<string, unknown>) => ({
           id: report.id,
-          date: new Date(report.fecha_parte || report.reportDate).toLocaleDateString('es-PE'),
-          project: report.location || 'Sin ubicación',
+          date: new Date((report['fecha_parte'] as string) || (report['reportDate'] as string)).toLocaleDateString('es-PE'),
+          project: (report['location'] as string) || 'Sin ubicación',
           equipment:
-            report.equipment_name || report.equipment_code || `Equipo #${report.equipo_id}`,
+            (report['equipment_name'] as string) || (report['equipment_code'] as string) || `Equipo #${report['equipo_id']}`,
           hours:
-            report.worked_hours ||
-            (report.horometro_final || 0) - (report.horometro_inicial || 0) ||
+            (report['worked_hours'] as number) ||
+            ((report['horometro_final'] as number) || 0) - ((report['horometro_inicial'] as number) || 0) ||
             0,
-          status: report.estado as 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO',
+          status: report['estado'] as 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO',
         }));
         this.filterReports();
         this.loading = false;

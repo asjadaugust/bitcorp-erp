@@ -8,8 +8,8 @@ import { AuditInfo, EntityDetailHeader, NotFoundConfig } from './entity-detail.t
  * Marker directive: use the attribute `entity-sidebar-actions` on an ng-container
  * to project action buttons into the sidebar Actions card.
  */
-@Directive({ selector: '[entity-sidebar-actions]', standalone: true })
-export class EntitySidebarActionsDirective {}
+@Directive({ selector: '[appEntitySidebarActions]', standalone: true })
+export class EntitySidebarActionsDirective { }
 
 /**
  * EntityDetailShellComponent
@@ -37,7 +37,7 @@ export class EntitySidebarActionsDirective {}
  *  </entity-detail-shell>
  */
 @Component({
-  selector: 'entity-detail-shell',
+  selector: 'app-entity-detail-shell',
   standalone: true,
   imports: [CommonModule, RouterModule, EntityDetailSidebarCardComponent, DatePipe],
   template: `
@@ -98,15 +98,15 @@ export class EntitySidebarActionsDirective {}
               <ng-content select="[entity-sidebar-before]" />
 
               <!-- Actions card -->
-              <entity-detail-sidebar-card title="Acciones">
+              <app-entity-detail-sidebar-card title="Acciones">
                 <div class="quick-actions">
-                  <ng-content select="[entity-sidebar-actions]" />
+                  <ng-content select="[appEntitySidebarActions]" />
                 </div>
-              </entity-detail-sidebar-card>
+              </app-entity-detail-sidebar-card>
 
               <!-- Audit trail -->
               @if (auditInfo && auditInfo.entries.length > 0) {
-                <entity-detail-sidebar-card title="Información del Sistema">
+                <app-entity-detail-sidebar-card title="Información del Sistema">
                   <div class="timeline">
                     @for (entry of auditInfo.entries; track entry.label) {
                       <div class="timeline-item">
@@ -117,7 +117,7 @@ export class EntitySidebarActionsDirective {}
                       </div>
                     }
                   </div>
-                </entity-detail-sidebar-card>
+                </app-entity-detail-sidebar-card>
               }
 
               <!-- After-audit slot -->

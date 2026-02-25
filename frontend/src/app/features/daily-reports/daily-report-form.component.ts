@@ -13,8 +13,6 @@ import {
   FormErrorHandlerService,
   ValidationError,
 } from '../../core/services/form-error-handler.service';
-import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
-import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 
@@ -25,8 +23,6 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
     CommonModule,
     FormsModule,
     RouterModule,
-    ValidationErrorsComponent,
-    AlertComponent,
     DropdownComponent,
     FormContainerComponent,
   ],
@@ -599,7 +595,7 @@ export class DailyReportFormComponent implements OnInit {
   };
 
   equipment: Equipment[] = [];
-  equipmentOptions: { label: string; value: any }[] = [];
+  equipmentOptions: { label: string; value: string | number | null }[] = [];
   selectedEquipment: Equipment | null = null;
   loading = false;
   saving = false;
@@ -658,7 +654,7 @@ export class DailyReportFormComponent implements OnInit {
         this.selectedEquipment =
           this.equipment.find((eq) => eq.id === this.report.equipo_id) || null;
       },
-      error: (error) => {
+      error: (_error) => {
         this.errorMessage = 'Error al cargar el parte';
         this.loading = false;
       },
@@ -755,8 +751,8 @@ export class DailyReportFormComponent implements OnInit {
       this.report.gps_longitude = this.gpsPosition.longitude;
       this.report.gps_accuracy = this.gpsPosition.accuracy;
       this.report.gps_captured_at = this.gpsPosition.timestamp.toISOString();
-    } catch (error: any) {
-      this.gpsError = error.message || 'Error al capturar ubicación';
+    } catch (error) {
+      this.gpsError = (error instanceof Error ? error.message : null) || 'Error al capturar ubicación';
     } finally {
       this.capturingGps = false;
     }
@@ -807,15 +803,16 @@ export class DailyReportFormComponent implements OnInit {
     };
 
     const request$ = this.reportId
-      ? this.dailyReportService.update(this.reportId, sanitizedReport as any)
-      : this.dailyReportService.create(sanitizedReport as any);
+      ? this.dailyReportService.update(this.reportId, sanitizedReport as CreateDailyReportDto)
+      : this.dailyReportService.create(sanitizedReport as CreateDailyReportDto);
 
     request$.subscribe({
-      next: (response: any) => {
+      next: (response: unknown) => {
         this.saving = false;
-        if (response && response.offline) {
+        const res = response as { offline?: boolean; message?: string };
+        if (res && res.offline) {
           this.successMessage =
-            response.message || 'Parte guardado offline. Se sincronizará cuando esté en línea.';
+            res.message || 'Parte guardado offline. Se sincronizará cuando esté en línea.';
         } else {
           this.successMessage =
             this.report.estado === 'BORRADOR'
@@ -881,10 +878,10 @@ export class DailyReportFormComponent implements OnInit {
       }
 
       const reader = new FileReader();
-      reader.onload = (e: any) => {
+      reader.onload = (e: ProgressEvent<FileReader>) => {
         this.selectedPhotos.push({
           file: file,
-          preview: e.target.result,
+          preview: e.target?.result as string,
         });
       };
       reader.readAsDataURL(file);
@@ -910,7 +907,7 @@ export class DailyReportFormComponent implements OnInit {
     });
 
     this.dailyReportService.uploadPhotos(this.reportId, formData).subscribe({
-      next: (response: any) => {
+      next: (response: { photos?: string[] }) => {
         this.uploadedPhotos = response.photos || [];
         this.selectedPhotos = [];
         this.uploadingPhotos = false;
@@ -928,7 +925,7 @@ export class DailyReportFormComponent implements OnInit {
 
     if (confirm('¿Estás seguro de eliminar esta foto?')) {
       this.dailyReportService.deletePhoto(this.reportId, index).subscribe({
-        next: (response: any) => {
+        next: (response: { photos?: string[] }) => {
           this.uploadedPhotos = response.photos || [];
           this.successMessage = 'Foto eliminada exitosamente';
         },

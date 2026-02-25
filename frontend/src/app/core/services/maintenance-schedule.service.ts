@@ -12,7 +12,7 @@ export class MaintenanceScheduleService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/maintenance`;
 
-  getAll(filters?: any): Observable<MaintenanceSchedule[]> {
+  getAll(filters?: Record<string, string | number | undefined>): Observable<MaintenanceSchedule[]> {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach((key) => {
@@ -21,11 +21,11 @@ export class MaintenanceScheduleService {
         }
       });
     }
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
-        let data: any[] = [];
+        let data: Record<string, unknown>[] = [];
         if (response && typeof response === 'object' && 'data' in response) {
-          data = response.data;
+          data = response['data'] as Record<string, unknown>[];
         } else if (Array.isArray(response)) {
           data = response;
         }
@@ -36,15 +36,15 @@ export class MaintenanceScheduleService {
 
   getById(id: string | number): Observable<MaintenanceSchedule> {
     return this.http
-      .get<any>(`${this.apiUrl}/${id}`)
-      .pipe(map((response) => this.toCamelCase(response?.data || response)));
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
+      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
   }
 
   create(schedule: Partial<MaintenanceSchedule>): Observable<MaintenanceSchedule> {
     const payload = this.toSnakeCase(schedule);
     return this.http
-      .post<any>(this.apiUrl, payload)
-      .pipe(map((response) => this.toCamelCase(response?.data || response)));
+      .post<Record<string, unknown>>(this.apiUrl, payload)
+      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
   }
 
   update(
@@ -53,27 +53,27 @@ export class MaintenanceScheduleService {
   ): Observable<MaintenanceSchedule> {
     const payload = this.toSnakeCase(schedule);
     return this.http
-      .put<any>(`${this.apiUrl}/${id}`, payload)
-      .pipe(map((response) => this.toCamelCase(response?.data || response)));
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, payload)
+      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
   }
 
   delete(id: string | number): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${id}`);
   }
 
-  generateTasks(daysAhead = 30): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/generate-tasks`, { daysAhead });
+  generateTasks(daysAhead = 30): Observable<unknown> {
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/generate-tasks`, { daysAhead });
   }
 
   complete(id: string | number, completionHours?: number): Observable<MaintenanceSchedule> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/complete`, {
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/complete`, {
         completionHours,
       })
-      .pipe(map((response) => this.toCamelCase(response?.data || response)));
+      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
   }
 
-  private toSnakeCase(data: any): any {
+  private toSnakeCase(data: Partial<MaintenanceSchedule>): Record<string, unknown> {
     return {
       equipo_id: data.equipoId,
       tipo_mantenimiento: data.tipoMantenimiento,
@@ -88,40 +88,41 @@ export class MaintenanceScheduleService {
     };
   }
 
-  private toCamelCase(data: any): MaintenanceSchedule {
-    const schedule: any = {
-      id: data.id,
-      equipoId: data.equipo_id,
-      tipoMantenimiento: data.tipo_mantenimiento,
-      fechaProgramada: data.fecha_programada,
-      fechaRealizada: data.fecha_realizada,
-      costoEstimado: data.costo_estimado,
-      costoReal: data.costo_real,
-      tecnicoResponsable: data.tecnico_responsable,
-      estado: data.estado,
-      observaciones: data.observaciones,
-      descripcion: data.descripcion,
-      intervalValue: data.interval_value,
-      intervalType: data.interval_type,
-      nextDueHours: data.next_due_hours,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+  private toCamelCase(data: Record<string, unknown>): MaintenanceSchedule {
+    const schedule: Record<string, unknown> = {
+      id: data['id'],
+      equipoId: data['equipo_id'],
+      tipoMantenimiento: data['tipo_mantenimiento'],
+      fechaProgramada: data['fecha_programada'],
+      fechaRealizada: data['fecha_realizada'],
+      costoEstimado: data['costo_estimado'],
+      costoReal: data['costo_real'],
+      tecnicoResponsable: data['tecnico_responsable'],
+      estado: data['estado'],
+      observaciones: data['observaciones'],
+      descripcion: data['descripcion'],
+      intervalValue: data['interval_value'],
+      intervalType: data['interval_type'],
+      nextDueHours: data['next_due_hours'],
+      createdAt: data['created_at'],
+      updatedAt: data['updated_at'],
     };
 
-    if (data.equipo) {
-      schedule.equipo = {
-        ...data.equipo,
-        codigo_equipo: data.equipo.codigo_equipo || data.equipo.code,
+    if (data['equipo']) {
+      const equipo = data['equipo'] as Record<string, unknown>;
+      schedule['equipo'] = {
+        ...equipo,
+        codigo_equipo: (equipo['codigo_equipo'] as string) || (equipo['code'] as string),
       };
-    } else if (data.equipo_codigo) {
+    } else if (data['equipo_codigo']) {
       // Backend returns flattened fields in MaintenanceDto
-      schedule.equipo = {
-        id: data.equipo_id,
-        codigo_equipo: data.equipo_codigo,
+      schedule['equipo'] = {
+        id: data['equipo_id'],
+        codigo_equipo: data['equipo_codigo'],
         marca: '', // Not returned by flattened DTO
-        modelo: data.equipo_descripcion, // Mapped to description as fallback
+        modelo: data['equipo_descripcion'], // Mapped to description as fallback
       };
     }
-    return schedule;
+    return schedule as unknown as MaintenanceSchedule;
   }
 }

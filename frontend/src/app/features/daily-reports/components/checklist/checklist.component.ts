@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   DropdownComponent,
-  DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
 
 export interface ChecklistItem {
@@ -11,7 +10,7 @@ export interface ChecklistItem {
   label: string;
   type: 'boolean' | 'text' | 'number' | 'select';
   required: boolean;
-  options?: any;
+  options?: string[];
   displayOrder: number;
 }
 
@@ -24,7 +23,7 @@ export interface ChecklistTemplate {
 
 export interface ChecklistResponse {
   itemId: string;
-  value: any;
+  value: string | number | boolean;
 }
 
 @Component({
@@ -40,10 +39,10 @@ export interface ChecklistResponse {
 
       <div class="checklist-items">
         <div *ngFor="let item of template?.items" class="checklist-item">
-          <label class="checklist-label">
+          <span class="checklist-label">
             {{ item.label }}
             <span class="required" *ngIf="item.required">*</span>
-          </label>
+          </span>
 
           <div *ngIf="item.type === 'boolean'" class="checkbox-container">
             <input
@@ -193,7 +192,7 @@ export class ChecklistComponent implements OnInit {
   @Input() initialResponses: ChecklistResponse[] = [];
   @Output() responsesChange = new EventEmitter<ChecklistResponse[]>();
 
-  responses: { [itemId: string]: any } = {};
+  responses: { [itemId: string]: string | number | boolean } = {};
 
   ngOnInit() {
     if (this.initialResponses?.length) {

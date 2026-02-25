@@ -268,7 +268,7 @@ export class ActaDevolucionListComponent implements OnInit {
 
   cargar() {
     this.loading = true;
-    const filters: any = {
+    const filters: Record<string, string | number> = {
       page: this.page,
       limit: this.limit,
       estado: this.filtroEstado,
@@ -289,10 +289,10 @@ export class ActaDevolucionListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.search = filters['search'] || '';
-    this.filtroEstado = filters['estado'] || '';
-    this.filtroTipo = filters['tipo'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.search = (filters['search'] as string) || '';
+    this.filtroEstado = (filters['estado'] as string) || '';
+    this.filtroTipo = (filters['tipo'] as string) || '';
     this.page = 1;
     this.cargar();
   }

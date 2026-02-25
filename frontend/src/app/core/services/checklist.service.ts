@@ -13,7 +13,7 @@ import {
 } from '../models/checklist.model';
 
 // Response wrapper interfaces
-interface ApiResponse<T> {
+interface _ApiResponse<T> {
   success: boolean;
   data: T;
   message?: string;
@@ -70,7 +70,7 @@ export class ChecklistService {
   /**
    * Map backend ChecklistTemplateListDto (Spanish snake_case) to frontend ChecklistTemplate (camelCase)
    */
-  private mapApiToChecklistTemplate(apiData: any): ChecklistTemplate {
+  private mapApiToChecklistTemplate(apiData: Record<string, unknown>): ChecklistTemplate {
     return {
       id: apiData.id,
       codigo: apiData.codigo,
@@ -103,7 +103,7 @@ export class ChecklistService {
     }
 
     // Handle paginated response {success, data, pagination}
-    return this.http.get<any>(`${this.apiUrl}/templates`, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/templates`, { params }).pipe(
       map((response) => {
         const dataArray = response?.data || response;
         if (Array.isArray(dataArray)) {
@@ -115,7 +115,7 @@ export class ChecklistService {
   }
 
   getTemplateById(id: number): Observable<ChecklistTemplate> {
-    return this.http.get<any>(`${this.apiUrl}/templates/${id}`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/templates/${id}`).pipe(
       map((response) => {
         const data = response?.data || response;
         return this.mapApiToChecklistTemplate(data);

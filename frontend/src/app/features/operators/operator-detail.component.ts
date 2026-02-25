@@ -31,11 +31,11 @@ import {
           <h2>Información de Contacto</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Email</label>
+              <span class="label">Email</span>
               <p>{{ operator?.correo_electronico || '-' }}</p>
             </div>
             <div class="info-item">
-              <label>Teléfono</label>
+              <span class="label">Teléfono</span>
               <p>{{ operator?.telefono || '-' }}</p>
             </div>
           </div>
@@ -45,11 +45,11 @@ import {
           <h2>Información Laboral</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Cargo</label>
+              <span class="label">Cargo</span>
               <p>{{ operator?.cargo || 'No especificado' }}</p>
             </div>
             <div class="info-item">
-              <label>Fecha Ingreso</label>
+              <span class="label">Fecha Ingreso</span>
               <p>
                 {{ operator?.fecha_ingreso ? (operator!.fecha_ingreso | date: 'dd/MM/yyyy') : '-' }}
               </p>
@@ -61,11 +61,11 @@ import {
           <h2>Licencia de Conducir</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Nro. Licencia</label>
+              <span class="label">Nro. Licencia</span>
               <p>{{ operator?.licencia_conducir }}</p>
             </div>
             <div class="info-item">
-              <label>Vencimiento</label>
+              <span class="label">Vencimiento</span>
               <p>
                 {{
                   operator?.vencimiento_licencia

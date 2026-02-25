@@ -121,11 +121,11 @@ export class AeroInputComponent implements ControlValueAccessor {
   @Input() required = false;
   @Input() inputId = `aero-input-${Math.random().toString(36).substr(2, 9)}`;
 
-  value: any = '';
+  value: unknown = '';
   disabled = false;
 
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  onChange: (value: unknown) => void = () => { /* noop */ };
+  onTouched: () => void = () => { /* noop */ };
 
   onInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
@@ -133,15 +133,15 @@ export class AeroInputComponent implements ControlValueAccessor {
     this.onChange(value);
   }
 
-  writeValue(value: any): void {
+  writeValue(value: unknown): void {
     this.value = value;
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: unknown) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 

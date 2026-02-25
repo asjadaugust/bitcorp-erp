@@ -5,9 +5,9 @@ import {
   EventEmitter,
   forwardRef,
   ElementRef,
-  HostListener,
   ViewChild,
   OnInit,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -15,7 +15,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 
 export interface DropdownOption {
   label: string;
-  value: any;
+  value: unknown;
   icon?: string;
   disabled?: boolean;
 }
@@ -39,7 +39,7 @@ export interface DropdownOption {
       [class.has-error]="error"
     >
       <!-- Trigger -->
-      <div class="dropdown-trigger" (click)="toggle()" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
+      <div class="dropdown-trigger" (click)="toggle()" (keydown.enter)="toggle()" tabindex="0" role="combobox" [attr.aria-expanded]="isOpen" aria-controls="dropdown-listbox" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
         <div class="selected-value" [class.placeholder]="!hasValue()">
           <span *ngIf="!hasValue()">{{ placeholder }}</span>
           <span *ngIf="hasValue()">{{ getDisplayValue() }}</span>
@@ -90,13 +90,17 @@ export interface DropdownOption {
           </div>
 
           <!-- Options -->
-          <div class="options-list">
+          <div class="options-list" id="dropdown-listbox" role="listbox">
             <div
               *ngFor="let option of filteredOptions"
               class="option-item"
               [class.selected]="isSelected(option)"
               [class.disabled]="option.disabled"
               (click)="selectOption(option)"
+              (keydown.enter)="selectOption(option)"
+              tabindex="0"
+              role="option"
+              [attr.aria-selected]="isSelected(option)"
             >
               <div class="option-content">
                 <i *ngIf="option.icon" [class]="option.icon"></i>
@@ -323,13 +327,13 @@ export interface DropdownOption {
 })
 export class DropdownComponent implements OnInit, ControlValueAccessor {
   @Input() options: DropdownOption[] = [];
-  @Input() placeholder: string = 'Seleccionar...';
-  @Input() disabled: boolean = false;
-  @Input() multiple: boolean = false;
-  @Input() searchable: boolean = false;
-  @Input() error: boolean = false;
+  @Input() placeholder = 'Seleccionar...';
+  @Input() disabled = false;
+  @Input() multiple = false;
+  @Input() searchable = false;
+  @Input() error = false;
 
-  @Output() selectionChange = new EventEmitter<any>();
+  @Output() selectionChange = new EventEmitter<unknown>();
 
   @ViewChild('searchInput') searchInput!: ElementRef;
   @ViewChild('trigger', { read: ElementRef }) trigger!: ElementRef;
@@ -340,28 +344,28 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   triggerWidth = 0;
 
   // Value accessor storage
-  private value: any = null;
+  private value: unknown = null;
 
   // Callbacks
-  onChange: any = () => {};
-  onTouch: any = () => {};
+  onChange: (value: unknown) => void = () => { /* noop */ };
+  onTouch: () => void = () => { /* noop */ };
 
-  constructor(private elementRef: ElementRef) {}
+  private elementRef = inject(ElementRef);
 
   ngOnInit() {
     this.filteredOptions = this.options;
   }
 
   // Value Accessor Interface
-  writeValue(value: any): void {
+  writeValue(value: unknown): void {
     this.value = value;
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: unknown) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouch = fn;
   }
 

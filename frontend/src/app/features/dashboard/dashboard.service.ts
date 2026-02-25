@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
@@ -22,7 +22,7 @@ export interface BackendModule {
     puede_eliminar: boolean;
     puede_aprobar: boolean;
   };
-  pages?: any[];
+  pages?: Record<string, unknown>[];
 }
 
 export interface BackendUserInfo {
@@ -34,8 +34,8 @@ export interface BackendUserInfo {
     email: string;
     roles: string[];
   };
-  active_project: any;
-  assigned_projects: any[];
+  active_project: Record<string, unknown> | null;
+  assigned_projects: Record<string, unknown>[];
 }
 
 @Injectable({
@@ -43,8 +43,7 @@ export interface BackendUserInfo {
 })
 export class DashboardService {
   private baseUrl = environment.apiUrl;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   /** Get modules with permissions for the current user */
   getModules(): Observable<{ success: boolean; data: BackendModule[] }> {
@@ -61,13 +60,13 @@ export class DashboardService {
   }
 
   /** Switch active project */
-  switchProject(project_id: string): Observable<any> {
+  switchProject(project_id: string): Observable<Record<string, unknown>> {
     return this.http.put(`${this.baseUrl}/dashboard/switch-project`, { project_id });
   }
 
   /** Get dashboard statistics */
-  getStats(project_id?: string): Observable<any> {
-    const params: any = {};
+  getStats(project_id?: string): Observable<Record<string, unknown>> {
+    const params: Record<string, string> = {};
     if (project_id) {
       params.project_id = project_id;
     }

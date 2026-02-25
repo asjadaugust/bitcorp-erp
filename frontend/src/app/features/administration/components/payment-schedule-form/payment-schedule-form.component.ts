@@ -27,7 +27,7 @@ import {
       <form (ngSubmit)="onSubmit()" #psForm="ngForm" class="form-container">
         <div class="form-grid">
           <div class="form-group">
-            <label>Fecha de Programación *</label>
+            <span class="label">Fecha de Programación *</span>
             <input
               type="date"
               [(ngModel)]="formData.schedule_date"
@@ -38,7 +38,7 @@ import {
           </div>
 
           <div class="form-group">
-            <label>Fecha de Pago *</label>
+            <span class="label">Fecha de Pago *</span>
             <input
               type="date"
               [(ngModel)]="formData.payment_date"
@@ -49,7 +49,7 @@ import {
           </div>
 
           <div class="form-group full-width">
-            <label>Descripción</label>
+            <span class="label">Descripción</span>
             <textarea
               [(ngModel)]="formData.description"
               name="description"
@@ -132,8 +132,8 @@ import {
       </form>
 
       <!-- Add Item Modal -->
-      <div class="modal" *ngIf="showAddItemModal" (click)="showAddItemModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" *ngIf="showAddItemModal" (click)="showAddItemModal = false" (keydown.enter)="showAddItemModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h3>Seleccionar Cuentas por Pagar Pendientes</h3>
             <button type="button" class="btn-close" (click)="showAddItemModal = false">×</button>

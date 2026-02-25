@@ -247,7 +247,7 @@ export class ChecklistComponent implements OnInit {
     }
   }
 
-  onItemChange(item: ChecklistItem) {
+  onItemChange(_item: ChecklistItem) {
     this.itemsChange.emit(this.items);
     this.validationChange.emit(this.allRequiredChecked);
   }

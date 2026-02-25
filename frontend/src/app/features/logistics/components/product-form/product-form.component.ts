@@ -17,7 +17,6 @@ import { ValidationErrorsComponent } from '../../../../shared/components/validat
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 import {
-  DropdownComponent,
   DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
 
@@ -32,7 +31,6 @@ import {
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
-    DropdownComponent,
   ],
   template: `
     <app-form-container
@@ -233,7 +231,7 @@ export class ProductFormComponent implements OnInit {
         this.productForm.patchValue(product);
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('Error loading product', err);
         this.errorMessage = this.errorHandler.getErrorMessage(err);
         this.loading = false;
@@ -260,14 +258,14 @@ export class ProductFormComponent implements OnInit {
 
     if (this.isEditMode && this.productId) {
       // Strip non-permitted fields for update (strict backend validation)
-      const { codigo, id, created_at, updated_at, stock_actual, ...updateData } = productData;
+      const { codigo: _codigo, id: _id, created_at: _created_at, updated_at: _updated_at, stock_actual: _stock_actual, ...updateData } = productData;
 
       this.inventoryService.updateProduct(this.productId, updateData).subscribe({
         next: () => {
           this.submitting = false;
           this.router.navigate(['/logistics/products']);
         },
-        error: (err: any) => {
+        error: (err: unknown) => {
           console.error('Error updating product:', err);
           this.submitting = false;
           this.validationErrors = this.errorHandler.extractValidationErrors(err);
@@ -280,7 +278,7 @@ export class ProductFormComponent implements OnInit {
           this.submitting = false;
           this.router.navigate(['/logistics/products']);
         },
-        error: (err: any) => {
+        error: (err: unknown) => {
           console.error('Error saving product', err);
           this.submitting = false;
           this.validationErrors = this.errorHandler.extractValidationErrors(err);

@@ -545,7 +545,7 @@ export class DailyReportListComponent implements OnInit {
     },
   ];
 
-  currentFilters: any = { status: '', date: '' };
+  currentFilters: Record<string, string> = { status: '', date: '' };
 
   ngOnInit(): void {
     this.loadReports();
@@ -578,8 +578,12 @@ export class DailyReportListComponent implements OnInit {
     return labels[status] || status;
   }
 
-  onFilterChange(filters: any) {
-    this.currentFilters = { ...this.currentFilters, ...filters };
+  onFilterChange(filters: Record<string, unknown>) {
+    const typedFilters: Record<string, string> = {};
+    for (const key of Object.keys(filters)) {
+      typedFilters[key] = (filters[key] as string) || '';
+    }
+    this.currentFilters = { ...this.currentFilters, ...typedFilters };
     this.loadReports();
   }
 
@@ -672,8 +676,8 @@ export class DailyReportListComponent implements OnInit {
     const user = this.authService.currentUser;
     const nombreResidente = user
       ? user.nombre_completo ||
-        `${user.nombres || ''} ${user.apellidos || ''}`.trim() ||
-        'Residente'
+      `${user.nombres || ''} ${user.apellidos || ''}`.trim() ||
+      'Residente'
       : 'Residente';
     if (confirm(`¿Confirma su firma como Residente en el parte #${report.id}?`)) {
       this.dailyReportService.firmarResidente(report.id, nombreResidente).subscribe({

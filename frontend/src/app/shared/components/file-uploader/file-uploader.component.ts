@@ -13,6 +13,9 @@ import { CommonModule } from '@angular/common';
       (dragleave)="onDragLeave($event)"
       (drop)="onDrop($event)"
       (click)="fileInput.click()"
+      (keydown.enter)="fileInput.click()"
+      tabindex="0"
+      role="button"
     >
       <input #fileInput type="file" [accept]="accept" (change)="onFileSelected($event)" hidden />
 

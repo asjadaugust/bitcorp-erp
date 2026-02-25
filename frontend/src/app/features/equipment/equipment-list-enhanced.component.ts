@@ -83,7 +83,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <div class="filter-panel" *ngIf="showFilters">
         <div class="filters-grid">
           <div class="filter-group">
-            <label>Búsqueda Rápida</label>
+            <span class="label">Búsqueda Rápida</span>
             <input
               type="text"
               [(ngModel)]="filters.search"
@@ -93,7 +93,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             />
           </div>
           <div class="filter-group">
-            <label>Estado</label>
+            <span class="label">Estado</span>
             <app-dropdown
               [(ngModel)]="filters.status"
               [options]="statusOptions"
@@ -101,7 +101,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             ></app-dropdown>
           </div>
           <div class="filter-group">
-            <label>Categoría</label>
+            <span class="label">Categoría</span>
             <app-dropdown
               [(ngModel)]="filters.category"
               [options]="categoryOptions"
@@ -109,7 +109,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             ></app-dropdown>
           </div>
           <div class="filter-group">
-            <label>Alertas</label>
+            <span class="label">Alertas</span>
             <div class="checkbox-wrapper">
               <input
                 type="checkbox"
@@ -183,7 +183,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
         <!-- Actions Template -->
         <ng-template #actionsTemplate let-row>
-          <div class="action-buttons" (click)="$event.stopPropagation()">
+          <div class="action-buttons" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
             <button class="btn-icon" (click)="viewDetails(row)" title="View Details">📝</button>
             <button class="btn-icon" title="More Actions">⋮</button>
           </div>
@@ -555,7 +555,7 @@ export class EquipmentListEnhancedComponent implements OnInit {
   private csvService = inject(CsvExportService);
   private router = inject(Router);
 
-  equipment: any[] = [];
+  equipment: Equipment[] = [];
   loading = false;
   selectedIds: number[] = [];
   showFilters = false;
@@ -634,7 +634,7 @@ export class EquipmentListEnhancedComponent implements OnInit {
   loadEquipment(): void {
     this.loading = true;
     this.equipmentService.getAll(this.filters).subscribe({
-      next: (data: any) => {
+      next: (data: unknown) => {
         this.equipment = Array.isArray(data) ? data : [];
         this.totalEquipment = this.equipment.length;
         this.loading = false;
@@ -648,8 +648,9 @@ export class EquipmentListEnhancedComponent implements OnInit {
 
   loadStatistics(): void {
     this.equipmentService.getStatistics().subscribe({
-      next: (data: any) => {
-        this.stats = data;
+      next: (response: unknown) => {
+        const data = response as Record<string, number>;
+        this.stats = data as typeof this.stats;
         this.statItems = [
           {
             label: 'Total Equipment',
@@ -722,7 +723,7 @@ export class EquipmentListEnhancedComponent implements OnInit {
     return this.equipment.length > 0 && this.selectedIds.length === this.equipment.length;
   }
 
-  onRowClick(equip: any, event: MouseEvent): void {
+  onRowClick(equip: Equipment, event: MouseEvent): void {
     // Ctrl/Cmd click for multi-select
     if (event.ctrlKey || event.metaKey) {
       this.toggleSelect(equip.id);
@@ -731,7 +732,7 @@ export class EquipmentListEnhancedComponent implements OnInit {
     }
   }
 
-  viewDetails(equip: any): void {
+  viewDetails(equip: Equipment): void {
     this.router.navigate(['/equipment', equip.id]);
   }
 
@@ -777,23 +778,23 @@ export class EquipmentListEnhancedComponent implements OnInit {
     }
   }
 
-  formatDate(date: any): string {
+  formatDate(date: unknown): string {
     if (!date) return '-';
-    const d = new Date(date);
+    const d = new Date(date as string);
     return d.toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' });
   }
 
-  isExpiringSoon(date: any): boolean {
+  isExpiringSoon(date: unknown): boolean {
     if (!date) return false;
-    const d = new Date(date);
+    const d = new Date(date as string);
     const today = new Date();
     const diffDays = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays > 0 && diffDays <= 30;
   }
 
-  isExpired(date: any): boolean {
+  isExpired(date: unknown): boolean {
     if (!date) return false;
-    const d = new Date(date);
+    const d = new Date(date as string);
     return d < new Date();
   }
 

@@ -273,23 +273,23 @@ export class TimesheetGenerateComponent implements OnInit {
     observaciones: '',
   };
 
-  operators: any[] = [];
-  projects: any[] = [];
+  operators: Record<string, unknown>[] = [];
+  projects: Record<string, unknown>[] = [];
   loading = false;
   successMessage = '';
   errorMessage = '';
 
   get operatorOptions(): DropdownOption[] {
     return this.operators.map((op) => ({
-      label: op.nombre_completo || `${op.nombres} ${op.apellido_paterno}`,
-      value: op.id,
+      label: (op['nombre_completo'] as string) || `${op['nombres']} ${op['apellido_paterno']}`,
+      value: op['id'],
     }));
   }
 
   get projectOptions(): DropdownOption[] {
     const options = this.projects.map((proj) => ({
-      label: `${proj.G00007_Codigo} - ${proj.G00007_Nombre}`,
-      value: proj.id,
+      label: `${proj['G00007_Codigo']} - ${proj['G00007_Nombre']}`,
+      value: proj['id'],
     }));
     return [{ label: 'Todos los proyectos', value: '' }, ...options];
   }
@@ -309,8 +309,8 @@ export class TimesheetGenerateComponent implements OnInit {
 
   loadOperators() {
     this.operatorService.getAll().subscribe({
-      next: (response: any) => {
-        this.operators = response || [];
+      next: (response: unknown) => {
+        this.operators = (response as Record<string, unknown>[]) || [];
       },
       error: (error) => console.error('Error loading operators:', error),
     });
@@ -318,8 +318,8 @@ export class TimesheetGenerateComponent implements OnInit {
 
   loadProjects() {
     this.projectService.getAll().subscribe({
-      next: (response: any) => {
-        this.projects = response || [];
+      next: (response: unknown) => {
+        this.projects = (response as Record<string, unknown>[]) || [];
       },
       error: (error) => console.error('Error loading projects:', error),
     });
@@ -372,7 +372,7 @@ export class TimesheetGenerateComponent implements OnInit {
                   this.errorMessage = err.error.error.message;
                   if (err.error.error.details && Array.isArray(err.error.error.details)) {
                     const details = err.error.error.details
-                      .map((d: any) => `${d.field}: ${d.errors.join(', ')}`)
+                      .map((d: Record<string, unknown>) => `${d['field']}: ${(d['errors'] as string[]).join(', ')}`)
                       .join('; ');
                     this.errorMessage += ` (${details})`;
                   }

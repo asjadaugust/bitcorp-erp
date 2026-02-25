@@ -50,7 +50,7 @@ export class TenderService {
         }
 
         // If already unwrapped (shouldn't happen with our interceptor), return as is
-        return response as any as Tender[];
+        return response as unknown as Tender[];
       })
     );
   }

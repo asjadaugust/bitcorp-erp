@@ -46,7 +46,7 @@ import {
             <h2>Información del Acta</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>Código de Equipo</label>
+                <span class="label">Código de Equipo</span>
                 <p>
                   <a [routerLink]="['/equipment', acta?.equipo_id]" class="link-primary">
                     <i
@@ -58,7 +58,7 @@ import {
                 </p>
               </div>
               <div class="info-item" *ngIf="acta?.contrato_id">
-                <label>Contrato Relacionado</label>
+                <span class="label">Contrato Relacionado</span>
                 <p>
                   <a
                     [routerLink]="['/equipment/contracts', acta?.contrato_id]"
@@ -73,17 +73,17 @@ import {
                 </p>
               </div>
               <div class="info-item">
-                <label>Proyecto</label>
+                <span class="label">Proyecto</span>
                 <p class="value-highlight">
                   {{ acta?.proyecto_nombre || '#' + acta?.proyecto_id || 'N/A' }}
                 </p>
               </div>
               <div class="info-item">
-                <label>Fecha de Devolución</label>
+                <span class="label">Fecha de Devolución</span>
                 <p>{{ acta?.fecha_devolucion | date: 'dd/MM/yyyy' }}</p>
               </div>
               <div class="info-item">
-                <label>Tipo de Acta</label>
+                <span class="label">Tipo de Acta</span>
                 <p>{{ tipoLabel(acta?.tipo || '') }}</p>
               </div>
             </div>
@@ -96,7 +96,7 @@ import {
             <h2>Condición y Uso del Equipo</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>Estado del Equipo</label>
+                <span class="label">Estado del Equipo</span>
                 <div>
                   <span
                     class="condition-badge"
@@ -113,7 +113,7 @@ import {
                   acta?.horometro_devolucion !== null && acta?.horometro_devolucion !== undefined
                 "
               >
-                <label>Horómetro Final</label>
+                <span class="label">Horómetro Final</span>
                 <p class="value-highlight mono">
                   {{ acta?.horometro_devolucion | number: '1.1-2' }} <span class="unit">h</span>
                 </p>
@@ -125,7 +125,7 @@ import {
                   acta?.kilometraje_devolucion !== undefined
                 "
               >
-                <label>Kilometraje Final</label>
+                <span class="label">Kilometraje Final</span>
                 <p class="value-highlight mono">
                   {{ acta?.kilometraje_devolucion | number: '1.1-2' }} <span class="unit">km</span>
                 </p>
@@ -143,11 +143,11 @@ import {
             </div>
             <div class="firma-form">
               <div class="form-group">
-                <label>ID Usuario que Entrega</label>
+                <span class="label">ID Usuario que Entrega</span>
                 <input type="number" class="form-control" [(ngModel)]="firmaDto.entregado_por" />
               </div>
               <div class="form-group">
-                <label>ID Usuario que Recibe</label>
+                <span class="label">ID Usuario que Recibe</span>
                 <input type="number" class="form-control" [(ngModel)]="firmaDto.recibido_por" />
               </div>
               <div class="firma-actions">
@@ -163,7 +163,7 @@ import {
             <h2>Estado de Firmas</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>Entregado por</label>
+                <span class="label">Entregado por</span>
                 <div class="signature-status" [class.signed]="acta?.tiene_firma_entregado">
                   <i
                     class="fa-solid"
@@ -177,7 +177,7 @@ import {
                 </div>
               </div>
               <div class="info-item">
-                <label>Recibido por</label>
+                <span class="label">Recibido por</span>
                 <div class="signature-status" [class.signed]="acta?.tiene_firma_recibido">
                   <i
                     class="fa-solid"
@@ -198,11 +198,11 @@ import {
               <h2>Observaciones</h2>
               <div class="info-grid">
                 <div class="info-item" *ngIf="acta?.observaciones">
-                  <label>Observaciones Generales</label>
+                  <span class="label">Observaciones Generales</span>
                   <p class="text-italic">{{ acta?.observaciones }}</p>
                 </div>
                 <div class="info-item" *ngIf="acta?.observaciones_fisicas">
-                  <label>Observaciones Físicas</label>
+                  <span class="label">Observaciones Físicas</span>
                   <p class="text-italic text-danger-soft">{{ acta?.observaciones_fisicas }}</p>
                 </div>
               </div>

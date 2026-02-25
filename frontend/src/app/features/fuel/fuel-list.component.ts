@@ -242,10 +242,10 @@ export class FuelListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.startDate = filters['startDate'] || '';
-    this.filters.endDate = filters['endDate'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.startDate = (filters['startDate'] as string) || '';
+    this.filters.endDate = (filters['endDate'] as string) || '';
     this.loadRecords();
   }
 

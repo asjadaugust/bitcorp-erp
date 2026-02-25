@@ -10,11 +10,11 @@ export type EstadoTarea =
 export interface ScheduledTask {
   id: number;
   scheduleId?: number;
-  schedule?: any;
+  schedule?: Record<string, unknown>;
   equipoId: number;
-  equipo?: any;
+  equipo?: Record<string, unknown>;
   operadorId?: number;
-  operador?: any;
+  operador?: Record<string, unknown>;
   tipoTarea: string; // 'mantenimiento' | 'inspeccion' | 'reparacion'
   titulo?: string;
   descripcion?: string;
@@ -33,7 +33,7 @@ export interface ScheduledTask {
   creadoPor?: number;
   asignadoPor?: number;
   projectId?: number;
-  project?: any;
+  project?: Record<string, unknown>;
   createdAt?: string;
   updatedAt?: string;
 }

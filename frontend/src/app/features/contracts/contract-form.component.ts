@@ -11,7 +11,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ContractService } from '../../core/services/contract.service';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { ProviderService } from '../../core/services/provider.service';
-import { Contract } from '../../core/models/contract.model';
 import { Equipment } from '../../core/models/equipment.model';
 import { Provider } from '../../core/models/provider.model';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
@@ -416,7 +415,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
           </h3>
           <div class="section-grid">
             <div class="form-group full-width">
-              <label>Adjuntar Contrato Firmado</label>
+              <span class="label">Adjuntar Contrato Firmado</span>
               <div class="file-upload-area">
                 <input
                   type="file"
@@ -634,20 +633,20 @@ export class ContractFormComponent implements OnInit {
   contractId: string | null = null;
   equipmentList: Equipment[] = [];
   providerList: Provider[] = [];
-  contractFileName: string = '';
+  contractFileName = '';
   contractFile: File | null = null;
   validationErrors: ValidationError[] = [];
   errorMessage = '';
 
   // Annex data
-  annexA: Array<{ concepto: string; incluido: boolean; observaciones: string }> = [];
-  annexB: Array<{ concepto: string; incluido: boolean; observaciones: string }> = [];
+  annexA: { concepto: string; incluido: boolean; observaciones: string }[] = [];
+  annexB: { concepto: string; incluido: boolean; observaciones: string }[] = [];
   savingAnnexA = false;
   savingAnnexB = false;
 
   // Dropdown Options
-  equipmentOptions: { label: string; value: any }[] = [];
-  providerOptions: { label: string; value: any }[] = [];
+  equipmentOptions: { label: string; value: string | number | null }[] = [];
+  providerOptions: { label: string; value: string | number | null }[] = [];
 
   modalidadOptions = [
     { label: 'Alquiler Seco', value: 'alquiler_seco' },
@@ -724,8 +723,9 @@ export class ContractFormComponent implements OnInit {
     );
   }
 
-  onContractFileSelected(event: any): void {
-    const file = event.target.files[0];
+  onContractFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (file) {
       this.contractFile = file;
       this.contractFileName = file.name;
@@ -834,7 +834,7 @@ export class ContractFormComponent implements OnInit {
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
-  dateRangeValidator(group: FormGroup): { [key: string]: any } | null {
+  dateRangeValidator(group: FormGroup): { [key: string]: boolean } | null {
     const start = group.get('fecha_inicio')?.value;
     const end = group.get('fecha_fin')?.value;
 
@@ -850,7 +850,7 @@ export class ContractFormComponent implements OnInit {
     if (!this.contractId) return;
     this.contractService.getAnnexes(this.contractId, 'A').subscribe({
       next: (items) => {
-        this.annexA = items.map((i: any) => ({
+        this.annexA = items.map((i: { concepto?: string; incluido?: boolean; observaciones?: string }) => ({
           concepto: i.concepto || '',
           incluido: i.incluido || false,
           observaciones: i.observaciones || '',
@@ -859,7 +859,7 @@ export class ContractFormComponent implements OnInit {
     });
     this.contractService.getAnnexes(this.contractId, 'B').subscribe({
       next: (items) => {
-        this.annexB = items.map((i: any) => ({
+        this.annexB = items.map((i: { concepto?: string; incluido?: boolean; observaciones?: string }) => ({
           concepto: i.concepto || '',
           incluido: i.incluido || false,
           observaciones: i.observaciones || '',

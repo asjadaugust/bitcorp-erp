@@ -1,19 +1,19 @@
 import { Directive, ElementRef, Output, EventEmitter, HostListener, inject } from '@angular/core';
 
 @Directive({
-  selector: '[clickOutside]',
+  selector: '[appClickOutside]',
   standalone: true,
 })
 export class ClickOutsideDirective {
   private elementRef = inject(ElementRef);
 
-  @Output() clickOutside = new EventEmitter<void>();
+  @Output() appClickOutside = new EventEmitter<void>();
 
   @HostListener('document:click', ['$event.target'])
-  public onClick(target: any) {
+  public onClick(target: EventTarget) {
     const clickedInside = this.elementRef.nativeElement.contains(target);
     if (!clickedInside) {
-      this.clickOutside.emit();
+      this.appClickOutside.emit();
     }
   }
 }

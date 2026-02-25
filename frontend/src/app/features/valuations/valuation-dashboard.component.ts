@@ -230,7 +230,11 @@ import {
 export class ValuationDashboardComponent implements OnInit {
   valuationService = inject(ValuationService);
   loading = true;
-  data: any = null;
+  data: {
+    status_breakdown: { status: string; count: number; total: number }[];
+    monthly_trend: { month: string; total: number }[];
+    top_equipment: { equipo: string; total: number }[];
+  } | null = null;
   statItems: StatItem[] = [];
 
   ngOnInit() {
@@ -288,24 +292,24 @@ export class ValuationDashboardComponent implements OnInit {
 
   getTotalAmount(): number {
     if (!this.data) return 0;
-    return this.data.status_breakdown.reduce((acc: number, curr: any) => acc + curr.total, 0);
+    return this.data.status_breakdown.reduce((acc: number, curr: { total: number }) => acc + curr.total, 0);
   }
 
   getStatusCount(status: string): number {
     if (!this.data) return 0;
-    const item = this.data.status_breakdown.find((s: any) => s.status === status);
+    const item = this.data.status_breakdown.find((s) => s.status === status);
     return item ? item.count : 0;
   }
 
   getBarHeight(value: number): number {
     if (!this.data || this.data.monthly_trend.length === 0) return 0;
-    const max = Math.max(...this.data.monthly_trend.map((i: any) => i.total));
+    const max = Math.max(...this.data.monthly_trend.map((i) => i.total));
     return max > 0 ? (value / max) * 100 : 0;
   }
 
   getEquipmentPercentage(value: number): number {
     if (!this.data || this.data.top_equipment.length === 0) return 0;
-    const max = Math.max(...this.data.top_equipment.map((i: any) => i.total));
+    const max = Math.max(...this.data.top_equipment.map((i) => i.total));
     return max > 0 ? (value / max) * 100 : 0;
   }
 }

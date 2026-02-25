@@ -303,9 +303,9 @@ export class ProjectListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.status = filters['status'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.status = (filters['status'] as string) || '';
     this.loadProjects();
   }
 

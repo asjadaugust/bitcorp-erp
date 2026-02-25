@@ -24,7 +24,7 @@ export class ProviderService {
   /**
    * Map API response (Spanish snake_case) to frontend model (English camelCase)
    */
-  private mapApiToProvider(apiData: any): Provider {
+  private mapApiToProvider(apiData: Record<string, unknown>): Provider {
     return {
       id: apiData.id,
       legacy_id: apiData.legacy_id,
@@ -41,7 +41,7 @@ export class ProviderService {
     };
   }
 
-  getAll(filters: any = {}): Observable<Provider[]> {
+  getAll(filters: Record<string, string | number | undefined> = {}): Observable<Provider[]> {
     let params = new HttpParams();
     if (filters.search) params = params.set('search', filters.search);
     if (filters.status) params = params.set('status', filters.status);
@@ -58,7 +58,7 @@ export class ProviderService {
       params = params.set('page', filters.page.toString());
     }
 
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         // Handle paginated response format: { success: true, data: [], pagination: {...} }
         const providers = response.data || response;
@@ -68,13 +68,13 @@ export class ProviderService {
           return [];
         }
 
-        return providers.map((p: any) => this.mapApiToProvider(p));
+        return providers.map((p: Record<string, unknown>) => this.mapApiToProvider(p));
       })
     );
   }
 
   getById(id: number | string): Observable<Provider> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(
       map((response) => {
         // Handle wrapped response format: { success: true, data: {...} }
         const provider = response.data || response;
@@ -95,7 +95,7 @@ export class ProviderService {
       correo_electronico: provider.correo_electronico,
       is_active: provider.is_active !== undefined ? provider.is_active : true,
     };
-    return this.http.post<any>(this.apiUrl, payload).pipe(
+    return this.http.post<Record<string, unknown>>(this.apiUrl, payload).pipe(
       map((response) => {
         // Handle wrapped response format: { success: true, data: {...} }
         const provider = response.data || response;
@@ -107,7 +107,7 @@ export class ProviderService {
   update(id: number | string, provider: Partial<Provider>): Observable<Provider> {
     // Send Spanish snake_case to backend
     // Use !== undefined so empty strings can clear fields
-    const payload: any = {};
+    const payload: Record<string, unknown> = {};
     if (provider.ruc !== undefined) payload.ruc = provider.ruc;
     if (provider.razon_social !== undefined) payload.razon_social = provider.razon_social;
     if (provider.nombre_comercial !== undefined)
@@ -119,7 +119,7 @@ export class ProviderService {
       payload.correo_electronico = provider.correo_electronico;
     if (provider.is_active !== undefined) payload.is_active = provider.is_active;
 
-    return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
+    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, payload).pipe(
       map((response) => {
         // Handle wrapped response format: { success: true, data: {...} }
         const provider = response.data || response;
@@ -132,21 +132,21 @@ export class ProviderService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  getAuditLogs(id: number | string): Observable<any[]> {
+  getAuditLogs(id: number | string): Observable<Record<string, unknown>[]> {
     return this.http
-      .get<any>(`${this.apiUrl}/${id}/logs`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}/logs`)
       .pipe(map((response) => response.data || response));
   }
 
-  lookupRuc(ruc: string): Observable<any> {
+  lookupRuc(ruc: string): Observable<unknown> {
     return this.http
-      .get<any>(`${this.apiUrl}/ruc/${ruc}/lookup`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/ruc/${ruc}/lookup`)
       .pipe(map((response) => response.data || response));
   }
 
   getDocuments(providerId: number | string): Observable<ProviderDocument[]> {
     return this.http
-      .get<any>(`${this.apiUrl}/${providerId}/documents`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/${providerId}/documents`)
       .pipe(map((response) => response.data || response));
   }
 
@@ -155,7 +155,7 @@ export class ProviderService {
     document: Partial<ProviderDocument>
   ): Observable<ProviderDocument> {
     return this.http
-      .post<any>(`${this.apiUrl}/${providerId}/documents`, document)
+      .post<Record<string, unknown>>(`${this.apiUrl}/${providerId}/documents`, document)
       .pipe(map((response) => response.data || response));
   }
 
@@ -164,7 +164,7 @@ export class ProviderService {
     document: Partial<ProviderDocument>
   ): Observable<ProviderDocument> {
     return this.http
-      .put<any>(`${this.apiUrl}/documents/${id}`, document)
+      .put<Record<string, unknown>>(`${this.apiUrl}/documents/${id}`, document)
       .pipe(map((response) => response.data || response));
   }
 
@@ -185,7 +185,7 @@ export class ProviderService {
     formData.append('file', file);
 
     return this.http
-      .post<any>(`${this.apiUrl}/documents/upload`, formData)
+      .post<Record<string, unknown>>(`${this.apiUrl}/documents/upload`, formData)
       .pipe(map((response) => response.data || response));
   }
 }

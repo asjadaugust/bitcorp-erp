@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
 import { EquipmentService } from '../../../core/services/equipment.service';
+import { Equipment } from '../../../core/models/equipment.model';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import {
   DropdownComponent,
@@ -279,7 +280,7 @@ export class MaintenanceScheduleFormComponent implements OnInit {
   isEditMode = false;
   scheduleId: string | null = null;
   loading = false;
-  equipmentList: any[] = [];
+  equipmentList: Equipment[] = [];
   successMessage = '';
   errorMessage = '';
 
@@ -329,15 +330,15 @@ export class MaintenanceScheduleFormComponent implements OnInit {
 
   loadEquipment() {
     this.equipmentService.getAll().subscribe({
-      next: (res: any) => {
+      next: (res: unknown) => {
         // Handle standard array response or wrapped response
-        this.equipmentList = Array.isArray(res) ? res : res?.data || [];
+        this.equipmentList = Array.isArray(res) ? res : (res as Record<string, unknown>)?.data as Equipment[] || [];
         this.equipmentOptions = this.equipmentList.map((eq) => ({
           label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
           value: eq.id,
         }));
       },
-      error: (err: any) => console.error('Error cargando equipos:', err),
+      error: (err: unknown) => console.error('Error cargando equipos:', err),
     });
   }
 
@@ -357,8 +358,7 @@ export class MaintenanceScheduleFormComponent implements OnInit {
         });
         this.loading = false;
       },
-      error: (err: any) => {
-        console.error('Error cargando programación:', err);
+      error: (_err: unknown) => {
         this.errorMessage = 'Error al cargar la programación';
         this.loading = false;
       },
@@ -388,9 +388,10 @@ export class MaintenanceScheduleFormComponent implements OnInit {
           : 'Programación creada exitosamente';
         setTimeout(() => this.router.navigate(['/equipment/maintenance/schedule']), 1500);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
+        const errorObj = err as Record<string, Record<string, string>>;
         this.errorMessage =
-          err.error?.error || err.error?.message || 'Error al guardar la programación';
+          errorObj.error?.error || errorObj.error?.message || 'Error al guardar la programación';
         this.loading = false;
       },
     });

@@ -691,7 +691,7 @@ export class DailyReportListEnhancedComponent implements OnInit {
     this.loadReports();
   }
 
-  getInitials(operator: any): string {
+  getInitials(operator: Record<string, string> | null): string {
     if (!operator) return '??';
     const first = operator.first_name?.charAt(0) || '';
     const last = operator.last_name?.charAt(0) || '';
@@ -731,7 +731,7 @@ export class DailyReportListEnhancedComponent implements OnInit {
       return;
     }
 
-    const exportData = this.reports.map((report: any) => {
+    const exportData = this.reports.map((report: DailyReport) => {
       const hoursDiff =
         report.horometro_final && report.horometro_inicial
           ? report.horometro_final - report.horometro_inicial

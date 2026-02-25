@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -11,15 +11,14 @@ import { environment } from '../../../environments/environment';
 })
 export class ProjectService {
   private apiUrl = `${environment.apiUrl}/projects`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   /**
    * Map backend DTO (Spanish snake_case) to frontend model (Spanish camelCase)
    * Backend returns: codigo, nombre, descripcion, ubicacion, fecha_inicio, fecha_fin, estado, presupuesto, cliente
    * Frontend expects: codigo, nombre, descripcion, ubicacion, fechaInicio, fechaFin, estado, presupuesto, cliente
    */
-  private mapApiToProject(apiProject: any): Project {
+  private mapApiToProject(apiProject: Record<string, unknown>): Project {
     return {
       id: apiProject.id,
       codigo: apiProject.codigo || apiProject.project_code || apiProject.code || '',
@@ -38,7 +37,7 @@ export class ProjectService {
     };
   }
 
-  getAll(filters?: any): Observable<Project[]> {
+  getAll(filters?: Record<string, string | number | undefined>): Observable<Project[]> {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach((key) => {
@@ -49,7 +48,7 @@ export class ProjectService {
     }
     // Interceptor does NOT unwrap paginated responses {success, data, pagination}
     // So we need to extract data ourselves
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         // Handle paginated response
         const dataArray = response?.data || response;
@@ -64,7 +63,7 @@ export class ProjectService {
   getById(id: string): Observable<Project> {
     // Interceptor already unwraps {success, data} -> data
     return this.http
-      .get<any>(`${this.apiUrl}/${id}`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
       .pipe(map((data) => this.mapApiToProject(data)));
   }
 
@@ -83,18 +82,18 @@ export class ProjectService {
   ): Observable<Project> {
     // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
     const apiData = {
-      codigo: (project as any).code || project.codigo,
-      nombre: (project as any).name || project.nombre,
-      descripcion: (project as any).description || project.descripcion,
-      ubicacion: (project as any).location || project.ubicacion,
-      fecha_inicio: (project as any).startDate || project.fechaInicio,
-      fecha_fin: (project as any).endDate || project.fechaFin,
-      estado: (project as any).status || project.estado,
-      presupuesto: (project as any).budget || project.presupuesto,
-      cliente: (project as any).client || project.cliente,
+      codigo: (project as Record<string, unknown>).code as string || project.codigo,
+      nombre: (project as Record<string, unknown>).name as string || project.nombre,
+      descripcion: (project as Record<string, unknown>).description as string || project.descripcion,
+      ubicacion: (project as Record<string, unknown>).location as string || project.ubicacion,
+      fecha_inicio: (project as Record<string, unknown>).startDate as string || project.fechaInicio,
+      fecha_fin: (project as Record<string, unknown>).endDate as string || project.fechaFin,
+      estado: (project as Record<string, unknown>).status as string || project.estado,
+      presupuesto: (project as Record<string, unknown>).budget as number || project.presupuesto,
+      cliente: (project as Record<string, unknown>).client as string || project.cliente,
     };
     return this.http
-      .post<any>(this.apiUrl, apiData)
+      .post<Record<string, unknown>>(this.apiUrl, apiData)
       .pipe(map((data) => this.mapApiToProject(data)));
   }
 
@@ -113,17 +112,17 @@ export class ProjectService {
     }
   ): Observable<Project> {
     // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
-    const apiData: any = {};
+    const apiData: Record<string, unknown> = {};
 
-    const code = (project as any).code || project.codigo;
-    const name = (project as any).name || project.nombre;
-    const description = (project as any).description || project.descripcion;
-    const location = (project as any).location || project.ubicacion;
-    const startDate = (project as any).startDate || project.fechaInicio;
-    const endDate = (project as any).endDate || project.fechaFin;
-    const status = (project as any).status || project.estado;
-    const budget = (project as any).budget || project.presupuesto;
-    const client = (project as any).client || project.cliente;
+    const code = (project as Record<string, unknown>).code as string || project.codigo;
+    const name = (project as Record<string, unknown>).name as string || project.nombre;
+    const description = (project as Record<string, unknown>).description as string || project.descripcion;
+    const location = (project as Record<string, unknown>).location as string || project.ubicacion;
+    const startDate = (project as Record<string, unknown>).startDate as string || project.fechaInicio;
+    const endDate = (project as Record<string, unknown>).endDate as string || project.fechaFin;
+    const status = (project as Record<string, unknown>).status as string || project.estado;
+    const budget = (project as Record<string, unknown>).budget as number || project.presupuesto;
+    const client = (project as Record<string, unknown>).client as string || project.cliente;
 
     // Use !== undefined so empty strings / 0 can clear fields
     if (code !== undefined) apiData.codigo = code;
@@ -137,7 +136,7 @@ export class ProjectService {
     if (client !== undefined) apiData.cliente = client;
 
     return this.http
-      .put<any>(`${this.apiUrl}/${id}`, apiData)
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, apiData)
       .pipe(map((data) => this.mapApiToProject(data)));
   }
 
@@ -151,7 +150,7 @@ export class ProjectService {
     if (filters?.endDate) params = params.set('endDate', filters.endDate);
 
     return this.http
-      .get<any>(`${this.apiUrl}/stats`, { params })
+      .get<Record<string, unknown>>(`${this.apiUrl}/stats`, { params })
       .pipe(map((response) => response?.data || response));
   }
 }

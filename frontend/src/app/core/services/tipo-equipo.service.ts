@@ -44,16 +44,16 @@ export class TipoEquipoService {
   private apiUrl = `${environment.apiUrl}/tipos-equipo`;
 
   listar(): Observable<TipoEquipo[]> {
-    return this.http.get<any>(this.apiUrl).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(this.apiUrl).pipe(map((r) => (r['data'] ?? r) as TipoEquipo[]));
   }
 
   listarAgrupados(): Observable<CategoriaPrdGrupo[]> {
-    return this.http.get<any>(`${this.apiUrl}/agrupados`).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/agrupados`).pipe(map((r) => (r['data'] ?? r) as CategoriaPrdGrupo[]));
   }
 
   listarPorCategoria(categoriaPrd: CategoriaPrd): Observable<TipoEquipo[]> {
     return this.http
-      .get<any>(`${this.apiUrl}/categoria/${categoriaPrd}`)
-      .pipe(map((r) => r.data ?? r));
+      .get<Record<string, unknown>>(`${this.apiUrl}/categoria/${categoriaPrd}`)
+      .pipe(map((r) => (r['data'] ?? r) as TipoEquipo[]));
   }
 }

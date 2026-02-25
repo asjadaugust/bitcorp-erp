@@ -64,7 +64,7 @@ import {
       <div class="filters-card">
         <div class="filters-grid">
           <div class="filter-group">
-            <label>Estado</label>
+            <span class="label">Estado</span>
             <app-dropdown
               [(ngModel)]="filters.estado"
               [options]="statusOptions"
@@ -73,7 +73,7 @@ import {
             ></app-dropdown>
           </div>
           <div class="filter-group">
-            <label>Fecha Desde</label>
+            <span class="label">Fecha Desde</span>
             <input
               type="date"
               [(ngModel)]="filters.fechaDesde"
@@ -82,7 +82,7 @@ import {
             />
           </div>
           <div class="filter-group">
-            <label>Fecha Hasta</label>
+            <span class="label">Fecha Hasta</span>
             <input
               type="date"
               [(ngModel)]="filters.fechaHasta"
@@ -489,7 +489,7 @@ export class ScheduledTaskListComponent implements OnInit {
     { label: 'Planillas', route: '/operaciones/timesheets', icon: 'fa-clipboard-user' },
   ];
 
-  filters: { estado: string; fechaDesde: string; fechaHasta: string; [key: string]: string } = {
+  filters: { estado: string; fechaDesde: string; fechaHasta: string;[key: string]: string } = {
     estado: '',
     fechaDesde: '',
     fechaHasta: '',
@@ -511,12 +511,12 @@ export class ScheduledTaskListComponent implements OnInit {
     this.error = null;
 
     this.taskService.getAll(this.filters).subscribe({
-      next: (res: any) => {
+      next: (res: unknown) => {
         // Handle both wrapped and unwrapped responses
-        this.tasks = Array.isArray(res) ? res : res.data || res || [];
+        this.tasks = Array.isArray(res) ? res : (res as Record<string, unknown>).data as ScheduledTask[] || (res as ScheduledTask[]) || [];
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('Error loading tasks:', err);
         this.error = 'Error al cargar tareas';
         this.loading = false;
@@ -536,7 +536,7 @@ export class ScheduledTaskListComponent implements OnInit {
     if (confirm('¿Estás seguro de eliminar esta tarea?')) {
       this.taskService.delete(id).subscribe({
         next: () => this.loadTasks(),
-        error: (err: any) => alert('Error al eliminar: ' + err.message),
+        error: (err: unknown) => alert('Error al eliminar: ' + (err as Error).message),
       });
     }
   }

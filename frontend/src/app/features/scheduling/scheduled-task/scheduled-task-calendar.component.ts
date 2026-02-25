@@ -80,6 +80,9 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
               [class.other-month]="!day.isCurrentMonth"
               [class.is-today]="day.isToday"
               (click)="selectDay(day)"
+              (keydown.enter)="selectDay(day)"
+              tabindex="0"
+              role="gridcell"
             >
               <div class="day-slot-header">
                 <span class="day-num">{{ day.date.getDate() }}</span>
@@ -99,6 +102,9 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
                   class="task-item-pill"
                   [class]="'priority-' + task.prioridad"
                   (click)="editTask(task.id, $event)"
+                  (keydown.enter)="editTask(task.id, $event)"
+                  tabindex="0"
+                  role="button"
                   [title]="task.titulo || task.descripcion"
                 >
                   <span class="task-pill-dot"></span>
@@ -427,7 +433,7 @@ export class ScheduledTaskCalendarComponent implements OnInit {
       next: (tasks) => {
         this.tasks = tasks;
       },
-      error: (err: any) => console.error('Error loading tasks:', err),
+      error: (err: unknown) => console.error('Error loading tasks:', err),
     });
   }
 
@@ -475,7 +481,7 @@ export class ScheduledTaskCalendarComponent implements OnInit {
     this.router.navigate(['/operaciones/scheduling/tasks', id, 'edit']);
   }
 
-  selectDay(day: any) {
+  selectDay(_day: { date: Date; isCurrentMonth: boolean; isToday: boolean }) {
     // Optional: Open day view or modal
   }
 

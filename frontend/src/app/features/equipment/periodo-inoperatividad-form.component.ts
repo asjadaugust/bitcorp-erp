@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { PeriodoInoperatividadService } from '../../core/services/periodo-inoperatividad.service';
-import { EquipmentService } from '../../core/services/equipment.service';
-import { ContractService } from '../../core/services/contract.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 
 @Component({
@@ -31,7 +29,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
         <div class="form-body">
           <!-- Equipo ID -->
           <div class="form-group">
-            <label>Equipo ID *</label>
+            <span class="label">Equipo ID *</span>
             <input
               type="number"
               class="form-control"
@@ -43,7 +41,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
 
           <!-- Contrato -->
           <div class="form-group">
-            <label>Contrato (opcional)</label>
+            <span class="label">Contrato (opcional)</span>
             <input
               type="number"
               class="form-control"
@@ -54,7 +52,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
 
           <!-- Fecha inicio -->
           <div class="form-group">
-            <label>Fecha de inicio de inoperatividad *</label>
+            <span class="label">Fecha de inicio de inoperatividad *</span>
             <input type="date" class="form-control" [(ngModel)]="form.fecha_inicio" />
             @if (diasActuales > 0) {
               <span class="field-hint" [class.hint-danger]="diasActuales >= form.dias_plazo">
@@ -69,7 +67,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
 
           <!-- Motivo -->
           <div class="form-group">
-            <label>Motivo / Descripción del desperfecto *</label>
+            <span class="label">Motivo / Descripción del desperfecto *</span>
             <textarea
               class="form-control"
               rows="4"
@@ -80,7 +78,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
 
           <!-- Días plazo -->
           <div class="form-group">
-            <label>Plazo de reparación (días)</label>
+            <span class="label">Plazo de reparación (días)</span>
             <input
               type="number"
               class="form-control"

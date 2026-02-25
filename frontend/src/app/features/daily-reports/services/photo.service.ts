@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, from } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface PhotoUploadData {
@@ -28,10 +28,9 @@ export interface ReportPhoto {
 })
 export class PhotoService {
   private apiUrl = `${environment.apiUrl}/reports`;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
-
-  uploadPhoto(data: PhotoUploadData): Observable<any> {
+  uploadPhoto(data: PhotoUploadData): Observable<Record<string, unknown>> {
     const formData = new FormData();
     formData.append('photo', data.file);
 
@@ -58,7 +57,7 @@ export class PhotoService {
     return this.http.post(`${this.apiUrl}/${data.reportId}/photos`, formData);
   }
 
-  deletePhoto(reportId: string, photoId: string): Observable<any> {
+  deletePhoto(reportId: string, photoId: string): Observable<Record<string, unknown>> {
     return this.http.delete(`${this.apiUrl}/${reportId}/photos/${photoId}`);
   }
 
@@ -67,7 +66,7 @@ export class PhotoService {
   }
 
   capturePhotoWithGPS(file: File): Promise<PhotoUploadData> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -106,11 +105,11 @@ export class PhotoService {
     });
   }
 
-  compressImage(file: File, maxWidth: number = 1920, quality: number = 0.8): Promise<File> {
+  compressImage(file: File, maxWidth = 1920, quality = 0.8): Promise<File> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      reader.onload = (e: any) => {
+      reader.onload = (e: ProgressEvent<FileReader>) => {
         const img = new Image();
 
         img.onload = () => {
@@ -147,7 +146,7 @@ export class PhotoService {
         };
 
         img.onerror = reject;
-        img.src = e.target.result;
+        img.src = e.target?.result as string;
       };
 
       reader.onerror = reject;

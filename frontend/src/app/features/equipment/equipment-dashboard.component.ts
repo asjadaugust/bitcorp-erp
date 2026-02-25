@@ -799,12 +799,12 @@ export class EquipmentDashboardComponent implements OnInit {
   loadEquipmentStats(): void {
     this.equipmentService.getAll({ limit: '200' }).subscribe({
       next: (response) => {
-        const equipos = Array.isArray(response) ? response : (response as any).data || [];
+        const equipos = Array.isArray(response) ? response : ((response as Record<string, unknown>).data as Record<string, unknown>[]) || [];
         const total = equipos.length;
-        const disponibles = equipos.filter((e: any) => e.estado === 'DISPONIBLE').length;
-        const enUso = equipos.filter((e: any) => e.estado === 'EN_USO').length;
+        const disponibles = equipos.filter((e: Record<string, unknown>) => e.estado === 'DISPONIBLE').length;
+        const enUso = equipos.filter((e: Record<string, unknown>) => e.estado === 'EN_USO').length;
         const propios = equipos.filter(
-          (e: any) => e.es_propio || e.tipo_proveedor === 'PROPIO'
+          (e: Record<string, unknown>) => e.es_propio || e.tipo_proveedor === 'PROPIO'
         ).length;
 
         this.summaryStats = [

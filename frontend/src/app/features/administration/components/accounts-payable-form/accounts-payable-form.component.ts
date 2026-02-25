@@ -4,7 +4,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdministrationService, Provider } from '../../services/administration.service';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
-import { FormErrorHandlerService } from '../../../../core/services/form-error-handler.service';
+import {
+  FormErrorHandlerService,
+  ValidationError,
+} from '../../../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import {
@@ -187,7 +190,7 @@ export class AccountsPayableFormComponent implements OnInit {
   loading = false;
   isEditMode = false;
   recordId?: number;
-  validationErrors: any[] = [];
+  validationErrors: ValidationError[] = [];
   errorMessage: string | null = null;
 
   providerOptions: DropdownOption[] = [];

@@ -10,7 +10,7 @@ export class EquipmentService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/equipment`;
 
-  getAll(filters?: any): Observable<EquipmentListResponse> {
+  getAll(filters?: Record<string, string | number | undefined>): Observable<EquipmentListResponse> {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach((key) => {
@@ -51,8 +51,8 @@ export class EquipmentService {
     return this.http.get<Equipment[]>(`${this.apiUrl}/available`);
   }
 
-  getStatistics(): Observable<any> {
+  getStatistics(): Observable<unknown> {
     // Interceptor already unwraps { success: true, data: stats } to stats
-    return this.http.get<any>(`${this.apiUrl}/statistics`);
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/statistics`);
   }
 }

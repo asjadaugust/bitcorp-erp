@@ -1,4 +1,4 @@
-import { Component, ContentChildren, QueryList, TemplateRef, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -52,4 +52,4 @@ import { CommonModule } from '@angular/common';
     `,
   ],
 })
-export class ActionsContainerComponent {}
+export class ActionsContainerComponent { }

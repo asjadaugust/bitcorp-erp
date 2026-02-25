@@ -68,11 +68,11 @@ export class PeriodoInoperatividadService {
   }
 
   obtener(id: number): Observable<PeriodoInoperatividad> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
   }
 
   getResumen(equipoId: number): Observable<PeriodoResumen> {
-    return this.http.get<any>(`${this.apiUrl}/resumen/${equipoId}`).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/resumen/${equipoId}`).pipe(map((r) => r.data ?? r));
   }
 
   crear(dto: {
@@ -82,20 +82,20 @@ export class PeriodoInoperatividadService {
     motivo: string;
     dias_plazo?: number;
   }): Observable<PeriodoInoperatividad> {
-    return this.http.post<any>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
   }
 
   resolver(
     id: number,
     dto: { fecha_fin: string; observaciones_penalidad?: string }
   ): Observable<PeriodoInoperatividad> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/resolver`, dto).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/resolver`, dto).pipe(map((r) => r.data ?? r));
   }
 
   aplicarPenalidad(
     id: number,
     dto: { monto_penalidad: number; observaciones_penalidad?: string }
   ): Observable<PeriodoInoperatividad> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/penalidad`, dto).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/penalidad`, dto).pipe(map((r) => r.data ?? r));
   }
 }

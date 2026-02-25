@@ -75,19 +75,19 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <h2>Datos del Vale</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Código</label>
+              <span class="label">Código</span>
               <p class="mono-value" data-testid="vale-codigo">{{ vale.codigo }}</p>
             </div>
             <div class="info-item">
-              <label>Número de Vale</label>
+              <span class="label">Número de Vale</span>
               <p data-testid="vale-numero">{{ vale.numero_vale }}</p>
             </div>
             <div class="info-item">
-              <label>Fecha</label>
+              <span class="label">Fecha</span>
               <p data-testid="vale-fecha">{{ vale.fecha | date: 'dd/MM/yyyy' }}</p>
             </div>
             <div class="info-item">
-              <label>Tipo de Combustible</label>
+              <span class="label">Tipo de Combustible</span>
               <p>
                 <span
                   class="fuel-badge fuel-{{ vale.tipo_combustible | lowercase }}"
@@ -105,11 +105,11 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <h2>Consumo y Costos</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Cantidad (galones)</label>
+              <span class="label">Cantidad (galones)</span>
               <p data-testid="vale-cantidad">{{ vale.cantidad_galones | number: '1.2-2' }} gal</p>
             </div>
             <div class="info-item">
-              <label>Precio Unitario</label>
+              <span class="label">Precio Unitario</span>
               <p data-testid="vale-precio">
                 <span *ngIf="vale.precio_unitario"
                   >S/ {{ vale.precio_unitario | number: '1.2-2' }}</span
@@ -118,14 +118,14 @@ import { ConfirmService } from '../../core/services/confirm.service';
               </p>
             </div>
             <div class="info-item highlight-total">
-              <label>Monto Total</label>
+              <span class="label">Monto Total</span>
               <p class="value-large" data-testid="vale-monto-total">
                 <span *ngIf="vale.monto_total">S/ {{ vale.monto_total | number: '1.2-2' }}</span>
                 <span *ngIf="!vale.monto_total" class="text-muted">—</span>
               </p>
             </div>
             <div class="info-item" *ngIf="vale.proveedor">
-              <label>Proveedor / Grifo</label>
+              <span class="label">Proveedor / Grifo</span>
               <p data-testid="vale-proveedor">{{ vale.proveedor }}</p>
             </div>
           </div>
@@ -139,7 +139,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <h2>Referencias</h2>
           <div class="info-grid">
             <div class="info-item" *ngIf="vale.equipo_id">
-              <label>Equipo</label>
+              <span class="label">Equipo</span>
               <p>
                 <a
                   [routerLink]="['/equipment', vale.equipo_id]"
@@ -155,7 +155,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
               </p>
             </div>
             <div class="info-item" *ngIf="vale.parte_diario_id">
-              <label>Parte Diario</label>
+              <span class="label">Parte Diario</span>
               <p>
                 <a
                   [routerLink]="['/equipment/daily-reports', vale.parte_diario_id]"
@@ -171,7 +171,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
               </p>
             </div>
             <div class="info-item" *ngIf="vale.proyecto_id">
-              <label>Proyecto</label>
+              <span class="label">Proyecto</span>
               <p>
                 <a
                   [routerLink]="['/projects', vale.proyecto_id]"

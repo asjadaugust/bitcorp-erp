@@ -322,10 +322,10 @@ export class MovementListComponent implements OnInit {
     ];
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.type = filters['type'] || '';
-    this.filters.startDate = filters['startDate'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.type = (filters['type'] as string) || '';
+    this.filters.startDate = (filters['startDate'] as string) || '';
     this.applyFilters();
   }
 

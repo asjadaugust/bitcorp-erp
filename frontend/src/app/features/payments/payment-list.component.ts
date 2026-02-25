@@ -38,7 +38,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         <div class="card filters-card">
           <div class="filters-grid">
             <div class="filter-item">
-              <label>Estado</label>
+              <span class="label">Estado</span>
               <app-dropdown
                 [(ngModel)]="filters.estado"
                 [options]="statusOptions"
@@ -48,7 +48,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
 
             <div class="filter-item">
-              <label>Método de Pago</label>
+              <span class="label">Método de Pago</span>
               <app-dropdown
                 [(ngModel)]="filters.metodo_pago"
                 [options]="paymentMethodOptions"
@@ -58,7 +58,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
 
             <div class="filter-item">
-              <label>Conciliado</label>
+              <span class="label">Conciliado</span>
               <app-dropdown
                 [(ngModel)]="filters.conciliado"
                 [options]="reconciledOptions"
@@ -68,7 +68,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
 
             <div class="filter-item">
-              <label>Fecha Desde</label>
+              <span class="label">Fecha Desde</span>
               <input
                 type="date"
                 [(ngModel)]="filters.fecha_desde"
@@ -78,7 +78,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
 
             <div class="filter-item">
-              <label>Fecha Hasta</label>
+              <span class="label">Fecha Hasta</span>
               <input
                 type="date"
                 [(ngModel)]="filters.fecha_hasta"
@@ -88,7 +88,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
 
             <div class="filter-item">
-              <label>Moneda</label>
+              <span class="label">Moneda</span>
               <app-dropdown
                 [(ngModel)]="filters.moneda"
                 [options]="currencyDropdownOptions"
@@ -602,7 +602,7 @@ export class PaymentListComponent implements OnInit {
     });
   }
 
-  private formatDate(dateStr: any): string {
+  private formatDate(dateStr: string | Date | null | undefined): string {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('es-ES');

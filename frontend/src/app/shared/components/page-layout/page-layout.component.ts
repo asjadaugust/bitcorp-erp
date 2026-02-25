@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { animate, style, transition, trigger } from '@angular/animations';
 import { BackButtonComponent } from '../back-button/back-button.component';
+import { AeroTabsComponent } from '../aero-tabs/aero-tabs.component';
 
 export interface TabItem {
   label: string;
@@ -20,24 +20,7 @@ export interface Breadcrumb {
 @Component({
   selector: 'app-page-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, BackButtonComponent],
-  animations: [
-    trigger('tabItemAnim', [
-      transition(':enter', [
-        style({ width: 0, opacity: 0, paddingLeft: 0, paddingRight: 0, overflow: 'hidden' }),
-        animate(
-          '300ms ease-out',
-          style({ width: '*', opacity: 1, paddingLeft: '*', paddingRight: '*', overflow: 'hidden' })
-        ),
-      ]),
-      transition(':leave', [
-        animate(
-          '250ms ease-in',
-          style({ width: 0, opacity: 0, paddingLeft: 0, paddingRight: 0, overflow: 'hidden' })
-        ),
-      ]),
-    ]),
-  ],
+  imports: [CommonModule, RouterModule, BackButtonComponent, AeroTabsComponent],
   template: `
     <div class="page-container">
       <!-- Header -->
@@ -70,20 +53,7 @@ export interface Breadcrumb {
 
       <!-- Tab Navigation (Optional) -->
       <div class="nav-container" *ngIf="tabs && tabs.length > 0">
-        <nav class="tab-navigation">
-          <a
-            *ngFor="let tab of tabs"
-            [routerLink]="tab.route"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="tab.exact ? { exact: true } : { exact: false }"
-            class="tab-item"
-            [@tabItemAnim]
-            [@.disabled]="!tab.animate"
-          >
-            <i *ngIf="tab.icon" [class]="'fa-solid ' + tab.icon"></i>
-            <span>{{ tab.label }}</span>
-          </a>
-        </nav>
+        <app-aero-tabs [tabs]="tabs"></app-aero-tabs>
       </div>
 
       <!-- Content Area with Loading Overlay -->

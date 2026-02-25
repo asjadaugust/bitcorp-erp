@@ -488,10 +488,10 @@ export class DailyReportListPWAComponent implements OnInit {
   protected syncService = inject(SyncService);
   private offlineDB = inject(OfflineDBService);
 
-  reports = signal<any[]>([]);
+  reports = signal<DailyReport[]>([]);
   loading = signal(true);
   selectionMode = signal(false);
-  selectedReports = signal<any[]>([]);
+  selectedReports = signal<DailyReport[]>([]);
 
   filters = {
     startDate: '',
@@ -531,7 +531,7 @@ export class DailyReportListPWAComponent implements OnInit {
     try {
       // Load from offline DB first
       const offlineReports = await this.offlineDB.getAllDailyReports();
-      this.reports.set(offlineReports as any[]);
+      this.reports.set(offlineReports as DailyReport[]);
 
       // Try to fetch from server if online
       if (this.syncService.isOnline()) {
@@ -551,7 +551,7 @@ export class DailyReportListPWAComponent implements OnInit {
     }
   }
 
-  private mergeReports(serverReports: any[], offlineReports: any[]): any[] {
+  private mergeReports(serverReports: DailyReport[], offlineReports: DailyReport[]): DailyReport[] {
     // Prioritize server reports, add offline-only reports
     const merged = [...serverReports];
     const serverIds = new Set(serverReports.map((r) => r.id));
@@ -586,7 +586,7 @@ export class DailyReportListPWAComponent implements OnInit {
     this.selectedReports.set([]);
   }
 
-  toggleSelection(report: any): void {
+  toggleSelection(report: DailyReport): void {
     const current = this.selectedReports();
     const index = current.findIndex((r) => r.id === report.id);
 
@@ -597,16 +597,16 @@ export class DailyReportListPWAComponent implements OnInit {
     }
   }
 
-  isSelected(report: any): boolean {
+  isSelected(report: DailyReport): boolean {
     return this.selectedReports().some((r) => r.id === report.id);
   }
 
-  viewReport(report: any): void {
+  viewReport(report: DailyReport): void {
     // Navigate to detail view
     console.log('View report:', report);
   }
 
-  exportSinglePDF(report: any): void {
+  exportSinglePDF(report: DailyReport): void {
     window.open(`/api/v1/reports/${report.id}/pdf`, '_blank');
   }
 
@@ -649,7 +649,7 @@ export class DailyReportListPWAComponent implements OnInit {
     return icons[status] || 'fa-solid fa-file';
   }
 
-  getReportInfoItems(report: any): CardInfoItem[] {
+  getReportInfoItems(report: DailyReport): CardInfoItem[] {
     return [
       {
         icon: 'fa-solid fa-user-gear',

@@ -63,11 +63,11 @@ import {
             <h2>Equipo y Proveedor</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>Código</label>
+                <span class="label">Código</span>
                 <p class="mono-value">{{ orden?.codigo }}</p>
               </div>
               <div class="info-item">
-                <label>ID Proveedor</label>
+                <span class="label">ID Proveedor</span>
                 <p>
                   <a [routerLink]="['/providers', orden?.proveedor_id]" class="link-primary">
                     <i
@@ -79,7 +79,7 @@ import {
                 </p>
               </div>
               <div class="info-item" *ngIf="orden?.equipo_id">
-                <label>Equipo</label>
+                <span class="label">Equipo</span>
                 <p>
                   <a [routerLink]="['/equipment', orden?.equipo_id]" class="link-primary">
                     <i
@@ -91,7 +91,7 @@ import {
                 </p>
               </div>
               <div class="info-item" *ngIf="orden?.proyecto_id">
-                <label>Proyecto</label>
+                <span class="label">Proyecto</span>
                 <p>
                   <a [routerLink]="['/projects', orden?.proyecto_id]" class="link-primary">
                     <i
@@ -103,7 +103,7 @@ import {
                 </p>
               </div>
               <div class="info-item" *ngIf="orden?.solicitud_equipo_id">
-                <label>Solicitud Origen</label>
+                <span class="label">Solicitud Origen</span>
                 <p>
                   <a
                     [routerLink]="['/equipment/solicitudes', orden?.solicitud_equipo_id]"
@@ -114,7 +114,7 @@ import {
                 </p>
               </div>
               <div class="info-item span-full">
-                <label>Descripción del Equipo</label>
+                <span class="label">Descripción del Equipo</span>
                 <p>{{ orden?.descripcion_equipo }}</p>
               </div>
             </div>
@@ -124,15 +124,15 @@ import {
             <h2>Fechas</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>Fecha de Orden</label>
+                <span class="label">Fecha de Orden</span>
                 <p>{{ orden?.fecha_orden | date: 'dd/MM/yyyy' }}</p>
               </div>
               <div class="info-item" *ngIf="orden?.fecha_inicio_estimada">
-                <label>Inicio Estimado</label>
+                <span class="label">Inicio Estimado</span>
                 <p>{{ orden?.fecha_inicio_estimada | date: 'dd/MM/yyyy' }}</p>
               </div>
               <div class="info-item" *ngIf="orden?.fecha_fin_estimada">
-                <label>Fin Estimado</label>
+                <span class="label">Fin Estimado</span>
                 <p>{{ orden?.fecha_fin_estimada | date: 'dd/MM/yyyy' }}</p>
               </div>
             </div>
@@ -151,17 +151,17 @@ import {
             </div>
             <div class="info-grid">
               <div class="info-item" *ngIf="orden?.tipo_cambio">
-                <label>Tipo de Cambio</label>
+                <span class="label">Tipo de Cambio</span>
                 <p>S/ {{ orden?.tipo_cambio | number: '1.4-4' }}</p>
               </div>
               <div class="info-item" *ngIf="orden?.horas_incluidas">
-                <label>Horas Incluidas</label>
+                <span class="label">Horas Incluidas</span>
                 <p class="value-highlight mono-value">
                   {{ orden?.horas_incluidas }} <span class="unit">h</span>
                 </p>
               </div>
               <div class="info-item" *ngIf="orden?.penalidad_exceso">
-                <label>Penalidad por Hora Excedente</label>
+                <span class="label">Penalidad por Hora Excedente</span>
                 <p>{{ orden?.moneda }} {{ orden?.penalidad_exceso | number: '1.2-2' }} / h</p>
               </div>
             </div>
@@ -172,11 +172,11 @@ import {
               <h2>Notas y Condiciones</h2>
               <div class="info-grid">
                 <div class="info-item span-full" *ngIf="orden?.condiciones_especiales">
-                  <label>Condiciones Especiales</label>
+                  <span class="label">Condiciones Especiales</span>
                   <p class="text-italic">{{ orden?.condiciones_especiales }}</p>
                 </div>
                 <div class="info-item span-full" *ngIf="orden?.observaciones">
-                  <label>Observaciones</label>
+                  <span class="label">Observaciones</span>
                   <p class="text-italic">{{ orden?.observaciones }}</p>
                 </div>
               </div>

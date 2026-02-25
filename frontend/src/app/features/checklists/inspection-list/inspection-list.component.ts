@@ -432,11 +432,11 @@ export class InspectionListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.fechaDesde = filters['fechaDesde'] || '';
-    this.filters.fechaHasta = filters['fechaHasta'] || '';
-    this.filters.estado = filters['estado'] || '';
-    this.filters.resultadoGeneral = filters['resultadoGeneral'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.fechaDesde = (filters['fechaDesde'] as string) || '';
+    this.filters.fechaHasta = (filters['fechaHasta'] as string) || '';
+    this.filters.estado = (filters['estado'] as string) || '';
+    this.filters.resultadoGeneral = (filters['resultadoGeneral'] as string) || '';
     this.filters.page = 1; // Reset to first page on filter change
     this.loadInspections();
   }

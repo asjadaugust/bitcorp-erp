@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { DailyReportService } from '../../core/services/daily-report.service';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SyncService } from '../../core/services/sync.service';
@@ -363,7 +362,7 @@ import {
         <div class="drafts-section" *ngIf="draftReports().length > 0">
           <h3>📋 Borradores Guardados ({{ draftReports().length }})</h3>
           <div class="draft-list">
-            <div *ngFor="let draft of draftReports()" class="draft-item" (click)="loadDraft(draft)">
+            <div *ngFor="let draft of draftReports()" class="draft-item" (click)="loadDraft(draft)" (keydown.enter)="loadDraft(draft)" tabindex="0" role="button">
               <div class="draft-info">
                 <strong>{{ draft.fecha_parte }}</strong>
                 <span>{{ draft.location }}</span>
@@ -788,7 +787,7 @@ export class DailyReportFormPWAComponent implements OnInit {
   private offlineDB = inject(OfflineDBService);
   private http = inject(HttpClient);
 
-  report: any = {
+  report: OfflineDailyReport = {
     fecha_parte: new Date().toISOString().split('T')[0],
     trabajador_id: 0,
     equipo_id: 0,
@@ -922,7 +921,7 @@ export class DailyReportFormPWAComponent implements OnInit {
         formData.append('photos', file);
       });
 
-      const response: any = await this.http.post('/api/reports/photos', formData).toPromise();
+      const response = (await this.http.post('/api/reports/photos', formData).toPromise()) as { success?: boolean; data?: { url: string; filename: string; size: number }[] };
 
       if (response.success && response.data) {
         this.photos.set([...this.photos(), ...response.data]);
@@ -932,9 +931,10 @@ export class DailyReportFormPWAComponent implements OnInit {
         this.successMessage.set(`${response.data.length} foto(s) agregada(s)`);
         setTimeout(() => this.successMessage.set(''), 2000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error uploading photos:', error);
-      this.errorMessage.set(error.message || 'Error subiendo fotos');
+      const errMsg = error instanceof Error ? error.message : 'Error subiendo fotos';
+      this.errorMessage.set(errMsg);
     } finally {
       this.uploadingPhotos.set(false);
       input.value = '';
@@ -976,7 +976,7 @@ export class DailyReportFormPWAComponent implements OnInit {
       this.successMessage.set('Borrador guardado');
       await this.loadDrafts();
       setTimeout(() => this.successMessage.set(''), 2000);
-    } catch (error) {
+    } catch {
       this.errorMessage.set('Error guardando borrador');
     } finally {
       this.saving.set(false);
@@ -1004,7 +1004,7 @@ export class DailyReportFormPWAComponent implements OnInit {
       await this.syncService.saveReportOffline(sanitizedReport);
       this.successMessage.set('Reporte guardado. Se sincronizará automáticamente.');
       setTimeout(() => this.router.navigate(['/daily-reports']), 2000);
-    } catch (error) {
+    } catch {
       this.errorMessage.set('Error guardando reporte');
     } finally {
       this.saving.set(false);

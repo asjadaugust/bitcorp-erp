@@ -422,7 +422,7 @@ export class EquipmentEditComponent implements OnInit {
         this.equipment = data;
         this.loading = false;
       },
-      error: (error) => {
+      error: (_error) => {
         this.errorMessage = 'Failed to load equipment';
         this.loading = false;
         setTimeout(() => this.router.navigate(['/equipment']), 2000);

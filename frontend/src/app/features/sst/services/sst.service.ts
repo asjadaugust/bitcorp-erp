@@ -25,7 +25,7 @@ export class SstService {
   private apiUrl = `${environment.apiUrl}/sst`;
 
   getIncidents(): Observable<SafetyIncident[]> {
-    return this.http.get<any>(`${this.apiUrl}/incidents`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/incidents`).pipe(
       map((response) => {
         const dataArray = response?.data || response;
         if (Array.isArray(dataArray)) {
@@ -37,10 +37,10 @@ export class SstService {
   }
 
   getIncident(id: string): Observable<SafetyIncident> {
-    return this.http.get<any>(`${this.apiUrl}/incidents/${id}`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/incidents/${id}`).pipe(
       map((response) => {
         const data = response?.data || response;
-        return this.mapApiToIncident(data);
+        return this.mapApiToIncident(data as Record<string, unknown>);
       })
     );
   }
@@ -60,20 +60,20 @@ export class SstService {
   /**
    * Map API snake_case response to camelCase SafetyIncident model
    */
-  private mapApiToIncident(apiData: any): SafetyIncident {
+  private mapApiToIncident(apiData: Record<string, unknown>): SafetyIncident {
     return {
-      id: apiData.id?.toString() || apiData.legacy_id,
-      date: new Date(apiData.fecha_incidente || apiData.date || apiData.created_at),
-      description: apiData.descripcion || apiData.description || '',
-      severity: this.mapSeverity(apiData.severidad || apiData.severity),
-      location: apiData.ubicacion || apiData.location || '',
-      reportedBy: apiData.reportado_por
+      id: (apiData['id'] as number | undefined)?.toString() || (apiData['legacy_id'] as string),
+      date: new Date(((apiData['fecha_incidente'] || apiData['date'] || apiData['created_at']) as string)),
+      description: (apiData['descripcion'] as string) || (apiData['description'] as string) || '',
+      severity: this.mapSeverity(((apiData['severidad'] || apiData['severity']) as string)),
+      location: (apiData['ubicacion'] as string) || (apiData['location'] as string) || '',
+      reportedBy: apiData['reportado_por']
         ? {
-            firstName: 'Usuario',
-            lastName: `#${apiData.reportado_por}`,
-          }
+          firstName: 'Usuario',
+          lastName: `#${apiData['reportado_por']}`,
+        }
         : undefined,
-      createdAt: new Date(apiData.created_at || apiData.createdAt),
+      createdAt: new Date(((apiData['created_at'] || apiData['createdAt']) as string)),
     };
   }
 

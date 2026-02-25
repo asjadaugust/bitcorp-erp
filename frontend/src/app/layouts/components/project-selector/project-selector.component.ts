@@ -11,12 +11,12 @@ import { Router } from '@angular/router';
   template: `
     <div class="project-selector">
       <div class="selector-container">
-        <label class="selector-label">
+        <span class="selector-label">
           <i class="fa-solid fa-layer-group"></i>
           <span>Entorno de Proyecto</span>
-        </label>
+        </span>
 
-        <div class="dropdown-wrapper" (click)="$event.stopPropagation()">
+        <div class="dropdown-wrapper" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
           <button
             type="button"
             class="toggle-btn"
@@ -62,6 +62,10 @@ import { Router } from '@angular/router';
                 class="option-item"
                 [class.active]="project.id === currentProject()?.id"
                 (click)="onProjectClick(project)"
+                (keydown.enter)="onProjectClick(project)"
+                tabindex="0"
+                role="option"
+                [attr.aria-selected]="project.id === currentProject()?.id"
               >
                 <div class="option-avatar" [style.background-color]="getProjectColor(project.id)">
                   {{ getInitials(project.name) }}

@@ -19,7 +19,7 @@ import {
     >
       <div class="module-grid">
         <!-- Personal Card -->
-        <div class="module-card" (click)="navigateTo('employees')">
+        <div class="module-card" (click)="navigateTo('employees')" (keydown.enter)="navigateTo('employees')" tabindex="0" role="button">
           <div class="card-icon">
             <i class="fa-solid fa-users"></i>
           </div>

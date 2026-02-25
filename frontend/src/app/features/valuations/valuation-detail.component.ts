@@ -106,11 +106,11 @@ import {
           <h2>Información General</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Período</label>
+              <span class="label">Período</span>
               <p>{{ valuation?.periodo }}</p>
             </div>
             <div class="info-item">
-              <label>Equipo</label>
+              <span class="label">Equipo</span>
               <p>
                 <a [routerLink]="['/equipment', valuation?.equipmentId]" class="link-primary">
                   {{ valuation?.codigo_equipo }}
@@ -118,7 +118,7 @@ import {
               </p>
             </div>
             <div class="info-item">
-              <label>Contrato</label>
+              <span class="label">Contrato</span>
               <p>
                 @if (valuation?.contractId) {
                   <a
@@ -133,15 +133,15 @@ import {
               </p>
             </div>
             <div class="info-item">
-              <label>Cliente</label>
+              <span class="label">Cliente</span>
               <p>{{ valuation?.cliente_nombre || '-' }}</p>
             </div>
             <div class="info-item">
-              <label>Proveedor</label>
+              <span class="label">Proveedor</span>
               <p>{{ valuation?.proveedor_nombre || '-' }}</p>
             </div>
             <div class="info-item">
-              <label>Tipo de Tarifa</label>
+              <span class="label">Tipo de Tarifa</span>
               <p>{{ valuation?.tipoTarifa || '-' }}</p>
             </div>
           </div>
@@ -162,7 +162,7 @@ import {
               </thead>
               <tbody>
                 <!-- Hours worked -->
-                @if (valuationSummary?.horas_trabajadas != null) {
+                @if (valuationSummary?.horas_trabajadas !== null) {
                   <tr class="row-header">
                     <td colspan="4"><strong>Horas Trabajadas</strong></td>
                   </tr>
@@ -177,7 +177,7 @@ import {
                 }
                 <!-- Stand-by / included hours -->
                 @if (
-                  valuationSummary?.horas_stand_by != null && valuationSummary!.horas_stand_by! > 0
+                  valuationSummary?.horas_stand_by !== null && valuationSummary!.horas_stand_by! > 0
                 ) {
                   <tr>
                     <td>Horas Stand By</td>
@@ -192,7 +192,7 @@ import {
                 }
                 <!-- Penalty -->
                 @if (
-                  valuationSummary?.penalidad_exceso != null &&
+                  valuationSummary?.penalidad_exceso !== null &&
                   valuationSummary!.penalidad_exceso! > 0
                 ) {
                   <tr>
@@ -205,7 +205,7 @@ import {
                   </tr>
                 }
                 <!-- Discounts -->
-                @if (valuationSummary?.descuentos != null && valuationSummary!.descuentos! > 0) {
+                @if (valuationSummary?.descuentos !== null && valuationSummary!.descuentos! > 0) {
                   <tr>
                     <td>Descuentos (Anexo B)</td>
                     <td class="text-right">-</td>
@@ -223,7 +223,7 @@ import {
                   </td>
                 </tr>
                 <!-- IGV -->
-                @if (valuationSummary?.igv != null) {
+                @if (valuationSummary?.igv !== null) {
                   <tr>
                     <td colspan="3">IGV (18%)</td>
                     <td class="text-right">{{ valuationSummary?.igv | currency: 'USD' }}</td>
@@ -247,40 +247,40 @@ import {
           <div class="info-grid-2col">
             <div class="info-column">
               <div class="info-item">
-                <label>Fecha Inicio</label>
+                <span class="label">Fecha Inicio</span>
                 <p>{{ valuation?.fechaInicio | date: 'dd/MM/yyyy' }}</p>
               </div>
               <div class="info-item">
-                <label>Fecha Fin</label>
+                <span class="label">Fecha Fin</span>
                 <p>{{ valuation?.fechaFin | date: 'dd/MM/yyyy' }}</p>
               </div>
               <div class="info-item">
-                <label>Días Trabajados</label>
+                <span class="label">Días Trabajados</span>
                 <p>{{ valuation?.diasTrabajados || '-' }}</p>
               </div>
               <div class="info-item">
-                <label>Horas Totales</label>
+                <span class="label">Horas Totales</span>
                 <p>{{ valuation?.horasTotales || '-' }}</p>
               </div>
             </div>
             <div class="info-column">
               <div class="info-item">
-                <label>Tarifa Base</label>
+                <span class="label">Tarifa Base</span>
                 <p class="highlight">{{ valuation?.tarifa | currency: 'USD' }}</p>
               </div>
               <div class="info-item">
-                <label>Monto Bruto</label>
+                <span class="label">Monto Bruto</span>
                 <p>{{ valuation?.montoBruto | currency: 'USD' }}</p>
               </div>
               <div class="info-item">
-                <label>Monto Neto</label>
+                <span class="label">Monto Neto</span>
                 <p class="highlight">{{ valuation?.montoNeto | currency: 'USD' }}</p>
               </div>
             </div>
           </div>
           @if (valuation?.observaciones) {
             <div class="observaciones-block">
-              <label>Observaciones</label>
+              <span class="label">Observaciones</span>
               <div class="observaciones-text">{{ valuation?.observaciones }}</div>
             </div>
           }
@@ -363,6 +363,8 @@ import {
                         <a
                           class="payment-link"
                           (click)="viewPayment(payment.id)"
+                          (keydown.enter)="viewPayment(payment.id)"
+                          tabindex="0"
                           style="cursor:pointer"
                         >
                           {{ payment.numero_pago || '#' + payment.id }}
@@ -689,8 +691,8 @@ import {
 
     <!-- Approve Modal -->
     @if (showApproveModal) {
-      <div class="modal" (click)="showApproveModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="showApproveModal = false" (keydown.enter)="showApproveModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h2>Confirmar Aprobación</h2>
             <button type="button" class="close" (click)="showApproveModal = false">
@@ -730,8 +732,8 @@ import {
 
     <!-- Reject Modal -->
     @if (showRejectModal) {
-      <div class="modal" (click)="showRejectModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="showRejectModal = false" (keydown.enter)="showRejectModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h2>Rechazar Valorización</h2>
             <button type="button" class="close" (click)="showRejectModal = false">
@@ -769,8 +771,8 @@ import {
 
     <!-- Mark as Paid Modal -->
     @if (showMarkPaidModal) {
-      <div class="modal" (click)="showMarkPaidModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="showMarkPaidModal = false" (keydown.enter)="showMarkPaidModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h2>Registrar Pago</h2>
             <button type="button" class="close" (click)="showMarkPaidModal = false">
@@ -779,11 +781,11 @@ import {
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label>Fecha de Pago <span class="required">*</span></label>
+              <span class="label">Fecha de Pago<span class="required">*</span></span>
               <input type="date" class="form-control" [(ngModel)]="paymentData.fecha_pago" />
             </div>
             <div class="form-group">
-              <label>Método de Pago <span class="required">*</span></label>
+              <span class="label">Método de Pago<span class="required">*</span></span>
               <app-dropdown
                 [options]="paymentMethodOptions"
                 [placeholder]="'Seleccionar método'"
@@ -791,7 +793,7 @@ import {
               ></app-dropdown>
             </div>
             <div class="form-group">
-              <label>Referencia / Número de Operación <span class="required">*</span></label>
+              <span class="label">Referencia / Número de Operación<span class="required">*</span></span>
               <input
                 type="text"
                 class="form-control"
@@ -819,8 +821,8 @@ import {
 
     <!-- Add Discount Event Modal -->
     @if (showAddDiscountModal) {
-      <div class="modal" (click)="showAddDiscountModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="showAddDiscountModal = false" (keydown.enter)="showAddDiscountModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h2>Agregar Evento de Descuento</h2>
             <button type="button" class="close" (click)="showAddDiscountModal = false">
@@ -829,11 +831,11 @@ import {
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label>Fecha <span class="required">*</span></label>
+              <span class="label">Fecha<span class="required">*</span></span>
               <input type="date" class="form-control" [(ngModel)]="newDiscountEvent.fecha" />
             </div>
             <div class="form-group">
-              <label>Tipo de Descuento <span class="required">*</span></label>
+              <span class="label">Tipo de Descuento<span class="required">*</span></span>
               <app-dropdown
                 [options]="discountTypeOptions"
                 [placeholder]="'Seleccionar tipo'"
@@ -843,7 +845,7 @@ import {
             </div>
             @if (currentSubtipoOptions.length > 0) {
               <div class="form-group">
-                <label>Subtipo <span class="required">*</span></label>
+                <span class="label">Subtipo<span class="required">*</span></span>
                 <app-dropdown
                   [options]="currentSubtipoOptions"
                   [placeholder]="'Seleccionar subtipo'"
@@ -864,7 +866,7 @@ import {
             }
             @if (showHorasHorometro) {
               <div class="form-group">
-                <label>Horas Horómetro (Mecánica) <span class="required">*</span></label>
+                <span class="label">Horas Horómetro (Mecánica)<span class="required">*</span></span>
                 <input
                   type="number"
                   class="form-control"
@@ -878,7 +880,7 @@ import {
             }
             @if (showHorasDescuento) {
               <div class="form-group">
-                <label>Horas de Paralización</label>
+                <span class="label">Horas de Paralización</span>
                 <input
                   type="number"
                   class="form-control"
@@ -905,7 +907,7 @@ import {
             }
             @if (!newDiscountEvent.subtipo) {
               <div class="form-group">
-                <label>Días de Descuento (manual)</label>
+                <span class="label">Días de Descuento (manual)</span>
                 <input
                   type="number"
                   class="form-control"
@@ -916,7 +918,7 @@ import {
               </div>
             }
             <div class="form-group">
-              <label>Descripción</label>
+              <span class="label">Descripción</span>
               <textarea
                 class="form-control"
                 rows="3"
@@ -944,8 +946,8 @@ import {
 
     <!-- Conformidad Modal -->
     @if (showConformidadModal) {
-      <div class="modal" (click)="showConformidadModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="showConformidadModal = false" (keydown.enter)="showConformidadModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h2>Registrar Conformidad del Proveedor</h2>
             <button type="button" class="close" (click)="showConformidadModal = false">
@@ -958,11 +960,11 @@ import {
               Registra la fecha en que el proveedor dio su conformidad a esta valorización.
             </p>
             <div class="form-group">
-              <label>Fecha de Conformidad <span class="required">*</span></label>
+              <span class="label">Fecha de Conformidad<span class="required">*</span></span>
               <input type="date" class="form-control" [(ngModel)]="conformidadData.fecha" />
             </div>
             <div class="form-group">
-              <label>Observaciones (opcional)</label>
+              <span class="label">Observaciones (opcional)</span>
               <textarea
                 class="form-control"
                 rows="3"
@@ -1765,13 +1767,13 @@ export class ValuationDetailComponent implements OnInit {
   // Payment-related properties
   payments: PaymentRecordList[] = [];
   paymentSummary: PaymentSummary | null = null;
-  paymentDocs: any[] = [];
+  paymentDocs: Record<string, unknown>[] = [];
   paymentCount = 0;
   loadingPayments = false;
 
   // Recalculate & discount events
   recalculating = false;
-  discountEvents: any[] = [];
+  discountEvents: Record<string, unknown>[] = [];
   showAddDiscountModal = false;
   newDiscountEvent: {
     fecha: string;
@@ -1782,14 +1784,14 @@ export class ValuationDetailComponent implements OnInit {
     horas_horometro_mecanica: number | null;
     descripcion: string;
   } = {
-    fecha: new Date().toISOString().split('T')[0],
-    tipo: '',
-    subtipo: '',
-    horas_descuento: 0,
-    dias_descuento: 0,
-    horas_horometro_mecanica: null,
-    descripcion: '',
-  };
+      fecha: new Date().toISOString().split('T')[0],
+      tipo: '',
+      subtipo: '',
+      horas_descuento: 0,
+      dias_descuento: 0,
+      horas_horometro_mecanica: null,
+      descripcion: '',
+    };
   discountTypeOptions: DropdownOption[] = [
     { label: 'Avería', value: 'AVERIA' },
     { label: 'Stand By', value: 'STAND_BY' },

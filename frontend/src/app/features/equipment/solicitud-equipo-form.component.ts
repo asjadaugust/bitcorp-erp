@@ -10,7 +10,6 @@ import {
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import {
   SolicitudEquipoService,
-  SolicitudEquipo,
 } from '../../core/services/solicitud-equipo.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
@@ -50,7 +49,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           </h3>
           <div class="section-grid">
             <div class="form-group">
-              <label class="required">Tipo de Equipo</label>
+              <span class="required">Tipo de Equipo</span>
               <input
                 type="text"
                 class="form-control"
@@ -63,19 +62,19 @@ import { ConfirmService } from '../../core/services/confirm.service';
             </div>
 
             <div class="form-group">
-              <label class="required">Cantidad</label>
+              <span class="required">Cantidad</span>
               <input type="number" class="form-control" formControlName="cantidad" min="1" />
               <div class="error-msg" *ngIf="hasError('cantidad')">Cantidad válida es requerida</div>
             </div>
 
             <div class="form-group">
-              <label class="required">Fecha Requerida</label>
+              <span class="required">Fecha Requerida</span>
               <input type="date" class="form-control" formControlName="fecha_requerida" />
               <div class="error-msg" *ngIf="hasError('fecha_requerida')">Fecha es requerida</div>
             </div>
 
             <div class="form-group">
-              <label>Prioridad</label>
+              <span class="label">Prioridad</span>
               <app-dropdown
                 formControlName="prioridad"
                 [options]="[
@@ -95,7 +94,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           </h3>
           <div class="section-grid">
             <div class="form-group full-width">
-              <label>Descripción Técnica</label>
+              <span class="label">Descripción Técnica</span>
               <textarea
                 class="form-control"
                 formControlName="descripcion"
@@ -105,7 +104,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
             </div>
 
             <div class="form-group full-width">
-              <label>Justificación Operativa</label>
+              <span class="label">Justificación Operativa</span>
               <textarea
                 class="form-control"
                 formControlName="justificacion"

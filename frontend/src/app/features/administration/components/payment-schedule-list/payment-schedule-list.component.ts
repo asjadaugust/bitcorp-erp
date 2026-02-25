@@ -196,7 +196,7 @@ export class PaymentScheduleListComponent implements OnInit {
   loading = false;
   schedules: PaymentSchedule[] = [];
   filteredSchedules: PaymentSchedule[] = [];
-  filters: Record<string, any> = { search: '', estado: '' };
+  filters: Record<string, string> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -261,9 +261,9 @@ export class PaymentScheduleListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters['search'] = filters['search'] || '';
-    this.filters['estado'] = filters['estado'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters['search'] = (filters['search'] as string) || '';
+    this.filters['estado'] = (filters['estado'] as string) || '';
     this.applyFilters();
   }
 
@@ -320,7 +320,7 @@ export class PaymentScheduleListComponent implements OnInit {
               this.loadSchedules();
               this.snackBar.open('Programación eliminada', 'Cerrar', { duration: 3000 });
             },
-            error: (err) => {
+            error: (_err) => {
               this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
             },
           });
@@ -343,8 +343,9 @@ export class PaymentScheduleListComponent implements OnInit {
               this.loadSchedules();
               this.snackBar.open('Programación aprobada', 'Cerrar', { duration: 3000 });
             },
-            error: (err: any) => {
-              const msg = err.error?.error || 'No se pudo aprobar';
+            error: (err: unknown) => {
+              const errObj = err as Record<string, Record<string, string>>;
+              const msg = errObj.error?.error || 'No se pudo aprobar';
               this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
             },
           });
@@ -367,8 +368,9 @@ export class PaymentScheduleListComponent implements OnInit {
               this.loadSchedules();
               this.snackBar.open('Programación procesada correctamente', 'Cerrar', { duration: 3000 });
             },
-            error: (err: any) => {
-              const msg = err.error?.error || 'No se pudo procesar';
+            error: (err: unknown) => {
+              const errObj = err as Record<string, Record<string, string>>;
+              const msg = errObj.error?.error || 'No se pudo procesar';
               this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
             },
           });
@@ -392,8 +394,9 @@ export class PaymentScheduleListComponent implements OnInit {
               this.loadSchedules();
               this.snackBar.open('Programación cancelada', 'Cerrar', { duration: 3000 });
             },
-            error: (err: any) => {
-              const msg = err.error?.error || 'No se pudo cancelar';
+            error: (err: unknown) => {
+              const errObj = err as Record<string, Record<string, string>>;
+              const msg = errObj.error?.error || 'No se pudo cancelar';
               this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
             },
           });

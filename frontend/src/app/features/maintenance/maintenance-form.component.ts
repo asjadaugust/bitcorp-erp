@@ -4,11 +4,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MaintenanceService } from '../../core/services/maintenance.service';
 import { EquipmentService } from '../../core/services/equipment.service';
-import { Equipment } from '../../core/models/equipment.model';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import {
   FormErrorHandlerService,
-  ValidationError,
 } from '../../core/services/form-error-handler.service';
 
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
@@ -271,8 +269,8 @@ export class MaintenanceFormComponent implements OnInit {
   isEditMode = false;
   loading = false;
   recordId: number | null = null;
-  equipmentList: any[] = [];
-  equipmentOptions: { label: string; value: any }[] = [];
+  equipmentList: Record<string, unknown>[] = [];
+  equipmentOptions: { label: string; value: string | number | null }[] = [];
   errorMessage = '';
 
   constructor() {
@@ -307,11 +305,12 @@ export class MaintenanceFormComponent implements OnInit {
 
   loadDependencies(): void {
     this.equipmentService.getAll().subscribe({
-      next: (response: any) => {
-        this.equipmentList = Array.isArray(response) ? response : response?.data || [];
+      next: (response: unknown) => {
+        const responseData = response as Record<string, unknown>;
+        this.equipmentList = Array.isArray(response) ? (response as Record<string, unknown>[]) : ((responseData?.['data'] as Record<string, unknown>[]) || []);
         this.equipmentOptions = this.equipmentList.map((eq) => ({
-          label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
-          value: eq.id,
+          label: `${eq['codigo_equipo']} - ${eq['marca']} ${eq['modelo']}`,
+          value: eq['id'] as number,
         }));
       },
       error: (err) => console.error('Error loading equipment', err),

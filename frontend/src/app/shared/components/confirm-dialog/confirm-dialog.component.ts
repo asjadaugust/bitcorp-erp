@@ -37,7 +37,7 @@ export interface ConfirmDialogData {
       (onClose)="onCancel()"
     >
       <div class="input-container" *ngIf="data.showInput">
-        <label class="input-label" *ngIf="data.inputLabel">{{ data.inputLabel }}</label>
+        <span class="input-label" *ngIf="data.inputLabel">{{ data.inputLabel }}</span>
         <textarea
           class="form-control"
           [(ngModel)]="inputValue"

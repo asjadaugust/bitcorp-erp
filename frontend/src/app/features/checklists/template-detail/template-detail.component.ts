@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ChecklistService } from '../../../core/services/checklist.service';
-import { ChecklistTemplate, ChecklistItem } from '../../../core/models/checklist.model';
+import { ChecklistTemplate } from '../../../core/models/checklist.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import {
   StatsGridComponent,
@@ -519,10 +519,10 @@ export class TemplateDetailComponent implements OnInit {
     return this.template?.items?.filter((item) => item.requiereFoto).length || 0;
   }
 
-  getGroupedItems(): any[] {
+  getGroupedItems(): Record<string, unknown>[] {
     if (!this.template?.items) return [];
 
-    const grouped: any[] = [];
+    const grouped: Record<string, unknown>[] = [];
     let currentCategory = '';
 
     this.template.items
@@ -580,7 +580,7 @@ export class TemplateDetailComponent implements OnInit {
     if (confirm(`¿Desea duplicar la plantilla "${this.template.nombre}"?`)) {
       const newTemplate = {
         ...this.template,
-        id: undefined as any,
+        id: undefined as unknown,
         codigo: `${this.template.codigo}-COPY`,
         nombre: `${this.template.nombre} (Copia)`,
         activo: false,

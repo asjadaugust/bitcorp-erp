@@ -270,7 +270,7 @@ export class TimesheetDetailComponent implements OnInit {
         this.timesheet = res;
         alert('Planilla enviada exitosamente');
       },
-      error: (err) => alert('Error al enviar planilla'),
+      error: (_err) => alert('Error al enviar planilla'),
     });
   }
 
@@ -283,7 +283,7 @@ export class TimesheetDetailComponent implements OnInit {
         this.timesheet = res;
         alert('Planilla aprobada');
       },
-      error: (err) => alert('Error al aprobar planilla'),
+      error: (_err) => alert('Error al aprobar planilla'),
     });
   }
 
@@ -297,7 +297,7 @@ export class TimesheetDetailComponent implements OnInit {
         this.timesheet = res;
         alert('Planilla rechazada');
       },
-      error: (err) => alert('Error al rechazar planilla'),
+      error: (_err) => alert('Error al rechazar planilla'),
     });
   }
 }

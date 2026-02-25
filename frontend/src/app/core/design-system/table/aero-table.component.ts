@@ -3,10 +3,7 @@ import {
   Input,
   Output,
   EventEmitter,
-  ContentChild,
   TemplateRef,
-  OnChanges,
-  SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -27,7 +24,7 @@ export interface TableColumn {
   badgeConfig?: {
     [key: string]: { label: string; class: string; icon?: string }; // Added icon support
   };
-  customTemplate?: (row: any) => string; // For custom HTML rendering
+  customTemplate?: (row: Record<string, unknown>) => string; // For custom HTML rendering
 }
 
 @Component({
@@ -123,7 +120,7 @@ export interface TableColumn {
             >Mostrando {{ startIndex + 1 }} - {{ endIndex }} de {{ totalResults }} resultados</span
           >
           <div class="page-size-selector">
-            <label>Filas por página:</label>
+            <span class="label">Filas por página:</span>
             <app-dropdown
               [(ngModel)]="pageSize"
               [options]="pageSizeOptions"
@@ -415,11 +412,11 @@ export interface TableColumn {
 })
 export class AeroTableComponent {
   @Input() columns: TableColumn[] = [];
-  @Input() data: any[] = [];
+  @Input() data: Record<string, unknown>[] = [];
   @Input() loading = false;
-  @Input() actionsTemplate?: TemplateRef<any>;
-  @Input() templates: { [key: string]: TemplateRef<any> } = {};
-  @Output() rowClick = new EventEmitter<any>();
+  @Input() actionsTemplate?: TemplateRef<unknown>;
+  @Input() templates: { [key: string]: TemplateRef<unknown> } = {};
+  @Output() rowClick = new EventEmitter<Record<string, unknown>>();
 
   @Input() serverSide = false;
   @Input() totalItems = 0;
@@ -437,7 +434,7 @@ export class AeroTableComponent {
     { label: '100', value: 100 },
   ];
 
-  get paginatedData(): any[] {
+  get paginatedData(): Record<string, unknown>[] {
     if (this.serverSide) {
       return this.data || [];
     }
@@ -492,11 +489,11 @@ export class AeroTableComponent {
     }
   }
 
-  onRowClick(row: any) {
+  onRowClick(row: Record<string, unknown>) {
     this.rowClick.emit(row);
   }
 
-  getTemplate(key: string): TemplateRef<any> | null {
+  getTemplate(key: string): TemplateRef<unknown> | null {
     return this.templates[key] || null;
   }
 

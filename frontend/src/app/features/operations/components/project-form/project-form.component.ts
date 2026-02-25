@@ -206,8 +206,8 @@ export class ProjectFormComponent implements OnInit {
     if (!this.projectId) return;
     this.loading = true;
     this.projectService.getById(this.projectId).subscribe({
-      next: (project: any) => {
-        this.form.patchValue(project);
+      next: (project: unknown) => {
+        this.form.patchValue(project as Record<string, unknown>);
         this.loading = false;
       },
       error: () => {

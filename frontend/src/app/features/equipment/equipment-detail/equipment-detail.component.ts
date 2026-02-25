@@ -24,8 +24,8 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../core/design-system/table/aero-table.component';
-import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
 import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-list.component';
+import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tabs.component';
 
 @Component({
   selector: 'app-equipment-detail',
@@ -35,8 +35,8 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
     RouterModule,
     EntityDetailShellComponent,
     AeroTableComponent,
-    AeroBadgeComponent,
     PeriodoInoperatividadListComponent,
+    AeroTabsComponent,
   ],
   template: `
     <entity-detail-shell
@@ -48,18 +48,11 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
       loadingText="Cargando detalles del equipo..."
     >
       <div entity-header-below>
-        <!-- Standard Tab Navigation -->
-        <div class="detail-tabs">
-          <button
-            *ngFor="let tab of tabConfigs"
-            class="tab-link"
-            [class.active]="activeTab === tab.id"
-            (click)="activeTab = tab.id"
-          >
-            <i [class]="tab.icon"></i>
-            {{ tab.label }}
-          </button>
-        </div>
+        <app-aero-tabs
+          [tabs]="tabConfigs"
+          [activeTabId]="activeTab"
+          (tabChange)="activeTab = $event.id || 'general'"
+        ></app-aero-tabs>
       </div>
 
       <div entity-main-content class="detail-sections">
@@ -71,20 +64,20 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
               </div>
               <div class="info-grid">
                 <div class="info-item">
-                  <label>Estado Actual</label>
+                  <span class="label">Estado Actual</span>
                   <div class="value-with-icon" [ngClass]="getStatusClass(equipment?.estado ?? '')">
                     <i [class]="getStatusIcon(equipment?.estado ?? '')"></i>
                     <span class="value">{{ equipment?.estado }}</span>
                   </div>
                 </div>
                 <div class="info-item">
-                  <label>Tipo de Equipo</label>
+                  <span class="label">Tipo de Equipo</span>
                   <p class="value">
                     {{ equipment?.tipo_equipo_nombre || equipment?.categoria || '-' }}
                   </p>
                 </div>
                 <div class="info-item">
-                  <label>Categoría PRD</label>
+                  <span class="label">Categoría PRD</span>
                   <div class="value">
                     @if (equipment?.categoria_prd) {
                       <span
@@ -99,7 +92,7 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
                   </div>
                 </div>
                 <div class="info-item">
-                  <label>Propiedad</label>
+                  <span class="label">Propiedad</span>
                   <div class="value">
                     <span
                       class="badge"
@@ -126,41 +119,41 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
               </div>
               <div class="info-grid">
                 <div class="info-item">
-                  <label>Marca / Modelo</label>
+                  <span class="label">Marca / Modelo</span>
                   <p class="value">{{ equipment?.marca || '' }} {{ equipment?.modelo || '' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Número de Serie</label>
+                  <span class="label">Número de Serie</span>
                   <p class="value">{{ equipment?.numero_serie_equipo || '-' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Número de Chasis</label>
+                  <span class="label">Número de Chasis</span>
                   <p class="value">{{ equipment?.numero_chasis || '-' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Serie Motor</label>
+                  <span class="label">Serie Motor</span>
                   <p class="value">{{ equipment?.numero_serie_motor || '-' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Año de Fabricación</label>
+                  <span class="label">Año de Fabricación</span>
                   <p class="value">{{ equipment?.anio_fabricacion || '-' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Placa / Código Externo</label>
+                  <span class="label">Placa / Código Externo</span>
                   <p class="value">{{ equipment?.placa || equipment?.codigo_externo || '-' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Tipo de Medición</label>
+                  <span class="label">Tipo de Medición</span>
                   <p class="value highlight project-link">
                     {{ equipment?.tipo_medicion || equipment?.medidor_uso || '-' }}
                   </p>
                 </div>
                 <div class="info-item">
-                  <label>Tipo de Motor</label>
+                  <span class="label">Tipo de Motor</span>
                   <p class="value">{{ equipment?.tipo_motor || '-' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Potencia Neta</label>
+                  <span class="label">Potencia Neta</span>
                   <p class="value">
                     {{ equipment?.net_power ? equipment?.net_power + ' HP' : '-' }}
                   </p>
@@ -174,13 +167,13 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
               </div>
               <div class="info-grid">
                 <div class="info-item">
-                  <label>Proyecto / Ubicación</label>
+                  <span class="label">Proyecto / Ubicación</span>
                   <p class="value highlight project-link">
                     {{ equipment?.proyecto_nombre || 'Sin Asignar' }}
                   </p>
                 </div>
                 <div class="info-item">
-                  <label>Fecha de Asignación</label>
+                  <span class="label">Fecha de Asignación</span>
                   <p class="value">
                     {{
                       equipment?.fecha_asignacion
@@ -190,11 +183,11 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
                   </p>
                 </div>
                 <div class="info-item">
-                  <label>Operador Asignado</label>
+                  <span class="label">Operador Asignado</span>
                   <p class="value">{{ equipment?.operador_nombre || '-' }}</p>
                 </div>
                 <div class="info-item">
-                  <label>Horómetro / Kilometraje Actual</label>
+                  <span class="label">Horómetro / Kilometraje Actual</span>
                   <p class="value highlight project-link">
                     {{ equipment?.horometro_actual || equipment?.kilometraje_actual || '0.0' }}
                   </p>
@@ -332,49 +325,6 @@ import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-li
   styles: [
     `
       @use 'detail-layout' as *;
-
-      .detail-tabs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: var(--s-24);
-
-        .tab-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 16px;
-          border-radius: 20px;
-          border: 1px solid var(--grey-200);
-          background: var(--neutral-0);
-          color: var(--grey-600);
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-size: 13px;
-
-          i {
-            opacity: 0.7;
-            font-size: 13px;
-          }
-
-          &:hover {
-            background: var(--grey-50);
-            border-color: var(--grey-300);
-            color: var(--primary-700);
-          }
-
-          &.active {
-            background: var(--primary-50);
-            border-color: var(--primary-200);
-            color: var(--primary-700);
-            font-weight: 600;
-            i {
-              opacity: 1;
-            }
-          }
-        }
-      }
 
       .sidebar-divider {
         height: 1px;
@@ -596,9 +546,9 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   loading = true;
   equipment: Equipment | null = null;
   activeTab = 'general';
-  dailyReports: any[] = [];
-  contracts: any[] = [];
-  maintenanceHistory: any[] = [];
+  dailyReports: Record<string, unknown>[] = [];
+  contracts: Record<string, unknown>[] = [];
+  maintenanceHistory: Record<string, unknown>[] = [];
   solicitudes: SolicitudEquipo[] = [];
 
   tabConfigs: TabConfig[] = [
@@ -788,14 +738,17 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   }
 
   loadRelatedData(id: string): void {
-    this.dailyReportService.getAll({ equipo_id: id }).subscribe((data: any) => {
-      this.dailyReports = Array.isArray(data) ? data : data.data || [];
+    this.dailyReportService.getAll({ equipo_id: id }).subscribe((data: unknown) => {
+      const d = data as Record<string, unknown>;
+      this.dailyReports = Array.isArray(d) ? d : (d.data as Record<string, unknown>[]) || [];
     });
-    this.contractService.getAll({ equipmentId: id }).subscribe((data: any) => {
-      this.contracts = Array.isArray(data) ? data : data.data || [];
+    this.contractService.getAll({ equipmentId: id }).subscribe((data: unknown) => {
+      const d = data as Record<string, unknown>;
+      this.contracts = Array.isArray(d) ? d : (d.data as Record<string, unknown>[]) || [];
     });
-    this.maintenanceService.getAll({ equipoId: id }).subscribe((data: any) => {
-      this.maintenanceHistory = Array.isArray(data) ? data : data.data || [];
+    this.maintenanceService.getAll({ equipoId: id }).subscribe((data: unknown) => {
+      const d = data as Record<string, unknown>;
+      this.maintenanceHistory = Array.isArray(d) ? d : (d.data as Record<string, unknown>[]) || [];
     });
     this.solicitudService.listar({ estado: 'APROBADO' }).subscribe((data) => {
       // For now, we filter locally if the API doesn't support equipo_id yet,

@@ -92,7 +92,7 @@ import {
           ></aero-input>
 
           <div class="filter-group">
-            <label class="aero-label">Estado</label>
+            <span class="aero-label">Estado</span>
             <app-dropdown
               [(ngModel)]="filters.estado"
               [options]="statusOptions"
@@ -317,8 +317,8 @@ export class ValuationRegistryComponent implements OnInit {
   private excelService = inject(ExcelExportService);
   private snackBar = inject(MatSnackBar);
 
-  registryData: any[] = [];
-  summary: any = null;
+  registryData: Record<string, unknown>[] = [];
+  summary: Record<string, unknown> | null = null;
   loading = false;
   moduleTabs = EQUIPMENT_MODULE_TABS;
   totalRecords = 0;
@@ -329,7 +329,7 @@ export class ValuationRegistryComponent implements OnInit {
     { label: 'Valorizaciones' },
   ];
 
-  filters: any = {
+  filters: Record<string, string | number> = {
     periodo_desde: '',
     periodo_hasta: '',
     estado: '',
@@ -371,7 +371,7 @@ export class ValuationRegistryComponent implements OnInit {
     },
   ];
 
-  private searchTimeout: any;
+  private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   statusOptions = [
     { value: 'BORRADOR', label: 'Borrador' },
@@ -422,7 +422,7 @@ export class ValuationRegistryComponent implements OnInit {
     }, 400);
   }
 
-  viewDetail(row: any): void {
+  viewDetail(row: Record<string, unknown>): void {
     this.router.navigate(['/equipment/valuations', row.id]);
   }
 

@@ -4,7 +4,7 @@ import {
   Output,
   EventEmitter,
   ChangeDetectionStrategy,
-  OnDestroy,
+  OnDestroy, OnChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,7 +37,7 @@ export type AlertType = 'success' | 'error' | 'warning' | 'info';
   styleUrls: ['./alert.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlertComponent implements OnDestroy {
+export class AlertComponent implements OnDestroy, OnChanges {
   /**
    * Type of alert (success, error, warning, info)
    */
@@ -71,7 +71,7 @@ export class AlertComponent implements OnDestroy {
   /**
    * Dismiss timeout reference for cleanup
    */
-  private dismissTimer: any = null;
+  private dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Icon for the current alert type

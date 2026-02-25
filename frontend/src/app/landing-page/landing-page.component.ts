@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
@@ -155,7 +155,7 @@ export class LandingPageComponent {
     },
   };
 
-  constructor(private router: Router) {}
+  private router = inject(Router);
 
   toggleLang() {
     this.currentLang = this.currentLang === 'es' ? 'en' : 'es';

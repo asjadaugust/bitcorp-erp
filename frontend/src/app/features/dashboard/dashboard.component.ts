@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { MainNavComponent } from '../../shared/components/main-nav.component';
-import { Role, ROLES, getRoleName } from '../../core/types/roles';
+import { Role, getRoleName } from '../../core/types/roles';
 import { DashboardApiService, DocumentAlertsSummary } from '../../core/services/dashboard.service';
 
 interface Module {
@@ -43,6 +42,9 @@ interface ModuleCategory {
               class="alert-card"
               *ngIf="getAlertTotal(documentAlerts.equipment) > 0"
               (click)="navigateTo('/equipment')"
+              (keydown.enter)="navigateTo('/equipment')"
+              tabindex="0"
+              role="button"
             >
               <div class="alert-icon"><i class="fa-solid fa-tractor"></i></div>
               <div class="alert-info">
@@ -64,6 +66,9 @@ interface ModuleCategory {
               class="alert-card"
               *ngIf="getAlertTotal(documentAlerts.operators) > 0"
               (click)="navigateTo('/operators')"
+              (keydown.enter)="navigateTo('/operators')"
+              tabindex="0"
+              role="button"
             >
               <div class="alert-icon"><i class="fa-solid fa-id-card"></i></div>
               <div class="alert-info">
@@ -85,6 +90,9 @@ interface ModuleCategory {
               class="alert-card"
               *ngIf="getAlertTotal(documentAlerts.contracts) > 0"
               (click)="navigateTo('/equipment/contracts')"
+              (keydown.enter)="navigateTo('/equipment/contracts')"
+              tabindex="0"
+              role="button"
             >
               <div class="alert-icon"><i class="fa-solid fa-file-contract"></i></div>
               <div class="alert-info">
@@ -124,6 +132,9 @@ interface ModuleCategory {
                 [class.module-active]="canAccessModule(module)"
                 [class.nivel-1-card]="category.level === 1"
                 (click)="navigateToModule(module)"
+                (keydown.enter)="navigateToModule(module)"
+                tabindex="0"
+                role="button"
               >
                 <div class="module-icon"><i [ngClass]="module.icon"></i></div>
                 <div class="module-info">
@@ -409,7 +420,7 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
   private dashboardApi = inject(DashboardApiService);
 
-  currentUser: any = null;
+  currentUser: Record<string, unknown> | null = null;
   documentAlerts: DocumentAlertsSummary | null = null;
   userProjects: string[] = ['Proyecto Carretera Norte', 'Proyecto Puente Sur'];
   activeProject: string = this.userProjects[0];

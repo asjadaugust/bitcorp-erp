@@ -1,9 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProviderService } from '../../core/services/provider.service';
-import { Provider } from '../../core/models/provider.model';
 import {
   FormErrorHandlerService,
   ValidationError,
@@ -406,7 +405,7 @@ export class ProviderFormComponent implements OnInit {
   loadProvider(id: string | number): void {
     this.loading = true;
     this.providerService.getById(id).subscribe({
-      next: (provider: any) => {
+      next: (provider: Record<string, unknown>) => {
         this.providerForm.patchValue({
           ruc: provider.ruc,
           razon_social: provider.razon_social,
@@ -451,7 +450,7 @@ export class ProviderFormComponent implements OnInit {
         : this.providerService.create(providerData);
 
     request$.subscribe({
-      next: (response: any) => {
+      next: (_response: unknown) => {
         this.loading = false;
         this.successMessage = this.isEditMode
           ? 'Proveedor actualizado exitosamente'
@@ -500,7 +499,7 @@ export class ProviderFormComponent implements OnInit {
           this.successMessage = 'Datos del RUC recuperados exitosamente';
         }
       },
-      error: (err) => {
+      error: (_err) => {
         this.loading = false;
         this.errorMessage = 'No se pudo encontrar información para el RUC proporcionado';
       },

@@ -48,7 +48,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       <!-- Standardized Period Selector -->
       <div actions class="period-controls-wrapper">
         <div class="period-group">
-          <label>Desde</label>
+          <span class="label">Desde</span>
           <input
             type="date"
             [(ngModel)]="fechaInicio"
@@ -57,7 +57,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
           />
         </div>
         <div class="period-group">
-          <label>Hasta</label>
+          <span class="label">Hasta</span>
           <input
             type="date"
             [(ngModel)]="fechaFin"
@@ -157,7 +157,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       <div *ngIf="tabActivo() === 'utilizacion'" data-testid="panel-utilizacion">
         <!-- Equipment selector with app-dropdown -->
         <div class="standard-selector-wrapper">
-          <label>Seleccionar Equipo</label>
+          <span class="label">Seleccionar Equipo</span>
           <app-dropdown
             [options]="equipmentOptions()"
             [(ngModel)]="equipoIdSeleccionado"
@@ -227,7 +227,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       <div *ngIf="tabActivo() === 'combustible'" data-testid="panel-combustible">
         <!-- Equipment selector with app-dropdown -->
         <div class="standard-selector-wrapper">
-          <label>Seleccionar Equipo</label>
+          <span class="label">Seleccionar Equipo</span>
           <app-dropdown
             [options]="equipmentOptions()"
             [(ngModel)]="equipoIdSeleccionado"
@@ -852,7 +852,7 @@ export class AnalyticsDashboardComponent implements OnInit {
   cargarEquipos(): void {
     this.equipmentSvc.getAll({ limit: '200' }).subscribe({
       next: (res) => this.equipos.set(res.data || []),
-      error: () => {},
+      error: () => { /* noop */ },
     });
   }
 
@@ -888,7 +888,7 @@ export class AnalyticsDashboardComponent implements OnInit {
 
     this.analyticsSvc.obtenerTendenciaUtilizacion(id, this.fechaInicio, this.fechaFin).subscribe({
       next: (data) => this.tendenciaUtilizacion.set(data),
-      error: () => {},
+      error: () => { /* noop */ },
     });
   }
 
@@ -909,7 +909,7 @@ export class AnalyticsDashboardComponent implements OnInit {
 
     this.analyticsSvc.obtenerTendenciaCombustible(id, this.fechaInicio, this.fechaFin).subscribe({
       next: (data) => this.tendenciaCombustible.set(data),
-      error: () => {},
+      error: () => { /* noop */ },
     });
   }
 

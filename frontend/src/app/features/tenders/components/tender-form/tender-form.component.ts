@@ -17,7 +17,6 @@ import { ValidationErrorsComponent } from '../../../../shared/components/validat
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import {
   DropdownComponent,
-  DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 

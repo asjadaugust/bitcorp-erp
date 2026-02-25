@@ -225,7 +225,7 @@ interface InspectionFormData {
           <!-- Response Form -->
           <div class="response-form">
             <div class="form-group">
-              <label>Estado *</label>
+              <span class="label">Estado *</span>
               <div class="radio-group">
                 <label
                   class="radio-option conforme"
@@ -299,7 +299,7 @@ interface InspectionFormData {
               class="form-group"
               *ngIf="currentItem.requiereFoto || currentResult.conforme === false"
             >
-              <label>Fotografía {{ currentItem.requiereFoto ? '*' : '(Opcional)' }}</label>
+              <span class="label">Fotografía {{ currentItem.requiereFoto ? '*' : '(Opcional)' }}</span>
               <button class="btn btn-secondary btn-photo">
                 <i class="fa-solid fa-camera"></i> Tomar Foto
               </button>

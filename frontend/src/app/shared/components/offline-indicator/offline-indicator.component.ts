@@ -20,7 +20,7 @@ import { SyncManager } from '../../../core/services/sync-manager.service';
       </div>
 
       <!-- Pending Sync Badge -->
-      <div class="pending-badge" *ngIf="pendingCount() > 0" (click)="syncNow()">
+      <div class="pending-badge" *ngIf="pendingCount() > 0" (click)="syncNow()" (keydown.enter)="syncNow()" tabindex="0" role="button">
         <span class="icon">🔄</span>
         <span class="count">{{ pendingCount() }}</span>
         <span class="text" *ngIf="isOnline()">pendientes - toca para sincronizar</span>
@@ -158,7 +158,7 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
     try {
       const count = await this.syncManager.getPendingCount();
       this.pendingCount.set(count);
-    } catch (e) {
+    } catch {
       // IndexedDB may not be initialized yet
     }
   }

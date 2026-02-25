@@ -91,8 +91,8 @@ export class MainLayoutComponent implements OnInit {
   constructor() {
     // Listen for sidebar toggle events (legacy/desktop)
     if (typeof window !== 'undefined') {
-      window.addEventListener('sidebar-toggle', (e: any) => {
-        this.sidebarCollapsed = e.detail.collapsed;
+      window.addEventListener('sidebar-toggle', (e: Event) => {
+        this.sidebarCollapsed = (e as CustomEvent).detail.collapsed;
       });
 
       // Listen for mobile toggle

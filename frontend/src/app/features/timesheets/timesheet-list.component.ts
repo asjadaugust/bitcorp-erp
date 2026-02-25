@@ -233,13 +233,13 @@ export class TimesheetListComponent implements OnInit {
     { key: 'acciones', label: 'Acciones', type: 'template' },
   ];
 
-  currentFilters: any = {};
+  currentFilters: Record<string, unknown> = {};
 
   ngOnInit() {
     this.loadTimesheets();
   }
 
-  onFilterChange(filters: any) {
+  onFilterChange(filters: Record<string, unknown>) {
     this.currentFilters = filters;
     this.loadTimesheets();
   }

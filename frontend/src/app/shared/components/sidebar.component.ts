@@ -105,7 +105,7 @@ interface NavItem {
         </button>
       </div>
     </aside>
-    <div class="sidebar-overlay" *ngIf="!collapsed" (click)="toggleCollapse()"></div>
+    <div class="sidebar-overlay" *ngIf="!collapsed" (click)="toggleCollapse()" (keydown.enter)="toggleCollapse()" tabindex="0" role="button"></div>
   `,
   styles: [
     `

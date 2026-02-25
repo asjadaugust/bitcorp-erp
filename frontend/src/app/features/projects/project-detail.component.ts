@@ -7,13 +7,15 @@ import {
   EntityDetailShellComponent,
   EntityDetailHeader,
   AuditInfo,
+  TabConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 
 @Component({
   selector: 'app-project-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroTabsComponent],
   template: `
     <entity-detail-shell
       [loading]="loading"
@@ -22,38 +24,93 @@ import { ConfirmService } from '../../core/services/confirm.service';
       [auditInfo]="auditInfo"
       loadingText="Cargando detalles del proyecto..."
     >
-      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
-      <div entity-main-content class="tab-content">
-        <section class="detail-section">
-          <h2>Información del Proyecto</h2>
-          <div class="info-grid">
-            <div class="info-item" *ngIf="project?.ubicacion">
-              <label>Ubicación</label>
-              <p>{{ project?.ubicacion }}</p>
-            </div>
-            <div class="info-item" *ngIf="project?.cliente">
-              <label>Cliente</label>
-              <p>{{ project?.cliente }}</p>
-            </div>
-            <div class="info-item" *ngIf="project?.fechaInicio">
-              <label>Fecha Inicio</label>
-              <p>{{ project?.fechaInicio | date: 'dd/MM/yyyy' }}</p>
-            </div>
-            <div class="info-item" *ngIf="project?.fechaFin">
-              <label>Fecha Fin</label>
-              <p>{{ project?.fechaFin | date: 'dd/MM/yyyy' }}</p>
-            </div>
-            <div class="info-item" *ngIf="project?.presupuesto">
-              <label>Presupuesto</label>
-              <p>{{ project?.presupuesto | currency: 'PEN' }}</p>
-            </div>
-          </div>
-        </section>
+      <div entity-header-below>
+        <app-aero-tabs
+          [tabs]="tabConfigs"
+          [activeTabId]="activeTab"
+          (tabChange)="activeTab = $event.id || 'general'"
+        ></app-aero-tabs>
+      </div>
 
-        <section class="detail-section" *ngIf="project?.descripcion">
-          <h2>Descripción</h2>
-          <p class="notes">{{ project?.descripcion }}</p>
-        </section>
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div entity-main-content class="detail-sections">
+        @if (project) {
+          @if (activeTab === 'general') {
+            <section class="detail-section card">
+              <div class="section-header">
+                <h3>Información del Proyecto</h3>
+              </div>
+              <div class="info-grid">
+                <div class="info-item" *ngIf="project?.ubicacion">
+                  <span class="label">Ubicación</span>
+                  <p class="value">{{ project?.ubicacion }}</p>
+                </div>
+                <div class="info-item" *ngIf="project?.cliente">
+                  <span class="label">Cliente</span>
+                  <p class="value">{{ project?.cliente }}</p>
+                </div>
+                <div class="info-item" *ngIf="project?.fechaInicio">
+                  <span class="label">Fecha Inicio</span>
+                  <p class="value">{{ project?.fechaInicio | date: 'dd/MM/yyyy' }}</p>
+                </div>
+                <div class="info-item" *ngIf="project?.fechaFin">
+                  <span class="label">Fecha Fin</span>
+                  <p class="value">{{ project?.fechaFin | date: 'dd/MM/yyyy' }}</p>
+                </div>
+                <div class="info-item" *ngIf="project?.presupuesto">
+                  <span class="label">Presupuesto</span>
+                  <p class="value highlight project-link">{{ project?.presupuesto | currency: 'PEN' }}</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="detail-section card" *ngIf="project?.descripcion">
+              <div class="section-header">
+                <h3>Descripción</h3>
+              </div>
+              <p class="notes">{{ project?.descripcion }}</p>
+            </section>
+          }
+
+          @if (activeTab === 'recursos') {
+            <section class="detail-section card">
+              <div class="section-header">
+                <h3>Recursos Asignados</h3>
+                <button type="button" class="btn btn-primary btn-sm" (click)="assignResources()">
+                  <i class="fa-solid fa-plus"></i> Asignar
+                </button>
+              </div>
+              <div class="empty-state-placeholder">
+                <i class="fa-solid fa-users fa-3x"></i>
+                <p>No se han asignado recursos específicos a este proyecto todavía.</p>
+              </div>
+            </section>
+          }
+
+          @if (activeTab === 'reportes') {
+            <section class="detail-section card">
+              <div class="section-header">
+                <h3>Partes Diarios</h3>
+              </div>
+              <div class="empty-state-placeholder">
+                <i class="fa-solid fa-file-alt fa-3x"></i>
+                <p>No hay partes diarios registrados para este proyecto.</p>
+              </div>
+            </section>
+          }
+
+          @if (activeTab === 'presupuesto') {
+            <section class="detail-section card">
+              <div class="section-header">
+                <h3>Estado de Presupuesto</h3>
+              </div>
+              <div class="empty-state-placeholder">
+                <i class="fa-solid fa-chart-line fa-3x"></i>
+                <p>La gestión detallada de presupuesto estará disponible próximamente.</p>
+              </div>
+            </section>
+          }
+        }
       </div>
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
@@ -66,25 +123,16 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <i class="fa-solid fa-users"></i>
           Asignar Recursos
         </button>
-        <button type="button" class="btn btn-secondary btn-block" (click)="viewReports()">
-          <i class="fa-solid fa-file-alt"></i>
-          Ver Reportes
-        </button>
-        <button type="button" class="btn btn-secondary btn-block" (click)="viewBudget()">
-          <i class="fa-solid fa-chart-line"></i>
-          Ver Presupuesto
-        </button>
         <button type="button" class="btn btn-ghost btn-block" (click)="navigateTo('/projects')">
           <i class="fa-solid fa-arrow-left"></i>
           Volver a Lista
         </button>
+        <div class="sidebar-divider"></div>
         <button type="button" class="btn btn-danger btn-block" (click)="deleteProject()">
           <i class="fa-solid fa-trash"></i>
           Eliminar Proyecto
         </button>
       </ng-container>
-    </entity-detail-shell>
-
     </entity-detail-shell>
   `,
   styles: [
@@ -117,6 +165,132 @@ import { ConfirmService } from '../../core/services/confirm.service';
         margin-top: 1.5rem;
       }
 
+      .detail-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-24);
+      }
+
+      .detail-section {
+        padding: var(--s-24);
+        border-radius: 16px;
+
+        h3 {
+          font-size: 0.75rem;
+          margin: 0;
+          color: var(--grey-600);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+        }
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--s-20);
+
+        h3 {
+          font-size: 0.75rem;
+          margin: 0;
+          color: var(--grey-600);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+        }
+
+        .btn-sm {
+          padding: 6px 14px;
+          font-size: 0.8rem;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px 40px;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        label {
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--grey-500);
+          font-weight: 700;
+          margin-bottom: 4px;
+          display: block;
+        }
+
+        .value {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--grey-900);
+          margin: 0;
+          line-height: 1.4;
+
+          &.highlight {
+            color: var(--primary-700);
+            font-weight: 700;
+            font-size: 1.05rem;
+          }
+        }
+      }
+
+      .empty-state-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--s-48) var(--s-24);
+        color: var(--grey-400);
+        text-align: center;
+        gap: var(--s-16);
+
+        i {
+          opacity: 0.5;
+        }
+
+        p {
+          font-size: 14px;
+          max-width: 300px;
+          margin: 0;
+        }
+      }
+
+      .sidebar-divider {
+        height: 1px;
+        background: var(--grey-100);
+        margin: var(--s-16) 0;
+      }
+
+      .btn-block {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        border-radius: 10px;
+
+        i {
+          width: 20px;
+          text-align: center;
+          font-size: 1.1em;
+        }
+      }
+
       .notes {
         background: var(--grey-50);
         padding: var(--s-16);
@@ -143,6 +317,14 @@ export class ProjectDetailComponent implements OnInit {
 
   project: Project | null = null;
   loading = true;
+  activeTab = 'general';
+
+  tabConfigs: TabConfig[] = [
+    { id: 'general', label: 'General', icon: 'fa-solid fa-circle-info' },
+    { id: 'recursos', label: 'Recursos', icon: 'fa-solid fa-users' },
+    { id: 'reportes', label: 'Partes Diarios', icon: 'fa-solid fa-file-alt' },
+    { id: 'presupuesto', label: 'Presupuesto', icon: 'fa-solid fa-chart-line' },
+  ];
 
   get header(): EntityDetailHeader {
     return {

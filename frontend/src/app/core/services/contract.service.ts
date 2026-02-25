@@ -20,7 +20,7 @@ export class ContractService {
    * Map backend DTO (Spanish snake_case) to frontend model
    * Backend returns all Spanish fields directly
    */
-  private mapBackendToFrontend(backendData: any): Contract {
+  private mapBackendToFrontend(backendData: Record<string, unknown>): Contract {
     // Compute display fields
     const equipoInfo =
       backendData.equipo_marca && backendData.equipo_modelo && backendData.equipo_placa
@@ -75,7 +75,7 @@ export class ContractService {
       tipo_tarifa_display: this.translateTipoTarifa(backendData.tipo_tarifa),
       proveedor_razon_social: backendData.proveedor_razon_social || '',
       equipo_info: equipoInfo,
-    } as any;
+    } as unknown as Contract;
   }
 
   /**
@@ -84,7 +84,7 @@ export class ContractService {
   /**
    * Map frontend model to backend DTO for create/update operations
    */
-  private mapFrontendToBackend(frontendData: any): any {
+  private mapFrontendToBackend(frontendData: Record<string, unknown>): Record<string, unknown> {
     return {
       ...frontendData,
       // Ensure specific fields are mapped correctly
@@ -134,7 +134,7 @@ export class ContractService {
     return map[tipo] || tipo;
   }
 
-  getAll(filters: any = {}): Observable<Contract[]> {
+  getAll(filters: Record<string, string | number | undefined> = {}): Observable<Contract[]> {
     let params = new HttpParams();
     if (filters.search) params = params.set('search', filters.search);
     if (filters.estado) params = params.set('estado', filters.estado);
@@ -148,7 +148,7 @@ export class ContractService {
 
     // API might return paginated response: {success, data, pagination}
     // Extract data array if it exists, otherwise return as-is
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         let data = response;
         if (response && typeof response === 'object' && 'data' in response) {
@@ -161,7 +161,7 @@ export class ContractService {
   }
 
   getById(id: string): Observable<Contract> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(
       map((response) => {
         // Handle both direct data and wrapped response
         const data = response?.data || response;
@@ -172,7 +172,7 @@ export class ContractService {
 
   create(contract: Omit<Contract, 'id'>): Observable<Contract> {
     const backendData = this.mapFrontendToBackend(contract);
-    return this.http.post<any>(this.apiUrl, backendData).pipe(
+    return this.http.post<Record<string, unknown>>(this.apiUrl, backendData).pipe(
       map((response) => {
         const data = response?.data || response;
         return this.mapBackendToFrontend(data);
@@ -182,7 +182,7 @@ export class ContractService {
 
   update(id: string, contract: Partial<Contract>): Observable<Contract> {
     const backendData = this.mapFrontendToBackend(contract);
-    return this.http.put<any>(`${this.apiUrl}/${id}`, backendData).pipe(
+    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, backendData).pipe(
       map((response) => {
         const data = response?.data || response;
         return this.mapBackendToFrontend(data);
@@ -202,9 +202,9 @@ export class ContractService {
       fecha_resolucion: string;
       monto_liquidacion?: number;
     }
-  ): Observable<any> {
+  ): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/resolver`, data)
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/resolver`, data)
       .pipe(map((res) => res?.data || res));
   }
 
@@ -217,7 +217,7 @@ export class ContractService {
     observaciones: string[];
   }> {
     return this.http
-      .get<any>(`${this.apiUrl}/${id}/liquidation-check`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}/liquidation-check`)
       .pipe(map((res) => res?.data || res));
   }
 
@@ -228,15 +228,15 @@ export class ContractService {
       monto_liquidacion?: number;
       observaciones_liquidacion?: string;
     }
-  ): Observable<any> {
+  ): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/liquidar`, data)
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/liquidar`, data)
       .pipe(map((res) => res?.data || res));
   }
 
-  getAddendums(contractId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${contractId}/addendums`).pipe(
-      map((response: any) => {
+  getAddendums(contractId: string): Observable<Contract[]> {
+    return this.http.get<Record<string, unknown>[]>(`${this.apiUrl}/${contractId}/addendums`).pipe(
+      map((response: Record<string, unknown>) => {
         const data = response?.data || response;
         const addendums = Array.isArray(data) ? data : [];
         return addendums.map((a) => this.mapBackendToFrontend(a));
@@ -244,9 +244,9 @@ export class ContractService {
     );
   }
 
-  createAddendum(contractId: string, data: any): Observable<any> {
+  createAddendum(contractId: string, data: Record<string, unknown>): Observable<Contract> {
     const backendData = this.mapFrontendToBackend(data);
-    return this.http.post<any>(`${this.apiUrl}/${contractId}/addendums`, backendData).pipe(
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/addendums`, backendData).pipe(
       map((response) => {
         const responseData = response?.data || response;
         return this.mapBackendToFrontend(responseData);
@@ -260,10 +260,10 @@ export class ContractService {
 
   // ─── Annex methods (WS-3) ───
 
-  getAnnexes(contractId: string, tipo?: 'A' | 'B'): Observable<any[]> {
+  getAnnexes(contractId: string, tipo?: 'A' | 'B'): Observable<Record<string, unknown>[]> {
     let params = new HttpParams();
     if (tipo) params = params.set('tipo', tipo);
-    return this.http.get<any>(`${this.apiUrl}/${contractId}/annexes`, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/annexes`, { params }).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -271,8 +271,8 @@ export class ContractService {
     );
   }
 
-  saveAnnexes(contractId: string, tipo: 'A' | 'B', items: any[]): Observable<any[]> {
-    return this.http.put<any>(`${this.apiUrl}/${contractId}/annexes/${tipo}`, { items }).pipe(
+  saveAnnexes(contractId: string, tipo: 'A' | 'B', items: Record<string, unknown>[]): Observable<Record<string, unknown>[]> {
+    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${contractId}/annexes/${tipo}`, { items }).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -282,8 +282,8 @@ export class ContractService {
 
   // ─── Required Document methods (WS-4) ───
 
-  getRequiredDocuments(contractId: string): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/${contractId}/required-documents`).pipe(
+  getRequiredDocuments(contractId: string): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/required-documents`).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -291,9 +291,9 @@ export class ContractService {
     );
   }
 
-  initializeRequiredDocuments(contractId: string): Observable<any[]> {
+  initializeRequiredDocuments(contractId: string): Observable<Record<string, unknown>[]> {
     return this.http
-      .post<any>(`${this.apiUrl}/${contractId}/required-documents/initialize`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/required-documents/initialize`, {})
       .pipe(
         map((response) => {
           const data = response?.data || response;
@@ -302,16 +302,16 @@ export class ContractService {
       );
   }
 
-  updateRequiredDocument(docId: number, data: any): Observable<any> {
+  updateRequiredDocument(docId: number, data: Record<string, unknown>): Observable<unknown> {
     return this.http
-      .put<any>(`${this.apiUrl}/required-documents/${docId}`, data)
+      .put<Record<string, unknown>>(`${this.apiUrl}/required-documents/${docId}`, data)
       .pipe(map((response) => response?.data || response));
   }
 
   // ─── Obligaciones del Arrendador (WS-21) ───
 
   getObligaciones(contractId: string): Observable<ContractObligacion[]> {
-    return this.http.get<any>(`${this.apiUrl}/${contractId}/obligaciones`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones`).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -320,7 +320,7 @@ export class ContractService {
   }
 
   initializeObligaciones(contractId: string): Observable<ContractObligacion[]> {
-    return this.http.post<any>(`${this.apiUrl}/${contractId}/obligaciones/initialize`, {}).pipe(
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones/initialize`, {}).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -333,14 +333,14 @@ export class ContractService {
     data: { estado?: string; fecha_compromiso?: string | null; observaciones?: string | null }
   ): Observable<ContractObligacion> {
     return this.http
-      .put<any>(`${this.apiUrl}/obligaciones/${obligacionId}`, data)
+      .put<Record<string, unknown>>(`${this.apiUrl}/obligaciones/${obligacionId}`, data)
       .pipe(map((response) => response?.data || response));
   }
 
   // ─── Obligaciones del Arrendatario (WS-22) ───
 
   getObligacionesArrendatario(contractId: string): Observable<ContractObligacionArrendatario[]> {
-    return this.http.get<any>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario`).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -352,7 +352,7 @@ export class ContractService {
     contractId: string
   ): Observable<ContractObligacionArrendatario[]> {
     return this.http
-      .post<any>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario/initialize`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario/initialize`, {})
       .pipe(
         map((response) => {
           const data = response?.data || response;
@@ -366,7 +366,7 @@ export class ContractService {
     data: { estado?: string; fecha_compromiso?: string | null; observaciones?: string | null }
   ): Observable<ContractObligacionArrendatario> {
     return this.http
-      .put<any>(`${this.apiUrl}/obligaciones-arrendatario/${obligacionId}`, data)
+      .put<Record<string, unknown>>(`${this.apiUrl}/obligaciones-arrendatario/${obligacionId}`, data)
       .pipe(map((response) => response?.data || response));
   }
 }

@@ -26,17 +26,17 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <div class="card filter-card">
         <div class="filters-grid">
           <div class="filter-group">
-            <label>Tipo de Reporte</label>
+            <span class="label">Tipo de Reporte</span>
             <app-dropdown [(ngModel)]="selectedReport" [options]="reportOptions"></app-dropdown>
           </div>
 
           <div class="filter-group">
-            <label>Fecha Inicio</label>
+            <span class="label">Fecha Inicio</span>
             <input type="date" [(ngModel)]="startDate" class="form-control" />
           </div>
 
           <div class="filter-group">
-            <label>Fecha Fin</label>
+            <span class="label">Fecha Fin</span>
             <input type="date" [(ngModel)]="endDate" class="form-control" />
           </div>
 
@@ -235,7 +235,7 @@ export class ReportsComponent {
   endDate = new Date().toISOString().split('T')[0];
 
   loading = false;
-  reportData: any[] | null = null;
+  reportData: Record<string, unknown>[] | null = null;
 
   reportOptions: DropdownOption[] = [
     { label: 'Utilización de Equipos', value: 'utilization' },
@@ -359,7 +359,7 @@ export class ReportsComponent {
     }
 
     request.subscribe({
-      next: (blob: any) => {
+      next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;

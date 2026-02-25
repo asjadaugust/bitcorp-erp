@@ -6,14 +6,12 @@ import { MaintenanceScheduleService } from '../../../core/services/maintenance-s
 import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.model';
 import { ExcelExportService } from '../../../core/services/excel-export.service';
 import {
-  ExportDropdownComponent,
   ExportFormat,
 } from '../../../shared/components/export-dropdown/export-dropdown.component';
 import { MaintenanceCardComponent } from '../../../shared/components/maintenance-card/maintenance-card.component';
 
 import {
   PageLayoutComponent,
-  TabItem,
 } from '../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
@@ -64,7 +62,7 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
             [schedule]="schedule"
             (edit)="editSchedule($event)"
             (delete)="deleteSchedule($event)"
-            (click)="editSchedule($event.id)"
+            (cardClick)="editSchedule($event.id)"
           ></app-maintenance-card>
         </div>
 
@@ -202,13 +200,13 @@ export class MaintenanceScheduleListComponent implements OnInit {
 
 
 
-  currentFilters: any = {};
+  currentFilters: Record<string, unknown> = {};
 
   ngOnInit() {
     this.loadSchedules();
   }
 
-  onFilterChange(filters: any) {
+  onFilterChange(filters: Record<string, unknown>) {
     this.currentFilters = filters;
     this.loadSchedules();
   }
@@ -223,9 +221,9 @@ export class MaintenanceScheduleListComponent implements OnInit {
         this.schedules = Array.isArray(schedules) ? schedules : [];
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('Error loading schedules:', err);
-        this.error = err.error?.message || 'Error al cargar programaciones';
+        this.error = (err as Record<string, Record<string, string>>).error?.message || 'Error al cargar programaciones';
         this.loading = false;
       },
     });
@@ -235,15 +233,15 @@ export class MaintenanceScheduleListComponent implements OnInit {
     this.router.navigate(['new'], { relativeTo: this.route });
   }
 
-  editSchedule(id: any) {
+  editSchedule(id: number | string) {
     this.router.navigate([id, 'edit'], { relativeTo: this.route });
   }
 
-  deleteSchedule(id: any) {
+  deleteSchedule(id: number | string) {
     if (confirm('¿Estás seguro de eliminar esta programación?')) {
       this.scheduleService.delete(id).subscribe({
         next: () => this.loadSchedules(),
-        error: (err: any) => alert('Error al eliminar: ' + err.message),
+        error: (err: unknown) => alert('Error al eliminar: ' + (err as Error).message),
       });
     }
   }
@@ -251,12 +249,12 @@ export class MaintenanceScheduleListComponent implements OnInit {
   generateTasks() {
     this.loading = true;
     this.scheduleService.generateTasks(30).subscribe({
-      next: (res: any) => {
-        alert(`Se generaron ${res.data.tasksGenerated} tareas nuevas.`);
+      next: (res: Record<string, unknown>) => {
+        alert(`Se generaron ${(res.data as Record<string, number>).tasksGenerated} tareas nuevas.`);
         this.loading = false;
       },
-      error: (err: any) => {
-        alert('Error al generar tareas: ' + err.message);
+      error: (err: unknown) => {
+        alert('Error al generar tareas: ' + (err as Error).message);
         this.loading = false;
       },
     });

@@ -298,9 +298,9 @@ export class ContractListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.estado = filters['estado'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.estado = (filters['estado'] as string) || '';
     this.loadContracts();
   }
 

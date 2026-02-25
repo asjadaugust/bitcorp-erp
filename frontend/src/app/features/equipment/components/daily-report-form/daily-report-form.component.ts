@@ -1,10 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
+import { Equipment } from '../../../../core/models/equipment.model';
+import { Operator } from '../../../../core/models/operator.model';
 import { EquipmentService } from '../../../../core/services/equipment.service';
 import { OperatorService } from '../../../../core/services/operator.service';
 import { DailyReportService } from '../../../../core/services/daily-report.service';
@@ -55,9 +57,9 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   isOffline = false;
   reportId?: string;
 
-  equipment: any[] = [];
-  operators: any[] = [];
-  filteredEquipment: any[] = [];
+  equipment: Equipment[] = [];
+  operators: Operator[] = [];
+  filteredEquipment: Equipment[] = [];
   equipmentOptions: DropdownOption[] = [];
   operatorOptions: DropdownOption[] = [];
 
@@ -79,19 +81,16 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   maxPhotoSize = 5 * 1024 * 1024; // 5MB
 
   private destroy$ = new Subject<void>();
-
-  constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private route: ActivatedRoute,
-    private equipmentService: EquipmentService,
-    private operatorService: OperatorService,
-    private dailyReportService: DailyReportService,
-    private authService: AuthService,
-    private precalentamientoService: PrecalentamientoConfigService,
-    private snackBar: MatSnackBar,
-    private confirmSvc: ConfirmService
-  ) {}
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private equipmentService = inject(EquipmentService);
+  private operatorService = inject(OperatorService);
+  private dailyReportService = inject(DailyReportService);
+  private authService = inject(AuthService);
+  private precalentamientoService = inject(PrecalentamientoConfigService);
+  private snackBar = inject(MatSnackBar);
+  private confirmSvc = inject(ConfirmService);
 
   ngOnInit(): void {
     this.initForm();
@@ -183,10 +182,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.reportForm
       .get('equipo_id')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((equipoId: any) => this.onEquipoChange(equipoId));
+      .subscribe((equipoId: unknown) => this.onEquipoChange(equipoId));
   }
 
-  onEquipoChange(equipoId: any): void {
+  onEquipoChange(equipoId: unknown): void {
     console.log('Equipment changed:', equipoId);
     if (!equipoId || this.precalentamientoOverride) {
       if (!equipoId) {
@@ -196,7 +195,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const equipo = this.equipment.find((e: any) => e.id === Number(equipoId));
+    const equipo = this.equipment.find((e) => e.id === Number(equipoId));
     if (equipo) {
       console.log('Selected equipment details:', equipo);
       if (!equipo.tipo_equipo_id) {
@@ -207,8 +206,8 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       }
       this.precalentamientoTipoNombre = equipo.tipo_equipo_nombre || equipo.categoria || '';
       this.precalentamientoService.obtenerHoras(equipo.tipo_equipo_id).subscribe({
-        next: (data: any) => {
-          if (data && data.horas_precalentamiento > 0) {
+        next: (data: Record<string, unknown>) => {
+          if (data && (data.horas_precalentamiento as number) > 0) {
             this.showPrecalentamiento = true;
             if (!this.precalentamientoOverride) {
               this.reportForm.patchValue({ horas_precalentamiento: data.horas_precalentamiento });
@@ -243,23 +242,23 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     forkJoin([equipment$, operators$])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ([equipmentRes, operators]: [any, any]) => {
-          const equipment = Array.isArray(equipmentRes) ? equipmentRes : equipmentRes?.data || [];
+        next: ([equipmentRes, operators]: [unknown, unknown]) => {
+          const equipment = Array.isArray(equipmentRes) ? equipmentRes : (equipmentRes as Record<string, unknown>)?.data as Equipment[] || [];
           this.equipment = equipment;
           this.filteredEquipment = equipment;
           console.log('Equipment loaded into component:', this.equipment.length);
 
           this.equipmentOptions = equipment
-            .filter((eq: any) => eq && (eq.codigo_equipo || eq.id))
-            .map((eq: any) => ({
+            .filter((eq: Equipment) => eq && (eq.codigo_equipo || eq.id))
+            .map((eq: Equipment) => ({
               label: `${eq.codigo_equipo || 'S/C'} - ${eq.marca || ''} ${eq.modelo || ''}`.trim(),
               value: eq.id,
             }));
 
-          this.operators = operators || [];
+          this.operators = (operators as Operator[]) || [];
           this.operatorOptions = this.operators
-            .filter((op: any) => op && op.id)
-            .map((op: any) => ({
+            .filter((op: Operator) => op && op.id)
+            .map((op: Operator) => ({
               label:
                 `${op.nombres || ''} ${op.apellido_paterno || ''}`.trim() || `Operador ${op.id}`,
               value: op.id,
@@ -275,7 +274,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
           }
           this.loading = false;
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           console.error('Error loading form data:', error);
           this.showError('Error al cargar datos del formulario');
           this.loading = false;
@@ -286,7 +285,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   loadReport(id: string | number): void {
     this.loading = true;
     this.dailyReportService.getById(id).subscribe({
-      next: (report: any) => {
+      next: (report: Record<string, unknown>) => {
         // Calculate fuel_end from consumed if needed
         let fuelEnd = report.fuel_end;
         if (
@@ -320,7 +319,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         });
         this.loading = false;
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         console.error('Error loading report:', error);
         this.showError('Error al cargar el reporte');
         this.loading = false;
@@ -333,7 +332,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     const end = this.reportForm.get('horometro_final')?.value;
 
     if (start && end && end >= start) {
-      const hours = end - start;
+      const _hours = end - start;
       // Display calculated hours (optional field to show)
     }
   }
@@ -448,7 +447,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.saveReport('BORRADOR');
   }
 
-  private toCreateDto(status: 'BORRADOR' | 'PENDIENTE'): any {
+  private toCreateDto(status: 'BORRADOR' | 'PENDIENTE'): Record<string, unknown> {
     const formValue = this.reportForm.getRawValue();
 
     return {
@@ -499,7 +498,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       : this.dailyReportService.create(reportData);
 
     saveOperation.subscribe({
-      next: (response: any) => {
+      next: (response: Record<string, unknown>) => {
         this.saving = false;
 
         // Upload photos if any
@@ -516,7 +515,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
           this.router.navigate(['/equipment/daily-reports']);
         }, 1500);
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         console.error('Error saving report:', error);
         this.saving = false;
 
@@ -532,14 +531,14 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   private uploadPhotos(reportId: string | number): void {
     const formData = new FormData();
-    this.uploadedPhotos.forEach((photo, index) => {
+    this.uploadedPhotos.forEach((photo, _index) => {
       formData.append('photos', photo, photo.name);
     });
     this.dailyReportService.uploadPhotos(reportId, formData).subscribe({
       next: () => {
         this.showSuccess('Fotos subidas exitosamente');
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         console.error('Error uploading photos:', error);
         this.showWarning('Error al subir fotos, pero el reporte fue guardado');
       },

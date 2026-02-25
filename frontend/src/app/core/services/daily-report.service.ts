@@ -50,7 +50,7 @@ export class DailyReportService {
    * Get all daily reports with optional filters
    * Backend returns Spanish snake_case fields, map to Frontend Interface
    */
-  getAll(filters?: any): Observable<DailyReport[]> {
+  getAll(filters?: Record<string, string | number | undefined>): Observable<DailyReport[]> {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach((key) => {
@@ -62,7 +62,7 @@ export class DailyReportService {
       params = params.set('limit', '100');
     }
 
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         let data = response;
         if (response && typeof response === 'object' && 'data' in response) {
@@ -77,38 +77,38 @@ export class DailyReportService {
    * Get daily report by ID
    */
   getById(id: string | number): Observable<DailyReport> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(map((r) => this.mapToFrontend(r)));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
    * Create a new daily report
    */
   create(data: CreateDailyReportDto): Observable<DailyReport> {
-    const backendData: any = { ...data };
+    const backendData: Record<string, unknown> = { ...data };
 
     // Map fecha_parte → fecha (backend expects 'fecha')
-    if (backendData.fecha_parte) {
-      backendData.fecha = backendData.fecha_parte;
-      delete backendData.fecha_parte;
+    if (backendData['fecha_parte']) {
+      backendData['fecha'] = backendData['fecha_parte'];
+      delete backendData['fecha_parte'];
     }
 
-    return this.http.post<any>(this.apiUrl, backendData).pipe(map((r) => this.mapToFrontend(r)));
+    return this.http.post<Record<string, unknown>>(this.apiUrl, backendData).pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
    * Update an existing daily report
    */
   update(id: string | number, data: Partial<DailyReport>): Observable<DailyReport> {
-    const backendData: any = { ...data };
+    const backendData: Record<string, unknown> = { ...data };
 
     // Map fecha_parte → fecha (backend expects 'fecha')
-    if (backendData.fecha_parte) {
-      backendData.fecha = backendData.fecha_parte;
-      delete backendData.fecha_parte;
+    if (backendData['fecha_parte']) {
+      backendData['fecha'] = backendData['fecha_parte'];
+      delete backendData['fecha_parte'];
     }
 
     return this.http
-      .put<any>(`${this.apiUrl}/${id}`, backendData)
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, backendData)
       .pipe(map((r) => this.mapToFrontend(r)));
   }
 
@@ -124,7 +124,7 @@ export class DailyReportService {
    */
   getByOperator(operatorId: string | number): Observable<DailyReport[]> {
     return this.http
-      .get<any[]>(`${this.apiUrl}/operator/${operatorId}`)
+      .get<Record<string, unknown>[]>(`${this.apiUrl}/operator/${operatorId}`)
       .pipe(map((reports) => reports.map((r) => this.mapToFrontend(r))));
   }
 
@@ -133,7 +133,7 @@ export class DailyReportService {
    */
   approve(id: string | number): Observable<DailyReport> {
     return this.http
-      .put<any>(`${this.apiUrl}/${id}/approve`, {})
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}/approve`, {})
       .pipe(map((r) => this.mapToFrontend(r)));
   }
 
@@ -142,7 +142,7 @@ export class DailyReportService {
    */
   reject(id: string | number, reason: string): Observable<DailyReport> {
     return this.http
-      .put<any>(`${this.apiUrl}/${id}/reject`, { reason })
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}/reject`, { reason })
       .pipe(map((r) => this.mapToFrontend(r)));
   }
 
@@ -151,7 +151,7 @@ export class DailyReportService {
    */
   firmarResidente(id: string | number, firma_residente: string): Observable<DailyReport> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/firmar-residente`, { firma_residente })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/firmar-residente`, { firma_residente })
       .pipe(map((r) => this.mapToFrontend(r?.data || r)));
   }
 
@@ -159,11 +159,11 @@ export class DailyReportService {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }
 
-  uploadPhotos(id: string | number, formData: FormData): Observable<any> {
+  uploadPhotos(id: string | number, formData: FormData): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/${id}/photos`, formData);
   }
 
-  deletePhoto(id: string | number, photoIndex: number): Observable<any> {
+  deletePhoto(id: string | number, photoIndex: number): Observable<unknown> {
     return this.http.delete(`${this.apiUrl}/${id}/photos/${photoIndex}`);
   }
 
@@ -179,7 +179,7 @@ export class DailyReportService {
     if (proyectoId) {
       params = params.set('proyecto_id', proyectoId.toString());
     }
-    return this.http.get<any>(`${this.apiUrl}/reception-status`, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/reception-status`, { params }).pipe(
       map((response) => {
         if (response && typeof response === 'object' && 'data' in response) {
           return response.data;
@@ -201,7 +201,13 @@ export class DailyReportService {
     | 'REVISADO_COSTOS'
     | 'APROBADO'
     | 'RECHAZADO' {
-    return estado as any;
+    return estado as
+      | 'BORRADOR'
+      | 'PENDIENTE'
+      | 'APROBADO_SUPERVISOR'
+      | 'REVISADO_COSTOS'
+      | 'APROBADO'
+      | 'RECHAZADO';
   }
 
   private mapStatusToEstado(status: string): string {
@@ -221,16 +227,16 @@ export class DailyReportService {
     if (fechaHasta) params = params.set('fecha_hasta', fechaHasta);
     if (soloAbiertas) params = params.set('solo_abiertas', 'true');
     return this.http
-      .get<any>(`${this.apiUrl}/inspection-tracking`, { params })
+      .get<Record<string, unknown>>(`${this.apiUrl}/inspection-tracking`, { params })
       .pipe(map((r) => r?.data ?? r));
   }
 
   /**
    * Resolve a mechanical delay observation
    */
-  resolverObservacion(id: number, observacion_resolucion?: string): Observable<any> {
+  resolverObservacion(id: number, observacion_resolucion?: string): Observable<unknown> {
     return this.http
-      .patch<any>(`${this.apiUrl}/observaciones/${id}/resolver`, {
+      .patch<Record<string, unknown>>(`${this.apiUrl}/observaciones/${id}/resolver`, {
         observacion_resolucion,
       })
       .pipe(map((r) => r?.data ?? r));
@@ -239,7 +245,7 @@ export class DailyReportService {
   /**
    * Map English properties to Frontend Interface
    */
-  private mapToFrontend(data: any): DailyReport {
+  private mapToFrontend(data: Record<string, unknown>): DailyReport {
     return {
       ...data,
       fecha_parte: data.fecha || data.fecha_parte,

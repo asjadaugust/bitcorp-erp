@@ -16,7 +16,7 @@ export class OperatorService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/operators`;
 
-  getAll(filters?: any): Observable<Operator[]> {
+  getAll(filters?: Record<string, string | number | undefined>): Observable<Operator[]> {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach((key) => {
@@ -25,7 +25,7 @@ export class OperatorService {
     }
     // API returns paginated response: {success, data, pagination}
     // Interceptor does NOT unwrap when pagination exists, so we extract data here
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         // Handle both paginated {data: [...]} and direct array responses
         const data =
@@ -40,7 +40,7 @@ export class OperatorService {
   }
 
   getById(id: number): Observable<Operator> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(
       map((response) => {
         return response && typeof response === 'object' && 'data' in response
           ? response.data
@@ -62,7 +62,7 @@ export class OperatorService {
   }
 
   getAvailable(): Observable<Operator[]> {
-    return this.http.get<any>(`${this.apiUrl}/available`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/available`).pipe(
       map((response) => {
         const data =
           response && typeof response === 'object' && 'data' in response
@@ -76,7 +76,7 @@ export class OperatorService {
   }
 
   getCertifications(operatorId: number): Observable<OperatorCertification[]> {
-    return this.http.get<any>(`${this.apiUrl}/${operatorId}/certifications`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${operatorId}/certifications`).pipe(
       map((response) => {
         if (response && typeof response === 'object' && 'data' in response) {
           return response.data;
@@ -97,7 +97,7 @@ export class OperatorService {
   }
 
   getSkills(operatorId: number): Observable<OperatorSkill[]> {
-    return this.http.get<any>(`${this.apiUrl}/${operatorId}/skills`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${operatorId}/skills`).pipe(
       map((response) => {
         if (response && typeof response === 'object' && 'data' in response) {
           return response.data;
@@ -114,7 +114,7 @@ export class OperatorService {
   searchBySkill(skill: string, projectId?: number): Observable<Operator[]> {
     let params = new HttpParams().set('skill', skill);
     if (projectId) params = params.set('project_id', projectId);
-    return this.http.get<any>(`${this.apiUrl}/search-by-skill`, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/search-by-skill`, { params }).pipe(
       map((response) => {
         const data =
           response && typeof response === 'object' && 'data' in response
@@ -127,10 +127,10 @@ export class OperatorService {
     );
   }
 
-  getPerformance(id: number, months?: number): Observable<any> {
+  getPerformance(id: number, months?: number): Observable<unknown> {
     let params = new HttpParams();
     if (months) params = params.set('months', months);
-    return this.http.get<any>(`${this.apiUrl}/${id}/performance`, { params });
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/performance`, { params });
   }
 
   notify(operatorId: number, message: string): Observable<void> {

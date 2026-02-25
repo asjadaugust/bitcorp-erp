@@ -34,7 +34,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           <h3 class="section-title"><i class="fa-solid fa-tractor"></i> Equipo</h3>
           <div class="section-grid">
             <div class="form-group">
-              <label class="form-label required">ID Equipo</label>
+              <span class="form-label required">ID Equipo</span>
               <input
                 type="number"
                 class="form-control"
@@ -48,8 +48,8 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label"
-                >ID Parte Diario <span class="optional">(opcional)</span></label
+              <span class="form-label"
+                >ID Parte Diario <span class="optional">(opcional)</span></span
               >
               <input
                 type="number"
@@ -64,7 +64,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">ID Proyecto <span class="optional">(opcional)</span></label>
+              <span class="form-label">ID Proyecto <span class="optional">(opcional)</span></span>
               <input
                 type="number"
                 class="form-control"
@@ -83,7 +83,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           <h3 class="section-title"><i class="fa-solid fa-receipt"></i> Datos del Vale</h3>
           <div class="section-grid">
             <div class="form-group">
-              <label class="form-label required">Fecha</label>
+              <span class="form-label required">Fecha</span>
               <input
                 type="date"
                 class="form-control"
@@ -95,7 +95,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label required">Número de Vale</label>
+              <span class="form-label required">Número de Vale</span>
               <input
                 type="text"
                 class="form-control"
@@ -110,7 +110,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label required">Tipo de Combustible</label>
+              <span class="form-label required">Tipo de Combustible</span>
               <select
                 class="form-control"
                 [(ngModel)]="form.tipo_combustible"
@@ -127,7 +127,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label required">Cantidad (galones)</label>
+              <span class="form-label required">Cantidad (galones)</span>
               <input
                 type="number"
                 class="form-control"
@@ -143,8 +143,8 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label"
-                >Precio Unitario (S/) <span class="optional">(opcional)</span></label
+              <span class="form-label"
+                >Precio Unitario (S/) <span class="optional">(opcional)</span></span
               >
               <input
                 type="number"
@@ -160,7 +160,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">Monto Total (S/)</label>
+              <span class="form-label">Monto Total (S/)</span>
               <input
                 type="number"
                 class="form-control form-control-readonly"
@@ -174,8 +174,8 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group span-2">
-              <label class="form-label"
-                >Proveedor / Grifo <span class="optional">(opcional)</span></label
+              <span class="form-label"
+                >Proveedor / Grifo <span class="optional">(opcional)</span></span
               >
               <input
                 type="text"
@@ -189,8 +189,8 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group span-2">
-              <label class="form-label"
-                >Observaciones <span class="optional">(opcional)</span></label
+              <span class="form-label"
+                >Observaciones <span class="optional">(opcional)</span></span
               >
               <textarea
                 class="form-control"

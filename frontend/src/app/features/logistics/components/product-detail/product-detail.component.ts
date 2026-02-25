@@ -458,7 +458,7 @@ export class ProductDetailComponent implements OnInit {
             this.snackBar.open('Producto eliminado correctamente', 'Cerrar', { duration: 3000 });
             this.router.navigate(['/logistics/products']);
           },
-          error: (err: any) => {
+          error: (err: unknown) => {
             console.error('Error deleting product', err);
             this.snackBar.open('Error al eliminar el producto', 'Cerrar', { duration: 3000 });
           },

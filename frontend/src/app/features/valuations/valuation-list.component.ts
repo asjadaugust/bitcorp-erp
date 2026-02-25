@@ -146,8 +146,8 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
     </app-page-layout>
 
     <!-- Generation Modal -->
-    <div class="modal-overlay" *ngIf="showGenerationModal" (click)="closeGenerationModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" *ngIf="showGenerationModal" (click)="closeGenerationModal()" (keydown.enter)="closeGenerationModal()" tabindex="0" role="button">
+      <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
         <div class="modal-header">
           <h3>Generar Valorizaciones</h3>
           <button class="close-btn" (click)="closeGenerationModal()">
@@ -160,7 +160,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
             diarios aprobados.
           </p>
           <div class="form-group">
-            <label>Mes</label>
+            <span class="label">Mes</span>
             <app-dropdown
               [options]="months"
               [(ngModel)]="selectedMonth"
@@ -168,7 +168,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
             ></app-dropdown>
           </div>
           <div class="form-group">
-            <label>Año</label>
+            <span class="label">Año</span>
             <input type="number" [(ngModel)]="selectedYear" class="form-control" />
           </div>
         </div>
@@ -488,7 +488,7 @@ export class ValuationListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
+  onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = filters['search'] || '';
     this.filters.estado = filters['estado'] || '';
     this.loadValuations();
@@ -548,12 +548,13 @@ export class ValuationListComponent implements OnInit {
         year: this.selectedYear,
       })
       .subscribe({
-        next: (res: any) => {
+        next: (res: unknown) => {
           console.log('[DEBUG] generation success', res);
           this.generating = false;
           this.closeGenerationModal();
           this.loadValuations();
-          const count = Array.isArray(res) ? res.length : res?.data?.length || 0;
+          const resData = Array.isArray(res) ? res : (res as Record<string, unknown>)?.data;
+          const count = Array.isArray(resData) ? resData.length : 0;
           this.snackBar.open(`Se generaron/actualizaron ${count} valorizaciones.`, 'Cerrar', {
             duration: 5000,
           });

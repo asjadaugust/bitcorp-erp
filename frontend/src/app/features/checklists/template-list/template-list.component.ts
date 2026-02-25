@@ -290,9 +290,9 @@ export class TemplateListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.tipoEquipo = filters['tipoEquipo'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.tipoEquipo = (filters['tipoEquipo'] as string) || '';
 
     // Convert string to boolean or undefined
     if (filters['activo'] === 'true') {

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { InventoryService, Product } from '../../services/inventory.service';
 import { WebMcpService } from '../../../../core/services/webmcp.service';
 import {
@@ -402,10 +402,10 @@ export class ProductListComponent implements OnInit {
     ];
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.category = filters['category'] || '';
-    this.filters.stockStatus = filters['stockStatus'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.category = (filters['category'] as string) || '';
+    this.filters.stockStatus = (filters['stockStatus'] as string) || '';
     this.applyFilters();
   }
 

@@ -15,7 +15,7 @@ export class ValuationService {
   /**
    * List valuations with optional filters
    */
-  getAll(filters: any = {}): Observable<Valuation[]> {
+  getAll(filters: Record<string, string | number | undefined> = {}): Observable<Valuation[]> {
     let params = new HttpParams();
     if (filters.search) params = params.set('search', filters.search);
     if (filters.estado) params = params.set('estado', filters.estado);
@@ -30,7 +30,7 @@ export class ValuationService {
     // Prevent caching
     params = params.set('_t', new Date().getTime().toString());
 
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         let data = response;
         if (response && typeof response === 'object' && 'data' in response) {
@@ -41,20 +41,20 @@ export class ValuationService {
     );
   }
 
-  getAnalytics(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/analytics`);
+  getAnalytics(): Observable<unknown> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/analytics`);
   }
 
   getById(id: number | string): Observable<Valuation> {
     return this.http
-      .get<any>(`${this.apiUrl}/${id}`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
       .pipe(map((response) => this.toCamelCase(response?.data || response)));
   }
 
   create(valuation: Partial<Valuation>): Observable<Valuation> {
     const payload = this.toSnakeCase(valuation);
     return this.http
-      .post<any>(this.apiUrl, payload)
+      .post<Record<string, unknown>>(this.apiUrl, payload)
       .pipe(map((response) => this.toCamelCase(response?.data || response)));
   }
 
@@ -62,11 +62,11 @@ export class ValuationService {
     const payload = this.toSnakeCase(valuation);
     // console.log('Update Payload:', payload);
     return this.http
-      .put<any>(`${this.apiUrl}/${id}`, payload)
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, payload)
       .pipe(map((response) => this.toCamelCase(response?.data || response)));
   }
 
-  private toSnakeCase(valuation: Partial<Valuation>): any {
+  private toSnakeCase(valuation: Partial<Valuation>): Record<string, unknown> {
     return {
       contrato_id: valuation.contratoId,
       equipo_id: valuation.equipoId,
@@ -86,7 +86,7 @@ export class ValuationService {
     };
   }
 
-  private toCamelCase(data: any): Valuation {
+  private toCamelCase(data: Record<string, unknown>): Valuation {
     return {
       id: data.id,
       legacyId: data.legacy_id,
@@ -128,22 +128,22 @@ export class ValuationService {
       updatedAt: data.updated_at,
       equipo: data.equipo
         ? {
-            id: data.equipo.id,
-            codigo: data.equipo.codigo,
-            codigo_equipo: data.equipo.codigo, // Keep for legacy
-            nombre: data.equipo.nombre,
-            marca: data.equipo.marca || '',
-            modelo: data.equipo.modelo || '',
-          }
+          id: data.equipo.id,
+          codigo: data.equipo.codigo,
+          codigo_equipo: data.equipo.codigo, // Keep for legacy
+          nombre: data.equipo.nombre,
+          marca: data.equipo.marca || '',
+          modelo: data.equipo.modelo || '',
+        }
         : undefined,
       contrato: data.contrato
         ? {
-            id: data.contrato.id,
-            codigo: data.contrato.codigo,
-            numero_contrato: data.contrato.codigo, // Keep for legacy
-            nombre_proyecto: data.contrato.nombre_proyecto,
-            proveedor: data.contrato.proveedor,
-          }
+          id: data.contrato.id,
+          codigo: data.contrato.codigo,
+          numero_contrato: data.contrato.codigo, // Keep for legacy
+          nombre_proyecto: data.contrato.nombre_proyecto,
+          proveedor: data.contrato.proveedor,
+        }
         : undefined,
       creador: data.creador,
       aprobador: data.aprobador,
@@ -167,25 +167,25 @@ export class ValuationService {
       contractId: data.contrato_id || data.contratoId,
 
       deadlines: data.deadlines,
-    } as any;
+    } as unknown as Valuation;
   }
 
   delete(id: number | string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  calculate(data: { contrato_id: string; month: number; year: number }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/calculate`, data);
+  calculate(data: { contrato_id: string; month: number; year: number }): Observable<unknown> {
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/calculate`, data);
   }
 
-  generate(data: { contrato_id?: string; month: number; year: number }): Observable<any> {
+  generate(data: { contrato_id?: string; month: number; year: number }): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/generate`, data)
+      .post<Record<string, unknown>>(`${this.apiUrl}/generate`, data)
       .pipe(map((response) => response?.data || response));
   }
 
   getSummary(id: number | string): Observable<ValuationSummary> {
-    return this.http.get<any>(`${this.apiUrl}/${id}/summary`).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/summary`).pipe(
       map((response) => {
         const data = response?.data || response;
         // Flatten for template compatibility
@@ -215,44 +215,44 @@ export class ValuationService {
   }
 
   /** Submit draft (BORRADOR → PENDIENTE) */
-  submitDraft(id: number | string): Observable<any> {
+  submitDraft(id: number | string): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/submit-draft`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/submit-draft`, {})
       .pipe(map((response) => response?.data || response));
   }
 
   /** Submit valuation for review (PENDIENTE → EN_REVISION) */
-  submitForReview(id: number | string): Observable<any> {
+  submitForReview(id: number | string): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/submit-review`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/submit-review`, {})
       .pipe(map((response) => response?.data || response));
   }
 
   /** Approve valuation (EN_REVISION → APROBADO) */
-  approve(id: number | string): Observable<any> {
+  approve(id: number | string): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/approve`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/approve`, {})
       .pipe(map((response) => response?.data || response));
   }
 
   /** Reject valuation (any state → RECHAZADO) */
-  reject(id: number | string, reason: string): Observable<any> {
+  reject(id: number | string, reason: string): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/reject`, { reason })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/reject`, { reason })
       .pipe(map((response) => response?.data || response));
   }
 
   /** Validate valuation (EN_REVISION → VALIDADO) */
-  validate(id: number | string): Observable<any> {
+  validate(id: number | string): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/validate`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/validate`, {})
       .pipe(map((response) => response?.data || response));
   }
 
   /** Reopen rejected valuation (RECHAZADO → BORRADOR) */
-  reopen(id: number | string): Observable<any> {
+  reopen(id: number | string): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/reopen`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/reopen`, {})
       .pipe(map((response) => response?.data || response));
   }
 
@@ -260,21 +260,21 @@ export class ValuationService {
   registerConformidad(
     id: number | string,
     data: { fecha?: string; observaciones?: string }
-  ): Observable<any> {
+  ): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/conformidad`, data)
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/conformidad`, data)
       .pipe(map((response) => response?.data || response));
   }
 
   /** Mark valuation as paid (APROBADO → PAGADO) */
-  markAsPaid(id: number | string, paymentData: PaymentData): Observable<any> {
+  markAsPaid(id: number | string, paymentData: PaymentData): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/mark-paid`, paymentData)
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/mark-paid`, paymentData)
       .pipe(map((response) => response?.data || response));
   }
 
   /** Get valuation registry (consolidated cross-project) */
-  getRegistry(filters?: any): Observable<any> {
+  getRegistry(filters?: Record<string, string | number | undefined>): Observable<unknown> {
     let params = new HttpParams();
     if (filters?.proyecto_id) params = params.set('proyecto_id', filters.proyecto_id);
     if (filters?.periodo_desde) params = params.set('periodo_desde', filters.periodo_desde);
@@ -286,7 +286,7 @@ export class ValuationService {
     if (filters?.limit) params = params.set('limit', filters.limit.toString());
 
     console.log('[DEBUG] ValuationService.getRegistry calling API...');
-    return this.http.get<any>(`${this.apiUrl}/registry`, { params }).pipe(
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/registry`, { params }).pipe(
       map((response) => {
         console.log('[DEBUG] getRegistry raw response:', response);
 
@@ -304,7 +304,7 @@ export class ValuationService {
           console.log('[DEBUG] Mapping paginated data, count:', payload.data.length);
           return {
             ...payload,
-            data: payload.data.map((item: any) => this.toCamelCase(item)),
+            data: payload.data.map((item: Record<string, unknown>) => this.toCamelCase(item)),
           };
         }
 
@@ -315,7 +315,7 @@ export class ValuationService {
           Array.isArray(list) ? list.length : 'not-array'
         );
 
-        return Array.isArray(list) ? list.map((item: any) => this.toCamelCase(item)) : list;
+        return Array.isArray(list) ? list.map((item: Record<string, unknown>) => this.toCamelCase(item)) : list;
       }),
       catchError((error) => {
         return throwError(() => error);
@@ -325,8 +325,8 @@ export class ValuationService {
 
   // ─── Payment Document Methods (WS-5) ───
 
-  getPaymentDocuments(valuationId: number): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/${valuationId}/payment-documents`).pipe(
+  getPaymentDocuments(valuationId: number): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/payment-documents`).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -334,21 +334,21 @@ export class ValuationService {
     );
   }
 
-  createPaymentDocument(valuationId: number, data: any): Observable<any> {
+  createPaymentDocument(valuationId: number, data: Record<string, unknown>): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${valuationId}/payment-documents`, data)
+      .post<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/payment-documents`, data)
       .pipe(map((response) => response?.data || response));
   }
 
-  updatePaymentDocument(docId: number, data: any): Observable<any> {
+  updatePaymentDocument(docId: number, data: Record<string, unknown>): Observable<unknown> {
     return this.http
-      .put<any>(`${this.apiUrl}/payment-documents/${docId}`, data)
+      .put<Record<string, unknown>>(`${this.apiUrl}/payment-documents/${docId}`, data)
       .pipe(map((response) => response?.data || response));
   }
 
   checkPaymentDocsComplete(valuationId: number): Observable<{ complete: boolean }> {
     return this.http
-      .get<any>(`${this.apiUrl}/${valuationId}/payment-documents/check`)
+      .get<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/payment-documents/check`)
       .pipe(map((response) => response?.data || response));
   }
 
@@ -356,12 +356,12 @@ export class ValuationService {
 
   recalculate(id: number | string): Observable<Valuation> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/recalculate`, {})
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/recalculate`, {})
       .pipe(map((response) => this.toCamelCase(response?.data || response)));
   }
 
-  getDiscountEvents(valuationId: number): Observable<any[]> {
-    return this.http.get<any>(`${this.apiUrl}/${valuationId}/discount-events`).pipe(
+  getDiscountEvents(valuationId: number): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/discount-events`).pipe(
       map((response) => {
         const data = response?.data || response;
         return Array.isArray(data) ? data : [];
@@ -380,9 +380,9 @@ export class ValuationService {
       horas_horometro_mecanica?: number | null;
       descripcion?: string;
     }
-  ): Observable<any> {
+  ): Observable<unknown> {
     return this.http
-      .post<any>(`${this.apiUrl}/${valuationId}/discount-events`, data)
+      .post<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/discount-events`, data)
       .pipe(map((response) => response?.data || response));
   }
 

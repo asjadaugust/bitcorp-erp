@@ -3,6 +3,7 @@ import { interval, fromEvent, merge } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 import { OfflineDBService, OfflineDailyReport } from './offline-db.service';
 import { DailyReportService } from './daily-report.service';
+import { CreateDailyReportDto } from '../models/daily-report.model';
 
 export interface SyncStatus {
   isSyncing: boolean;
@@ -130,12 +131,13 @@ export class SyncService {
     };
 
     return new Promise((resolve, reject) => {
-      this.dailyReportService.create(reportData as any).subscribe({
+      this.dailyReportService.create(reportData as unknown as CreateDailyReportDto).subscribe({
         next: async (response) => {
           // Check for success property or data property as common in this project's API responses
-          const res = response as any;
-          if (res && (res.id || (res.data && res.data.id))) {
-            const serverId = res.id || res.data.id;
+          const res = response as unknown as Record<string, unknown>;
+          const resData = res['data'] as Record<string, unknown> | undefined;
+          if (res && (res['id'] || (resData && resData['id']))) {
+            const serverId = (res['id'] || resData?.['id']) as number;
             await this.offlineDB.markAsSynced(report.localId, serverId);
           }
           resolve();

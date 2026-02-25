@@ -15,9 +15,7 @@ import {
   TipoEquipoService,
   TipoEquipo,
   CategoriaPrd,
-  CATEGORIA_PRD_LABELS,
 } from '../../core/services/tipo-equipo.service';
-import { Equipment } from '../../core/models/equipment.model';
 import { Provider } from '../../core/models/provider.model';
 import { Operator } from '../../core/models/operator.model';
 import {
@@ -97,7 +95,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
             <!-- Categoría PRD (filter) + Tipo de Equipo (valor real) -->
             <div class="form-group">
-              <label>Categoría PRD</label>
+              <span class="label">Categoría PRD</span>
               <app-dropdown
                 [options]="categoriaPrdOptions"
                 [placeholder]="'Seleccionar categoría'"
@@ -514,9 +512,9 @@ export class EquipmentFormComponent implements OnInit {
   private tipoEquipoService = inject(TipoEquipoService);
 
   providers: Provider[] = [];
-  providerOptions: { label: string; value: any }[] = [];
+  providerOptions: { label: string; value: string | number | null }[] = [];
   operators: Operator[] = [];
-  equipmentDocuments: any[] = [];
+  equipmentDocuments: { document_type: string; expiration_date: string; file_name: string; file: File | null }[] = [];
   validationErrors: ValidationError[] = [];
   errorMessage = '';
   successMessage = '';
@@ -524,7 +522,7 @@ export class EquipmentFormComponent implements OnInit {
   // Tipo de equipo / categoría PRD
   allTiposEquipo: TipoEquipo[] = [];
   selectedCategoriaPrd: CategoriaPrd | null = null;
-  tipoEquipoOptions: { label: string; value: any }[] = [];
+  tipoEquipoOptions: { label: string; value: string | number | null }[] = [];
   categoriaPrdOptions: { label: string; value: string }[] = [
     { label: 'Maquinaria Pesada', value: 'MAQUINARIA_PESADA' },
     { label: 'Vehículos Pesados', value: 'VEHICULOS_PESADOS' },
@@ -672,8 +670,9 @@ export class EquipmentFormComponent implements OnInit {
     this.equipmentDocuments.splice(index, 1);
   }
 
-  onDocFileSelected(event: any, index: number): void {
-    const file = event.target.files[0];
+  onDocFileSelected(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (file) {
       this.equipmentDocuments[index].file = file;
       this.equipmentDocuments[index].file_name = file.name;
@@ -804,7 +803,7 @@ export class EquipmentFormComponent implements OnInit {
         : this.equipmentService.create(equipmentData);
 
     request$.subscribe({
-      next: (response) => {
+      next: (_response) => {
         this.loading = false;
         this.successMessage = this.isEditMode
           ? 'Equipo actualizado correctamente'

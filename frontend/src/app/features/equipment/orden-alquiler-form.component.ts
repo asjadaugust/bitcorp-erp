@@ -32,7 +32,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           <h3 class="section-title"><i class="fa-solid fa-tractor"></i> Equipo y Proveedor</h3>
           <div class="section-grid">
             <div class="form-group">
-              <label class="form-label required">ID Proveedor</label>
+              <span class="form-label required">ID Proveedor</span>
               <input
                 type="number"
                 class="form-control"
@@ -46,7 +46,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">ID Equipo <span class="optional">(opcional)</span></label>
+              <span class="form-label">ID Equipo <span class="optional">(opcional)</span></span>
               <input
                 type="number"
                 class="form-control"
@@ -58,7 +58,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group span-2">
-              <label class="form-label required">Descripción del Equipo</label>
+              <span class="form-label required">Descripción del Equipo</span>
               <input
                 type="text"
                 class="form-control"
@@ -70,7 +70,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">ID Proyecto <span class="optional">(opcional)</span></label>
+              <span class="form-label">ID Proyecto <span class="optional">(opcional)</span></span>
               <input
                 type="number"
                 class="form-control"
@@ -82,8 +82,8 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label"
-                >ID Solicitud de Equipo <span class="optional">(opcional)</span></label
+              <span class="form-label"
+                >ID Solicitud de Equipo <span class="optional">(opcional)</span></span
               >
               <input
                 type="number"
@@ -102,7 +102,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           <h3 class="section-title"><i class="fa-solid fa-calendar-days"></i> Fechas</h3>
           <div class="section-grid">
             <div class="form-group">
-              <label class="form-label required">Fecha de Orden</label>
+              <span class="form-label required">Fecha de Orden</span>
               <input
                 type="date"
                 class="form-control"
@@ -113,7 +113,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">Fecha Inicio Estimada</label>
+              <span class="form-label">Fecha Inicio Estimada</span>
               <input
                 type="date"
                 class="form-control"
@@ -123,7 +123,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">Fecha Fin Estimada</label>
+              <span class="form-label">Fecha Fin Estimada</span>
               <input
                 type="date"
                 class="form-control"
@@ -141,7 +141,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           </h3>
           <div class="section-grid">
             <div class="form-group">
-              <label class="form-label required">Tarifa Acordada</label>
+              <span class="form-label required">Tarifa Acordada</span>
               <input
                 type="number"
                 class="form-control"
@@ -155,7 +155,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">Tipo de Tarifa</label>
+              <span class="form-label">Tipo de Tarifa</span>
               <select class="form-select" [(ngModel)]="form.tipo_tarifa" name="tipo_tarifa">
                 <option value="HORA">Por Hora</option>
                 <option value="DIA">Por Día</option>
@@ -164,7 +164,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group">
-              <label class="form-label">Moneda</label>
+              <span class="form-label">Moneda</span>
               <select class="form-select" [(ngModel)]="form.moneda" name="moneda">
                 <option value="PEN">PEN (Soles)</option>
                 <option value="USD">USD (Dólares)</option>
@@ -172,7 +172,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group" *ngIf="form.moneda === 'USD'">
-              <label class="form-label">Tipo de Cambio</label>
+              <span class="form-label">Tipo de Cambio</span>
               <input
                 type="number"
                 class="form-control"
@@ -185,7 +185,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group" *ngIf="form.tipo_tarifa !== 'HORA'">
-              <label class="form-label">Horas Incluidas en la Tarifa</label>
+              <span class="form-label">Horas Incluidas en la Tarifa</span>
               <input
                 type="number"
                 class="form-control"
@@ -198,7 +198,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
             </div>
 
             <div class="form-group" *ngIf="form.tipo_tarifa !== 'HORA'">
-              <label class="form-label">Penalidad por Hora Excedente</label>
+              <span class="form-label">Penalidad por Hora Excedente</span>
               <input
                 type="number"
                 class="form-control"
@@ -219,7 +219,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
           </h3>
           <div class="section-grid">
             <div class="form-group span-2">
-              <label class="form-label">Condiciones Especiales</label>
+              <span class="form-label">Condiciones Especiales</span>
               <textarea
                 class="form-control"
                 [(ngModel)]="form.condiciones_especiales"
@@ -229,7 +229,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
               ></textarea>
             </div>
             <div class="form-group span-2">
-              <label class="form-label">Observaciones</label>
+              <span class="form-label">Observaciones</span>
               <textarea
                 class="form-control"
                 [(ngModel)]="form.observaciones"

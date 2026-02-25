@@ -1,11 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, NgIf, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { PaymentService } from '../../core/services/payment.service';
 import { PaymentRecordDetail } from '../../core/models/payment-record.model';
 import {
   EntityDetailShellComponent,
-  EntityDetailSidebarCardComponent,
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
@@ -17,7 +16,6 @@ import {
     CommonModule,
     RouterModule,
     EntityDetailShellComponent,
-    EntityDetailSidebarCardComponent,
   ],
   template: `
     <entity-detail-shell
@@ -85,15 +83,15 @@ import {
             <h2>Información General</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>Número de Pago</label>
+                <span class="label">Número de Pago</span>
                 <p>{{ payment?.numero_pago }}</p>
               </div>
               <div class="info-item">
-                <label>Fecha de Pago</label>
+                <span class="label">Fecha de Pago</span>
                 <p>{{ payment?.fecha_pago | date: 'dd/MM/yyyy' }}</p>
               </div>
               <div class="info-item">
-                <label>Método de Pago</label>
+                <span class="label">Método de Pago</span>
                 <p>
                   <span class="badge badge-secondary">
                     {{ paymentService.getPaymentMethodLabel(payment?.metodo_pago || '') }}
@@ -101,7 +99,7 @@ import {
                 </p>
               </div>
               <div class="info-item">
-                <label>Estado</label>
+                <span class="label">Estado</span>
                 <p>
                   <span
                     [class]="
@@ -113,7 +111,7 @@ import {
                 </p>
               </div>
               <div class="info-item">
-                <label>Moneda</label>
+                <span class="label">Moneda</span>
                 <p>
                   {{
                     payment?.moneda === 'PEN'
@@ -125,7 +123,7 @@ import {
                 </p>
               </div>
               <div class="info-item" *ngIf="payment?.referencia_interna">
-                <label>Referencia Interna</label>
+                <span class="label">Referencia Interna</span>
                 <p>{{ payment?.referencia_interna }}</p>
               </div>
             </div>
@@ -145,27 +143,27 @@ import {
             <h2>Información Bancaria</h2>
             <div class="info-grid">
               <div class="info-item" *ngIf="payment?.banco_origen">
-                <label>Banco Origen</label>
+                <span class="label">Banco Origen</span>
                 <p>{{ payment?.banco_origen }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.cuenta_origen">
-                <label>Cuenta Origen</label>
+                <span class="label">Cuenta Origen</span>
                 <p class="code-text">{{ payment?.cuenta_origen }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.banco_destino">
-                <label>Banco Destino</label>
+                <span class="label">Banco Destino</span>
                 <p>{{ payment?.banco_destino }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.cuenta_destino">
-                <label>Cuenta Destino</label>
+                <span class="label">Cuenta Destino</span>
                 <p class="code-text">{{ payment?.cuenta_destino }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.numero_operacion">
-                <label>Número de Operación</label>
+                <span class="label">Número de Operación</span>
                 <p class="code-text highlight">{{ payment?.numero_operacion }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.numero_cheque">
-                <label>Número de Cheque</label>
+                <span class="label">Número de Cheque</span>
                 <p class="code-text">{{ payment?.numero_cheque }}</p>
               </div>
             </div>
@@ -176,7 +174,7 @@ import {
               <h2>Conciliación</h2>
               <div class="info-grid">
                 <div class="info-item">
-                  <label>Estado</label>
+                  <span class="label">Estado</span>
                   <p>
                     <span class="badge badge-success">
                       <i class="fa-solid fa-check-double"></i> Conciliado
@@ -184,7 +182,7 @@ import {
                   </p>
                 </div>
                 <div class="info-item" *ngIf="payment?.fecha_conciliacion">
-                  <label>Fecha</label>
+                  <span class="label">Fecha</span>
                   <p>{{ payment?.fecha_conciliacion | date: 'dd/MM/yyyy HH:mm' }}</p>
                 </div>
               </div>
@@ -198,15 +196,15 @@ import {
             <h2>Comprobante</h2>
             <div class="info-grid">
               <div class="info-item" *ngIf="payment?.comprobante_tipo">
-                <label>Tipo</label>
+                <span class="label">Tipo</span>
                 <p>{{ payment?.comprobante_tipo }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.comprobante_numero">
-                <label>Número</label>
+                <span class="label">Número</span>
                 <p class="code-text highlight">{{ payment?.comprobante_numero }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.comprobante_fecha">
-                <label>Fecha</label>
+                <span class="label">Fecha</span>
                 <p>{{ payment?.comprobante_fecha | date: 'dd/MM/yyyy' }}</p>
               </div>
             </div>
@@ -219,19 +217,19 @@ import {
             <h2>Auditoría</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>Registrado Por</label>
+                <span class="label">Registrado Por</span>
                 <p>{{ payment?.registrado_por_nombre || '-' }}</p>
               </div>
               <div class="info-item">
-                <label>Fecha Registro</label>
+                <span class="label">Fecha Registro</span>
                 <p>{{ payment?.fecha_registro | date: 'dd/MM/yyyy HH:mm' }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.aprobado_por_nombre">
-                <label>Aprobado Por</label>
+                <span class="label">Aprobado Por</span>
                 <p>{{ payment?.aprobado_por_nombre }}</p>
               </div>
               <div class="info-item" *ngIf="payment?.fecha_aprobacion">
-                <label>Fecha Aprobación</label>
+                <span class="label">Fecha Aprobación</span>
                 <p>{{ payment?.fecha_aprobacion | date: 'dd/MM/yyyy HH:mm' }}</p>
               </div>
             </div>
@@ -603,7 +601,7 @@ export class PaymentDetailComponent implements OnInit {
         this.payment = payment;
         this.loading = false;
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         console.error('Error loading payment:', error);
         this.loading = false;
         alert('Error al cargar el pago');
@@ -634,7 +632,7 @@ export class PaymentDetailComponent implements OnInit {
             alert('Pago conciliado exitosamente');
             this.loadPayment(this.payment!.id);
           },
-          error: (error: any) => {
+          error: (error: unknown) => {
             console.error('Error reconciling payment:', error);
             alert('Error al conciliar el pago');
           },
@@ -653,7 +651,7 @@ export class PaymentDetailComponent implements OnInit {
             alert('Pago anulado exitosamente');
             this.router.navigate(['/payments']);
           },
-          error: (error: any) => {
+          error: (error: unknown) => {
             console.error('Error canceling payment:', error);
             alert('Error al anular el pago');
           },

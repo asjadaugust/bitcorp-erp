@@ -143,7 +143,7 @@ export class IncidentListComponent implements OnInit {
   loadIncidents() {
     this.loading = true;
     this.sstService.getIncidents().subscribe({
-      next: (response: any) => {
+      next: (response: unknown) => {
         // Handle paginated response { success, data, meta/pagination } or direct array
         if (response && typeof response === 'object' && 'data' in response) {
           this.incidents = Array.isArray(response.data) ? response.data : [];
@@ -163,9 +163,9 @@ export class IncidentListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.severity = filters['severity'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.severity = (filters['severity'] as string) || '';
     this.applyFilters();
   }
 

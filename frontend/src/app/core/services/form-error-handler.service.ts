@@ -1,5 +1,19 @@
 import { Injectable } from '@angular/core';
-import { AbstractControl, FormGroup } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
+
+/**
+ * HTTP Error Response shape from Angular
+ */
+interface HttpErrorBody {
+  status?: number;
+  error?: {
+    error?: {
+      code?: string;
+      message?: string;
+      details?: ValidationError[];
+    };
+  };
+}
 
 /**
  * Validation Error Interface
@@ -34,7 +48,7 @@ export class FormErrorHandlerService {
    * @param error - Error object from HTTP request
    * @returns Array of validation errors
    */
-  extractValidationErrors(error: any): ValidationError[] {
+  extractValidationErrors(error: HttpErrorBody): ValidationError[] {
     // Check if error is a validation error from backend
     const isErrorValidation = error?.error?.error?.code === 'VALIDATION_ERROR';
 
@@ -60,7 +74,7 @@ export class FormErrorHandlerService {
    * @param error - Error object from HTTP request
    * @returns User-friendly error message (Spanish)
    */
-  getErrorMessage(error: any): string {
+  getErrorMessage(error: HttpErrorBody): string {
     // Handle validation errors
     const validationErrors = this.extractValidationErrors(error);
     if (validationErrors.length > 0) {
@@ -148,7 +162,7 @@ export class FormErrorHandlerService {
 
       if (control && control.errors) {
         // Remove only backend errors, preserve other validation
-        const { backend, ...otherErrors } = control.errors;
+        const { backend: _backend, ...otherErrors } = control.errors;
 
         if (Object.keys(otherErrors).length === 0) {
           control.setErrors(null);
@@ -165,7 +179,7 @@ export class FormErrorHandlerService {
    * @param error - Error object from HTTP request
    * @returns True if error is a validation error
    */
-  isValidationError(error: any): boolean {
+  isValidationError(error: HttpErrorBody): boolean {
     return error?.error?.error?.code === 'VALIDATION_ERROR';
   }
 
@@ -176,7 +190,7 @@ export class FormErrorHandlerService {
    * @param fieldName - Name of the field to get errors for
    * @returns Array of error messages for the field, or empty array
    */
-  getFieldErrors(error: any, fieldName: string): string[] {
+  getFieldErrors(error: HttpErrorBody, fieldName: string): string[] {
     const validationErrors = this.extractValidationErrors(error);
     const fieldError = validationErrors.find((e) => e.field === fieldName);
     return fieldError ? fieldError.errors : [];

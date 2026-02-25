@@ -18,6 +18,9 @@ export interface Tab {
         class="aero-tab"
         [class.aero-tab--active]="activeTabId === tab.id"
         (click)="onTabClick(tab.id)"
+        (keydown.enter)="onTabClick(tab.id)"
+        tabindex="0"
+        role="tab"
       >
         <i *ngIf="tab.icon" [class]="tab.icon"></i>
         {{ tab.label }}

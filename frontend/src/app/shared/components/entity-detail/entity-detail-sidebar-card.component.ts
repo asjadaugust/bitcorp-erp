@@ -10,7 +10,7 @@ import { Component, Input } from '@angular/core';
  *   </entity-detail-sidebar-card>
  */
 @Component({
-  selector: 'entity-detail-sidebar-card',
+  selector: 'app-entity-detail-sidebar-card',
   standalone: true,
   template: `
     <div class="card">

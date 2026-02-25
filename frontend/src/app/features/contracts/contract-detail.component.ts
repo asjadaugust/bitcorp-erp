@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ContractService } from '../../core/services/contract.service';
 import {
   Contract,
@@ -102,21 +103,21 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           <h2>Información General</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Fecha Inicio</label>
+              <span class="label">Fecha Inicio</span>
               <p>{{ contract?.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
             </div>
             <div class="info-item">
-              <label>Fecha Fin</label>
+              <span class="label">Fecha Fin</span>
               <p>{{ contract?.fecha_fin | date: 'dd/MM/yyyy' }}</p>
             </div>
             <div class="info-item">
-              <label>Tarifa</label>
+              <span class="label">Tarifa</span>
               <p class="highlight">
                 {{ contract?.tarifa | currency: contract?.moneda || 'USD' }}
               </p>
             </div>
             <div class="info-item">
-              <label>Tipo</label>
+              <span class="label">Tipo</span>
               <p>{{ contract?.tipo || 'Alquiler' }}</p>
             </div>
           </div>
@@ -126,7 +127,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           <h2>Equipo Asignado</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Codigo Equipo</label>
+              <span class="label">Codigo Equipo</span>
               <p>
                 <a [routerLink]="['/equipment', contract?.equipo_id]" class="link-primary">
                   {{ contract?.equipo_codigo || 'N/A' }}
@@ -134,15 +135,15 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
               </p>
             </div>
             <div class="info-item">
-              <label>Marca/Modelo</label>
+              <span class="label">Marca/Modelo</span>
               <p>{{ contract?.equipo_marca || '-' }} {{ contract?.equipo_modelo || '' }}</p>
             </div>
             <div class="info-item">
-              <label>Serie</label>
+              <span class="label">Serie</span>
               <p>{{ contract?.equipo_placa || '-' }}</p>
             </div>
             <div class="info-item">
-              <label>Ubicación</label>
+              <span class="label">Ubicación</span>
               <p>{{ contract?.plazo_texto || 'No especificada' }}</p>
             </div>
           </div>
@@ -209,19 +210,19 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             <div class="info-grid">
               @if (contract?.documento_acredita) {
                 <div class="info-item">
-                  <label>Documento que Acredita</label>
+                  <span class="label">Documento que Acredita</span>
                   <p>{{ contract?.documento_acredita }}</p>
                 </div>
               }
               @if (contract?.fecha_acreditada) {
                 <div class="info-item">
-                  <label>Fecha Acreditada</label>
+                  <span class="label">Fecha Acreditada</span>
                   <p>{{ contract?.fecha_acreditada | date: 'dd/MM/yyyy' }}</p>
                 </div>
               }
               @if (contract?.jurisdiccion) {
                 <div class="info-item">
-                  <label>Jurisdicción</label>
+                  <span class="label">Jurisdicción</span>
                   <p>{{ contract?.jurisdiccion }}</p>
                 </div>
               }
@@ -446,19 +447,19 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       <entity-detail-sidebar-card entity-sidebar-after title="Detalles de Vigencia">
         <div class="info-column">
           <div class="info-item">
-            <label>Cons. Contrato</label>
+            <span class="label">Cons. Contrato</span>
             <p>{{ contract?.fecha_contrato | date: 'dd/MM/yyyy' }}</p>
           </div>
           <div class="info-item">
-            <label>Inicio Vigencia</label>
+            <span class="label">Inicio Vigencia</span>
             <p>{{ contract?.fecha_inicio | date: 'dd/MM/yyyy' }}</p>
           </div>
           <div class="info-item">
-            <label>Fin Vigencia</label>
+            <span class="label">Fin Vigencia</span>
             <p>{{ contract?.fecha_fin | date: 'dd/MM/yyyy' }}</p>
           </div>
           <div class="info-item">
-            <label>Días Restantes</label>
+            <span class="label">Días Restantes</span>
             <p [class.text-danger]="getDaysRemaining(contract?.fecha_fin) <= 30" class="font-bold">
               {{ getDaysRemaining(contract?.fecha_fin) }} días
             </p>
@@ -485,8 +486,8 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
     <!-- ── MODAL: Resolver Contrato ──────────────────────────── -->
     @if (showResolverModal) {
-      <div class="modal" (click)="showResolverModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="showResolverModal = false" (keydown.enter)="showResolverModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h2><i class="fa-solid fa-scale-balanced"></i> Resolver Contrato</h2>
             <button type="button" class="close" (click)="showResolverModal = false">
@@ -498,7 +499,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
               La resolución formal registra la terminación anticipada del contrato según PRD §12.
             </p>
             <div class="form-group">
-              <label>Causal de Resolución <span class="required">*</span></label>
+              <span class="label">Causal de Resolución<span class="required">*</span></span>
               <app-dropdown
                 [options]="causalOptions"
                 [(ngModel)]="resolverForm.causal_resolucion"
@@ -506,7 +507,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
               />
             </div>
             <div class="form-group">
-              <label>Motivo Detallado <span class="required">*</span></label>
+              <span class="label">Motivo Detallado<span class="required">*</span></span>
               <textarea
                 class="form-control"
                 rows="3"
@@ -515,11 +516,11 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
               ></textarea>
             </div>
             <div class="form-group">
-              <label>Fecha de Resolución <span class="required">*</span></label>
+              <span class="label">Fecha de Resolución<span class="required">*</span></span>
               <input type="date" class="form-control" [(ngModel)]="resolverForm.fecha_resolucion" />
             </div>
             <div class="form-group">
-              <label>Monto de Liquidación Acordado <span class="optional">(opcional)</span></label>
+              <span class="label">Monto de Liquidación Acordado <span class="optional">(opcional)</span></span>
               <input
                 type="number"
                 class="form-control"
@@ -554,8 +555,8 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
     <!-- ── MODAL: Liquidar Contrato ───────────────────────────── -->
     @if (showLiquidarModal) {
-      <div class="modal" (click)="showLiquidarModal = false">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="showLiquidarModal = false" (keydown.enter)="showLiquidarModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
           <div class="modal-header">
             <h2><i class="fa-solid fa-circle-check"></i> Liquidar Contrato</h2>
             <button type="button" class="close" (click)="showLiquidarModal = false">
@@ -601,7 +602,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             }
             @if (liquidationCheck?.puede_liquidar) {
               <div class="form-group">
-                <label>Fecha de Liquidación <span class="required">*</span></label>
+                <span class="label">Fecha de Liquidación<span class="required">*</span></span>
                 <input
                   type="date"
                   class="form-control"
@@ -609,7 +610,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 />
               </div>
               <div class="form-group">
-                <label>Monto Final de Liquidación <span class="optional">(opcional)</span></label>
+                <span class="label">Monto Final de Liquidación <span class="optional">(opcional)</span></span>
                 <input
                   type="number"
                   class="form-control"
@@ -620,7 +621,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 />
               </div>
               <div class="form-group">
-                <label>Observaciones de Cierre <span class="optional">(opcional)</span></label>
+                <span class="label">Observaciones de Cierre <span class="optional">(opcional)</span></span>
                 <textarea
                   class="form-control"
                   rows="3"
@@ -1045,9 +1046,9 @@ export class ContractDetailComponent implements OnInit {
   valuations: Valuation[] = [];
   loading = true;
   showDeleteModal = false;
-  annexA: any[] = [];
-  annexB: any[] = [];
-  requiredDocs: any[] = [];
+  annexA: { concepto: string; incluido: boolean; observaciones: string }[] = [];
+  annexB: { concepto: string; incluido: boolean; observaciones: string }[] = [];
+  requiredDocs: { tipo_documento: string; estado: string }[] = [];
 
   // WS-21: Obligaciones del Arrendador
   obligaciones: ContractObligacion[] = [];
@@ -1436,11 +1437,18 @@ export class ContractDetailComponent implements OnInit {
     if (!this.contract) return;
     this.liquidationCheck = null;
     this.contractService.liquidationCheck(this.contract.id.toString()).subscribe({
-      next: (check: any) => {
+      next: (check: {
+        puede_liquidar: boolean;
+        contrato_estado: string;
+        valorizaciones_pendientes: number;
+        total_valorizaciones: number;
+        tiene_acta_devolucion: boolean;
+        observaciones: string[];
+      }) => {
         this.liquidationCheck = check;
         this.showLiquidarModal = true;
       },
-      error: (err: any) =>
+      error: (err: HttpErrorResponse) =>
         alert('Error verificando requisitos: ' + (err.error?.error?.message || err.message)),
     });
   }
@@ -1461,7 +1469,7 @@ export class ContractDetailComponent implements OnInit {
           this.showResolverModal = false;
           this.loadContract(this.contract!.id.toString());
         },
-        error: (err: any) => {
+        error: (err: HttpErrorResponse) => {
           this.savingLifecycle = false;
           alert('Error: ' + (err.error?.error?.message || err.message));
         },
@@ -1483,7 +1491,7 @@ export class ContractDetailComponent implements OnInit {
           this.showLiquidarModal = false;
           this.loadContract(this.contract!.id.toString());
         },
-        error: (err: any) => {
+        error: (err: HttpErrorResponse) => {
           this.savingLifecycle = false;
           alert('Error: ' + (err.error?.error?.message || err.message));
         },

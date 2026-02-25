@@ -142,7 +142,7 @@ export class ProviderLogComponent implements OnInit {
   @Input() providerId!: number | string;
   private providerService = inject(ProviderService);
 
-  logs: any[] = [];
+  logs: Record<string, unknown>[] = [];
   loading = false;
 
   ngOnInit(): void {

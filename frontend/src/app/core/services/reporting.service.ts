@@ -14,7 +14,7 @@ export class ReportingService {
     startDate: string,
     endDate: string,
     format: 'json' | 'excel' = 'json'
-  ): Observable<any> {
+  ): Observable<unknown> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -27,14 +27,14 @@ export class ReportingService {
       });
     }
 
-    return this.http.get<any>(`${this.apiUrl}/equipment-utilization`, { params });
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/equipment-utilization`, { params });
   }
 
   getMaintenanceHistory(
     startDate: string,
     endDate: string,
     format: 'json' | 'excel' = 'json'
-  ): Observable<any> {
+  ): Observable<unknown> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -47,14 +47,14 @@ export class ReportingService {
       });
     }
 
-    return this.http.get<any>(`${this.apiUrl}/maintenance`, { params });
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/maintenance`, { params });
   }
 
   getInventoryMovements(
     startDate: string,
     endDate: string,
     format: 'json' | 'excel' = 'json'
-  ): Observable<any> {
+  ): Observable<unknown> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -67,14 +67,14 @@ export class ReportingService {
       });
     }
 
-    return this.http.get<any>(`${this.apiUrl}/inventory`, { params });
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/inventory`, { params });
   }
 
   getOperatorTimesheet(
     startDate: string,
     endDate: string,
     format: 'json' | 'excel' = 'json'
-  ): Observable<any> {
+  ): Observable<unknown> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate)
@@ -87,6 +87,6 @@ export class ReportingService {
       });
     }
 
-    return this.http.get<any>(`${this.apiUrl}/operator-timesheet`, { params });
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/operator-timesheet`, { params });
   }
 }

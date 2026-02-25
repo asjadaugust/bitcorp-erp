@@ -31,7 +31,7 @@ import {
     >
       <div class="checklist-form-content">
         <div class="template-section" *ngIf="!selectedTemplate && templates.length > 0">
-          <label>Usar Plantilla:</label>
+          <span class="label">Usar Plantilla:</span>
           <app-dropdown
             [(ngModel)]="selectedTemplateId"
             [options]="templateOptions"
@@ -70,7 +70,7 @@ import {
               </div>
 
               <div class="item-value" *ngIf="item.expected_value">
-                <label>Esperado: {{ item.expected_value }}</label>
+                <span class="label">Esperado: {{ item.expected_value }}</span>
                 <input
                   type="text"
                   [(ngModel)]="item.actual_value"
@@ -105,7 +105,7 @@ import {
 
         <div class="checklist-footer-content" *ngIf="selectedTemplate">
           <div class="observations">
-            <label>Observaciones Generales</label>
+            <span class="label">Observaciones Generales</span>
             <textarea
               [(ngModel)]="observations"
               placeholder="Cualquier observación general sobre este checklist..."
@@ -448,7 +448,7 @@ export class ChecklistFormComponent implements OnInit {
   }
 
   loadTemplates() {
-    const filters: any = { checklist_type: this.checklistType, is_active: true };
+    const filters: Record<string, string | boolean> = { checklist_type: this.checklistType, is_active: true };
     if (this.equipmentCategoryId) {
       filters.equipment_category_id = this.equipmentCategoryId;
     }
@@ -548,7 +548,7 @@ export class ChecklistFormComponent implements OnInit {
       trabajador_id: this.operatorId,
       daily_report_id: this.dailyReportId,
       items: this.items.map(
-        ({ id, is_required, expected_value, allow_photos, allow_comments, ...item }) => item
+        ({ _id, _is_required, _expected_value, _allow_photos, _allow_comments, ...item }) => item
       ),
       observations: this.observations || undefined,
     };

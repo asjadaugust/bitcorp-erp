@@ -51,30 +51,30 @@ export class SolicitudEquipoService {
   }
 
   obtener(id: number): Observable<SolicitudEquipo> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
   }
 
   crear(dto: Partial<SolicitudEquipo>): Observable<SolicitudEquipo> {
-    return this.http.post<any>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
   }
 
   actualizar(id: number, dto: Partial<SolicitudEquipo>): Observable<SolicitudEquipo> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
+    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
   }
 
   enviar(id: number): Observable<SolicitudEquipo> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/enviar`, {}).pipe(map((r) => r.data ?? r));
+    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/enviar`, {}).pipe(map((r) => r.data ?? r));
   }
 
   aprobar(id: number, observaciones?: string): Observable<SolicitudEquipo> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/aprobar`, { observaciones })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/aprobar`, { observaciones })
       .pipe(map((r) => r.data ?? r));
   }
 
   rechazar(id: number, observaciones?: string): Observable<SolicitudEquipo> {
     return this.http
-      .post<any>(`${this.apiUrl}/${id}/rechazar`, { observaciones })
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/rechazar`, { observaciones })
       .pipe(map((r) => r.data ?? r));
   }
 

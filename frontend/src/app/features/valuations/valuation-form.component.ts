@@ -341,8 +341,8 @@ export class ValuationFormComponent implements OnInit {
   errorMessage = '';
 
   // Dropdown Options
-  contractOptions: { label: string; value: any }[] = [];
-  equipmentOptions: { label: string; value: any }[] = [];
+  contractOptions: { label: string; value: string | number | null }[] = [];
+  equipmentOptions: { label: string; value: string | number | null }[] = [];
 
   estadoOptions = [
     { label: 'Pendiente', value: 'PENDIENTE' },
@@ -468,7 +468,7 @@ export class ValuationFormComponent implements OnInit {
     this.loading = true;
     const rawValue = this.valuationForm.getRawValue();
     // Exclude 'id' from the form value to prevent backend validation errors
-    const { id, ...formValue } = rawValue;
+    const { id: _id, ...formValue } = rawValue;
 
     // Prepare data with correct types
     const valuationData: Partial<Valuation> = {

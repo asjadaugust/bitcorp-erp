@@ -1,4 +1,4 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -17,9 +17,9 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
       submitIcon="fa-plus"
       [loading]="loading"
       [disableSubmit]="form.invalid"
-      (onClose)="cancel()"
-      (onCancel)="cancel()"
-      (onSubmit)="submit()"
+      (closed)="cancel()"
+      (cancelled)="cancel()"
+      (submitted)="submit()"
     >
       <form [formGroup]="form" class="addendum-form">
         <div class="current-state-card">
@@ -27,7 +27,7 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
             <i class="fa-solid fa-calendar-day"></i>
           </div>
           <div class="current-state-card__content">
-            <label>Vigencia Actual</label>
+            <span class="label">Vigencia Actual</span>
             <p>
               Finaliza el <strong>{{ data.currentEndDate | date: 'dd/MM/yyyy' }}</strong>
             </p>
@@ -36,7 +36,7 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
 
         <div class="section-grid">
           <div class="form-group">
-            <label>Fecha de Adenda *</label>
+            <span class="label">Fecha de Adenda *</span>
             <input type="date" formControlName="addendumDate" class="form-control" />
             <div
               class="error-msg"
@@ -47,7 +47,7 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
           </div>
 
           <div class="form-group">
-            <label>Nueva Fecha de Fin *</label>
+            <span class="label">Nueva Fecha de Fin *</span>
             <input type="date" formControlName="newEndDate" class="form-control" />
             <div
               class="error-msg"
@@ -58,7 +58,7 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
           </div>
 
           <div class="form-group full-width">
-            <label>Descripción / Motivo *</label>
+            <span class="label">Descripción / Motivo *</span>
             <textarea
               formControlName="description"
               class="form-control"
@@ -74,7 +74,7 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
           </div>
 
           <div class="form-group">
-            <label>Ajuste de Monto (Opcional)</label>
+            <span class="label">Ajuste de Monto (Opcional)</span>
             <div class="amount-input-wrapper">
               <span class="currency-symbol">S/</span>
               <input
@@ -120,39 +120,39 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
         display: flex;
         align-items: center;
         gap: var(--s-16);
+      }
 
-        &__icon {
-          width: 40px;
-          height: 40px;
-          background: white;
-          color: var(--primary-500);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          box-shadow: var(--shadow-sm);
+      .current-state-card__icon {
+        width: 40px;
+        height: 40px;
+        background: white;
+        color: var(--primary-500);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .current-state-card__content {
+        label {
+          display: block;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--primary-600);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: var(--s-2);
         }
+        p {
+          margin: 0;
+          font-size: 15px;
+          color: var(--primary-900);
+          font-weight: 500;
 
-        &__content {
-          label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--primary-600);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--s-2);
-          }
-          p {
-            margin: 0;
-            font-size: 15px;
-            color: var(--primary-900);
-            font-weight: 500;
-
-            strong {
-              color: var(--primary-700);
-            }
+          strong {
+            color: var(--primary-700);
           }
         }
       }
@@ -260,13 +260,12 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
 export class ContractAddendumDialogComponent {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<ContractAddendumDialogComponent>);
+  public data = inject<{ contractId: number; currentEndDate: string }>(MAT_DIALOG_DATA);
 
   form: FormGroup;
   loading = false;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { contractId: number; currentEndDate: string }
-  ) {
+  constructor() {
     const today = new Date().toISOString().split('T')[0];
 
     this.form = this.fb.group({
@@ -277,7 +276,7 @@ export class ContractAddendumDialogComponent {
     });
   }
 
-  getAbsValue(val: any): number {
+  getAbsValue(val: number | null): number {
     return Math.abs(Number(val || 0));
   }
 

@@ -77,7 +77,7 @@ import {
           <app-page-card *ngIf="activeTab === 'general'" class="fade-in">
             <div class="form-grid">
               <div class="form-group">
-                <label>Idioma</label>
+                <span class="label">Idioma</span>
                 <app-dropdown
                   [options]="languageOptions"
                   [ngModel]="'es'"
@@ -87,7 +87,7 @@ import {
               </div>
 
               <div class="form-group">
-                <label>Tema</label>
+                <span class="label">Tema</span>
                 <div class="theme-selector">
                   <label class="theme-option">
                     <input type="radio" name="theme" value="light" checked />
@@ -118,7 +118,7 @@ import {
             <div *ngIf="currentUser">
               <div class="form-grid">
                 <div class="form-group">
-                  <label>Nombre de Usuario</label>
+                  <span class="label">Nombre de Usuario</span>
                   <input
                     type="text"
                     [value]="currentUser.username"
@@ -128,7 +128,7 @@ import {
                 </div>
 
                 <div class="form-group">
-                  <label>Email Corporativo</label>
+                  <span class="label">Email Corporativo</span>
                   <input
                     type="email"
                     [value]="currentUser.email"
@@ -138,7 +138,7 @@ import {
                 </div>
 
                 <div class="form-group">
-                  <label>Nombre</label>
+                  <span class="label">Nombre</span>
                   <input
                     type="text"
                     [value]="currentUser.first_name"
@@ -148,7 +148,7 @@ import {
                 </div>
 
                 <div class="form-group">
-                  <label>Apellido</label>
+                  <span class="label">Apellido</span>
                   <input
                     type="text"
                     [value]="currentUser.last_name"
@@ -164,7 +164,7 @@ import {
           <app-page-card *ngIf="activeTab === 'security'" class="fade-in">
             <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
               <div class="form-group">
-                <label>Contraseña Actual</label>
+                <span class="label">Contraseña Actual</span>
                 <input
                   type="password"
                   formControlName="currentPassword"
@@ -186,7 +186,7 @@ import {
               </div>
 
               <div class="form-group">
-                <label>Nueva Contraseña</label>
+                <span class="label">Nueva Contraseña</span>
                 <input
                   type="password"
                   formControlName="newPassword"
@@ -208,7 +208,7 @@ import {
               </div>
 
               <div class="form-group">
-                <label>Confirmar Nueva Contraseña</label>
+                <span class="label">Confirmar Nueva Contraseña</span>
                 <input
                   type="password"
                   formControlName="confirmPassword"

@@ -27,11 +27,11 @@ import {
     >
       <div class="filters-row" actions>
         <div class="date-filter">
-          <label>Desde</label>
+          <span class="label">Desde</span>
           <input type="date" [(ngModel)]="fechaDesde" (change)="loadData()" />
         </div>
         <div class="date-filter">
-          <label>Hasta</label>
+          <span class="label">Hasta</span>
           <input type="date" [(ngModel)]="fechaHasta" (change)="loadData()" />
         </div>
       </div>

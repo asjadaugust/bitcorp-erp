@@ -200,7 +200,7 @@ export class FormContainerComponent {
   @Input() title = '';
   @Input() subtitle = '';
   @Input() icon = 'fa-plus';
-  @Input() breadcrumbs: any[] = [];
+  @Input() breadcrumbs: { label: string; link?: string }[] = [];
   @Input() submitLabel = 'Guardar';
   @Input() submitIcon = 'fa-save';
   @Input() disableSubmit = false;
@@ -209,16 +209,16 @@ export class FormContainerComponent {
   @Input() showFooter = true;
   @Input() backUrl?: string;
 
-  @Output() onSubmit = new EventEmitter<void>();
-  @Output() onCancel = new EventEmitter<void>();
+  @Output() submitted = new EventEmitter<void>();
+  @Output() cancelled = new EventEmitter<void>();
 
   handleSubmit(): void {
     if (!this.disableSubmit && !this.loading) {
-      this.onSubmit.emit();
+      this.submitted.emit();
     }
   }
 
   handleCancel(): void {
-    this.onCancel.emit();
+    this.cancelled.emit();
   }
 }

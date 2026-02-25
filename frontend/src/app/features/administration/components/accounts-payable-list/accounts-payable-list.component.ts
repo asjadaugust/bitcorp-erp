@@ -175,7 +175,7 @@ export class AccountsPayableListComponent implements OnInit {
   records: AccountsPayable[] = [];
   filteredRecords: AccountsPayable[] = [];
   loading = false;
-  filters: Record<string, any> = { search: '', estado: '' };
+  filters: Record<string, string> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -253,9 +253,9 @@ export class AccountsPayableListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters['search'] = filters['search'] || '';
-    this.filters['estado'] = filters['estado'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters['search'] = (filters['search'] as string) || '';
+    this.filters['estado'] = (filters['estado'] as string) || '';
     this.applyFilters();
   }
 
@@ -309,7 +309,7 @@ export class AccountsPayableListComponent implements OnInit {
               this.loadRecords();
               this.snackBar.open('Cuenta por pagar eliminada', 'Cerrar', { duration: 3000 });
             },
-            error: (err) => {
+            error: (_err) => {
               this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
             },
           });

@@ -7,10 +7,10 @@ export interface FilterConfig {
   label: string;
   type: 'text' | 'select' | 'date' | 'dateRange';
   placeholder?: string;
-  options?: { label: string; value: any }[];
-  value?: any; // For text, select, date
-  valueStart?: any; // For dateRange
-  valueEnd?: any; // For dateRange
+  options?: { label: string; value: unknown }[];
+  value?: unknown; // For text, select, date
+  valueStart?: unknown; // For dateRange
+  valueEnd?: unknown; // For dateRange
 }
 
 import { DropdownComponent } from '../dropdown/dropdown.component';
@@ -55,7 +55,7 @@ import { ButtonComponent } from '../button/button.component';
         <div class="filters-grid">
           <ng-container *ngFor="let filter of getAdvancedFilters()">
             <div class="filter-group">
-              <label>{{ filter.label }}</label>
+              <span class="label">{{ filter.label }}</span>
 
               <!-- Dropdown -->
               <app-dropdown
@@ -254,7 +254,7 @@ import { ButtonComponent } from '../button/button.component';
 })
 export class FilterBarComponent {
   @Input() config: FilterConfig[] = [];
-  @Output() filterChange = new EventEmitter<Record<string, any>>();
+  @Output() filterChange = new EventEmitter<Record<string, unknown>>();
 
   showAdvanced = false;
 
@@ -270,7 +270,7 @@ export class FilterBarComponent {
     return this.config.filter((c) => c.type !== 'text');
   }
 
-  getDropdownOptions(filter: FilterConfig): any[] {
+  getDropdownOptions(filter: FilterConfig): { label: string; value: unknown }[] {
     const opts = filter.options || [];
     return [{ label: 'Todos', value: '' }, ...opts];
   }
@@ -289,7 +289,7 @@ export class FilterBarComponent {
   }
 
   onFilterChange() {
-    const filters: Record<string, any> = {};
+    const filters: Record<string, unknown> = {};
     this.config.forEach((c) => {
       if (c.type === 'dateRange') {
         filters[c.key + '_start'] = c.valueStart;

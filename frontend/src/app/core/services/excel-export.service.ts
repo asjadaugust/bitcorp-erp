@@ -18,7 +18,7 @@ export class ExcelExportService {
    * @param data Array of objects to export
    * @param options Export configuration options
    */
-  exportToExcel(data: any[], options: ExcelExportOptions = {}): void {
+  exportToExcel(data: Record<string, unknown>[], options: ExcelExportOptions = {}): void {
     if (!data || data.length === 0) {
       console.warn('No data to export');
       return;
@@ -63,7 +63,7 @@ export class ExcelExportService {
    * @param filename Output filename
    */
   exportMultipleSheets(
-    sheets: { data: any[]; sheetName: string; columnHeaders?: Record<string, string> }[],
+    sheets: { data: Record<string, unknown>[]; sheetName: string; columnHeaders?: Record<string, string> }[],
     filename = 'export'
   ): void {
     const workbook = XLSX.utils.book_new();
@@ -87,12 +87,12 @@ export class ExcelExportService {
    * Transform data based on column headers and exclusions
    */
   private transformData(
-    data: any[],
+    data: Record<string, unknown>[],
     columnHeaders?: Record<string, string>,
     excludeColumns: string[] = []
-  ): any[] {
+  ): Record<string, unknown>[] {
     return data.map((row) => {
-      const transformedRow: any = {};
+      const transformedRow: Record<string, unknown> = {};
 
       Object.keys(row).forEach((key) => {
         // Skip excluded columns
@@ -144,7 +144,7 @@ export class ExcelExportService {
   /**
    * Calculate column widths based on content
    */
-  private calculateColumnWidths(data: any[], maxWidth = 50): any[] {
+  private calculateColumnWidths(data: Record<string, unknown>[], maxWidth = 50): { wch: number }[] {
     if (!data || data.length === 0) return [];
 
     const keys = Object.keys(data[0]);
@@ -182,7 +182,7 @@ export class ExcelExportService {
    * @param data Array of objects to export
    * @param filename Output filename
    */
-  exportToCSV(data: any[], filename = 'export'): void {
+  exportToCSV(data: Record<string, unknown>[], filename = 'export'): void {
     if (!data || data.length === 0) {
       console.warn('No data to export');
       return;

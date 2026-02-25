@@ -209,8 +209,8 @@ export class EmployeeListComponent implements OnInit {
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.searchTerm = filters['search'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.searchTerm = (filters['search'] as string) || '';
     this.loadEmployees();
   }
 

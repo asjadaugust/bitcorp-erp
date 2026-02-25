@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { SyncManager } from './sync-manager.service';
 
 @Injectable({
@@ -7,8 +7,9 @@ import { SyncManager } from './sync-manager.service';
 export class ServiceWorkerService {
   private swRegistration: ServiceWorkerRegistration | null = null;
   private isOnline = navigator.onLine;
+  private syncManager = inject(SyncManager);
 
-  constructor(private syncManager: SyncManager) {
+  constructor() {
     this.init();
     this.setupEventListeners();
   }
@@ -76,12 +77,12 @@ export class ServiceWorkerService {
   /**
    * Handle messages from service worker
    */
-  private async handleServiceWorkerMessage(data: any): Promise<void> {
+  private async handleServiceWorkerMessage(data: Record<string, unknown>): Promise<void> {
     console.log('[PWA] Message from service worker:', data);
 
     switch (data.type) {
       case 'STORE_OFFLINE_REQUEST':
-        await this.storeOfflineRequest(data.data);
+        await this.storeOfflineRequest(data.data as Record<string, unknown>);
         break;
 
       case 'SYNC_PENDING_REPORTS':
@@ -93,9 +94,9 @@ export class ServiceWorkerService {
   /**
    * Store offline request in IndexedDB
    */
-  private async storeOfflineRequest(requestData: any): Promise<void> {
+  private async storeOfflineRequest(requestData: Record<string, unknown>): Promise<void> {
     try {
-      const reportData = JSON.parse(requestData.body);
+      const reportData = JSON.parse(requestData['body'] as string);
       await this.syncManager.storePendingReport(reportData);
       console.log('[PWA] Report stored offline');
     } catch (error) {
@@ -138,7 +139,7 @@ export class ServiceWorkerService {
   /**
    * Sync individual report
    */
-  private async syncReport(report: any): Promise<void> {
+  private async syncReport(report: Record<string, unknown>): Promise<void> {
     const response = await fetch('/api/reports', {
       method: 'POST',
       headers: {

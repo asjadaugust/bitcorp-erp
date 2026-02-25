@@ -1,8 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { OperatorService } from '../../../core/services/operator.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { Operator } from '../../../core/models/operator.model';
+import { finalize } from 'rxjs/operators';
 
-interface OperatorProfile {
+// Internal interface for UI display matching the existing template
+interface ProfileDisplay {
   name: string;
   id: string;
   email: string;
@@ -11,6 +17,11 @@ interface OperatorProfile {
   certifications: { name: string; expiry: string }[];
   experience: number;
   joinDate: string;
+  stats?: {
+    rating: number;
+    hours: number;
+    reliability: number;
+  };
 }
 
 @Component({
@@ -34,8 +45,8 @@ interface OperatorProfile {
           <p class="profile-id">ID: {{ profile.id }}</p>
           <div class="profile-stats">
             <div class="stat">
-              <div class="stat-value">{{ profile.experience }}</div>
-              <div class="stat-label">Años Experiencia</div>
+              <div class="stat-value">{{ profile.stats?.rating || 0 }}</div>
+              <div class="stat-label">Calificación</div>
             </div>
             <div class="stat">
               <div class="stat-value">{{ profile.skills.length }}</div>
@@ -47,6 +58,12 @@ interface OperatorProfile {
             </div>
           </div>
         </div>
+
+        <div *ngIf="loading" class="loading-overlay">
+          <p>Cargando perfil...</p>
+        </div>
+
+        <div *ngIf="!loading && profile" class="profile-content-fade-in">
 
         <!-- Contact Information -->
         <div class="info-section">
@@ -378,28 +395,106 @@ interface OperatorProfile {
   ],
 })
 export class OperatorProfileComponent implements OnInit {
-  profile: OperatorProfile = {
-    name: 'Juan Pérez',
-    id: 'OP-001',
-    email: 'juan.perez@bitcorp.com',
-    phone: '+34 600 123 456',
-    skills: ['Excavadora', 'Retroexcavadora', 'Motoniveladora', 'Bulldozer', 'Cargadora Frontal'],
-    certifications: [
-      { name: 'Operador de Maquinaria Pesada', expiry: '15/06/2026' },
-      { name: 'Seguridad en Construcción', expiry: '20/03/2024' },
-      { name: 'Primeros Auxilios', expiry: '10/09/2025' },
-    ],
-    experience: 8,
-    joinDate: '15/01/2020',
+  private operatorService = inject(OperatorService);
+  private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
+
+  loading = true;
+  profile: ProfileDisplay = {
+    name: 'Cargando...',
+    id: '',
+    email: '',
+    phone: '',
+    skills: [],
+    certifications: [],
+    experience: 0,
+    joinDate: '',
   };
 
   ngOnInit() {
-    // TODO: Load from API
+    this.route.params.subscribe((params) => {
+      const id = params['id'] ? parseInt(params['id']) : null;
+      if (id) {
+        this.loadProfile(id);
+      } else {
+        // Fallback or "My Profile" logic
+        // For now, load a default ID or notify that ID is required
+        this.loadProfile(1); // Default for testing
+      }
+    });
+  }
+
+  loadProfile(id: number) {
+    this.loading = true;
+    this.operatorService
+      .getById(id)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (operator) => {
+          this.mapToDisplay(operator);
+          this.loadExtraData(id);
+        },
+        error: (err) => {
+          console.error('Error loading operator profile', err);
+        },
+      });
+  }
+
+  loadExtraData(id: number) {
+    // Load skills
+    this.operatorService.getSkills(id).subscribe((skills) => {
+      this.profile.skills = skills.map((s) => `${s.tipoEquipo} (${s.nivelHabilidad})`);
+    });
+
+    // Load certifications
+    this.operatorService.getCertifications(id).subscribe((certs) => {
+      this.profile.certifications = certs.map((c) => ({
+        name: c.nombreCertificacion,
+        expiry: this.formatDate(c.fechaVencimiento),
+      }));
+    });
+
+    // Load performance
+    this.operatorService.getPerformance(id).subscribe((perf) => {
+      this.profile.stats = {
+        rating: perf.rating,
+        hours: perf.total_hours,
+        reliability: perf.reliability,
+      };
+    });
+  }
+
+  mapToDisplay(op: Operator) {
+    this.profile = {
+      name: op.nombre_completo || `${op.nombres} ${op.apellido_paterno}`,
+      id: op.dni,
+      email: op.correo_electronico || 'No especificado',
+      phone: op.telefono || 'No especificado',
+      skills: this.profile.skills, // Preserved from loadExtraData or initialized
+      certifications: this.profile.certifications,
+      experience: 0, // Calculated or from extra data
+      joinDate: this.formatDate(op.fecha_ingreso || ''),
+    };
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return 'N/A';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-ES');
+    } catch {
+      return dateStr;
+    }
   }
 
   isExpired(dateStr: string): boolean {
-    const parts = dateStr.split('/');
-    const expiryDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-    return expiryDate < new Date();
+    if (!dateStr || dateStr === 'N/A') return false;
+    // Handle both DD/MM/YYYY and other formats
+    const parts = dateStr.includes('/') ? dateStr.split('/') : [];
+    if (parts.length === 3) {
+      const expiryDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      return expiryDate < new Date();
+    }
+    return new Date(dateStr) < new Date();
   }
 }

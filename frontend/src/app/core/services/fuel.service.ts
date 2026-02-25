@@ -11,15 +11,15 @@ export class FuelService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/fuel`;
 
-  getAll(filters: any = {}): Observable<FuelListResponse> {
+  getAll(filters: Record<string, string | number | undefined> = {}): Observable<FuelListResponse> {
     let params = new HttpParams();
-    if (filters.search) params = params.set('search', filters.search);
-    if (filters.valorizacionId) params = params.set('valorizacionId', filters.valorizacionId);
-    if (filters.startDate) params = params.set('startDate', filters.startDate);
-    if (filters.endDate) params = params.set('endDate', filters.endDate);
-    if (filters.tipoCombustible) params = params.set('tipoCombustible', filters.tipoCombustible);
-    if (filters.page) params = params.set('page', filters.page.toString());
-    if (filters.limit) params = params.set('limit', filters.limit.toString());
+    if (filters['search']) params = params.set('search', filters['search']);
+    if (filters['valorizacionId']) params = params.set('valorizacionId', filters['valorizacionId']);
+    if (filters['startDate']) params = params.set('startDate', filters['startDate']);
+    if (filters['endDate']) params = params.set('endDate', filters['endDate']);
+    if (filters['tipoCombustible']) params = params.set('tipoCombustible', filters['tipoCombustible']);
+    if (filters['page']) params = params.set('page', filters['page'].toString());
+    if (filters['limit']) params = params.set('limit', filters['limit'].toString());
 
     return this.http.get<FuelListResponse>(this.apiUrl, { params });
   }

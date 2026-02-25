@@ -83,20 +83,20 @@ export class AdministrationService {
 
   // Cost Centers
   getCostCenters(): Observable<CostCenter[]> {
-    return this.http.get<any>(`${this.apiUrl}/cost-centers`).pipe(map((res) => res.data || res));
+    return this.http.get<{ data: CostCenter[] }>(`${this.apiUrl}/cost-centers`).pipe(map((res) => res.data || res as unknown as CostCenter[]));
   }
 
   getCostCenter(id: string): Observable<CostCenter> {
     return this.http
-      .get<any>(`${this.apiUrl}/cost-centers/${id}`)
-      .pipe(map((res) => res.data || res));
+      .get<{ data: CostCenter }>(`${this.apiUrl}/cost-centers/${id}`)
+      .pipe(map((res) => res.data || res as unknown as CostCenter));
   }
 
-  createCostCenter(costCenter: any): Observable<CostCenter> {
+  createCostCenter(costCenter: Partial<CostCenter>): Observable<CostCenter> {
     return this.http.post<CostCenter>(`${this.apiUrl}/cost-centers`, costCenter);
   }
 
-  updateCostCenter(id: string, costCenter: any): Observable<CostCenter> {
+  updateCostCenter(id: string, costCenter: Partial<CostCenter>): Observable<CostCenter> {
     return this.http.put<CostCenter>(`${this.apiUrl}/cost-centers/${id}`, costCenter);
   }
 
@@ -105,16 +105,16 @@ export class AdministrationService {
   }
 
   getProviders(): Observable<Provider[]> {
-    return this.http.get<any>(this.providersUrl).pipe(map((res) => res.data || res));
+    return this.http.get<{ data: Provider[] }>(this.providersUrl).pipe(map((res) => res.data || res as unknown as Provider[]));
   }
 
   // Accounts Payable (Spanish snake_case DTOs)
   getAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http.get<any>(this.apUrl).pipe(map((res) => res.data || res));
+    return this.http.get<{ data: AccountsPayable[] }>(this.apUrl).pipe(map((res) => res.data || res as unknown as AccountsPayable[]));
   }
 
   getAccountsPayableById(id: number): Observable<AccountsPayable> {
-    return this.http.get<any>(`${this.apUrl}/${id}`).pipe(map((res) => res.data || res));
+    return this.http.get<{ data: AccountsPayable }>(`${this.apUrl}/${id}`).pipe(map((res) => res.data || res as unknown as AccountsPayable));
   }
 
   createAccountsPayable(data: Partial<AccountsPayable>): Observable<AccountsPayable> {
@@ -130,16 +130,16 @@ export class AdministrationService {
   }
 
   getPendingAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http.get<any>(`${this.apUrl}/pending`).pipe(map((res) => res.data || res));
+    return this.http.get<{ data: AccountsPayable[] }>(`${this.apUrl}/pending`).pipe(map((res) => res.data || res as unknown as AccountsPayable[]));
   }
 
   // Payment Schedules (English properties from Entity)
   getPaymentSchedules(): Observable<PaymentSchedule[]> {
-    return this.http.get<any>(this.psUrl).pipe(map((res) => res.data || res));
+    return this.http.get<{ data: PaymentSchedule[] }>(this.psUrl).pipe(map((res) => res.data || res as unknown as PaymentSchedule[]));
   }
 
   getPaymentScheduleById(id: number): Observable<PaymentSchedule> {
-    return this.http.get<any>(`${this.psUrl}/${id}`).pipe(map((res) => res.data || res));
+    return this.http.get<{ data: PaymentSchedule }>(`${this.psUrl}/${id}`).pipe(map((res) => res.data || res as unknown as PaymentSchedule));
   }
 
   createPaymentSchedule(data: Partial<PaymentSchedule>): Observable<PaymentSchedule> {

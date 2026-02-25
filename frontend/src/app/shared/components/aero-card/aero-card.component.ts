@@ -13,7 +13,7 @@ export interface CardInfoItem {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="aero-card" (click)="onCardClick()">
+    <div class="aero-card" (click)="onCardClick()" (keydown.enter)="onCardClick()" tabindex="0" role="button">
       <!-- Header -->
       <div class="aero-card__header">
         <div class="aero-card__status-row">
@@ -64,7 +64,7 @@ export interface CardInfoItem {
         <div class="aero-card__meta">
           <span *ngIf="timestamp"> Actualizado: {{ timestamp | date: 'dd/MM/yy HH:mm' }} </span>
         </div>
-        <div class="aero-card__actions" (click)="$event.stopPropagation()">
+        <div class="aero-card__actions" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
           <ng-content select="[actions]"></ng-content>
         </div>
       </div>
@@ -363,12 +363,12 @@ export interface CardInfoItem {
   ],
 })
 export class AeroCardComponent {
-  @Input() title: string = '';
+  @Input() title = '';
   @Input() icon?: string;
   @Input() subtitle?: string; // Added subtitle input
-  @Input() statusLabel: string = '';
-  @Input() statusClass: string = '';
-  @Input() statusIcon: string = 'fa-solid fa-circle';
+  @Input() statusLabel = '';
+  @Input() statusClass = '';
+  @Input() statusIcon = 'fa-solid fa-circle';
   @Input() date?: string | Date;
   @Input() timestamp?: string | Date;
   @Input() infoItems: CardInfoItem[] = [];

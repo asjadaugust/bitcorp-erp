@@ -155,7 +155,7 @@ export class AuthService {
       );
   }
 
-  register(data: any): Observable<AuthResponse> {
+  register(data: Record<string, unknown>): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
       tap((response) => {
         this.setToken(response.access_token);

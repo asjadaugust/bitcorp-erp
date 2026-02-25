@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -60,8 +60,7 @@ export interface MovementDetail {
 })
 export class InventoryService {
   private apiUrl = `${environment.apiUrl}/logistics`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getProducts(): Observable<Product[]> {
     return this.http
@@ -116,12 +115,12 @@ export class InventoryService {
   }
 
   getStats(filters?: { startDate?: string; endDate?: string }): Observable<StatsSummary> {
-    const params: any = {};
-    if (filters?.startDate) params.startDate = filters.startDate;
-    if (filters?.endDate) params.endDate = filters.endDate;
+    const params: Record<string, string> = {};
+    if (filters?.startDate) params['startDate'] = filters.startDate;
+    if (filters?.endDate) params['endDate'] = filters.endDate;
 
     return this.http
-      .get<any>(`${this.apiUrl}/movements/stats`, { params })
+      .get<{ data: StatsSummary }>(`${this.apiUrl}/movements/stats`, { params })
       .pipe(map((response) => response?.data || response));
   }
 }

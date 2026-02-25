@@ -1,7 +1,7 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WebMcpService } from '../../core/services/webmcp.service';
@@ -469,7 +469,7 @@ export class EquipmentListComponent implements OnInit {
   showStatistics = false;
   errorMessage = '';
   successMessage = '';
-  statistics: any = null;
+  statistics: Record<string, number> | null = null;
   statItems: StatItem[] = [];
 
   filters = { status: '', search: '', categoria_prd: '', marca: '' };
@@ -559,7 +559,7 @@ export class EquipmentListComponent implements OnInit {
     { key: 'proveedor_nombre', label: 'Proveedor', type: 'text' },
   ];
 
-  actionsTemplate: any; // Fix for template type issue if needed, but usually inferred
+  actionsTemplate: TemplateRef<unknown> | undefined;
 
   ngOnInit(): void {
     this.loadEquipment();
@@ -607,18 +607,18 @@ export class EquipmentListComponent implements OnInit {
         this.equipment = response.data;
         this.loading = false;
       },
-      error: (error) => {
+      error: (_error) => {
         this.errorMessage = 'Error al cargar la lista de equipos';
         this.loading = false;
       },
     });
   }
 
-  onFilterChange(filters: Record<string, any>): void {
-    this.filters.search = filters['search'] || '';
-    this.filters.status = filters['status'] || '';
-    this.filters.categoria_prd = filters['categoria_prd'] || '';
-    this.filters.marca = filters['marca'] || '';
+  onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.status = (filters['status'] as string) || '';
+    this.filters.categoria_prd = (filters['categoria_prd'] as string) || '';
+    this.filters.marca = (filters['marca'] as string) || '';
     this.loadEquipment();
   }
 

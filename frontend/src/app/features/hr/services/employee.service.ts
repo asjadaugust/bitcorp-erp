@@ -17,7 +17,7 @@ export class EmployeeService {
     if (search) {
       params = params.set('search', search);
     }
-    return this.http.get<any>(this.apiUrl, { params }).pipe(
+    return this.http.get<{ success: boolean; data: Employee[] }>(this.apiUrl, { params }).pipe(
       map((response) => {
         // Handle response that has success/data structure
         const dataArray = response?.data || response;
@@ -27,7 +27,7 @@ export class EmployeeService {
   }
 
   getEmployeeByDni(dni: string): Observable<Employee> {
-    return this.http.get<any>(`${this.apiUrl}/${dni}`).pipe(
+    return this.http.get<{ success: boolean; data: Employee }>(`${this.apiUrl}/${dni}`).pipe(
       map((response) => {
         // Handle response that has success/data structure
         return response?.data || response;
@@ -37,13 +37,13 @@ export class EmployeeService {
 
   createEmployee(employee: Employee): Observable<Employee> {
     return this.http
-      .post<any>(this.apiUrl, employee)
+      .post<{ success: boolean; data: Employee }>(this.apiUrl, employee)
       .pipe(map((response) => response?.data || response));
   }
 
   updateEmployee(dni: string, employee: Partial<Employee>): Observable<Employee> {
     return this.http
-      .put<any>(`${this.apiUrl}/${dni}`, employee)
+      .put<{ success: boolean; data: Employee }>(`${this.apiUrl}/${dni}`, employee)
       .pipe(map((response) => response?.data || response));
   }
 

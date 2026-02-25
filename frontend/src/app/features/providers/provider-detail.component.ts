@@ -102,19 +102,19 @@ import { ConfirmService } from '../../core/services/confirm.service';
             <h2>Información General</h2>
             <div class="info-grid">
               <div class="info-item">
-                <label>RUC / Tax ID</label>
+                <span class="label">RUC / Tax ID</span>
                 <p>{{ provider?.ruc }}</p>
               </div>
               <div class="info-item">
-                <label>Dirección</label>
+                <span class="label">Dirección</span>
                 <p>{{ provider?.direccion || '-' }}</p>
               </div>
               <div class="info-item">
-                <label>Teléfono</label>
+                <span class="label">Teléfono</span>
                 <p>{{ provider?.telefono || '-' }}</p>
               </div>
               <div class="info-item">
-                <label>Email</label>
+                <span class="label">Email</span>
                 <p class="email-text">{{ provider?.correo_electronico || '-' }}</p>
               </div>
             </div>
@@ -195,8 +195,6 @@ import { ConfirmService } from '../../core/services/confirm.service';
           Eliminar Proveedor
         </button>
       </ng-container>
-    </entity-detail-shell>
-
     </entity-detail-shell>
   `,
   styles: [

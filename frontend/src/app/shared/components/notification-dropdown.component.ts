@@ -38,6 +38,9 @@ import { NotificationService, Notificacion } from '../../core/services/notificat
           class="notification-item"
           [class.unread]="!n.leido"
           (click)="onClickItem(n)"
+          (keydown.enter)="onClickItem(n)"
+          tabindex="0"
+          role="button"
           [attr.data-testid]="'notif-item-' + n.id"
         >
           <div class="icon-wrapper" [ngClass]="getIconClass(n.tipo)">

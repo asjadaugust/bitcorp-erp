@@ -70,7 +70,7 @@ import {
             </div>
 
             <div class="form-group full-width">
-              <label class="form-label">Documento *</label>
+              <span class="form-label">Documento *</span>
 
               <div *ngIf="!documentForm.get('archivo_url')?.value" class="upload-container">
                 <app-file-uploader

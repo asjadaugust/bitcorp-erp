@@ -108,7 +108,7 @@ export class PaymentService {
   /**
    * Helper: Format currency amount
    */
-  formatCurrency(amount: number, currency: string = 'PEN'): string {
+  formatCurrency(amount: number, currency = 'PEN'): string {
     const symbol = currency === 'PEN' ? 'S/' : currency === 'USD' ? '$' : currency;
     return `${symbol} ${amount.toFixed(2)}`;
   }

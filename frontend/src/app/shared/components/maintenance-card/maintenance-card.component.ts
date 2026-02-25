@@ -7,7 +7,7 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="maintenance-card" [class.hoverable]="clickable" (click)="onCardClick()">
+    <div class="maintenance-card" [class.hoverable]="clickable" (click)="onCardClick()" (keydown.enter)="onCardClick()" tabindex="0" role="button">
       <div class="card-header">
         <div class="status-row">
           <span [class]="getStatusClass(schedule.estado)">
@@ -278,7 +278,7 @@ export class MaintenanceCardComponent {
 
   @Output() edit = new EventEmitter<number>();
   @Output() delete = new EventEmitter<number>();
-  @Output() click = new EventEmitter<MaintenanceSchedule>();
+  @Output() cardClick = new EventEmitter<MaintenanceSchedule>();
 
   onEdit(event: Event) {
     event.stopPropagation();
@@ -291,7 +291,7 @@ export class MaintenanceCardComponent {
   }
 
   onCardClick() {
-    if (this.clickable) this.click.emit(this.schedule);
+    if (this.clickable) this.cardClick.emit(this.schedule);
   }
 
   getEstadoLabel(estado: string): string {

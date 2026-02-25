@@ -39,19 +39,19 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <h2>Información del Equipo</h2>
           <div class="info-grid">
             <div class="info-item">
-              <label>Tipo de Equipo</label>
+              <span class="label">Tipo de Equipo</span>
               <p>{{ solicitud?.tipo_equipo }}</p>
             </div>
             <div class="info-item">
-              <label>Cantidad</label>
+              <span class="label">Cantidad</span>
               <p>{{ solicitud?.cantidad }}</p>
             </div>
             <div class="info-item">
-              <label>Fecha Requerida</label>
+              <span class="label">Fecha Requerida</span>
               <p>{{ solicitud?.fecha_requerida | date: 'dd/MM/yyyy' }}</p>
             </div>
             <div class="info-item">
-              <label>Prioridad</label>
+              <span class="label">Prioridad</span>
               <p>
                 <span
                   class="priority-badge"
@@ -69,15 +69,15 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <h2>Justificación y Observaciones</h2>
           <div class="text-content-grid">
             <div class="info-item-full">
-              <label>Justificación</label>
+              <span class="label">Justificación</span>
               <p class="description-text">{{ solicitud?.justificacion || 'No especificada' }}</p>
             </div>
             <div class="info-item-full" *ngIf="solicitud?.descripcion">
-              <label>Descripción Adicional</label>
+              <span class="label">Descripción Adicional</span>
               <p class="description-text">{{ solicitud?.descripcion }}</p>
             </div>
             <div class="info-item-full" *ngIf="solicitud?.observaciones">
-              <label>Observaciones de Revisión</label>
+              <span class="label">Observaciones de Revisión</span>
               <div class="observations-box">
                 <i class="fa-solid fa-comment-dots"></i>
                 <p>{{ solicitud?.observaciones }}</p>

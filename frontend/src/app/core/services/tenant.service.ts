@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -49,8 +49,9 @@ export class TenantService {
   // BehaviorSubject for compatibility with existing code
   private currentProjectSubject = new BehaviorSubject<Project | null>(null);
   currentProject$ = this.currentProjectSubject.asObservable();
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.loadFromStorage();
   }
 
