@@ -3,7 +3,13 @@
  * Transformación de interfaces camelCase → snake_case español para respuestas API
  */
 
-import type { FleetUtilizationMetrics } from '../../services/equipment-analytics.service';
+import type {
+  FleetUtilizationMetrics,
+  UtilizationMetrics,
+  UtilizationTrend,
+  FuelMetrics,
+  FuelTrend,
+} from '../../services/equipment-analytics.service';
 
 // ─── Interfaces DTO ────────────────────────────────────────────────────────────
 
@@ -59,48 +65,30 @@ export interface TendenciaCombustibleDto {
 
 // ─── Funciones transformadoras ─────────────────────────────────────────────────
 
-export function toUtilizacionDto(entity: {
-  equipment_id: number;
-  equipment_code: string;
-  total_hours: number;
-  working_hours: number;
-  idle_hours: number;
-  utilization_rate: number;
-  cost_per_hour: number;
-  total_cost: number;
-  period_start: Date;
-  period_end: Date;
-}): UtilizacionEquipoDto {
+export function toUtilizacionDto(entity: UtilizationMetrics): UtilizacionEquipoDto {
   return {
-    equipo_id: entity.equipment_id,
-    codigo_equipo: entity.equipment_code,
-    horas_totales: entity.total_hours,
-    horas_trabajadas: entity.working_hours,
-    horas_inactivas: entity.idle_hours,
-    tasa_utilizacion: entity.utilization_rate,
-    costo_por_hora: entity.cost_per_hour,
-    costo_total: entity.total_cost,
+    equipo_id: entity.equipmentId,
+    codigo_equipo: entity.equipmentCode,
+    horas_totales: entity.totalHours,
+    horas_trabajadas: entity.workingHours,
+    horas_inactivas: entity.idleHours,
+    tasa_utilizacion: entity.utilizationRate,
+    costo_por_hora: entity.costPerHour,
+    costo_total: entity.totalCost,
     periodo_inicio:
-      entity.period_start instanceof Date
-        ? entity.period_start.toISOString()
-        : String(entity.period_start),
+      entity.periodStart instanceof Date
+        ? entity.periodStart.toISOString()
+        : String(entity.periodStart),
     periodo_fin:
-      entity.period_end instanceof Date
-        ? entity.period_end.toISOString()
-        : String(entity.period_end),
+      entity.periodEnd instanceof Date ? entity.periodEnd.toISOString() : String(entity.periodEnd),
   };
 }
 
-export function toTendenciaUtilizacionDto(entity: {
-  date: string;
-  utilization_rate: number;
-  working_hours: number;
-  cost: number;
-}): TendenciaUtilizacionDto {
+export function toTendenciaUtilizacionDto(entity: UtilizationTrend): TendenciaUtilizacionDto {
   return {
     fecha: entity.date,
-    tasa_utilizacion: entity.utilization_rate,
-    horas_trabajadas: entity.working_hours,
+    tasa_utilizacion: entity.utilizationRate,
+    horas_trabajadas: entity.workingHours,
     costo: entity.cost,
   };
 }
@@ -122,14 +110,7 @@ export function toFlotaUtilizacionDto(entity: FleetUtilizationMetrics): FlotaUti
   };
 }
 
-export function toCombustibleDto(entity: {
-  equipment_id: number;
-  total_fuel_consumed: number;
-  avg_fuel_per_hour: number;
-  total_fuel_cost: number;
-  avg_cost_per_hour: number;
-  efficiency: 'good' | 'average' | 'poor';
-}): CombustibleEquipoDto {
+export function toCombustibleDto(entity: FuelMetrics): CombustibleEquipoDto {
   const eficienciaMap: Record<'good' | 'average' | 'poor', 'buena' | 'promedio' | 'deficiente'> = {
     good: 'buena',
     average: 'promedio',
@@ -137,25 +118,20 @@ export function toCombustibleDto(entity: {
   };
 
   return {
-    equipo_id: entity.equipment_id,
-    total_combustible_consumido: entity.total_fuel_consumed,
-    promedio_combustible_por_hora: entity.avg_fuel_per_hour,
-    costo_total_combustible: entity.total_fuel_cost,
-    costo_promedio_por_hora: entity.avg_cost_per_hour,
+    equipo_id: entity.equipmentId,
+    total_combustible_consumido: entity.totalFuelConsumed,
+    promedio_combustible_por_hora: entity.avgFuelPerHour,
+    costo_total_combustible: entity.totalFuelCost,
+    costo_promedio_por_hora: entity.avgCostPerHour,
     eficiencia: eficienciaMap[entity.efficiency],
   };
 }
 
-export function toTendenciaCombustibleDto(entity: {
-  date: string;
-  fuel_consumed: number;
-  fuel_cost: number;
-  fuel_per_hour: number;
-}): TendenciaCombustibleDto {
+export function toTendenciaCombustibleDto(entity: FuelTrend): TendenciaCombustibleDto {
   return {
     fecha: entity.date,
-    combustible_consumido: entity.fuel_consumed,
-    costo_combustible: entity.fuel_cost,
-    combustible_por_hora: entity.fuel_per_hour,
+    combustible_consumido: entity.fuelConsumed,
+    costo_combustible: entity.fuelCost,
+    combustible_por_hora: entity.fuelPerHour,
   };
 }
