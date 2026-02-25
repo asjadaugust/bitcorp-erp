@@ -168,7 +168,7 @@ export class LogQuery {
       matchingFiles.sort().reverse();
 
       return matchingFiles.map((file) => path.join(this.logsDir, file));
-    } catch (error) {
+    } catch {
       // Directory doesn't exist or can't be read
       return [];
     }
@@ -207,7 +207,7 @@ export class LogQuery {
         if (options.limit && results.length >= options.limit + (options.offset || 0)) {
           break;
         }
-      } catch (error) {
+      } catch {
         // Skip malformed JSON lines
         continue;
       }

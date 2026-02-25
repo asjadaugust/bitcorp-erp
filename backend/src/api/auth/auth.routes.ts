@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
-import { AuthController } from './auth.controller';
 import { simpleLogin, simpleMe } from './auth.simple';
 import { validateDto } from '../../middleware/validation.middleware';
 import { LoginDto } from '../../types/dto/auth.dto';
 
 const router = Router();
-const authController = new AuthController();
 
 /**
  * @openapi

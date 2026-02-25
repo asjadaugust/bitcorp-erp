@@ -29,7 +29,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     });
 
     next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 };

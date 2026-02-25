@@ -147,7 +147,7 @@ describe('DashboardService', () => {
         // but it demonstrates the cache miss path
         try {
           await service.getDashboardStats('user-no-cache');
-        } catch (error) {
+        } catch {
           // Expected to fail because database is not mocked
           // The important part is that cache.get was called
           expect(cacheService.get).toHaveBeenCalledWith('dashboard:stats:user-no-cache:all');

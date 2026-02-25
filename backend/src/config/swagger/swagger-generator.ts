@@ -11,7 +11,7 @@ try {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
     version = pkg.version || version;
   }
-} catch (error) {
+} catch {
   console.error('Warning: Could not load version from package.json');
 }
 
@@ -34,22 +34,22 @@ const doc = {
   },
   components: {
     schemas: getDtoSchemas(),
-  }
+  },
 };
 
 const outputFile = path.join(__dirname, '../../../swagger-api.json');
 // Crawl ONLY the route files to keep it fast
-const endpointsFiles = [
-  path.join(__dirname, '../../api/**/*.routes.ts')
-];
+const endpointsFiles = [path.join(__dirname, '../../api/**/*.routes.ts')];
 
 /* NOTE: If you are using the "TS" versions, swagger-autogen might need 
    the compiled JS files or you might need to run this via ts-node */
 
 console.log('Generating Swagger documentation...');
 
-swaggerAutogen({ openapi: '3.0.0' })(outputFile, endpointsFiles, doc).then(() => {
-  console.log('Swagger documentation generated successfully!');
-}).catch((err) => {
-  console.error('Error generating Swagger documentation:', err);
-});
+swaggerAutogen({ openapi: '3.0.0' })(outputFile, endpointsFiles, doc)
+  .then(() => {
+    console.log('Swagger documentation generated successfully!');
+  })
+  .catch((err) => {
+    console.error('Error generating Swagger documentation:', err);
+  });

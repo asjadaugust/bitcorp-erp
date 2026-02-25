@@ -1615,7 +1615,7 @@ export class ValuationService {
    * const updated = await valuationService.update(123, data);
    * ```
    */
-  async updateValuation(tenantId: number, id: string, data: any, userId: string) {
+  async updateValuation(tenantId: number, id: string, data: any, _userId: string) {
     return this.update(tenantId, parseInt(id), data);
   }
 

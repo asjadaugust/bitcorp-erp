@@ -170,7 +170,7 @@ export class PuppeteerPdfService {
     try {
       const logoBuffer = await fs.readFile(logoPath);
       return logoBuffer.toString('base64');
-    } catch (error) {
+    } catch {
       Logger.warn('Logo file not found, using placeholder', {
         logoPath,
         context: 'PuppeteerPdfService.loadLogo',

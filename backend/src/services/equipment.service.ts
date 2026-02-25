@@ -1257,7 +1257,7 @@ export class EquipmentService {
    * @param endDate - End date of availability window
    * @returns Currently returns true (stub)
    */
-  async getAvailability(idOrFilters: any, startDate?: Date, endDate?: Date) {
+  async getAvailability(_idOrFilters: any, _startDate?: Date, _endDate?: Date) {
     return true;
   }
 

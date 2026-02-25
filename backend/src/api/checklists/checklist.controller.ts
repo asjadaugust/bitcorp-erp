@@ -134,11 +134,7 @@ export class ChecklistController {
     try {
       const { id } = req.params;
       const tenantId = (req as any).user?.id_empresa || 1;
-      const template = await this.checklistService.updateTemplate(
-        tenantId,
-        parseInt(id),
-        req.body
-      );
+      const template = await this.checklistService.updateTemplate(tenantId, parseInt(id), req.body);
 
       if (!template) {
         return sendError(res, 404, 'NOT_FOUND', 'Template not found');
@@ -282,7 +278,10 @@ export class ChecklistController {
     try {
       const { id } = req.params;
       const tenantId = (req as any).user?.id_empresa || 1;
-      const inspection = await this.checklistService.getInspectionWithResults(tenantId, parseInt(id));
+      const inspection = await this.checklistService.getInspectionWithResults(
+        tenantId,
+        parseInt(id)
+      );
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });
@@ -371,7 +370,10 @@ export class ChecklistController {
     try {
       const { inspectionId } = req.params;
       const tenantId = (req as any).user?.id_empresa || 1;
-      const results = await this.checklistService.getResultsByInspection(tenantId, parseInt(inspectionId));
+      const results = await this.checklistService.getResultsByInspection(
+        tenantId,
+        parseInt(inspectionId)
+      );
       res.json({ success: true, data: results });
     } catch (error) {
       next(error);
@@ -399,7 +401,10 @@ export class ChecklistController {
     try {
       const { id } = req.params;
       const tenantId = (req as any).user?.id_empresa || 1;
-      const inspection = await this.checklistService.getInspectionWithResults(tenantId, parseInt(id));
+      const inspection = await this.checklistService.getInspectionWithResults(
+        tenantId,
+        parseInt(id)
+      );
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });
@@ -429,7 +434,7 @@ export class ChecklistController {
       doc.moveDown(0.5);
 
       const infoY = doc.y;
-      const colWidth = 250;
+      const _colWidth = 250;
 
       // Left column
       doc.fontSize(10).font('Helvetica-Bold').text('Fecha:', 50, infoY);
@@ -495,7 +500,7 @@ export class ChecklistController {
       if (inspection.resultados && inspection.resultados.length > 0) {
         // Group by category
         const grouped: any = {};
-        const currentCategory = '';
+        const _currentCategory = '';
 
         inspection.resultados.forEach((result: any) => {
           const category = result.item_categoria || 'Sin Categoría';
@@ -515,7 +520,7 @@ export class ChecklistController {
           doc.fontSize(12).font('Helvetica-Bold').fillColor('#0066cc').text(category.toUpperCase());
           doc.fillColor('#000000').moveDown(0.3);
 
-          grouped[category].forEach((result: any, index: number) => {
+          grouped[category].forEach((result: any, _index: number) => {
             // Check if we need a new page
             if (doc.y > 680) {
               doc.addPage();

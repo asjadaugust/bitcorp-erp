@@ -58,7 +58,7 @@ export class RucFetcherService {
                   return reject(
                     new Error(errorBody.message || errorBody.error || 'Failed to fetch RUC data')
                   );
-                } catch (e) {
+                } catch {
                   return reject(new Error(`API returned status ${res.statusCode}`));
                 }
               }
@@ -88,7 +88,7 @@ export class RucFetcherService {
               };
 
               resolve(rucData);
-            } catch (err) {
+            } catch {
               reject(new Error('Failed to parse API response'));
             }
           });
