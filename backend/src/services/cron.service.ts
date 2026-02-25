@@ -257,7 +257,9 @@ export class CronService {
         );
 
         const title = `Mantenimiento Próximo - ${equipo.codigoEquipo}`;
-        const message = `El equipo ${equipo.codigoEquipo} (${equipo.marca} ${equipo.modelo}) requiere mantenimiento ${firstRecord.tipoMantenimiento} el ${fechaProgramada.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''})`;
+        const diasTextoMant =
+          daysUntil === 0 ? 'hoy' : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
+        const message = `El equipo ${equipo.codigoEquipo} (${equipo.marca} ${equipo.modelo}) requiere mantenimiento ${firstRecord.tipoMantenimiento} el ${fechaProgramada.toLocaleDateString('es-PE')} (${diasTextoMant})`;
 
         for (const user of targetUsers) {
           try {
@@ -382,7 +384,9 @@ export class CronService {
 
         const equipoInfo = equipo ? ` para el equipo ${equipo.codigoEquipo}` : '';
         const title = `Contrato por Vencer - ${contract.numeroContrato}`;
-        const message = `El contrato ${contract.numeroContrato}${equipoInfo} vence el ${fechaFin.toLocaleDateString('es-PE')} (en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}). Planifique renovación o retorno del equipo.`;
+        const diasTextoContrato =
+          daysUntil === 0 ? 'hoy' : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
+        const message = `El contrato ${contract.numeroContrato}${equipoInfo} vence el ${fechaFin.toLocaleDateString('es-PE')} (${diasTextoContrato}). Planifique renovación o retorno del equipo.`;
 
         for (const user of targetUsers) {
           try {
@@ -514,7 +518,11 @@ export class CronService {
               (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
             );
             const statusText =
-              daysUntil < 0 ? 'VENCIDO' : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
+              daysUntil < 0
+                ? 'VENCIDO'
+                : daysUntil === 0
+                  ? 'hoy'
+                  : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
             return `- ${doc.tipoDocumento}: ${expiryDate.toLocaleDateString('es-PE')} (${statusText})`;
           })
           .join('\n');
@@ -646,7 +654,11 @@ export class CronService {
           );
           if (daysUntil <= 30) {
             const statusText =
-              daysUntil < 0 ? 'VENCIDO' : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
+              daysUntil < 0
+                ? 'VENCIDO'
+                : daysUntil === 0
+                  ? 'hoy'
+                  : `en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`;
             expiringDocs.push(
               `- ${label}: ${expiryDate.toLocaleDateString('es-PE')} (${statusText})`
             );
@@ -701,7 +713,9 @@ export class CronService {
                   estado:
                     daysUntil < 0
                       ? 'VENCIDO'
-                      : `vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`,
+                      : daysUntil === 0
+                        ? 'vence hoy'
+                        : `vence en ${daysUntil} día${daysUntil !== 1 ? 's' : ''}`,
                 });
               }
             }

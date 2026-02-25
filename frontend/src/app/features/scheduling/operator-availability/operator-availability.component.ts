@@ -60,7 +60,7 @@ import {
       </div>
 
       <!-- Availability Grid -->
-      <div class="card" *ngIf="!loading">
+      <div class="card" *ngIf="!loading && operators.length > 0">
         <div
           class="availability-grid"
           data-testid="availability-grid"
@@ -105,11 +105,11 @@ import {
             ></div>
           </ng-container>
         </div>
+      </div>
 
-        <!-- Empty State -->
-        <div *ngIf="operators.length === 0" class="empty-state" data-testid="empty-state">
-          No se encontraron operadores activos.
-        </div>
+      <!-- Empty State -->
+      <div *ngIf="!loading && operators.length === 0" class="empty-state" data-testid="empty-state">
+        No se encontraron operadores activos.
       </div>
     </div>
   `,
