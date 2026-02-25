@@ -39,7 +39,17 @@ export interface DropdownOption {
       [class.has-error]="error"
     >
       <!-- Trigger -->
-      <div class="dropdown-trigger" (click)="toggle()" (keydown.enter)="toggle()" tabindex="0" role="combobox" [attr.aria-expanded]="isOpen" aria-controls="dropdown-listbox" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
+      <div
+        class="dropdown-trigger"
+        (click)="toggle()"
+        (keydown.enter)="toggle()"
+        tabindex="0"
+        role="combobox"
+        [attr.aria-expanded]="isOpen"
+        aria-controls="dropdown-listbox"
+        cdkOverlayOrigin
+        #trigger="cdkOverlayOrigin"
+      >
         <div class="selected-value" [class.placeholder]="!hasValue()">
           <span *ngIf="!hasValue()">{{ placeholder }}</span>
           <span *ngIf="hasValue()">{{ getDisplayValue() }}</span>
@@ -347,8 +357,12 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   private value: unknown = null;
 
   // Callbacks
-  onChange: (value: unknown) => void = () => { /* noop */ };
-  onTouch: () => void = () => { /* noop */ };
+  onChange: (value: unknown) => void = () => {
+    /* noop */
+  };
+  onTouch: () => void = () => {
+    /* noop */
+  };
 
   private elementRef = inject(ElementRef);
 
@@ -451,7 +465,8 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
     if (this.multiple) {
       if (!Array.isArray(this.value) || this.value.length === 0) return '';
       if (this.value.length === 1) {
-        const opt = this.options.find((o) => o.value === this.value[0]);
+        const valArray = this.value as unknown[];
+        const opt = this.options.find((o) => o.value === valArray[0]);
         return opt ? opt.label : '';
       }
       return `${this.value.length} seleccionados`;
