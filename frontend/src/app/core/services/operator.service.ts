@@ -9,6 +9,7 @@ import {
   OperatorSkill,
   OperatorDisponibilidad,
   OperatorRendimiento,
+  DisponibilidadProgramada,
 } from '../models/operator.model';
 
 import { environment } from '../../../environments/environment';
@@ -143,5 +144,24 @@ export class OperatorService {
 
   notify(operatorId: number, message: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${operatorId}/notify`, { message });
+  }
+
+  getProgramacionMensual(mesAnio: string): Observable<DisponibilidadProgramada[]> {
+    return this.http.get<DisponibilidadProgramada[]>(`${this.apiUrl}/programacion`, {
+      params: { mes: mesAnio },
+    });
+  }
+
+  setDisponibilidad(
+    operadorId: number,
+    fecha: string,
+    disponible: boolean,
+    observacion?: string
+  ): Observable<DisponibilidadProgramada> {
+    return this.http.post<DisponibilidadProgramada>(`${this.apiUrl}/${operadorId}/disponibilidad`, {
+      fecha,
+      disponible,
+      observacion,
+    });
   }
 }

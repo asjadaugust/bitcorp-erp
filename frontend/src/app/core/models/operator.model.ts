@@ -75,6 +75,14 @@ export interface OperatorRendimiento {
   eficiencia: number; // 0-100 percentage
 }
 
+export interface DisponibilidadProgramada {
+  id: number;
+  trabajador_id: number;
+  fecha: string; // YYYY-MM-DD
+  disponible: boolean;
+  observacion?: string;
+}
+
 export interface CreateOperatorDto {
   dni: string;
   nombres: string;
