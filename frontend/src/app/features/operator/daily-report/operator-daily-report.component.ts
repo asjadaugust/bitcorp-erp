@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DailyReportService } from '../../../core/services/daily-report.service';
-import {
-  PhotoUploadService,
-} from '../../../core/services/photo-upload.service';
+import { PhotoUploadService } from '../../../core/services/photo-upload.service';
 import {
   GeolocationService,
   LocationResult,
@@ -66,7 +64,9 @@ import {
             </div>
 
             <div class="form-field">
-              <span class="label">Proyecto <span class="required" *ngIf="!isViewMode">*</span></span>
+              <span class="label"
+                >Proyecto <span class="required" *ngIf="!isViewMode">*</span></span
+              >
               <app-dropdown
                 formControlName="projectId"
                 [options]="projectOptions"
@@ -82,7 +82,9 @@ import {
           <h2>Equipo Utilizado</h2>
           <div class="form-grid">
             <div class="form-field full-width">
-              <span class="label">Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></span>
+              <span class="label"
+                >Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></span
+              >
               <app-dropdown
                 formControlName="equipmentId"
                 [options]="equipmentOptions"
@@ -94,7 +96,9 @@ import {
             </div>
 
             <div class="form-field">
-              <span class="label">Horómetro Inicial <span class="required" *ngIf="!isViewMode">*</span></span>
+              <span class="label"
+                >Horómetro Inicial <span class="required" *ngIf="!isViewMode">*</span></span
+              >
               <input
                 type="number"
                 formControlName="horometerStart"
@@ -106,7 +110,9 @@ import {
             </div>
 
             <div class="form-field">
-              <span class="label">Horómetro Final <span class="required" *ngIf="!isViewMode">*</span></span>
+              <span class="label"
+                >Horómetro Final <span class="required" *ngIf="!isViewMode">*</span></span
+              >
               <input
                 type="number"
                 formControlName="horometerEnd"
@@ -129,7 +135,9 @@ import {
           <h2>Horario de Trabajo</h2>
           <div class="form-grid">
             <div class="form-field">
-              <span class="label">Hora Inicio <span class="required" *ngIf="!isViewMode">*</span></span>
+              <span class="label"
+                >Hora Inicio <span class="required" *ngIf="!isViewMode">*</span></span
+              >
               <input
                 type="time"
                 formControlName="startTime"
@@ -139,7 +147,9 @@ import {
             </div>
 
             <div class="form-field">
-              <span class="label">Hora Fin <span class="required" *ngIf="!isViewMode">*</span></span>
+              <span class="label"
+                >Hora Fin <span class="required" *ngIf="!isViewMode">*</span></span
+              >
               <input
                 type="time"
                 formControlName="endTime"
@@ -1353,11 +1363,11 @@ export class OperatorDailyReportComponent implements OnInit {
           horometerEnd: report.horometro_final,
           startTime: report.hora_inicio,
           endTime: report.hora_fin,
-          fuelStart: (report as Record<string, unknown>)['fuel_start'] || report.diesel_gln,
-          fuelEnd: (report as Record<string, unknown>)['fuel_end'] || report.gasolina_gln,
-          gpsLocation: (report as Record<string, unknown>)['location'] || report.lugar_salida,
-          manualLocation: (report as Record<string, unknown>)['location'] || report.lugar_llegada,
-          workDescription: (report as Record<string, unknown>)['work_description'] || report.observaciones,
+          fuelStart: (report as any)['fuel_start'] || report.diesel_gln,
+          fuelEnd: (report as any)['fuel_end'] || report.gasolina_gln,
+          gpsLocation: (report as any)['location'] || report.lugar_salida,
+          manualLocation: (report as any)['location'] || report.lugar_llegada,
+          workDescription: (report as any)['work_description'] || report.observaciones,
         });
 
         if (this.isViewMode) {
@@ -1624,7 +1634,9 @@ export class OperatorDailyReportComponent implements OnInit {
     }
   }
 
-  getSelectedCheckboxes(checkboxGroup: Record<string, boolean>): { codigo: string; checked: boolean }[] {
+  getSelectedCheckboxes(
+    checkboxGroup: Record<string, boolean>
+  ): { codigo: string; checked: boolean }[] {
     if (!checkboxGroup) return [];
     return Object.keys(checkboxGroup)
       .filter((key) => checkboxGroup[key])

@@ -460,12 +460,17 @@ export class TimesheetFormComponent implements OnInit {
   loadDependencies() {
     this.projectService.getAll().subscribe((res: unknown) => {
       const resData = res as Record<string, unknown>;
-      this.projects = (resData['data'] as Record<string, unknown>[]) || (res as Record<string, unknown>[]);
-      this.projectOptions = this.projects.map((p) => ({ label: p['nombre'] as string, value: p['id'] as number }));
+      this.projects =
+        (resData['data'] as Record<string, unknown>[]) || (res as Record<string, unknown>[]);
+      this.projectOptions = this.projects.map((p) => ({
+        label: p['nombre'] as string,
+        value: p['id'] as number,
+      }));
     });
     this.operatorService.getAll().subscribe((res: unknown) => {
       const resData = res as Record<string, unknown>;
-      this.operators = (resData['data'] as Record<string, unknown>[]) || (res as Record<string, unknown>[]);
+      this.operators =
+        (resData['data'] as Record<string, unknown>[]) || (res as Record<string, unknown>[]);
       this.operatorOptions = this.operators.map((op) => ({
         label: `${op['nombres']} ${op['apellidos']}`,
         value: op['id'] as number,
@@ -528,8 +533,8 @@ export class TimesheetFormComponent implements OnInit {
       },
       error: (err: unknown) => {
         this.loading = false;
-        this.validationErrors = this.errorHandler.extractValidationErrors(err);
-        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        this.validationErrors = this.errorHandler.extractValidationErrors(err as any);
+        this.errorMessage = this.errorHandler.getErrorMessage(err as any);
       },
     });
   }
