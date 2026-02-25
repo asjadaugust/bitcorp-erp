@@ -9,6 +9,8 @@
 
 import { Trabajador } from '../../models/trabajador.model';
 import { IsString, IsOptional, IsEmail, IsDateString, MaxLength } from 'class-validator';
+import { CertificacionOperador } from '../../models/operador-certificacion.model';
+import { HabilidadOperador } from '../../models/operador-habilidad.model';
 
 export interface OperatorDto {
   id: number;
@@ -275,4 +277,98 @@ export class OperatorUpdateDto {
   @IsString({ message: 'Licencia de conducir debe ser texto' })
   @MaxLength(50, { message: 'Licencia de conducir no puede exceder 50 caracteres' })
   licencia_conducir?: string;
+}
+
+// --- Certification DTOs ---
+
+export interface CertificacionDto {
+  id: number;
+  trabajador_id: number;
+  nombre_certificacion: string;
+  numero_certificacion?: string;
+  fecha_emision?: string;
+  fecha_vencimiento?: string;
+  entidad_emisora?: string;
+  estado: 'VIGENTE' | 'VENCIDO' | 'POR_VENCER';
+  created_at: string;
+}
+
+export interface CertificacionCreateDto {
+  nombre_certificacion: string;
+  numero_certificacion?: string;
+  fecha_emision?: string;
+  fecha_vencimiento?: string;
+  entidad_emisora?: string;
+}
+
+export function toCertificacionDto(e: CertificacionOperador): CertificacionDto {
+  return {
+    id: e.id,
+    trabajador_id: e.trabajadorId,
+    nombre_certificacion: e.nombreCertificacion,
+    numero_certificacion: e.numeroCertificacion,
+    fecha_emision: e.fechaEmision ? String(e.fechaEmision).split('T')[0] : undefined,
+    fecha_vencimiento: e.fechaVencimiento ? String(e.fechaVencimiento).split('T')[0] : undefined,
+    entidad_emisora: e.entidadEmisora,
+    estado: e.estado,
+    created_at: String(e.createdAt),
+  };
+}
+
+// --- Skill DTOs ---
+
+export interface HabilidadDto {
+  id: number;
+  trabajador_id: number;
+  tipo_equipo: string;
+  nivel_habilidad: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZADO' | 'EXPERTO';
+  anios_experiencia: number;
+  ultima_verificacion?: string;
+  created_at: string;
+}
+
+export interface HabilidadCreateDto {
+  tipo_equipo: string;
+  nivel_habilidad?: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZADO' | 'EXPERTO';
+  anios_experiencia?: number;
+  ultima_verificacion?: string;
+}
+
+export function toHabilidadDto(e: HabilidadOperador): HabilidadDto {
+  return {
+    id: e.id,
+    trabajador_id: e.trabajadorId,
+    tipo_equipo: e.tipoEquipo,
+    nivel_habilidad: e.nivelHabilidad,
+    anios_experiencia: Number(e.aniosExperiencia),
+    ultima_verificacion: e.ultimaVerificacion
+      ? String(e.ultimaVerificacion).split('T')[0]
+      : undefined,
+    created_at: String(e.createdAt),
+  };
+}
+
+// --- Availability DTO ---
+
+export interface DisponibilidadDto {
+  operador_id: number;
+  estado: 'DISPONIBLE' | 'ASIGNADO';
+  parte_diario_hoy: {
+    id: number;
+    fecha_parte: string;
+    equipo_id: number;
+  } | null;
+}
+
+// --- Performance DTO ---
+
+export interface RendimientoDto {
+  operador_id: number;
+  periodo_dias: number;
+  total_partes: number;
+  horas_totales: number;
+  partes_aprobados: number;
+  partes_rechazados: number;
+  partes_pendientes: number;
+  eficiencia: number;
 }
