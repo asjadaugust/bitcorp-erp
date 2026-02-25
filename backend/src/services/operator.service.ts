@@ -15,9 +15,12 @@ import {
   HabilidadDto,
   HabilidadCreateDto,
   toHabilidadDto,
+  DisponibilidadDto,
+  RendimientoDto,
 } from '../types/dto/operator.dto';
 import { CertificacionOperador } from '../models/operador-certificacion.model';
 import { HabilidadOperador } from '../models/operador-habilidad.model';
+import { ParteDiario } from '../models/daily-report-typeorm.model';
 import Logger from '../utils/logger';
 import { NotFoundError, ConflictError } from '../errors/http.errors';
 import { DashboardService } from './dashboard.service';
@@ -44,6 +47,11 @@ export class OperatorService {
   private get habRepository(): Repository<HabilidadOperador> {
     if (!AppDataSource.isInitialized) throw new Error('Database not initialized');
     return AppDataSource.getRepository(HabilidadOperador);
+  }
+
+  private get parteDiarioRepository(): Repository<ParteDiario> {
+    if (!AppDataSource.isInitialized) throw new Error('Database not initialized');
+    return AppDataSource.getRepository(ParteDiario);
   }
 
   async findAll(
@@ -477,16 +485,30 @@ export class OperatorService {
     }
   }
 
-  async getAvailability(tenantId: number, id: number): Promise<any> {
+  async getAvailability(tenantId: number, id: number): Promise<DisponibilidadDto> {
     try {
-      const operator = await this.findById(tenantId, id);
-      // Mock availability based on some logic
+      await this.findById(tenantId, id);
+
+      const parteHoy = await this.parteDiarioRepository
+        .createQueryBuilder('p')
+        .where('p.trabajador_id = :id', { id })
+        .andWhere('DATE(p.fecha) = CURRENT_DATE')
+        .andWhere("p.estado NOT IN ('RECHAZADO')")
+        .getOne();
+
       return {
-        operator_id: id,
-        status: operator.is_active ? 'AVAILABLE' : 'UNAVAILABLE',
-        current_assignment: null,
-        next_available_date: new Date().toISOString().split('T')[0],
-        restrictions: [],
+        operador_id: id,
+        estado: parteHoy ? 'ASIGNADO' : 'DISPONIBLE',
+        parte_diario_hoy: parteHoy
+          ? {
+              id: parteHoy.id,
+              fecha_parte:
+                parteHoy.fecha instanceof Date
+                  ? parteHoy.fecha.toISOString().slice(0, 10)
+                  : String(parteHoy.fecha),
+              equipo_id: parteHoy.equipoId!,
+            }
+          : null,
       };
     } catch (error) {
       Logger.error('Error getting operator availability', { error, tenantId, id });
@@ -494,21 +516,38 @@ export class OperatorService {
     }
   }
 
-  async getPerformance(tenantId: number, id: number): Promise<any> {
+  async getPerformance(tenantId: number, id: number, dias = 90): Promise<RendimientoDto> {
     try {
-      const operator = await this.findById(tenantId, id);
-      // Mock performance metrics
+      await this.findById(tenantId, id);
+
+      const raw = await this.parteDiarioRepository
+        .createQueryBuilder('p')
+        .select([
+          'COUNT(*) AS total',
+          "SUM(CASE WHEN p.estado = 'APROBADO' THEN 1 ELSE 0 END) AS aprobados",
+          "SUM(CASE WHEN p.estado = 'RECHAZADO' THEN 1 ELSE 0 END) AS rechazados",
+          "SUM(CASE WHEN p.estado IN ('BORRADOR','ENVIADO') THEN 1 ELSE 0 END) AS pendientes",
+          'SUM(COALESCE(p.horometro_final, 0) - COALESCE(p.horometro_inicial, 0)) AS horas',
+        ])
+        .where('p.trabajador_id = :id', { id })
+        .andWhere(`p.fecha >= CURRENT_DATE - INTERVAL '${dias} days'`)
+        .getRawOne();
+
+      const total = parseInt(raw?.total ?? '0') || 0;
+      const aprobados = parseInt(raw?.aprobados ?? '0') || 0;
+      const rechazados = parseInt(raw?.rechazados ?? '0') || 0;
+      const pendientes = parseInt(raw?.pendientes ?? '0') || 0;
+      const horas = parseFloat(raw?.horas ?? '0') || 0;
+
       return {
-        operator_id: id,
-        rating: 4.5,
-        total_hours: 1250,
-        efficiency: 0.92,
-        reliability: 0.98,
-        safety_score: 1.0,
-        recent_incidents: 0,
-        certifications: [
-          { name: 'Heavy Machinery Tier 1', issue_date: '2023-01-15', expiry_date: '2026-01-15' },
-        ],
+        operador_id: id,
+        periodo_dias: dias,
+        total_partes: total,
+        horas_totales: Math.round(horas * 10) / 10,
+        partes_aprobados: aprobados,
+        partes_rechazados: rechazados,
+        partes_pendientes: pendientes,
+        eficiencia: total > 0 ? Math.round((aprobados / total) * 1000) / 1000 : 0,
       };
     } catch (error) {
       Logger.error('Error getting operator performance', { error, tenantId, id });
