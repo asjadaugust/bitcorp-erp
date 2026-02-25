@@ -748,7 +748,7 @@ export class ContractService {
    * const contract = await contractService.findByNumero('CNT-2026-001');
    * if (contract) console.log(`Found contract ID: ${contract.id}`);
    */
-  async findByNumero(numeroContrato: string): Promise<Contract | null> {
+  async findByNumero(_tenantId: number, numeroContrato: string): Promise<Contract | null> {
     try {
       // TODO: [Phase 21 - Tenant Context] Add tenant filtering
       // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
@@ -816,10 +816,10 @@ export class ContractService {
    *   modalidad: 'ALQUILER_PURO',
    * });
    */
-  async create(data: Partial<ContractDto>): Promise<ContractDto> {
+  async create(tenantId: number, data: Partial<ContractDto>): Promise<ContractDto> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant context to new record
-      // entityData.unidad_operativa_id = tenantId
+      const entityDataInput = fromContractDto(data);
+      entityDataInput.tenantId = tenantId;
 
       // Validate required fields
       if (!data.numero_contrato || !data.fecha_inicio || !data.fecha_fin) {
@@ -847,7 +847,7 @@ export class ContractService {
       }
 
       // Check if numeroContrato already exists
-      const existing = await this.findByNumero(data.numero_contrato);
+      const existing = await this.findByNumero(tenantId, data.numero_contrato!);
       if (existing) {
         throw new ConflictError(`Contract with number ${data.numero_contrato} already exists`, {
           field: 'numero_contrato',
@@ -859,9 +859,10 @@ export class ContractService {
       // Check for overlapping contracts
       if (data.equipo_id) {
         const overlapping = await this.checkOverlappingContracts(
+          tenantId,
           data.equipo_id,
-          new Date(data.fecha_inicio),
-          new Date(data.fecha_fin)
+          new Date(data.fecha_inicio!),
+          new Date(data.fecha_fin!)
         );
         if (overlapping) {
           throw new BusinessRuleError(
@@ -966,7 +967,7 @@ export class ContractService {
 
       // If updating numeroContrato, check it doesn't exist
       if (data.numero_contrato && data.numero_contrato !== contractDto.numero_contrato) {
-        const existing = await this.findByNumero(data.numero_contrato);
+        const existing = await this.findByNumero(0, data.numero_contrato);
         if (existing && existing.id !== id) {
           throw new ConflictError(`Contract with number ${data.numero_contrato} already exists`, {
             field: 'numero_contrato',
@@ -1086,6 +1087,7 @@ export class ContractService {
    * Does NOT validate valorizaciones; that is done in liquidar().
    */
   async resolver(
+    tenantId: number,
     id: number,
     dto: {
       causal_resolucion: string;
@@ -1095,7 +1097,7 @@ export class ContractService {
       usuarioId: number;
     }
   ): Promise<ContractDto> {
-    const contract = await this.contractRepository.findOne({ where: { id } });
+    const contract = await this.contractRepository.findOne({ where: { id, tenantId } });
     if (!contract) throw new NotFoundError('Contract', id);
 
     if (!['ACTIVO', 'VENCIDO'].includes(contract.estado)) {
@@ -1135,7 +1137,10 @@ export class ContractService {
    * 2. All linked valorizaciones are PAGADO
    * 3. An Acta de Devolución exists for the equipment
    */
-  async verificarLiquidacion(id: number): Promise<{
+  async verificarLiquidacion(
+    tenantId: number,
+    id: number
+  ): Promise<{
     puede_liquidar: boolean;
     contrato_estado: string;
     valorizaciones_pendientes: number;
@@ -1143,7 +1148,7 @@ export class ContractService {
     tiene_acta_devolucion: boolean;
     observaciones: string[];
   }> {
-    const contract = await this.contractRepository.findOne({ where: { id } });
+    const contract = await this.contractRepository.findOne({ where: { id, tenantId } });
     if (!contract) throw new NotFoundError('Contract', id);
 
     const observaciones: string[] = [];
@@ -1199,6 +1204,7 @@ export class ContractService {
    * Validates prerequisites via verificarLiquidacion() before proceeding.
    */
   async liquidar(
+    tenantId: number,
     id: number,
     dto: {
       fecha_liquidacion: string;
@@ -1207,7 +1213,7 @@ export class ContractService {
       usuarioId: number;
     }
   ): Promise<ContractDto> {
-    const check = await this.verificarLiquidacion(id);
+    const check = await this.verificarLiquidacion(tenantId, id);
     if (!check.puede_liquidar) {
       throw new BusinessRuleError(
         `No se puede liquidar el contrato: ${check.observaciones.join('; ')}`,
@@ -1323,6 +1329,7 @@ export class ContractService {
    * @private
    */
   private async checkOverlappingContracts(
+    _tenantId: number,
     equipoId: number,
     fechaInicio: Date,
     fechaFin: Date,
@@ -1467,7 +1474,7 @@ export class ContractService {
    * });
    * // Result: Addendum created + parent fecha_fin updated to 2027-07-31 (atomic)
    */
-  async createAddendum(data: Partial<ContractDto>): Promise<ContractDto> {
+  async createAddendum(tenantId: number, data: Partial<ContractDto>): Promise<ContractDto> {
     // Validate required fields BEFORE starting transaction
     if (!data.contrato_padre_id || !data.numero_contrato || !data.fecha_fin) {
       throw new ValidationError('Missing required fields for addendum creation', [
@@ -1513,6 +1520,7 @@ export class ContractService {
         ...entityData,
         tipo: 'ADENDA',
         estado: 'ACTIVO',
+        tenantId,
       });
 
       const savedAddendum = await queryRunner.manager.save(addendum);
