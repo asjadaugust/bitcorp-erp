@@ -4,6 +4,7 @@ import { AppDataSource } from '../config/database.config';
 import { ParteDiario } from '../models/daily-report-typeorm.model';
 import { CertificacionOperador } from '../models/operador-certificacion.model';
 import { HabilidadOperador } from '../models/operador-habilidad.model';
+import { NotFoundError } from '../errors';
 
 jest.mock('../config/database.config', () => ({
   AppDataSource: {
@@ -85,6 +86,11 @@ describe('OperatorService — availability and performance', () => {
       expect(result.parte_diario_hoy?.id).toBe(99);
       expect(result.parte_diario_hoy?.equipo_id).toBe(12);
     });
+
+    it('should propagate NotFoundError if operator not found', async () => {
+      mockTrabRepo.findOne.mockResolvedValue(null);
+      await expect(service.getAvailability(1, 999)).rejects.toThrow(NotFoundError);
+    });
   });
 
   describe('getPerformance', () => {
@@ -115,6 +121,11 @@ describe('OperatorService — availability and performance', () => {
       expect(result.partes_rechazados).toBe(1);
       expect(result.horas_totales).toBe(120.5);
       expect(result.eficiencia).toBeCloseTo(0.8, 2);
+    });
+
+    it('should propagate NotFoundError if operator not found', async () => {
+      mockTrabRepo.findOne.mockResolvedValue(null);
+      await expect(service.getPerformance(1, 999)).rejects.toThrow(NotFoundError);
     });
   });
 });

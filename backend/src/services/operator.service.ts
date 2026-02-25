@@ -520,6 +520,10 @@ export class OperatorService {
     try {
       await this.findById(tenantId, id);
 
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - dias);
+      const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
+
       const raw = await this.parteDiarioRepository
         .createQueryBuilder('p')
         .select([
@@ -530,7 +534,7 @@ export class OperatorService {
           'SUM(COALESCE(p.horometro_final, 0) - COALESCE(p.horometro_inicial, 0)) AS horas',
         ])
         .where('p.trabajador_id = :id', { id })
-        .andWhere(`p.fecha >= CURRENT_DATE - INTERVAL '${dias} days'`)
+        .andWhere('p.fecha >= :cutoffDate', { cutoffDate: cutoffDateStr })
         .getRawOne();
 
       const total = parseInt(raw?.total ?? '0') || 0;
