@@ -75,6 +75,8 @@ import { PrecalentamientoConfig } from '../models/precalentamiento-config.model'
 import { ContractObligacion } from '../models/contract-obligacion.model';
 import { ContractObligacionArrendatario } from '../models/contract-obligacion-arrendatario.model';
 import { ValeCombustible } from '../models/vale-combustible.model';
+import { CertificacionOperador } from '../models/operador-certificacion.model';
+import { HabilidadOperador } from '../models/operador-habilidad.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -159,6 +161,8 @@ export const AppDataSource = new DataSource({
     ContractObligacion,
     ContractObligacionArrendatario,
     ValeCombustible,
+    CertificacionOperador,
+    HabilidadOperador,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],
