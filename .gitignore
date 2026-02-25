@@ -107,3 +107,6 @@ docs/logs/
 
 # Repomix LLM context snapshot
 repomix-output.txt
+
+# openapi-typescript generated types (regenerate via npm run generate:types)
+frontend/src/app/core/types/api.gen.ts

@@ -7,7 +7,8 @@
     "build": "ng build",
     "test": "echo 'No unit tests implemented'",
     "lint": "eslint \"src/**/*.ts\" \"src/**/*.html\"",
-    "lint:fix": "eslint \"src/**/*.ts\" \"src/**/*.html\" --fix"
+    "lint:fix": "eslint \"src/**/*.ts\" \"src/**/*.html\" --fix",
+    "generate:types": "npx openapi-typescript ../backend/swagger-api.json -o src/app/core/types/api.gen.ts"
   },
   "private": true,
   "dependencies": {
@@ -39,6 +40,7 @@
     "@types/node": "^20.19.25",
     "angular-eslint": "21.0.1",
     "eslint": "^9.39.1",
+    "openapi-typescript": "^7.13.0",
     "typescript": "~5.6.2",
     "typescript-eslint": "8.46.4"
   },
