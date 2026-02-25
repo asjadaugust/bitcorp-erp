@@ -586,7 +586,7 @@ export class TemplateDetailComponent implements OnInit {
         activo: false,
       };
 
-      this.checklistService.createTemplate(newTemplate).subscribe({
+      this.checklistService.createTemplate(newTemplate as any).subscribe({
         next: () => {
           alert('Plantilla duplicada exitosamente');
           this.router.navigate(['/checklists/templates']);

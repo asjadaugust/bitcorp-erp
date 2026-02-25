@@ -8,12 +8,12 @@
     "@typescript-eslint/no-unused-vars": "off",
     "unused-imports/no-unused-imports": "error",
     "unused-imports/no-unused-vars": [
-      "warn",
+      "error",
       {
         "vars": "all",
         "varsIgnorePattern": "^_",
         "args": "after-used",
-        "argsIgnorePattern": "^_"
+        "argsIgnorePattern": "^(_|next$)"
       }
     ],
     "bitcorp/dto-spanish-snake-case": ["warn", { "allowlist": [] }],

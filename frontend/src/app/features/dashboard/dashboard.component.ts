@@ -575,7 +575,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((user) => {
-      this.currentUser = user;
+      this.currentUser = user as unknown as Record<string, unknown>;
     });
     this.loadDocumentAlerts();
   }
@@ -600,7 +600,9 @@ export class DashboardComponent implements OnInit {
     if (!module.isActive) return false;
 
     // Check if user has any of the required roles (case-insensitive)
-    const userRolesLower = this.currentUser.roles?.map((r: string) => r.toLowerCase()) || [];
+    const userRolesLower =
+      (this.currentUser['roles'] as string[] | undefined)?.map((r: string) => r.toLowerCase()) ||
+      [];
     const requiredRolesLower = module.requiredRoles.map((r: string) => r.toLowerCase());
     return requiredRolesLower.some((role: string) => userRolesLower.includes(role));
   }

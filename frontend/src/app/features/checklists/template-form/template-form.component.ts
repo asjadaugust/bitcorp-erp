@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ChecklistService } from '../../../core/services/checklist.service';
-import {
-  ChecklistItem,
-} from '../../../core/models/checklist.model';
+import { ChecklistItem } from '../../../core/models/checklist.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import {
   DropdownComponent,
@@ -633,8 +631,8 @@ export class TemplateFormComponent implements OnInit {
     };
 
     if (this.isEditMode && this.templateId) {
-      template.id = this.templateId;
-      this.checklistService.updateTemplate(this.templateId, template).subscribe({
+      template['id'] = this.templateId;
+      this.checklistService.updateTemplate(this.templateId, template as any).subscribe({
         next: () => {
           alert('Plantilla actualizada exitosamente');
           this.router.navigate(['/checklists/templates']);
@@ -646,7 +644,7 @@ export class TemplateFormComponent implements OnInit {
         },
       });
     } else {
-      this.checklistService.createTemplate(template).subscribe({
+      this.checklistService.createTemplate(template as any).subscribe({
         next: () => {
           alert('Plantilla creada exitosamente');
           this.router.navigate(['/checklists/templates']);

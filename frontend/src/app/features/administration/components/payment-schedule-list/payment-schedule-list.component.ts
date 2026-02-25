@@ -311,21 +311,19 @@ export class PaymentScheduleListComponent implements OnInit {
   }
 
   deleteSchedule(schedule: PaymentSchedule): void {
-    this.confirmSvc
-      .confirmDelete('esta programación de pago')
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this.adminService.deletePaymentSchedule(schedule.id).subscribe({
-            next: () => {
-              this.loadSchedules();
-              this.snackBar.open('Programación eliminada', 'Cerrar', { duration: 3000 });
-            },
-            error: (_err) => {
-              this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
-            },
-          });
-        }
-      });
+    this.confirmSvc.confirmDelete('esta programación de pago').subscribe((confirmed) => {
+      if (confirmed) {
+        this.adminService.deletePaymentSchedule(schedule.id).subscribe({
+          next: () => {
+            this.loadSchedules();
+            this.snackBar.open('Programación eliminada', 'Cerrar', { duration: 3000 });
+          },
+          error: (_err) => {
+            this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
+          },
+        });
+      }
+    });
   }
 
   approveSchedule(schedule: PaymentSchedule): void {
@@ -344,8 +342,8 @@ export class PaymentScheduleListComponent implements OnInit {
               this.snackBar.open('Programación aprobada', 'Cerrar', { duration: 3000 });
             },
             error: (err: unknown) => {
-              const errObj = err as Record<string, Record<string, string>>;
-              const msg = errObj.error?.error || 'No se pudo aprobar';
+              const errObj = err as any;
+              const msg = errObj['error']?.['error'] || 'No se pudo aprobar';
               this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
             },
           });
@@ -357,7 +355,8 @@ export class PaymentScheduleListComponent implements OnInit {
     this.confirmSvc
       .confirm({
         title: 'Procesar Programación',
-        message: '¿Procesar esta programación de pago? Esta acción marcará los pagos como realizados.',
+        message:
+          '¿Procesar esta programación de pago? Esta acción marcará los pagos como realizados.',
         icon: 'fa-play-circle',
         confirmLabel: 'Procesar',
       })
@@ -366,11 +365,13 @@ export class PaymentScheduleListComponent implements OnInit {
           this.adminService.processPaymentSchedule(schedule.id).subscribe({
             next: () => {
               this.loadSchedules();
-              this.snackBar.open('Programación procesada correctamente', 'Cerrar', { duration: 3000 });
+              this.snackBar.open('Programación procesada correctamente', 'Cerrar', {
+                duration: 3000,
+              });
             },
             error: (err: unknown) => {
-              const errObj = err as Record<string, Record<string, string>>;
-              const msg = errObj.error?.error || 'No se pudo procesar';
+              const errObj = err as any;
+              const msg = errObj['error']?.['error'] || 'No se pudo procesar';
               this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
             },
           });
@@ -395,8 +396,8 @@ export class PaymentScheduleListComponent implements OnInit {
               this.snackBar.open('Programación cancelada', 'Cerrar', { duration: 3000 });
             },
             error: (err: unknown) => {
-              const errObj = err as Record<string, Record<string, string>>;
-              const msg = errObj.error?.error || 'No se pudo cancelar';
+              const errObj = err as any;
+              const msg = errObj['error']?.['error'] || 'No se pudo cancelar';
               this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
             },
           });
@@ -414,7 +415,9 @@ export class PaymentScheduleListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.schedules.length === 0) {
-      this.snackBar.open('No hay programaciones de pago para exportar', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('No hay programaciones de pago para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -443,7 +446,9 @@ export class PaymentScheduleListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.schedules.length === 0) {
-      this.snackBar.open('No hay programaciones de pago para exportar', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('No hay programaciones de pago para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 

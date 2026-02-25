@@ -135,9 +135,9 @@ export class CostCenterListComponent implements OnInit {
         // Handle paginated response { success, data, pagination } or direct array
         const resp = response as Record<string, unknown>;
         if (resp && typeof resp === 'object' && 'data' in resp) {
-          this.costCenters = Array.isArray(resp.data) ? resp.data as CostCenter[] : [];
+          this.costCenters = Array.isArray(resp['data']) ? (resp['data'] as CostCenter[]) : [];
         } else if (Array.isArray(response)) {
-          this.costCenters = response;
+          this.costCenters = response as CostCenter[];
         } else {
           this.costCenters = [];
         }

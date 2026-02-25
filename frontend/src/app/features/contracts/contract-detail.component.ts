@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+
 import { HttpErrorResponse } from '@angular/common/http';
 import { ContractService } from '../../core/services/contract.service';
 import {
@@ -53,7 +54,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
     AeroBadgeComponent,
   ],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="contract"
       [header]="header"
@@ -444,7 +445,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       <!-- ── SIDEBAR AFTER (extra cards below audit) ─────────── -->
 
       <!-- Detalles de Vigencia -->
-      <entity-detail-sidebar-card entity-sidebar-after title="Detalles de Vigencia">
+      <app-entity-detail-sidebar-card entity-sidebar-after title="Detalles de Vigencia">
         <div class="info-column">
           <div class="info-item">
             <span class="label">Cons. Contrato</span>
@@ -465,11 +466,11 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             </p>
           </div>
         </div>
-      </entity-detail-sidebar-card>
+      </app-entity-detail-sidebar-card>
 
       <!-- Documentos Requeridos -->
       @if (requiredDocs.length > 0) {
-        <entity-detail-sidebar-card entity-sidebar-after title="Documentos Requeridos">
+        <app-entity-detail-sidebar-card entity-sidebar-after title="Documentos Requeridos">
           <div class="doc-list">
             @for (doc of requiredDocs; track doc.tipo_documento) {
               <div class="doc-item">
@@ -480,14 +481,26 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
               </div>
             }
           </div>
-        </entity-detail-sidebar-card>
+        </app-entity-detail-sidebar-card>
       }
-    </entity-detail-shell>
+    </app-entity-detail-shell>
 
     <!-- ── MODAL: Resolver Contrato ──────────────────────────── -->
     @if (showResolverModal) {
-      <div class="modal" (click)="showResolverModal = false" (keydown.enter)="showResolverModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+      <div
+        class="modal"
+        (click)="showResolverModal = false"
+        (keydown.enter)="showResolverModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
           <div class="modal-header">
             <h2><i class="fa-solid fa-scale-balanced"></i> Resolver Contrato</h2>
             <button type="button" class="close" (click)="showResolverModal = false">
@@ -520,7 +533,9 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
               <input type="date" class="form-control" [(ngModel)]="resolverForm.fecha_resolucion" />
             </div>
             <div class="form-group">
-              <span class="label">Monto de Liquidación Acordado <span class="optional">(opcional)</span></span>
+              <span class="label"
+                >Monto de Liquidación Acordado <span class="optional">(opcional)</span></span
+              >
               <input
                 type="number"
                 class="form-control"
@@ -555,8 +570,20 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
     <!-- ── MODAL: Liquidar Contrato ───────────────────────────── -->
     @if (showLiquidarModal) {
-      <div class="modal" (click)="showLiquidarModal = false" (keydown.enter)="showLiquidarModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+      <div
+        class="modal"
+        (click)="showLiquidarModal = false"
+        (keydown.enter)="showLiquidarModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
           <div class="modal-header">
             <h2><i class="fa-solid fa-circle-check"></i> Liquidar Contrato</h2>
             <button type="button" class="close" (click)="showLiquidarModal = false">
@@ -610,7 +637,9 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 />
               </div>
               <div class="form-group">
-                <span class="label">Monto Final de Liquidación <span class="optional">(opcional)</span></span>
+                <span class="label"
+                  >Monto Final de Liquidación <span class="optional">(opcional)</span></span
+                >
                 <input
                   type="number"
                   class="form-control"
@@ -621,7 +650,9 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 />
               </div>
               <div class="form-group">
-                <span class="label">Observaciones de Cierre <span class="optional">(opcional)</span></span>
+                <span class="label"
+                  >Observaciones de Cierre <span class="optional">(opcional)</span></span
+                >
                 <textarea
                   class="form-control"
                   rows="3"
@@ -1220,16 +1251,16 @@ export class ContractDetailComponent implements OnInit {
 
   loadAnnexes(id: string): void {
     this.contractService.getAnnexes(id, 'A').subscribe({
-      next: (items) => (this.annexA = items),
+      next: (items: any) => (this.annexA = items),
     });
     this.contractService.getAnnexes(id, 'B').subscribe({
-      next: (items) => (this.annexB = items),
+      next: (items: any) => (this.annexB = items),
     });
   }
 
   loadRequiredDocs(id: string): void {
     this.contractService.getRequiredDocuments(id).subscribe({
-      next: (docs) => (this.requiredDocs = docs),
+      next: (docs: any) => (this.requiredDocs = docs),
     });
   }
 

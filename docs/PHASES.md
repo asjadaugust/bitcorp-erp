@@ -127,9 +127,16 @@ Summary Table
 ---
 
 My recommendation for next workstreams (in order):
-
+You are a Product Owner who cares a lot about the consistency and User-Experience of the product, test the following:
+```
 1. WS-24 — Notifications (backend is done, just needs frontend bell + panel — quick win)
 2. WS-25 — Analytics Dashboard (backend done, high management value)
 3. WS-29 — Payment Excel Export (trivial, unblocks existing UI)
 4. WS-30 — Operator Profile wiring (completes an existing feature)
 5. WS-26 — Operator Availability/Performance (needs real OperatorService implementation)
+```
+Identify what works and what does not work, make a list of things that don't work and suggestions for improvements.
+
+Navigate to the application, click around thoroughly and not down every details, make use of WebMCP and note down the console messages and docker-compose logs.
+
+Focus on just making the list of things that dont work and suggestions for improvement only.
