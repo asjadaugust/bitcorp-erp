@@ -32,7 +32,14 @@ describe('OperatorService — certifications', () => {
       save: jest.fn(),
     };
     mockTrabRepo = {
-      findOne: jest.fn(),
+      findOne: jest.fn().mockResolvedValue({
+        id: 5,
+        isActive: true,
+        tenantId: 1,
+        nombres: 'Test',
+        apellidoPaterno: 'User',
+        dni: '12345678',
+      }),
       count: jest.fn(),
       find: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnThis(),
@@ -115,6 +122,11 @@ describe('OperatorService — certifications', () => {
       await service.deleteCertification(1, 10);
 
       expect(mockCertRepo.delete).toHaveBeenCalledWith({ id: 10, tenantId: 1 });
+    });
+
+    it('throws NotFoundError when certification not found', async () => {
+      mockCertRepo.delete.mockResolvedValue({ affected: 0 });
+      await expect(service.deleteCertification(1, 999)).rejects.toThrow();
     });
   });
 

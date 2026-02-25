@@ -517,6 +517,7 @@ export class OperatorService {
   }
 
   async getCertifications(tenantId: number, operadorId: number): Promise<CertificacionDto[]> {
+    await this.findById(tenantId, operadorId);
     const certs = await this.certRepository.find({
       where: { trabajadorId: operadorId, tenantId },
       order: { fechaVencimiento: 'ASC' },
@@ -544,10 +545,14 @@ export class OperatorService {
   }
 
   async deleteCertification(tenantId: number, certId: number): Promise<void> {
-    await this.certRepository.delete({ id: certId, tenantId });
+    const result = await this.certRepository.delete({ id: certId, tenantId });
+    if (!result.affected) {
+      throw new NotFoundError(`Certificación ${certId} no encontrada`);
+    }
   }
 
   async getSkills(tenantId: number, operadorId: number): Promise<HabilidadDto[]> {
+    await this.findById(tenantId, operadorId);
     const skills = await this.habRepository.find({
       where: { trabajadorId: operadorId, tenantId },
       order: { tipoEquipo: 'ASC' },
