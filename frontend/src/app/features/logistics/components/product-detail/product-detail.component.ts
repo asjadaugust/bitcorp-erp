@@ -16,7 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   standalone: true,
   imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroTableComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [header]="header"
       [entity]="product"
       [loading]="loading"
@@ -197,7 +197,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           Eliminar Producto
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `

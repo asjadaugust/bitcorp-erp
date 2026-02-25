@@ -309,14 +309,15 @@ export class ProductListComponent implements OnInit {
       inputSchema: {
         type: 'object',
         properties: {
-          query: { type: 'string', description: 'The search term' }
+          query: { type: 'string', description: 'The search term' },
         },
-        required: ['query']
+        required: ['query'],
       },
-      execute: async (args: { query: string }) => {
-        this.onFilterChange({ search: args.query });
-        return { success: true, message: `Searching products for: ${args.query}` };
-      }
+      execute: async (args: Record<string, unknown>) => {
+        const query = args['query'] as string;
+        this.onFilterChange({ search: query });
+        return { success: true, message: `Searching products for: ${query}` };
+      },
     });
 
     this.webMcpService.registerTool({
@@ -325,14 +326,15 @@ export class ProductListComponent implements OnInit {
       inputSchema: {
         type: 'object',
         properties: {
-          id: { type: 'string', description: 'The unique ID of the product' }
+          id: { type: 'string', description: 'The unique ID of the product' },
         },
-        required: ['id']
+        required: ['id'],
       },
-      execute: async (args: { id: string }) => {
-        await this.router.navigate(['/logistics/products', args.id]);
-        return { success: true, message: `Navigating to product details for ID: ${args.id}` };
-      }
+      execute: async (args: Record<string, unknown>) => {
+        const id = args['id'] as string;
+        await this.router.navigate(['/logistics/products', id]);
+        return { success: true, message: `Navigating to product details for ID: ${id}` };
+      },
     });
   }
 

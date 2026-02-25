@@ -332,7 +332,7 @@ export class MaintenanceScheduleFormComponent implements OnInit {
     this.equipmentService.getAll().subscribe({
       next: (res: unknown) => {
         // Handle standard array response or wrapped response
-        this.equipmentList = Array.isArray(res) ? res : (res as Record<string, unknown>)?.data as Equipment[] || [];
+        this.equipmentList = Array.isArray(res) ? res : ((res as any)?.data as Equipment[]) || [];
         this.equipmentOptions = this.equipmentList.map((eq) => ({
           label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
           value: eq.id,
@@ -389,7 +389,7 @@ export class MaintenanceScheduleFormComponent implements OnInit {
         setTimeout(() => this.router.navigate(['/equipment/maintenance/schedule']), 1500);
       },
       error: (err: unknown) => {
-        const errorObj = err as Record<string, Record<string, string>>;
+        const errorObj = err as any;
         this.errorMessage =
           errorObj.error?.error || errorObj.error?.message || 'Error al guardar la programación';
         this.loading = false;

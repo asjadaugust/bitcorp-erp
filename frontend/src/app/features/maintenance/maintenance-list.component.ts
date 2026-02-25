@@ -305,7 +305,7 @@ export class MaintenanceListComponent implements OnInit {
 
         const equipmentList = Array.isArray(result.equipment)
           ? result.equipment
-          : ((result.equipment as Record<string, unknown>)['data'] as Record<string, unknown>[]) || [];
+          : ((result.equipment as any)['data'] as Record<string, unknown>[]) || [];
 
         (equipmentList as Record<string, unknown>[]).forEach((eq: Record<string, unknown>) => {
           this.equipmentMap.set(eq['id'] as number, eq);

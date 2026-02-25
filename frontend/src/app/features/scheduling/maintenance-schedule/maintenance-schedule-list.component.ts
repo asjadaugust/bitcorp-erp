@@ -5,14 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
 import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.model';
 import { ExcelExportService } from '../../../core/services/excel-export.service';
-import {
-  ExportFormat,
-} from '../../../shared/components/export-dropdown/export-dropdown.component';
+import { ExportFormat } from '../../../shared/components/export-dropdown/export-dropdown.component';
 import { MaintenanceCardComponent } from '../../../shared/components/maintenance-card/maintenance-card.component';
 
-import {
-  PageLayoutComponent,
-} from '../../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -198,16 +194,14 @@ export class MaintenanceScheduleListComponent implements OnInit {
     },
   ];
 
-
-
-  currentFilters: Record<string, unknown> = {};
+  currentFilters: Record<string, string | number | undefined> = {};
 
   ngOnInit() {
     this.loadSchedules();
   }
 
   onFilterChange(filters: Record<string, unknown>) {
-    this.currentFilters = filters;
+    this.currentFilters = filters as Record<string, string | number | undefined>;
     this.loadSchedules();
   }
 
@@ -222,8 +216,7 @@ export class MaintenanceScheduleListComponent implements OnInit {
         this.loading = false;
       },
       error: (err: unknown) => {
-        console.error('Error loading schedules:', err);
-        this.error = (err as Record<string, Record<string, string>>).error?.message || 'Error al cargar programaciones';
+        this.error = (err as any)?.error?.message || 'Error al cargar programaciones';
         this.loading = false;
       },
     });
@@ -249,8 +242,8 @@ export class MaintenanceScheduleListComponent implements OnInit {
   generateTasks() {
     this.loading = true;
     this.scheduleService.generateTasks(30).subscribe({
-      next: (res: Record<string, unknown>) => {
-        alert(`Se generaron ${(res.data as Record<string, number>).tasksGenerated} tareas nuevas.`);
+      next: (res: any) => {
+        alert(`Se generaron ${res.data?.tasksGenerated} tareas nuevas.`);
         this.loading = false;
       },
       error: (err: unknown) => {

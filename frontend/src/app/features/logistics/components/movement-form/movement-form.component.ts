@@ -409,7 +409,7 @@ export class MovementFormComponent implements OnInit {
       },
       error: (err: unknown) => {
         console.error('Error loading movement', err);
-        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err as any);
         this.loading = false;
       },
     });
@@ -478,9 +478,9 @@ export class MovementFormComponent implements OnInit {
       numero_documento: formValue.numero_documento,
       observaciones: formValue.observaciones,
       items: formValue.items.map((item: Record<string, unknown>) => ({
-        producto_id: Number(item.producto_id),
-        cantidad: Number(item.cantidad),
-        precio_unitario: Number(item.precio_unitario),
+        producto_id: Number(item['producto_id']),
+        cantidad: Number(item['cantidad']),
+        precio_unitario: Number(item['precio_unitario']),
         observaciones: '', // Optional
       })),
     };
@@ -493,8 +493,8 @@ export class MovementFormComponent implements OnInit {
       error: (err: unknown) => {
         console.error('Error saving movement', err);
         this.submitting = false;
-        this.validationErrors = this.errorHandler.extractValidationErrors(err);
-        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        this.validationErrors = this.errorHandler.extractValidationErrors(err as any);
+        this.errorMessage = this.errorHandler.getErrorMessage(err as any);
       },
     });
   }

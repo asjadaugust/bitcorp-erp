@@ -376,7 +376,7 @@ export class ScheduledTaskFormComponent implements OnInit {
   loadDependencies() {
     this.equipmentService.getAll().subscribe((res: unknown) => {
       const data = res as Record<string, unknown>;
-      this.equipmentList = (data.data as Equipment[]) || (res as Equipment[]);
+      this.equipmentList = (data['data'] as Equipment[]) || (res as Equipment[]);
       this.equipmentOptions = this.equipmentList.map((eq) => ({
         label: `${eq.codigo_equipo} - ${eq.marca} ${eq.modelo}`,
         value: eq.id,
@@ -384,8 +384,8 @@ export class ScheduledTaskFormComponent implements OnInit {
     });
     this.operatorService.getAll().subscribe((res: unknown) => {
       this.operators = res as Operator[];
-      this.operatorOptions = this.operators.map((op) => ({
-        label: `${op.C05000_Nombre || op.nombres} ${op.C05000_Apellido || op.apellidos}`,
+      this.operatorOptions = this.operators.map((op: any) => ({
+        label: `${op.C05000_Nombre || op.nombres || ''} ${op.C05000_Apellido || op.apellidos || ''}`,
         value: op.id,
       }));
     });
@@ -442,8 +442,8 @@ export class ScheduledTaskFormComponent implements OnInit {
       },
       error: (err: unknown) => {
         this.loading = false;
-        this.validationErrors = this.errorHandler.extractValidationErrors(err);
-        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        this.validationErrors = this.errorHandler.extractValidationErrors(err as any);
+        this.errorMessage = this.errorHandler.getErrorMessage(err as any);
       },
     });
   }

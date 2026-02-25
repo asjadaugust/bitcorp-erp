@@ -16,9 +16,7 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
-import {
-  DropdownOption,
-} from '../../../../shared/components/dropdown/dropdown.component';
+import { DropdownOption } from '../../../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-product-form',
@@ -233,7 +231,7 @@ export class ProductFormComponent implements OnInit {
       },
       error: (err: unknown) => {
         console.error('Error loading product', err);
-        this.errorMessage = this.errorHandler.getErrorMessage(err);
+        this.errorMessage = this.errorHandler.getErrorMessage(err as any);
         this.loading = false;
       },
     });
@@ -258,7 +256,14 @@ export class ProductFormComponent implements OnInit {
 
     if (this.isEditMode && this.productId) {
       // Strip non-permitted fields for update (strict backend validation)
-      const { codigo: _codigo, id: _id, created_at: _created_at, updated_at: _updated_at, stock_actual: _stock_actual, ...updateData } = productData;
+      const {
+        codigo: _codigo,
+        id: _id,
+        created_at: _created_at,
+        updated_at: _updated_at,
+        stock_actual: _stock_actual,
+        ...updateData
+      } = productData;
 
       this.inventoryService.updateProduct(this.productId, updateData).subscribe({
         next: () => {
@@ -268,8 +273,8 @@ export class ProductFormComponent implements OnInit {
         error: (err: unknown) => {
           console.error('Error updating product:', err);
           this.submitting = false;
-          this.validationErrors = this.errorHandler.extractValidationErrors(err);
-          this.errorMessage = this.errorHandler.getErrorMessage(err);
+          this.validationErrors = this.errorHandler.extractValidationErrors(err as any);
+          this.errorMessage = this.errorHandler.getErrorMessage(err as any);
         },
       });
     } else {
@@ -281,8 +286,8 @@ export class ProductFormComponent implements OnInit {
         error: (err: unknown) => {
           console.error('Error saving product', err);
           this.submitting = false;
-          this.validationErrors = this.errorHandler.extractValidationErrors(err);
-          this.errorMessage = this.errorHandler.getErrorMessage(err);
+          this.validationErrors = this.errorHandler.extractValidationErrors(err as any);
+          this.errorMessage = this.errorHandler.getErrorMessage(err as any);
         },
       });
     }

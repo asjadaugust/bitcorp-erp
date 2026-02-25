@@ -16,7 +16,7 @@ import {
   standalone: true,
   imports: [CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [header]="header"
       [entity]="record"
       [loading]="loading"
@@ -126,11 +126,24 @@ import {
           Eliminar Registro
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
 
     <!-- Delete Confirmation Modal -->
-    <div *ngIf="showDeleteModal" class="modal-backdrop" (click)="showDeleteModal = false" (keydown.enter)="showDeleteModal = false" tabindex="0" role="button">
-      <div class="modal-content animate-scale-in" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
+    <div
+      *ngIf="showDeleteModal"
+      class="modal-backdrop"
+      (click)="showDeleteModal = false"
+      (keydown.enter)="showDeleteModal = false"
+      tabindex="0"
+      role="button"
+    >
+      <div
+        class="modal-content animate-scale-in"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="0"
+        role="dialog"
+      >
         <div class="modal-header">
           <h3>Eliminar Registro</h3>
           <button class="btn-close" (click)="showDeleteModal = false">&times;</button>

@@ -16,7 +16,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
   standalone: true,
   imports: [CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="record"
       [header]="header"
@@ -86,7 +86,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <i class="fa-solid fa-arrow-left"></i> Volver a Equipo
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `

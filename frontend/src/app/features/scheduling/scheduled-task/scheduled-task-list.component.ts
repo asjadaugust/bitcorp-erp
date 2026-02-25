@@ -489,7 +489,7 @@ export class ScheduledTaskListComponent implements OnInit {
     { label: 'Planillas', route: '/operaciones/timesheets', icon: 'fa-clipboard-user' },
   ];
 
-  filters: { estado: string; fechaDesde: string; fechaHasta: string;[key: string]: string } = {
+  filters: { estado: string; fechaDesde: string; fechaHasta: string; [key: string]: string } = {
     estado: '',
     fechaDesde: '',
     fechaHasta: '',
@@ -513,7 +513,11 @@ export class ScheduledTaskListComponent implements OnInit {
     this.taskService.getAll(this.filters).subscribe({
       next: (res: unknown) => {
         // Handle both wrapped and unwrapped responses
-        this.tasks = Array.isArray(res) ? res : (res as Record<string, unknown>).data as ScheduledTask[] || (res as ScheduledTask[]) || [];
+        this.tasks = Array.isArray(res)
+          ? res
+          : ((res as Record<string, unknown>)['data'] as ScheduledTask[]) ||
+            (res as ScheduledTask[]) ||
+            [];
         this.loading = false;
       },
       error: (err: unknown) => {
@@ -528,8 +532,23 @@ export class ScheduledTaskListComponent implements OnInit {
     this.router.navigate(['/operaciones/scheduling/tasks/new']);
   }
 
-  editTask(id: number) {
+  editTask(id: number, event?: Event) {
+    if (event) event.stopPropagation();
     this.router.navigate(['/operaciones/scheduling/tasks', id, 'edit']);
+  }
+
+  viewTask(id: number) {
+    this.router.navigate(['/operaciones/scheduling/tasks', id]);
+  }
+
+  assignTask(task: ScheduledTask, event: Event) {
+    event.stopPropagation();
+    this.router.navigate(['/operaciones/scheduling/tasks', task.id, 'assign']);
+  }
+
+  completeTask(task: ScheduledTask, event: Event) {
+    event.stopPropagation();
+    this.router.navigate(['/operaciones/scheduling/tasks', task.id, 'complete']);
   }
 
   deleteTask(id: number) {
@@ -550,13 +569,14 @@ export class ScheduledTaskListComponent implements OnInit {
       {
         icon: 'fa-solid fa-truck-front',
         label: 'Equipo',
-        value: task.equipo?.codigo_equipo || 'N/A',
+        value: (task.equipo?.['codigo_equipo'] as string) || 'N/A',
       },
       {
         icon: 'fa-solid fa-user-gear',
         label: 'Operador',
         value: task.operador
-          ? task.operador.nombreCompleto || task.operador.nombres
+          ? (((task.operador as any)['nombreCompleto'] ||
+              (task.operador as any)['nombres']) as string)
           : 'Sin asignar',
       },
       {
@@ -610,9 +630,10 @@ export class ScheduledTaskListComponent implements OnInit {
     const exportData = this.tasks.map((task) => ({
       Tipo: task.tipoTarea || '',
       Título: task.titulo || task.descripcion || '',
-      Equipo: task.equipo?.codigo_equipo || 'N/A',
+      Equipo: (task.equipo?.['codigo_equipo'] as string) || 'N/A',
       Operador: task.operador
-        ? task.operador.nombreCompleto || task.operador.nombres
+        ? (((task.operador as any)['nombreCompleto'] ||
+            (task.operador as any)['nombres']) as string)
         : 'Sin asignar',
       'Fecha Programada': task.fechaInicio
         ? new Date(task.fechaInicio).toLocaleDateString('es-PE')
@@ -639,9 +660,10 @@ export class ScheduledTaskListComponent implements OnInit {
     const exportData = this.tasks.map((task) => ({
       Tipo: task.tipoTarea || '',
       Título: task.titulo || task.descripcion || '',
-      Equipo: task.equipo?.codigo_equipo || 'N/A',
+      Equipo: (task.equipo?.['codigo_equipo'] as string) || 'N/A',
       Operador: task.operador
-        ? task.operador.nombreCompleto || task.operador.nombres
+        ? (((task.operador as any)['nombreCompleto'] ||
+            (task.operador as any)['nombres']) as string)
         : 'Sin asignar',
       'Fecha Programada': task.fechaInicio
         ? new Date(task.fechaInicio).toLocaleDateString('es-PE')

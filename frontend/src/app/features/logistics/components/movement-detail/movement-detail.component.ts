@@ -17,7 +17,7 @@ import {
   standalone: true,
   imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroTableComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [header]="header"
       [entity]="movement"
       [loading]="loading"
@@ -185,7 +185,7 @@ import {
           Anular Movimiento
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `
