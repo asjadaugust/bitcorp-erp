@@ -2,8 +2,16 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { OperatorService } from '../../core/services/operator.service';
-import { Operator } from '../../core/models/operator.model';
+import {
+  Operator,
+  OperatorCertification,
+  OperatorSkill,
+  OperatorDisponibilidad,
+  OperatorRendimiento,
+} from '../../core/models/operator.model';
 
 import {
   EntityDetailShellComponent,
@@ -17,7 +25,7 @@ import {
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, EntityDetailShellComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="operator"
       [header]="header"
@@ -76,6 +84,83 @@ import {
             </div>
           </div>
         </section>
+
+        <!-- Availability + Performance -->
+        <section class="detail-section" data-testid="section-performance">
+          <h2>Desempeño (30 días)</h2>
+          <div class="info-grid">
+            <div class="info-item" data-testid="badge-disponibilidad">
+              <span class="label">Estado Hoy</span>
+              <p>
+                <span
+                  class="badge"
+                  [class.badge-success]="disponibilidad?.estado === 'DISPONIBLE'"
+                  [class.badge-info]="disponibilidad?.estado === 'ASIGNADO'"
+                >
+                  {{ disponibilidad?.estado ?? '—' }}
+                </span>
+              </p>
+            </div>
+            <div class="info-item" data-testid="stat-partes">
+              <span class="label">Partes (30d)</span>
+              <p>{{ rendimiento?.total_partes ?? '—' }}</p>
+            </div>
+            <div class="info-item" data-testid="stat-horas">
+              <span class="label">Horas (30d)</span>
+              <p>{{ rendimiento?.horas_totales ?? '—' }}</p>
+            </div>
+            <div class="info-item" data-testid="stat-eficiencia">
+              <span class="label">Eficiencia</span>
+              <p>{{ rendimiento ? (rendimiento.eficiencia | number: '1.0-0') + '%' : '—' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Skills -->
+        <section
+          class="detail-section"
+          *ngIf="habilidades.length > 0"
+          data-testid="section-habilidades"
+        >
+          <h2>Habilidades y Equipos</h2>
+          <div class="skills-list">
+            <div *ngFor="let h of habilidades" class="skill-tag" data-testid="skill-item">
+              <strong>{{ h.tipo_equipo }}</strong>
+              <span class="badge badge-info">{{ h.nivel_habilidad }}</span>
+              <span class="text-muted">{{ h.anios_experiencia }}a exp.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Certifications -->
+        <section
+          class="detail-section"
+          *ngIf="certificaciones.length > 0"
+          data-testid="section-certificaciones"
+        >
+          <h2>Certificaciones</h2>
+          <div class="cert-list">
+            <div *ngFor="let cert of certificaciones" class="cert-item" data-testid="cert-item">
+              <div class="cert-info">
+                <strong data-testid="cert-nombre">{{ cert.nombre_certificacion }}</strong>
+                <span *ngIf="cert.numero_certificacion" class="text-muted">
+                  · {{ cert.numero_certificacion }}
+                </span>
+                <span *ngIf="cert.fecha_vencimiento" class="text-muted">
+                  · Vence: {{ cert.fecha_vencimiento }}
+                </span>
+              </div>
+              <span
+                class="badge"
+                [class.badge-success]="cert.estado === 'VIGENTE'"
+                [class.badge-warning]="cert.estado === 'POR_VENCER'"
+                [class.badge-danger]="cert.estado === 'VENCIDO'"
+              >
+                {{ cert.estado }}
+              </span>
+            </div>
+          </div>
+        </section>
       </div>
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
@@ -93,7 +178,7 @@ import {
           <i class="fa-solid fa-arrow-left"></i> Volver a Lista
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `
@@ -409,6 +494,65 @@ import {
           margin-bottom: 24px;
         }
       }
+
+      /* Performance, Skills, and Certifications */
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .badge-success {
+        background: #d1fae5;
+        color: #059669;
+      }
+      .badge-info {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge-warning {
+        background: #fef3c7;
+        color: #d97706;
+      }
+      .badge-danger {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+      .skills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .skill-tag {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: #f3f4f6;
+        border-radius: 8px;
+        font-size: 13px;
+      }
+      .cert-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .cert-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: #f9fafb;
+        border-radius: 8px;
+      }
+      .cert-info {
+        font-size: 13px;
+      }
+      .text-muted {
+        color: #6b7280;
+        font-size: 12px;
+      }
     `,
   ],
 })
@@ -419,6 +563,11 @@ export class OperatorDetailComponent implements OnInit {
 
   operator: Operator | null = null;
   loading = true;
+
+  disponibilidad: OperatorDisponibilidad | null = null;
+  rendimiento: OperatorRendimiento | null = null;
+  certificaciones: OperatorCertification[] = [];
+  habilidades: OperatorSkill[] = [];
 
   get header(): EntityDetailHeader {
     return {
@@ -459,10 +608,25 @@ export class OperatorDetailComponent implements OnInit {
       next: (data) => {
         this.operator = data;
         this.loading = false;
+        this.loadExtraData(id);
       },
       error: () => {
         this.loading = false;
       },
+    });
+  }
+
+  loadExtraData(id: number): void {
+    forkJoin({
+      disponibilidad: this.operatorService.getAvailability(id).pipe(catchError(() => of(null))),
+      rendimiento: this.operatorService.getPerformance(id, 30).pipe(catchError(() => of(null))),
+      certs: this.operatorService.getCertifications(id).pipe(catchError(() => of([]))),
+      skills: this.operatorService.getSkills(id).pipe(catchError(() => of([]))),
+    }).subscribe(({ disponibilidad, rendimiento, certs, skills }) => {
+      this.disponibilidad = disponibilidad as OperatorDisponibilidad | null;
+      this.rendimiento = rendimiento as OperatorRendimiento | null;
+      this.certificaciones = (certs as OperatorCertification[]) ?? [];
+      this.habilidades = (skills as OperatorSkill[]) ?? [];
     });
   }
 
