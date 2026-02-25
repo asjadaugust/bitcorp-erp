@@ -21,7 +21,7 @@ export class CertificacionOperador {
   @Index('idx_op_cert_trabajador')
   trabajadorId!: number;
 
-  @ManyToOne(() => Trabajador)
+  @ManyToOne(() => Trabajador, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'trabajador_id' })
   trabajador?: Trabajador;
 
