@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DailyReportService } from '../../../core/services/daily-report.service';
+import { DailyReport } from '../../../core/models/daily-report.model';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   DropdownComponent,
@@ -12,6 +13,7 @@ import {
 interface HistoryReport {
   id: number;
   date: string;
+  rawDate: Date;
   project: string;
   equipment: string;
   hours: number;
@@ -52,22 +54,22 @@ interface HistoryReport {
 
       <!-- Summary Stats -->
       <div class="summary-stats">
-        <div class="stat-item">
+        <div class="stat-item" data-testid="summary-total">
           <span class="stat-label">Total Partes:</span>
           <span class="stat-value">{{ filteredReports.length }}</span>
         </div>
-        <div class="stat-item">
+        <div class="stat-item" data-testid="summary-hours">
           <span class="stat-label">Horas Totales:</span>
           <span class="stat-value">{{ calculateTotalHours() }}h</span>
         </div>
-        <div class="stat-item">
+        <div class="stat-item" data-testid="summary-approved">
           <span class="stat-label">Aprobados:</span>
           <span class="stat-value">{{ countByStatus('APROBADO') }}</span>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="loading" class="loading-state">
+      <div *ngIf="loading" class="loading-state" data-testid="loading-state">
         <span class="loading-icon">⏳</span>
         <p>Cargando historial...</p>
       </div>
@@ -78,6 +80,7 @@ interface HistoryReport {
           *ngFor="let report of filteredReports"
           class="report-card"
           [class.clickable]="report.status === 'BORRADOR'"
+          data-testid="report-card"
         >
           <div class="report-main">
             <div class="report-icon" [class]="'status-' + report.status">
@@ -97,7 +100,11 @@ interface HistoryReport {
             </div>
 
             <div class="report-status">
-              <span class="status-badge" [class]="'badge-' + report.status">
+              <span
+                class="status-badge"
+                [class]="'badge-' + report.status"
+                data-testid="report-status"
+              >
                 {{ getStatusLabel(report.status) }}
               </span>
             </div>
@@ -107,15 +114,29 @@ interface HistoryReport {
             <button
               *ngIf="report.status === 'BORRADOR'"
               class="action-btn edit"
+              [attr.data-testid]="'btn-edit-' + report.id"
               (click)="editReport(report)"
             >
               ✏️ Editar
             </button>
-            <button class="action-btn view" (click)="viewReport(report)">👁️ Ver</button>
-            <button class="action-btn download" (click)="downloadPdf(report)">📥 PDF</button>
+            <button
+              class="action-btn view"
+              [attr.data-testid]="'btn-view-' + report.id"
+              (click)="viewReport(report)"
+            >
+              👁️ Ver
+            </button>
+            <button
+              class="action-btn download"
+              [attr.data-testid]="'btn-download-' + report.id"
+              (click)="downloadPdf(report)"
+            >
+              📥 PDF
+            </button>
             <button
               *ngIf="report.status === 'BORRADOR'"
               class="action-btn delete"
+              [attr.data-testid]="'btn-delete-' + report.id"
               (click)="deleteReport(report)"
             >
               🗑️
@@ -123,7 +144,7 @@ interface HistoryReport {
           </div>
         </div>
 
-        <div *ngIf="filteredReports.length === 0" class="empty-state">
+        <div *ngIf="filteredReports.length === 0" class="empty-state" data-testid="empty-state">
           <span class="empty-icon">📋</span>
           <p>No se encontraron partes diarios</p>
           <a routerLink="/operator/daily-report" class="btn-link">Crear nuevo parte</a>
@@ -457,20 +478,28 @@ export class OperatorHistoryComponent implements OnInit {
 
     // Fetch reports from API
     this.dailyReportService.getAll().subscribe({
-      next: (reports) => {
+      next: (reports: DailyReport[]) => {
         // Map API response to local interface
-        this.allReports = reports.map((report: Record<string, unknown>) => ({
-          id: report.id,
-          date: new Date((report['fecha_parte'] as string) || (report['reportDate'] as string)).toLocaleDateString('es-PE'),
-          project: (report['location'] as string) || 'Sin ubicación',
-          equipment:
-            (report['equipment_name'] as string) || (report['equipment_code'] as string) || `Equipo #${report['equipo_id']}`,
-          hours:
-            (report['worked_hours'] as number) ||
-            ((report['horometro_final'] as number) || 0) - ((report['horometro_inicial'] as number) || 0) ||
-            0,
-          status: report['estado'] as 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO',
-        }));
+        this.allReports = reports.map((report: DailyReport) => {
+          const rawDate = new Date(report.fecha_parte);
+          return {
+            id: report.id,
+            date: rawDate.toLocaleDateString('es-PE'),
+            rawDate,
+            project: report.proyecto_nombre || report.lugar_salida || 'Sin ubicación',
+            equipment:
+              report.equipo_nombre || report.codigo_equipo || `Equipo #${report.equipo_id}`,
+            hours:
+              Number(report.horas_trabajadas) ||
+              (Number(report.horometro_final) || 0) - (Number(report.horometro_inicial) || 0) ||
+              0,
+            status: (report.estado === 'PENDIENTE' ? 'ENVIADO' : report.estado) as
+              | 'BORRADOR'
+              | 'ENVIADO'
+              | 'APROBADO'
+              | 'RECHAZADO',
+          };
+        });
         this.filterReports();
         this.loading = false;
       },
@@ -489,7 +518,21 @@ export class OperatorHistoryComponent implements OnInit {
       filtered = filtered.filter((r) => r.status === this.selectedStatus);
     }
 
-    // TODO: Filter by period
+    // Filter by period
+    if (this.selectedPeriod !== 'all') {
+      const now = new Date();
+      const periodDays: Record<string, number> = {
+        week: 7,
+        month: 30,
+        quarter: 90,
+        year: 365,
+      };
+      const days = periodDays[this.selectedPeriod];
+      if (days) {
+        const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter((r) => r.rawDate >= cutoff);
+      }
+    }
 
     this.filteredReports = filtered;
   }
@@ -513,11 +556,7 @@ export class OperatorHistoryComponent implements OnInit {
   }
 
   viewReport(report: HistoryReport) {
-    // For now, show alert with report details
-    // TODO: Create a view-only report detail component
-    alert(
-      `Parte Diario #${report.id}\nFecha: ${report.date}\nEquipo: ${report.equipment}\nHoras: ${report.hours}h\nEstado: ${this.getStatusLabel(report.status)}`
-    );
+    this.router.navigate(['/operator/daily-report', report.id]);
   }
 
   editReport(report: HistoryReport) {
@@ -531,9 +570,16 @@ export class OperatorHistoryComponent implements OnInit {
 
   deleteReport(report: HistoryReport) {
     if (confirm('¿Está seguro de eliminar este borrador?')) {
-      // TODO: Call API to delete
-      this.allReports = this.allReports.filter((r) => r.id !== report.id);
-      this.filterReports();
+      this.dailyReportService.delete(report.id).subscribe({
+        next: () => {
+          this.allReports = this.allReports.filter((r) => r.id !== report.id);
+          this.filterReports();
+        },
+        error: (err) => {
+          console.error('Error al eliminar el parte diario:', err);
+          alert('Error al eliminar el parte diario. Inténtelo de nuevo.');
+        },
+      });
     }
   }
 
