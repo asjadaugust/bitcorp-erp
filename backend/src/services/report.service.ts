@@ -18,7 +18,7 @@ import Logger from '../utils/logger';
 import { NotFoundError } from '../errors/http.errors';
 import { ValidationError } from '../errors/validation.error';
 import { DashboardService } from './dashboard.service';
-import { Between, In } from 'typeorm';
+import { Between, FindOptionsWhere, In } from 'typeorm';
 
 export interface EquipmentReceptionStatus {
   equipo_id: number;
@@ -107,7 +107,7 @@ export class ReportService {
       // filters = { ...filters, tenant_id: tenantId };
 
       // Fetch all matching reports (model layer doesn't support pagination yet)
-      const entities: DailyReportRawRow[] = await DailyReportModel.findAll(filters);
+      const entities: DailyReportRawRow[] = await DailyReportModel.findAll(tenantId, filters);
 
       // Calculate pagination
       const total = entities.length;
@@ -162,8 +162,7 @@ export class ReportService {
         context: 'ReportService.getReportById',
       });
 
-      // TODO: Add tenant_id filter when column exists
-      const entity: DailyReportRawRow | null = await DailyReportModel.findById(id);
+      const entity: DailyReportRawRow | null = await DailyReportModel.findById(tenantId, id);
 
       if (!entity) {
         throw new NotFoundError('Daily report', id, { tenantId });
@@ -210,8 +209,10 @@ export class ReportService {
         context: 'ReportService.getReportsByOperator',
       });
 
-      // TODO: Add tenant_id filter when column exists
-      const entities: DailyReportRawRow[] = await DailyReportModel.findByOperator(operatorId);
+      const entities: DailyReportRawRow[] = await DailyReportModel.findByOperator(
+        tenantId,
+        operatorId
+      );
 
       const reports = entities.map(toDailyReportDto);
 
@@ -358,7 +359,7 @@ export class ReportService {
       }
 
       // Persist
-      const created: DailyReportRawRow = await DailyReportModel.create(entity);
+      const created: DailyReportRawRow = await DailyReportModel.create(tenantId, entity);
       const report = toDailyReportDto(created);
 
       Logger.info('Daily report created successfully', {
@@ -433,7 +434,7 @@ export class ReportService {
       // TODO: Add tenant_id verification when column exists
 
       // Persist
-      const updated: DailyReportRawRow | null = await DailyReportModel.update(id, entity);
+      const updated: DailyReportRawRow | null = await DailyReportModel.update(tenantId, id, entity);
 
       if (!updated) {
         throw new NotFoundError('Daily report', id, { tenantId });
@@ -493,8 +494,11 @@ export class ReportService {
         context: 'ReportService.approveReport',
       });
 
-      // TODO: Add tenant_id verification when column exists
-      const entity: DailyReportRawRow | null = await DailyReportModel.approve(id, approvedBy);
+      const entity: DailyReportRawRow | null = await DailyReportModel.approve(
+        tenantId,
+        id,
+        approvedBy
+      );
 
       if (!entity) {
         throw new NotFoundError('Daily report', id, { tenantId });
@@ -560,8 +564,7 @@ export class ReportService {
         ]);
       }
 
-      // TODO: Add tenant_id verification when column exists
-      const entity: DailyReportRawRow | null = await DailyReportModel.reject(id, reason);
+      const entity: DailyReportRawRow | null = await DailyReportModel.reject(tenantId, id, reason);
 
       if (!entity) {
         throw new NotFoundError('Daily report', id, { tenantId });
@@ -622,7 +625,11 @@ export class ReportService {
         ]);
       }
 
-      const entity = await DailyReportModel.firmarResidente(id, firmaResidente.trim());
+      const entity = await DailyReportModel.firmarResidente(
+        tenantId,
+        id,
+        firmaResidente.trim()
+      );
 
       if (!entity) {
         throw new NotFoundError('Daily report', id, { tenantId });
@@ -668,8 +675,7 @@ export class ReportService {
         context: 'ReportService.deleteReport',
       });
 
-      // TODO: Add tenant_id verification when column exists
-      const deleted = await DailyReportModel.delete(id);
+      const deleted = await DailyReportModel.delete(tenantId, id);
 
       if (!deleted) {
         throw new NotFoundError('Daily report', id, { tenantId });
@@ -726,10 +732,8 @@ export class ReportService {
 
       const repository = AppDataSource.getRepository(DailyReport);
 
-      // TODO: Add tenant_id filter when column exists
-      // where: { id, tenant_id: tenantId }
       const report = await repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: [
           'equipo',
           'trabajador',
@@ -795,7 +799,7 @@ export class ReportService {
 
       // Get active equipment
       const equipment = await equipmentRepo.find({
-        where: { estado: In(['DISPONIBLE', 'EN_USO', 'OPERATIVO']) },
+        where: { tenantId, estado: In(['DISPONIBLE', 'EN_USO', 'OPERATIVO']) },
         order: { codigoEquipo: 'ASC' },
       });
 
@@ -821,7 +825,8 @@ export class ReportService {
       const totalDias = workingDays.length;
 
       // Get all daily reports in the date range (optionally filtered by project)
-      const reportWhere: Record<string, unknown> = {
+      const reportWhere: FindOptionsWhere<DailyReport> = {
+        tenantId,
         fecha: Between(new Date(fechaDesde), new Date(fechaHasta)),
       };
       if (proyectoId) {

@@ -56,6 +56,9 @@ export class MaintenanceSchedule {
   @Column({ name: 'observaciones', type: 'text', nullable: true })
   observaciones?: string;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

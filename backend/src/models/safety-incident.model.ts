@@ -52,6 +52,9 @@ export class Incidente {
   @Index('idx_incidente_estado')
   estado!: EstadoIncidente;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

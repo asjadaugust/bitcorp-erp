@@ -5,7 +5,7 @@ import { PaymentScheduleDetail } from '../models/payment-schedule-detail.model';
 export const PaymentScheduleRepository = AppDataSource.getRepository(PaymentSchedule).extend({
   async findByStatus(status: string) {
     return this.find({
-      where: { status: status as any },
+      where: { status },
       relations: ['details', 'details.accounts_payable'],
     });
   },

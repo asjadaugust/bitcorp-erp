@@ -48,7 +48,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     const offset = (page - 1) * limit;
 
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     // Tenant filter
@@ -146,7 +146,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
 
   async findById(id: number, tenantId?: number): Promise<DailyReport | null> {
     const conditions: string[] = ['dr.id = $1'];
-    const params: any[] = [id];
+    const params: unknown[] = [id];
     let paramCount = 2;
 
     if (tenantId) {
@@ -233,7 +233,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     tenantId?: number
   ): Promise<DailyReport> {
     const setClauses: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     const updateFields = Object.keys(data).filter(
@@ -286,7 +286,7 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     equipmentId?: number
   ): Promise<DailyReport[]> {
     const conditions: string[] = ['fecha >= $1', 'fecha <= $2'];
-    const params: any[] = [startDate, endDate];
+    const params: unknown[] = [startDate, endDate];
     let paramCount = 3;
 
     if (tenantId) {
@@ -323,12 +323,12 @@ export class DailyReportRepository extends BaseRepository<DailyReport> {
     return result.rows;
   }
 
-  async getMonthlyStats(year: number, month: number, tenantId?: number): Promise<any> {
+  async getMonthlyStats(year: number, month: number, tenantId?: number): Promise<Record<string, unknown>> {
     const conditions: string[] = [
       'EXTRACT(YEAR FROM fecha) = $1',
       'EXTRACT(MONTH FROM fecha) = $2',
     ];
-    const params: any[] = [year, month];
+    const params: unknown[] = [year, month];
     let paramCount = 3;
 
     if (tenantId) {

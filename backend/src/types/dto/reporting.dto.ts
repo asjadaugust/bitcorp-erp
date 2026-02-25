@@ -7,10 +7,10 @@ import { IsDateString, IsOptional, IsIn } from 'class-validator';
  */
 export class ReportQueryDto {
   @IsDateString({}, { message: 'La fecha de inicio debe ser una fecha válida (YYYY-MM-DD)' })
-  startDate!: string;
+  start_date!: string;
 
   @IsDateString({}, { message: 'La fecha de fin debe ser una fecha válida (YYYY-MM-DD)' })
-  endDate!: string;
+  end_date!: string;
 
   @IsOptional()
   @IsIn(['excel', 'json'], { message: 'El formato debe ser "excel" o "json"' })

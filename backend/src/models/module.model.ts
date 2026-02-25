@@ -2,51 +2,51 @@ import { BaseModel } from './base.model';
 
 export interface Module extends BaseModel {
   codigo: string;
-  nombre_es: string;
-  nombre_en?: string;
+  nombreEs: string;
+  nombreEn?: string;
   descripcion?: string;
   icono?: string;
   ruta?: string;
   nivel: number;
   orden: number;
-  parent_id?: string;
-  is_active: boolean;
+  parentId?: string;
+  isActive: boolean;
 }
 
 export interface UserModulePermission {
   id: string;
-  user_id: string;
-  module_id: string;
-  puede_ver: boolean;
-  puede_crear: boolean;
-  puede_editar: boolean;
-  puede_eliminar: boolean;
-  puede_aprobar: boolean;
-  created_at: Date;
-  updated_at: Date;
+  userId: string;
+  moduleId: string;
+  puedeVer: boolean;
+  puedeCrear: boolean;
+  puedeEditar: boolean;
+  puedeEliminar: boolean;
+  puedeAprobar: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ModulePage {
   id: string;
-  module_id: string;
+  moduleId: string;
   codigo: string;
-  nombre_es: string;
-  nombre_en?: string;
+  nombreEs: string;
+  nombreEn?: string;
   descripcion?: string;
   ruta?: string;
   orden: number;
-  is_active: boolean;
-  created_at: Date;
-  updated_at: Date;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ModuleWithPermissions extends Module {
   permissions: {
-    puede_ver: boolean;
-    puede_crear: boolean;
-    puede_editar: boolean;
-    puede_eliminar: boolean;
-    puede_aprobar: boolean;
+    puedeVer: boolean;
+    puedeCrear: boolean;
+    puedeEditar: boolean;
+    puedeEliminar: boolean;
+    puedeAprobar: boolean;
   };
   pages?: ModulePage[];
 }

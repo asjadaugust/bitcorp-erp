@@ -1,5 +1,5 @@
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
-import { getMetadataStorage } from 'class-validator';
+
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -9,7 +9,7 @@ import * as path from 'path';
  */
 export function getDtoSchemas() {
   const dtoDir = path.join(__dirname, '../../types/dto');
-  
+
   // Ensure reflect-metadata is loaded (it should be in index.ts but good to be sure)
   require('reflect-metadata');
 

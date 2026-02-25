@@ -279,6 +279,7 @@ export class EquipmentService {
    * ```
    */
   async findAll(
+    tenantId: number,
     filter?: EquipmentFilter,
     page = 1,
     limit = 10
@@ -293,7 +294,8 @@ export class EquipmentService {
           .createQueryBuilder('e')
           .leftJoinAndSelect('e.provider', 'p')
           .leftJoinAndSelect('e.tipoEquipo', 'te')
-          .where('e.isActive = :isActive', { isActive: filter?.isActive ?? true })
+          .where('e.tenantId = :tenantId', { tenantId })
+          .andWhere('e.isActive = :isActive', { isActive: filter?.isActive ?? true })
           .andWhere(
             '(e.codigoEquipo ILIKE :search OR e.marca ILIKE :search OR e.modelo ILIKE :search OR e.placa ILIKE :search OR e.categoria ILIKE :search)',
             { search: `%${filter.search}%` }
@@ -364,7 +366,8 @@ export class EquipmentService {
           .createQueryBuilder('e')
           .leftJoinAndSelect('e.provider', 'p')
           .leftJoinAndSelect('e.tipoEquipo', 'te')
-          .where('e.isActive = :isActive', { isActive: filter?.isActive ?? true });
+          .where('e.tenantId = :tenantId', { tenantId })
+          .andWhere('e.isActive = :isActive', { isActive: filter?.isActive ?? true });
 
         if (filter?.estado) {
           queryBuilder.andWhere('e.estado = :estado', { estado: filter.estado });
@@ -409,6 +412,7 @@ export class EquipmentService {
 
       // For simple filters (no join needed), use findAndCount
       const where: any = {
+        tenantId,
         isActive: filter?.isActive ?? true,
       };
 
@@ -498,12 +502,12 @@ export class EquipmentService {
    * console.log(`${excavator.codigo_equipo} - ${excavator.marca} ${excavator.modelo}`);
    * ```
    */
-  async findById(id: number): Promise<EquipmentDetailDto> {
+  async findById(tenantId: number, id: number): Promise<EquipmentDetailDto> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // where: { id, tenant_id: tenantId }
       const equipment = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['provider', 'tipoEquipo'],
       });
 
@@ -557,12 +561,12 @@ export class EquipmentService {
    * }
    * ```
    */
-  async findByCode(codigo: string): Promise<Equipment | null> {
+  async findByCode(tenantId: number, codigo: string): Promise<Equipment | null> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // where: { codigo_equipo: codigo, tenant_id: tenantId }
       const equipment = await this.repository.findOne({
-        where: { codigoEquipo: codigo },
+        where: { codigoEquipo: codigo, tenantId },
       });
 
       if (equipment) {
@@ -617,11 +621,11 @@ export class EquipmentService {
    * });
    * ```
    */
-  async create(data: CreateEquipmentDto): Promise<EquipmentDetailDto> {
+  async create(tenantId: number, data: CreateEquipmentDto): Promise<EquipmentDetailDto> {
     try {
       // Check if codigo already exists (tenant-aware check via findByCode)
       if (data.codigo_equipo) {
-        const existing = await this.findByCode(data.codigo_equipo);
+        const existing = await this.findByCode(tenantId, data.codigo_equipo);
         if (existing) {
           throw new ConflictError(`El código de equipo '${data.codigo_equipo}' ya existe`, {
             field: 'codigo_equipo',
@@ -652,6 +656,7 @@ export class EquipmentService {
         fechaVencSoat: data.fecha_venc_soat ? new Date(data.fecha_venc_soat) : undefined,
         fechaVencCitv: data.fecha_venc_citv ? new Date(data.fecha_venc_citv) : undefined,
         isActive: true,
+        tenantId,
       });
 
       const saved = await this.repository.save(equipment);
@@ -727,11 +732,15 @@ export class EquipmentService {
    * });
    * ```
    */
-  async update(id: number, data: UpdateEquipmentDto): Promise<EquipmentDetailDto> {
+  async update(
+    tenantId: number,
+    id: number,
+    data: UpdateEquipmentDto
+  ): Promise<EquipmentDetailDto> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       const equipment = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['provider'],
       });
 
@@ -741,7 +750,7 @@ export class EquipmentService {
 
       // If updating codigo, check it doesn't exist
       if (data.codigo_equipo && data.codigo_equipo !== equipment.codigoEquipo) {
-        const existing = await this.findByCode(data.codigo_equipo);
+        const existing = await this.findByCode(tenantId, data.codigo_equipo);
         if (existing && existing.id !== id) {
           throw new ConflictError(`El código de equipo '${data.codigo_equipo}' ya existe`, {
             field: 'codigo_equipo',
@@ -816,7 +825,7 @@ export class EquipmentService {
       // Reload to get updated relations
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       const withRelations = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['provider'],
       });
 
@@ -877,9 +886,9 @@ export class EquipmentService {
    * await equipmentService.delete(123); // Soft delete
    * ```
    */
-  async delete(id: number): Promise<void> {
+  async delete(tenantId: number, id: number): Promise<void> {
     try {
-      await this.repository.update(id, { isActive: false });
+      await this.repository.update({ id, tenantId }, { isActive: false });
 
       Logger.info('Equipment soft deleted successfully', {
         id,
@@ -931,11 +940,11 @@ export class EquipmentService {
    * await equipmentService.updateStatus(123, 'MANTENIMIENTO');
    * ```
    */
-  async updateStatus(id: number, estado: string): Promise<EquipmentDetailDto> {
+  async updateStatus(tenantId: number, id: number, estado: string): Promise<EquipmentDetailDto> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       const equipment = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['provider'],
       });
 
@@ -995,10 +1004,10 @@ export class EquipmentService {
    * @returns Equipment detail DTO (currently unchanged)
    * @throws {NotFoundError} If equipment with given ID does not exist
    */
-  async updateHourmeter(id: number, reading: number): Promise<EquipmentDetailDto> {
+  async updateHourmeter(tenantId: number, id: number, reading: number): Promise<EquipmentDetailDto> {
     // TODO: Add tenant_id filter when schema updated (Phase 21)
     const equipment = await this.repository.findOne({
-      where: { id },
+      where: { id, tenantId },
       relations: ['provider'],
     });
 
@@ -1033,10 +1042,10 @@ export class EquipmentService {
    * @returns Equipment detail DTO (currently unchanged)
    * @throws {NotFoundError} If equipment with given ID does not exist
    */
-  async updateOdometer(id: number, reading: number): Promise<EquipmentDetailDto> {
+  async updateOdometer(tenantId: number, id: number, reading: number): Promise<EquipmentDetailDto> {
     // TODO: Add tenant_id filter when schema updated (Phase 21)
     const equipment = await this.repository.findOne({
-      where: { id },
+      where: { id, tenantId },
       relations: ['provider'],
     });
 
@@ -1081,14 +1090,15 @@ export class EquipmentService {
    * console.log(`Total: ${stats.total}, Available: ${stats.disponible}`);
    * ```
    */
-  async getStatistics(): Promise<EquipmentStatsDto> {
+  async getStatistics(tenantId: number): Promise<EquipmentStatsDto> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       const stats = await this.repository
         .createQueryBuilder('e')
         .select('e.estado', 'estado')
         .addSelect('COUNT(*)', 'count')
-        .where('e.isActive = true')
+        .where('e.tenantId = :tenantId', { tenantId })
+        .andWhere('e.isActive = true')
         .groupBy('e.estado')
         .getRawMany();
 
@@ -1162,13 +1172,14 @@ export class EquipmentService {
    * // ['MAQUINARIA_PESADA', 'VEHICULOS_LIVIANOS', 'EQUIPOS_MENORES']
    * ```
    */
-  async getEquipmentTypes(): Promise<string[]> {
+  async getEquipmentTypes(tenantId: number): Promise<string[]> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       const result = await this.repository
         .createQueryBuilder('e')
         .select('DISTINCT e.categoria', 'categoria')
-        .where('e.categoria IS NOT NULL')
+        .where('e.tenantId = :tenantId', { tenantId })
+        .andWhere('e.categoria IS NOT NULL')
         .orderBy('e.categoria')
         .getRawMany();
 
@@ -1263,8 +1274,8 @@ export class EquipmentService {
    * console.log(`${available.length} equipment ready for assignment`);
    * ```
    */
-  async getAvailableEquipment(): Promise<EquipmentListDto[]> {
-    const result = await this.findAll({ estado: 'DISPONIBLE' }, 1, 9999);
+  async getAvailableEquipment(tenantId: number): Promise<EquipmentListDto[]> {
+    const result = await this.findAll(tenantId, { estado: 'DISPONIBLE' }, 1, 9999);
 
     Logger.info('Available equipment retrieved successfully', {
       count: result.data.length,
@@ -1302,7 +1313,10 @@ export class EquipmentService {
    * @param daysAhead - Number of days to look ahead (default: 30)
    * @returns Array of expiring document info objects
    */
-  async getExpiringDocuments(daysAhead: number = 30): Promise<ExpiringDocumentInfo[]> {
+  async getExpiringDocuments(
+    tenantId: number,
+    daysAhead: number = 30
+  ): Promise<ExpiringDocumentInfo[]> {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -1311,7 +1325,8 @@ export class EquipmentService {
 
       const equipment = await this.repository
         .createQueryBuilder('e')
-        .where('e.isActive = :isActive', { isActive: true })
+        .where('e.tenantId = :tenantId', { tenantId })
+        .andWhere('e.isActive = :isActive', { isActive: true })
         .andWhere(
           '(e.fechaVencSoat <= :threshold OR e.fechaVencPoliza <= :threshold OR e.fechaVencCitv <= :threshold)',
           { threshold }

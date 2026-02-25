@@ -19,13 +19,16 @@ export class UserService {
   /**
    * List users with pagination, search, and filters
    */
-  async findAll(filters: {
-    search?: string;
-    role?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-  }): Promise<{ data: any[]; total: number }> {
+  async findAll(
+    tenantId: number,
+    filters: {
+      search?: string;
+      role?: string;
+      status?: string;
+      page?: number;
+      limit?: number;
+    }
+  ): Promise<{ data: any[]; total: number }> {
     const page = filters.page || 1;
     const limit = Math.min(filters.limit || 10, 100);
     const skip = (page - 1) * limit;
@@ -51,7 +54,8 @@ export class UserService {
         'rol.name',
         'unidadOperativa.id',
         'unidadOperativa.nombre',
-      ]);
+      ])
+      .where('user.tenantId = :tenantId', { tenantId });
 
     if (filters.search) {
       qb.andWhere(
@@ -100,7 +104,7 @@ export class UserService {
   /**
    * Get a single user by ID with relations
    */
-  async findById(id: number): Promise<any> {
+  async findById(tenantId: number, id: number): Promise<any> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.rol', 'rol')
@@ -126,6 +130,7 @@ export class UserService {
         'unidadOperativa.nombre',
       ])
       .where('user.id = :id', { id })
+      .andWhere('user.tenantId = :tenantId', { tenantId })
       .getOne();
 
     if (!user) {
@@ -157,7 +162,7 @@ export class UserService {
   /**
    * Create a new user
    */
-  async create(dto: CreateUserDto): Promise<any> {
+  async create(tenantId: number, dto: CreateUserDto): Promise<any> {
     // Check for duplicate username
     const existingUsername = await this.userRepository.findOne({
       where: { username: dto.username },
@@ -194,19 +199,20 @@ export class UserService {
       rolId: dto.rol_id,
       unidadOperativaId: dto.unidad_operativa_id,
       isActive: dto.is_active !== undefined ? dto.is_active : true,
+      tenantId,
     });
 
     const saved = await this.userRepository.save(user);
     Logger.info('User created', { userId: saved.id, username: saved.username });
 
-    return this.findById(saved.id);
+    return this.findById(tenantId, saved.id);
   }
 
   /**
    * Update a user
    */
-  async update(id: number, dto: UpdateUserDto): Promise<any> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  async update(tenantId: number, id: number, dto: UpdateUserDto): Promise<any> {
+    const user = await this.userRepository.findOne({ where: { id, tenantId } });
     if (!user) {
       throw new Error('Usuario no encontrado');
     }
@@ -256,31 +262,31 @@ export class UserService {
     }
 
     await this.userRepository.save(user);
-    Logger.info('User updated', { userId: id });
+    Logger.info('User updated', { userId: id, tenantId });
 
-    return this.findById(id);
+    return this.findById(tenantId, id);
   }
 
   /**
    * Admin password reset
    */
-  async changePassword(id: number, newPassword: string): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  async changePassword(tenantId: number, id: number, newPassword: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id, tenantId } });
     if (!user) {
       throw new Error('Usuario no encontrado');
     }
 
     user.password_hash = await SecurityUtil.hashPassword(newPassword);
     await this.userRepository.save(user);
-    Logger.info('User password changed by admin', { userId: id });
+    Logger.info('User password changed by admin', { userId: id, tenantId });
   }
 
   /**
    * Toggle user active status
    */
-  async toggleActive(id: number, currentUserId: number): Promise<any> {
+  async toggleActive(tenantId: number, id: number, currentUserId: number): Promise<any> {
     const user = await this.userRepository.findOne({
-      where: { id },
+      where: { id, tenantId },
       relations: ['rol'],
     });
     if (!user) {
@@ -299,6 +305,7 @@ export class UserService {
         .leftJoin('user.rol', 'rol')
         .where('rol.code = :code', { code: 'ADMIN' })
         .andWhere('user.isActive = true')
+        .andWhere('user.tenantId = :tenantId', { tenantId })
         .getCount();
 
       if (activeAdminCount <= 1) {
@@ -308,9 +315,9 @@ export class UserService {
 
     user.isActive = !user.isActive;
     await this.userRepository.save(user);
-    Logger.info('User active status toggled', { userId: id, isActive: user.isActive });
+    Logger.info('User active status toggled', { userId: id, isActive: user.isActive, tenantId });
 
-    return this.findById(id);
+    return this.findById(tenantId, id);
   }
 
   /**

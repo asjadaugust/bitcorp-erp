@@ -44,8 +44,9 @@ export class ChecklistController {
         search: req.query.search,
       };
 
+      const tenantId = (req as any).user?.id_empresa || 1;
       // Get all templates from service
-      const allTemplates = await this.checklistService.getAllTemplates(filters);
+      const allTemplates = await this.checklistService.getAllTemplates(tenantId, filters);
 
       // Apply sorting in memory
       const validSortFields = ['nombre', 'tipo_equipo', 'created_at', 'updated_at'];
@@ -93,7 +94,8 @@ export class ChecklistController {
   getTemplateById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const template = await this.checklistService.getTemplateById(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const template = await this.checklistService.getTemplateById(tenantId, parseInt(id));
 
       if (!template) {
         return sendError(res, 404, 'NOT_FOUND', 'Template not found');
@@ -113,8 +115,9 @@ export class ChecklistController {
 
   createTemplate = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const tenantId = (req as any).user?.id_empresa || 1;
       const userId = (req as any).user.id;
-      const template = await this.checklistService.createTemplate(req.body, userId);
+      const template = await this.checklistService.createTemplate(tenantId, req.body, userId);
       return sendCreated(res, template);
     } catch (error) {
       return sendError(
@@ -130,7 +133,12 @@ export class ChecklistController {
   updateTemplate = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const template = await this.checklistService.updateTemplate(parseInt(id), req.body);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const template = await this.checklistService.updateTemplate(
+        tenantId,
+        parseInt(id),
+        req.body
+      );
 
       if (!template) {
         return sendError(res, 404, 'NOT_FOUND', 'Template not found');
@@ -151,7 +159,8 @@ export class ChecklistController {
   deleteTemplate = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const success = await this.checklistService.deleteTemplate(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const success = await this.checklistService.deleteTemplate(tenantId, parseInt(id));
 
       if (!success) {
         return sendError(res, 404, 'NOT_FOUND', 'Template not found');
@@ -172,7 +181,8 @@ export class ChecklistController {
   // ===== ITEMS =====
   createItem = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const item = await this.checklistService.createItem(req.body);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const item = await this.checklistService.createItem(tenantId, req.body);
       return sendCreated(res, item);
     } catch (error) {
       return sendError(res, 400, 'CREATE_ERROR', 'Failed to create item', (error as Error).message);
@@ -182,7 +192,8 @@ export class ChecklistController {
   updateItem = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const item = await this.checklistService.updateItem(parseInt(id), req.body);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const item = await this.checklistService.updateItem(tenantId, parseInt(id), req.body);
 
       if (!item) {
         return sendError(res, 404, 'NOT_FOUND', 'Item not found');
@@ -197,7 +208,8 @@ export class ChecklistController {
   deleteItem = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const success = await this.checklistService.deleteItem(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const success = await this.checklistService.deleteItem(tenantId, parseInt(id));
 
       if (!success) {
         return sendError(res, 404, 'NOT_FOUND', 'Item not found');
@@ -230,7 +242,8 @@ export class ChecklistController {
         sort_order: req.query.sort_order,
       };
 
-      const result = await this.checklistService.getAllInspections(filters);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const result = await this.checklistService.getAllInspections(tenantId, filters);
 
       // Use standard pagination helper (converts totalPages to total_pages)
       return sendPaginatedSuccess(res, result.data, {
@@ -252,7 +265,8 @@ export class ChecklistController {
   getInspectionById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const inspection = await this.checklistService.getInspectionById(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const inspection = await this.checklistService.getInspectionById(tenantId, parseInt(id));
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });
@@ -267,7 +281,8 @@ export class ChecklistController {
   getInspectionWithResults = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const inspection = await this.checklistService.getInspectionWithResults(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const inspection = await this.checklistService.getInspectionWithResults(tenantId, parseInt(id));
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });
@@ -281,7 +296,8 @@ export class ChecklistController {
 
   createInspection = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const inspection = await this.checklistService.createInspection(req.body);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const inspection = await this.checklistService.createInspection(tenantId, req.body);
       res.status(201).json({ success: true, data: inspection });
     } catch (error) {
       next(error);
@@ -291,7 +307,12 @@ export class ChecklistController {
   updateInspection = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const inspection = await this.checklistService.updateInspection(parseInt(id), req.body);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const inspection = await this.checklistService.updateInspection(
+        tenantId,
+        parseInt(id),
+        req.body
+      );
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });
@@ -306,7 +327,8 @@ export class ChecklistController {
   completeInspection = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const inspection = await this.checklistService.completeInspection(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const inspection = await this.checklistService.completeInspection(tenantId, parseInt(id));
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });
@@ -321,7 +343,8 @@ export class ChecklistController {
   cancelInspection = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const inspection = await this.checklistService.cancelInspection(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const inspection = await this.checklistService.cancelInspection(tenantId, parseInt(id));
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });
@@ -336,7 +359,8 @@ export class ChecklistController {
   // ===== RESULTS =====
   saveResult = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await this.checklistService.saveResult(req.body);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const result = await this.checklistService.saveResult(tenantId, req.body);
       res.json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -346,7 +370,8 @@ export class ChecklistController {
   getResultsByInspection = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { inspectionId } = req.params;
-      const results = await this.checklistService.getResultsByInspection(parseInt(inspectionId));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const results = await this.checklistService.getResultsByInspection(tenantId, parseInt(inspectionId));
       res.json({ success: true, data: results });
     } catch (error) {
       next(error);
@@ -361,7 +386,8 @@ export class ChecklistController {
         endDate: req.query.endDate,
       };
 
-      const stats = await this.checklistService.getInspectionStats(filters);
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const stats = await this.checklistService.getInspectionStats(tenantId, filters);
       res.json({ success: true, data: stats });
     } catch (error) {
       next(error);
@@ -372,7 +398,8 @@ export class ChecklistController {
   exportInspectionPDF = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const inspection = await this.checklistService.getInspectionWithResults(parseInt(id));
+      const tenantId = (req as any).user?.id_empresa || 1;
+      const inspection = await this.checklistService.getInspectionWithResults(tenantId, parseInt(id));
 
       if (!inspection) {
         return res.status(404).json({ success: false, message: 'Inspection not found' });

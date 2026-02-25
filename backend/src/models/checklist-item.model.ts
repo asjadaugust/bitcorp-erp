@@ -34,6 +34,9 @@ export class ChecklistItem {
   @Column({ name: 'instrucciones', type: 'text', nullable: true })
   instrucciones?: string;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

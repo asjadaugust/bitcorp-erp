@@ -8,7 +8,7 @@ export class ExportUtil {
    */
   static async exportToExcel(
     res: Response,
-    data: any[],
+    data: Record<string, unknown>[],
     columns: { header: string; key: string; width?: number }[],
     filename: string
   ): Promise<void> {
@@ -59,7 +59,7 @@ export class ExportUtil {
    */
   static exportToCSV(
     res: Response,
-    data: any[],
+    data: Record<string, unknown>[],
     fields: { label: string; value: string }[],
     filename: string
   ): void {

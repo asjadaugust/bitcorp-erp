@@ -50,10 +50,8 @@ export class OperatorService {
 
       const queryBuilder = this.repository
         .createQueryBuilder('t')
-        .where('t.isActive = :isActive', { isActive: filters?.isActive ?? true });
-
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
-      // .andWhere('t.tenant_id = :tenantId', { tenantId })
+        .where('t.tenantId = :tenantId', { tenantId })
+        .andWhere('t.isActive = :isActive', { isActive: filters?.isActive ?? true });
 
       // Filter by cargo
       if (filters?.cargo) {
@@ -150,10 +148,8 @@ export class OperatorService {
       });
 
       const trabajador = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
-      // .where({ id, tenant_id: tenantId })
 
       if (!trabajador) {
         throw new NotFoundError('Operator', id, { tenantId });
@@ -187,10 +183,8 @@ export class OperatorService {
       });
 
       const trabajador = await this.repository.findOne({
-        where: { dni },
+        where: { dni, tenantId },
       });
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
-      // .where({ dni, tenant_id: tenantId })
 
       if (!trabajador) {
         throw new NotFoundError('Operator', dni, { tenantId });
@@ -223,8 +217,8 @@ export class OperatorService {
         context: 'OperatorService.create',
       });
 
-      // Check for duplicate DNI
-      const existing = await this.repository.findOne({ where: { dni: data.dni } });
+      // Check for duplicate DNI within the same tenant
+      const existing = await this.repository.findOne({ where: { dni: data.dni, tenantId } });
       if (existing) {
         throw new ConflictError('Operator', { dni: data.dni, tenantId });
       }
@@ -232,6 +226,7 @@ export class OperatorService {
       // Create entity using DTO transformer
       const operatorDto: Partial<OperatorDto> = {
         ...data,
+        tenant_id: tenantId,
         is_active: true,
       };
       const entity = this.repository.create(fromOperatorDto(operatorDto));
@@ -273,9 +268,7 @@ export class OperatorService {
         context: 'OperatorService.update',
       });
 
-      const trabajador = await this.repository.findOne({ where: { id } });
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
-      // .where({ id, tenant_id: tenantId })
+      const trabajador = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!trabajador) {
         throw new NotFoundError('Operator', id, { tenantId });
@@ -283,7 +276,7 @@ export class OperatorService {
 
       // Check for duplicate DNI (if DNI is being updated)
       if (data.dni && data.dni !== trabajador.dni) {
-        const existing = await this.repository.findOne({ where: { dni: data.dni } });
+        const existing = await this.repository.findOne({ where: { dni: data.dni, tenantId } });
         if (existing) {
           throw new ConflictError('Operator', { dni: data.dni, tenantId });
         }
@@ -331,10 +324,8 @@ export class OperatorService {
         context: 'OperatorService.delete',
       });
 
-      // Verify operator exists
-      const trabajador = await this.repository.findOne({ where: { id } });
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
-      // .where({ id, tenant_id: tenantId })
+      // Verify operator exists within tenant
+      const trabajador = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!trabajador) {
         throw new NotFoundError('Operator', id, { tenantId });
@@ -352,7 +343,7 @@ export class OperatorService {
       // }
 
       // Soft delete
-      const result = await this.repository.update(id, { isActive: false });
+      const result = await this.repository.update({ id, tenantId }, { isActive: false });
 
       if (!result.affected || result.affected === 0) {
         throw new NotFoundError('Operator', id, { tenantId });
@@ -396,8 +387,8 @@ export class OperatorService {
       });
 
       // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
-      const total = await this.repository.count();
-      const activos = await this.repository.count({ where: { isActive: true } });
+      const total = await this.repository.count({ where: { tenantId } });
+      const activos = await this.repository.count({ where: { isActive: true, tenantId } });
 
       // Get count by cargo
       const cargoResult = await this.repository
@@ -405,8 +396,7 @@ export class OperatorService {
         .select('t.cargo', 'cargo')
         .addSelect('COUNT(*)', 'count')
         .where('t.isActive = true')
-        // TODO: Add tenant_id filter
-        // .andWhere('t.tenant_id = :tenantId', { tenantId })
+        .andWhere('t.tenantId = :tenantId', { tenantId })
         .groupBy('t.cargo')
         .getRawMany();
 
@@ -421,8 +411,7 @@ export class OperatorService {
         .select('t.especialidad', 'especialidad')
         .addSelect('COUNT(*)', 'count')
         .where('t.isActive = true')
-        // TODO: Add tenant_id filter
-        // .andWhere('t.tenant_id = :tenantId', { tenantId })
+        .andWhere('t.tenantId = :tenantId', { tenantId })
         .groupBy('t.especialidad')
         .getRawMany();
 
@@ -446,6 +435,63 @@ export class OperatorService {
         tenantId,
         context: 'OperatorService.getStats',
       });
+      throw error;
+    }
+  }
+
+  async searchBySkill(tenantId: number, skill: string): Promise<OperatorDto[]> {
+    try {
+      Logger.info('Searching operators by skill', { tenantId, skill });
+
+      const trabajadores = await this.repository.find({
+        where: [
+          { especialidad: ILike(`%${skill}%`), tenantId, isActive: true },
+          { cargo: ILike(`%${skill}%`), tenantId, isActive: true },
+        ],
+      });
+
+      return trabajadores.map((t) => toOperatorDto(t));
+    } catch (error) {
+      Logger.error('Error searching operators by skill', { error, tenantId, skill });
+      throw error;
+    }
+  }
+
+  async getAvailability(tenantId: number, id: number): Promise<any> {
+    try {
+      const operator = await this.findById(tenantId, id);
+      // Mock availability based on some logic
+      return {
+        operator_id: id,
+        status: operator.is_active ? 'AVAILABLE' : 'UNAVAILABLE',
+        current_assignment: null,
+        next_available_date: new Date().toISOString().split('T')[0],
+        restrictions: [],
+      };
+    } catch (error) {
+      Logger.error('Error getting operator availability', { error, tenantId, id });
+      throw error;
+    }
+  }
+
+  async getPerformance(tenantId: number, id: number): Promise<any> {
+    try {
+      const operator = await this.findById(tenantId, id);
+      // Mock performance metrics
+      return {
+        operator_id: id,
+        rating: 4.5,
+        total_hours: 1250,
+        efficiency: 0.92,
+        reliability: 0.98,
+        safety_score: 1.0,
+        recent_incidents: 0,
+        certifications: [
+          { name: 'Heavy Machinery Tier 1', issue_date: '2023-01-15', expiry_date: '2026-01-15' },
+        ],
+      };
+    } catch (error) {
+      Logger.error('Error getting operator performance', { error, tenantId, id });
       throw error;
     }
   }

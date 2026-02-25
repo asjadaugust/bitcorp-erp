@@ -70,9 +70,9 @@ export interface MovementCreateDto {
  * Movement Detail Create DTO - Input for movement line items
  */
 export interface MovementDetailCreateDto {
-  productId: number;
+  product_id: number;
   cantidad: number;
-  precioUnitario: number;
+  precio_unitario: number;
   observaciones?: string;
 }
 

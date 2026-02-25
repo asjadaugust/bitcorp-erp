@@ -28,10 +28,10 @@ export interface StatsSummaryDto {
 
   /** Metadata about the statistics (filters applied, date range) */
   metadata?: {
-    startDate?: string;
-    endDate?: string;
-    entityId?: string | number;
+    start_date?: string;
+    end_date?: string;
+    entity_id?: string | number;
     filters?: Record<string, unknown>;
-    generatedAt: string;
+    generated_at: string;
   };
 }

@@ -58,16 +58,16 @@ export interface TendenciaCombustibleDto {
 // ─── Funciones transformadoras ─────────────────────────────────────────────────
 
 export function toUtilizacionDto(entity: {
-  equipmentId: number;
-  equipmentCode: string;
-  totalHours: number;
-  workingHours: number;
-  idleHours: number;
-  utilizationRate: number;
-  costPerHour: number;
-  totalCost: number;
-  periodStart: Date;
-  periodEnd: Date;
+  equipment_id: number;
+  equipment_code: string;
+  total_hours: number;
+  working_hours: number;
+  idle_hours: number;
+  utilization_rate: number;
+  cost_per_hour: number;
+  total_cost: number;
+  period_start: Date;
+  period_end: Date;
 }): UtilizacionEquipoDto {
   return {
     equipo_id: entity.equipmentId,
@@ -89,8 +89,8 @@ export function toUtilizacionDto(entity: {
 
 export function toTendenciaUtilizacionDto(entity: {
   date: string;
-  utilizationRate: number;
-  workingHours: number;
+  utilization_rate: number;
+  working_hours: number;
   cost: number;
 }): TendenciaUtilizacionDto {
   return {
@@ -102,12 +102,12 @@ export function toTendenciaUtilizacionDto(entity: {
 }
 
 export function toFlotaUtilizacionDto(entity: {
-  totalEquipment: number;
-  activeEquipment: number;
-  avgUtilizationRate: number;
-  totalCost: number;
-  topPerformers: Array<{ equipmentCode: string; utilizationRate: number }>;
-  underutilized: Array<{ equipmentCode: string; utilizationRate: number }>;
+  total_equipment: number;
+  active_equipment: number;
+  avg_utilization_rate: number;
+  total_cost: number;
+  top_performers: Array<{ equipment_code: string; utilization_rate: number }>;
+  underutilized: Array<{ equipment_code: string; utilization_rate: number }>;
 }): FlotaUtilizacionDto {
   return {
     total_equipos: entity.totalEquipment,
@@ -126,11 +126,11 @@ export function toFlotaUtilizacionDto(entity: {
 }
 
 export function toCombustibleDto(entity: {
-  equipmentId: number;
-  totalFuelConsumed: number;
-  avgFuelPerHour: number;
-  totalFuelCost: number;
-  avgCostPerHour: number;
+  equipment_id: number;
+  total_fuel_consumed: number;
+  avg_fuel_per_hour: number;
+  total_fuel_cost: number;
+  avg_cost_per_hour: number;
   efficiency: 'good' | 'average' | 'poor';
 }): CombustibleEquipoDto {
   const eficienciaMap: Record<'good' | 'average' | 'poor', 'buena' | 'promedio' | 'deficiente'> = {
@@ -151,9 +151,9 @@ export function toCombustibleDto(entity: {
 
 export function toTendenciaCombustibleDto(entity: {
   date: string;
-  fuelConsumed: number;
-  fuelCost: number;
-  fuelPerHour: number;
+  fuel_consumed: number;
+  fuel_cost: number;
+  fuel_per_hour: number;
 }): TendenciaCombustibleDto {
   return {
     fecha: entity.date,

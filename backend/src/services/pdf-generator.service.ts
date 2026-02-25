@@ -1,5 +1,4 @@
 import PDFDocument from 'pdfkit';
-import { PassThrough } from 'stream';
 
 export interface DailyReportPDFData {
   report_date: string;

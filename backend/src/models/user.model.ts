@@ -9,13 +9,13 @@ export class User extends BaseModel {
   username!: string;
 
   @Column({ type: 'varchar', length: 255, select: false, name: 'contrasena' })
-  password_hash!: string;
+  passwordHash!: string;
 
   @Column({ type: 'varchar', length: 100, name: 'nombres', nullable: true })
-  first_name?: string;
+  firstName?: string;
 
   @Column({ type: 'varchar', length: 100, name: 'apellidos', nullable: true })
-  last_name?: string;
+  lastName?: string;
 
   @Column({ type: 'varchar', length: 100, unique: true, name: 'correo_electronico' })
   email!: string;
@@ -40,8 +40,11 @@ export class User extends BaseModel {
   @JoinColumn({ name: 'unidad_operativa_id' })
   unidadOperativa?: UnidadOperativa;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @Column({ type: 'timestamp', nullable: true, name: 'ultimo_acceso' })
-  last_login?: Date;
+  lastLogin?: Date;
 
   @ManyToMany(() => Role, (role) => role.users)
   @JoinTable({

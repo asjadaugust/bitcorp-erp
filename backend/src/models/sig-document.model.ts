@@ -49,6 +49,9 @@ export class SigDocument {
   @Column({ name: 'creado_por', type: 'integer', nullable: true })
   creadoPor?: number;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'creado_por' })
   creador?: User;

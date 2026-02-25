@@ -70,9 +70,9 @@ export interface CreateMaintenanceDto {
   observaciones?: string;
 
   // English camelCase (backward compatibility)
-  equipoId?: number;
+  equipo_id?: number;
   equipment_id?: number;
-  tipoMantenimiento?: TipoMantenimiento;
+  tipo_mantenimiento?: TipoMantenimiento;
   maintenance_type?: TipoMantenimiento;
   description?: string;
   start_date?: string;

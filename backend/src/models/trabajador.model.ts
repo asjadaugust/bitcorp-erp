@@ -64,6 +64,10 @@ export class Trabajador {
   @Index('idx_trabajador_unidad_operativa')
   operatingUnitId?: number;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  @Index('idx_trabajador_tenant_id')
+  tenantId?: number;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 

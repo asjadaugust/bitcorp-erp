@@ -19,7 +19,7 @@ async function verifyPaymentSchedule() {
       throw new Error(`Login failed: ${loginRes.statusText}`);
     }
 
-    const loginData: any = await loginRes.json();
+    const loginData = await loginRes.json() as Record<string, unknown>;
     const token = loginData.access_token;
     console.log('✅ Login successful');
 
@@ -50,7 +50,7 @@ async function verifyPaymentSchedule() {
       throw new Error(`Create AP failed: ${createApRes.status}`);
     }
 
-    const createdAp: any = await createApRes.json();
+    const createdAp = await createApRes.json() as Record<string, unknown>;
     console.log('✅ Created Accounts Payable:', createdAp.id);
 
     // 3. Create Payment Schedule
@@ -76,7 +76,7 @@ async function verifyPaymentSchedule() {
       throw new Error(`Create Schedule failed: ${createScheduleRes.status} - ${err}`);
     }
 
-    const createdSchedule: any = await createScheduleRes.json();
+    const createdSchedule = await createScheduleRes.json() as Record<string, unknown>;
     console.log('✅ Created Payment Schedule:', createdSchedule.id);
 
     // 4. Add Detail to Schedule
@@ -111,8 +111,8 @@ async function verifyPaymentSchedule() {
       }
     );
 
-    const scheduleWithDetails: any = await getScheduleRes.json();
-    console.log(`✅ Fetched schedule with ${scheduleWithDetails.details?.length || 0} details`);
+    const scheduleWithDetails = await getScheduleRes.json() as Record<string, unknown>;
+    console.log(`✅ Fetched schedule with ${(scheduleWithDetails.details as unknown[])?.length || 0} details`);
     console.log(`   Total amount: ${scheduleWithDetails.total_amount}`);
 
     // 6. Get All Schedules
@@ -121,7 +121,7 @@ async function verifyPaymentSchedule() {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    const allSchedules: any = await getAllRes.json();
+    const allSchedules = await getAllRes.json() as Record<string, unknown>[];
     console.log(`✅ Fetched ${allSchedules.length} schedules`);
 
     // 7. Update Schedule

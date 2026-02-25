@@ -19,7 +19,7 @@ export interface Operator {
   tipo_contrato?: string;
   tarifa_hora?: number;
   skills?: string[];
-  certifications?: any[];
+  certifications?: Record<string, unknown>[];
   is_active: boolean;
   created_at: Date;
   updated_at?: Date;
@@ -44,7 +44,7 @@ export class OperatorRepository extends BaseRepository<Operator> {
     const offset = (page - 1) * limit;
 
     const conditions: string[] = ['o.is_active = true'];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     // Tenant filter
@@ -120,7 +120,7 @@ export class OperatorRepository extends BaseRepository<Operator> {
 
   async findById(id: number, tenantId?: number): Promise<Operator | null> {
     const conditions: string[] = ['o.id = $1', 'o.is_active = true'];
-    const params: any[] = [id];
+    const params: unknown[] = [id];
     let paramCount = 2;
 
     if (tenantId) {
@@ -145,7 +145,7 @@ export class OperatorRepository extends BaseRepository<Operator> {
 
   async findByCode(codigo: string, tenantId?: number): Promise<Operator | null> {
     const conditions: string[] = ['codigo_operador = $1', 'is_active = true'];
-    const params: any[] = [codigo];
+    const params: unknown[] = [codigo];
     let paramCount = 2;
 
     if (tenantId) {
@@ -162,7 +162,7 @@ export class OperatorRepository extends BaseRepository<Operator> {
 
   async findByDocument(documento: string, tenantId?: number): Promise<Operator | null> {
     const conditions: string[] = ['documento_identidad = $1', 'is_active = true'];
-    const params: any[] = [documento];
+    const params: unknown[] = [documento];
     let paramCount = 2;
 
     if (tenantId) {
@@ -222,7 +222,7 @@ export class OperatorRepository extends BaseRepository<Operator> {
     tenantId?: number
   ): Promise<Operator> {
     const setClauses: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     const updateFields = Object.keys(data).filter(
@@ -268,9 +268,9 @@ export class OperatorRepository extends BaseRepository<Operator> {
     return result.rows[0];
   }
 
-  async getOperatorStats(operatorId: number, tenantId?: number): Promise<any> {
+  async getOperatorStats(operatorId: number, tenantId?: number): Promise<Record<string, unknown> | undefined> {
     const conditions: string[] = ['operator_id = $1', 'is_active = true'];
-    const params: any[] = [operatorId];
+    const params: unknown[] = [operatorId];
     let paramCount = 2;
 
     if (tenantId) {

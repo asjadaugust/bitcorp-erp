@@ -7,7 +7,7 @@ export interface QueryFilters {
   search?: string;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface PaginatedResult<T> {
@@ -30,7 +30,7 @@ export abstract class BaseRepository<T> {
   /**
    * Add tenant filter to WHERE clause
    */
-  protected addTenantFilter(conditions: string[], params: any[], tenantId?: number): number {
+  protected addTenantFilter(conditions: string[], params: unknown[], tenantId?: number): number {
     let paramCount = params.length + 1;
     if (tenantId) {
       conditions.push(`${this.tableName}.tenant_id = $${paramCount}`);
@@ -58,7 +58,7 @@ export abstract class BaseRepository<T> {
     const sortOrder = filters.sortOrder || 'DESC';
 
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     // Add tenant filter
@@ -107,7 +107,7 @@ export abstract class BaseRepository<T> {
    */
   async findById(id: number | string, tenantId?: number): Promise<T | null> {
     const conditions: string[] = [`${this.tableName}.id = $1`];
-    const params: any[] = [id];
+    const params: unknown[] = [id];
     let paramCount = 2;
 
     paramCount = this.addTenantFilter(conditions, params, tenantId);
@@ -132,7 +132,7 @@ export abstract class BaseRepository<T> {
    */
   async softDelete(id: number | string, tenantId?: number): Promise<void> {
     const conditions: string[] = ['id = $1'];
-    const params: any[] = [id];
+    const params: unknown[] = [id];
     let paramCount = 2;
 
     if (tenantId) {
@@ -156,7 +156,7 @@ export abstract class BaseRepository<T> {
    */
   async hardDelete(id: number | string, tenantId?: number): Promise<void> {
     const conditions: string[] = ['id = $1'];
-    const params: any[] = [id];
+    const params: unknown[] = [id];
     let paramCount = 2;
 
     if (tenantId) {

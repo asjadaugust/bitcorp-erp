@@ -47,21 +47,25 @@ export class DailyReportModel {
    * Find all daily reports with optional filters and LEFT JOIN relations
    * Migrated from raw SQL to TypeORM QueryBuilder
    */
-  static async findAll(filters?: {
-    estado?: string;
-    fecha?: string;
-    fecha_inicio?: string;
-    fecha_fin?: string;
-    trabajador_id?: string;
-    equipo_id?: string;
-    proyecto_id?: string;
-  }): Promise<DailyReportRawRow[]> {
+  static async findAll(
+    tenantId: number,
+    filters?: {
+      estado?: string;
+      fecha?: string;
+      fechaInicio?: string;
+      fechaFin?: string;
+      trabajadorId?: string;
+      equipoId?: string;
+      proyectoId?: string;
+    }
+  ): Promise<DailyReportRawRow[]> {
     const repository = this.getRepository();
     const queryBuilder = repository
       .createQueryBuilder('dr')
       .leftJoinAndSelect('dr.trabajador', 'o')
       .leftJoinAndSelect('dr.equipo', 'e')
       .leftJoinAndSelect('dr.proyecto', 'p')
+      .where('dr.tenantId = :tenantId', { tenantId })
       .select([
         'dr',
         // Computed fields for backward compatibility
@@ -117,7 +121,7 @@ export class DailyReportModel {
    * Find daily report by ID with relations
    * Migrated from raw SQL JOIN to TypeORM QueryBuilder
    */
-  static async findById(id: string): Promise<DailyReportRawRow | null> {
+  static async findById(tenantId: number, id: string): Promise<DailyReportRawRow | null> {
     const repository = this.getRepository();
     const result = await repository
       .createQueryBuilder('dr')
@@ -125,6 +129,7 @@ export class DailyReportModel {
       .leftJoinAndSelect('dr.equipo', 'e')
       .leftJoinAndSelect('dr.proyecto', 'p')
       .where('dr.id = :id', { id: parseInt(id) })
+      .andWhere('dr.tenantId = :tenantId', { tenantId })
       .getRawAndEntities();
 
     if (result.entities.length === 0) return null;
@@ -136,7 +141,7 @@ export class DailyReportModel {
    * Find daily reports by operator/worker ID
    * Migrated from raw SQL JOIN to TypeORM QueryBuilder
    */
-  static async findByOperator(operatorId: string): Promise<DailyReportRawRow[]> {
+  static async findByOperator(tenantId: number, operatorId: string): Promise<DailyReportRawRow[]> {
     const repository = this.getRepository();
     const result = await repository
       .createQueryBuilder('dr')
@@ -144,6 +149,7 @@ export class DailyReportModel {
       .leftJoinAndSelect('dr.equipo', 'e')
       .leftJoinAndSelect('dr.proyecto', 'p')
       .where('dr.trabajadorId = :trabajadorId', { trabajadorId: parseInt(operatorId) })
+      .andWhere('dr.tenantId = :tenantId', { tenantId })
       .orderBy('dr.fecha', 'DESC')
       .getRawAndEntities();
 
@@ -154,7 +160,7 @@ export class DailyReportModel {
    * Create new daily report
    * Migrated from raw INSERT to TypeORM save
    */
-  static async create(data: any): Promise<DailyReportRawRow> {
+  static async create(tenantId: number, data: any): Promise<DailyReportRawRow> {
     const repository = this.getRepository();
 
     // Calculate hours worked if hourmeter data is provided
@@ -181,6 +187,7 @@ export class DailyReportModel {
       observacionesCorrecciones: data.observaciones_correcciones || null,
       estado: data.estado || 'BORRADOR',
       lugarSalida: data.lugar_salida,
+      tenantId,
     });
 
     const saved = await repository.save(dailyReport);
@@ -191,9 +198,9 @@ export class DailyReportModel {
    * Update daily report
    * Migrated from dynamic SQL UPDATE to TypeORM save
    */
-  static async update(id: string, data: any): Promise<DailyReportRawRow | null> {
+  static async update(tenantId: number, id: string, data: any): Promise<DailyReportRawRow | null> {
     const repository = this.getRepository();
-    const dailyReport = await repository.findOne({ where: { id: parseInt(id) } });
+    const dailyReport = await repository.findOne({ where: { id: parseInt(id), tenantId } });
 
     if (!dailyReport) return null;
 
@@ -236,16 +243,20 @@ export class DailyReportModel {
     }
 
     await repository.save(dailyReport);
-    return this.findById(id);
+    return this.findById(tenantId, id);
   }
 
   /**
    * Approve daily report
    * Migrated from raw UPDATE to TypeORM save
    */
-  static async approve(id: string, approvedBy: string): Promise<DailyReportRawRow | null> {
+  static async approve(
+    tenantId: number,
+    id: string,
+    approvedBy: string
+  ): Promise<DailyReportRawRow | null> {
     const repository = this.getRepository();
-    const dailyReport = await repository.findOne({ where: { id: parseInt(id) } });
+    const dailyReport = await repository.findOne({ where: { id: parseInt(id), tenantId } });
 
     if (!dailyReport) return null;
 
@@ -254,16 +265,20 @@ export class DailyReportModel {
     dailyReport.aprobadoEn = new Date();
 
     await repository.save(dailyReport);
-    return this.findById(id);
+    return this.findById(tenantId, id);
   }
 
   /**
    * Reject daily report with reason
    * Migrated from raw UPDATE to TypeORM save
    */
-  static async reject(id: string, reason: string): Promise<DailyReportRawRow | null> {
+  static async reject(
+    tenantId: number,
+    id: string,
+    reason: string
+  ): Promise<DailyReportRawRow | null> {
     const repository = this.getRepository();
-    const dailyReport = await repository.findOne({ where: { id: parseInt(id) } });
+    const dailyReport = await repository.findOne({ where: { id: parseInt(id), tenantId } });
 
     if (!dailyReport) return null;
 
@@ -271,7 +286,7 @@ export class DailyReportModel {
     dailyReport.observacionesCorrecciones = reason;
 
     await repository.save(dailyReport);
-    return this.findById(id);
+    return this.findById(tenantId, id);
   }
 
   /**
@@ -279,27 +294,28 @@ export class DailyReportModel {
    * Sets firma_residente field with the provided signature value (name or base64)
    */
   static async firmarResidente(
+    tenantId: number,
     id: string,
     firmaResidente: string
   ): Promise<DailyReportRawRow | null> {
     const repository = this.getRepository();
-    const dailyReport = await repository.findOne({ where: { id: parseInt(id) } });
+    const dailyReport = await repository.findOne({ where: { id: parseInt(id), tenantId } });
 
     if (!dailyReport) return null;
 
     dailyReport.firmaResidente = firmaResidente;
 
     await repository.save(dailyReport);
-    return this.findById(id);
+    return this.findById(tenantId, id);
   }
 
   /**
    * Hard delete daily report
    * Migrated from raw DELETE to TypeORM remove
    */
-  static async delete(id: string): Promise<boolean> {
+  static async delete(tenantId: number, id: string): Promise<boolean> {
     const repository = this.getRepository();
-    const result = await repository.delete({ id: parseInt(id) });
+    const result = await repository.delete({ id: parseInt(id), tenantId });
     return result.affected !== null && result.affected > 0;
   }
 

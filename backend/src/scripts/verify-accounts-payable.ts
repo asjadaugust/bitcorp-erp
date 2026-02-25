@@ -19,7 +19,7 @@ async function verifyAccountsPayable() {
       throw new Error(`Login failed: ${loginRes.statusText}`);
     }
 
-    const loginData: any = await loginRes.json();
+    const loginData = await loginRes.json() as Record<string, unknown>;
     const token = loginData.access_token;
     console.log('✅ Login successful');
 
@@ -34,7 +34,7 @@ async function verifyAccountsPayable() {
       console.log('⚠️ Could not fetch providers, using default ID 1');
     }
 
-    const providers: any = providersRes.ok ? await providersRes.json() : [];
+    const providers = providersRes.ok ? (await providersRes.json() as Record<string, unknown>[]) : [];
     const providerId = providers.length > 0 ? providers[0].id : 1;
     console.log(`ℹ️ Using Provider ID: ${providerId}`);
 
@@ -66,7 +66,7 @@ async function verifyAccountsPayable() {
       throw new Error(`Create failed: ${createRes.status} - ${err}`);
     }
 
-    const createdAp: any = await createRes.json();
+    const createdAp = await createRes.json() as Record<string, unknown>;
     console.log('✅ Created Accounts Payable:', createdAp.id);
 
     // 4. Get All
@@ -74,7 +74,7 @@ async function verifyAccountsPayable() {
     const getAllRes = await fetch(`${ACCOUNTS_PAYABLE_API_URL}/accounts-payable`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const allAp: any = await getAllRes.json();
+    const allAp = await getAllRes.json() as Record<string, unknown>[];
     console.log(`✅ Fetched ${allAp.length} records`);
 
     // 5. Get One
@@ -82,7 +82,7 @@ async function verifyAccountsPayable() {
     const getOneRes = await fetch(`${ACCOUNTS_PAYABLE_API_URL}/accounts-payable/${createdAp.id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const oneAp: any = await getOneRes.json();
+    const oneAp = await getOneRes.json() as Record<string, unknown>;
     if (oneAp.id === createdAp.id) {
       console.log('✅ Fetched correct record');
     } else {
@@ -107,7 +107,7 @@ async function verifyAccountsPayable() {
       throw new Error(`Update failed: ${updateRes.statusText}`);
     }
 
-    const updatedAp: any = await updateRes.json();
+    const updatedAp = await updateRes.json() as Record<string, unknown>;
     if (updatedAp.amount === '2000.00' || updatedAp.amount === 2000) {
       console.log('✅ Update successful (Amount updated)');
     } else {

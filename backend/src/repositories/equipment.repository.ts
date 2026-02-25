@@ -49,7 +49,7 @@ export class EquipmentRepository extends BaseRepository<Equipment> {
     const offset = (page - 1) * limit;
 
     const conditions: string[] = ['e.is_active = true'];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     // Tenant filter
@@ -141,7 +141,7 @@ export class EquipmentRepository extends BaseRepository<Equipment> {
 
   async findById(id: number, tenantId?: number): Promise<Equipment | null> {
     const conditions: string[] = ['e.id = $1', 'e.is_active = true'];
-    const params: any[] = [id];
+    const params: unknown[] = [id];
     let paramCount = 2;
 
     if (tenantId) {
@@ -168,7 +168,7 @@ export class EquipmentRepository extends BaseRepository<Equipment> {
 
   async findByCode(code: string, tenantId?: number): Promise<Equipment | null> {
     const conditions: string[] = ['code = $1', 'is_active = true'];
-    const params: any[] = [code];
+    const params: unknown[] = [code];
     let paramCount = 2;
 
     if (tenantId) {
@@ -231,7 +231,7 @@ export class EquipmentRepository extends BaseRepository<Equipment> {
     tenantId?: number
   ): Promise<Equipment> {
     const setClauses: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     const updateFields = Object.keys(data).filter(
@@ -280,7 +280,7 @@ export class EquipmentRepository extends BaseRepository<Equipment> {
         fecha_venc_citv <= CURRENT_DATE + INTERVAL '${days} days'
       )`,
     ];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramCount = 1;
 
     if (tenantId) {

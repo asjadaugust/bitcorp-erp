@@ -38,6 +38,9 @@ export class ChecklistResultado {
   @Column({ name: 'foto_url', type: 'text', nullable: true })
   fotoUrl?: string;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

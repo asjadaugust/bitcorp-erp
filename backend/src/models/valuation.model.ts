@@ -156,6 +156,10 @@ export class Valorizacion {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  @Index('idx_valorizacion_equipo_tenant')
+  tenantId?: number;
+
   // Relations
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'creado_por' })

@@ -337,7 +337,7 @@ export class AccountsPayableService {
    * });
    * ```
    */
-  async create(data: CreateAccountsPayableDto): Promise<AccountsPayableDto> {
+  async create(tenantId: number, data: CreateAccountsPayableDto): Promise<AccountsPayableDto> {
     // Map frontend camelCase and Spanish snake_case to DTO format
     const accountsPayableData: Partial<AccountsPayableDto> = {
       proveedor_id: data.proveedor_id || data.providerId,
@@ -371,12 +371,15 @@ export class AccountsPayableService {
     );
 
     try {
-      const entity = AccountsPayableRepository.create(fromAccountsPayableDto(accountsPayableData));
+      const entity = AccountsPayableRepository.create({
+        ...fromAccountsPayableDto(accountsPayableData),
+        tenantId,
+      });
       const saved = await AccountsPayableRepository.save(entity);
 
       // Reload with relations
       const reloaded = await AccountsPayableRepository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['provider'],
       });
 
@@ -443,12 +446,15 @@ export class AccountsPayableService {
    * // Returns: { data: [...], total: 145 }
    * ```
    */
-  async findAll(filters?: {
-    page?: number;
-    limit?: number;
-    sort_by?: string;
-    sort_order?: 'ASC' | 'DESC';
-  }): Promise<{ data: AccountsPayableDto[]; total: number }> {
+  async findAll(
+    tenantId: number,
+    filters?: {
+      page?: number;
+      limit?: number;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+    }
+  ): Promise<{ data: AccountsPayableDto[]; total: number }> {
     const page = filters?.page || 1;
     const limit = filters?.limit || 20;
     const skip = (page - 1) * limit;
@@ -477,6 +483,7 @@ export class AccountsPayableService {
 
       // Use query builder for dynamic sorting
       const queryBuilder = AccountsPayableRepository.createQueryBuilder('ap')
+        .where('ap.tenantId = :tenantId', { tenantId })
         .leftJoinAndSelect('ap.provider', 'provider')
         .orderBy(sortBy, sortOrder);
 
@@ -524,13 +531,13 @@ export class AccountsPayableService {
    * console.log(invoice.saldo); // Remaining balance
    * ```
    */
-  async findOne(id: number): Promise<AccountsPayableDto | null> {
+  async findOne(tenantId: number, id: number): Promise<AccountsPayableDto | null> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // where: { id, tenant_id: tenantId }
 
       const account = await AccountsPayableRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['provider'],
       });
 
@@ -597,13 +604,17 @@ export class AccountsPayableService {
    * });
    * ```
    */
-  async update(id: number, data: UpdateAccountsPayableDto): Promise<AccountsPayableDto | null> {
+  async update(
+    tenantId: number,
+    id: number,
+    data: UpdateAccountsPayableDto
+  ): Promise<AccountsPayableDto | null> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // where: { id, tenant_id: tenantId }
 
       const accountPayable = await AccountsPayableRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['provider'],
       });
 
@@ -710,21 +721,21 @@ export class AccountsPayableService {
    * // ⚠️ Record permanently deleted - prefer ANULADO status
    * ```
    */
-  async delete(id: number): Promise<boolean> {
+  async delete(tenantId: number, id: number): Promise<boolean> {
     try {
       // TODO: Add tenant_id validation when schema updated (Phase 21)
       // Verify record belongs to current tenant before deleting
 
       // Check if record exists
       const existing = await AccountsPayableRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!existing) {
         throw new NotFoundError('AccountsPayable', id);
       }
 
-      const result = await AccountsPayableRepository.delete(id);
+      const result = await AccountsPayableRepository.delete({ id, tenantId });
 
       logger.warn('Hard deleted accounts payable (audit trail destroyed)', {
         id,
@@ -765,12 +776,12 @@ export class AccountsPayableService {
    * console.log(`Total pending: ${totalOwed}`);
    * ```
    */
-  async findPending(): Promise<AccountsPayableDto[]> {
+  async findPending(tenantId: number): Promise<AccountsPayableDto[]> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // Repository method needs tenant_id parameter
 
-      const accounts = await AccountsPayableRepository.findPending();
+      const accounts = await AccountsPayableRepository.findPending(tenantId);
 
       const totalSaldo = accounts.reduce(
         (sum, ap) => sum + (Number(ap.amount) - Number(ap.amount_paid)),
@@ -819,11 +830,12 @@ export class AccountsPayableService {
    * ```
    */
   async updateStatus(
+    tenantId: number,
     id: number,
     status: AccountsPayableStatus
   ): Promise<AccountsPayableDto | null> {
     try {
-      const result = await this.update(id, { estado: status });
+      const result = await this.update(tenantId, id, { estado: status });
 
       if (result) {
         logger.info('Updated accounts payable status', {

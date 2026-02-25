@@ -114,6 +114,7 @@ export class ValuationService {
    *
    * TODO: [Phase 21] Add tenant context - filter by req.tenantContext.tenantId
    *
+   * @param tenantId - Tenant context for data isolation
    * @param filters - Optional query filters
    * @param filters.estado - Filter by estado (PENDIENTE, EN_REVISION, APROBADO, RECHAZADO, PAGADO)
    * @param filters.search - Search in periodo and observaciones (ILIKE)
@@ -142,7 +143,7 @@ export class ValuationService {
    * console.log(`Found ${result.total} valuations, showing ${result.data.length}`);
    * ```
    */
-  async findAll(filters?: {
+  async findAll(tenantId: number, filters?: {
     estado?: string;
     search?: string;
     projectId?: number;
@@ -188,6 +189,7 @@ export class ValuationService {
 
       const queryBuilder = this.repository
         .createQueryBuilder('v')
+        .where('v.tenantId = :tenantId', { tenantId })
         .leftJoinAndSelect('v.creator', 'creator')
         .leftJoinAndSelect('v.approver', 'approver')
         .leftJoinAndSelect('v.contrato', 'contrato')
@@ -277,10 +279,10 @@ export class ValuationService {
    * console.log(`Valuation ${valuation.numero_valorizacion}, estado: ${valuation.estado}`);
    * ```
    */
-  async findById(id: number): Promise<ValuationDto | null> {
+  async findById(tenantId: number, id: number): Promise<ValuationDto | null> {
     try {
       const v = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['creator', 'approver', 'contrato', 'contrato.provider', 'equipo'],
       });
 
@@ -346,12 +348,12 @@ export class ValuationService {
    * // Estado automatically set to PENDIENTE
    * ```
    */
-  async create(data: Partial<Valorizacion>, userId?: number): Promise<Valorizacion> {
+  async create(tenantId: number, data: Partial<Valorizacion>, userId?: number): Promise<Valorizacion> {
     try {
       // Business rule 1: Check numero_valorizacion uniqueness
       if (data.numeroValorizacion) {
         const existing = await this.repository.findOne({
-          where: { numeroValorizacion: data.numeroValorizacion },
+          where: { numeroValorizacion: data.numeroValorizacion, tenantId },
         });
         if (existing) {
           throw new ConflictError(
@@ -402,6 +404,7 @@ export class ValuationService {
         numeroValorizacion: valuationData.numero_valorizacion || data.numeroValorizacion,
         estado: data.estado || 'BORRADOR',
         creadoPor: userId,
+        tenantId,
       });
 
       const saved = await this.repository.save(valorizacion);
@@ -467,9 +470,9 @@ export class ValuationService {
    * });
    * ```
    */
-  async update(id: number, data: Partial<Valorizacion>): Promise<ValuationDto> {
+  async update(tenantId: number, id: number, data: Partial<Valorizacion>): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -493,7 +496,7 @@ export class ValuationService {
       const numVal = data.numeroValorizacion || (data as any).numero_valorizacion;
       if (numVal && numVal !== valorizacion.numeroValorizacion) {
         const existing = await this.repository.findOne({
-          where: { numeroValorizacion: numVal },
+          where: { numeroValorizacion: numVal, tenantId },
         });
         if (existing) {
           throw new ConflictError(`Valuation with numero '${numVal}' already exists`, {
@@ -608,7 +611,7 @@ export class ValuationService {
    * }
    * ```
    */
-  async delete(id: number): Promise<boolean> {
+  async delete(tenantId: number, id: number): Promise<boolean> {
     try {
       // Find valuation first
       const valorizacion = await this.repository.findOne({ where: { id } });
@@ -1386,7 +1389,7 @@ export class ValuationService {
    * Get consolidated valuation registry with filters and summary totals.
    * Implements CORP-GEM-F-011 cross-project consolidated register.
    */
-  async getRegistry(filters?: {
+  async getRegistry(tenantId: number, filters?: {
     proyecto_id?: number;
     periodo_desde?: string;
     periodo_hasta?: string;
@@ -1406,7 +1409,8 @@ export class ValuationService {
         .leftJoinAndSelect('v.equipo', 'equipo')
         .leftJoinAndSelect('v.contrato', 'contrato')
         .leftJoinAndSelect('contrato.provider', 'provider')
-        .where('v.estado != :eliminado', { eliminado: 'ELIMINADO' });
+        .where('v.tenantId = :tenantId', { tenantId })
+        .andWhere('v.estado != :eliminado', { eliminado: 'ELIMINADO' });
 
       if (filters?.proyecto_id) {
         queryBuilder.andWhere('v.proyecto_id = :proyectoId', { proyectoId: filters.proyecto_id });
@@ -1538,8 +1542,8 @@ export class ValuationService {
    * const result = await valuationService.findAll({ estado: 'APROBADO' });
    * ```
    */
-  async getAllValuations(filters?: any) {
-    return this.findAll(filters);
+  async getAllValuations(tenantId: number, filters?: any) {
+    return this.findAll(tenantId, filters);
   }
 
   /**
@@ -1560,8 +1564,8 @@ export class ValuationService {
    * const valuation = await valuationService.findById(123);
    * ```
    */
-  async getValuationById(id: string) {
-    return this.findById(parseInt(id));
+  async getValuationById(tenantId: number, id: string) {
+    return this.findById(tenantId, parseInt(id));
   }
 
   /**
@@ -1583,8 +1587,8 @@ export class ValuationService {
    * const valuation = await valuationService.create(data, 5);
    * ```
    */
-  async createValuation(data: any, userId: string) {
-    return this.create(data, userId ? parseInt(userId) : undefined);
+  async createValuation(tenantId: number, data: any, userId: string) {
+    return this.create(tenantId, data, userId ? parseInt(userId) : undefined);
   }
 
   /**
@@ -1607,8 +1611,8 @@ export class ValuationService {
    * const updated = await valuationService.update(123, data);
    * ```
    */
-  async updateValuation(id: string, data: any, userId: string) {
-    return this.update(parseInt(id), data);
+  async updateValuation(tenantId: number, id: string, data: any, userId: string) {
+    return this.update(tenantId, parseInt(id), data);
   }
 
   /**
@@ -1632,8 +1636,8 @@ export class ValuationService {
    * const deleted = await valuationService.delete(123);
    * ```
    */
-  async deleteValuation(id: string) {
-    return this.delete(parseInt(id));
+  async deleteValuation(tenantId: number, id: string) {
+    return this.delete(tenantId, parseInt(id));
   }
 
   /**
@@ -1691,6 +1695,7 @@ export class ValuationService {
    * Sum discount events (hours and days) for a valuation.
    */
   private async sumDiscountEvents(
+    tenantId: number,
     valuationId: number
   ): Promise<{ totalDiscountHours: number; totalDiscountDays: number }> {
     // When subtipo is set and aplica_descuento is true, use the PRD-computed values.
@@ -1725,7 +1730,7 @@ export class ValuationService {
   /**
    * Sum work expenses (importe_sin_igv) for a valuation.
    */
-  private async sumWorkExpenses(valuationId: number): Promise<number> {
+  private async sumWorkExpenses(tenantId: number, valuationId: number): Promise<number> {
     const result = await AppDataSource.query(
       `SELECT COALESCE(SUM(importe_sin_igv), 0)::numeric AS total
        FROM equipo.gasto_obra
@@ -1738,7 +1743,7 @@ export class ValuationService {
   /**
    * Sum advance amortizations (monto) for a valuation.
    */
-  private async sumAdvanceAmortizations(valuationId: number): Promise<number> {
+  private async sumAdvanceAmortizations(tenantId: number, valuationId: number): Promise<number> {
     const result = await AppDataSource.query(
       `SELECT COALESCE(SUM(monto), 0)::numeric AS total
        FROM equipo.adelanto_amortizacion
@@ -1751,7 +1756,7 @@ export class ValuationService {
   /**
    * Sum excess fuel costs for a valuation.
    */
-  private async sumExcessFuel(valuationId: number): Promise<number> {
+  private async sumExcessFuel(tenantId: number, valuationId: number): Promise<number> {
     const result = await AppDataSource.query(
       `SELECT COALESCE(SUM(importe_exceso_combustible), 0)::numeric AS total
        FROM equipo.exceso_combustible
@@ -1774,9 +1779,9 @@ export class ValuationService {
    * Includes: pre-warming deduction, manipuleo, discount events,
    * work expenses, advance amortizations, excess fuel.
    */
-  async calculateValuation(contractId: string, month: number, year: number, valuationId?: number) {
+  async calculateValuation(tenantId: number, contractId: string, month: number, year: number, valuationId?: number) {
     const contract = await this.contractRepository.findOne({
-      where: { id: parseInt(contractId) },
+      where: { id: parseInt(contractId), tenantId },
       relations: ['equipo'],
     });
 
@@ -1803,7 +1808,7 @@ export class ValuationService {
     let totalDiscountHours = 0;
     let totalDiscountDays = 0;
     if (valuationId) {
-      const discounts = await this.sumDiscountEvents(valuationId);
+      const discounts = await this.sumDiscountEvents(tenantId, valuationId);
       totalDiscountHours = discounts.totalDiscountHours;
       totalDiscountDays = discounts.totalDiscountDays;
     }
@@ -1852,9 +1857,9 @@ export class ValuationService {
     let importeExcesoCombustible = 0;
     if (valuationId) {
       [importeGastoObra, importeAdelanto, importeExcesoCombustible] = await Promise.all([
-        this.sumWorkExpenses(valuationId),
-        this.sumAdvanceAmortizations(valuationId),
-        this.sumExcessFuel(valuationId),
+        this.sumWorkExpenses(tenantId, valuationId),
+        this.sumAdvanceAmortizations(tenantId, valuationId),
+        this.sumExcessFuel(tenantId, valuationId),
       ]);
     }
 
@@ -1905,9 +1910,9 @@ export class ValuationService {
    *
    * Only works on BORRADOR or PENDIENTE states.
    */
-  async recalculateValuation(valuationId: number) {
+  async recalculateValuation(tenantId: number, valuationId: number) {
     const valuation = await this.repository.findOne({
-      where: { id: valuationId },
+      where: { id: valuationId, tenantId },
       relations: ['contrato'],
     });
 
@@ -1932,6 +1937,7 @@ export class ValuationService {
     const year = parseInt(yearStr);
 
     const calculation = await this.calculateValuation(
+      tenantId,
       valuation.contratoId.toString(),
       month,
       year,
@@ -1998,17 +2004,19 @@ export class ValuationService {
    * ```
    */
   async generateValuationForContract(
+    tenantId: number,
     contractId: string,
     month: number,
     year: number,
     userId: string
   ) {
-    const calculation = await this.calculateValuation(contractId, month, year);
+    const calculation = await this.calculateValuation(tenantId, contractId, month, year);
     const periodo = `${year}-${String(month).padStart(2, '0')}`;
     const fechaInicio = new Date(year, month - 1, 1);
     const fechaFin = new Date(year, month, 0);
 
     const valuation = await this.create(
+      tenantId,
       {
         contratoId: parseInt(contractId),
         equipoId: calculation.equipo_id,
@@ -2070,7 +2078,7 @@ export class ValuationService {
    * // TODO: Implement bulk generation for all active contracts
    * ```
    */
-  async generateValuationsForPeriod(month: number, year: number, userId: string) {
+  async generateValuationsForPeriod(tenantId: number, month: number, year: number, userId: string) {
     const fechaInicio = new Date(year, month - 1, 1);
     const fechaFin = new Date(year, month, 0);
     const periodo = `${year}-${String(month).padStart(2, '0')}`;
@@ -2104,6 +2112,7 @@ export class ValuationService {
         where: {
           equipoId: contract.equipo.id,
           periodo,
+          tenantId,
         },
       });
 
@@ -2119,6 +2128,7 @@ export class ValuationService {
 
       try {
         const valuation = await this.generateValuationForContract(
+          tenantId,
           contract.id.toString(),
           month,
           year,
@@ -2164,8 +2174,8 @@ export class ValuationService {
    * const valuation = await valuationService.findById(123);
    * ```
    */
-  async getValuationDetailsForPdf(id: string) {
-    return this.findById(parseInt(id));
+  async getValuationDetailsForPdf(tenantId: number, id: string) {
+    return this.findById(tenantId, parseInt(id));
   }
 
   /**

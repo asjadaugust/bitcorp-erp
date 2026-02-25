@@ -66,10 +66,9 @@ export class ChecklistService {
    * @returns Array of template list DTOs with items
    * @throws {DatabaseError} If database query fails
    */
-  async getAllTemplates(filters?: any): Promise<ChecklistTemplateListDto[]> {
+  async getAllTemplates(tenantId: number, filters?: any): Promise<ChecklistTemplateListDto[]> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      const where: any = {};
+      const where: any = { tenantId };
 
       if (filters?.activo !== undefined) {
         where.activo = filters.activo;
@@ -137,10 +136,9 @@ export class ChecklistService {
    * @throws {NotFoundError} If template does not exist
    * @throws {DatabaseError} If database query fails
    */
-  async getTemplateById(id: number): Promise<ChecklistTemplateDetailDto | null> {
+  async getTemplateById(tenantId: number, id: number): Promise<ChecklistTemplateDetailDto | null> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      const template = await this.templateRepository.findOne({ where: { id } });
+      const template = await this.templateRepository.findOne({ where: { id, tenantId } });
 
       if (!template) {
         throw new NotFoundError('ChecklistTemplate', id);
@@ -188,6 +186,7 @@ export class ChecklistService {
    * @throws {DatabaseError} If database operation fails
    */
   async createTemplate(
+    tenantId: number,
     data: Partial<ChecklistTemplate>,
     userId: number
   ): Promise<ChecklistTemplateDetailDto> {
@@ -205,6 +204,7 @@ export class ChecklistService {
       const template = this.templateRepository.create({
         ...data,
         createdBy: userId,
+        tenantId,
       });
       const saved = await this.templateRepository.save(template);
 
@@ -217,7 +217,7 @@ export class ChecklistService {
         context: 'ChecklistService.createTemplate',
       });
 
-      return this.getTemplateById(saved.id) as Promise<ChecklistTemplateDetailDto>;
+      return this.getTemplateById(tenantId, saved.id) as Promise<ChecklistTemplateDetailDto>;
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
@@ -247,12 +247,13 @@ export class ChecklistService {
    * @throws {DatabaseError} If database operation fails
    */
   async updateTemplate(
+    tenantId: number,
     id: number,
     data: Partial<ChecklistTemplate>
   ): Promise<ChecklistTemplateDetailDto | null> {
     try {
       // Check if template exists
-      const existing = await this.templateRepository.findOne({ where: { id } });
+      const existing = await this.templateRepository.findOne({ where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ChecklistTemplate', id);
       }
@@ -268,7 +269,7 @@ export class ChecklistService {
         context: 'ChecklistService.updateTemplate',
       });
 
-      return this.getTemplateById(id);
+      return this.getTemplateById(tenantId, id);
     } catch (error) {
       if (error instanceof NotFoundError) {
         throw error;
@@ -299,17 +300,17 @@ export class ChecklistService {
    * @throws {NotFoundError} If template does not exist
    * @throws {DatabaseError} If database operation fails
    */
-  async deleteTemplate(id: number) {
+  async deleteTemplate(tenantId: number, id: number) {
     try {
       // Check if template exists
-      const existing = await this.templateRepository.findOne({ where: { id } });
+      const existing = await this.templateRepository.findOne({ where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ChecklistTemplate', id);
       }
 
       // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
 
-      const result = await this.templateRepository.delete(id);
+      const result = await this.templateRepository.delete({ id, tenantId });
 
       logger.warn('Hard deleted checklist template', {
         id,
@@ -349,7 +350,7 @@ export class ChecklistService {
    * @throws {ValidationError} If required fields are missing
    * @throws {DatabaseError} If database operation fails
    */
-  async createItem(data: Partial<ChecklistItem>): Promise<ChecklistItemDto> {
+  async createItem(tenantId: number, data: Partial<ChecklistItem>): Promise<ChecklistItemDto> {
     try {
       // Validate required fields
       if (!data.plantillaId || !data.descripcion) {
@@ -361,7 +362,7 @@ export class ChecklistService {
 
       // TODO: [Phase 21 - Tenant Context] Add tenant assignment
 
-      const item = this.itemRepository.create(data);
+      const item = this.itemRepository.create({ ...data, tenantId });
       const saved = await this.itemRepository.save(item);
 
       logger.info('Created checklist item', {
@@ -401,10 +402,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If item does not exist
    * @throws {DatabaseError} If database operation fails
    */
-  async updateItem(id: number, data: Partial<ChecklistItem>): Promise<ChecklistItemDto | null> {
+  async updateItem(tenantId: number, id: number, data: Partial<ChecklistItem>): Promise<ChecklistItemDto | null> {
     try {
       // Check if item exists
-      const existing = await this.itemRepository.findOne({ where: { id } });
+      const existing = await this.itemRepository.findOne({ where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ChecklistItem', id);
       }
@@ -412,7 +413,7 @@ export class ChecklistService {
       // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
 
       await this.itemRepository.update(id, data);
-      const item = await this.itemRepository.findOne({ where: { id } });
+      const item = await this.itemRepository.findOne({ where: { id, tenantId } });
 
       logger.info('Updated checklist item', {
         id,
@@ -451,10 +452,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If item does not exist
    * @throws {DatabaseError} If database operation fails
    */
-  async deleteItem(id: number) {
+  async deleteItem(tenantId: number, id: number) {
     try {
       // Check if item exists
-      const existing = await this.itemRepository.findOne({ where: { id } });
+      const existing = await this.itemRepository.findOne({ where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ChecklistItem', id);
       }
@@ -496,11 +497,10 @@ export class ChecklistService {
    * @returns Array of item DTOs ordered by sequence
    * @throws {DatabaseError} If database query fails
    */
-  async getItemsByTemplate(plantillaId: number): Promise<ChecklistItemDto[]> {
+  async getItemsByTemplate(tenantId: number, plantillaId: number): Promise<ChecklistItemDto[]> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
       const items = await this.itemRepository.find({
-        where: { plantillaId },
+        where: { plantillaId, tenantId },
         order: { orden: 'ASC' },
       });
 
@@ -535,7 +535,7 @@ export class ChecklistService {
    * @returns Paginated inspection list
    * @throws {DatabaseError} If database query fails
    */
-  async getAllInspections(filters?: any): Promise<{
+  async getAllInspections(tenantId: number, filters?: any): Promise<{
     data: ChecklistInspectionListDto[];
     total: number;
     page: number;
@@ -551,7 +551,7 @@ export class ChecklistService {
       const sortBy = filters?.sort_by || 'fecha_inspeccion';
       const sortOrder = filters?.sort_order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
-      const where: any = {};
+      const where: any = { tenantId };
 
       // TODO: [Phase 21 - Tenant Context] Add tenant filtering
 
@@ -632,11 +632,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If database query fails
    */
-  async getInspectionById(id: number): Promise<ChecklistInspectionDetailDto | null> {
+  async getInspectionById(tenantId: number, id: number): Promise<ChecklistInspectionDetailDto | null> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
       const inspection = await this.inspectionRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['plantilla', 'equipo', 'trabajador'],
       });
 
@@ -683,11 +682,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If database query fails
    */
-  async getInspectionWithResults(id: number): Promise<ChecklistInspectionWithResultsDto | null> {
+  async getInspectionWithResults(tenantId: number, id: number): Promise<ChecklistInspectionWithResultsDto | null> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
       const inspection = await this.inspectionRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['plantilla', 'equipo', 'trabajador'],
       });
 
@@ -742,6 +740,7 @@ export class ChecklistService {
    * @throws {DatabaseError} If database operation fails
    */
   async createInspection(
+    tenantId: number,
     data: Partial<ChecklistInspection>
   ): Promise<ChecklistInspectionDetailDto> {
     try {
@@ -776,6 +775,7 @@ export class ChecklistService {
         codigo,
         itemsTotal,
         fechaInspeccion: data.fechaInspeccion || new Date(),
+        tenantId,
       });
 
       const saved = await this.inspectionRepository.save(inspection);
@@ -790,7 +790,7 @@ export class ChecklistService {
         context: 'ChecklistService.createInspection',
       });
 
-      return this.getInspectionById(saved.id) as Promise<ChecklistInspectionDetailDto>;
+      return this.getInspectionById(tenantId, saved.id) as Promise<ChecklistInspectionDetailDto>;
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
@@ -819,12 +819,13 @@ export class ChecklistService {
    * @throws {DatabaseError} If database operation fails
    */
   async updateInspection(
+    tenantId: number,
     id: number,
     data: Partial<ChecklistInspection>
   ): Promise<ChecklistInspectionDetailDto | null> {
     try {
       // Check if inspection exists
-      const existing = await this.inspectionRepository.findOne({ where: { id } });
+      const existing = await this.inspectionRepository.findOne({ where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ChecklistInspection', id);
       }
@@ -840,7 +841,7 @@ export class ChecklistService {
         context: 'ChecklistService.updateInspection',
       });
 
-      return this.getInspectionById(id);
+      return this.getInspectionById(tenantId, id);
     } catch (error) {
       if (error instanceof NotFoundError) {
         throw error;
@@ -883,14 +884,14 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If transaction fails
    */
-  async completeInspection(id: number): Promise<ChecklistInspectionDetailDto | null> {
+  async completeInspection(tenantId: number, id: number): Promise<ChecklistInspectionDetailDto | null> {
     const queryRunner: QueryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
       // Check if inspection exists
-      const existing = await queryRunner.manager.findOne(ChecklistInspection, { where: { id } });
+      const existing = await queryRunner.manager.findOne(ChecklistInspection, { where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ChecklistInspection', id);
       }
@@ -954,7 +955,7 @@ export class ChecklistService {
         context: 'ChecklistService.completeInspection',
       });
 
-      return this.getInspectionById(id);
+      return this.getInspectionById(tenantId, id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof NotFoundError) {
@@ -986,10 +987,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If database operation fails
    */
-  async cancelInspection(id: number): Promise<ChecklistInspectionDetailDto | null> {
+  async cancelInspection(tenantId: number, id: number): Promise<ChecklistInspectionDetailDto | null> {
     try {
       // Check if inspection exists
-      const existing = await this.inspectionRepository.findOne({ where: { id } });
+      const existing = await this.inspectionRepository.findOne({ where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ChecklistInspection', id);
       }
@@ -1005,7 +1006,7 @@ export class ChecklistService {
         context: 'ChecklistService.cancelInspection',
       });
 
-      return this.getInspectionById(id);
+      return this.getInspectionById(tenantId, id);
     } catch (error) {
       if (error instanceof NotFoundError) {
         throw error;
@@ -1037,7 +1038,7 @@ export class ChecklistService {
    * @throws {ValidationError} If required fields are missing
    * @throws {DatabaseError} If database operation fails
    */
-  async saveResult(data: Partial<ChecklistResult>): Promise<ChecklistResultDto> {
+  async saveResult(tenantId: number, data: Partial<ChecklistResult>): Promise<ChecklistResultDto> {
     try {
       // Validate required fields
       if (!data.inspeccionId || !data.itemId) {
@@ -1054,6 +1055,7 @@ export class ChecklistService {
         where: {
           inspeccionId: data.inspeccionId,
           itemId: data.itemId,
+          tenantId,
         },
       });
 
@@ -1069,7 +1071,7 @@ export class ChecklistService {
         result = updated;
         action = 'updated';
       } else {
-        result = this.resultRepository.create(data);
+        result = this.resultRepository.create({ ...data, tenantId });
         result = await this.resultRepository.save(result);
         action = 'created';
       }
@@ -1115,11 +1117,10 @@ export class ChecklistService {
    * @returns Array of result DTOs with item details
    * @throws {DatabaseError} If database query fails
    */
-  async getResultsByInspection(inspeccionId: number): Promise<ChecklistResultDto[]> {
+  async getResultsByInspection(tenantId: number, inspeccionId: number): Promise<ChecklistResultDto[]> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
       const results = await this.resultRepository.find({
-        where: { inspeccionId },
+        where: { inspeccionId, tenantId },
         order: { createdAt: 'ASC' },
       });
 
@@ -1164,9 +1165,9 @@ export class ChecklistService {
    * @returns Inspection statistics DTO
    * @throws {DatabaseError} If database query fails
    */
-  async getInspectionStats(filters?: any): Promise<ChecklistInspectionStatsDto> {
+  async getInspectionStats(tenantId: number, filters?: any): Promise<ChecklistInspectionStatsDto> {
     try {
-      const where: any = {};
+      const where: any = { tenantId };
 
       // TODO: [Phase 21 - Tenant Context] Add tenant filtering
       // TODO: Implement date range filtering with QueryBuilder

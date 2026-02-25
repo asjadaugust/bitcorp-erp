@@ -18,7 +18,7 @@ export class EnsureSchemasExist1700000000000 implements MigrationInterface {
         await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
     }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
+    public async down(_queryRunner: QueryRunner): Promise<void> {
         // We generally don't drop schemas in down migrations unless we are sure
         // it's a destructive rollback, as they might contain other non-managed data.
     }

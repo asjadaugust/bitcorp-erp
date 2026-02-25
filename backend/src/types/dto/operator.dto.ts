@@ -29,6 +29,7 @@ export interface OperatorDto {
   especialidad?: string | null;
   licencia_conducir?: string | null;
   unidad_operativa_id?: number | null;
+  tenant_id?: number | null;
   is_active: boolean;
   created_at: string; // ISO datetime string
   updated_at: string; // ISO datetime string
@@ -42,8 +43,8 @@ export interface OperatorFiltersDto {
   search?: string;
   cargo?: string;
   especialidad?: string;
-  isActive?: boolean;
-  unidadOperativaId?: number;
+  is_active?: boolean;
+  unidad_operativa_id?: number;
   sort_by?: string;
   sort_order?: 'ASC' | 'DESC';
 }
@@ -87,6 +88,7 @@ export function toOperatorDto(entity: Trabajador): OperatorDto {
     especialidad: entity.especialidad || null,
     licencia_conducir: entity.licenciaConducir || null,
     unidad_operativa_id: entity.operatingUnitId || null,
+    tenant_id: entity.tenantId || null,
     is_active: entity.isActive,
     created_at: toDateTimeString(entity.createdAt),
     updated_at: toDateTimeString(entity.updatedAt),
@@ -128,6 +130,7 @@ export function fromOperatorDto(dto: Partial<OperatorDto>): Partial<Trabajador> 
     entity.licenciaConducir = dto.licencia_conducir || undefined;
   if (dto.unidad_operativa_id !== undefined)
     entity.operatingUnitId = dto.unidad_operativa_id || undefined;
+  if (dto.tenant_id !== undefined) entity.tenantId = dto.tenant_id || undefined;
   if (dto.is_active !== undefined) entity.isActive = dto.is_active;
 
   return entity;

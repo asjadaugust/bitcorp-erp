@@ -178,7 +178,7 @@ export class MaintenanceService {
    * });
    * ```
    */
-  async getAllMaintenance(filters?: MaintenanceFilters): Promise<{
+  async getAllMaintenance(tenantId: number, filters?: MaintenanceFilters): Promise<{
     data: MaintenanceDto[];
     total: number;
   }> {
@@ -191,6 +191,7 @@ export class MaintenanceService {
       // Expected: queryBuilder.andWhere('m.tenant_id = :tenantId', { tenantId })
       const queryBuilder = this.repository
         .createQueryBuilder('m')
+        .where('m.tenantId = :tenantId', { tenantId })
         .leftJoinAndSelect('m.equipo', 'e');
 
       // Apply filters
@@ -288,12 +289,12 @@ export class MaintenanceService {
    * }
    * ```
    */
-  async getMaintenanceById(id: number): Promise<MaintenanceDto | null> {
+  async getMaintenanceById(tenantId: number, id: number): Promise<MaintenanceDto | null> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // Expected: where: { id, tenant_id: tenantId }
       const maintenance = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['equipo'],
       });
 
@@ -368,19 +369,22 @@ export class MaintenanceService {
    * }, 'user-123');
    * ```
    */
-  async createMaintenance(data: CreateMaintenanceDto, userId: string): Promise<MaintenanceDto> {
+  async createMaintenance(tenantId: number, data: CreateMaintenanceDto, userId: string): Promise<MaintenanceDto> {
     try {
       // Map dual input format to DTO
       const dtoData = mapCreateMaintenanceDto(data);
 
-      const maintenance = this.repository.create(fromMaintenanceDto(dtoData));
+      const maintenance = this.repository.create({
+        ...fromMaintenanceDto(dtoData),
+        tenantId,
+      });
       const saved = await this.repository.save(maintenance);
 
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // Expected: where: { id: saved.id, tenant_id: tenantId }
       // Reload with relations
       const withRelations = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['equipo'],
       });
 
@@ -463,6 +467,7 @@ export class MaintenanceService {
    * ```
    */
   async updateMaintenance(
+    tenantId: number,
     id: number,
     data: UpdateMaintenanceDto,
     userId: string
@@ -471,7 +476,7 @@ export class MaintenanceService {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // Expected: where: { id, tenant_id: tenantId }
       const maintenance = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['equipo'],
       });
 
@@ -493,7 +498,7 @@ export class MaintenanceService {
       // Expected: where: { id: saved.id, tenant_id: tenantId }
       // Reload with relations
       const withRelations = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['equipo'],
       });
 
@@ -564,12 +569,12 @@ export class MaintenanceService {
    * }
    * ```
    */
-  async deleteMaintenance(id: number): Promise<boolean> {
+  async deleteMaintenance(tenantId: number, id: number): Promise<boolean> {
     try {
       // TODO: Add tenant_id filter when schema updated (Phase 21)
       // Expected: where: { id, tenant_id: tenantId }
       const maintenance = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!maintenance) {
@@ -609,11 +614,12 @@ export class MaintenanceService {
     }
   }
 
-  async getStats(filters?: { startDate?: string; endDate?: string }): Promise<StatsSummaryDto> {
+  async getStats(tenantId: number, filters?: { startDate?: string; endDate?: string }): Promise<StatsSummaryDto> {
     try {
       const query = this.repository
         .createQueryBuilder('m')
-        .where('m.estado != :deleted', { deleted: 'ELIMINADO' });
+        .where('m.tenantId = :tenantId', { tenantId })
+        .andWhere('m.estado != :deleted', { deleted: 'ELIMINADO' });
 
       if (filters?.startDate) {
         query.andWhere('m.createdAt >= :startDate', { startDate: new Date(filters.startDate) });

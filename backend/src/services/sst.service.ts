@@ -44,9 +44,7 @@ export class SstService {
       });
 
       const queryBuilder = this.repository.createQueryBuilder('i');
-      // .leftJoinAndSelect('i.reportador', 'r'); // Load reportador relation - DISABLED: causing TypeORM error
-      // TODO: Add tenant_id filter when column exists in sst.incidente table
-      // .where('i.tenant_id = :tenantId', { tenantId })
+      queryBuilder.where('i.tenantId = :tenantId', { tenantId });
 
       if (filters?.estado) {
         queryBuilder.andWhere('i.estado = :estado', { estado: filters.estado });
@@ -100,9 +98,7 @@ export class SstService {
     try {
       Logger.info('Fetching safety incident', { tenantId, id, context: 'SstService.findById' });
 
-      // TODO: Add tenant_id filter when column exists in sst.incidente table
-      // const entity = await this.repository.findOne({ where: { id, tenant_id: tenantId }, relations: ['reportador'] });
-      const entity = await this.repository.findOne({ where: { id }, relations: ['reportador'] });
+      const entity = await this.repository.findOne({ where: { id, tenantId }, relations: ['reportador'] });
 
       if (!entity) {
         throw new NotFoundError('Safety incident', id, { tenantId });
@@ -149,8 +145,7 @@ export class SstService {
         });
       }
 
-      // TODO: Add tenant_id to entity when column exists
-      const entity = this.repository.create(data);
+      const entity = this.repository.create({ ...data, tenantId });
       const saved = await this.repository.save(entity);
 
       Logger.info('Safety incident created', {
@@ -224,8 +219,7 @@ export class SstService {
         }
       }
 
-      // TODO: Verify tenant_id when column exists
-      const entityToUpdate = await this.repository.findOne({ where: { id } });
+      const entityToUpdate = await this.repository.findOne({ where: { id, tenantId } });
       if (!entityToUpdate) {
         throw new NotFoundError('Safety incident', id, { tenantId });
       }
@@ -258,8 +252,7 @@ export class SstService {
       // Verify existence first
       await this.findById(tenantId, id);
 
-      // TODO: Verify tenant_id when column exists
-      await this.repository.delete(id);
+      await this.repository.delete({ id, tenantId });
 
       Logger.info('Safety incident deleted', { tenantId, id, context: 'SstService.delete' });
     } catch (error) {

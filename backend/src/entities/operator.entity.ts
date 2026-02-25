@@ -62,6 +62,9 @@ export class Operator {
   @Column({ name: 'unidad_operativa_id', type: 'int', nullable: true })
   operatingUnitId?: number;
 
+  @Column({ name: 'tenant_id', type: 'int', nullable: true })
+  tenantId?: number;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 

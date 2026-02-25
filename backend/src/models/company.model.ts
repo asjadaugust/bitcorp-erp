@@ -26,9 +26,9 @@ export interface Company {
     billingEmail?: string;
     paymentMethod?: string;
   };
-  created_at?: Date;
-  updated_at?: Date;
-  deleted_at?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+  deletedAt?: Date | null;
 }
 
 export interface CreateCompanyDto {

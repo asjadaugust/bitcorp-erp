@@ -301,7 +301,7 @@ export function toEquipmentListDtoArray(entities: any[]): EquipmentListDto[] {
 export function toEquipmentStatsDto(stats: {
   total: number;
   disponible: number;
-  enUso: number;
+  en_uso: number;
   mantenimiento: number;
   retirado: number;
 }): EquipmentStatsDto {

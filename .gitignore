@@ -102,5 +102,5 @@ logs.txt
 backend/swagger-api.json
 
 # Documentation
-!docs/
-!docs/logs/
+docs/
+docs/logs/

@@ -1,6 +1,6 @@
 import { BaseSeeder } from './base-seeder';
-import { Proyecto } from '../../models/project.model';
-import { Provider } from '../../models/provider.model';
+import { Proyecto, EstadoProyecto } from '../../models/project.model';
+import { Provider, TipoProveedor } from '../../models/provider.model';
 import { Equipment } from '../../models/equipment.model';
 import { Trabajador } from '../../models/trabajador.model';
 import { Producto } from '../../models/product.model';
@@ -24,7 +24,7 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         fechaInicio: new Date('2025-01-01'),
         fechaFin: new Date('2025-12-31'),
         presupuesto: 5000000,
-        estado: 'ACTIVO' as any,
+        estado: 'ACTIVO' as EstadoProyecto,
         cliente: 'Ministerio de Transportes',
         isActive: true,
       },
@@ -37,7 +37,7 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         fechaInicio: new Date('2025-02-01'),
         fechaFin: new Date('2025-11-30'),
         presupuesto: 3000000,
-        estado: 'PLANIFICACION' as any,
+        estado: 'PLANIFICACION' as EstadoProyecto,
         cliente: 'Gobierno Regional',
         isActive: true,
       },
@@ -58,7 +58,7 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         ruc: '20123456789',
         razonSocial: 'MAQUINARIAS DEL PERÚ S.A.C.',
         nombreComercial: 'Maquinarias Perú',
-        tipoProveedor: 'EQUIPOS' as any,
+        tipoProveedor: 'EQUIPOS' as TipoProveedor,
         direccion: 'Av. Industrial 123, Lima',
         telefono: '(01) 234-5678',
         email: 'ventas@maquinariasperu.com',
@@ -69,7 +69,7 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         ruc: '20987654321',
         razonSocial: 'EQUIPOS PESADOS SAC',
         nombreComercial: 'Equipos Pesados',
-        tipoProveedor: 'EQUIPOS' as any,
+        tipoProveedor: 'EQUIPOS' as TipoProveedor,
         direccion: 'Jr. Los Pinos 456, Callao',
         telefono: '(01) 876-5432',
         email: 'info@equipospesados.pe',
@@ -97,8 +97,8 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         numeroSerieEquipo: 'CAT320D-2025-001',
         anioFabricacion: 2020,
         potenciaNeta: 121.0,
-        estado: 'DISPONIBLE' as any,
-        medidorUso: 'HOROMETRO' as any,
+        estado: 'DISPONIBLE',
+        medidorUso: 'HOROMETRO',
         isActive: true,
       },
       {
@@ -111,8 +111,8 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         numeroSerieEquipo: 'KOM-D65-2025-001',
         anioFabricacion: 2021,
         potenciaNeta: 175.0,
-        estado: 'DISPONIBLE' as any,
-        medidorUso: 'HOROMETRO' as any,
+        estado: 'DISPONIBLE',
+        medidorUso: 'HOROMETRO',
         isActive: true,
       },
       {
@@ -124,8 +124,8 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         modelo: 'FM500',
         numeroSerieEquipo: 'VOL-FM500-2025-001',
         anioFabricacion: 2022,
-        estado: 'DISPONIBLE' as any,
-        medidorUso: 'ODOMETRO' as any,
+        estado: 'DISPONIBLE',
+        medidorUso: 'ODOMETRO',
         isActive: true,
       },
     ];
@@ -152,7 +152,7 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         cargo: 'Operador de Excavadora',
         especialidad: 'Operación de maquinaria pesada',
         licenciaConducir: 'A-III-c',
-        tipoContrato: 'PLAZO_FIJO' as any,
+        tipoContrato: 'PLAZO_FIJO',
         fechaIngreso: new Date('2024-01-15'),
         isActive: true,
       },
@@ -168,7 +168,7 @@ export class CoreEntitiesSeeder extends BaseSeeder {
         cargo: 'Operador de Tractor',
         especialidad: 'Operación de equipos de movimiento de tierras',
         licenciaConducir: 'A-III-c',
-        tipoContrato: 'INDEFINIDO' as any,
+        tipoContrato: 'INDEFINIDO',
         fechaIngreso: new Date('2023-06-01'),
         isActive: true,
       },

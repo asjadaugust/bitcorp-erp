@@ -145,47 +145,62 @@ export class OperatorController {
     }
   }
 
-  static async searchBySkill(req: Request, res: Response, next: NextFunction) {
+  static async searchBySkill(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // TODO: Implement searchOperatorsBySkill method in OperatorService
-      res.json({
-        success: true,
-        data: [],
-        message: 'Method not yet implemented',
-      });
-    } catch (error) {
-      next(error);
+      const tenantId = req.user!.id_empresa;
+      const { skill } = req.query;
+      
+      if (!skill) {
+        sendError(res, 400, 'SKILL_REQUIRED', 'Se requiere el parámetro skill');
+        return;
+      }
+
+      const operators = await operatorService.searchBySkill(tenantId, skill as string);
+      sendSuccess(res, operators);
+    } catch (error: any) {
+      sendError(res, 500, 'SEARCH_BY_SKILL_FAILED', 'Error al buscar por habilidad', error.message);
     }
   }
 
-  static async getAvailability(req: Request, res: Response, next: NextFunction) {
+  static async getAvailability(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // TODO: Implement getOperatorAvailability method in OperatorService
-      res.json({
-        success: true,
-        data: {},
-        message: 'Method not yet implemented',
-      });
-    } catch (error) {
-      next(error);
+      const tenantId = req.user!.id_empresa;
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
+
+      const availability = await operatorService.getAvailability(tenantId, id);
+      sendSuccess(res, availability);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      sendError(res, 500, 'FETCH_AVAILABILITY_FAILED', 'Error al obtener disponibilidad', error.message);
     }
   }
 
-  static async getPerformance(req: Request, res: Response, next: NextFunction) {
+  static async getPerformance(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // TODO: Implement getOperatorPerformance method in OperatorService
-      res.json({
-        success: true,
-        data: {},
-        message: 'Method not yet implemented',
-      });
+      const tenantId = req.user!.id_empresa;
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
 
-      res.json({
-        success: true,
-        data: performance,
-      });
-    } catch (error) {
-      next(error);
+      const performance = await operatorService.getPerformance(tenantId, id);
+      sendSuccess(res, performance);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      sendError(res, 500, 'FETCH_PERFORMANCE_FAILED', 'Error al obtener rendimiento', error.message);
     }
   }
 

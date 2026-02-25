@@ -8,50 +8,50 @@ import { BaseModel } from './base.model';
  * Kept for backward compatibility with existing code
  */
 export interface Operator extends BaseModel {
-  user_id?: string;
-  first_name: string;
-  last_name: string;
-  full_name?: string;
+  userId?: string;
+  firstName: string;
+  lastName: string;
+  fullName?: string;
   email: string;
   phone: string;
-  license_number?: string;
-  license_expiry?: string;
-  employment_start_date: string;
-  employment_end_date?: string;
-  hourly_rate: number;
+  licenseNumber?: string;
+  licenseExpiry?: string;
+  employmentStartDate: string;
+  employmentEndDate?: string;
+  hourlyRate: number;
   status: 'active' | 'inactive' | 'on_leave';
-  performance_rating?: number;
+  performanceRating?: number;
   notes?: string;
   skills?: OperatorSkill[];
   certifications?: OperatorCertification[];
   address?: string;
   city?: string;
   country?: string;
-  contract_type?: string;
-  emergency_contact_name?: string;
-  emergency_contact_phone?: string;
+  contractType?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
   dni?: string;
-  date_of_birth?: string;
-  hire_date?: string;
+  dateOfBirth?: string;
+  hireDate?: string;
 }
 
 export interface OperatorSkill {
   id: string;
-  operator_id: string;
-  equipment_type: string;
-  skill_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  years_experience: number;
-  last_verified?: string;
+  operatorId: string;
+  equipmentType: string;
+  skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  yearsExperience: number;
+  lastVerified?: string;
 }
 
 export interface OperatorCertification {
   id: string;
-  operator_id: string;
-  certification_name: string;
-  certification_number: string;
-  issue_date: string;
-  expiry_date: string;
-  issuing_authority: string;
+  operatorId: string;
+  certificationName: string;
+  certificationNumber: string;
+  issueDate: string;
+  expiryDate: string;
+  issuingAuthority: string;
   status: 'valid' | 'expired' | 'expiring_soon';
 }
 

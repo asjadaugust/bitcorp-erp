@@ -59,6 +59,7 @@ export class SigService {
       // TODO: Add tenant_id filter when column exists
       // where: { tenant_id: tenantId }
       const [documents, total] = await this.sigRepository.findAndCount({
+        where: { tenantId },
         order: { createdAt: 'DESC' },
         skip: (page - 1) * limit,
         take: limit,
@@ -113,7 +114,7 @@ export class SigService {
 
       // Check if codigo already exists
       const existing = await this.sigRepository.findOne({
-        where: { codigo: data.codigo },
+        where: { codigo: data.codigo, tenantId },
       });
 
       if (existing) {
@@ -129,8 +130,7 @@ export class SigService {
       const document = this.sigRepository.create({
         ...data,
         estado: data.estado || 'VIGENTE', // Default to VIGENTE
-        // TODO: Add tenant_id when column exists
-        // tenant_id: tenantId,
+        tenantId,
       });
 
       const saved = await this.sigRepository.save(document);
@@ -177,7 +177,7 @@ export class SigService {
       // TODO: Add tenant_id filter when column exists
       // where: { id: parseInt(id), tenant_id: tenantId }
       const document = await this.sigRepository.findOne({
-        where: { id: parseInt(id) },
+        where: { id: parseInt(id), tenantId },
       });
 
       if (!document) {

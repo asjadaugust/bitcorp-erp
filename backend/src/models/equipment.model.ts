@@ -125,6 +125,9 @@ export class Equipment {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp',

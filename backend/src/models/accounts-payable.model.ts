@@ -29,29 +29,29 @@ export class AccountsPayable {
   id!: number;
 
   @Column({ name: 'legacy_id', type: 'varchar', length: 50, unique: true, nullable: true })
-  legacy_id?: string;
+  legacyId?: string;
 
   @Column({ type: 'integer', name: 'proveedor_id' })
-  provider_id!: number;
+  providerId!: number;
 
   @ManyToOne(() => Provider, { nullable: false, eager: true })
   @JoinColumn({ name: 'proveedor_id' })
   provider!: Provider;
 
   @Column({ type: 'varchar', length: 50, name: 'numero_factura' })
-  document_number!: string;
+  documentNumber!: string;
 
   @Column({ type: 'date', name: 'fecha_emision' })
-  issue_date!: Date;
+  issueDate!: Date;
 
   @Column({ type: 'date', name: 'fecha_vencimiento' })
-  due_date!: Date;
+  dueDate!: Date;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, name: 'monto_total' })
   amount!: number;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, default: 0, name: 'monto_pagado' })
-  amount_paid!: number;
+  amountPaid!: number;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true, name: 'saldo' })
   balance?: number;
@@ -70,9 +70,12 @@ export class AccountsPayable {
   @Column({ type: 'text', nullable: true, name: 'observaciones' })
   description?: string;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
-  created_at!: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'updated_at' })
-  updated_at!: Date;
+  updatedAt!: Date;
 }

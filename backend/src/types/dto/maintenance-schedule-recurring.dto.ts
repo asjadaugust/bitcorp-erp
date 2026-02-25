@@ -64,13 +64,13 @@ export interface CreateMaintenanceScheduleRecurringDto {
   created_by_id?: number;
 
   // English camelCase (backward compatibility)
-  equipmentId?: number;
-  projectId?: number;
-  maintenanceType?: MaintenanceType;
-  intervalType?: IntervalType;
-  intervalValue?: number;
-  autoGenerateTasks?: boolean;
-  createdById?: number;
+  equipment_id?: number;
+  project_id?: number;
+  maintenance_type?: MaintenanceType;
+  interval_type?: IntervalType;
+  interval_value?: number;
+  auto_generate_tasks?: boolean;
+  created_by_id?: number;
 }
 
 /**
@@ -85,10 +85,10 @@ export interface UpdateMaintenanceScheduleRecurringDto extends Partial<CreateMai
   last_completed_hours?: number;
 
   // English camelCase (backward compatibility)
-  nextDueDate?: string;
-  nextDueHours?: number;
-  lastCompletedDate?: string;
-  lastCompletedHours?: number;
+  next_due_date?: string;
+  next_due_hours?: number;
+  last_completed_date?: string;
+  last_completed_hours?: number;
 }
 
 /**
@@ -106,10 +106,10 @@ export interface MaintenanceScheduleRecurringFilterDto {
   sort_order?: 'ASC' | 'DESC';
 
   // English camelCase (backward compatibility)
-  equipmentId?: number;
-  projectId?: number;
-  maintenanceType?: MaintenanceType;
-  isActive?: boolean;
+  equipment_id?: number;
+  project_id?: number;
+  maintenance_type?: MaintenanceType;
+  is_active?: boolean;
 }
 
 /**

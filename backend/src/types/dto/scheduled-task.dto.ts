@@ -83,22 +83,22 @@ export interface CreateScheduledTaskDto {
   proyecto_id?: number;
 
   // English camelCase (backward compatibility)
-  scheduleId?: number;
-  equipmentId?: number;
-  operatorId?: number;
-  taskType?: string;
-  startDate?: string | Date;
-  endDate?: string | Date;
-  startTime?: string;
-  endTime?: string;
-  allDay?: boolean;
-  durationMinutes?: number;
-  completionDate?: string;
-  completionNotes?: string;
-  maintenanceRecordId?: number;
-  createdBy?: number;
-  assignedBy?: number;
-  projectId?: number;
+  schedule_id?: number;
+  equipment_id?: number;
+  operator_id?: number;
+  task_type?: string;
+  start_date?: string | Date;
+  end_date?: string | Date;
+  start_time?: string;
+  end_time?: string;
+  all_day?: boolean;
+  duration_minutes?: number;
+  completion_date?: string;
+  completion_notes?: string;
+  maintenance_record_id?: number;
+  created_by?: number;
+  assigned_by?: number;
+  project_id?: number;
 }
 
 /**

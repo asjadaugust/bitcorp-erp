@@ -3,7 +3,7 @@ export interface PaginationMeta {
   page: number;
   limit: number;
   total: number;
-  totalPages: number;
+  total_pages: number;
 }
 
 export interface PaginatedResponse<T> {

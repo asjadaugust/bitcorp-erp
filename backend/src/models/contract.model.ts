@@ -179,6 +179,9 @@ export class Contract {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
 }
 
 // Export aliases for backward compatibility

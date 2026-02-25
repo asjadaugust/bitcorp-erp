@@ -58,14 +58,14 @@ export interface CreateFuelRecordDto {
   observaciones?: string;
 
   // English camelCase (backward compatibility)
-  valorizacionId?: number;
+  valorizacion_id?: number;
   date?: string;
   amount?: number;
-  unitPrice?: number;
-  totalAmount?: number;
-  fuelType?: TipoCombustible;
+  unit_price?: number;
+  total_amount?: number;
+  fuel_type?: TipoCombustible;
   provider?: string;
-  documentNumber?: string;
+  document_number?: string;
   notes?: string;
 }
 

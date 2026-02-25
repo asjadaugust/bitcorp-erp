@@ -1,8 +1,40 @@
 import PDFDocument from 'pdfkit';
 import { Response } from 'express';
 
+interface ValuationPdfDailyReport {
+  C08005_Fecha: string;
+  operator_name?: string;
+  hourmeter_end: number;
+  hourmeter_start: number;
+  fuel_consumed?: string;
+  work_description?: string;
+}
+
+interface ValuationPdfData {
+  id?: number | string;
+  period_month?: string | number;
+  period_year?: string | number;
+  contract?: { project_name?: string };
+  equipment?: { code?: string; name?: string; brand?: string; model?: string };
+  contract_details?: { numero_contrato?: string };
+  proveedor_ruc?: string;
+  period_start?: string;
+  period_end?: string;
+  dias_trabajados?: number;
+  horas_trabajadas?: number;
+  combustible_consumido?: number;
+  daily_reports?: ValuationPdfDailyReport[];
+  moneda?: string;
+  costo_base?: number;
+  costo_horas_exceso?: number;
+  costo_combustible?: number;
+  cargos_adicionales?: number;
+  total_valorizado?: number;
+  amount?: number;
+}
+
 export class PdfService {
-  generateValuationPdf(valuation: any, res: Response) {
+  generateValuationPdf(valuation: ValuationPdfData, res: Response) {
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
     // Set response headers
@@ -95,7 +127,7 @@ export class PdfService {
     y += 5;
 
     doc.font('Helvetica');
-    reports.forEach((r: any) => {
+    reports.forEach((r: ValuationPdfDailyReport) => {
       if (y > 750) {
         doc.addPage();
         y = 50;
