@@ -199,7 +199,8 @@ export class OperatorController {
         return;
       }
 
-      const dias = req.query.dias ? parseInt(req.query.dias as string) : 30;
+      const parsedDias = parseInt(req.query.dias as string);
+      const dias = !isNaN(parsedDias) && parsedDias > 0 ? parsedDias : 30;
 
       const performance = await operatorService.getPerformance(tenantId, id, dias);
       sendSuccess(res, performance);

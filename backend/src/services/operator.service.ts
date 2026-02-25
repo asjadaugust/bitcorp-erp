@@ -575,6 +575,7 @@ export class OperatorService {
     operadorId: number,
     data: CertificacionCreateDto
   ): Promise<CertificacionDto> {
+    await this.findById(tenantId, operadorId);
     const entity = this.certRepository.create({
       trabajadorId: operadorId,
       tenantId,
