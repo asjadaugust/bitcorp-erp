@@ -1,9 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateOperadorCertificacionAndHabilidad1771965000000 implements MigrationInterface {
+  name = 'CreateOperadorCertificacionAndHabilidad1771965000000';
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE rrhh.operador_certificacion (
+      CREATE TABLE IF NOT EXISTS rrhh.operador_certificacion (
         id                    SERIAL PRIMARY KEY,
         trabajador_id         INTEGER NOT NULL REFERENCES rrhh.trabajador(id) ON DELETE CASCADE,
         nombre_certificacion  VARCHAR(200) NOT NULL,
@@ -20,17 +22,17 @@ export class CreateOperadorCertificacionAndHabilidad1771965000000 implements Mig
     `);
 
     await queryRunner.query(
-      `CREATE INDEX idx_op_cert_trabajador ON rrhh.operador_certificacion(trabajador_id)`
+      `CREATE INDEX IF NOT EXISTS idx_op_cert_trabajador ON rrhh.operador_certificacion(trabajador_id)`
     );
     await queryRunner.query(
-      `CREATE INDEX idx_op_cert_tenant    ON rrhh.operador_certificacion(tenant_id)`
+      `CREATE INDEX IF NOT EXISTS idx_op_cert_tenant    ON rrhh.operador_certificacion(tenant_id)`
     );
     await queryRunner.query(
-      `CREATE INDEX idx_op_cert_venc      ON rrhh.operador_certificacion(fecha_vencimiento)`
+      `CREATE INDEX IF NOT EXISTS idx_op_cert_venc      ON rrhh.operador_certificacion(fecha_vencimiento)`
     );
 
     await queryRunner.query(`
-      CREATE TABLE rrhh.operador_habilidad (
+      CREATE TABLE IF NOT EXISTS rrhh.operador_habilidad (
         id                   SERIAL PRIMARY KEY,
         trabajador_id        INTEGER NOT NULL REFERENCES rrhh.trabajador(id) ON DELETE CASCADE,
         tipo_equipo          VARCHAR(100) NOT NULL,
@@ -45,17 +47,15 @@ export class CreateOperadorCertificacionAndHabilidad1771965000000 implements Mig
     `);
 
     await queryRunner.query(
-      `CREATE INDEX idx_op_hab_trabajador ON rrhh.operador_habilidad(trabajador_id)`
+      `CREATE INDEX IF NOT EXISTS idx_op_hab_trabajador ON rrhh.operador_habilidad(trabajador_id)`
     );
     await queryRunner.query(
-      `CREATE INDEX idx_op_hab_tenant     ON rrhh.operador_habilidad(tenant_id)`
+      `CREATE INDEX IF NOT EXISTS idx_op_hab_tenant     ON rrhh.operador_habilidad(tenant_id)`
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      DROP TABLE IF EXISTS rrhh.operador_habilidad;
-      DROP TABLE IF EXISTS rrhh.operador_certificacion;
-    `);
+    await queryRunner.query(`DROP TABLE IF EXISTS rrhh.operador_habilidad CASCADE`);
+    await queryRunner.query(`DROP TABLE IF EXISTS rrhh.operador_certificacion CASCADE`);
   }
 }
