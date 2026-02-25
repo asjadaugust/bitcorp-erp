@@ -20,21 +20,47 @@ export class ProjectService {
    */
   private mapApiToProject(apiProject: Record<string, unknown>): Project {
     return {
-      id: apiProject.id,
-      codigo: apiProject.codigo || apiProject.project_code || apiProject.code || '',
-      nombre: apiProject.nombre || apiProject.project_name || apiProject.name || '',
-      descripcion: apiProject.descripcion || apiProject.description || '',
-      ubicacion: apiProject.ubicacion || apiProject.location || '',
-      fechaInicio: apiProject.fecha_inicio || apiProject.start_date || '',
-      fechaFin: apiProject.fecha_fin || apiProject.end_date || apiProject.estimated_end_date || '',
-      estado: apiProject.estado || apiProject.status || 'ACTIVO',
-      presupuesto: apiProject.presupuesto || apiProject.budget || apiProject.total_budget || 0,
-      cliente: apiProject.cliente || apiProject.client || apiProject.client_name || '',
+      id: apiProject['id'] ? String(apiProject['id']) : undefined, // Project model expects string
+      codigo: (apiProject['codigo'] ||
+        apiProject['project_code'] ||
+        apiProject['code'] ||
+        '') as string,
+      nombre: (apiProject['nombre'] ||
+        apiProject['project_name'] ||
+        apiProject['name'] ||
+        '') as string,
+      descripcion: (apiProject['descripcion'] || apiProject['description'] || '') as string,
+      ubicacion: (apiProject['ubicacion'] || apiProject['location'] || '') as string,
+      fechaInicio: (apiProject['fecha_inicio'] || apiProject['start_date'] || '') as string,
+      fechaFin: (apiProject['fecha_fin'] ||
+        apiProject['end_date'] ||
+        apiProject['estimated_end_date'] ||
+        '') as string,
+      estado: (apiProject['estado'] || apiProject['status'] || 'ACTIVO') as
+        | 'ACTIVO'
+        | 'PLANIFICACION'
+        | 'PAUSADO'
+        | 'COMPLETADO'
+        | 'CANCELADO',
+      presupuesto: (apiProject['presupuesto'] ||
+        apiProject['budget'] ||
+        apiProject['total_budget'] ||
+        0) as number,
+      cliente: (apiProject['cliente'] ||
+        apiProject['client'] ||
+        apiProject['client_name'] ||
+        '') as string,
       isActive:
-        apiProject.is_active !== undefined ? apiProject.is_active : apiProject.status === 'ACTIVO',
-      createdAt: apiProject.created_at,
-      updatedAt: apiProject.updated_at,
-    };
+        apiProject['is_active'] !== undefined
+          ? (apiProject['is_active'] as boolean)
+          : apiProject['status'] === 'ACTIVO',
+      createdAt: apiProject['created_at']
+        ? new Date(apiProject['created_at'] as string)
+        : undefined,
+      updatedAt: apiProject['updated_at']
+        ? new Date(apiProject['updated_at'] as string)
+        : undefined,
+    } as unknown as Project;
   }
 
   getAll(filters?: Record<string, string | number | undefined>): Observable<Project[]> {
@@ -51,7 +77,7 @@ export class ProjectService {
     return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
         // Handle paginated response
-        const dataArray = response?.data || response;
+        const dataArray = response?.['data'] || response;
         if (Array.isArray(dataArray)) {
           return dataArray.map((p) => this.mapApiToProject(p));
         }
@@ -82,15 +108,18 @@ export class ProjectService {
   ): Observable<Project> {
     // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
     const apiData = {
-      codigo: (project as Record<string, unknown>).code as string || project.codigo,
-      nombre: (project as Record<string, unknown>).name as string || project.nombre,
-      descripcion: (project as Record<string, unknown>).description as string || project.descripcion,
-      ubicacion: (project as Record<string, unknown>).location as string || project.ubicacion,
-      fecha_inicio: (project as Record<string, unknown>).startDate as string || project.fechaInicio,
-      fecha_fin: (project as Record<string, unknown>).endDate as string || project.fechaFin,
-      estado: (project as Record<string, unknown>).status as string || project.estado,
-      presupuesto: (project as Record<string, unknown>).budget as number || project.presupuesto,
-      cliente: (project as Record<string, unknown>).client as string || project.cliente,
+      codigo: ((project as Record<string, unknown>)['code'] as string) || project.codigo,
+      nombre: ((project as Record<string, unknown>)['name'] as string) || project.nombre,
+      descripcion:
+        ((project as Record<string, unknown>)['description'] as string) || project.descripcion,
+      ubicacion: ((project as Record<string, unknown>)['location'] as string) || project.ubicacion,
+      fecha_inicio:
+        ((project as Record<string, unknown>)['startDate'] as string) || project.fechaInicio,
+      fecha_fin: ((project as Record<string, unknown>)['endDate'] as string) || project.fechaFin,
+      estado: ((project as Record<string, unknown>)['status'] as string) || project.estado,
+      presupuesto:
+        ((project as Record<string, unknown>)['budget'] as number) || project.presupuesto,
+      cliente: ((project as Record<string, unknown>)['client'] as string) || project.cliente,
     };
     return this.http
       .post<Record<string, unknown>>(this.apiUrl, apiData)
@@ -114,26 +143,30 @@ export class ProjectService {
     // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
     const apiData: Record<string, unknown> = {};
 
-    const code = (project as Record<string, unknown>).code as string || project.codigo;
-    const name = (project as Record<string, unknown>).name as string || project.nombre;
-    const description = (project as Record<string, unknown>).description as string || project.descripcion;
-    const location = (project as Record<string, unknown>).location as string || project.ubicacion;
-    const startDate = (project as Record<string, unknown>).startDate as string || project.fechaInicio;
-    const endDate = (project as Record<string, unknown>).endDate as string || project.fechaFin;
-    const status = (project as Record<string, unknown>).status as string || project.estado;
-    const budget = (project as Record<string, unknown>).budget as number || project.presupuesto;
-    const client = (project as Record<string, unknown>).client as string || project.cliente;
+    const code = ((project as Record<string, unknown>)['code'] as string) || project.codigo;
+    const name = ((project as Record<string, unknown>)['name'] as string) || project.nombre;
+    const description =
+      ((project as Record<string, unknown>)['description'] as string) || project.descripcion;
+    const location =
+      ((project as Record<string, unknown>)['location'] as string) || project.ubicacion;
+    const startDate =
+      ((project as Record<string, unknown>)['startDate'] as string) || project.fechaInicio;
+    const endDate = ((project as Record<string, unknown>)['endDate'] as string) || project.fechaFin;
+    const status = ((project as Record<string, unknown>)['status'] as string) || project.estado;
+    const budget =
+      ((project as Record<string, unknown>)['budget'] as number) || project.presupuesto;
+    const client = ((project as Record<string, unknown>)['client'] as string) || project.cliente;
 
     // Use !== undefined so empty strings / 0 can clear fields
-    if (code !== undefined) apiData.codigo = code;
-    if (name !== undefined) apiData.nombre = name;
-    if (description !== undefined) apiData.descripcion = description;
-    if (location !== undefined) apiData.ubicacion = location;
-    if (startDate !== undefined) apiData.fecha_inicio = startDate;
-    if (endDate !== undefined) apiData.fecha_fin = endDate;
-    if (status !== undefined) apiData.estado = status;
-    if (budget !== undefined) apiData.presupuesto = budget;
-    if (client !== undefined) apiData.cliente = client;
+    if (code !== undefined) apiData['codigo'] = code;
+    if (name !== undefined) apiData['nombre'] = name;
+    if (description !== undefined) apiData['descripcion'] = description;
+    if (location !== undefined) apiData['ubicacion'] = location;
+    if (startDate !== undefined) apiData['fecha_inicio'] = startDate;
+    if (endDate !== undefined) apiData['fecha_fin'] = endDate;
+    if (status !== undefined) apiData['estado'] = status;
+    if (budget !== undefined) apiData['presupuesto'] = budget;
+    if (client !== undefined) apiData['cliente'] = client;
 
     return this.http
       .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, apiData)
@@ -151,6 +184,6 @@ export class ProjectService {
 
     return this.http
       .get<Record<string, unknown>>(`${this.apiUrl}/stats`, { params })
-      .pipe(map((response) => response?.data || response));
+      .pipe(map((response) => (response?.['data'] || response) as unknown as StatsSummary));
   }
 }

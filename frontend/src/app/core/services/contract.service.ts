@@ -23,57 +23,57 @@ export class ContractService {
   private mapBackendToFrontend(backendData: Record<string, unknown>): Contract {
     // Compute display fields
     const equipoInfo =
-      backendData.equipo_marca && backendData.equipo_modelo && backendData.equipo_placa
-        ? `${backendData.equipo_marca} ${backendData.equipo_modelo} / ${backendData.equipo_placa}`
-        : backendData.equipo_marca && backendData.equipo_modelo
-          ? `${backendData.equipo_marca} ${backendData.equipo_modelo}`
+      backendData['equipo_marca'] && backendData['equipo_modelo'] && backendData['equipo_placa']
+        ? `${backendData['equipo_marca']} ${backendData['equipo_modelo']} / ${backendData['equipo_placa']}`
+        : backendData['equipo_marca'] && backendData['equipo_modelo']
+          ? `${backendData['equipo_marca']} ${backendData['equipo_modelo']}`
           : '';
 
     return {
       // Core fields from API (Spanish snake_case)
-      id: backendData.id,
-      legacy_id: backendData.legacy_id,
-      numero_contrato: backendData.numero_contrato,
-      equipo_id: backendData.equipo_id,
-      equipo_codigo: backendData.equipo_codigo,
-      equipo_marca: backendData.equipo_marca,
-      equipo_modelo: backendData.equipo_modelo,
-      equipo_placa: backendData.equipo_placa,
-      proveedor_id: backendData.proveedor_id,
-      tipo: backendData.tipo,
-      contrato_padre_id: backendData.contrato_padre_id,
-      fecha_contrato: backendData.fecha_contrato,
-      fecha_inicio: backendData.fecha_inicio,
-      fecha_fin: backendData.fecha_fin,
-      duracion_dias: backendData.duracion_dias,
-      moneda: backendData.moneda,
-      tipo_tarifa: backendData.tipo_tarifa,
-      tarifa: backendData.tarifa,
-      modalidad: backendData.modalidad,
-      minimo_por: backendData.minimo_por,
-      incluye_motor: backendData.incluye_motor,
-      incluye_operador: backendData.incluye_operador,
-      costo_adicional_motor: backendData.costo_adicional_motor,
-      horas_incluidas: backendData.horas_incluidas,
-      penalidad_exceso: backendData.penalidad_exceso,
-      documento_acredita: backendData.documento_acredita,
-      fecha_acreditada: backendData.fecha_acreditada,
-      jurisdiccion: backendData.jurisdiccion,
-      plazo_texto: backendData.plazo_texto,
-      motivo_resolucion: backendData.motivo_resolucion,
-      fecha_resolucion: backendData.fecha_resolucion,
-      monto_liquidacion: backendData.monto_liquidacion,
-      condiciones_especiales: backendData.condiciones_especiales,
-      documento_url: backendData.documento_url,
-      estado: backendData.estado,
-      created_at: backendData.created_at,
-      updated_at: backendData.updated_at,
-      creado_por: backendData.creado_por,
+      id: backendData['id'],
+      legacy_id: backendData['legacy_id'],
+      numero_contrato: backendData['numero_contrato'],
+      equipo_id: backendData['equipo_id'],
+      equipo_codigo: backendData['equipo_codigo'],
+      equipo_marca: backendData['equipo_marca'],
+      equipo_modelo: backendData['equipo_modelo'],
+      equipo_placa: backendData['equipo_placa'],
+      proveedor_id: backendData['proveedor_id'],
+      tipo: backendData['tipo'],
+      contrato_padre_id: backendData['contrato_padre_id'],
+      fecha_contrato: backendData['fecha_contrato'],
+      fecha_inicio: backendData['fecha_inicio'],
+      fecha_fin: backendData['fecha_fin'],
+      duracion_dias: backendData['duracion_dias'],
+      moneda: backendData['moneda'],
+      tipo_tarifa: backendData['tipo_tarifa'],
+      tarifa: backendData['tarifa'],
+      modalidad: backendData['modalidad'],
+      minimo_por: backendData['minimo_por'],
+      incluye_motor: backendData['incluye_motor'],
+      incluye_operador: backendData['incluye_operador'],
+      costo_adicional_motor: backendData['costo_adicional_motor'],
+      horas_incluidas: backendData['horas_incluidas'],
+      penalidad_exceso: backendData['penalidad_exceso'],
+      documento_acredita: backendData['documento_acredita'],
+      fecha_acreditada: backendData['fecha_acreditada'],
+      jurisdiccion: backendData['jurisdiccion'],
+      plazo_texto: backendData['plazo_texto'],
+      motivo_resolucion: backendData['motivo_resolucion'],
+      fecha_resolucion: backendData['fecha_resolucion'],
+      monto_liquidacion: backendData['monto_liquidacion'],
+      condiciones_especiales: backendData['condiciones_especiales'],
+      documento_url: backendData['documento_url'],
+      estado: backendData['estado'],
+      created_at: backendData['created_at'],
+      updated_at: backendData['updated_at'],
+      creado_por: backendData['creado_por'],
 
       // Computed display fields
-      modalidad_display: this.translateModalidad(backendData.modalidad),
-      tipo_tarifa_display: this.translateTipoTarifa(backendData.tipo_tarifa),
-      proveedor_razon_social: backendData.proveedor_razon_social || '',
+      modalidad_display: this.translateModalidad(backendData['modalidad'] as string),
+      tipo_tarifa_display: this.translateTipoTarifa(backendData['tipo_tarifa'] as string),
+      proveedor_razon_social: backendData['proveedor_razon_social'] || '',
       equipo_info: equipoInfo,
     } as unknown as Contract;
   }
@@ -88,22 +88,26 @@ export class ContractService {
     return {
       ...frontendData,
       // Ensure specific fields are mapped correctly
-      equipo_id: frontendData.equipo_id ? Number(frontendData.equipo_id) : null,
-      proveedor_id: frontendData.proveedor_id ? Number(frontendData.proveedor_id) : null,
-      tarifa: frontendData.tarifa ? Number(frontendData.tarifa) : 0,
-      costo_adicional_motor: frontendData.costo_adicional_motor
-        ? Number(frontendData.costo_adicional_motor)
+      equipo_id: frontendData['equipo_id'] ? Number(frontendData['equipo_id']) : null,
+      proveedor_id: frontendData['proveedor_id'] ? Number(frontendData['proveedor_id']) : null,
+      tarifa: frontendData['tarifa'] ? Number(frontendData['tarifa']) : 0,
+      costo_adicional_motor: frontendData['costo_adicional_motor']
+        ? Number(frontendData['costo_adicional_motor'])
         : 0,
-      horas_incluidas: frontendData.horas_incluidas ? Number(frontendData.horas_incluidas) : 0,
-      penalidad_exceso: frontendData.penalidad_exceso ? Number(frontendData.penalidad_exceso) : 0,
+      horas_incluidas: frontendData['horas_incluidas']
+        ? Number(frontendData['horas_incluidas'])
+        : 0,
+      penalidad_exceso: frontendData['penalidad_exceso']
+        ? Number(frontendData['penalidad_exceso'])
+        : 0,
 
       // Default required fields if missing
-      tipo: frontendData.tipo || 'CONTRATO',
-      incluye_motor: !!frontendData.incluye_motor,
-      incluye_operador: !!frontendData.incluye_operador,
+      tipo: frontendData['tipo'] || 'CONTRATO',
+      incluye_motor: !!frontendData['incluye_motor'],
+      incluye_operador: !!frontendData['incluye_operador'],
 
       // Estado already in uppercase from frontend
-      estado: frontendData.estado || 'ACTIVO',
+      estado: frontendData['estado'] || 'ACTIVO',
 
       // Remove computed display fields
       proveedor_razon_social: undefined,
@@ -136,13 +140,13 @@ export class ContractService {
 
   getAll(filters: Record<string, string | number | undefined> = {}): Observable<Contract[]> {
     let params = new HttpParams();
-    if (filters.search) params = params.set('search', filters.search);
-    if (filters.estado) params = params.set('estado', filters.estado);
-    if (filters.equipmentId) params = params.set('equipmentId', filters.equipmentId);
+    if (filters['search']) params = params.set('search', filters['search']);
+    if (filters['estado']) params = params.set('estado', filters['estado']);
+    if (filters['equipmentId']) params = params.set('equipmentId', filters['equipmentId']);
 
     // DEFAULT LIMIT: Backend defaults to limit=10, but for dropdowns/lists we want all
     // Set default limit to 100 to show all contracts unless explicitly filtered
-    if (!filters.limit) {
+    if (!filters['limit']) {
       params = params.set('limit', '100');
     }
 
@@ -150,12 +154,12 @@ export class ContractService {
     // Extract data array if it exists, otherwise return as-is
     return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
-        let data = response;
+        let data: unknown = response;
         if (response && typeof response === 'object' && 'data' in response) {
-          data = response.data;
+          data = response['data'];
         }
         const contracts = Array.isArray(data) ? data : [];
-        return contracts.map((c) => this.mapBackendToFrontend(c));
+        return contracts.map((c) => this.mapBackendToFrontend(c as Record<string, unknown>));
       })
     );
   }
@@ -164,28 +168,28 @@ export class ContractService {
     return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(
       map((response) => {
         // Handle both direct data and wrapped response
-        const data = response?.data || response;
-        return this.mapBackendToFrontend(data);
+        const data = response?.['data'] || response;
+        return this.mapBackendToFrontend(data as Record<string, unknown>);
       })
     );
   }
 
   create(contract: Omit<Contract, 'id'>): Observable<Contract> {
-    const backendData = this.mapFrontendToBackend(contract);
+    const backendData = this.mapFrontendToBackend(contract as unknown as Record<string, unknown>);
     return this.http.post<Record<string, unknown>>(this.apiUrl, backendData).pipe(
       map((response) => {
-        const data = response?.data || response;
-        return this.mapBackendToFrontend(data);
+        const data = response?.['data'] || response;
+        return this.mapBackendToFrontend(data as Record<string, unknown>);
       })
     );
   }
 
   update(id: string, contract: Partial<Contract>): Observable<Contract> {
-    const backendData = this.mapFrontendToBackend(contract);
+    const backendData = this.mapFrontendToBackend(contract as unknown as Record<string, unknown>);
     return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, backendData).pipe(
       map((response) => {
-        const data = response?.data || response;
-        return this.mapBackendToFrontend(data);
+        const data = response?.['data'] || response;
+        return this.mapBackendToFrontend(data as Record<string, unknown>);
       })
     );
   }
@@ -205,7 +209,7 @@ export class ContractService {
   ): Observable<unknown> {
     return this.http
       .post<Record<string, unknown>>(`${this.apiUrl}/${id}/resolver`, data)
-      .pipe(map((res) => res?.data || res));
+      .pipe(map((res) => res?.['data'] || res));
   }
 
   liquidationCheck(id: string): Observable<{
@@ -216,9 +220,19 @@ export class ContractService {
     tiene_acta_devolucion: boolean;
     observaciones: string[];
   }> {
-    return this.http
-      .get<Record<string, unknown>>(`${this.apiUrl}/${id}/liquidation-check`)
-      .pipe(map((res) => res?.data || res));
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/liquidation-check`).pipe(
+      map(
+        (res) =>
+          (res?.['data'] || res) as unknown as {
+            puede_liquidar: boolean;
+            contrato_estado: string;
+            valorizaciones_pendientes: number;
+            total_valorizaciones: number;
+            tiene_acta_devolucion: boolean;
+            observaciones: string[];
+          }
+      )
+    );
   }
 
   liquidar(
@@ -231,27 +245,29 @@ export class ContractService {
   ): Observable<unknown> {
     return this.http
       .post<Record<string, unknown>>(`${this.apiUrl}/${id}/liquidar`, data)
-      .pipe(map((res) => res?.data || res));
+      .pipe(map((res) => res?.['data'] || res));
   }
 
   getAddendums(contractId: string): Observable<Contract[]> {
     return this.http.get<Record<string, unknown>[]>(`${this.apiUrl}/${contractId}/addendums`).pipe(
-      map((response: Record<string, unknown>) => {
-        const data = response?.data || response;
+      map((response: Record<string, unknown> | Record<string, unknown>[]) => {
+        const data = (response as Record<string, unknown>)?.['data'] || response;
         const addendums = Array.isArray(data) ? data : [];
-        return addendums.map((a) => this.mapBackendToFrontend(a));
+        return addendums.map((a) => this.mapBackendToFrontend(a as Record<string, unknown>));
       })
     );
   }
 
   createAddendum(contractId: string, data: Record<string, unknown>): Observable<Contract> {
     const backendData = this.mapFrontendToBackend(data);
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/addendums`, backendData).pipe(
-      map((response) => {
-        const responseData = response?.data || response;
-        return this.mapBackendToFrontend(responseData);
-      })
-    );
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/addendums`, backendData)
+      .pipe(
+        map((response) => {
+          const responseData = response?.['data'] || response;
+          return this.mapBackendToFrontend(responseData as Record<string, unknown>);
+        })
+      );
   }
 
   downloadPdf(contractId: string): Observable<Blob> {
@@ -263,40 +279,52 @@ export class ContractService {
   getAnnexes(contractId: string, tipo?: 'A' | 'B'): Observable<Record<string, unknown>[]> {
     let params = new HttpParams();
     if (tipo) params = params.set('tipo', tipo);
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/annexes`, { params }).pipe(
-      map((response) => {
-        const data = response?.data || response;
-        return Array.isArray(data) ? data : [];
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/annexes`, { params })
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? data : [];
+        })
+      );
   }
 
-  saveAnnexes(contractId: string, tipo: 'A' | 'B', items: Record<string, unknown>[]): Observable<Record<string, unknown>[]> {
-    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${contractId}/annexes/${tipo}`, { items }).pipe(
-      map((response) => {
-        const data = response?.data || response;
-        return Array.isArray(data) ? data : [];
-      })
-    );
+  saveAnnexes(
+    contractId: string,
+    tipo: 'A' | 'B',
+    items: Record<string, unknown>[]
+  ): Observable<Record<string, unknown>[]> {
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/${contractId}/annexes/${tipo}`, { items })
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? data : [];
+        })
+      );
   }
 
   // ─── Required Document methods (WS-4) ───
 
   getRequiredDocuments(contractId: string): Observable<Record<string, unknown>[]> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/required-documents`).pipe(
-      map((response) => {
-        const data = response?.data || response;
-        return Array.isArray(data) ? data : [];
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/required-documents`)
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? data : [];
+        })
+      );
   }
 
   initializeRequiredDocuments(contractId: string): Observable<Record<string, unknown>[]> {
     return this.http
-      .post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/required-documents/initialize`, {})
+      .post<
+        Record<string, unknown>
+      >(`${this.apiUrl}/${contractId}/required-documents/initialize`, {})
       .pipe(
         map((response) => {
-          const data = response?.data || response;
+          const data = response?.['data'] || response;
           return Array.isArray(data) ? data : [];
         })
       );
@@ -305,7 +333,7 @@ export class ContractService {
   updateRequiredDocument(docId: number, data: Record<string, unknown>): Observable<unknown> {
     return this.http
       .put<Record<string, unknown>>(`${this.apiUrl}/required-documents/${docId}`, data)
-      .pipe(map((response) => response?.data || response));
+      .pipe(map((response) => response?.['data'] || response));
   }
 
   // ─── Obligaciones del Arrendador (WS-21) ───
@@ -313,19 +341,21 @@ export class ContractService {
   getObligaciones(contractId: string): Observable<ContractObligacion[]> {
     return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones`).pipe(
       map((response) => {
-        const data = response?.data || response;
-        return Array.isArray(data) ? data : [];
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? (data as unknown as ContractObligacion[]) : [];
       })
     );
   }
 
   initializeObligaciones(contractId: string): Observable<ContractObligacion[]> {
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones/initialize`, {}).pipe(
-      map((response) => {
-        const data = response?.data || response;
-        return Array.isArray(data) ? data : [];
-      })
-    );
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones/initialize`, {})
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? (data as unknown as ContractObligacion[]) : [];
+        })
+      );
   }
 
   updateObligacion(
@@ -334,29 +364,33 @@ export class ContractService {
   ): Observable<ContractObligacion> {
     return this.http
       .put<Record<string, unknown>>(`${this.apiUrl}/obligaciones/${obligacionId}`, data)
-      .pipe(map((response) => response?.data || response));
+      .pipe(map((response) => (response?.['data'] || response) as unknown as ContractObligacion));
   }
 
   // ─── Obligaciones del Arrendatario (WS-22) ───
 
   getObligacionesArrendatario(contractId: string): Observable<ContractObligacionArrendatario[]> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario`).pipe(
-      map((response) => {
-        const data = response?.data || response;
-        return Array.isArray(data) ? data : [];
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario`)
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? (data as unknown as ContractObligacionArrendatario[]) : [];
+        })
+      );
   }
 
   initializeObligacionesArrendatario(
     contractId: string
   ): Observable<ContractObligacionArrendatario[]> {
     return this.http
-      .post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/obligaciones-arrendatario/initialize`, {})
+      .post<
+        Record<string, unknown>
+      >(`${this.apiUrl}/${contractId}/obligaciones-arrendatario/initialize`, {})
       .pipe(
         map((response) => {
-          const data = response?.data || response;
-          return Array.isArray(data) ? data : [];
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? (data as unknown as ContractObligacionArrendatario[]) : [];
         })
       );
   }
@@ -366,7 +400,14 @@ export class ContractService {
     data: { estado?: string; fecha_compromiso?: string | null; observaciones?: string | null }
   ): Observable<ContractObligacionArrendatario> {
     return this.http
-      .put<Record<string, unknown>>(`${this.apiUrl}/obligaciones-arrendatario/${obligacionId}`, data)
-      .pipe(map((response) => response?.data || response));
+      .put<
+        Record<string, unknown>
+      >(`${this.apiUrl}/obligaciones-arrendatario/${obligacionId}`, data)
+      .pipe(
+        map(
+          (response) =>
+            (response?.['data'] || response) as unknown as ContractObligacionArrendatario
+        )
+      );
   }
 }

@@ -57,7 +57,7 @@ export class FormErrorHandlerService {
     }
 
     // Extract details array from backend response
-    const details = error.error.error.details || [];
+    const details = (error as any)['error']?.['error']?.['details'] || [];
     return Array.isArray(details) ? details : [];
   }
 

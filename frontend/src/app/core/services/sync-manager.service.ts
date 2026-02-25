@@ -181,8 +181,10 @@ export class SyncManager {
     if (!this.db) await this.init();
 
     const syncedReports = await this.getSyncedReports();
-    const promises = syncedReports.map((report) => this.deleteSyncedReport(report.id));
-    await Promise.all(promises);
+    const deletePromises = syncedReports.map((report) =>
+      this.deleteSyncedReport((report as any)['id'])
+    );
+    await Promise.all(deletePromises);
   }
 
   /**

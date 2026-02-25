@@ -75,15 +75,21 @@ export class ValeCombustibleService {
   }
 
   obtener(id: number): Observable<ValeCombustible> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as ValeCombustible));
   }
 
   crear(dto: CreateValeDto): Observable<ValeCombustible> {
-    return this.http.post<Record<string, unknown>>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
+    return this.http
+      .post<Record<string, unknown>>(this.apiUrl, dto)
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as ValeCombustible));
   }
 
   actualizar(id: number, dto: Partial<CreateValeDto>): Observable<ValeCombustible> {
-    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, dto)
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as ValeCombustible));
   }
 
   eliminar(id: number): Observable<void> {
@@ -91,10 +97,14 @@ export class ValeCombustibleService {
   }
 
   registrar(id: number): Observable<ValeCombustible> {
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/registrar`, {}).pipe(map((r) => r.data ?? r));
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/registrar`, {})
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as ValeCombustible));
   }
 
   anular(id: number): Observable<ValeCombustible> {
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/anular`, {}).pipe(map((r) => r.data ?? r));
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/anular`, {})
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as ValeCombustible));
   }
 }

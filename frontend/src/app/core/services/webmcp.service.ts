@@ -9,7 +9,7 @@ export interface WebMcpTool {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebMcpService {
   private router = inject(Router);
@@ -35,13 +35,13 @@ export class WebMcpService {
     try {
       // @ts-expect-error - Experimental API
       navigator.modelContext.registerTool({
-        name: tool.name,
-        description: tool.description,
-        inputSchema: tool.inputSchema,
+        name: tool['name'],
+        description: tool['description'],
+        inputSchema: tool['inputSchema'],
         execute: async (args: Record<string, unknown>) => {
-          console.log(`[WebMCP] Executing tool: ${tool.name}`, args);
-          return await tool.execute(args);
-        }
+          console.log(`[WebMCP] Executing tool: ${tool['name']}`, args);
+          return await tool['execute'](args);
+        },
       });
       this.registeredTools.set(tool.name, tool);
       console.log(`[WebMCP] Tool registered: ${tool.name}`);
@@ -56,22 +56,23 @@ export class WebMcpService {
     // Global Navigation Tool
     this.registerTool({
       name: 'navigate_to_module',
-      description: 'Navigates the user to a specific module in the ERP (e.g., equipment, logistics, administration).',
+      description:
+        'Navigates the user to a specific module in the ERP (e.g., equipment, logistics, administration).',
       inputSchema: {
         type: 'object',
         properties: {
           module: {
             type: 'string',
             enum: ['equipment', 'logistics', 'administration', 'sig', 'hr', 'projects'],
-            description: 'The module to navigate to'
-          }
+            description: 'The module to navigate to',
+          },
         },
-        required: ['module']
+        required: ['module'],
       },
-      execute: async (args: { module: string }) => {
+      execute: async (args: any) => {
         await this.router.navigate([`/${args.module}`]);
         return { success: true, message: `Navigated to ${args.module}` };
-      }
+      },
     });
 
     // Logout Tool
@@ -80,11 +81,11 @@ export class WebMcpService {
       description: 'Logs the current user out of the application.',
       inputSchema: { type: 'object', properties: {} },
       execute: async () => {
-        // Find AuthService dynamically to avoid circular dependency if possible, 
+        // Find AuthService dynamically to avoid circular dependency if possible,
         // or just use router for now.
         await this.router.navigate(['/login']);
         return { success: true };
-      }
+      },
     });
 
     // UI Metadata Tool
@@ -93,7 +94,8 @@ export class WebMcpService {
       description: 'Returns the position and size of the current secondary navigation bar.',
       inputSchema: { type: 'object', properties: {} },
       execute: async () => {
-        const nav = document.querySelector('.nav-container') || document.querySelector('.tab-navigation');
+        const nav =
+          document.querySelector('.nav-container') || document.querySelector('.tab-navigation');
         if (nav) {
           const rect = nav.getBoundingClientRect();
           return {
@@ -105,12 +107,12 @@ export class WebMcpService {
               width: rect.width,
               height: rect.height,
               bottom: rect.bottom,
-              right: rect.right
-            }
+              right: rect.right,
+            },
           };
         }
         return { success: false, message: 'Navigation bar not found on this page' };
-      }
+      },
     });
   }
 }

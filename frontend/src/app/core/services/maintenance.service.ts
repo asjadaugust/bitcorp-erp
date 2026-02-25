@@ -15,9 +15,9 @@ export class MaintenanceService {
 
   getAll(filters: Record<string, string | undefined> = {}): Observable<MaintenanceRecord[]> {
     let params = new HttpParams();
-    if (filters.search) params = params.set('search', filters.search);
-    if (filters.status) params = params.set('status', filters.status);
-    if (filters.type) params = params.set('type', filters.type);
+    if (filters['search']) params = params.set('search', filters['search']);
+    if (filters['status']) params = params.set('status', filters['status']);
+    if (filters['type']) params = params.set('type', filters['type']);
 
     return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response: Record<string, unknown>) => {
@@ -35,21 +35,33 @@ export class MaintenanceService {
   getById(id: number): Observable<MaintenanceRecord> {
     return this.http
       .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
-      .pipe(map((response: Record<string, unknown>) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
+      .pipe(
+        map((response: Record<string, unknown>) =>
+          this.toCamelCase((response['data'] as Record<string, unknown>) || response)
+        )
+      );
   }
 
   create(record: Omit<MaintenanceRecord, 'id'>): Observable<MaintenanceRecord> {
     const payload = this.toSnakeCase(record);
     return this.http
       .post<Record<string, unknown>>(this.apiUrl, payload)
-      .pipe(map((response: Record<string, unknown>) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
+      .pipe(
+        map((response: Record<string, unknown>) =>
+          this.toCamelCase((response['data'] as Record<string, unknown>) || response)
+        )
+      );
   }
 
   update(id: number, record: Partial<MaintenanceRecord>): Observable<MaintenanceRecord> {
     const payload = this.toSnakeCase(record);
     return this.http
       .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, payload)
-      .pipe(map((response: Record<string, unknown>) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
+      .pipe(
+        map((response: Record<string, unknown>) =>
+          this.toCamelCase((response['data'] as Record<string, unknown>) || response)
+        )
+      );
   }
 
   delete(id: number): Observable<void> {
@@ -63,7 +75,7 @@ export class MaintenanceService {
 
     return this.http
       .get<Record<string, unknown>>(`${this.apiUrl}/stats`, { params })
-      .pipe(map((response) => response?.data || response));
+      .pipe(map((response) => (response?.['data'] || response) as unknown as StatsSummary));
   }
 
   private toSnakeCase(data: Partial<MaintenanceRecord>): Record<string, unknown> {
@@ -86,14 +98,14 @@ export class MaintenanceService {
     const record: MaintenanceRecord = {
       id: data['id'] as number,
       equipoId: data['equipo_id'] as number,
-      tipoMantenimiento: data['tipo_mantenimiento'] as string,
+      tipoMantenimiento: data['tipo_mantenimiento'] as any,
       descripcion: data['descripcion'] as string,
       fechaProgramada: data['fecha_programada'] as string,
       fechaRealizada: data['fecha_realizada'] as string,
       costoEstimado: data['costo_estimado'] as number,
       costoReal: data['costo_real'] as number,
       tecnicoResponsable: data['tecnico_responsable'] as string,
-      estado: data['estado'] as string,
+      estado: data['estado'] as any,
       observaciones: data['observaciones'] as string,
       createdAt: data['created_at'] as string,
       updatedAt: data['updated_at'] as string,
@@ -104,7 +116,7 @@ export class MaintenanceService {
       record.equipo = {
         ...equipo,
         codigo_equipo: (equipo['codigo_equipo'] as string) || (equipo['code'] as string),
-      } as Record<string, unknown>;
+      } as any;
     }
     return record;
   }

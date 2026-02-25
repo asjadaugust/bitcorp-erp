@@ -23,16 +23,16 @@ export class TimesheetService {
   }): Observable<Timesheet[]> {
     const params: Record<string, string> = {};
     if (filters) {
-      if (filters.trabajador_id) params.trabajador_id = filters.trabajador_id.toString();
-      if (filters.proyecto_id) params.proyecto_id = filters.proyecto_id;
-      if (filters.estado) params.estado = filters.estado;
-      if (filters.periodo) params.periodo = filters.periodo;
+      if (filters.trabajador_id) params['trabajador_id'] = filters.trabajador_id.toString();
+      if (filters.proyecto_id) params['proyecto_id'] = filters.proyecto_id;
+      if (filters.estado) params['estado'] = filters.estado;
+      if (filters.periodo) params['periodo'] = filters.periodo;
     }
 
     return this.http.get<Record<string, unknown>>(this.apiUrl, { params }).pipe(
       map((response) => {
-        const dataArray = response?.data || response;
-        return Array.isArray(dataArray) ? dataArray : [];
+        const dataArray = response?.['data'] || response;
+        return Array.isArray(dataArray) ? (dataArray as Timesheet[]) : [];
       })
     );
   }
@@ -41,9 +41,9 @@ export class TimesheetService {
    * Get timesheet by ID
    */
   getById(id: string | number): Observable<Timesheet> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(
-      map((response) => response?.data || response)
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
+      .pipe(map((response) => (response?.['data'] || response) as Timesheet));
   }
 
   // Alias for backward compatibility
@@ -55,18 +55,18 @@ export class TimesheetService {
    * Create manual timesheet
    */
   create(data: Partial<Timesheet>): Observable<Timesheet> {
-    return this.http.post<Record<string, unknown>>(this.apiUrl, data).pipe(
-      map((response) => response?.data || response)
-    );
+    return this.http
+      .post<Record<string, unknown>>(this.apiUrl, data)
+      .pipe(map((response) => (response?.['data'] || response) as Timesheet));
   }
 
   /**
    * Update timesheet (draft only)
    */
   update(id: string | number, data: Partial<Timesheet>): Observable<Timesheet> {
-    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, data).pipe(
-      map((response) => response?.data || response)
-    );
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, data)
+      .pipe(map((response) => (response?.['data'] || response) as Timesheet));
   }
 
   // Alias for backward compatibility
@@ -78,36 +78,36 @@ export class TimesheetService {
    * Generate timesheet from daily reports
    */
   generateTimesheet(dto: GenerateTimesheetDto): Observable<Timesheet> {
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/generate`, dto).pipe(
-      map((response) => response?.data || response)
-    );
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/generate`, dto)
+      .pipe(map((response) => (response?.['data'] || response) as Timesheet));
   }
 
   /**
    * Submit timesheet for approval (BORRADOR → ENVIADO)
    */
   submitTimesheet(id: number): Observable<Timesheet> {
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/submit`, {}).pipe(
-      map((response) => response?.data || response)
-    );
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/submit`, {})
+      .pipe(map((response) => (response?.['data'] || response) as Timesheet));
   }
 
   /**
    * Approve timesheet (ENVIADO → APROBADO)
    */
   approveTimesheet(id: number): Observable<Timesheet> {
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/approve`, {}).pipe(
-      map((response) => response?.data || response)
-    );
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/approve`, {})
+      .pipe(map((response) => (response?.['data'] || response) as Timesheet));
   }
 
   /**
    * Reject timesheet (ENVIADO → RECHAZADO)
    */
   rejectTimesheet(id: number, reason: string): Observable<Timesheet> {
-    return this.http.post<Record<string, unknown>>(`${this.apiUrl}/${id}/reject`, { reason }).pipe(
-      map((response) => response?.data || response)
-    );
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/reject`, { reason })
+      .pipe(map((response) => (response?.['data'] || response) as Timesheet));
   }
 
   /**

@@ -65,33 +65,43 @@ export class OrdenAlquilerService {
   }
 
   obtener(id: number): Observable<OrdenAlquiler> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => r.data ?? r));
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as OrdenAlquiler));
   }
 
   crear(dto: Partial<OrdenAlquiler>): Observable<OrdenAlquiler> {
-    return this.http.post<Record<string, unknown>>(this.apiUrl, dto).pipe(map((r) => r.data ?? r));
+    return this.http
+      .post<Record<string, unknown>>(this.apiUrl, dto)
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as OrdenAlquiler));
   }
 
   actualizar(id: number, dto: Partial<OrdenAlquiler>): Observable<OrdenAlquiler> {
-    return this.http.put<Record<string, unknown>>(`${this.apiUrl}/${id}`, dto).pipe(map((r) => r.data ?? r));
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, dto)
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as OrdenAlquiler));
   }
 
   enviar(id: number, enviadoA?: string): Observable<OrdenAlquiler> {
     return this.http
       .post<Record<string, unknown>>(`${this.apiUrl}/${id}/enviar`, { enviado_a: enviadoA })
-      .pipe(map((r) => r.data ?? r));
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as OrdenAlquiler));
   }
 
   confirmar(id: number, confirmadoPor?: string): Observable<OrdenAlquiler> {
     return this.http
-      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/confirmar`, { confirmado_por: confirmadoPor })
-      .pipe(map((r) => r.data ?? r));
+      .post<
+        Record<string, unknown>
+      >(`${this.apiUrl}/${id}/confirmar`, { confirmado_por: confirmadoPor })
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as OrdenAlquiler));
   }
 
   cancelar(id: number, motivoCancelacion?: string): Observable<OrdenAlquiler> {
     return this.http
-      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/cancelar`, { motivo_cancelacion: motivoCancelacion })
-      .pipe(map((r) => r.data ?? r));
+      .post<
+        Record<string, unknown>
+      >(`${this.apiUrl}/${id}/cancelar`, { motivo_cancelacion: motivoCancelacion })
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as OrdenAlquiler));
   }
 
   eliminar(id: number): Observable<void> {

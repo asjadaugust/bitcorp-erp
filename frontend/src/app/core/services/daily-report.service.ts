@@ -58,7 +58,7 @@ export class DailyReportService {
       });
     }
     // Default limit to 100 to avoid pagination issues
-    if (!filters?.limit) {
+    if (!filters?.['limit']) {
       params = params.set('limit', '100');
     }
 
@@ -66,9 +66,11 @@ export class DailyReportService {
       map((response) => {
         let data = response;
         if (response && typeof response === 'object' && 'data' in response) {
-          data = response.data;
+          data = response['data'] as Record<string, unknown>;
         }
-        return Array.isArray(data) ? data.map((item) => this.mapToFrontend(item)) : [];
+        return Array.isArray(data)
+          ? data.map((item) => this.mapToFrontend(item as Record<string, unknown>))
+          : [];
       })
     );
   }
@@ -77,7 +79,9 @@ export class DailyReportService {
    * Get daily report by ID
    */
   getById(id: string | number): Observable<DailyReport> {
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}`).pipe(map((r) => this.mapToFrontend(r)));
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
+      .pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
@@ -92,7 +96,9 @@ export class DailyReportService {
       delete backendData['fecha_parte'];
     }
 
-    return this.http.post<Record<string, unknown>>(this.apiUrl, backendData).pipe(map((r) => this.mapToFrontend(r)));
+    return this.http
+      .post<Record<string, unknown>>(this.apiUrl, backendData)
+      .pipe(map((r) => this.mapToFrontend(r)));
   }
 
   /**
@@ -152,19 +158,19 @@ export class DailyReportService {
   firmarResidente(id: string | number, firma_residente: string): Observable<DailyReport> {
     return this.http
       .post<Record<string, unknown>>(`${this.apiUrl}/${id}/firmar-residente`, { firma_residente })
-      .pipe(map((r) => this.mapToFrontend(r?.data || r)));
+      .pipe(map((r) => this.mapToFrontend((r?.['data'] || r) as Record<string, unknown>)));
   }
 
   downloadPdf(id: string | number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }
 
-  uploadPhotos(id: string | number, formData: FormData): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/${id}/photos`, formData);
+  uploadPhotos(id: string | number, formData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/photos`, formData);
   }
 
-  deletePhoto(id: string | number, photoIndex: number): Observable<unknown> {
-    return this.http.delete(`${this.apiUrl}/${id}/photos/${photoIndex}`);
+  deletePhoto(id: string | number, photoIndex: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}/photos/${photoIndex}`);
   }
 
   /**
@@ -179,14 +185,16 @@ export class DailyReportService {
     if (proyectoId) {
       params = params.set('proyecto_id', proyectoId.toString());
     }
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/reception-status`, { params }).pipe(
-      map((response) => {
-        if (response && typeof response === 'object' && 'data' in response) {
-          return response.data;
-        }
-        return response;
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/reception-status`, { params })
+      .pipe(
+        map((response) => {
+          if (response && typeof response === 'object' && 'data' in response) {
+            return response['data'] as EquipmentReceptionStatus[];
+          }
+          return response as unknown as EquipmentReceptionStatus[];
+        })
+      );
   }
 
   /**
@@ -228,7 +236,7 @@ export class DailyReportService {
     if (soloAbiertas) params = params.set('solo_abiertas', 'true');
     return this.http
       .get<Record<string, unknown>>(`${this.apiUrl}/inspection-tracking`, { params })
-      .pipe(map((r) => r?.data ?? r));
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown as EquipmentInspectionTracking[]));
   }
 
   /**
@@ -239,7 +247,7 @@ export class DailyReportService {
       .patch<Record<string, unknown>>(`${this.apiUrl}/observaciones/${id}/resolver`, {
         observacion_resolucion,
       })
-      .pipe(map((r) => r?.data ?? r));
+      .pipe(map((r) => (r?.['data'] ?? r) as unknown));
   }
 
   /**
@@ -247,15 +255,15 @@ export class DailyReportService {
    */
   private mapToFrontend(data: Record<string, unknown>): DailyReport {
     return {
-      ...data,
-      fecha_parte: data.fecha || data.fecha_parte,
-      horas_trabajadas: data.horas_trabajadas ?? 0,
+      ...(data as any),
+      fecha_parte: (data['fecha'] || data['fecha_parte']) as string,
+      horas_trabajadas: (data['horas_trabajadas'] ?? 0) as number,
 
       // Ensure relations are populated
-      codigo_equipo: data.equipo_codigo || data.codigo_equipo,
-      equipo_nombre: data.equipo_nombre,
-      trabajador_nombre: data.trabajador_nombre,
-      proyecto_nombre: data.proyecto_nombre,
-    };
+      codigo_equipo: (data['equipo_codigo'] || data['codigo_equipo']) as string,
+      equipo_nombre: data['equipo_nombre'] as string | undefined,
+      trabajador_nombre: data['trabajador_nombre'] as string | undefined,
+      proyecto_nombre: data['proyecto_nombre'] as string | undefined,
+    } as DailyReport;
   }
 }

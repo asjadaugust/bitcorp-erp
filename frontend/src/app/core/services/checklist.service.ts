@@ -72,17 +72,17 @@ export class ChecklistService {
    */
   private mapApiToChecklistTemplate(apiData: Record<string, unknown>): ChecklistTemplate {
     return {
-      id: apiData.id,
-      codigo: apiData.codigo,
-      nombre: apiData.nombre,
-      tipoEquipo: apiData.tipo_equipo || apiData.tipoEquipo,
-      descripcion: apiData.descripcion,
-      frecuencia: apiData.frecuencia,
-      activo: apiData.activo,
-      createdBy: apiData.created_by || apiData.createdBy,
-      createdAt: apiData.created_at || apiData.createdAt,
-      updatedAt: apiData.updated_at || apiData.updatedAt,
-      items: apiData.items || [],
+      id: apiData['id'] as number,
+      codigo: apiData['codigo'] as string,
+      nombre: apiData['nombre'] as string,
+      tipoEquipo: (apiData['tipo_equipo'] || apiData['tipoEquipo']) as string,
+      descripcion: apiData['descripcion'] as string | undefined,
+      frecuencia: apiData['frecuencia'] as any,
+      activo: apiData['activo'] !== undefined ? (apiData['activo'] as boolean) : true,
+      createdBy: (apiData['created_by'] || apiData['createdBy']) as number,
+      createdAt: (apiData['created_at'] || apiData['createdAt']) as string,
+      updatedAt: (apiData['updated_at'] || apiData['updatedAt']) as string,
+      items: (apiData['items'] as ChecklistItem[]) || [],
     };
   }
 
@@ -105,9 +105,11 @@ export class ChecklistService {
     // Handle paginated response {success, data, pagination}
     return this.http.get<Record<string, unknown>>(`${this.apiUrl}/templates`, { params }).pipe(
       map((response) => {
-        const dataArray = response?.data || response;
+        const dataArray = response?.['data'] || response;
         if (Array.isArray(dataArray)) {
-          return dataArray.map((item) => this.mapApiToChecklistTemplate(item));
+          return dataArray.map((item) =>
+            this.mapApiToChecklistTemplate(item as Record<string, unknown>)
+          );
         }
         return [];
       })
@@ -117,18 +119,30 @@ export class ChecklistService {
   getTemplateById(id: number): Observable<ChecklistTemplate> {
     return this.http.get<Record<string, unknown>>(`${this.apiUrl}/templates/${id}`).pipe(
       map((response) => {
-        const data = response?.data || response;
-        return this.mapApiToChecklistTemplate(data);
+        const data = response?.['data'] || response;
+        return this.mapApiToChecklistTemplate(data as Record<string, unknown>);
       })
     );
   }
 
   createTemplate(data: Partial<ChecklistTemplate>): Observable<ChecklistTemplate> {
-    return this.http.post<ChecklistTemplate>(`${this.apiUrl}/templates`, data);
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/templates`, data)
+      .pipe(
+        map((res) =>
+          this.mapApiToChecklistTemplate((res?.['data'] || res) as Record<string, unknown>)
+        )
+      );
   }
 
   updateTemplate(id: number, data: Partial<ChecklistTemplate>): Observable<ChecklistTemplate> {
-    return this.http.put<ChecklistTemplate>(`${this.apiUrl}/templates/${id}`, data);
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/templates/${id}`, data)
+      .pipe(
+        map((res) =>
+          this.mapApiToChecklistTemplate((res?.['data'] || res) as Record<string, unknown>)
+        )
+      );
   }
 
   deleteTemplate(id: number): Observable<void> {
@@ -140,11 +154,15 @@ export class ChecklistService {
   // ============================================
 
   createItem(data: Partial<ChecklistItem>): Observable<ChecklistItem> {
-    return this.http.post<ChecklistItem>(`${this.apiUrl}/items`, data);
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/items`, data)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistItem));
   }
 
   updateItem(id: number, data: Partial<ChecklistItem>): Observable<ChecklistItem> {
-    return this.http.put<ChecklistItem>(`${this.apiUrl}/items/${id}`, data);
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/items/${id}`, data)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistItem));
   }
 
   deleteItem(id: number): Observable<void> {
@@ -185,36 +203,52 @@ export class ChecklistService {
       params = params.set('fechaHasta', filters.fechaHasta);
     }
 
-    return this.http.get<PaginatedResponse<ChecklistInspection>>(`${this.apiUrl}/inspections`, {
-      params,
-    });
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/inspections`, {
+        params,
+      })
+      .pipe(
+        map((res) => (res?.['data'] || res) as unknown as PaginatedResponse<ChecklistInspection>)
+      );
   }
 
   getInspectionById(id: number): Observable<ChecklistInspection> {
-    return this.http.get<ChecklistInspection>(`${this.apiUrl}/inspections/${id}`);
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/inspections/${id}`)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistInspection));
   }
 
   getInspectionWithResults(id: number): Observable<InspectionWithResults> {
-    return this.http.get<InspectionWithResults>(`${this.apiUrl}/inspections/${id}/with-results`);
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/inspections/${id}/with-results`)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as InspectionWithResults));
   }
 
   createInspection(data: Partial<ChecklistInspection>): Observable<ChecklistInspection> {
-    return this.http.post<ChecklistInspection>(`${this.apiUrl}/inspections`, data);
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/inspections`, data)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistInspection));
   }
 
   updateInspection(
     id: number,
     data: Partial<ChecklistInspection>
   ): Observable<ChecklistInspection> {
-    return this.http.put<ChecklistInspection>(`${this.apiUrl}/inspections/${id}`, data);
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/inspections/${id}`, data)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistInspection));
   }
 
   completeInspection(id: number): Observable<ChecklistInspection> {
-    return this.http.post<ChecklistInspection>(`${this.apiUrl}/inspections/${id}/complete`, {});
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/inspections/${id}/complete`, {})
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistInspection));
   }
 
   cancelInspection(id: number): Observable<ChecklistInspection> {
-    return this.http.post<ChecklistInspection>(`${this.apiUrl}/inspections/${id}/cancel`, {});
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/inspections/${id}/cancel`, {})
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistInspection));
   }
 
   // ============================================
@@ -222,11 +256,15 @@ export class ChecklistService {
   // ============================================
 
   getResultsByInspection(inspectionId: number): Observable<ChecklistResult[]> {
-    return this.http.get<ChecklistResult[]>(`${this.apiUrl}/inspections/${inspectionId}/results`);
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/inspections/${inspectionId}/results`)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistResult[]));
   }
 
   saveResult(data: Partial<ChecklistResult>): Observable<ChecklistResult> {
-    return this.http.post<ChecklistResult>(`${this.apiUrl}/results`, data);
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/results`, data)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistResult));
   }
 
   // ============================================
@@ -249,6 +287,8 @@ export class ChecklistService {
       params = params.set('fechaHasta', filters.fechaHasta);
     }
 
-    return this.http.get<ChecklistStats>(`${this.apiUrl}/inspections/stats`, { params });
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/inspections/stats`, { params })
+      .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistStats));
   }
 }

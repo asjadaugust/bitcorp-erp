@@ -105,7 +105,7 @@ export class PhotoUploadService {
           } else if (event.type === HttpEventType.Response) {
             const responseData = event.body;
             return {
-              url: responseData.photos?.[0] || '',
+              url: (responseData as any)['photos']?.[0] || '',
               size: photoFile.size,
               originalSize: photoFile.size,
               compressionRatio: 1,

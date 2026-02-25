@@ -44,13 +44,13 @@ export const apiResponseInterceptor: HttpInterceptorFn = (req, next) => {
         if (
           body &&
           typeof body === 'object' &&
-          body.success === true &&
+          body['success'] === true &&
           'data' in body &&
           !('pagination' in body) &&
           !('meta' in body) // Also preserve responses with 'meta' (backend uses this for pagination)
         ) {
           // Return a new response with just the data
-          return event.clone({ body: body.data });
+          return event.clone({ body: body['data'] });
         }
       }
       // Return event unchanged for all other cases (paginated responses, direct arrays, objects, etc.)

@@ -80,9 +80,9 @@ export class ServiceWorkerService {
   private async handleServiceWorkerMessage(data: Record<string, unknown>): Promise<void> {
     console.log('[PWA] Message from service worker:', data);
 
-    switch (data.type) {
+    switch (data['type']) {
       case 'STORE_OFFLINE_REQUEST':
-        await this.storeOfflineRequest(data.data as Record<string, unknown>);
+        await this.storeOfflineRequest(data['data'] as Record<string, unknown>);
         break;
 
       case 'SYNC_PENDING_REPORTS':
@@ -120,11 +120,11 @@ export class ServiceWorkerService {
       for (const report of pendingReports) {
         try {
           await this.syncReport(report);
-          await this.syncManager.markAsSynced(report.id);
-          console.log(`[PWA] Report ${report.id} synced successfully`);
+          await this.syncManager.markAsSynced(report['id'] as number);
+          console.log(`[PWA] Report ${report['id']} synced successfully`);
         } catch (error) {
-          console.error(`[PWA] Failed to sync report ${report.id}:`, error);
-          await this.syncManager.incrementSyncAttempts(report.id);
+          console.error(`[PWA] Failed to sync report ${report['id']}:`, error);
+          await this.syncManager.incrementSyncAttempts(report['id'] as number);
         }
       }
 
