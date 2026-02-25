@@ -114,8 +114,8 @@ describe('PaymentScheduleService', () => {
       await service.addDetail(1, { amount_to_pay: 1000 });
 
       expect(mockDetailRepo.create).toHaveBeenCalledWith({
-        payment_schedule_id: 1,
-        amount_to_pay: 1000,
+        paymentScheduleId: 1,
+        amountToPay: 1000,
       });
       expect(mockDetailRepo.save).toHaveBeenCalled();
       expect(mockScheduleRepo.save).toHaveBeenCalled();

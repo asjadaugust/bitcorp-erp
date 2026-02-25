@@ -84,27 +84,27 @@ export class DailyReportModel {
       queryBuilder.andWhere('dr.fecha = :fecha', { fecha: filters.fecha });
     }
 
-    if (filters?.fecha_inicio) {
-      queryBuilder.andWhere('dr.fecha >= :fechaInicio', { fechaInicio: filters.fecha_inicio });
+    if (filters?.fechaInicio) {
+      queryBuilder.andWhere('dr.fecha >= :fechaInicio', { fechaInicio: filters.fechaInicio });
     }
 
-    if (filters?.fecha_fin) {
-      queryBuilder.andWhere('dr.fecha <= :fechaFin', { fechaFin: filters.fecha_fin });
+    if (filters?.fechaFin) {
+      queryBuilder.andWhere('dr.fecha <= :fechaFin', { fechaFin: filters.fechaFin });
     }
 
-    if (filters?.trabajador_id) {
+    if (filters?.trabajadorId) {
       queryBuilder.andWhere('dr.trabajadorId = :trabajadorId', {
-        trabajadorId: parseInt(filters.trabajador_id),
+        trabajadorId: parseInt(filters.trabajadorId),
       });
     }
 
-    if (filters?.equipo_id) {
-      queryBuilder.andWhere('dr.equipoId = :equipoId', { equipoId: parseInt(filters.equipo_id) });
+    if (filters?.equipoId) {
+      queryBuilder.andWhere('dr.equipoId = :equipoId', { equipoId: parseInt(filters.equipoId) });
     }
 
-    if (filters?.proyecto_id) {
+    if (filters?.proyectoId) {
       queryBuilder.andWhere('dr.proyectoId = :proyectoId', {
-        proyectoId: parseInt(filters.proyecto_id),
+        proyectoId: parseInt(filters.proyectoId),
       });
     }
 

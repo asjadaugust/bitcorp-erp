@@ -143,15 +143,15 @@ export const createSchedule = async (req: Request, res: Response) => {
     const createdBy = (req as any).user?.id;
 
     const schedule = await service.create({
-      equipmentId: equipment_id,
-      projectId: project_id,
-      maintenanceType: maintenance_type,
-      intervalType: interval_type,
-      intervalValue: interval_value,
+      equipment_id,
+      project_id,
+      maintenance_type,
+      interval_type,
+      interval_value,
       description,
       notes,
-      autoGenerateTasks: auto_generate_tasks,
-      createdById: createdBy,
+      auto_generate_tasks,
+      created_by_id: createdBy,
     });
 
     return sendCreated(res, schedule.id, 'Programa de mantenimiento creado exitosamente');

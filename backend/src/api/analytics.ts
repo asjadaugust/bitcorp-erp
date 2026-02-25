@@ -31,7 +31,7 @@ router.get('/equipment/:id/utilization', authenticate, async (req: Request, res:
       startDate,
       endDate
     );
-    sendSuccess(res, toUtilizacionDto(metrics));
+    sendSuccess(res, toUtilizacionDto(metrics as any));
   } catch (error: any) {
     Logger.error('Error fetching equipment utilization', {
       error: error instanceof Error ? error.message : String(error),
@@ -67,7 +67,7 @@ router.get(
         startDate,
         endDate
       );
-      sendSuccess(res, trend.map(toTendenciaUtilizacionDto));
+      sendSuccess(res, (trend as any[]).map(toTendenciaUtilizacionDto));
     } catch (error: any) {
       Logger.error('Error fetching utilization trend', {
         error: error instanceof Error ? error.message : String(error),
@@ -101,7 +101,7 @@ router.get('/fleet/utilization', authenticate, async (req: Request, res: Respons
       endDate,
       projectId
     );
-    sendSuccess(res, toFlotaUtilizacionDto(metrics));
+    sendSuccess(res, toFlotaUtilizacionDto(metrics as any));
   } catch (error: any) {
     Logger.error('Error fetching fleet utilization', {
       error: error instanceof Error ? error.message : String(error),
@@ -129,7 +129,7 @@ router.get('/equipment/:id/fuel', authenticate, async (req: Request, res: Respon
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
     const metrics = await equipmentAnalyticsService.getFuelMetrics(equipmentId, startDate, endDate);
-    sendSuccess(res, toCombustibleDto(metrics));
+    sendSuccess(res, toCombustibleDto(metrics as any));
   } catch (error: any) {
     Logger.error('Error fetching fuel metrics', {
       error: error instanceof Error ? error.message : String(error),
@@ -158,7 +158,7 @@ router.get('/equipment/:id/fuel-trend', authenticate, async (req: Request, res: 
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
     const trend = await equipmentAnalyticsService.getFuelTrend(equipmentId, startDate, endDate);
-    sendSuccess(res, trend.map(toTendenciaCombustibleDto));
+    sendSuccess(res, (trend as any[]).map(toTendenciaCombustibleDto));
   } catch (error: any) {
     Logger.error('Error fetching fuel trend', {
       error: error instanceof Error ? error.message : String(error),

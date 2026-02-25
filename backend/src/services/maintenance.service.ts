@@ -5,7 +5,7 @@ import {
   TipoMantenimiento,
   EstadoMantenimiento,
 } from '../models/maintenance-schedule.model';
-import { Repository, ILike } from 'typeorm';
+import { Repository } from 'typeorm';
 import {
   MaintenanceDto,
   CreateMaintenanceDto,
@@ -178,7 +178,10 @@ export class MaintenanceService {
    * });
    * ```
    */
-  async getAllMaintenance(tenantId: number, filters?: MaintenanceFilters): Promise<{
+  async getAllMaintenance(
+    tenantId: number,
+    filters?: MaintenanceFilters
+  ): Promise<{
     data: MaintenanceDto[];
     total: number;
   }> {
@@ -369,7 +372,11 @@ export class MaintenanceService {
    * }, 'user-123');
    * ```
    */
-  async createMaintenance(tenantId: number, data: CreateMaintenanceDto, userId: string): Promise<MaintenanceDto> {
+  async createMaintenance(
+    tenantId: number,
+    data: CreateMaintenanceDto,
+    userId: string
+  ): Promise<MaintenanceDto> {
     try {
       // Map dual input format to DTO
       const dtoData = mapCreateMaintenanceDto(data);
@@ -614,7 +621,10 @@ export class MaintenanceService {
     }
   }
 
-  async getStats(tenantId: number, filters?: { startDate?: string; endDate?: string }): Promise<StatsSummaryDto> {
+  async getStats(
+    tenantId: number,
+    filters?: { startDate?: string; endDate?: string }
+  ): Promise<StatsSummaryDto> {
     try {
       const query = this.repository
         .createQueryBuilder('m')
@@ -674,7 +684,7 @@ export class MaintenanceService {
         distribution,
         metadata: {
           ...filters,
-          generatedAt: new Date().toISOString(),
+          generated_at: new Date().toISOString(),
         },
       };
     } catch (error) {

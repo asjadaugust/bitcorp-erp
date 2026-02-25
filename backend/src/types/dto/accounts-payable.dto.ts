@@ -64,12 +64,12 @@ export function toAccountsPayableDto(entity: AccountsPayable): AccountsPayableDt
   };
 
   // Calculate balance
-  const balance = Number(entity.amount) - Number(entity.amount_paid);
+  const balance = Number(entity.amount) - Number(entity.amountPaid);
 
   return {
     id: entity.id,
-    legacy_id: entity.legacy_id || null,
-    proveedor_id: entity.provider_id,
+    legacy_id: entity.legacyId || null,
+    proveedor_id: entity.providerId,
     provider: entity.provider
       ? {
           id: entity.provider.id,
@@ -78,17 +78,17 @@ export function toAccountsPayableDto(entity: AccountsPayable): AccountsPayableDt
           nombre_comercial: entity.provider.nombreComercial || null,
         }
       : undefined,
-    numero_factura: entity.document_number,
-    fecha_emision: toDateString(entity.issue_date),
-    fecha_vencimiento: toDateString(entity.due_date),
+    numero_factura: entity.documentNumber,
+    fecha_emision: toDateString(entity.issueDate),
+    fecha_vencimiento: toDateString(entity.dueDate),
     monto_total: Number(entity.amount),
-    monto_pagado: Number(entity.amount_paid),
+    monto_pagado: Number(entity.amountPaid),
     saldo: Number(entity.balance ?? balance),
     moneda: entity.currency,
     estado: entity.status,
     observaciones: entity.description || null,
-    created_at: toDateTimeString(entity.created_at),
-    updated_at: toDateTimeString(entity.updated_at),
+    created_at: toDateTimeString(entity.createdAt),
+    updated_at: toDateTimeString(entity.updatedAt),
   };
 }
 
@@ -108,13 +108,13 @@ export function fromAccountsPayableDto(dto: Partial<AccountsPayableDto>): Partia
   const entity: Partial<AccountsPayable> = {};
 
   if (dto.id !== undefined) entity.id = dto.id;
-  if (dto.legacy_id !== undefined) entity.legacy_id = dto.legacy_id || undefined;
-  if (dto.proveedor_id !== undefined) entity.provider_id = dto.proveedor_id;
-  if (dto.numero_factura !== undefined) entity.document_number = dto.numero_factura;
-  if (dto.fecha_emision !== undefined) entity.issue_date = toDate(dto.fecha_emision)!;
-  if (dto.fecha_vencimiento !== undefined) entity.due_date = toDate(dto.fecha_vencimiento)!;
+  if (dto.legacy_id !== undefined) entity.legacyId = dto.legacy_id || undefined;
+  if (dto.proveedor_id !== undefined) entity.providerId = dto.proveedor_id;
+  if (dto.numero_factura !== undefined) entity.documentNumber = dto.numero_factura;
+  if (dto.fecha_emision !== undefined) entity.issueDate = toDate(dto.fecha_emision)!;
+  if (dto.fecha_vencimiento !== undefined) entity.dueDate = toDate(dto.fecha_vencimiento)!;
   if (dto.monto_total !== undefined) entity.amount = dto.monto_total;
-  if (dto.monto_pagado !== undefined) entity.amount_paid = dto.monto_pagado;
+  if (dto.monto_pagado !== undefined) entity.amountPaid = dto.monto_pagado;
   if (dto.saldo !== undefined) entity.balance = dto.saldo;
   if (dto.moneda !== undefined) entity.currency = dto.moneda;
   if (dto.estado !== undefined) entity.status = dto.estado;

@@ -519,11 +519,11 @@ export class PaymentRecordService {
       referencia_interna: payment.internalReference,
       registrado_por_id: payment.registeredBy,
       registrado_por_nombre: payment.registeredByUser
-        ? `${payment.registeredByUser.first_name || ''} ${payment.registeredByUser.last_name || ''}`.trim()
+        ? `${payment.registeredByUser.firstName || ''} ${payment.registeredByUser.lastName || ''}`.trim()
         : undefined,
       aprobado_por_id: payment.approvedBy,
       aprobado_por_nombre: payment.approvedByUser
-        ? `${payment.approvedByUser.first_name || ''} ${payment.approvedByUser.last_name || ''}`.trim()
+        ? `${payment.approvedByUser.firstName || ''} ${payment.approvedByUser.lastName || ''}`.trim()
         : undefined,
       fecha_registro: this.formatDate(payment.registrationDate),
       fecha_aprobacion: payment.approvalDate ? this.formatDate(payment.approvalDate) : undefined,

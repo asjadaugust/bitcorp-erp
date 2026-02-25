@@ -50,6 +50,6 @@ export class PaymentSchedule {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt!: Date;
 
-  @OneToMany(() => PaymentScheduleDetail, (detail) => detail.payment_schedule)
+  @OneToMany(() => PaymentScheduleDetail, (detail) => detail.paymentSchedule)
   details!: PaymentScheduleDetail[];
 }

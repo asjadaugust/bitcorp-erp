@@ -308,7 +308,7 @@ export function toEquipmentStatsDto(stats: {
   return {
     total: stats.total,
     disponible: stats.disponible,
-    en_uso: stats.enUso,
+    en_uso: stats.en_uso,
     mantenimiento: stats.mantenimiento,
     retirado: stats.retirado,
     por_categoria: {},

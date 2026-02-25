@@ -57,6 +57,6 @@ export class User extends BaseModel {
 
   // Virtual field for full name
   get full_name(): string {
-    return `${this.first_name || ''} ${this.last_name || ''}`.trim();
+    return `${this.firstName || ''} ${this.lastName || ''}`.trim();
   }
 }

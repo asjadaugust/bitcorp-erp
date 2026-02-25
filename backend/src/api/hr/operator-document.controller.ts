@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth.middleware';
 import { OperatorDocumentService } from '../../services/operator-document.service';
 import { NotFoundError, ConflictError } from '../../errors/http.errors';

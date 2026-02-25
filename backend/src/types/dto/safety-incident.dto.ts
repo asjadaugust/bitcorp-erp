@@ -119,7 +119,7 @@ export function toSafetyIncidentDto(entity: Incidente): SafetyIncidentDto {
     created_at: entity.createdAt,
     updated_at: entity.updatedAt,
     reportador_nombre: entity.reportador
-      ? `${entity.reportador.first_name || ''} ${entity.reportador.last_name || ''}`.trim()
+      ? `${entity.reportador.firstName || ''} ${entity.reportador.lastName || ''}`.trim()
       : undefined,
   };
 }

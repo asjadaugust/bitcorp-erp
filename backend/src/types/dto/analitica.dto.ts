@@ -70,20 +70,22 @@ export function toUtilizacionDto(entity: {
   period_end: Date;
 }): UtilizacionEquipoDto {
   return {
-    equipo_id: entity.equipmentId,
-    codigo_equipo: entity.equipmentCode,
-    horas_totales: entity.totalHours,
-    horas_trabajadas: entity.workingHours,
-    horas_inactivas: entity.idleHours,
-    tasa_utilizacion: entity.utilizationRate,
-    costo_por_hora: entity.costPerHour,
-    costo_total: entity.totalCost,
+    equipo_id: entity.equipment_id,
+    codigo_equipo: entity.equipment_code,
+    horas_totales: entity.total_hours,
+    horas_trabajadas: entity.working_hours,
+    horas_inactivas: entity.idle_hours,
+    tasa_utilizacion: entity.utilization_rate,
+    costo_por_hora: entity.cost_per_hour,
+    costo_total: entity.total_cost,
     periodo_inicio:
-      entity.periodStart instanceof Date
-        ? entity.periodStart.toISOString()
-        : String(entity.periodStart),
+      entity.period_start instanceof Date
+        ? entity.period_start.toISOString()
+        : String(entity.period_start),
     periodo_fin:
-      entity.periodEnd instanceof Date ? entity.periodEnd.toISOString() : String(entity.periodEnd),
+      entity.period_end instanceof Date
+        ? entity.period_end.toISOString()
+        : String(entity.period_end),
   };
 }
 
@@ -95,8 +97,8 @@ export function toTendenciaUtilizacionDto(entity: {
 }): TendenciaUtilizacionDto {
   return {
     fecha: entity.date,
-    tasa_utilizacion: entity.utilizationRate,
-    horas_trabajadas: entity.workingHours,
+    tasa_utilizacion: entity.utilization_rate,
+    horas_trabajadas: entity.working_hours,
     costo: entity.cost,
   };
 }
@@ -110,17 +112,17 @@ export function toFlotaUtilizacionDto(entity: {
   underutilized: Array<{ equipment_code: string; utilization_rate: number }>;
 }): FlotaUtilizacionDto {
   return {
-    total_equipos: entity.totalEquipment,
-    equipos_activos: entity.activeEquipment,
-    tasa_utilizacion_promedio: entity.avgUtilizationRate,
-    costo_total: entity.totalCost,
-    mejores_equipos: entity.topPerformers.map((e) => ({
-      codigo_equipo: e.equipmentCode,
-      tasa_utilizacion: e.utilizationRate,
+    total_equipos: entity.total_equipment,
+    equipos_activos: entity.active_equipment,
+    tasa_utilizacion_promedio: entity.avg_utilization_rate,
+    costo_total: entity.total_cost,
+    mejores_equipos: entity.top_performers.map((e) => ({
+      codigo_equipo: e.equipment_code,
+      tasa_utilizacion: e.utilization_rate,
     })),
     equipos_sub_utilizados: entity.underutilized.map((e) => ({
-      codigo_equipo: e.equipmentCode,
-      tasa_utilizacion: e.utilizationRate,
+      codigo_equipo: e.equipment_code,
+      tasa_utilizacion: e.utilization_rate,
     })),
   };
 }
@@ -140,11 +142,11 @@ export function toCombustibleDto(entity: {
   };
 
   return {
-    equipo_id: entity.equipmentId,
-    total_combustible_consumido: entity.totalFuelConsumed,
-    promedio_combustible_por_hora: entity.avgFuelPerHour,
-    costo_total_combustible: entity.totalFuelCost,
-    costo_promedio_por_hora: entity.avgCostPerHour,
+    equipo_id: entity.equipment_id,
+    total_combustible_consumido: entity.total_fuel_consumed,
+    promedio_combustible_por_hora: entity.avg_fuel_per_hour,
+    costo_total_combustible: entity.total_fuel_cost,
+    costo_promedio_por_hora: entity.avg_cost_per_hour,
     eficiencia: eficienciaMap[entity.efficiency],
   };
 }
@@ -157,8 +159,8 @@ export function toTendenciaCombustibleDto(entity: {
 }): TendenciaCombustibleDto {
   return {
     fecha: entity.date,
-    combustible_consumido: entity.fuelConsumed,
-    costo_combustible: entity.fuelCost,
-    combustible_por_hora: entity.fuelPerHour,
+    combustible_consumido: entity.fuel_consumed,
+    costo_combustible: entity.fuel_cost,
+    combustible_por_hora: entity.fuel_per_hour,
   };
 }

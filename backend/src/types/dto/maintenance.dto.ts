@@ -69,10 +69,8 @@ export interface CreateMaintenanceDto {
   estado?: EstadoMantenimiento;
   observaciones?: string;
 
-  // English camelCase (backward compatibility)
-  equipo_id?: number;
+  // Additional English fields (backward compatibility)
   equipment_id?: number;
-  tipo_mantenimiento?: TipoMantenimiento;
   maintenance_type?: TipoMantenimiento;
   description?: string;
   start_date?: string;
@@ -179,9 +177,8 @@ export function fromMaintenanceDto(dto: Partial<MaintenanceDto>): Partial<Mainte
  */
 export function mapCreateMaintenanceDto(input: CreateMaintenanceDto): Partial<MaintenanceDto> {
   return {
-    equipo_id: input.equipo_id ?? input.equipoId ?? input.equipment_id,
-    tipo_mantenimiento:
-      input.tipo_mantenimiento ?? input.tipoMantenimiento ?? input.maintenance_type,
+    equipo_id: input.equipo_id ?? input.equipment_id,
+    tipo_mantenimiento: input.tipo_mantenimiento ?? input.maintenance_type,
     descripcion: input.descripcion ?? input.description,
     fecha_programada: input.fecha_programada ?? input.start_date ?? input.maintenance_date,
     fecha_realizada: input.fecha_realizada ?? input.completion_date,

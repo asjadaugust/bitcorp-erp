@@ -86,16 +86,16 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
 
   describe('toUtilizacionDto — Conversión a snake_case español', () => {
     const mockUtilizacion = {
-      equipmentId: 101,
-      equipmentCode: 'EXC-001',
-      totalHours: 720,
-      workingHours: 504,
-      idleHours: 216,
-      utilizationRate: 70.0,
-      costPerHour: 50.0,
-      totalCost: 25200.0,
-      periodStart: new Date('2026-01-01'),
-      periodEnd: new Date('2026-01-30'),
+      equipment_id: 101,
+      equipment_code: 'EXC-001',
+      total_hours: 720,
+      working_hours: 504,
+      idle_hours: 216,
+      utilization_rate: 70.0,
+      cost_per_hour: 50.0,
+      total_cost: 25200.0,
+      period_start: new Date('2026-01-01'),
+      period_end: new Date('2026-01-30'),
     };
 
     it('debe mapear equipmentId a equipo_id', () => {
@@ -173,8 +173,8 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
   describe('toTendenciaUtilizacionDto — Tendencia diaria de utilización', () => {
     const mockTendencia = {
       date: '2026-01-15',
-      utilizationRate: 75.0,
-      workingHours: 18.0,
+      utilization_rate: 75.0,
+      working_hours: 18.0,
       cost: 900.0,
     };
 
@@ -199,7 +199,7 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
     });
 
     it('debe mapear un array de tendencias correctamente', () => {
-      const items = [mockTendencia, { ...mockTendencia, date: '2026-01-16', workingHours: 20 }];
+      const items = [mockTendencia, { ...mockTendencia, date: '2026-01-16', working_hours: 20 }];
       const dtos: TendenciaUtilizacionDto[] = items.map(toTendenciaUtilizacionDto);
       expect(dtos).toHaveLength(2);
       expect(dtos[0].fecha).toBe('2026-01-15');
@@ -217,15 +217,15 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
 
   describe('toFlotaUtilizacionDto — Métricas de flota', () => {
     const mockFlota = {
-      totalEquipment: 20,
-      activeEquipment: 15,
-      avgUtilizationRate: 68.5,
-      totalCost: 150000,
-      topPerformers: [
-        { equipmentCode: 'EXC-001', utilizationRate: 95.2 },
-        { equipmentCode: 'CAM-015', utilizationRate: 90.1 },
+      total_equipment: 20,
+      active_equipment: 15,
+      avg_utilization_rate: 68.5,
+      total_cost: 150000,
+      top_performers: [
+        { equipment_code: 'EXC-001', utilization_rate: 95.2 },
+        { equipment_code: 'CAM-015', utilization_rate: 90.1 },
       ],
-      underutilized: [{ equipmentCode: 'VOL-022', utilizationRate: 30.0 }],
+      underutilized: [{ equipment_code: 'VOL-022', utilization_rate: 30.0 }],
     };
 
     it('debe mapear totalEquipment a total_equipos', () => {
@@ -280,11 +280,11 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
 
   describe('toCombustibleDto — Métricas de combustible', () => {
     const mockCombustible = {
-      equipmentId: 101,
-      totalFuelConsumed: 1250.5,
-      avgFuelPerHour: 2.22,
-      totalFuelCost: 4376.75,
-      avgCostPerHour: 7.78,
+      equipment_id: 101,
+      total_fuel_consumed: 1250.5,
+      avg_fuel_per_hour: 2.22,
+      total_fuel_cost: 4376.75,
+      avg_cost_per_hour: 7.78,
       efficiency: 'average' as const,
     };
 
@@ -342,9 +342,9 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
   describe('toTendenciaCombustibleDto — Tendencia diaria de combustible', () => {
     const mockTendencia = {
       date: '2026-01-15',
-      fuelConsumed: 45.2,
-      fuelCost: 158.2,
-      fuelPerHour: 2.51,
+      fuel_consumed: 45.2,
+      fuel_cost: 158.2,
+      fuel_per_hour: 2.51,
     };
 
     it('debe mapear date a fecha', () => {
@@ -384,11 +384,11 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
   describe('Clasificación de eficiencia de combustible (lógica pura)', () => {
     it('eficiencia "good" → "buena" cuando promedio < 2 gal/hora', () => {
       const dto = toCombustibleDto({
-        equipmentId: 1,
-        totalFuelConsumed: 10,
-        avgFuelPerHour: 1.5,
-        totalFuelCost: 35,
-        avgCostPerHour: 5.25,
+        equipment_id: 1,
+        total_fuel_consumed: 10,
+        avg_fuel_per_hour: 1.5,
+        total_fuel_cost: 35,
+        avg_cost_per_hour: 5.25,
         efficiency: 'good',
       });
       expect(dto.eficiencia).toBe('buena');
@@ -396,11 +396,11 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
 
     it('eficiencia "average" → "promedio" cuando promedio entre 2 y 4 gal/hora', () => {
       const dto = toCombustibleDto({
-        equipmentId: 1,
-        totalFuelConsumed: 30,
-        avgFuelPerHour: 3.0,
-        totalFuelCost: 105,
-        avgCostPerHour: 10.5,
+        equipment_id: 1,
+        total_fuel_consumed: 30,
+        avg_fuel_per_hour: 3.0,
+        total_fuel_cost: 105,
+        avg_cost_per_hour: 10.5,
         efficiency: 'average',
       });
       expect(dto.eficiencia).toBe('promedio');
@@ -408,11 +408,11 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
 
     it('eficiencia "poor" → "deficiente" cuando promedio > 4 gal/hora', () => {
       const dto = toCombustibleDto({
-        equipmentId: 1,
-        totalFuelConsumed: 60,
-        avgFuelPerHour: 5.0,
-        totalFuelCost: 210,
-        avgCostPerHour: 17.5,
+        equipment_id: 1,
+        total_fuel_consumed: 60,
+        avg_fuel_per_hour: 5.0,
+        total_fuel_cost: 210,
+        avg_cost_per_hour: 17.5,
         efficiency: 'poor',
       });
       expect(dto.eficiencia).toBe('deficiente');

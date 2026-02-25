@@ -27,13 +27,7 @@ import {
   ValuationPage6Dto,
   ValuationPage7Dto,
 } from '../types/dto/valuation-pdf.dto';
-import {
-  toValuationDto,
-  fromValuationDto,
-  ValuationDto,
-  ValuationCreateDto,
-  ValuationUpdateDto,
-} from '../types/dto/valuation.dto';
+import { toValuationDto, ValuationDto } from '../types/dto/valuation.dto';
 import Logger from '../utils/logger';
 import {
   NotFoundError,
@@ -143,16 +137,19 @@ export class ValuationService {
    * console.log(`Found ${result.total} valuations, showing ${result.data.length}`);
    * ```
    */
-  async findAll(tenantId: number, filters?: {
-    estado?: string;
-    search?: string;
-    projectId?: number;
-    equipmentId?: number;
-    page?: number;
-    limit?: number;
-    sort_by?: string;
-    sort_order?: 'ASC' | 'DESC';
-  }) {
+  async findAll(
+    tenantId: number,
+    filters?: {
+      estado?: string;
+      search?: string;
+      projectId?: number;
+      equipmentId?: number;
+      page?: number;
+      limit?: number;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+    }
+  ) {
     try {
       const page = filters?.page || 1;
       const limit = filters?.limit || 20;
@@ -348,7 +345,11 @@ export class ValuationService {
    * // Estado automatically set to PENDIENTE
    * ```
    */
-  async create(tenantId: number, data: Partial<Valorizacion>, userId?: number): Promise<Valorizacion> {
+  async create(
+    tenantId: number,
+    data: Partial<Valorizacion>,
+    userId?: number
+  ): Promise<Valorizacion> {
     try {
       // Business rule 1: Check numero_valorizacion uniqueness
       if (data.numeroValorizacion) {
@@ -1389,16 +1390,19 @@ export class ValuationService {
    * Get consolidated valuation registry with filters and summary totals.
    * Implements CORP-GEM-F-011 cross-project consolidated register.
    */
-  async getRegistry(tenantId: number, filters?: {
-    proyecto_id?: number;
-    periodo_desde?: string;
-    periodo_hasta?: string;
-    estado?: string;
-    proveedor?: string;
-    equipo_id?: number;
-    page?: number;
-    limit?: number;
-  }) {
+  async getRegistry(
+    tenantId: number,
+    filters?: {
+      proyecto_id?: number;
+      periodo_desde?: string;
+      periodo_hasta?: string;
+      estado?: string;
+      proveedor?: string;
+      equipo_id?: number;
+      page?: number;
+      limit?: number;
+    }
+  ) {
     try {
       const page = filters?.page || 1;
       const limit = filters?.limit || 50;
@@ -1779,7 +1783,13 @@ export class ValuationService {
    * Includes: pre-warming deduction, manipuleo, discount events,
    * work expenses, advance amortizations, excess fuel.
    */
-  async calculateValuation(tenantId: number, contractId: string, month: number, year: number, valuationId?: number) {
+  async calculateValuation(
+    tenantId: number,
+    contractId: string,
+    month: number,
+    year: number,
+    valuationId?: number
+  ) {
     const contract = await this.contractRepository.findOne({
       where: { id: parseInt(contractId), tenantId },
       relations: ['equipo'],

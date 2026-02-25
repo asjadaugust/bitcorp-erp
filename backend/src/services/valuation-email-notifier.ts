@@ -111,8 +111,7 @@ export class ValuationEmailNotifier {
           nombre_proyecto: undefined,
         },
         user: {
-          nombre:
-            `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || creator.username,
+          nombre: `${creator.firstName || ''} ${creator.lastName || ''}`.trim() || creator.username,
           email: creator.email,
         },
         detailUrl: `${process.env.FRONTEND_URL || 'http://localhost:3420'}/equipment/valuations/${valorizacion.id}`,
@@ -169,14 +168,13 @@ export class ValuationEmailNotifier {
           nombre_proyecto: undefined,
         },
         user: {
-          nombre:
-            `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || creator.username,
+          nombre: `${creator.firstName || ''} ${creator.lastName || ''}`.trim() || creator.username,
           email: creator.email,
         },
         approver: approver
           ? {
               nombre:
-                `${approver.first_name || ''} ${approver.last_name || ''}`.trim() ||
+                `${approver.firstName || ''} ${approver.lastName || ''}`.trim() ||
                 approver.username,
               email: approver.email,
             }
@@ -241,14 +239,13 @@ export class ValuationEmailNotifier {
           nombre_proyecto: undefined,
         },
         user: {
-          nombre:
-            `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || creator.username,
+          nombre: `${creator.firstName || ''} ${creator.lastName || ''}`.trim() || creator.username,
           email: creator.email,
         },
         approver: rejecter
           ? {
               nombre:
-                `${rejecter.first_name || ''} ${rejecter.last_name || ''}`.trim() ||
+                `${rejecter.firstName || ''} ${rejecter.lastName || ''}`.trim() ||
                 rejecter.username,
               email: rejecter.email,
             }
@@ -310,8 +307,7 @@ export class ValuationEmailNotifier {
           nombre_proyecto: undefined,
         },
         user: {
-          nombre:
-            `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || creator.username,
+          nombre: `${creator.firstName || ''} ${creator.lastName || ''}`.trim() || creator.username,
           email: creator.email,
         },
         paymentData,

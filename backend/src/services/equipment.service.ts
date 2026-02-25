@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { AppDataSource } from '../config/database.config';
 import { Equipment } from '../models/equipment.model';
-import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Repository } from 'typeorm';
 import Logger from '../utils/logger';
 import {
   EquipmentListDto,
   EquipmentDetailDto,
   EquipmentStatsDto,
-  toEquipmentListDto,
   toEquipmentDetailDto,
   toEquipmentListDtoArray,
   toEquipmentStatsDto,
-  fromEquipmentDto,
 } from '../types/dto/equipment.dto';
 import { NotFoundError, ConflictError, DatabaseError, DatabaseErrorType } from '../errors';
 import { DashboardService } from './dashboard.service';
@@ -1004,7 +1002,11 @@ export class EquipmentService {
    * @returns Equipment detail DTO (currently unchanged)
    * @throws {NotFoundError} If equipment with given ID does not exist
    */
-  async updateHourmeter(tenantId: number, id: number, reading: number): Promise<EquipmentDetailDto> {
+  async updateHourmeter(
+    tenantId: number,
+    id: number,
+    reading: number
+  ): Promise<EquipmentDetailDto> {
     // TODO: Add tenant_id filter when schema updated (Phase 21)
     const equipment = await this.repository.findOne({
       where: { id, tenantId },
@@ -1105,7 +1107,7 @@ export class EquipmentService {
       const result = {
         total: 0,
         disponible: 0,
-        enUso: 0,
+        en_uso: 0,
         mantenimiento: 0,
         retirado: 0,
       };
@@ -1120,7 +1122,7 @@ export class EquipmentService {
             break;
           case 'EN_USO':
           case 'IN_USE':
-            result.enUso = count;
+            result.en_uso = count;
             break;
           case 'MANTENIMIENTO':
           case 'MAINTENANCE':
@@ -1136,7 +1138,7 @@ export class EquipmentService {
       Logger.info('Equipment statistics calculated successfully', {
         total: result.total,
         disponible: result.disponible,
-        en_uso: result.enUso,
+        en_uso: result.en_uso,
         mantenimiento: result.mantenimiento,
         retirado: result.retirado,
         context: 'EquipmentService.getStatistics',

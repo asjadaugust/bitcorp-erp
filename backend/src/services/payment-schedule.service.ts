@@ -333,8 +333,8 @@ export class PaymentScheduleService {
       logger.info('Created payment schedule', {
         id: saved.id,
         periodo: saved.periodo,
-        schedule_date: saved.schedule_date,
-        total_amount: saved.total_amount || 0,
+        schedule_date: saved.scheduleDate,
+        total_amount: saved.totalAmount || 0,
         status: saved.status,
       });
 
@@ -487,7 +487,7 @@ export class PaymentScheduleService {
         id: schedule.id,
         periodo: schedule.periodo,
         status: schedule.status,
-        total_amount: schedule.total_amount || 0,
+        total_amount: schedule.totalAmount || 0,
         details_count: schedule.details?.length || 0,
       });
 
@@ -688,21 +688,21 @@ export class PaymentScheduleService {
       }
 
       const detail = PaymentScheduleDetailRepository.create({
-        payment_schedule_id: scheduleId,
-        amount_to_pay: data.amount_to_pay,
+        paymentScheduleId: scheduleId,
+        amountToPay: data.amount_to_pay,
       });
 
       const savedDetail = await PaymentScheduleDetailRepository.save(detail);
 
       // Update total amount
-      schedule.total_amount = Number(schedule.total_amount || 0) + Number(data.amount_to_pay);
+      schedule.totalAmount = Number(schedule.totalAmount || 0) + Number(data.amount_to_pay);
       await PaymentScheduleRepository.save(schedule);
 
       logger.info('Added payment schedule detail', {
         schedule_id: scheduleId,
         detail_id: savedDetail.id,
         amount_to_pay: data.amount_to_pay,
-        new_total: schedule.total_amount,
+        new_total: schedule.totalAmount,
       });
 
       return savedDetail;
@@ -767,7 +767,7 @@ export class PaymentScheduleService {
       }
 
       const detail = await PaymentScheduleDetailRepository.findOne({
-        where: { id: detailId, payment_schedule_id: scheduleId },
+        where: { id: detailId, paymentScheduleId: scheduleId },
       });
 
       if (!detail) {
@@ -777,7 +777,7 @@ export class PaymentScheduleService {
       }
 
       // Update total amount
-      schedule.total_amount = Number(schedule.total_amount || 0) - Number(detail.amount_to_pay);
+      schedule.totalAmount = Number(schedule.totalAmount || 0) - Number(detail.amountToPay);
       await PaymentScheduleRepository.save(schedule);
 
       const removed = await PaymentScheduleDetailRepository.remove(detail);
@@ -785,8 +785,8 @@ export class PaymentScheduleService {
       logger.info('Removed payment schedule detail', {
         schedule_id: scheduleId,
         detail_id: detailId,
-        amount_removed: detail.amount_to_pay,
-        new_total: schedule.total_amount,
+        amount_removed: detail.amountToPay,
+        new_total: schedule.totalAmount,
       });
 
       return removed;

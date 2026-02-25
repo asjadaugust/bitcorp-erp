@@ -59,15 +59,14 @@ export interface ScheduledTaskDto {
  * Supports both English camelCase (frontend) and Spanish snake_case (API/tests)
  */
 export interface CreateScheduledTaskDto {
-  // Spanish snake_case (preferred)
   programa_mantenimiento_id?: number;
   equipo_id?: number;
   trabajador_id?: number;
   task_type?: string;
   title?: string;
   description?: string;
-  start_date?: string;
-  end_date?: string;
+  start_date?: string | Date;
+  end_date?: string | Date;
   start_time?: string;
   end_time?: string;
   all_day?: boolean;
@@ -81,21 +80,9 @@ export interface CreateScheduledTaskDto {
   creado_por?: number;
   asignado_por?: number;
   proyecto_id?: number;
-
-  // English camelCase (backward compatibility)
   schedule_id?: number;
   equipment_id?: number;
   operator_id?: number;
-  task_type?: string;
-  start_date?: string | Date;
-  end_date?: string | Date;
-  start_time?: string;
-  end_time?: string;
-  all_day?: boolean;
-  duration_minutes?: number;
-  completion_date?: string;
-  completion_notes?: string;
-  maintenance_record_id?: number;
   created_by?: number;
   assigned_by?: number;
   project_id?: number;
@@ -381,28 +368,30 @@ export function mapCreateScheduledTaskDto(
     return date.toISOString().split('T')[0];
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const i = input as any;
   return {
-    programa_mantenimiento_id: input.programa_mantenimiento_id ?? input.scheduleId,
-    equipo_id: input.equipo_id ?? input.equipmentId,
-    trabajador_id: input.trabajador_id ?? input.operatorId,
-    task_type: input.task_type ?? input.taskType,
+    programa_mantenimiento_id: input.programa_mantenimiento_id ?? i.scheduleId,
+    equipo_id: input.equipo_id ?? i.equipmentId,
+    trabajador_id: input.trabajador_id ?? i.operatorId,
+    task_type: input.task_type ?? i.taskType,
     title: input.title,
     description: input.description,
-    start_date: input.start_date ?? convertDate(input.startDate),
-    end_date: input.end_date ?? convertDate(input.endDate),
-    start_time: input.start_time ?? input.startTime,
-    end_time: input.end_time ?? input.endTime,
-    all_day: input.all_day ?? input.allDay,
+    start_date: convertDate(input.start_date) ?? convertDate(i.startDate),
+    end_date: convertDate(input.end_date) ?? convertDate(i.endDate),
+    start_time: input.start_time ?? i.startTime,
+    end_time: input.end_time ?? i.endTime,
+    all_day: input.all_day ?? i.allDay,
     recurrence: input.recurrence,
-    duration_minutes: input.duration_minutes ?? input.durationMinutes,
+    duration_minutes: input.duration_minutes ?? i.durationMinutes,
     priority: input.priority,
     status: input.status,
-    completion_date: input.completion_date ?? input.completionDate,
-    completion_notes: input.completion_notes ?? input.completionNotes,
-    maintenance_record_id: input.maintenance_record_id ?? input.maintenanceRecordId,
-    creado_por: input.creado_por ?? input.createdBy,
-    asignado_por: input.asignado_por ?? input.assignedBy,
-    proyecto_id: input.proyecto_id ?? input.projectId,
+    completion_date: input.completion_date ?? i.completionDate,
+    completion_notes: input.completion_notes ?? i.completionNotes,
+    maintenance_record_id: input.maintenance_record_id ?? i.maintenanceRecordId,
+    creado_por: input.creado_por ?? i.createdBy,
+    asignado_por: input.asignado_por ?? i.assignedBy,
+    proyecto_id: input.proyecto_id ?? i.projectId,
   };
 }
 

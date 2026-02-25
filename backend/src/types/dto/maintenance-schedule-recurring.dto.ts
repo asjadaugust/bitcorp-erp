@@ -52,7 +52,6 @@ export interface MaintenanceScheduleRecurringDto {
  * Supports both English camelCase (frontend/legacy) and Spanish snake_case (API/tests)
  */
 export interface CreateMaintenanceScheduleRecurringDto {
-  // Spanish snake_case (preferred)
   equipment_id?: number;
   project_id?: number;
   maintenance_type?: MaintenanceType;
@@ -62,29 +61,13 @@ export interface CreateMaintenanceScheduleRecurringDto {
   notes?: string;
   auto_generate_tasks?: boolean;
   created_by_id?: number;
-
-  // English camelCase (backward compatibility)
-  equipment_id?: number;
-  project_id?: number;
-  maintenance_type?: MaintenanceType;
-  interval_type?: IntervalType;
-  interval_value?: number;
-  auto_generate_tasks?: boolean;
-  created_by_id?: number;
 }
 
 /**
  * Update DTO - partial version of CreateMaintenanceScheduleRecurringDto
  */
 export interface UpdateMaintenanceScheduleRecurringDto extends Partial<CreateMaintenanceScheduleRecurringDto> {
-  // Additional update-only fields
   status?: ScheduleStatus;
-  next_due_date?: string;
-  next_due_hours?: number;
-  last_completed_date?: string;
-  last_completed_hours?: number;
-
-  // English camelCase (backward compatibility)
   next_due_date?: string;
   next_due_hours?: number;
   last_completed_date?: string;
@@ -104,12 +87,6 @@ export interface MaintenanceScheduleRecurringFilterDto {
   limit?: number;
   sort_by?: string;
   sort_order?: 'ASC' | 'DESC';
-
-  // English camelCase (backward compatibility)
-  equipment_id?: number;
-  project_id?: number;
-  maintenance_type?: MaintenanceType;
-  is_active?: boolean;
 }
 
 /**
@@ -208,16 +185,18 @@ export function fromMaintenanceScheduleRecurringDto(
 export function mapCreateMaintenanceScheduleRecurringDto(
   input: CreateMaintenanceScheduleRecurringDto
 ): Partial<MaintenanceScheduleRecurringDto> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const i = input as any;
   return {
-    equipment_id: input.equipment_id ?? input.equipmentId,
-    project_id: input.project_id ?? input.projectId,
-    maintenance_type: input.maintenance_type ?? input.maintenanceType,
-    interval_type: input.interval_type ?? input.intervalType,
-    interval_value: input.interval_value ?? input.intervalValue,
+    equipment_id: input.equipment_id ?? i.equipmentId,
+    project_id: input.project_id ?? i.projectId,
+    maintenance_type: input.maintenance_type ?? i.maintenanceType,
+    interval_type: input.interval_type ?? i.intervalType,
+    interval_value: input.interval_value ?? i.intervalValue,
     description: input.description,
     notes: input.notes,
-    auto_generate_tasks: input.auto_generate_tasks ?? input.autoGenerateTasks,
-    created_by_id: input.created_by_id ?? input.createdById,
+    auto_generate_tasks: input.auto_generate_tasks ?? i.autoGenerateTasks,
+    created_by_id: input.created_by_id ?? i.createdById,
   };
 }
 
@@ -228,21 +207,23 @@ export function mapCreateMaintenanceScheduleRecurringDto(
 export function mapUpdateMaintenanceScheduleRecurringDto(
   input: UpdateMaintenanceScheduleRecurringDto
 ): Partial<MaintenanceScheduleRecurringDto> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const i = input as any;
   return {
-    equipment_id: input.equipment_id ?? input.equipmentId,
-    project_id: input.project_id ?? input.projectId,
-    maintenance_type: input.maintenance_type ?? input.maintenanceType,
-    interval_type: input.interval_type ?? input.intervalType,
-    interval_value: input.interval_value ?? input.intervalValue,
+    equipment_id: input.equipment_id ?? i.equipmentId,
+    project_id: input.project_id ?? i.projectId,
+    maintenance_type: input.maintenance_type ?? i.maintenanceType,
+    interval_type: input.interval_type ?? i.intervalType,
+    interval_value: input.interval_value ?? i.intervalValue,
     description: input.description,
     notes: input.notes,
     status: input.status,
-    auto_generate_tasks: input.auto_generate_tasks ?? input.autoGenerateTasks,
-    created_by_id: input.created_by_id ?? input.createdById,
-    next_due_date: input.next_due_date ?? input.nextDueDate,
-    next_due_hours: input.next_due_hours ?? input.nextDueHours,
-    last_completed_date: input.last_completed_date ?? input.lastCompletedDate,
-    last_completed_hours: input.last_completed_hours ?? input.lastCompletedHours,
+    auto_generate_tasks: input.auto_generate_tasks ?? i.autoGenerateTasks,
+    created_by_id: input.created_by_id ?? i.createdById,
+    next_due_date: input.next_due_date ?? i.nextDueDate,
+    next_due_hours: input.next_due_hours ?? i.nextDueHours,
+    last_completed_date: input.last_completed_date ?? i.lastCompletedDate,
+    last_completed_hours: input.last_completed_hours ?? i.lastCompletedHours,
   };
 }
 
@@ -252,12 +233,14 @@ export function mapUpdateMaintenanceScheduleRecurringDto(
 export function mapMaintenanceScheduleRecurringFilterDto(
   input: MaintenanceScheduleRecurringFilterDto
 ): MaintenanceScheduleRecurringFilterDto {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const i = input as any;
   return {
-    equipment_id: input.equipment_id ?? input.equipmentId,
-    project_id: input.project_id ?? input.projectId,
+    equipment_id: input.equipment_id ?? i.equipmentId,
+    project_id: input.project_id ?? i.projectId,
     status: input.status,
-    maintenance_type: input.maintenance_type ?? input.maintenanceType,
-    is_active: input.is_active ?? input.isActive,
+    maintenance_type: input.maintenance_type ?? i.maintenanceType,
+    is_active: input.is_active ?? i.isActive,
     page: input.page,
     limit: input.limit,
     sort_by: input.sort_by,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { AppDataSource } from '../config/database.config';
-import { Contract, Addendum } from '../models/contract.model';
+import { Contract } from '../models/contract.model';
 import { ContractAnnex } from '../models/contract-annex.model';
 import { ContractRequiredDocument } from '../models/contract-required-document.model';
 import {

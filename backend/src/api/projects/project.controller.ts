@@ -2,12 +2,7 @@
 import { Request, Response } from 'express';
 import { ProjectService, CreateProjectDto, UpdateProjectDto } from '../../services/project.service';
 import Logger from '../../utils/logger';
-import {
-  sendSuccess,
-  sendPaginatedSuccess,
-  sendCreated,
-  sendError,
-} from '../../utils/api-response';
+import { sendSuccess, sendPaginatedSuccess, sendError } from '../../utils/api-response';
 
 export class ProjectController {
   private projectService: ProjectService;

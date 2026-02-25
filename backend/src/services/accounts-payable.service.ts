@@ -391,11 +391,11 @@ export class AccountsPayableService {
 
       logger.info('Created accounts payable', {
         id: reloaded.id,
-        numero_factura: reloaded.document_number,
-        proveedor_id: reloaded.provider_id,
+        numero_factura: reloaded.documentNumber,
+        proveedor_id: reloaded.providerId,
         monto_total: reloaded.amount,
-        monto_pagado: reloaded.amount_paid,
-        saldo: Number(reloaded.amount) - Number(reloaded.amount_paid),
+        monto_pagado: reloaded.amountPaid,
+        saldo: Number(reloaded.amount) - Number(reloaded.amountPaid),
         estado: reloaded.status,
         moneda: reloaded.currency,
       });
@@ -547,10 +547,10 @@ export class AccountsPayableService {
 
       logger.info('Retrieved accounts payable', {
         id: account.id,
-        numero_factura: account.document_number,
-        proveedor_id: account.provider_id,
+        numero_factura: account.documentNumber,
+        proveedor_id: account.providerId,
         estado: account.status,
-        saldo: Number(account.amount) - Number(account.amount_paid),
+        saldo: Number(account.amount) - Number(account.amountPaid),
       });
 
       return toAccountsPayableDto(account);
@@ -646,7 +646,7 @@ export class AccountsPayableService {
 
       // Validate payment amount if being updated
       const newTotal = updateData.monto_total ?? Number(accountPayable.amount);
-      const newPaid = updateData.monto_pagado ?? Number(accountPayable.amount_paid);
+      const newPaid = updateData.monto_pagado ?? Number(accountPayable.amountPaid);
 
       if (newPaid > newTotal) {
         throw new ValidationError('Payment amount cannot exceed total amount', [
@@ -663,9 +663,9 @@ export class AccountsPayableService {
       // Validate date range if dates are being updated
       if (updateData.fecha_emision || updateData.fecha_vencimiento) {
         const issueDate =
-          updateData.fecha_emision || accountPayable.issue_date.toISOString().split('T')[0];
+          updateData.fecha_emision || accountPayable.issueDate.toISOString().split('T')[0];
         const dueDate =
-          updateData.fecha_vencimiento || accountPayable.due_date.toISOString().split('T')[0];
+          updateData.fecha_vencimiento || accountPayable.dueDate.toISOString().split('T')[0];
         this.validateDateRange(issueDate, dueDate);
       }
 
@@ -680,7 +680,7 @@ export class AccountsPayableService {
 
       logger.info('Updated accounts payable', {
         id: saved.id,
-        numero_factura: saved.document_number,
+        numero_factura: saved.documentNumber,
         changed_fields: changedFields,
       });
 
@@ -739,7 +739,7 @@ export class AccountsPayableService {
 
       logger.warn('Hard deleted accounts payable (audit trail destroyed)', {
         id,
-        numero_factura: existing.document_number,
+        numero_factura: existing.documentNumber,
         recommendation: 'Use ANULADO status instead of delete',
       });
 
@@ -784,7 +784,7 @@ export class AccountsPayableService {
       const accounts = await AccountsPayableRepository.findPending(tenantId);
 
       const totalSaldo = accounts.reduce(
-        (sum, ap) => sum + (Number(ap.amount) - Number(ap.amount_paid)),
+        (sum, ap) => sum + (Number(ap.amount) - Number(ap.amountPaid)),
         0
       );
 

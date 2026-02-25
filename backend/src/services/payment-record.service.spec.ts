@@ -218,7 +218,7 @@ describe('PaymentRecordService — Registro de Pagos (WS-29)', () => {
 
     it('debe formatear nombre del usuario registrador cuando está presente', () => {
       const payment = buildMockPayment({
-        registeredByUser: { first_name: 'Juan', last_name: 'Pérez' } as any,
+        registeredByUser: { firstName: 'Juan', lastName: 'Pérez' } as any,
       });
       const dto = service.toDetailDTO(payment);
 

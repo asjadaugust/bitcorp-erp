@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../../config/database.config';
 import { ScheduledTask } from '../../models/scheduled-task.model';
-import { Between, LessThanOrEqual, MoreThanOrEqual, Not, In } from 'typeorm';
+import { Not, In } from 'typeorm';
 import Logger from '../../utils/logger';
 import {
   sendSuccess,

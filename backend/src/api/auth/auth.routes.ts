@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
-import { authenticate } from '../../middleware/auth.middleware';
 import { simpleLogin, simpleMe } from './auth.simple';
 import { validateDto } from '../../middleware/validation.middleware';
 import { LoginDto } from '../../types/dto/auth.dto';

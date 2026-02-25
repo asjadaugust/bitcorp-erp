@@ -5,7 +5,6 @@ import {
   CreateEquipmentDto,
   UpdateEquipmentDto,
 } from '../../services/equipment.service';
-import { EquipmentStatus } from '../../models/equipment.model';
 import { ExportUtil } from '../../utils/export.util';
 import {
   sendError,
@@ -92,7 +91,12 @@ export class EquipmentController {
       const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Max 100
 
       const tenantId = (req as any).user?.id_empresa || 1;
-      const { data, total } = await this.equipmentService.findAll(tenantId, filters, pageNum, limitNum);
+      const { data, total } = await this.equipmentService.findAll(
+        tenantId,
+        filters,
+        pageNum,
+        limitNum
+      );
 
       sendPaginatedSuccess(res, data, { page: pageNum, limit: limitNum, total });
     } catch (error: any) {

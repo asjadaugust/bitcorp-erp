@@ -41,12 +41,12 @@ export class UserService {
         'user.id',
         'user.username',
         'user.email',
-        'user.first_name',
-        'user.last_name',
+        'user.firstName',
+        'user.lastName',
         'user.dni',
         'user.phone',
         'user.isActive',
-        'user.last_login',
+        'user.lastLogin',
         'user.createdAt',
         'user.updatedAt',
         'rol.id',
@@ -59,7 +59,7 @@ export class UserService {
 
     if (filters.search) {
       qb.andWhere(
-        '(user.username ILIKE :search OR user.email ILIKE :search OR user.first_name ILIKE :search OR user.last_name ILIKE :search OR user.dni ILIKE :search)',
+        '(user.username ILIKE :search OR user.email ILIKE :search OR user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.dni ILIKE :search)',
         { search: `%${filters.search}%` }
       );
     }
@@ -83,8 +83,8 @@ export class UserService {
       id: user.id,
       username: user.username,
       email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      first_name: user.firstName,
+      last_name: user.lastName,
       full_name: user.full_name,
       dni: user.dni,
       phone: user.phone,
@@ -93,7 +93,7 @@ export class UserService {
         ? { id: user.unidadOperativa.id, nombre: (user.unidadOperativa as any).nombre }
         : null,
       is_active: user.isActive,
-      last_login: user.last_login,
+      last_login: user.lastLogin,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
     }));
@@ -113,14 +113,14 @@ export class UserService {
         'user.id',
         'user.username',
         'user.email',
-        'user.first_name',
-        'user.last_name',
+        'user.firstName',
+        'user.lastName',
         'user.dni',
         'user.phone',
         'user.rolId',
         'user.unidadOperativaId',
         'user.isActive',
-        'user.last_login',
+        'user.lastLogin',
         'user.createdAt',
         'user.updatedAt',
         'rol.id',
@@ -141,8 +141,8 @@ export class UserService {
       id: user.id,
       username: user.username,
       email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      first_name: user.firstName,
+      last_name: user.lastName,
       full_name: user.full_name,
       dni: user.dni,
       phone: user.phone,
@@ -153,7 +153,7 @@ export class UserService {
         ? { id: user.unidadOperativa.id, nombre: (user.unidadOperativa as any).nombre }
         : null,
       is_active: user.isActive,
-      last_login: user.last_login,
+      last_login: user.lastLogin,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
     };
@@ -190,10 +190,10 @@ export class UserService {
 
     const user = this.userRepository.create({
       username: dto.username,
-      password_hash: hashedPassword,
+      passwordHash: hashedPassword,
       email: dto.email,
-      first_name: dto.first_name,
-      last_name: dto.last_name,
+      firstName: dto.first_name,
+      lastName: dto.last_name,
       dni: dto.dni,
       phone: dto.phone,
       rolId: dto.rol_id,
@@ -248,8 +248,8 @@ export class UserService {
     // Update fields
     if (dto.username !== undefined) user.username = dto.username;
     if (dto.email !== undefined) user.email = dto.email;
-    if (dto.first_name !== undefined) user.first_name = dto.first_name;
-    if (dto.last_name !== undefined) user.last_name = dto.last_name;
+    if (dto.first_name !== undefined) user.firstName = dto.first_name;
+    if (dto.last_name !== undefined) user.lastName = dto.last_name;
     if (dto.dni !== undefined) user.dni = dto.dni;
     if (dto.phone !== undefined) user.phone = dto.phone;
     if (dto.rol_id !== undefined) user.rolId = dto.rol_id;
@@ -258,7 +258,7 @@ export class UserService {
 
     // Hash password if provided
     if (dto.password) {
-      user.password_hash = await SecurityUtil.hashPassword(dto.password);
+      user.passwordHash = await SecurityUtil.hashPassword(dto.password);
     }
 
     await this.userRepository.save(user);
@@ -276,7 +276,7 @@ export class UserService {
       throw new Error('Usuario no encontrado');
     }
 
-    user.password_hash = await SecurityUtil.hashPassword(newPassword);
+    user.passwordHash = await SecurityUtil.hashPassword(newPassword);
     await this.userRepository.save(user);
     Logger.info('User password changed by admin', { userId: id, tenantId });
   }
