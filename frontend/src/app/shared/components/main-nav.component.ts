@@ -39,7 +39,7 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
 
       <div class="nav-user">
         <!-- Notification Bell -->
-        <div class="notification-wrapper" (clickOutside)="closeNotifications()">
+        <div class="notification-wrapper" (appClickOutside)="closeNotifications()">
           <button class="btn-icon" (click)="toggleNotifications()">
             <i class="fa-regular fa-bell"></i>
             <span class="badge" *ngIf="notificationService.unreadCount() > 0">
