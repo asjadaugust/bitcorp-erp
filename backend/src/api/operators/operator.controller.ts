@@ -149,7 +149,7 @@ export class OperatorController {
     try {
       const tenantId = req.user!.id_empresa;
       const { skill } = req.query;
-      
+
       if (!skill) {
         sendError(res, 400, 'SKILL_REQUIRED', 'Se requiere el parámetro skill');
         return;
@@ -166,7 +166,7 @@ export class OperatorController {
     try {
       const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
-      
+
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
         return;
@@ -179,7 +179,13 @@ export class OperatorController {
         sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
         return;
       }
-      sendError(res, 500, 'FETCH_AVAILABILITY_FAILED', 'Error al obtener disponibilidad', error.message);
+      sendError(
+        res,
+        500,
+        'FETCH_AVAILABILITY_FAILED',
+        'Error al obtener disponibilidad',
+        error.message
+      );
     }
   }
 
@@ -187,20 +193,190 @@ export class OperatorController {
     try {
       const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
-      
+
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
         return;
       }
 
-      const performance = await operatorService.getPerformance(tenantId, id);
+      const dias = req.query.dias ? parseInt(req.query.dias as string) : 30;
+
+      const performance = await operatorService.getPerformance(tenantId, id, dias);
       sendSuccess(res, performance);
     } catch (error: any) {
       if (error instanceof NotFoundError) {
         sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
         return;
       }
-      sendError(res, 500, 'FETCH_PERFORMANCE_FAILED', 'Error al obtener rendimiento', error.message);
+      sendError(
+        res,
+        500,
+        'FETCH_PERFORMANCE_FAILED',
+        'Error al obtener rendimiento',
+        error.message
+      );
+    }
+  }
+
+  // --- Certifications ---
+
+  static async getCertifications(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
+
+      const certifications = await operatorService.getCertifications(tenantId, id);
+      sendSuccess(res, certifications);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'FETCH_CERTIFICATIONS_FAILED',
+        'Error al obtener certificaciones',
+        error.message
+      );
+    }
+  }
+
+  static async addCertification(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
+
+      const {
+        nombre_certificacion,
+        numero_certificacion,
+        fecha_emision,
+        fecha_vencimiento,
+        entidad_emisora,
+      } = req.body;
+
+      if (!nombre_certificacion) {
+        sendError(
+          res,
+          400,
+          'NOMBRE_CERTIFICACION_REQUIRED',
+          'El nombre de la certificación es requerido'
+        );
+        return;
+      }
+
+      const certification = await operatorService.addCertification(tenantId, id, {
+        nombre_certificacion,
+        numero_certificacion,
+        fecha_emision,
+        fecha_vencimiento,
+        entidad_emisora,
+      });
+      sendCreated(res, certification);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      sendError(
+        res,
+        400,
+        'ADD_CERTIFICATION_FAILED',
+        'Error al agregar certificación',
+        error.message
+      );
+    }
+  }
+
+  static async deleteCertification(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const certId = parseInt(req.params.certId);
+
+      if (isNaN(certId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de certificación inválido');
+        return;
+      }
+
+      await operatorService.deleteCertification(tenantId, certId);
+      res.status(204).send();
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'CERTIFICATION_NOT_FOUND', 'Certificación no encontrada');
+        return;
+      }
+      sendError(
+        res,
+        500,
+        'DELETE_CERTIFICATION_FAILED',
+        'Error al eliminar certificación',
+        error.message
+      );
+    }
+  }
+
+  // --- Skills ---
+
+  static async getSkills(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
+
+      const skills = await operatorService.getSkills(tenantId, id);
+      sendSuccess(res, skills);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      sendError(res, 500, 'FETCH_SKILLS_FAILED', 'Error al obtener habilidades', error.message);
+    }
+  }
+
+  static async addSkill(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const id = parseInt(req.params.id);
+
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de operador inválido');
+        return;
+      }
+
+      const { tipo_equipo, nivel_habilidad, anios_experiencia } = req.body;
+
+      if (!tipo_equipo) {
+        sendError(res, 400, 'TIPO_EQUIPO_REQUIRED', 'El tipo de equipo es requerido');
+        return;
+      }
+
+      const skill = await operatorService.addSkill(tenantId, id, {
+        tipo_equipo,
+        nivel_habilidad,
+        anios_experiencia,
+      });
+      sendCreated(res, skill);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) {
+        sendError(res, 404, 'OPERATOR_NOT_FOUND', 'Operador no encontrado');
+        return;
+      }
+      sendError(res, 400, 'ADD_SKILL_FAILED', 'Error al agregar habilidad', error.message);
     }
   }
 

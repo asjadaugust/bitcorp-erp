@@ -21,6 +21,16 @@ router.get(
   OperatorController.searchBySkill
 );
 router.get(
+  '/export/excel',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.exportExcel
+);
+router.get(
+  '/export/csv',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.exportCSV
+);
+router.get(
   '/:id',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO, ROLES.OPERADOR),
   OperatorController.getById
@@ -35,6 +45,31 @@ router.get(
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
   OperatorController.getPerformance
 );
+router.get(
+  '/:id/certifications',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.getCertifications
+);
+router.post(
+  '/:id/certifications',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.addCertification
+);
+router.delete(
+  '/certifications/:certId',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.deleteCertification
+);
+router.get(
+  '/:id/skills',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.getSkills
+);
+router.post(
+  '/:id/skills',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  OperatorController.addSkill
+);
 router.post(
   '/',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
@@ -48,15 +83,5 @@ router.put(
   OperatorController.update
 );
 router.delete('/:id', authorize(ROLES.ADMIN, ROLES.DIRECTOR), OperatorController.delete);
-router.get(
-  '/export/excel',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
-  OperatorController.exportExcel
-);
-router.get(
-  '/export/csv',
-  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
-  OperatorController.exportCSV
-);
 
 export default router;
