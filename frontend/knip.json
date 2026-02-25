@@ -1,0 +1,6 @@
+{
+  "entry": ["src/main.ts", "src/app/app.routes.ts"],
+  "project": ["src/**/*.ts"],
+  "ignore": ["src/**/*.spec.ts", "src/environments/**"],
+  "angular": true
+}
