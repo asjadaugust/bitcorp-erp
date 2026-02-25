@@ -641,15 +641,15 @@ export class OperatorService {
     const lastDay = new Date(year, month, 0).getDate();
     const fechaFin = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    const records = await this.dispRepository.find({
-      where: { tenantId },
-      order: { trabajadorId: 'ASC', fecha: 'ASC' },
-    });
+    const records = await this.dispRepository
+      .createQueryBuilder('d')
+      .where('d.tenant_id = :tenantId', { tenantId })
+      .andWhere('d.fecha BETWEEN :inicio AND :fin', { inicio: fechaInicio, fin: fechaFin })
+      .orderBy('d.trabajador_id', 'ASC')
+      .addOrderBy('d.fecha', 'ASC')
+      .getMany();
 
-    // Filter to the requested month in JS (avoids TypeORM date range complexity)
-    const filtered = records.filter((r) => r.fecha >= fechaInicio && r.fecha <= fechaFin);
-
-    return filtered.map(toDisponibilidadProgramadaDto);
+    return records.map(toDisponibilidadProgramadaDto);
   }
 
   async setDisponibilidad(

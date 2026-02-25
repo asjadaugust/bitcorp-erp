@@ -409,7 +409,10 @@ export function toDisponibilidadProgramadaDto(
   return {
     id: e.id,
     trabajador_id: e.trabajadorId,
-    fecha: typeof e.fecha === 'string' ? e.fecha.split('T')[0] : String(e.fecha),
+    fecha: ((e.fecha as unknown) instanceof Date
+      ? (e.fecha as unknown as Date).toISOString()
+      : String(e.fecha)
+    ).slice(0, 10),
     disponible: e.disponible,
     observacion: e.observacion,
   };
