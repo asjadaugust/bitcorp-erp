@@ -492,6 +492,7 @@ export class OperatorService {
       const parteHoy = await this.parteDiarioRepository
         .createQueryBuilder('p')
         .where('p.trabajador_id = :id', { id })
+        .andWhere('p.tenant_id = :tenantId', { tenantId })
         .andWhere('DATE(p.fecha) = CURRENT_DATE')
         .andWhere("p.estado NOT IN ('RECHAZADO')")
         .getOne();
@@ -531,9 +532,10 @@ export class OperatorService {
           "SUM(CASE WHEN p.estado = 'APROBADO' THEN 1 ELSE 0 END) AS aprobados",
           "SUM(CASE WHEN p.estado = 'RECHAZADO' THEN 1 ELSE 0 END) AS rechazados",
           "SUM(CASE WHEN p.estado IN ('BORRADOR','ENVIADO') THEN 1 ELSE 0 END) AS pendientes",
-          'SUM(COALESCE(p.horometro_final, 0) - COALESCE(p.horometro_inicial, 0)) AS horas',
+          'SUM(GREATEST(COALESCE(p.horometro_final, 0) - COALESCE(p.horometro_inicial, 0), 0)) AS horas',
         ])
         .where('p.trabajador_id = :id', { id })
+        .andWhere('p.tenant_id = :tenantId', { tenantId })
         .andWhere('p.fecha >= :cutoffDate', { cutoffDate: cutoffDateStr })
         .getRawOne();
 

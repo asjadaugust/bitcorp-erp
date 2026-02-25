@@ -85,6 +85,7 @@ describe('OperatorService — availability and performance', () => {
       expect(result.estado).toBe('ASIGNADO');
       expect(result.parte_diario_hoy?.id).toBe(99);
       expect(result.parte_diario_hoy?.equipo_id).toBe(12);
+      expect(result.parte_diario_hoy?.fecha_parte).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
 
     it('should propagate NotFoundError if operator not found', async () => {
