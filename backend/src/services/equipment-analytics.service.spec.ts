@@ -217,15 +217,15 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
 
   describe('toFlotaUtilizacionDto — Métricas de flota', () => {
     const mockFlota = {
-      total_equipment: 20,
-      active_equipment: 15,
-      avg_utilization_rate: 68.5,
-      total_cost: 150000,
-      top_performers: [
-        { equipment_code: 'EXC-001', utilization_rate: 95.2 },
-        { equipment_code: 'CAM-015', utilization_rate: 90.1 },
+      totalEquipment: 20,
+      activeEquipment: 15,
+      avgUtilizationRate: 68.5,
+      totalCost: 150000,
+      topPerformers: [
+        { equipmentCode: 'EXC-001', utilizationRate: 95.2 },
+        { equipmentCode: 'CAM-015', utilizationRate: 90.1 },
       ],
-      underutilized: [{ equipment_code: 'VOL-022', utilization_rate: 30.0 }],
+      underutilized: [{ equipmentCode: 'VOL-022', utilizationRate: 30.0 }],
     };
 
     it('debe mapear totalEquipment a total_equipos', () => {

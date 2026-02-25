@@ -3,6 +3,8 @@
  * Transformación de interfaces camelCase → snake_case español para respuestas API
  */
 
+import type { FleetUtilizationMetrics } from '../../services/equipment-analytics.service';
+
 // ─── Interfaces DTO ────────────────────────────────────────────────────────────
 
 export interface UtilizacionEquipoDto {
@@ -103,26 +105,19 @@ export function toTendenciaUtilizacionDto(entity: {
   };
 }
 
-export function toFlotaUtilizacionDto(entity: {
-  total_equipment: number;
-  active_equipment: number;
-  avg_utilization_rate: number;
-  total_cost: number;
-  top_performers: Array<{ equipment_code: string; utilization_rate: number }>;
-  underutilized: Array<{ equipment_code: string; utilization_rate: number }>;
-}): FlotaUtilizacionDto {
+export function toFlotaUtilizacionDto(entity: FleetUtilizationMetrics): FlotaUtilizacionDto {
   return {
-    total_equipos: entity.total_equipment,
-    equipos_activos: entity.active_equipment,
-    tasa_utilizacion_promedio: entity.avg_utilization_rate,
-    costo_total: entity.total_cost,
-    mejores_equipos: entity.top_performers.map((e) => ({
-      codigo_equipo: e.equipment_code,
-      tasa_utilizacion: e.utilization_rate,
+    total_equipos: entity.totalEquipment,
+    equipos_activos: entity.activeEquipment,
+    tasa_utilizacion_promedio: entity.avgUtilizationRate,
+    costo_total: entity.totalCost,
+    mejores_equipos: (entity.topPerformers ?? []).map((e) => ({
+      codigo_equipo: e.equipmentCode,
+      tasa_utilizacion: e.utilizationRate,
     })),
-    equipos_sub_utilizados: entity.underutilized.map((e) => ({
-      codigo_equipo: e.equipment_code,
-      tasa_utilizacion: e.utilization_rate,
+    equipos_sub_utilizados: (entity.underutilized ?? []).map((e) => ({
+      codigo_equipo: e.equipmentCode,
+      tasa_utilizacion: e.utilizationRate,
     })),
   };
 }
