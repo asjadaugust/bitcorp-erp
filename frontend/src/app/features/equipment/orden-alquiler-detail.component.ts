@@ -16,7 +16,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [header]="header"
       [entity]="orden"
       [loading]="loading"
@@ -233,7 +233,7 @@ import {
           <i class="fa-solid fa-arrow-left"></i> Volver a la Lista
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `

@@ -18,7 +18,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [header]="header"
       [entity]="vale"
       [loading]="loading"
@@ -200,7 +200,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
         </div>
       </div>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `

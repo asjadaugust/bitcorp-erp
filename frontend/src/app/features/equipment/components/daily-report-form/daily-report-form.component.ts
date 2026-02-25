@@ -206,11 +206,13 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       }
       this.precalentamientoTipoNombre = equipo.tipo_equipo_nombre || equipo.categoria || '';
       this.precalentamientoService.obtenerHoras(equipo.tipo_equipo_id).subscribe({
-        next: (data: Record<string, unknown>) => {
-          if (data && (data.horas_precalentamiento as number) > 0) {
+        next: (data: any) => {
+          if (data && (data['horas_precalentamiento'] as number) > 0) {
             this.showPrecalentamiento = true;
             if (!this.precalentamientoOverride) {
-              this.reportForm.patchValue({ horas_precalentamiento: data.horas_precalentamiento });
+              this.reportForm.patchValue({
+                horas_precalentamiento: data['horas_precalentamiento'],
+              });
             }
           } else {
             this.showPrecalentamiento = false;
@@ -243,7 +245,9 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ([equipmentRes, operators]: [unknown, unknown]) => {
-          const equipment = Array.isArray(equipmentRes) ? equipmentRes : (equipmentRes as Record<string, unknown>)?.data as Equipment[] || [];
+          const equipment = Array.isArray(equipmentRes)
+            ? equipmentRes
+            : ((equipmentRes as Record<string, unknown>)?.['data'] as Equipment[]) || [];
           this.equipment = equipment;
           this.filteredEquipment = equipment;
           console.log('Equipment loaded into component:', this.equipment.length);
@@ -267,7 +271,9 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
           // Auto-select current user if they're an operator
           const currentUser = this.authService.currentUser;
           if (currentUser) {
-            const currentOperator = this.operators.find((op) => op.user_id === currentUser.id);
+            const currentOperator = this.operators.find(
+              (op: any) => (op.user_id || op.usuario_id || op.userId) === currentUser.id
+            );
             if (currentOperator) {
               this.reportForm.patchValue({ trabajador_id: currentOperator.id });
             }
@@ -285,37 +291,38 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   loadReport(id: string | number): void {
     this.loading = true;
     this.dailyReportService.getById(id).subscribe({
-      next: (report: Record<string, unknown>) => {
+      next: (report: any) => {
         // Calculate fuel_end from consumed if needed
-        let fuelEnd = report.fuel_end;
+        let fuelEnd = report['fuel_end'] as number | undefined;
         if (
-          report.combustible_inicial !== undefined &&
-          report.combustible_consumido !== undefined
+          report['combustible_inicial'] !== undefined &&
+          report['combustible_consumido'] !== undefined
         ) {
-          fuelEnd = report.combustible_inicial - report.combustible_consumido;
+          fuelEnd =
+            (report['combustible_inicial'] as number) - (report['combustible_consumido'] as number);
         }
 
         this.reportForm.patchValue({
-          fecha_parte: report.fecha || report.fecha_parte,
-          trabajador_id: report.trabajador_id,
-          equipo_id: report.equipo_id,
-          proyecto_id: report.proyecto_id,
-          hora_inicio: report.hora_inicio,
-          hora_fin: report.hora_fin,
-          horometro_inicial: report.horometro_inicial,
-          horometro_final: report.horometro_final,
-          odometro_inicial: report.odometro_inicial,
-          odometro_final: report.odometro_final,
-          fuel_start: report.combustible_inicial || report.fuel_start,
+          fecha_parte: report['fecha'] || report['fecha_parte'],
+          trabajador_id: report['trabajador_id'],
+          equipo_id: report['equipo_id'],
+          proyecto_id: report['proyecto_id'],
+          hora_inicio: report['hora_inicio'],
+          hora_fin: report['hora_fin'],
+          horometro_inicial: report['horometro_inicial'],
+          horometro_final: report['horometro_final'],
+          odometro_inicial: report['odometro_inicial'],
+          odometro_final: report['odometro_final'],
+          fuel_start: report['combustible_inicial'] || report['fuel_start'],
           fuel_end: fuelEnd,
           // Map API field names to form field names
-          location: report.lugar_salida || report.location || '',
-          work_description: report.observaciones || report.work_description || '',
-          notes: report.observaciones_correcciones || report.notes,
-          weather_conditions: report.weather_conditions, // Might not exist in backend yet
-          gps_latitude: report.gps_latitude, // Might not exist in backend yet
-          gps_longitude: report.gps_longitude, // Might not exist in backend yet
-          horas_precalentamiento: report.horas_precalentamiento ?? 0,
+          location: report['lugar_salida'] || report['location'] || '',
+          work_description: report['observaciones'] || report['work_description'] || '',
+          notes: report['observaciones_correcciones'] || report['notes'],
+          weather_conditions: report['weather_conditions'], // Might not exist in backend yet
+          gps_latitude: report['gps_latitude'], // Might not exist in backend yet
+          gps_longitude: report['gps_longitude'], // Might not exist in backend yet
+          horas_precalentamiento: report['horas_precalentamiento'] ?? 0,
         });
         this.loading = false;
       },
@@ -494,16 +501,16 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     const reportData = this.toCreateDto(status);
 
     const saveOperation = this.reportId
-      ? this.dailyReportService.update(this.reportId, reportData)
-      : this.dailyReportService.create(reportData);
+      ? this.dailyReportService.update(this.reportId, reportData as any)
+      : this.dailyReportService.create(reportData as any);
 
     saveOperation.subscribe({
-      next: (response: Record<string, unknown>) => {
+      next: (response: Record<string, unknown> | any) => {
         this.saving = false;
 
         // Upload photos if any
-        if (this.uploadedPhotos.length > 0 && response.id) {
-          this.uploadPhotos(response.id);
+        if (this.uploadedPhotos.length > 0 && response['id']) {
+          this.uploadPhotos(response['id'] as string | number);
         }
 
         const message =

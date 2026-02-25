@@ -573,14 +573,15 @@ export class EquipmentListComponent implements OnInit {
       inputSchema: {
         type: 'object',
         properties: {
-          query: { type: 'string', description: 'The search term' }
+          query: { type: 'string', description: 'The search term' },
         },
-        required: ['query']
+        required: ['query'],
       },
-      execute: async (args: { query: string }) => {
-        this.onFilterChange({ search: args.query });
-        return { success: true, message: `Searching for: ${args.query}` };
-      }
+      execute: async (args: Record<string, unknown>) => {
+        const query = args['query'] as string;
+        this.onFilterChange({ search: query });
+        return { success: true, message: `Searching for: ${query}` };
+      },
     });
 
     this.webMcpService.registerTool({
@@ -589,14 +590,15 @@ export class EquipmentListComponent implements OnInit {
       inputSchema: {
         type: 'object',
         properties: {
-          id: { type: 'string', description: 'The unique ID of the equipment' }
+          id: { type: 'string', description: 'The unique ID of the equipment' },
         },
-        required: ['id']
+        required: ['id'],
       },
-      execute: async (args: { id: string }) => {
-        await this.router.navigate(['/equipment', args.id]);
-        return { success: true, message: `Navigating to details for ID: ${args.id}` };
-      }
+      execute: async (args: Record<string, unknown>) => {
+        const id = args['id'] as string;
+        await this.router.navigate(['/equipment', id]);
+        return { success: true, message: `Navigating to details for ID: ${id}` };
+      },
     });
   }
 
@@ -638,32 +640,33 @@ export class EquipmentListComponent implements OnInit {
     this.loadingStatistics = true;
     this.equipmentService.getStatistics().subscribe({
       next: (data) => {
-        this.statistics = data;
+        const statsData = data as any;
+        this.statistics = statsData;
         this.statItems = [
           {
             label: 'Total Equipos',
-            value: data.total,
+            value: statsData.total,
             icon: 'fa-cubes',
             color: 'primary',
             testId: 'total-equipment',
           },
           {
             label: 'Disponibles',
-            value: data.disponible,
+            value: statsData.disponible,
             icon: 'fa-check',
             color: 'success',
             testId: 'available-equipment',
           },
           {
             label: 'En Uso',
-            value: data.en_uso,
+            value: statsData.en_uso,
             icon: 'fa-person-digging',
             color: 'info',
             testId: 'in-use-equipment',
           },
           {
             label: 'Mantenimiento',
-            value: data.mantenimiento,
+            value: statsData.mantenimiento,
             icon: 'fa-wrench',
             color: 'warning',
             testId: 'maintenance-equipment',

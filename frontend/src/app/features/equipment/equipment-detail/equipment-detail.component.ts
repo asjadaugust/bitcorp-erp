@@ -39,7 +39,7 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
     AeroTabsComponent,
   ],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="equipment"
       [header]="header"
@@ -320,7 +320,7 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
           <i class="fa-solid fa-arrow-left"></i> Volver a Lista
         </button>
       </ng-container>
-    </entity-detail-shell>
+    </app-entity-detail-shell>
   `,
   styles: [
     `
@@ -740,15 +740,17 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   loadRelatedData(id: string): void {
     this.dailyReportService.getAll({ equipo_id: id }).subscribe((data: unknown) => {
       const d = data as Record<string, unknown>;
-      this.dailyReports = Array.isArray(d) ? d : (d.data as Record<string, unknown>[]) || [];
+      this.dailyReports = Array.isArray(d) ? d : (d['data'] as Record<string, unknown>[]) || [];
     });
     this.contractService.getAll({ equipmentId: id }).subscribe((data: unknown) => {
       const d = data as Record<string, unknown>;
-      this.contracts = Array.isArray(d) ? d : (d.data as Record<string, unknown>[]) || [];
+      this.contracts = Array.isArray(d) ? d : (d['data'] as Record<string, unknown>[]) || [];
     });
     this.maintenanceService.getAll({ equipoId: id }).subscribe((data: unknown) => {
       const d = data as Record<string, unknown>;
-      this.maintenanceHistory = Array.isArray(d) ? d : (d.data as Record<string, unknown>[]) || [];
+      this.maintenanceHistory = Array.isArray(d)
+        ? d
+        : (d['data'] as Record<string, unknown>[]) || [];
     });
     this.solicitudService.listar({ estado: 'APROBADO' }).subscribe((data) => {
       // For now, we filter locally if the API doesn't support equipo_id yet,
@@ -777,11 +779,13 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
 
   deleteEquipment(): void {
     if (!this.equipment) return;
-    this.confirmSvc.confirmDelete(`el equipo ${this.equipment.codigo_equipo}`).subscribe((confirmed) => {
-      if (confirmed) {
-        this.confirmDelete();
-      }
-    });
+    this.confirmSvc
+      .confirmDelete(`el equipo ${this.equipment.codigo_equipo}`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.confirmDelete();
+        }
+      });
   }
 
   confirmDelete(): void {

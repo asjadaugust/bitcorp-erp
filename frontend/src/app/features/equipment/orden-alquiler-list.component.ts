@@ -93,7 +93,13 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
       </ng-template>
 
       <ng-template #actionsTemplate let-row>
-        <div class="action-buttons" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
+        <div
+          class="action-buttons"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="toolbar"
+        >
           <button
             *ngIf="['BORRADOR', 'ENVIADO'].includes(row.estado)"
             class="btn-icon"
@@ -132,11 +138,23 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Modal: Enviar al proveedor -->
     @if (showEnviarModal && modalOrden) {
-      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
-        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
-            <button class="btn-close" (click)="cerrarModales()">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+      <div
+        class="modal-overlay"
+        (click)="cerrarModales()"
+        (keydown.enter)="cerrarModales()"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-panel"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
+          <button class="btn-close" (click)="cerrarModales()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong> →
@@ -166,11 +184,23 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Modal: Confirmar orden -->
     @if (showConfirmarModal && modalOrden) {
-      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
-        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
-            <button class="btn-close" (click)="cerrarModales()">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+      <div
+        class="modal-overlay"
+        (click)="cerrarModales()"
+        (keydown.enter)="cerrarModales()"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-panel"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
+          <button class="btn-close" (click)="cerrarModales()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
@@ -200,11 +230,23 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
     <!-- Modal: Cancelar orden -->
     @if (showCancelarModal && modalOrden) {
-      <div class="modal-overlay" (click)="cerrarModales()" (keydown.enter)="cerrarModales()" tabindex="0" role="button">
-        <div class="modal-panel" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
-            <button class="btn-close" (click)="cerrarModales()">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+      <div
+        class="modal-overlay"
+        (click)="cerrarModales()"
+        (keydown.enter)="cerrarModales()"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-panel"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
+          <button class="btn-close" (click)="cerrarModales()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
@@ -499,12 +541,12 @@ export class OrdenAlquilerListComponent implements OnInit {
   cargar() {
     this.loading = true;
     const filters: Record<string, string | number> = { page: this.page, limit: this.limit };
-    if (this.filtroEstado) filters.estado = this.filtroEstado;
+    if (this.filtroEstado) filters['estado'] = this.filtroEstado;
 
     this.service.listar(filters).subscribe({
       next: (res) => {
         this.ordenes = res.data ?? [];
-        this.total = (res as Record<string, unknown>).total as number ?? res.pagination?.total ?? 0;
+        this.total = ((res as any)['total'] as number) ?? res.pagination?.total ?? 0;
         this.loading = false;
       },
       error: () => {

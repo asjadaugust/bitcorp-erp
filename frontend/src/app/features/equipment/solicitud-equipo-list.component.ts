@@ -100,7 +100,13 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
-        <div class="action-buttons" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
+        <div
+          class="action-buttons"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="toolbar"
+        >
           <button
             *ngIf="row.estado === 'BORRADOR'"
             class="btn-icon"
@@ -304,7 +310,7 @@ export class SolicitudEquipoListComponent implements OnInit {
   cargar() {
     this.loading = true;
     const filters: Record<string, string | number> = { page: this.page, limit: this.limit };
-    if (this.filtroEstado) filters.estado = this.filtroEstado;
+    if (this.filtroEstado) filters['estado'] = this.filtroEstado;
 
     this.svc.listar(filters).subscribe({
       next: (res) => {

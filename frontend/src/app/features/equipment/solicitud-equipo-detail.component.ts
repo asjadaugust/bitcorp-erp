@@ -25,7 +25,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     EntityDetailSidebarCardComponent,
   ],
   template: `
-    <entity-detail-shell
+    <app-entity-detail-shell
       [loading]="loading"
       [entity]="solicitud"
       [header]="header"
@@ -117,7 +117,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
       </ng-container>
 
       <!-- SIDEBAR EXTRA CARDS -->
-      <entity-detail-sidebar-card entity-sidebar-after title="Estado de Aprobación">
+      <app-entity-detail-sidebar-card entity-sidebar-after title="Estado de Aprobación">
         <div class="status-info-card">
           <div class="status-indicator" [ngClass]="'status-' + solicitud?.estado?.toLowerCase()">
             <i class="fa-solid" [ngClass]="getStatusIcon(solicitud?.estado || '')"></i>
@@ -130,8 +130,8 @@ import { ConfirmService } from '../../core/services/confirm.service';
             </div>
           }
         </div>
-      </entity-detail-sidebar-card>
-    </entity-detail-shell>
+      </app-entity-detail-sidebar-card>
+    </app-entity-detail-shell>
   `,
   styles: [
     `

@@ -282,7 +282,7 @@ export class ValeCombustibleListComponent implements OnInit {
   cargar() {
     this.loading = true;
     this.svc
-      .listar({ ...this.activeFilters, page: String(this.page), limit: String(this.limit) })
+      .listar({ ...this.activeFilters, page: this.page as any, limit: this.limit as any })
       .subscribe({
         next: (res) => {
           this.vales = res.data;
