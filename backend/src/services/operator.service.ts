@@ -17,9 +17,12 @@ import {
   toHabilidadDto,
   DisponibilidadDto,
   RendimientoDto,
+  DisponibilidadProgramadaDto,
+  toDisponibilidadProgramadaDto,
 } from '../types/dto/operator.dto';
 import { CertificacionOperador } from '../models/operador-certificacion.model';
 import { HabilidadOperador } from '../models/operador-habilidad.model';
+import { DisponibilidadOperador } from '../models/disponibilidad-operador.model';
 import { ParteDiario } from '../models/daily-report-typeorm.model';
 import Logger from '../utils/logger';
 import { NotFoundError, ConflictError } from '../errors/http.errors';
@@ -47,6 +50,11 @@ export class OperatorService {
   private get habRepository(): Repository<HabilidadOperador> {
     if (!AppDataSource.isInitialized) throw new Error('Database not initialized');
     return AppDataSource.getRepository(HabilidadOperador);
+  }
+
+  private get dispRepository(): Repository<DisponibilidadOperador> {
+    if (!AppDataSource.isInitialized) throw new Error('Database not initialized');
+    return AppDataSource.getRepository(DisponibilidadOperador);
   }
 
   private get parteDiarioRepository(): Repository<ParteDiario> {
@@ -622,6 +630,55 @@ export class OperatorService {
     });
     const saved = await this.habRepository.save(entity);
     return toHabilidadDto(saved);
+  }
+
+  async getDisponibilidadMensual(
+    tenantId: number,
+    mesAnio: string // format: YYYY-MM
+  ): Promise<DisponibilidadProgramadaDto[]> {
+    const [year, month] = mesAnio.split('-').map(Number);
+    const fechaInicio = `${year}-${String(month).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const fechaFin = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+    const records = await this.dispRepository.find({
+      where: { tenantId },
+      order: { trabajadorId: 'ASC', fecha: 'ASC' },
+    });
+
+    // Filter to the requested month in JS (avoids TypeORM date range complexity)
+    const filtered = records.filter((r) => r.fecha >= fechaInicio && r.fecha <= fechaFin);
+
+    return filtered.map(toDisponibilidadProgramadaDto);
+  }
+
+  async setDisponibilidad(
+    tenantId: number,
+    operadorId: number,
+    fecha: string,
+    disponible: boolean,
+    observacion?: string
+  ): Promise<DisponibilidadProgramadaDto> {
+    // Upsert: find existing or create new
+    let record = await this.dispRepository.findOne({
+      where: { trabajadorId: operadorId, fecha, tenantId },
+    });
+
+    if (record) {
+      record.disponible = disponible;
+      record.observacion = observacion;
+    } else {
+      record = this.dispRepository.create({
+        trabajadorId: operadorId,
+        fecha,
+        disponible,
+        observacion,
+        tenantId,
+      });
+    }
+
+    const saved = await this.dispRepository.save(record);
+    return toDisponibilidadProgramadaDto(saved);
   }
 }
 

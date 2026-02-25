@@ -11,6 +11,7 @@ import { Trabajador } from '../../models/trabajador.model';
 import { IsString, IsOptional, IsEmail, IsDateString, MaxLength } from 'class-validator';
 import { CertificacionOperador } from '../../models/operador-certificacion.model';
 import { HabilidadOperador } from '../../models/operador-habilidad.model';
+import { DisponibilidadOperador } from '../../models/disponibilidad-operador.model';
 
 export interface OperatorDto {
   id: number;
@@ -384,4 +385,32 @@ export interface RendimientoDto {
   partes_rechazados: number;
   partes_pendientes: number;
   eficiencia: number;
+}
+
+// --- Disponibilidad Programada DTOs ---
+
+export interface DisponibilidadProgramadaDto {
+  id: number;
+  trabajador_id: number;
+  fecha: string; // YYYY-MM-DD
+  disponible: boolean;
+  observacion?: string;
+}
+
+export interface DisponibilidadProgramadaCreateDto {
+  fecha: string; // YYYY-MM-DD
+  disponible: boolean;
+  observacion?: string;
+}
+
+export function toDisponibilidadProgramadaDto(
+  e: DisponibilidadOperador
+): DisponibilidadProgramadaDto {
+  return {
+    id: e.id,
+    trabajador_id: e.trabajadorId,
+    fecha: typeof e.fecha === 'string' ? e.fecha.split('T')[0] : String(e.fecha),
+    disponible: e.disponible,
+    observacion: e.observacion,
+  };
 }
