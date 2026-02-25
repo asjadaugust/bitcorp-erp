@@ -14,6 +14,15 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
+import { AeroInputComponent } from '../../../core/design-system/input/aero-input.component';
+import {
+  AeroBadgeComponent,
+  BadgeVariant,
+} from '../../../core/design-system/badge/aero-badge.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface InspectionFormData {
   plantillaId?: number;
@@ -29,7 +38,17 @@ interface InspectionFormData {
 @Component({
   selector: 'app-inspection-execute',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent, DropdownComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    PageLayoutComponent,
+    DropdownComponent,
+    ButtonComponent,
+    PageCardComponent,
+    AeroInputComponent,
+    AeroBadgeComponent,
+  ],
   template: `
     <app-page-layout
       [title]="getPageTitle()"
@@ -61,125 +80,120 @@ interface InspectionFormData {
       </div>
 
       <!-- Step 1: Select Template and Equipment -->
-      <div class="step-content" *ngIf="currentStep === 1">
-        <h2>Seleccionar Plantilla y Equipo</h2>
+      <app-page-card *ngIf="currentStep === 1" title="Seleccionar Plantilla y Equipo">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="aero-label">Plantilla de Checklist <span class="required">*</span></label>
+            <app-dropdown
+              [(ngModel)]="formData.plantillaId"
+              [options]="templateOptions"
+              (ngModelChange)="onTemplateChange()"
+              [placeholder]="'Seleccione una plantilla'"
+            ></app-dropdown>
+          </div>
 
-        <div class="form-group">
-          <label for="plantillaId">Plantilla de Checklist *</label>
-          <app-dropdown
-            [(ngModel)]="formData.plantillaId"
-            [options]="templateOptions"
-            (ngModelChange)="onTemplateChange()"
-            [placeholder]="'Seleccione una plantilla'"
-          ></app-dropdown>
-        </div>
+          <div class="form-group">
+            <aero-input
+              label="ID Equipo"
+              type="number"
+              [(ngModel)]="formData.equipoId"
+              placeholder="ID del equipo"
+              [required]="true"
+            ></aero-input>
+          </div>
 
-        <div class="form-group">
-          <label for="equipoId">Equipo *</label>
-          <input
-            type="number"
-            id="equipoId"
-            [(ngModel)]="formData.equipoId"
-            class="form-control"
-            placeholder="ID del equipo"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="trabajadorId">Inspector *</label>
-          <input
-            type="number"
-            id="trabajadorId"
-            [(ngModel)]="formData.trabajadorId"
-            class="form-control"
-            placeholder="ID del trabajador"
-          />
+          <div class="form-group">
+            <aero-input
+              label="ID Inspector"
+              type="number"
+              [(ngModel)]="formData.trabajadorId"
+              placeholder="ID del trabajador"
+              [required]="true"
+            ></aero-input>
+          </div>
         </div>
 
         <div class="button-group">
-          <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="nextStep()"
+          <app-button
+            variant="secondary"
+            icon="fa-arrow-left"
+            label="Cancelar"
+            (clicked)="cancel()"
+          ></app-button>
+          <app-button
+            variant="primary"
+            icon="fa-arrow-right"
+            label="Siguiente"
             [disabled]="!formData.plantillaId || !formData.equipoId || !formData.trabajadorId"
-          >
-            Siguiente <i class="fa-solid fa-arrow-right"></i>
-          </button>
+            (clicked)="nextStep()"
+          ></app-button>
         </div>
-      </div>
+      </app-page-card>
 
       <!-- Step 2: Initial Data -->
-      <div class="step-content" *ngIf="currentStep === 2">
-        <h2>Datos Iniciales de la Inspección</h2>
+      <app-page-card *ngIf="currentStep === 2" title="Datos Iniciales de la Inspección">
+        <div class="form-grid">
+          <div class="form-group">
+            <aero-input
+              label="Fecha de Inspección"
+              type="date"
+              [(ngModel)]="formData.fechaInspeccion"
+              [required]="true"
+            ></aero-input>
+          </div>
 
-        <div class="form-group">
-          <label for="fechaInspeccion">Fecha de Inspección *</label>
-          <input
-            type="date"
-            id="fechaInspeccion"
-            [(ngModel)]="formData.fechaInspeccion"
-            class="form-control"
-          />
-        </div>
+          <div class="form-group">
+            <aero-input
+              label="Hora de Inicio"
+              type="time"
+              [(ngModel)]="formData.horaInicio"
+              [required]="true"
+            ></aero-input>
+          </div>
 
-        <div class="form-group">
-          <label for="horaInicio">Hora de Inicio *</label>
-          <input
-            type="time"
-            id="horaInicio"
-            [(ngModel)]="formData.horaInicio"
-            class="form-control"
-          />
-        </div>
+          <div class="form-group">
+            <aero-input
+              label="Ubicación"
+              [(ngModel)]="formData.ubicacion"
+              placeholder="Ubicación de la inspección"
+            ></aero-input>
+          </div>
 
-        <div class="form-group">
-          <label for="ubicacion">Ubicación</label>
-          <input
-            type="text"
-            id="ubicacion"
-            [(ngModel)]="formData.ubicacion"
-            class="form-control"
-            placeholder="Ubicación de la inspección"
-          />
-        </div>
+          <div class="form-group">
+            <aero-input
+              label="Horómetro Inicial"
+              type="number"
+              [(ngModel)]="formData.horometroInicial"
+              placeholder="Horas del horómetro"
+            ></aero-input>
+          </div>
 
-        <div class="form-group">
-          <label for="horometroInicial">Horómetro Inicial</label>
-          <input
-            type="number"
-            id="horometroInicial"
-            [(ngModel)]="formData.horometroInicial"
-            class="form-control"
-            placeholder="Horas del horómetro"
-            step="0.1"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="odometroInicial">Odómetro Inicial</label>
-          <input
-            type="number"
-            id="odometroInicial"
-            [(ngModel)]="formData.odometroInicial"
-            class="form-control"
-            placeholder="Kilómetros del odómetro"
-            step="0.1"
-          />
+          <div class="form-group">
+            <aero-input
+              label="Odómetro Inicial"
+              type="number"
+              [(ngModel)]="formData.odometroInicial"
+              placeholder="Kilómetros del odómetro"
+            ></aero-input>
+          </div>
         </div>
 
         <div class="button-group">
-          <button class="btn btn-secondary" (click)="previousStep()">
-            <i class="fa-solid fa-arrow-left"></i> Atrás
-          </button>
-          <button
-            class="btn btn-primary"
-            (click)="startInspection()"
+          <app-button
+            variant="secondary"
+            icon="fa-arrow-left"
+            label="Atrás"
+            (clicked)="previousStep()"
+          ></app-button>
+          <app-button
+            variant="primary"
+            icon="fa-play"
+            label="Iniciar Inspección"
             [disabled]="!formData.fechaInspeccion || !formData.horaInicio"
-          >
-            Iniciar Inspección <i class="fa-solid fa-play"></i>
-          </button>
+            (clicked)="startInspection()"
+          ></app-button>
         </div>
-      </div>
+      </app-page-card>
 
       <!-- Step 3: Inspection Items -->
       <div class="step-content inspection-step" *ngIf="currentStep === 3 && currentItem">
@@ -198,12 +212,10 @@ interface InspectionFormData {
         </div>
 
         <!-- Item Card -->
-        <div class="item-card">
+        <app-page-card>
           <div class="item-header">
-            <span class="item-category">{{ currentItem.categoria }}</span>
-            <span class="item-critical" *ngIf="currentItem.esCritico">
-              <i class="fa-solid fa-exclamation-triangle"></i> CRÍTICO
-            </span>
+            <aero-badge variant="primary">{{ currentItem.categoria }}</aero-badge>
+            <aero-badge variant="error" *ngIf="currentItem.esCritico"> CRÍTICO </aero-badge>
           </div>
 
           <h3 class="item-description">{{ currentItem.descripcion }}</h3>
@@ -225,7 +237,7 @@ interface InspectionFormData {
           <!-- Response Form -->
           <div class="response-form">
             <div class="form-group">
-              <span class="label">Estado *</span>
+              <span class="aero-label">Estado *</span>
               <div class="radio-group">
                 <label
                   class="radio-option conforme"
@@ -266,20 +278,16 @@ interface InspectionFormData {
             </div>
 
             <div class="form-group" *ngIf="currentItem.tipoVerificacion === 'MEDICION'">
-              <label for="valorMedido">Valor Medido</label>
-              <input
-                type="text"
-                id="valorMedido"
+              <aero-input
+                label="Valor Medido"
                 [(ngModel)]="currentResult.valorMedido"
-                class="form-control"
                 placeholder="Ingrese el valor medido"
-              />
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="observaciones">Observaciones</label>
+              <label class="aero-label">Observaciones</label>
               <textarea
-                id="observaciones"
                 [(ngModel)]="currentResult.observaciones"
                 class="form-control"
                 rows="3"
@@ -288,7 +296,7 @@ interface InspectionFormData {
             </div>
 
             <div class="form-group" *ngIf="currentResult.conforme === false">
-              <label for="accionRequerida">Acción Requerida *</label>
+              <label class="aero-label">Acción Requerida <span class="required">*</span></label>
               <app-dropdown
                 [(ngModel)]="currentResult.accionRequerida"
                 [options]="actionOptions"
@@ -299,98 +307,113 @@ interface InspectionFormData {
               class="form-group"
               *ngIf="currentItem.requiereFoto || currentResult.conforme === false"
             >
-              <span class="label">Fotografía {{ currentItem.requiereFoto ? '*' : '(Opcional)' }}</span>
-              <button class="btn btn-secondary btn-photo">
-                <i class="fa-solid fa-camera"></i> Tomar Foto
-              </button>
+              <span class="aero-label"
+                >Fotografía {{ currentItem.requiereFoto ? '*' : '(Opcional)' }}</span
+              >
+              <app-button
+                variant="secondary"
+                icon="fa-camera"
+                label="Tomar Foto"
+                [fullWidth]="true"
+              ></app-button>
               <span class="photo-note">Función de cámara en desarrollo</span>
             </div>
           </div>
-        </div>
+        </app-page-card>
 
         <!-- Navigation Buttons -->
         <div class="button-group navigation-buttons">
-          <button
-            class="btn btn-secondary"
-            (click)="previousItem()"
+          <app-button
+            variant="secondary"
+            icon="fa-arrow-left"
+            label="Anterior"
             [disabled]="currentItemIndex === 0"
-          >
-            <i class="fa-solid fa-arrow-left"></i> Anterior
-          </button>
+            (clicked)="previousItem()"
+          ></app-button>
 
-          <button class="btn btn-outline" (click)="saveDraft()">
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Borrador
-          </button>
+          <app-button
+            variant="ghost"
+            icon="fa-floppy-disk"
+            label="Guardar Borrador"
+            (clicked)="saveDraft()"
+          ></app-button>
 
-          <button
-            class="btn btn-primary"
-            (click)="nextItem()"
+          <app-button
+            variant="primary"
+            icon="fa-arrow-right"
+            [label]="currentItemIndex < items.length - 1 ? 'Siguiente' : 'Revisar'"
             [disabled]="currentResult.conforme === undefined"
-          >
-            {{ currentItemIndex < items.length - 1 ? 'Siguiente' : 'Revisar' }}
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
+            (clicked)="nextItem()"
+          ></app-button>
         </div>
       </div>
 
       <!-- Step 4: Summary -->
-      <div class="step-content summary-step" *ngIf="currentStep === 4">
-        <h2>Resumen de Inspección</h2>
-
-        <div class="summary-stats">
-          <div class="stat-card stat-total">
-            <div class="stat-value">{{ items.length }}</div>
-            <div class="stat-label">Total Items</div>
+      <div *ngIf="currentStep === 4">
+        <app-page-card title="Resumen de Inspección">
+          <div class="summary-stats">
+            <div class="stat-card stat-total">
+              <div class="stat-value">{{ items.length }}</div>
+              <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-card stat-pass">
+              <div class="stat-value">{{ getConformeCount() }}</div>
+              <div class="stat-label">Conformes</div>
+            </div>
+            <div class="stat-card stat-fail">
+              <div class="stat-value">{{ getNoConformeCount() }}</div>
+              <div class="stat-label">No Conformes</div>
+            </div>
+            <div class="stat-card stat-critical">
+              <div class="stat-value">{{ getCriticalFailCount() }}</div>
+              <div class="stat-label">Críticos Fallados</div>
+            </div>
           </div>
-          <div class="stat-card stat-pass">
-            <div class="stat-value">{{ getConformeCount() }}</div>
-            <div class="stat-label">Conformes</div>
+
+          <div class="critical-warning" *ngIf="getCriticalFailCount() > 0">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>ADVERTENCIA:</strong> Se detectaron fallas en items críticos. El equipo puede
+            ser marcado como no operativo.
           </div>
-          <div class="stat-card stat-fail">
-            <div class="stat-value">{{ getNoConformeCount() }}</div>
-            <div class="stat-label">No Conformes</div>
+
+          <div class="form-group">
+            <label class="aero-label">Observaciones Generales</label>
+            <textarea
+              [(ngModel)]="inspection!.observacionesGenerales"
+              class="form-control"
+              rows="4"
+              placeholder="Observaciones generales de la inspección..."
+            ></textarea>
           </div>
-          <div class="stat-card stat-critical">
-            <div class="stat-value">{{ getCriticalFailCount() }}</div>
-            <div class="stat-label">Críticos Fallados</div>
+
+          <div class="form-group checkbox-group">
+            <label>
+              <input type="checkbox" [(ngModel)]="inspection!.requiereMantenimiento" />
+              <span>El equipo requiere mantenimiento</span>
+            </label>
           </div>
-        </div>
 
-        <div class="critical-warning" *ngIf="getCriticalFailCount() > 0">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <strong>ADVERTENCIA:</strong> Se detectaron fallas en items críticos. El equipo puede ser
-          marcado como no operativo.
-        </div>
-
-        <div class="form-group">
-          <label for="observacionesGenerales">Observaciones Generales</label>
-          <textarea
-            id="observacionesGenerales"
-            [(ngModel)]="inspection!.observacionesGenerales"
-            class="form-control"
-            rows="4"
-            placeholder="Observaciones generales de la inspección..."
-          ></textarea>
-        </div>
-
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" [(ngModel)]="inspection!.requiereMantenimiento" />
-            <span>El equipo requiere mantenimiento</span>
-          </label>
-        </div>
-
-        <div class="button-group">
-          <button class="btn btn-secondary" (click)="backToItems()">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Items
-          </button>
-          <button class="btn btn-outline" (click)="saveDraft()">
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Borrador
-          </button>
-          <button class="btn btn-success" (click)="completeInspection()">
-            <i class="fa-solid fa-check-circle"></i> Completar Inspección
-          </button>
-        </div>
+          <div class="button-group">
+            <app-button
+              variant="secondary"
+              icon="fa-arrow-left"
+              label="Volver a Items"
+              (clicked)="backToItems()"
+            ></app-button>
+            <app-button
+              variant="ghost"
+              icon="fa-floppy-disk"
+              label="Guardar Borrador"
+              (clicked)="saveDraft()"
+            ></app-button>
+            <app-button
+              variant="primary"
+              icon="fa-check-circle"
+              label="Completar Inspección"
+              (clicked)="completeInspection()"
+            ></app-button>
+          </div>
+        </app-page-card>
       </div>
     </app-page-layout>
   `,
@@ -459,21 +482,18 @@ interface InspectionFormData {
       }
 
       /* Form Styles */
-      .step-content {
-        background: var(--neutral-0);
-        padding: var(--s-24);
-        border-radius: var(--s-8);
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-16);
       }
 
       .form-group {
         margin-bottom: var(--s-16);
       }
 
-      .form-group label {
-        display: block;
-        margin-bottom: var(--s-8);
-        font-weight: 600;
-        color: var(--grey-800);
+      .form-group.full-width {
+        grid-column: 1 / -1;
       }
 
       .form-control {
@@ -501,62 +521,6 @@ interface InspectionFormData {
         gap: var(--s-12);
         justify-content: flex-end;
         margin-top: var(--s-24);
-      }
-
-      .btn {
-        padding: var(--s-12) var(--s-24);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s;
-        min-height: 44px; /* Mobile touch target */
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-800);
-      }
-
-      .btn-secondary:hover:not(:disabled) {
-        background: var(--grey-300);
-      }
-
-      .btn-success {
-        background: var(--success-500);
-        color: var(--neutral-0);
-      }
-
-      .btn-success:hover {
-        background: var(--success-700);
-      }
-
-      .btn-outline {
-        background: transparent;
-        border: 2px solid var(--primary-500);
-        color: var(--primary-500);
-      }
-
-      .btn-outline:hover {
-        background: var(--primary-50);
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
       }
 
       /* Progress Bar */
@@ -593,41 +557,11 @@ interface InspectionFormData {
       }
 
       /* Item Card */
-      .item-card {
-        background: var(--neutral-0);
-        border: 2px solid var(--grey-200);
-        border-radius: var(--s-12);
-        padding: var(--s-24);
-        margin-bottom: var(--s-24);
-      }
-
       .item-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: var(--s-12);
-      }
-
-      .item-category {
-        background: var(--primary-100);
-        color: var(--primary-800);
-        padding: var(--s-4) var(--s-12);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-
-      .item-critical {
-        background: var(--error-100);
-        color: var(--error-800);
-        padding: var(--s-4) var(--s-12);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: var(--s-4);
       }
 
       .item-description {
@@ -775,16 +709,16 @@ interface InspectionFormData {
         cursor: pointer;
       }
 
-      .btn-photo {
-        width: 100%;
-      }
-
       .photo-note {
         display: block;
         margin-top: var(--s-8);
         font-size: 12px;
         color: var(--grey-600);
         font-style: italic;
+      }
+
+      .required {
+        color: var(--error-500);
       }
 
       /* Mobile Optimizations */
@@ -798,13 +732,12 @@ interface InspectionFormData {
           display: none;
         }
 
-        .button-group {
-          flex-direction: column;
+        .form-grid {
+          grid-template-columns: 1fr;
         }
 
-        .btn {
-          width: 100%;
-          justify-content: center;
+        .button-group {
+          flex-direction: column;
         }
 
         .radio-group {
@@ -823,9 +756,11 @@ interface InspectionFormData {
   ],
 })
 export class InspectionExecuteComponent implements OnInit {
-  checklistService = inject(ChecklistService);
+  private checklistService = inject(ChecklistService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   loading = false;
   currentStep = 1;
@@ -865,12 +800,10 @@ export class InspectionExecuteComponent implements OnInit {
   ngOnInit(): void {
     this.loadTemplates();
 
-    // Check if continuing existing inspection
     const inspectionId = this.route.snapshot.paramMap.get('id');
     if (inspectionId) {
       this.loadExistingInspection(Number(inspectionId));
     } else {
-      // Set default values
       this.formData.fechaInspeccion = new Date().toISOString().split('T')[0];
       this.formData.horaInicio = new Date().toTimeString().slice(0, 5);
     }
@@ -894,14 +827,12 @@ export class InspectionExecuteComponent implements OnInit {
         this.inspection = data;
         this.items = data.plantilla?.items || [];
 
-        // Load existing results
         if (data.resultados) {
           data.resultados.forEach((result) => {
             this.results.set(result.itemId, result);
           });
         }
 
-        // Jump to inspection step
         this.currentStep = 3;
         this.loadCurrentItem();
         this.loading = false;
@@ -950,7 +881,7 @@ export class InspectionExecuteComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error creating inspection:', error);
-        alert('Error al crear la inspección');
+        this.snackBar.open('Error al crear la inspección', 'Cerrar', { duration: 3000 });
         this.loading = false;
       },
     });
@@ -960,7 +891,6 @@ export class InspectionExecuteComponent implements OnInit {
     if (this.items.length > 0) {
       this.currentItem = this.items[this.currentItemIndex];
 
-      // Load existing result if available
       const existingResult = this.results.get(this.currentItem.id);
       if (existingResult) {
         this.currentResult = { ...existingResult };
@@ -995,7 +925,6 @@ export class InspectionExecuteComponent implements OnInit {
       this.currentItemIndex++;
       this.loadCurrentItem();
     } else {
-      // Move to summary
       this.currentStep = 4;
     }
   }
@@ -1015,33 +944,43 @@ export class InspectionExecuteComponent implements OnInit {
 
   saveDraft(): void {
     this.saveCurrentResult();
-    alert('Borrador guardado correctamente');
+    this.snackBar.open('Borrador guardado correctamente', 'Cerrar', { duration: 3000 });
   }
 
   completeInspection(): void {
     this.saveCurrentResult();
 
-    if (confirm('¿Está seguro de completar esta inspección? No podrá editarla después.')) {
-      this.loading = true;
-      this.checklistService.completeInspection(this.inspection!.id).subscribe({
-        next: (completedInspection) => {
-          this.loading = false;
-          alert('Inspección completada exitosamente');
-          this.router.navigate(['/checklists/inspections', completedInspection.id]);
-        },
-        error: (error) => {
-          console.error('Error completing inspection:', error);
-          alert('Error al completar la inspección');
-          this.loading = false;
-        },
+    this.confirmSvc
+      .confirmDelete('completar esta inspección (no podrá editarla después)')
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.loading = true;
+          this.checklistService.completeInspection(this.inspection!.id).subscribe({
+            next: (completedInspection) => {
+              this.loading = false;
+              this.snackBar.open('Inspección completada exitosamente', 'Cerrar', {
+                duration: 3000,
+              });
+              this.router.navigate(['/checklists/inspections', completedInspection.id]);
+            },
+            error: (error) => {
+              console.error('Error completing inspection:', error);
+              this.snackBar.open('Error al completar la inspección', 'Cerrar', { duration: 3000 });
+              this.loading = false;
+            },
+          });
+        }
       });
-    }
   }
 
   cancel(): void {
-    if (confirm('¿Está seguro de cancelar? Se perderán los datos no guardados.')) {
-      this.router.navigate(['/checklists/inspections']);
-    }
+    this.confirmSvc
+      .confirmDelete('cancelar (se perderán los datos no guardados)')
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.router.navigate(['/checklists/inspections']);
+        }
+      });
   }
 
   getConformeCount(): number {

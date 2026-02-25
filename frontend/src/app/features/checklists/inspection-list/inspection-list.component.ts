@@ -19,7 +19,10 @@ import {
   ExportDropdownComponent,
   ExportFormat,
 } from '../../../shared/components/export-dropdown/export-dropdown.component';
-import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-inspection-list',
@@ -31,7 +34,8 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
-    ActionsContainerComponent,
+    ButtonComponent,
+    PageCardComponent,
   ],
   template: `
     <app-page-layout
@@ -41,35 +45,40 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       [loading]="loading"
       [tabs]="tabs"
     >
-      <app-actions-container actions>
+      <div actions class="action-buttons-header">
         <app-export-dropdown (export)="handleExport($event)"></app-export-dropdown>
-        <button class="btn btn-primary" (click)="createInspection()">
-          <i class="fa-solid fa-plus"></i> Nueva Inspección
-        </button>
-      </app-actions-container>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Inspección"
+          (clicked)="createInspection()"
+        ></app-button>
+      </div>
 
       <app-filter-bar
         [config]="filterConfig"
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="inspections"
-        [loading]="loading"
-        [serverSide]="true"
-        [totalItems]="pagination.total"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          equipo: equipoTemplate,
-          trabajador: trabajadorTemplate,
-          progreso: progresoTemplate,
-        }"
-        (rowClick)="viewInspection($event)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="inspections"
+          [loading]="loading"
+          [serverSide]="true"
+          [totalItems]="pagination.total"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            equipo: equipoTemplate,
+            trabajador: trabajadorTemplate,
+            progreso: progresoTemplate,
+          }"
+          (rowClick)="viewInspection($event)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #equipoTemplate let-row>
@@ -101,61 +110,43 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button
-            class="btn-icon"
-            (click)="continueInspection(row); $event.stopPropagation()"
-            title="Continuar Inspección"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-play"
+            (clicked)="continueInspection(row); $event.stopPropagation()"
             *ngIf="row.estado === 'EN_PROGRESO'"
-          >
-            <i class="fa-solid fa-play"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="viewInspection(row); $event.stopPropagation()"
-            title="Ver Resultados"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="exportPDF(row); $event.stopPropagation()"
-            title="Exportar PDF"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
+            (clicked)="viewInspection(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-file-pdf"
+            (clicked)="exportPDF(row); $event.stopPropagation()"
             *ngIf="row.estado === 'COMPLETADO'"
-          >
-            <i class="fa-solid fa-file-pdf"></i>
-          </button>
-          <button
-            class="btn-icon btn-danger"
-            (click)="cancelInspection(row); $event.stopPropagation()"
-            title="Cancelar"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-ban"
+            (clicked)="cancelInspection(row); $event.stopPropagation()"
             *ngIf="row.estado === 'EN_PROGRESO'"
-          >
-            <i class="fa-solid fa-ban"></i>
-          </button>
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
+      .action-buttons-header {
+        display: flex;
+        gap: var(--s-12);
         align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
       }
 
       .equipment-info,
@@ -207,87 +198,15 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         justify-content: flex-end;
         gap: 8px;
       }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: all 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.btn-danger:hover {
-        background: var(--error-100);
-        color: var(--error-500);
-      }
-
-      /* Server-side pagination */
-      .server-pagination {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: var(--s-16);
-        background: var(--neutral-0);
-        border-top: 1px solid var(--grey-200);
-        margin-top: var(--s-16);
-        border-radius: var(--s-8);
-      }
-
-      .pagination-info {
-        font-size: 14px;
-        color: var(--grey-700);
-      }
-
-      .pagination-controls {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
-      }
-
-      .btn-pagination {
-        padding: var(--s-8);
-        border: 1px solid var(--grey-300);
-        background: var(--neutral-0);
-        border-radius: var(--s-4);
-        cursor: pointer;
-        transition: all 0.2s;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .btn-pagination:hover:not(:disabled) {
-        background: var(--primary-100);
-        border-color: var(--primary-500);
-        color: var(--primary-500);
-      }
-
-      .btn-pagination:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .page-indicator {
-        padding: 0 var(--s-12);
-        font-weight: 600;
-        color: var(--grey-800);
-      }
     `,
   ],
 })
 export class InspectionListComponent implements OnInit {
-  checklistService = inject(ChecklistService);
+  private checklistService = inject(ChecklistService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   inspections: ChecklistInspection[] = [];
   loading = false;
@@ -437,7 +356,7 @@ export class InspectionListComponent implements OnInit {
     this.filters.fechaHasta = (filters['fechaHasta'] as string) || '';
     this.filters.estado = (filters['estado'] as string) || '';
     this.filters.resultadoGeneral = (filters['resultadoGeneral'] as string) || '';
-    this.filters.page = 1; // Reset to first page on filter change
+    this.filters.page = 1;
     this.loadInspections();
   }
 
@@ -458,44 +377,6 @@ export class InspectionListComponent implements OnInit {
     return (completed / total) * 100;
   }
 
-  getEstadoLabel(estado: string): string {
-    const labels: Record<string, string> = {
-      EN_PROGRESO: 'En Progreso',
-      COMPLETADO: 'Completado',
-      RECHAZADO: 'Rechazado',
-      CANCELADO: 'Cancelado',
-    };
-    return labels[estado] || estado;
-  }
-
-  getEstadoClass(estado: string): string {
-    const classes: Record<string, string> = {
-      EN_PROGRESO: 'estado-en-progreso',
-      COMPLETADO: 'estado-completado',
-      RECHAZADO: 'estado-rechazado',
-      CANCELADO: 'estado-cancelado',
-    };
-    return classes[estado] || '';
-  }
-
-  getResultadoLabel(resultado: string): string {
-    const labels: Record<string, string> = {
-      APROBADO: 'Aprobado',
-      APROBADO_CON_OBSERVACIONES: 'Con Observaciones',
-      RECHAZADO: 'Rechazado',
-    };
-    return labels[resultado] || resultado;
-  }
-
-  getResultadoClass(resultado: string): string {
-    const classes: Record<string, string> = {
-      APROBADO: 'resultado-aprobado',
-      APROBADO_CON_OBSERVACIONES: 'resultado-con-observaciones',
-      RECHAZADO: 'resultado-rechazado',
-    };
-    return classes[resultado] || '';
-  }
-
   viewInspection(inspection: ChecklistInspection): void {
     this.router.navigate([inspection.id], { relativeTo: this.route });
   }
@@ -511,19 +392,12 @@ export class InspectionListComponent implements OnInit {
   exportPDF(inspection: ChecklistInspection): void {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      alert('No se encontró token de autenticación');
+      this.snackBar.open('No se encontró token de autenticación', 'Cerrar', { duration: 3000 });
       return;
     }
 
-    // Create a temporary link to download the PDF
     const url = `${this.checklistService['apiUrl']}/inspections/${inspection.id}/export-pdf`;
 
-    // Create an anchor element and trigger download
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `inspeccion-${inspection.codigo}.pdf`);
-
-    // Add authorization header by fetching with credentials
     fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -536,37 +410,41 @@ export class InspectionListComponent implements OnInit {
         return response.blob();
       })
       .then((blob) => {
-        // Create a temporary URL for the blob
         const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
         link.href = blobUrl;
+        link.setAttribute('download', `inspeccion-${inspection.codigo}.pdf`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        // Clean up the blob URL
         window.URL.revokeObjectURL(blobUrl);
       })
       .catch((error) => {
         console.error('Error exporting PDF:', error);
-        alert('Error al exportar el PDF. Por favor intente nuevamente.');
+        this.snackBar.open('Error al exportar el PDF', 'Cerrar', { duration: 3000 });
       });
   }
 
   cancelInspection(inspection: ChecklistInspection): void {
-    if (confirm(`¿Está seguro de cancelar la inspección ${inspection.codigo}?`)) {
-      this.checklistService.cancelInspection(inspection.id).subscribe({
-        next: () => {
-          this.loadInspections();
-        },
-        error: (error) => {
-          console.error('Error canceling inspection:', error);
-          alert('Error al cancelar la inspección');
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete(`la inspección ${inspection.codigo}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.checklistService.cancelInspection(inspection.id).subscribe({
+          next: () => {
+            this.snackBar.open('Inspección cancelada correctamente', 'Cerrar', {
+              duration: 3000,
+            });
+            this.loadInspections();
+          },
+          error: (error) => {
+            console.error('Error canceling inspection:', error);
+            this.snackBar.open('Error al cancelar la inspección', 'Cerrar', { duration: 3000 });
+          },
+        });
+      }
+    });
   }
 
   handleExport(format: ExportFormat): void {
-    console.log('Export format:', format);
-    alert('Función de exportación en desarrollo');
+    this.snackBar.open('Función de exportación en desarrollo', 'Cerrar', { duration: 3000 });
   }
 }

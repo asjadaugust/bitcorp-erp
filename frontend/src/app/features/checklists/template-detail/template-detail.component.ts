@@ -8,75 +8,91 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../../shared/components/stats-grid/stats-grid.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
+import {
+  AeroBadgeComponent,
+  BadgeVariant,
+} from '../../../core/design-system/badge/aero-badge.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-template-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, PageLayoutComponent, StatsGridComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    PageLayoutComponent,
+    StatsGridComponent,
+    ButtonComponent,
+    PageCardComponent,
+    AeroBadgeComponent,
+  ],
   template: `
     <app-page-layout
       [title]="'Plantilla: ' + (template?.nombre || '')"
       icon="fa-clipboard-list"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/checklists/templates"
     >
-      <div class="actions-bar" *ngIf="template">
-        <button class="btn btn-secondary" (click)="goBack()">
-          <i class="fa-solid fa-arrow-left"></i> Volver
-        </button>
-        <button class="btn btn-primary" (click)="editTemplate()">
-          <i class="fa-solid fa-pen"></i> Editar
-        </button>
-        <button class="btn btn-info" (click)="duplicateTemplate()">
-          <i class="fa-solid fa-copy"></i> Duplicar
-        </button>
-        <button class="btn btn-danger" (click)="deleteTemplate()" *ngIf="!template.activo">
-          <i class="fa-solid fa-trash"></i> Eliminar
-        </button>
+      <div actions class="action-buttons-header" *ngIf="template">
+        <app-button
+          variant="primary"
+          icon="fa-pen"
+          label="Editar"
+          (clicked)="editTemplate()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-copy"
+          label="Duplicar"
+          (clicked)="duplicateTemplate()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-trash"
+          label="Eliminar"
+          (clicked)="deleteTemplate()"
+          *ngIf="!template.activo"
+        ></app-button>
       </div>
 
       <div class="template-content" *ngIf="template">
         <!-- Header Card -->
-        <div class="info-card header-card">
-          <div class="card-header">
-            <h2>Información General</h2>
-            <span
-              class="badge"
-              [class.badge-active]="template.activo"
-              [class.badge-inactive]="!template.activo"
-            >
+        <app-page-card title="Información General">
+          <div header-actions>
+            <aero-badge [variant]="template.activo ? 'success' : 'neutral'">
               {{ template.activo ? 'Activo' : 'Inactivo' }}
-            </span>
+            </aero-badge>
           </div>
 
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Código:</span>
+              <span class="label">Código</span>
               <span class="value">{{ template.codigo }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Nombre:</span>
+              <span class="label">Nombre</span>
               <span class="value">{{ template.nombre }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Tipo Equipo:</span>
+              <span class="label">Tipo Equipo</span>
               <span class="value">{{ template.tipoEquipo || '-' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Frecuencia:</span>
-              <span
-                class="badge badge-frecuencia"
-                [ngClass]="getFrecuenciaClass(template.frecuencia)"
-              >
+              <span class="label">Frecuencia</span>
+              <aero-badge [variant]="getFrecuenciaBadgeVariant(template.frecuencia)">
                 {{ getFrecuenciaLabel(template.frecuencia) }}
-              </span>
+              </aero-badge>
             </div>
             <div class="info-item full-width" *ngIf="template.descripcion">
-              <span class="label">Descripción:</span>
+              <span class="label">Descripción</span>
               <span class="value">{{ template.descripcion }}</span>
             </div>
           </div>
-        </div>
+        </app-page-card>
 
         <!-- Statistics Section -->
         <div class="stats-section" *ngIf="template">
@@ -85,12 +101,10 @@ import {
         </div>
 
         <!-- Items Card -->
-        <div class="info-card items-card">
-          <div class="card-header">
-            <h2>Items de Checklist</h2>
-            <span class="item-count">{{ template.items?.length || 0 }} items</span>
-          </div>
-
+        <app-page-card
+          title="Items de Checklist"
+          [subtitle]="(template.items?.length || 0) + ' items'"
+        >
           <div class="items-list" *ngIf="template.items && template.items.length > 0">
             <div
               class="item-row"
@@ -109,16 +123,12 @@ import {
                   <span class="item-orden">#{{ item.orden }}</span>
                   <span class="item-descripcion">{{ item.descripcion }}</span>
                   <div class="item-badges">
-                    <span class="badge badge-tipo">
+                    <aero-badge variant="primary">
                       <i [class]="getTipoIcon(item.tipoVerificacion)"></i>
                       {{ getTipoLabel(item.tipoVerificacion) }}
-                    </span>
-                    <span class="badge badge-critical" *ngIf="item.esCritico">
-                      <i class="fa-solid fa-exclamation-triangle"></i> Crítico
-                    </span>
-                    <span class="badge badge-photo" *ngIf="item.requiereFoto">
-                      <i class="fa-solid fa-camera"></i> Foto
-                    </span>
+                    </aero-badge>
+                    <aero-badge variant="error" *ngIf="item.esCritico"> Crítico </aero-badge>
+                    <aero-badge variant="info" *ngIf="item.requiereFoto"> Foto </aero-badge>
                   </div>
                 </div>
                 <div class="item-body" *ngIf="item.valorEsperado || item.instrucciones">
@@ -137,91 +147,22 @@ import {
             <i class="fa-solid fa-inbox"></i>
             <p>No hay items configurados en esta plantilla</p>
           </div>
-        </div>
+        </app-page-card>
       </div>
     </app-page-layout>
   `,
   styles: [
     `
-      .actions-bar {
+      .action-buttons-header {
         display: flex;
-        gap: var(--s-8);
-        margin-bottom: var(--s-16);
-        flex-wrap: wrap;
-      }
-
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
+        gap: var(--s-12);
         align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-800);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-300);
-      }
-
-      .btn-info {
-        background: var(--info-500);
-        color: var(--neutral-0);
-      }
-      .btn-info:hover {
-        background: var(--info-800);
-      }
-
-      .btn-danger {
-        background: var(--error-500);
-        color: var(--neutral-0);
-      }
-      .btn-danger:hover {
-        background: var(--error-800);
       }
 
       .template-content {
         display: flex;
         flex-direction: column;
         gap: var(--s-24);
-      }
-
-      .info-card {
-        background: var(--neutral-0);
-        border-radius: var(--s-12);
-        padding: var(--s-24);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-16);
-        padding-bottom: var(--s-16);
-        border-bottom: 1px solid var(--grey-200);
-      }
-
-      .card-header h2 {
-        margin: 0;
-        font-size: var(--type-h3-size);
-        font-weight: 700;
-        color: var(--grey-900);
       }
 
       .info-grid {
@@ -241,58 +182,15 @@ import {
       }
 
       .info-item .label {
-        font-size: var(--type-bodySmall-size);
+        font-size: 12px;
         color: var(--grey-600);
         font-weight: 600;
+        text-transform: uppercase;
       }
 
       .info-item .value {
-        font-size: var(--type-body-size);
+        font-size: 16px;
         color: var(--grey-900);
-      }
-
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        display: inline-block;
-      }
-
-      .badge-active {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
-      .badge-inactive {
-        background: var(--grey-200);
-        color: var(--grey-600);
-      }
-
-      .badge-frecuencia {
-        background: var(--primary-100);
-        color: var(--primary-800);
-      }
-
-      .frecuencia-diario {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
-      .frecuencia-semanal {
-        background: var(--warning-100);
-        color: var(--warning-800);
-      }
-
-      .frecuencia-mensual {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
-      .frecuencia-antes-uso {
-        background: var(--success-100);
-        color: var(--success-800);
       }
 
       .stats-section h2 {
@@ -300,12 +198,6 @@ import {
         font-size: var(--type-h3-size);
         font-weight: 700;
         color: var(--grey-900);
-      }
-
-      .item-count {
-        font-size: var(--type-bodySmall-size);
-        color: var(--grey-600);
-        font-weight: 600;
       }
 
       .items-list {
@@ -370,21 +262,6 @@ import {
         flex-wrap: wrap;
       }
 
-      .badge-tipo {
-        background: var(--primary-100);
-        color: var(--primary-800);
-      }
-
-      .badge-critical {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
-      .badge-photo {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
       .item-body {
         padding-left: 42px;
         display: flex;
@@ -421,9 +298,11 @@ import {
   ],
 })
 export class TemplateDetailComponent implements OnInit {
-  checklistService = inject(ChecklistService);
+  private checklistService = inject(ChecklistService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   template: ChecklistTemplate | null = null;
   loading = false;
@@ -455,8 +334,8 @@ export class TemplateDetailComponent implements OnInit {
       error: (error) => {
         console.error('Error loading template:', error);
         this.loading = false;
-        alert('Error al cargar la plantilla');
-        this.goBack();
+        this.snackBar.open('Error al cargar la plantilla', 'Cerrar', { duration: 3000 });
+        this.router.navigate(['/checklists/templates']);
       },
     });
   }
@@ -500,15 +379,15 @@ export class TemplateDetailComponent implements OnInit {
     return labels[frecuencia] || frecuencia;
   }
 
-  getFrecuenciaClass(frecuencia?: string): string {
-    if (!frecuencia) return '';
-    const classes: Record<string, string> = {
-      DIARIO: 'frecuencia-diario',
-      SEMANAL: 'frecuencia-semanal',
-      MENSUAL: 'frecuencia-mensual',
-      ANTES_USO: 'frecuencia-antes-uso',
+  getFrecuenciaBadgeVariant(frecuencia?: string): BadgeVariant {
+    if (!frecuencia) return 'neutral';
+    const variants: Record<string, BadgeVariant> = {
+      DIARIO: 'error',
+      SEMANAL: 'warning',
+      MENSUAL: 'info',
+      ANTES_USO: 'success',
     };
-    return classes[frecuencia] || '';
+    return variants[frecuencia] || 'neutral';
   }
 
   getCriticalCount(): number {
@@ -564,10 +443,6 @@ export class TemplateDetailComponent implements OnInit {
     return icons[tipo] || 'fa-solid fa-check';
   }
 
-  goBack(): void {
-    this.router.navigate(['/checklists/templates']);
-  }
-
   editTemplate(): void {
     if (this.template) {
       this.router.navigate(['edit'], { relativeTo: this.route });
@@ -577,42 +452,54 @@ export class TemplateDetailComponent implements OnInit {
   duplicateTemplate(): void {
     if (!this.template) return;
 
-    if (confirm(`¿Desea duplicar la plantilla "${this.template.nombre}"?`)) {
-      const newTemplate = {
-        ...this.template,
-        id: undefined as unknown,
-        codigo: `${this.template.codigo}-COPY`,
-        nombre: `${this.template.nombre} (Copia)`,
-        activo: false,
-      };
+    this.confirmSvc
+      .confirmDelete(`duplicar la plantilla "${this.template.nombre}"`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          const newTemplate = {
+            ...this.template!,
+            id: undefined as unknown,
+            codigo: `${this.template!.codigo}-COPY`,
+            nombre: `${this.template!.nombre} (Copia)`,
+            activo: false,
+          };
 
-      this.checklistService.createTemplate(newTemplate as any).subscribe({
-        next: () => {
-          alert('Plantilla duplicada exitosamente');
-          this.router.navigate(['/checklists/templates']);
-        },
-        error: (error) => {
-          console.error('Error duplicating template:', error);
-          alert('Error al duplicar la plantilla');
-        },
+          this.checklistService.createTemplate(newTemplate as any).subscribe({
+            next: () => {
+              this.snackBar.open('Plantilla duplicada correctamente', 'Cerrar', {
+                duration: 3000,
+              });
+              this.router.navigate(['/checklists/templates']);
+            },
+            error: (error) => {
+              console.error('Error duplicating template:', error);
+              this.snackBar.open('Error al duplicar la plantilla', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   deleteTemplate(): void {
     if (!this.template) return;
 
-    if (confirm(`¿Está seguro de eliminar la plantilla "${this.template.nombre}"?`)) {
-      this.checklistService.deleteTemplate(this.template.id).subscribe({
-        next: () => {
-          alert('Plantilla eliminada exitosamente');
-          this.router.navigate(['/checklists/templates']);
-        },
-        error: (error) => {
-          console.error('Error deleting template:', error);
-          alert('Error al eliminar la plantilla');
-        },
+    this.confirmSvc
+      .confirmDelete(`la plantilla "${this.template.nombre}"`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.checklistService.deleteTemplate(this.template!.id).subscribe({
+            next: () => {
+              this.snackBar.open('Plantilla eliminada correctamente', 'Cerrar', {
+                duration: 3000,
+              });
+              this.router.navigate(['/checklists/templates']);
+            },
+            error: (error) => {
+              console.error('Error deleting template:', error);
+              this.snackBar.open('Error al eliminar la plantilla', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 }

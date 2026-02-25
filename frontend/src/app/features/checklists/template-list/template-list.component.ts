@@ -15,7 +15,14 @@ import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../shared/components/filter-bar/filter-bar.component';
-import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
+import {
+  AeroBadgeComponent,
+  BadgeVariant,
+} from '../../../core/design-system/badge/aero-badge.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-template-list',
@@ -26,7 +33,9 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ActionsContainerComponent,
+    ButtonComponent,
+    PageCardComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <app-page-layout
@@ -36,29 +45,34 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       [loading]="loading"
       [tabs]="tabs"
     >
-      <app-actions-container actions>
-        <button class="btn btn-primary" (click)="createTemplate()">
-          <i class="fa-solid fa-plus"></i> Nueva Plantilla
-        </button>
-      </app-actions-container>
+      <div actions>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Plantilla"
+          (clicked)="createTemplate()"
+        ></app-button>
+      </div>
 
       <app-filter-bar
         [config]="filterConfig"
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="templates"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          itemCount: itemCountTemplate,
-          frecuencia: frecuenciaTemplate,
-        }"
-        (rowClick)="viewTemplate($event)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="templates"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            itemCount: itemCountTemplate,
+            frecuencia: frecuenciaTemplate,
+          }"
+          (rowClick)="viewTemplate($event)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #itemCountTemplate let-row>
@@ -69,69 +83,45 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       </ng-template>
 
       <ng-template #frecuenciaTemplate let-row>
-        <span class="badge badge-frecuencia" [ngClass]="getFrecuenciaClass(row.frecuencia)">
+        <aero-badge [variant]="getFrecuenciaBadgeVariant(row.frecuencia)">
           {{ getFrecuenciaLabel(row.frecuencia) }}
-        </span>
+        </aero-badge>
       </ng-template>
 
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button
-            class="btn-icon"
-            (click)="viewTemplate(row); $event.stopPropagation()"
-            title="Ver Detalles"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="editTemplate(row); $event.stopPropagation()"
-            title="Editar"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="duplicateTemplate(row); $event.stopPropagation()"
-            title="Duplicar"
-          >
-            <i class="fa-solid fa-copy"></i>
-          </button>
-          <button
-            class="btn-icon btn-danger"
-            (click)="deleteTemplate(row); $event.stopPropagation()"
-            title="Eliminar"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
+            (clicked)="viewTemplate(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
+            (clicked)="editTemplate(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-copy"
+            (clicked)="duplicateTemplate(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-trash"
+            (clicked)="deleteTemplate(row); $event.stopPropagation()"
             *ngIf="!row.activo"
-          >
-            <i class="fa-solid fa-trash"></i>
-          </button>
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
       .item-count {
         display: inline-flex;
         align-items: center;
@@ -140,63 +130,20 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         color: var(--primary-800);
       }
 
-      .badge-frecuencia {
-        background: var(--primary-100);
-        color: var(--primary-800);
-      }
-
-      .frecuencia-diario {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
-      .frecuencia-semanal {
-        background: var(--warning-100);
-        color: var(--warning-800);
-      }
-
-      .frecuencia-mensual {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
-      .frecuencia-antes-uso {
-        background: var(--success-100);
-        color: var(--success-800);
-      }
-
       .action-buttons {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
       }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: all 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.btn-danger:hover {
-        background: var(--error-100);
-        color: var(--error-500);
-      }
     `,
   ],
 })
 export class TemplateListComponent implements OnInit {
-  checklistService = inject(ChecklistService);
+  private checklistService = inject(ChecklistService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   templates: ChecklistTemplate[] = [];
   loading = false;
@@ -294,7 +241,6 @@ export class TemplateListComponent implements OnInit {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.tipoEquipo = (filters['tipoEquipo'] as string) || '';
 
-    // Convert string to boolean or undefined
     if (filters['activo'] === 'true') {
       this.filters.activo = true;
     } else if (filters['activo'] === 'false') {
@@ -316,14 +262,14 @@ export class TemplateListComponent implements OnInit {
     return labels[frecuencia] || frecuencia;
   }
 
-  getFrecuenciaClass(frecuencia: string): string {
-    const classes: Record<string, string> = {
-      DIARIO: 'frecuencia-diario',
-      SEMANAL: 'frecuencia-semanal',
-      MENSUAL: 'frecuencia-mensual',
-      ANTES_USO: 'frecuencia-antes-uso',
+  getFrecuenciaBadgeVariant(frecuencia: string): BadgeVariant {
+    const variants: Record<string, BadgeVariant> = {
+      DIARIO: 'error',
+      SEMANAL: 'warning',
+      MENSUAL: 'info',
+      ANTES_USO: 'success',
     };
-    return classes[frecuencia] || '';
+    return variants[frecuencia] || 'neutral';
   }
 
   viewTemplate(template: ChecklistTemplate): void {
@@ -339,39 +285,50 @@ export class TemplateListComponent implements OnInit {
   }
 
   duplicateTemplate(template: ChecklistTemplate): void {
-    if (confirm(`¿Desea duplicar la plantilla "${template.nombre}"?`)) {
-      // Remove id and set new codigo
-      const newTemplate = {
-        ...template,
-        id: undefined,
-        codigo: `${template.codigo}-COPY`,
-        nombre: `${template.nombre} (Copia)`,
-        activo: false,
-      };
+    this.confirmSvc
+      .confirmDelete(`duplicar la plantilla "${template.nombre}"`)
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          const newTemplate = {
+            ...template,
+            id: undefined,
+            codigo: `${template.codigo}-COPY`,
+            nombre: `${template.nombre} (Copia)`,
+            activo: false,
+          };
 
-      this.checklistService.createTemplate(newTemplate).subscribe({
-        next: () => {
-          this.loadTemplates();
-        },
-        error: (error) => {
-          console.error('Error duplicating template:', error);
-          alert('Error al duplicar la plantilla');
-        },
+          this.checklistService.createTemplate(newTemplate).subscribe({
+            next: () => {
+              this.snackBar.open('Plantilla duplicada correctamente', 'Cerrar', {
+                duration: 3000,
+              });
+              this.loadTemplates();
+            },
+            error: (error) => {
+              console.error('Error duplicating template:', error);
+              this.snackBar.open('Error al duplicar la plantilla', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   deleteTemplate(template: ChecklistTemplate): void {
-    if (confirm(`¿Está seguro de eliminar la plantilla "${template.nombre}"?`)) {
-      this.checklistService.deleteTemplate(template.id).subscribe({
-        next: () => {
-          this.loadTemplates();
-        },
-        error: (error) => {
-          console.error('Error deleting template:', error);
-          alert('Error al eliminar la plantilla');
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete(`la plantilla "${template.nombre}"`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.checklistService.deleteTemplate(template.id).subscribe({
+          next: () => {
+            this.snackBar.open('Plantilla eliminada correctamente', 'Cerrar', {
+              duration: 3000,
+            });
+            this.loadTemplates();
+          },
+          error: (error) => {
+            console.error('Error deleting template:', error);
+            this.snackBar.open('Error al eliminar la plantilla', 'Cerrar', { duration: 3000 });
+          },
+        });
+      }
+    });
   }
 }

@@ -203,13 +203,9 @@ export class ChecklistService {
       params = params.set('fechaHasta', filters.fechaHasta);
     }
 
-    return this.http
-      .get<Record<string, unknown>>(`${this.apiUrl}/inspections`, {
-        params,
-      })
-      .pipe(
-        map((res) => (res?.['data'] || res) as unknown as PaginatedResponse<ChecklistInspection>)
-      );
+    return this.http.get<PaginatedResponse<ChecklistInspection>>(`${this.apiUrl}/inspections`, {
+      params,
+    });
   }
 
   getInspectionById(id: number): Observable<ChecklistInspection> {

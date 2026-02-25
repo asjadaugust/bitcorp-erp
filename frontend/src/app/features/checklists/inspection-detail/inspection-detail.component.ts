@@ -8,119 +8,103 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../../shared/components/stats-grid/stats-grid.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
+import {
+  AeroBadgeComponent,
+  BadgeVariant,
+} from '../../../core/design-system/badge/aero-badge.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-inspection-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, PageLayoutComponent, StatsGridComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    PageLayoutComponent,
+    StatsGridComponent,
+    ButtonComponent,
+    PageCardComponent,
+    AeroBadgeComponent,
+  ],
   template: `
     <app-page-layout
       [title]="'Inspección ' + (inspection?.codigo || '')"
       icon="fa-clipboard-check"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/checklists/inspections"
     >
-      <div class="actions-bar" *ngIf="inspection">
-        <button class="btn btn-secondary" (click)="goBack()">
-          <i class="fa-solid fa-arrow-left"></i> Volver
-        </button>
-        <button
-          class="btn btn-primary"
-          (click)="exportPDF()"
+      <div actions class="action-buttons-header" *ngIf="inspection">
+        <app-button
+          variant="primary"
+          icon="fa-file-pdf"
+          label="Exportar PDF"
+          (clicked)="exportPDF()"
           *ngIf="inspection.estado === 'COMPLETADO'"
-        >
-          <i class="fa-solid fa-file-pdf"></i> Exportar PDF
-        </button>
-        <button
-          class="btn btn-warning"
-          (click)="sendToMaintenance()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-wrench"
+          label="Enviar a Mantenimiento"
+          (clicked)="sendToMaintenance()"
           *ngIf="inspection.requiereMantenimiento && inspection.estado === 'COMPLETADO'"
-        >
-          <i class="fa-solid fa-wrench"></i> Enviar a Mantenimiento
-        </button>
+        ></app-button>
       </div>
 
       <div class="inspection-content" *ngIf="inspection">
         <!-- Header Card -->
-        <div class="info-card header-card">
-          <div class="card-header">
-            <h2>Información General</h2>
-            <div class="header-badges">
-              <span
-                class="status-badge"
-                [ngClass]="'status-' + inspection.estado.toLowerCase().replace(' ', '_')"
-              >
-                <i
-                  [class]="
-                    inspection.estado === 'EN_PROGRESO'
-                      ? 'fa-solid fa-spinner fa-spin'
-                      : inspection.estado === 'COMPLETADO'
-                        ? 'fa-solid fa-check-circle'
-                        : inspection.estado === 'RECHAZADO'
-                          ? 'fa-solid fa-circle-xmark'
-                          : inspection.estado === 'CANCELADO'
-                            ? 'fa-solid fa-ban'
-                            : 'fa-solid fa-circle'
-                  "
-                ></i>
-                {{ getEstadoLabel(inspection.estado) }}
-              </span>
-              <span
-                class="status-badge"
-                [ngClass]="getResultadoClass(inspection.resultadoGeneral)"
-                *ngIf="inspection.resultadoGeneral"
-              >
-                <i
-                  [class]="
-                    inspection.resultadoGeneral === 'APROBADO'
-                      ? 'fa-solid fa-check-circle'
-                      : inspection.resultadoGeneral === 'APROBADO_CON_OBSERVACIONES'
-                        ? 'fa-solid fa-triangle-exclamation'
-                        : 'fa-solid fa-circle-xmark'
-                  "
-                ></i>
-                {{ getResultadoLabel(inspection.resultadoGeneral) }}
-              </span>
-            </div>
+        <app-page-card title="Información General">
+          <div header-actions class="header-badges">
+            <aero-badge [variant]="getEstadoBadgeVariant(inspection.estado)">
+              {{ getEstadoLabel(inspection.estado) }}
+            </aero-badge>
+            <aero-badge
+              [variant]="getResultadoBadgeVariant(inspection.resultadoGeneral)"
+              *ngIf="inspection.resultadoGeneral"
+            >
+              {{ getResultadoLabel(inspection.resultadoGeneral) }}
+            </aero-badge>
           </div>
 
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Código:</span>
+              <span class="label">Código</span>
               <span class="value">{{ inspection.codigo }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Fecha:</span>
+              <span class="label">Fecha</span>
               <span class="value">{{ inspection.fechaInspeccion | date: 'dd/MM/yyyy' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Equipo:</span>
+              <span class="label">Equipo</span>
               <span class="value">{{ inspection.equipo?.codigo || 'N/A' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Inspector:</span>
+              <span class="label">Inspector</span>
               <span class="value">
                 {{ inspection.trabajador?.nombre }} {{ inspection.trabajador?.apellido }}
               </span>
             </div>
             <div class="info-item">
-              <span class="label">Ubicación:</span>
+              <span class="label">Ubicación</span>
               <span class="value">{{ inspection.ubicacion || '-' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Hora Inicio:</span>
+              <span class="label">Hora Inicio</span>
               <span class="value">{{ inspection.horaInicio || '-' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Hora Fin:</span>
+              <span class="label">Hora Fin</span>
               <span class="value">{{ inspection.horaFin || '-' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Horómetro:</span>
+              <span class="label">Horómetro</span>
               <span class="value">{{ inspection.horometroInicial || '-' }}</span>
             </div>
           </div>
-        </div>
+        </app-page-card>
 
         <!-- Statistics Section -->
         <div class="stats-section" *ngIf="inspection">
@@ -149,15 +133,13 @@ import {
         </div>
 
         <!-- Results by Category -->
-        <div class="info-card results-card">
-          <h2>Resultados por Categoría</h2>
-
+        <app-page-card title="Resultados por Categoría">
           <div *ngFor="let category of getCategories()" class="category-section">
             <div class="category-header">
               <h3>{{ category }}</h3>
-              <span class="category-count">
+              <aero-badge variant="info">
                 {{ getResultsByCategory(category).length }} items
-              </span>
+              </aero-badge>
             </div>
 
             <table class="results-table">
@@ -178,24 +160,23 @@ import {
                   <td class="col-description">
                     <div class="description-content">
                       {{ result.item?.descripcion }}
-                      <span class="critical-badge" *ngIf="result.item?.esCritico">
-                        <i class="fa-solid fa-exclamation-triangle"></i> CRÍTICO
-                      </span>
+                      <aero-badge variant="error" *ngIf="result.item?.esCritico">
+                        CRÍTICO
+                      </aero-badge>
                     </div>
                   </td>
                   <td class="col-status">
-                    <span class="status-badge" [ngClass]="getStatusClass(result.conforme)">
-                      <i [class]="getStatusIcon(result.conforme)"></i>
+                    <aero-badge [variant]="getStatusBadgeVariant(result.conforme)">
                       {{ getStatusLabel(result.conforme) }}
-                    </span>
+                    </aero-badge>
                   </td>
                   <td class="col-value">
                     {{ result.valorMedido || '-' }}
                   </td>
                   <td class="col-action">
-                    <span class="action-badge" [ngClass]="getActionClass(result.accionRequerida)">
+                    <aero-badge [variant]="getActionBadgeVariant(result.accionRequerida)">
                       {{ getActionLabel(result.accionRequerida) }}
-                    </span>
+                    </aero-badge>
                   </td>
                   <td class="col-obs">
                     {{ result.observaciones || '-' }}
@@ -204,13 +185,12 @@ import {
               </tbody>
             </table>
           </div>
-        </div>
+        </app-page-card>
 
         <!-- General Observations -->
-        <div class="info-card observations-card" *ngIf="inspection.observacionesGenerales">
-          <h2>Observaciones Generales</h2>
+        <app-page-card title="Observaciones Generales" *ngIf="inspection.observacionesGenerales">
           <p class="observations-text">{{ inspection.observacionesGenerales }}</p>
-        </div>
+        </app-page-card>
       </div>
 
       <div class="no-data" *ngIf="!loading && !inspection">
@@ -221,84 +201,21 @@ import {
   `,
   styles: [
     `
-      .actions-bar {
+      .action-buttons-header {
         display: flex;
         gap: var(--s-12);
-        margin-bottom: var(--s-24);
-        flex-wrap: wrap;
-      }
-
-      .btn {
-        padding: var(--s-12) var(--s-24);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
         align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s;
       }
 
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-800);
-      }
-
-      .btn-secondary:hover {
-        background: var(--grey-300);
-      }
-
-      .btn-warning {
-        background: var(--warning-500);
-        color: var(--neutral-0);
-      }
-
-      .btn-warning:hover {
-        background: var(--warning-700);
-      }
-
-      .info-card {
-        background: var(--neutral-0);
-        border-radius: var(--s-12);
-        padding: var(--s-24);
-        margin-bottom: var(--s-24);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      .card-header {
+      .inspection-content {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-24);
-      }
-
-      .card-header h2 {
-        margin: 0;
-        color: var(--grey-900);
+        flex-direction: column;
+        gap: var(--s-24);
       }
 
       .header-badges {
         display: flex;
         gap: var(--s-8);
-      }
-
-      .badge {
-        padding: var(--s-6) var(--s-12);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
       }
 
       .info-grid {
@@ -339,7 +256,6 @@ import {
         gap: var(--s-16);
         padding: var(--s-20);
         border-radius: var(--s-8);
-        margin-bottom: var(--s-24);
         border-left: 4px solid;
       }
 
@@ -387,15 +303,6 @@ import {
         margin: 0;
         color: var(--primary-800);
         font-size: 18px;
-      }
-
-      .category-count {
-        background: var(--primary-100);
-        color: var(--primary-800);
-        padding: var(--s-4) var(--s-12);
-        border-radius: var(--s-4);
-        font-size: 12px;
-        font-weight: 700;
       }
 
       .results-table {
@@ -456,52 +363,6 @@ import {
         font-weight: 500;
       }
 
-      .critical-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-4);
-        background: var(--error-100);
-        color: var(--error-800);
-        padding: 2px var(--s-8);
-        border-radius: var(--s-4);
-        font-size: 10px;
-        font-weight: 700;
-        width: fit-content;
-      }
-      /* Status Badges */
-      /* Global .status-badge classes are used now */
-
-      /* Action Badge */
-
-      .action-badge {
-        display: inline-block;
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: 11px;
-        font-weight: 600;
-        width: fit-content;
-      }
-
-      .action-ninguna {
-        background: var(--grey-200);
-        color: var(--grey-700);
-      }
-
-      .action-observar {
-        background: var(--info-100);
-        color: var(--info-800);
-      }
-
-      .action-reparar {
-        background: var(--warning-100);
-        color: var(--warning-800);
-      }
-
-      .action-reemplazar {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
       .observations-text {
         line-height: 1.6;
         color: var(--grey-700);
@@ -518,42 +379,14 @@ import {
         font-size: 48px;
         margin-bottom: var(--s-16);
       }
-
-      /* Mobile Responsive */
-      @media (max-width: 768px) {
-        .result-row {
-          grid-template-columns: 1fr;
-          gap: var(--s-8);
-        }
-
-        .result-row > div {
-          display: flex;
-          justify-content: space-between;
-        }
-
-        .result-row.header-row {
-          display: none;
-        }
-
-        .result-row > div::before {
-          content: attr(class);
-          font-weight: 700;
-          text-transform: uppercase;
-          font-size: 11px;
-          color: var(--grey-600);
-        }
-
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
     `,
   ],
 })
 export class InspectionDetailComponent implements OnInit {
-  checklistService = inject(ChecklistService);
+  private checklistService = inject(ChecklistService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
 
   inspection: InspectionWithResults | null = null;
   loading = false;
@@ -587,6 +420,7 @@ export class InspectionDetailComponent implements OnInit {
       },
     });
   }
+
   calculateStatItems(): void {
     if (!this.inspection) return;
 
@@ -632,14 +466,14 @@ export class InspectionDetailComponent implements OnInit {
     return labels[estado] || estado;
   }
 
-  getEstadoClass(estado: string): string {
-    const classes: Record<string, string> = {
-      EN_PROGRESO: 'estado-en-progreso',
-      COMPLETADO: 'estado-completado',
-      RECHAZADO: 'estado-rechazado',
-      CANCELADO: 'estado-cancelado',
+  getEstadoBadgeVariant(estado: string): BadgeVariant {
+    const variants: Record<string, BadgeVariant> = {
+      EN_PROGRESO: 'info',
+      COMPLETADO: 'success',
+      RECHAZADO: 'error',
+      CANCELADO: 'neutral',
     };
-    return classes[estado] || '';
+    return variants[estado] || 'neutral';
   }
 
   getResultadoLabel(resultado: string): string {
@@ -651,13 +485,13 @@ export class InspectionDetailComponent implements OnInit {
     return labels[resultado] || resultado;
   }
 
-  getResultadoClass(resultado: string): string {
-    const classes: Record<string, string> = {
-      APROBADO: 'status-approved',
-      APROBADO_CON_OBSERVACIONES: 'status-pending_finance', // Using orange/warning color
-      RECHAZADO: 'status-rejected',
+  getResultadoBadgeVariant(resultado: string): BadgeVariant {
+    const variants: Record<string, BadgeVariant> = {
+      APROBADO: 'success',
+      APROBADO_CON_OBSERVACIONES: 'warning',
+      RECHAZADO: 'error',
     };
-    return classes[resultado] || '';
+    return variants[resultado] || 'neutral';
   }
 
   getApprovalRate(): number {
@@ -687,16 +521,10 @@ export class InspectionDetailComponent implements OnInit {
     return 'N/A';
   }
 
-  getStatusClass(conforme: boolean | null | undefined): string {
-    if (conforme === true) return 'status-approved';
-    if (conforme === false) return 'status-rejected';
-    return 'status-na';
-  }
-
-  getStatusIcon(conforme: boolean | null | undefined): string {
-    if (conforme === true) return 'fa-solid fa-check-circle';
-    if (conforme === false) return 'fa-solid fa-times-circle';
-    return 'fa-solid fa-minus-circle';
+  getStatusBadgeVariant(conforme: boolean | null | undefined): BadgeVariant {
+    if (conforme === true) return 'success';
+    if (conforme === false) return 'error';
+    return 'neutral';
   }
 
   getActionLabel(action: string | undefined): string {
@@ -709,19 +537,15 @@ export class InspectionDetailComponent implements OnInit {
     return action ? labels[action] || action : '-';
   }
 
-  getActionClass(action: string | undefined): string {
-    if (!action) return '';
-    const classes: Record<string, string> = {
-      NINGUNA: 'action-ninguna',
-      OBSERVAR: 'action-observar',
-      REPARAR: 'action-reparar',
-      REEMPLAZAR: 'action-reemplazar',
+  getActionBadgeVariant(action: string | undefined): BadgeVariant {
+    if (!action) return 'neutral';
+    const variants: Record<string, BadgeVariant> = {
+      NINGUNA: 'neutral',
+      OBSERVAR: 'info',
+      REPARAR: 'warning',
+      REEMPLAZAR: 'error',
     };
-    return classes[action] || '';
-  }
-
-  goBack(): void {
-    this.router.navigate(['/checklists/inspections']);
+    return variants[action] || 'neutral';
   }
 
   exportPDF(): void {
@@ -729,14 +553,12 @@ export class InspectionDetailComponent implements OnInit {
 
     const token = localStorage.getItem('access_token');
     if (!token) {
-      alert('No se encontró token de autenticación');
+      this.snackBar.open('No se encontró token de autenticación', 'Cerrar', { duration: 3000 });
       return;
     }
 
-    // Create URL for PDF export
     const url = `${this.checklistService['apiUrl']}/inspections/${this.inspection.id}/export-pdf`;
 
-    // Fetch and download PDF
     fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -749,7 +571,6 @@ export class InspectionDetailComponent implements OnInit {
         return response.blob();
       })
       .then((blob) => {
-        // Create a temporary URL for the blob and trigger download
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = blobUrl;
@@ -757,17 +578,17 @@ export class InspectionDetailComponent implements OnInit {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        // Clean up the blob URL
         window.URL.revokeObjectURL(blobUrl);
       })
       .catch((error) => {
         console.error('Error exporting PDF:', error);
-        alert('Error al exportar el PDF. Por favor intente nuevamente.');
+        this.snackBar.open('Error al exportar el PDF', 'Cerrar', { duration: 3000 });
       });
   }
 
   sendToMaintenance(): void {
-    console.log('Send to maintenance:', this.inspection?.id);
-    alert('Función para enviar a mantenimiento en desarrollo');
+    this.snackBar.open('Función para enviar a mantenimiento en desarrollo', 'Cerrar', {
+      duration: 3000,
+    });
   }
 }

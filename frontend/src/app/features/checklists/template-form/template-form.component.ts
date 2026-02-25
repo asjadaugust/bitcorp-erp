@@ -9,6 +9,11 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
+import { AeroInputComponent } from '../../../core/design-system/input/aero-input.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-template-form',
@@ -19,6 +24,9 @@ import {
     ReactiveFormsModule,
     PageLayoutComponent,
     DropdownComponent,
+    ButtonComponent,
+    PageCardComponent,
+    AeroInputComponent,
   ],
   template: `
     <app-page-layout
@@ -26,61 +34,52 @@ import {
       icon="fa-clipboard-list"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/checklists/templates"
     >
+      <div actions class="action-buttons-header">
+        <app-button
+          variant="primary"
+          icon="fa-save"
+          [label]="saving ? 'Guardando...' : 'Guardar'"
+          [disabled]="!templateForm.valid || saving"
+          (clicked)="onSubmit()"
+        ></app-button>
+      </div>
+
       <form [formGroup]="templateForm" (ngSubmit)="onSubmit()">
-        <div class="form-actions-top">
-          <button type="button" class="btn btn-secondary" (click)="goBack()">
-            <i class="fa-solid fa-arrow-left"></i> Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary" [disabled]="!templateForm.valid || saving">
-            <i class="fa-solid fa-save"></i> {{ saving ? 'Guardando...' : 'Guardar' }}
-          </button>
-        </div>
-
         <!-- General Information Card -->
-        <div class="form-card">
-          <h2 class="card-title">
-            <i class="fa-solid fa-info-circle"></i>
-            Información General
-          </h2>
-
+        <app-page-card title="Información General">
           <div class="form-grid">
             <div class="form-group">
-              <label for="codigo">Código *</label>
-              <input
-                id="codigo"
-                type="text"
+              <aero-input
+                label="Código"
                 formControlName="codigo"
-                class="form-control"
                 placeholder="Ej: CHL-EXC-001"
-              />
-              <span
-                class="error-message"
-                *ngIf="templateForm.get('codigo')?.invalid && templateForm.get('codigo')?.touched"
-              >
-                El código es requerido
-              </span>
+                [required]="true"
+                [error]="
+                  templateForm.get('codigo')?.invalid && templateForm.get('codigo')?.touched
+                    ? 'El código es requerido'
+                    : ''
+                "
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="nombre">Nombre *</label>
-              <input
-                id="nombre"
-                type="text"
+              <aero-input
+                label="Nombre"
                 formControlName="nombre"
-                class="form-control"
                 placeholder="Nombre de la plantilla"
-              />
-              <span
-                class="error-message"
-                *ngIf="templateForm.get('nombre')?.invalid && templateForm.get('nombre')?.touched"
-              >
-                El nombre es requerido
-              </span>
+                [required]="true"
+                [error]="
+                  templateForm.get('nombre')?.invalid && templateForm.get('nombre')?.touched
+                    ? 'El nombre es requerido'
+                    : ''
+                "
+              ></aero-input>
             </div>
 
             <div class="form-group">
-              <label for="tipoEquipo">Tipo de Equipo</label>
+              <label class="aero-label">Tipo de Equipo</label>
               <app-dropdown
                 formControlName="tipoEquipo"
                 [options]="equipmentTypeOptions"
@@ -89,7 +88,7 @@ import {
             </div>
 
             <div class="form-group">
-              <label for="frecuencia">Frecuencia</label>
+              <label class="aero-label">Frecuencia</label>
               <app-dropdown
                 formControlName="frecuencia"
                 [options]="frequencyOptions"
@@ -98,9 +97,8 @@ import {
             </div>
 
             <div class="form-group full-width">
-              <label for="descripcion">Descripción</label>
+              <label class="aero-label">Descripción</label>
               <textarea
-                id="descripcion"
                 formControlName="descripcion"
                 class="form-control"
                 rows="3"
@@ -115,18 +113,18 @@ import {
               </label>
             </div>
           </div>
-        </div>
+        </app-page-card>
 
         <!-- Items Card -->
-        <div class="form-card">
-          <div class="card-header-with-action">
-            <h2 class="card-title">
-              <i class="fa-solid fa-list-check"></i>
-              Items del Checklist
-            </h2>
-            <button type="button" class="btn btn-success btn-sm" (click)="addItem()">
-              <i class="fa-solid fa-plus"></i> Agregar Item
-            </button>
+        <app-page-card title="Items del Checklist">
+          <div header-actions>
+            <app-button
+              variant="primary"
+              icon="fa-plus"
+              label="Agregar Item"
+              size="sm"
+              (clicked)="addItem()"
+            ></app-button>
           </div>
 
           <div formArrayName="items" class="items-list">
@@ -137,44 +135,45 @@ import {
             >
               <div class="item-form-header">
                 <span class="item-number">#{{ i + 1 }}</span>
-                <button
-                  type="button"
-                  class="btn-icon btn-danger-icon"
-                  (click)="removeItem(i)"
-                  title="Eliminar"
-                >
-                  <i class="fa-solid fa-trash"></i>
-                </button>
+                <app-button
+                  variant="icon"
+                  size="sm"
+                  icon="fa-trash"
+                  (clicked)="removeItem(i)"
+                ></app-button>
               </div>
 
               <div class="item-form-grid">
                 <div class="form-group">
-                  <span class="label">Orden *</span>
-                  <input type="number" formControlName="orden" class="form-control" min="1" />
+                  <aero-input
+                    label="Orden"
+                    type="number"
+                    formControlName="orden"
+                    [required]="true"
+                  ></aero-input>
                 </div>
 
                 <div class="form-group span-2">
-                  <span class="label">Categoría</span>
-                  <input
-                    type="text"
+                  <aero-input
+                    label="Categoría"
                     formControlName="categoria"
-                    class="form-control"
                     placeholder="Ej: Sistema Hidráulico"
-                  />
+                  ></aero-input>
                 </div>
 
                 <div class="form-group full-width">
-                  <span class="label">Descripción *</span>
-                  <input
-                    type="text"
+                  <aero-input
+                    label="Descripción"
                     formControlName="descripcion"
-                    class="form-control"
                     placeholder="Descripción del item a verificar"
-                  />
+                    [required]="true"
+                  ></aero-input>
                 </div>
 
                 <div class="form-group">
-                  <span class="label">Tipo de Verificación *</span>
+                  <label class="aero-label"
+                    >Tipo de Verificación <span class="required">*</span></label
+                  >
                   <app-dropdown
                     formControlName="tipoVerificacion"
                     [options]="verificationTypeOptions"
@@ -183,17 +182,15 @@ import {
                 </div>
 
                 <div class="form-group span-2">
-                  <span class="label">Valor Esperado</span>
-                  <input
-                    type="text"
+                  <aero-input
+                    label="Valor Esperado"
                     formControlName="valorEsperado"
-                    class="form-control"
                     placeholder="Ej: Sin fugas, Operativo, etc."
-                  />
+                  ></aero-input>
                 </div>
 
                 <div class="form-group full-width">
-                  <span class="label">Instrucciones</span>
+                  <label class="aero-label">Instrucciones</label>
                   <textarea
                     formControlName="instrucciones"
                     class="form-control"
@@ -223,16 +220,7 @@ import {
               <p>No hay items. Haga clic en "Agregar Item" para comenzar.</p>
             </div>
           </div>
-        </div>
-
-        <div class="form-actions-bottom">
-          <button type="button" class="btn btn-secondary" (click)="goBack()">
-            <i class="fa-solid fa-arrow-left"></i> Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary" [disabled]="!templateForm.valid || saving">
-            <i class="fa-solid fa-save"></i> {{ saving ? 'Guardando...' : 'Guardar' }}
-          </button>
-        </div>
+        </app-page-card>
       </form>
     </app-page-layout>
   `,
@@ -244,82 +232,10 @@ import {
         gap: var(--s-24);
       }
 
-      .form-actions-top,
-      .form-actions-bottom {
+      .action-buttons-header {
         display: flex;
-        gap: var(--s-8);
-        justify-content: space-between;
-      }
-
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
+        gap: var(--s-12);
         align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover:not(:disabled) {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-800);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-300);
-      }
-
-      .btn-success {
-        background: var(--success-500);
-        color: var(--neutral-0);
-      }
-      .btn-success:hover {
-        background: var(--success-800);
-      }
-
-      .btn-sm {
-        padding: var(--s-6) var(--s-12);
-        font-size: 12px;
-      }
-
-      .form-card {
-        background: var(--neutral-0);
-        border-radius: var(--s-12);
-        padding: var(--s-24);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .card-title {
-        margin: 0 0 var(--s-20) 0;
-        font-size: var(--type-h3-size);
-        font-weight: 700;
-        color: var(--grey-900);
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-      }
-
-      .card-header-with-action {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-20);
       }
 
       .form-grid {
@@ -342,12 +258,6 @@ import {
         grid-column: span 2;
       }
 
-      .form-group label {
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        color: var(--grey-700);
-      }
-
       .form-control {
         padding: var(--s-8) var(--s-12);
         border: 1px solid var(--grey-300);
@@ -360,11 +270,6 @@ import {
         outline: none;
         border-color: var(--primary-500);
         box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-      }
-
-      .form-control:disabled {
-        background: var(--grey-100);
-        cursor: not-allowed;
       }
 
       textarea.form-control {
@@ -384,12 +289,6 @@ import {
         width: 18px;
         height: 18px;
         cursor: pointer;
-      }
-
-      .error-message {
-        color: var(--error-500);
-        font-size: var(--type-bodySmall-size);
-        margin-top: var(--s-4);
       }
 
       .items-list {
@@ -420,28 +319,14 @@ import {
         color: var(--primary-500);
       }
 
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--s-6);
-        border-radius: var(--s-4);
-        transition: all 0.2s;
-      }
-
-      .btn-danger-icon {
-        color: var(--error-500);
-      }
-
-      .btn-danger-icon:hover {
-        background: var(--error-100);
-        color: var(--error-800);
-      }
-
       .item-form-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: var(--s-12);
+      }
+
+      .required {
+        color: var(--error-500);
       }
 
       .empty-state {
@@ -478,10 +363,12 @@ import {
   ],
 })
 export class TemplateFormComponent implements OnInit {
-  checklistService = inject(ChecklistService);
+  private checklistService = inject(ChecklistService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   templateForm!: FormGroup;
   loading = false;
@@ -568,13 +455,14 @@ export class TemplateFormComponent implements OnInit {
   }
 
   removeItem(index: number): void {
-    if (confirm('¿Está seguro de eliminar este item?')) {
-      this.items.removeAt(index);
-      // Update orden for remaining items
-      this.items.controls.forEach((control, i) => {
-        control.get('orden')?.setValue(i + 1);
-      });
-    }
+    this.confirmSvc.confirmDelete('este item').subscribe((confirmed) => {
+      if (confirmed) {
+        this.items.removeAt(index);
+        this.items.controls.forEach((control, i) => {
+          control.get('orden')?.setValue(i + 1);
+        });
+      }
+    });
   }
 
   loadTemplate(id: number): void {
@@ -590,7 +478,6 @@ export class TemplateFormComponent implements OnInit {
           activo: template.activo,
         });
 
-        // Load items
         if (template.items && template.items.length > 0) {
           template.items
             .sort((a, b) => a.orden - b.orden)
@@ -604,8 +491,8 @@ export class TemplateFormComponent implements OnInit {
       error: (error) => {
         console.error('Error loading template:', error);
         this.loading = false;
-        alert('Error al cargar la plantilla');
-        this.goBack();
+        this.snackBar.open('Error al cargar la plantilla', 'Cerrar', { duration: 3000 });
+        this.router.navigate(['/checklists/templates']);
       },
     });
   }
@@ -613,7 +500,9 @@ export class TemplateFormComponent implements OnInit {
   onSubmit(): void {
     if (this.templateForm.invalid) {
       this.templateForm.markAllAsTouched();
-      alert('Por favor complete todos los campos requeridos');
+      this.snackBar.open('Por favor complete todos los campos requeridos', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -634,31 +523,27 @@ export class TemplateFormComponent implements OnInit {
       template['id'] = this.templateId;
       this.checklistService.updateTemplate(this.templateId, template as any).subscribe({
         next: () => {
-          alert('Plantilla actualizada exitosamente');
+          this.snackBar.open('Plantilla actualizada correctamente', 'Cerrar', { duration: 3000 });
           this.router.navigate(['/checklists/templates']);
         },
         error: (error) => {
           console.error('Error updating template:', error);
           this.saving = false;
-          alert('Error al actualizar la plantilla');
+          this.snackBar.open('Error al actualizar la plantilla', 'Cerrar', { duration: 3000 });
         },
       });
     } else {
       this.checklistService.createTemplate(template as any).subscribe({
         next: () => {
-          alert('Plantilla creada exitosamente');
+          this.snackBar.open('Plantilla creada correctamente', 'Cerrar', { duration: 3000 });
           this.router.navigate(['/checklists/templates']);
         },
         error: (error) => {
           console.error('Error creating template:', error);
           this.saving = false;
-          alert('Error al crear la plantilla');
+          this.snackBar.open('Error al crear la plantilla', 'Cerrar', { duration: 3000 });
         },
       });
     }
-  }
-
-  goBack(): void {
-    this.router.navigate(['/checklists/templates']);
   }
 }
