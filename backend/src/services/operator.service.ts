@@ -516,7 +516,7 @@ export class OperatorService {
     }
   }
 
-  async getPerformance(tenantId: number, id: number, dias = 90): Promise<RendimientoDto> {
+  async getPerformance(tenantId: number, id: number, dias = 30): Promise<RendimientoDto> {
     try {
       await this.findById(tenantId, id);
 
@@ -551,7 +551,7 @@ export class OperatorService {
         partes_aprobados: aprobados,
         partes_rechazados: rechazados,
         partes_pendientes: pendientes,
-        eficiencia: total > 0 ? Math.round((aprobados / total) * 1000) / 1000 : 0,
+        eficiencia: total > 0 ? Math.round((aprobados / total) * 10000) / 100 : 0,
       };
     } catch (error) {
       Logger.error('Error getting operator performance', { error, tenantId, id });

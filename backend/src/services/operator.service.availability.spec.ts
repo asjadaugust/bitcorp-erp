@@ -102,7 +102,7 @@ describe('OperatorService — availability and performance', () => {
       expect(result.operador_id).toBe(5);
       expect(result.total_partes).toBe(0);
       expect(result.eficiencia).toBe(0);
-      expect(result.periodo_dias).toBe(90);
+      expect(result.periodo_dias).toBe(30);
     });
 
     it('calculates efficiency from partes', async () => {
@@ -120,7 +120,7 @@ describe('OperatorService — availability and performance', () => {
       expect(result.partes_aprobados).toBe(8);
       expect(result.partes_rechazados).toBe(1);
       expect(result.horas_totales).toBe(120.5);
-      expect(result.eficiencia).toBeCloseTo(0.8, 2);
+      expect(result.eficiencia).toBeCloseTo(80, 2);
     });
 
     it('should propagate NotFoundError if operator not found', async () => {
