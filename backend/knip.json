@@ -1,0 +1,9 @@
+{
+  "entry": ["src/index.ts"],
+  "project": ["src/**/*.ts"],
+  "ignore": ["src/database/migrations/**", "src/database/seeders/**", "eslint-rules/**"],
+  "ignoreDependencies": ["reflect-metadata", "ts-node-dev"],
+  "typescript": {
+    "config": "tsconfig.json"
+  }
+}
