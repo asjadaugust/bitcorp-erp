@@ -9,10 +9,7 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
-import {
-  PageLayoutComponent,
-  TabItem,
-} from '../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -42,7 +39,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       icon="fa-gas-pump"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
@@ -195,12 +191,6 @@ export class FuelListComponent implements OnInit {
     { label: 'Inicio', url: '/app' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Combustible' },
-  ];
-
-  tabs: TabItem[] = [
-    { label: 'Productos', route: '/logistics/products', icon: 'fa-boxes-stacked' },
-    { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-dolly' },
-    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' },
   ];
 
   filterConfig: FilterConfig[] = [

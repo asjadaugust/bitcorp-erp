@@ -199,36 +199,7 @@ export const routes: Routes = [
       },
       {
         path: 'rrhh',
-        loadComponent: () =>
-          import('./features/hr/hr-dashboard.component').then((m) => m.HrDashboardComponent),
-      },
-      {
-        path: 'rrhh/employees',
-        loadComponent: () =>
-          import('./features/hr/components/employee-list/employee-list.component').then(
-            (m) => m.EmployeeListComponent
-          ),
-      },
-      {
-        path: 'rrhh/employees/new',
-        loadComponent: () =>
-          import('./features/hr/components/employee-form/employee-form.component').then(
-            (m) => m.EmployeeFormComponent
-          ),
-      },
-      {
-        path: 'rrhh/employees/:id',
-        loadComponent: () =>
-          import('./features/hr/components/employee-detail/employee-detail.component').then(
-            (m) => m.EmployeeDetailComponent
-          ),
-      },
-      {
-        path: 'rrhh/employees/:id/edit',
-        loadComponent: () =>
-          import('./features/hr/components/employee-form/employee-form.component').then(
-            (m) => m.EmployeeFormComponent
-          ),
+        loadChildren: () => import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
       },
       {
         path: 'logistics',
@@ -290,16 +261,8 @@ export const routes: Routes = [
       // Analytics
       {
         path: 'analytics',
-        children: [
-          { path: '', redirectTo: 'flota', pathMatch: 'full' },
-          {
-            path: ':tab',
-            loadComponent: () =>
-              import('./features/analytics/analytics-dashboard.component').then(
-                (m) => m.AnalyticsDashboardComponent
-              ),
-          },
-        ],
+        loadChildren: () =>
+          import('./features/analytics/analytics.routes').then((m) => m.ANALYTICS_ROUTES),
       },
     ],
   },

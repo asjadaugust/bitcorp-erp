@@ -7,10 +7,7 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../core/design-system/table/aero-table.component';
-import {
-  PageLayoutComponent,
-  TabItem,
-} from '../../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -43,7 +40,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       icon="fa-clipboard-check"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <div actions>
         <app-button
@@ -153,11 +149,6 @@ export class TemplateListComponent implements OnInit {
     { label: 'Inicio', url: '/app' },
     { label: 'Checklists', url: '/checklists' },
     { label: 'Plantillas' },
-  ];
-
-  tabs: TabItem[] = [
-    { label: 'Plantillas', route: '/checklists/templates', icon: 'fa-clipboard-list' },
-    { label: 'Inspecciones', route: '/checklists/inspections', icon: 'fa-clipboard-check' },
   ];
 
   filterConfig: FilterConfig[] = [

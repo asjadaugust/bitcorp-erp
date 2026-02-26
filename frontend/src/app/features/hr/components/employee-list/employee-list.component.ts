@@ -11,7 +11,6 @@ import {
 import {
   PageLayoutComponent,
   Breadcrumb,
-  TabItem,
 } from '../../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
@@ -40,7 +39,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       title="Gestión de Personal"
       icon="fa-users"
       [breadcrumbs]="breadcrumbs"
-      [tabs]="tabs"
       [loading]="loading"
     >
       <div actions>
@@ -165,11 +163,6 @@ export class EmployeeListComponent implements OnInit {
     { label: 'Inicio', url: '/app' },
     { label: 'RRHH', url: '/rrhh' },
     { label: 'Personal' },
-  ];
-
-  tabs: TabItem[] = [
-    { label: 'Dashboard', route: '/rrhh', icon: 'fa-chart-pie' },
-    { label: 'Personal', route: '/rrhh/employees', icon: 'fa-users' },
   ];
 
   filterConfig: FilterConfig[] = [

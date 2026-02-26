@@ -1,22 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import {
-  PageLayoutComponent,
-  TabItem,
-} from '../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 
 @Component({
   selector: 'app-hr-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule, PageLayoutComponent],
   template: `
-    <app-page-layout
-      title="Recursos Humanos"
-      icon="fa-users-gear"
-      [breadcrumbs]="breadcrumbs"
-      [tabs]="tabs"
-    >
+    <app-page-layout title="Recursos Humanos" icon="fa-users-gear" [breadcrumbs]="breadcrumbs">
       <div class="module-grid">
         <!-- Personal Card -->
         <div
@@ -133,11 +125,6 @@ export class HrDashboardComponent {
   private router = inject(Router);
 
   breadcrumbs = [{ label: 'Inicio', url: '/app' }, { label: 'RRHH' }];
-
-  tabs: TabItem[] = [
-    { label: 'Dashboard', route: '/rrhh', icon: 'fa-chart-pie' },
-    { label: 'Personal', route: '/rrhh/employees', icon: 'fa-users' },
-  ];
 
   navigateTo(path: string): void {
     this.router.navigate(['/rrhh', path]);

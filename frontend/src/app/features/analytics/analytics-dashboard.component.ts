@@ -20,7 +20,6 @@ import {
 import {
   PageLayoutComponent,
   Breadcrumb,
-  TabItem,
 } from '../../shared/components/page-layout/page-layout.component';
 import {
   DropdownComponent,
@@ -28,7 +27,6 @@ import {
 } from '../../shared/components/dropdown/dropdown.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
-import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 
 type TabId = 'flota' | 'utilizacion' | 'combustible';
 
@@ -44,7 +42,6 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
     DropdownComponent,
     AeroInputComponent,
     AeroCardComponent,
-    AeroTabsComponent,
   ],
   template: `
     <app-page-layout
@@ -68,9 +65,6 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
           (ngModelChange)="onPeriodChange()"
         ></aero-input>
       </div>
-
-      <!-- Detail Tabs Structure -->
-      <app-aero-tabs [tabs]="tabs"></app-aero-tabs>
 
       <!-- ══════════════════════════ TAB: FLOTA ══════════════════════════ -->
       <div *ngIf="tabActivo() === 'flota'" data-testid="panel-flota">
@@ -574,16 +568,6 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
 
   // ── Tab state (synced with route :tab param) ──────────────────────────────
   tabActivo = signal<TabId>('flota');
-  tabs: (TabItem & { id: string; route: string })[] = [
-    { id: 'flota', label: 'Resumen de Flota', icon: 'fa-truck-fast', route: '/analytics/flota' },
-    { id: 'utilizacion', label: 'Utilización', icon: 'fa-clock', route: '/analytics/utilizacion' },
-    {
-      id: 'combustible',
-      label: 'Combustible',
-      icon: 'fa-gas-pump',
-      route: '/analytics/combustible',
-    },
-  ];
 
   // ── Equipment selector ──────────────────────────────────────────────────────
   equipos = signal<Equipment[]>([]);

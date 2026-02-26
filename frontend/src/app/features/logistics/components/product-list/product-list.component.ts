@@ -8,10 +8,7 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
-import {
-  PageLayoutComponent,
-  TabItem,
-} from '../../../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -56,7 +53,6 @@ import { AeroBadgeComponent } from '../../../../core/design-system/badge/aero-ba
       icon="fa-boxes-stacked"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <app-actions-container actions>
         <app-export-dropdown
@@ -194,12 +190,6 @@ export class ProductListComponent implements OnInit {
     { label: 'Inicio', url: '/app' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Productos' },
-  ];
-
-  tabs: TabItem[] = [
-    { label: 'Productos', route: '/logistics/products', icon: 'fa-boxes-stacked' },
-    { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-dolly' },
-    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' },
   ];
 
   filterConfig: FilterConfig[] = [

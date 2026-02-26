@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { LogisticsModuleLayoutComponent } from './logistics-module-layout.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { ProductFormComponent } from './components/product-form/product-form.component';
 import { ProductDetailComponent } from './components/product-detail/product-detail.component';
@@ -8,32 +9,39 @@ import { MovementFormComponent } from './components/movement-form/movement-form.
 import { MovementDetailComponent } from './components/movement-detail/movement-detail.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'products', pathMatch: 'full' },
-  { path: 'products', component: ProductListComponent },
-  { path: 'products/new', component: ProductFormComponent },
-  { path: 'products/:id', component: ProductDetailComponent },
-  { path: 'products/:id/edit', component: ProductFormComponent },
-  { path: 'movements', component: MovementListComponent },
-  { path: 'movements/new', component: MovementFormComponent },
-  { path: 'movements/:id', component: MovementDetailComponent }, // Assuming detail exists or will be created if needed
-  { path: 'movements/:id/edit', component: MovementFormComponent },
+  {
+    path: '',
+    component: LogisticsModuleLayoutComponent,
+    children: [
+      { path: '', redirectTo: 'products', pathMatch: 'full' },
+      { path: 'products', component: ProductListComponent },
+      { path: 'products/new', component: ProductFormComponent },
+      { path: 'products/:id', component: ProductDetailComponent },
+      { path: 'products/:id/edit', component: ProductFormComponent },
+      { path: 'movements', component: MovementListComponent },
+      { path: 'movements/new', component: MovementFormComponent },
+      { path: 'movements/:id', component: MovementDetailComponent },
+      { path: 'movements/:id/edit', component: MovementFormComponent },
 
-  // Fuel Routes
-  {
-    path: 'fuel',
-    loadComponent: () => import('../fuel/fuel-list.component').then((m) => m.FuelListComponent),
-  },
-  {
-    path: 'fuel/new',
-    loadComponent: () => import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
-  },
-  {
-    path: 'fuel/:id',
-    loadComponent: () => import('../fuel/fuel-detail.component').then((m) => m.FuelDetailComponent),
-  },
-  {
-    path: 'fuel/:id/edit',
-    loadComponent: () => import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
+      // Fuel Routes
+      {
+        path: 'fuel',
+        loadComponent: () => import('../fuel/fuel-list.component').then((m) => m.FuelListComponent),
+      },
+      {
+        path: 'fuel/new',
+        loadComponent: () => import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
+      },
+      {
+        path: 'fuel/:id',
+        loadComponent: () =>
+          import('../fuel/fuel-detail.component').then((m) => m.FuelDetailComponent),
+      },
+      {
+        path: 'fuel/:id/edit',
+        loadComponent: () => import('../fuel/fuel-form.component').then((m) => m.FuelFormComponent),
+      },
+    ],
   },
 ];
 

@@ -7,10 +7,7 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
-import {
-  PageLayoutComponent,
-  TabItem,
-} from '../../../../shared/components/page-layout/page-layout.component';
+import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -47,7 +44,6 @@ import {
       icon="fa-right-left"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="tabs"
     >
       <app-actions-container actions>
         <button class="btn btn-primary" (click)="registerMovement('entrada')">
@@ -239,12 +235,6 @@ export class MovementListComponent implements OnInit {
     { label: 'Inicio', url: '/app' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Movimientos' },
-  ];
-
-  tabs: TabItem[] = [
-    { label: 'Productos', route: '/logistics/products', icon: 'fa-boxes-stacked' },
-    { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-dolly' },
-    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' },
   ];
 
   filterConfig: FilterConfig[] = [
