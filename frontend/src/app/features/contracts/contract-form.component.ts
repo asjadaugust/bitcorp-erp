@@ -669,7 +669,7 @@ export class ContractFormComponent implements OnInit {
       error: (err) => {
         console.error('Error loading contract', err);
         this.loading = false;
-        this.router.navigate(['/equipment/contracts']);
+        this.router.navigate(['/equipment/operaciones/contratos']);
       },
     });
   }
@@ -687,7 +687,7 @@ export class ContractFormComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.router.navigate(['/equipment/contracts']);
+        this.router.navigate(['/equipment/operaciones/contratos']);
       },
       error: (err) => {
         this.loading = false;
@@ -698,7 +698,7 @@ export class ContractFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/equipment/contracts']);
+    this.router.navigate(['/equipment/operaciones/contratos']);
   }
 
   hasError(field: string): boolean {

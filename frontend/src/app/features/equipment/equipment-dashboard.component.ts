@@ -288,6 +288,39 @@ import {
           }
         </div>
       </div>
+
+      <!-- Quick Access: Removed tab modules -->
+      <div class="quick-access-section">
+        <h3 class="section-title"><i class="fa-solid fa-bolt"></i> Acceso rápido</h3>
+        <div class="quick-links-row">
+          <a routerLink="/equipment/maintenance" class="quick-link-card">
+            <div class="ql-icon"><i class="fa-solid fa-wrench"></i></div>
+            <div class="ql-info">
+              <span class="ql-title">Mantenimiento</span>
+              <span class="ql-desc">Programas y registros de mantenimiento</span>
+            </div>
+            <i class="fa-solid fa-chevron-right ql-arrow"></i>
+          </a>
+          <a routerLink="/equipment/inoperatividad" class="quick-link-card">
+            <div class="ql-icon ql-icon-warning">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="ql-info">
+              <span class="ql-title">Inoperatividad</span>
+              <span class="ql-desc">Períodos de inoperatividad y penalidades</span>
+            </div>
+            <i class="fa-solid fa-chevron-right ql-arrow"></i>
+          </a>
+          <a routerLink="/equipment/precalentamiento-config" class="quick-link-card">
+            <div class="ql-icon ql-icon-config"><i class="fa-solid fa-fire-flame-curved"></i></div>
+            <div class="ql-info">
+              <span class="ql-title">Precalentamiento</span>
+              <span class="ql-desc">Configuración de horas por tipo de equipo</span>
+            </div>
+            <i class="fa-solid fa-chevron-right ql-arrow"></i>
+          </a>
+        </div>
+      </div>
     </app-page-layout>
   `,
   styles: [
@@ -715,6 +748,104 @@ import {
         60% {
           background-position: 100% 0%;
         }
+      }
+
+      .quick-access-section {
+        margin-top: var(--s-24);
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--grey-800);
+        display: flex;
+        align-items: center;
+        gap: var(--s-12);
+        margin: 0 0 var(--s-16) 0;
+
+        i {
+          color: var(--primary-500);
+          background: var(--primary-50);
+          padding: 8px;
+          border-radius: 8px;
+          font-size: 14px;
+        }
+      }
+
+      .quick-links-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--s-16);
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .quick-link-card {
+        display: flex;
+        align-items: center;
+        gap: var(--s-16);
+        padding: var(--s-16) var(--s-24);
+        background: white;
+        border: 1px solid var(--grey-100);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: var(--primary-200);
+          box-shadow: var(--shadow-sm);
+          transform: translateY(-1px);
+        }
+      }
+
+      .ql-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--primary-50);
+        color: var(--primary-600);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      .ql-icon-warning {
+        background: #fff7ed;
+        color: #ea580c;
+      }
+
+      .ql-icon-config {
+        background: #fef3c7;
+        color: #d97706;
+      }
+
+      .ql-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .ql-title {
+        display: block;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--grey-800);
+      }
+
+      .ql-desc {
+        display: block;
+        font-size: 12px;
+        color: var(--grey-500);
+        margin-top: 2px;
+      }
+
+      .ql-arrow {
+        color: var(--grey-300);
+        font-size: 12px;
+        flex-shrink: 0;
       }
     `,
   ],

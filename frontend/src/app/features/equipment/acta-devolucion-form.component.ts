@@ -1,192 +1,183 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ActaDevolucionService, ActaDevolucion } from '../../core/services/acta-devolucion.service';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import {
-  PageLayoutComponent,
-  Breadcrumb,
-} from '../../shared/components/page-layout/page-layout.component';
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-acta-devolucion-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FormContainerComponent,
+    FormSectionComponent,
+    DropdownComponent,
+  ],
   template: `
-    <app-page-layout
+    <app-form-container
       [title]="isEdit ? 'Editar Acta' : 'Nueva Acta de Devolución'"
-      icon="fa-file-signature"
-      [breadcrumbs]="breadcrumbs"
-      [loading]="loading"
+      [subtitle]="
+        isEdit ? 'Actualizar información del acta' : 'Registrar una nueva acta de devolución'
+      "
+      [icon]="isEdit ? 'fa-pen' : 'fa-file-signature'"
+      [loading]="saving"
+      [disableSubmit]="saving || f.invalid"
+      [submitLabel]="isEdit ? 'Actualizar' : 'Crear Acta'"
+      (submitted)="guardar()"
+      (cancelled)="cancelar(f)"
     >
-      <div class="form-container">
-        <form (ngSubmit)="guardar()" #f="ngForm">
-          <div class="form-grid">
-            <div class="form-group">
-              <span class="form-label required">ID Equipo</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.equipo_id"
-                name="equipo_id"
-                required
-                min="1"
-                placeholder="Número de ID del equipo"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label required">Fecha de Devolución</span>
-              <input
-                type="date"
-                class="form-control"
-                [(ngModel)]="form.fecha_devolucion"
-                name="fecha_devolucion"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Tipo de Acta</span>
-              <select class="form-select" [(ngModel)]="form.tipo" name="tipo">
-                <option value="DEVOLUCION">Devolución</option>
-                <option value="DESMOBILIZACION">Desmovilización</option>
-                <option value="TRANSFERENCIA">Transferencia</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Condición del Equipo</span>
-              <select
-                class="form-select"
-                [(ngModel)]="form.condicion_equipo"
-                name="condicion_equipo"
-              >
-                <option value="BUENO">Bueno</option>
-                <option value="REGULAR">Regular</option>
-                <option value="MALO">Malo</option>
-                <option value="CON_OBSERVACIONES">Con Observaciones</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Horómetro (horas)</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.horometro_devolucion"
-                name="horometro_devolucion"
-                step="0.01"
-                min="0"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Kilometraje (km)</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.kilometraje_devolucion"
-                name="kilometraje_devolucion"
-                step="0.01"
-                min="0"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">ID Contrato (opcional)</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.contrato_id"
-                name="contrato_id"
-                min="1"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">ID Proyecto (opcional)</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.proyecto_id"
-                name="proyecto_id"
-                min="1"
-              />
-            </div>
-
-            <div class="form-group span-2">
-              <span class="form-label">Observaciones Generales</span>
-              <textarea
-                class="form-control"
-                [(ngModel)]="form.observaciones"
-                name="observaciones"
-                rows="2"
-              ></textarea>
-            </div>
-
-            <div class="form-group span-2">
-              <span class="form-label">Observaciones Físicas / Daños</span>
-              <textarea
-                class="form-control"
-                [(ngModel)]="form.observaciones_fisicas"
-                name="observaciones_fisicas"
-                rows="3"
-                placeholder="Describir daños físicos, piezas faltantes, etc..."
-              ></textarea>
-            </div>
+      <form #f="ngForm" class="form-grid">
+        <!-- Section 1: Equipo y Fecha -->
+        <app-form-section title="Datos del Equipo" icon="fa-tractor">
+          <div class="form-group">
+            <label class="form-label required" for="equipo_id">ID Equipo</label>
+            <input
+              id="equipo_id"
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.equipo_id"
+              name="equipo_id"
+              required
+              min="1"
+              placeholder="Numero de ID del equipo"
+            />
           </div>
 
-          <div class="form-actions">
-            <button type="button" class="btn btn-outline-secondary" (click)="cancelar(f)">
-              Cancelar
-            </button>
-            <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
-              <i class="fa-solid fa-save"></i>
-              {{ saving ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear Acta' }}
-            </button>
+          <div class="form-group">
+            <label class="form-label required" for="fecha_devolucion">Fecha de Devolucion</label>
+            <input
+              id="fecha_devolucion"
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.fecha_devolucion"
+              name="fecha_devolucion"
+              required
+            />
           </div>
-        </form>
-      </div>
-    </app-page-layout>
+
+          <div class="form-group">
+            <label class="form-label" for="tipo">Tipo de Acta</label>
+            <app-dropdown
+              [(ngModel)]="form.tipo"
+              name="tipo"
+              [options]="tipoOptions"
+              placeholder="Seleccionar tipo"
+            ></app-dropdown>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="condicion_equipo">Condicion del Equipo</label>
+            <app-dropdown
+              [(ngModel)]="form.condicion_equipo"
+              name="condicion_equipo"
+              [options]="condicionOptions"
+              placeholder="Seleccionar condicion"
+            ></app-dropdown>
+          </div>
+        </app-form-section>
+
+        <!-- Section 2: Mediciones -->
+        <app-form-section title="Mediciones" icon="fa-gauge-high">
+          <div class="form-group">
+            <label class="form-label" for="horometro_devolucion">Horometro (horas)</label>
+            <input
+              id="horometro_devolucion"
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.horometro_devolucion"
+              name="horometro_devolucion"
+              step="0.01"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="kilometraje_devolucion">Kilometraje (km)</label>
+            <input
+              id="kilometraje_devolucion"
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.kilometraje_devolucion"
+              name="kilometraje_devolucion"
+              step="0.01"
+              min="0"
+            />
+          </div>
+        </app-form-section>
+
+        <!-- Section 3: Referencias -->
+        <app-form-section title="Referencias" icon="fa-link">
+          <div class="form-group">
+            <label class="form-label" for="contrato_id"
+              >ID Contrato <span class="optional">(opcional)</span></label
+            >
+            <input
+              id="contrato_id"
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.contrato_id"
+              name="contrato_id"
+              min="1"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="proyecto_id"
+              >ID Proyecto <span class="optional">(opcional)</span></label
+            >
+            <input
+              id="proyecto_id"
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.proyecto_id"
+              name="proyecto_id"
+              min="1"
+            />
+          </div>
+        </app-form-section>
+
+        <!-- Section 4: Observaciones -->
+        <app-form-section title="Observaciones" icon="fa-comment-dots" [columns]="1">
+          <div class="form-group">
+            <label class="form-label" for="observaciones">Observaciones Generales</label>
+            <textarea
+              id="observaciones"
+              class="form-control"
+              [(ngModel)]="form.observaciones"
+              name="observaciones"
+              rows="2"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="observaciones_fisicas"
+              >Observaciones Fisicas / Danos</label
+            >
+            <textarea
+              id="observaciones_fisicas"
+              class="form-control"
+              [(ngModel)]="form.observaciones_fisicas"
+              name="observaciones_fisicas"
+              rows="3"
+              placeholder="Describir danos fisicos, piezas faltantes, etc..."
+            ></textarea>
+          </div>
+        </app-form-section>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
-      .form-container {
-        padding: var(--s-24);
-      }
-      .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--s-16);
-      }
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .span-2 {
-        grid-column: span 2;
-      }
-      .form-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--grey-700, #495057);
-      }
-      .form-label.required::after {
-        content: ' *';
-        color: #dc3545;
-      }
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: var(--s-24);
-        padding-top: var(--s-16);
-        border-top: 1px solid var(--grey-200);
-      }
+      @use 'form-layout';
     `,
   ],
 })
@@ -212,25 +203,30 @@ export class ActaDevolucionFormComponent implements OnInit {
     observaciones_fisicas: '',
   };
 
-  breadcrumbs: Breadcrumb[] = [];
+  tipoOptions: DropdownOption[] = [
+    { label: 'Devolucion', value: 'DEVOLUCION' },
+    { label: 'Desmovilizacion', value: 'DESMOBILIZACION' },
+    { label: 'Transferencia', value: 'TRANSFERENCIA' },
+  ];
+
+  condicionOptions: DropdownOption[] = [
+    { label: 'Bueno', value: 'BUENO' },
+    { label: 'Regular', value: 'REGULAR' },
+    { label: 'Malo', value: 'MALO' },
+    { label: 'Con Observaciones', value: 'CON_OBSERVACIONES' },
+  ];
+
+  breadcrumbs = [
+    { label: 'Equipo', url: '/equipment' },
+    { label: 'Actas de Devolucion', url: '/equipment/actas-devolucion' },
+  ];
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.isEdit = true;
       this.actaId = parseInt(id);
-      this.breadcrumbs = [
-        { label: 'Equipo', url: '/equipment' },
-        { label: 'Actas de Devolución', url: '/equipment/actas-devolucion' },
-        { label: 'Editar Acta' },
-      ];
       this.cargar();
-    } else {
-      this.breadcrumbs = [
-        { label: 'Equipo', url: '/equipment' },
-        { label: 'Actas de Devolución', url: '/equipment/actas-devolucion' },
-        { label: 'Nueva Acta' },
-      ];
     }
   }
 
@@ -279,8 +275,8 @@ export class ActaDevolucionFormComponent implements OnInit {
     if (f.dirty) {
       this.confirmSvc
         .confirm({
-          title: 'Confirmar Cancelación',
-          message: '¿Está seguro de cancelar? Los cambios no guardados se perderán.',
+          title: 'Confirmar Cancelacion',
+          message: 'Esta seguro de cancelar? Los cambios no guardados se perderan.',
           icon: 'fa-triangle-exclamation',
           confirmLabel: 'Salir sin guardar',
           isDanger: true,

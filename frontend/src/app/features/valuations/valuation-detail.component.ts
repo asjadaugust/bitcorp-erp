@@ -122,7 +122,7 @@ import {
               <p>
                 @if (valuation?.contractId) {
                   <a
-                    [routerLink]="['/equipment/contracts', valuation?.contractId]"
+                    [routerLink]="['/equipment/operaciones/contratos', valuation?.contractId]"
                     class="link-primary"
                   >
                     {{ valuation?.contrato_numero || 'Ver Contrato' }}

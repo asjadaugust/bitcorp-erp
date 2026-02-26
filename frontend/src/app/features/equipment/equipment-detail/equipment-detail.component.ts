@@ -20,6 +20,7 @@ import {
   SolicitudEquipoService,
   SolicitudEquipo,
 } from '../../../core/services/solicitud-equipo.service';
+import { ValeCombustibleService } from '../../../core/services/vale-combustible.service';
 import {
   AeroTableComponent,
   TableColumn,
@@ -224,12 +225,12 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
                 [loading]="false"
                 [templates]="{ numero_contrato: contractCodeTemplate }"
                 emptyMessage="No hay contratos asociados a este equipo."
-                (rowClick)="router.navigate(['/equipment/contracts', $event.id])"
+                (rowClick)="router.navigate(['/equipment/operaciones/contratos', $event.id])"
               ></aero-table>
 
               <ng-template #contractCodeTemplate let-row>
                 <a
-                  [routerLink]="['/equipment/contracts', row.id]"
+                  [routerLink]="['/equipment/operaciones/contratos', row.id]"
                   class="link-primary"
                   (click)="$event.stopPropagation()"
                 >
@@ -282,6 +283,37 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
               <app-periodo-inoperatividad-list
                 [equipoId]="equipment.id"
               ></app-periodo-inoperatividad-list>
+            </div>
+          }
+          @if (activeTab === 'combustible' && equipment) {
+            <div class="detail-section card">
+              <div class="section-header">
+                <h3>Vales de Combustible</h3>
+                <a
+                  [routerLink]="['/equipment/vales-combustible/new']"
+                  [queryParams]="{ equipo_id: equipment.id }"
+                  class="btn btn-sm btn-primary"
+                >
+                  <i class="fa-solid fa-plus"></i> Nuevo Vale
+                </a>
+              </div>
+              <aero-table
+                [columns]="fuelColumns"
+                [data]="fuelVouchers"
+                [loading]="loadingFuel"
+                [templates]="{ codigo: fuelCodeTemplate }"
+                emptyMessage="No hay vales de combustible para este equipo."
+                (rowClick)="router.navigate(['/equipment/vales-combustible', $event.id])"
+              ></aero-table>
+              <ng-template #fuelCodeTemplate let-row>
+                <a
+                  [routerLink]="['/equipment/vales-combustible', row.id]"
+                  class="link-primary"
+                  (click)="$event.stopPropagation()"
+                >
+                  {{ row.codigo || '#' + row.id }}
+                </a>
+              </ng-template>
             </div>
           }
         }
@@ -486,12 +518,12 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
         font-weight: 600;
       }
       .badge-propio {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--semantic-green-50, #e8f5e9);
+        color: var(--semantic-green-700, #2e7d32);
       }
       .badge-tercero {
-        background: #e3f2fd;
-        color: #1565c0;
+        background: var(--primary-50, #e3f2fd);
+        color: var(--primary-700, #1565c0);
       }
 
       .cat-badge {
@@ -504,20 +536,20 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
         letter-spacing: 0.3px;
       }
       .badge-cat-maquinaria {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--semantic-yellow-50, #fef3c7);
+        color: var(--semantic-yellow-800, #92400e);
       }
       .badge-cat-pesado {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--semantic-red-50, #fee2e2);
+        color: var(--semantic-red-800, #991b1b);
       }
       .badge-cat-liviano {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--primary-50, #dbeafe);
+        color: var(--primary-800, #1e40af);
       }
       .badge-cat-menor {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--semantic-green-50, #d1fae5);
+        color: var(--semantic-green-800, #065f46);
       }
 
       .status-badge {
@@ -540,6 +572,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   private contractService = inject(ContractService);
   private maintenanceService = inject(MaintenanceScheduleService);
   private solicitudService = inject(SolicitudEquipoService);
+  private valeCombustibleService = inject(ValeCombustibleService);
   private confirmSvc = inject(ConfirmService);
   private destroy$ = new Subject<void>();
 
@@ -550,6 +583,8 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   contracts: Record<string, unknown>[] = [];
   maintenanceHistory: Record<string, unknown>[] = [];
   solicitudes: SolicitudEquipo[] = [];
+  fuelVouchers: Record<string, unknown>[] = [];
+  loadingFuel = false;
 
   tabConfigs: TabConfig[] = [
     { id: 'general', label: 'General', icon: 'fa-solid fa-circle-info' },
@@ -558,6 +593,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     { id: 'reports', label: 'Partes Diarios', icon: 'fa-solid fa-clipboard-list' },
     { id: 'solicitudes', label: 'Solicitudes', icon: 'fa-solid fa-file-invoice' },
     { id: 'inoperatividad', label: 'Inoperatividad', icon: 'fa-solid fa-triangle-exclamation' },
+    { id: 'combustible', label: 'Combustible', icon: 'fa-solid fa-gas-pump' },
   ];
 
   maintenanceColumns: TableColumn[] = [
@@ -665,6 +701,28 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     },
   ];
 
+  fuelColumns: TableColumn[] = [
+    { key: 'codigo', label: 'Código', type: 'template' },
+    { key: 'fecha', label: 'Fecha', type: 'date' },
+    { key: 'tipo_combustible', label: 'Tipo', type: 'text' },
+    { key: 'cantidad_galones', label: 'Galones', type: 'text' },
+    { key: 'monto_total', label: 'Monto', type: 'currency' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-PENDIENTE', icon: 'fa-clock' },
+        REGISTRADO: {
+          label: 'Registrado',
+          class: 'status-badge status-APROBADO',
+          icon: 'fa-check',
+        },
+        ANULADO: { label: 'Anulado', class: 'status-badge status-CANCELADO', icon: 'fa-xmark' },
+      },
+    },
+  ];
+
   get header(): EntityDetailHeader {
     return {
       icon: 'fa-solid fa-truck-monster',
@@ -753,9 +811,17 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
         : (d['data'] as Record<string, unknown>[]) || [];
     });
     this.solicitudService.listar({ estado: 'APROBADO' }).subscribe((data) => {
-      // For now, we filter locally if the API doesn't support equipo_id yet,
-      // but ideally the backend should handle this filtering.
       this.solicitudes = data.data || [];
+    });
+    this.loadingFuel = true;
+    this.valeCombustibleService.listar({ equipo_id: Number(id), limit: 50 }).subscribe({
+      next: (data) => {
+        this.fuelVouchers = (data.data || []) as unknown as Record<string, unknown>[];
+        this.loadingFuel = false;
+      },
+      error: () => {
+        this.loadingFuel = false;
+      },
     });
   }
 

@@ -1172,7 +1172,7 @@ export class ContractDetailComponent implements OnInit {
     title: 'Contrato no encontrado',
     message: 'La información solicitada no está disponible actualmente.',
     backLabel: 'Ver Todos los Contratos',
-    backRoute: '/equipment/contracts',
+    backRoute: '/equipment/operaciones/contratos',
   };
 
   valuationColumns: TableColumn[] = [
@@ -1382,7 +1382,11 @@ export class ContractDetailComponent implements OnInit {
 
   editContract(): void {
     if (this.contract) {
-      this.router.navigate(['/equipment/contracts', this.contract.id.toString(), 'edit']);
+      this.router.navigate([
+        '/equipment/operaciones/contratos',
+        this.contract.id.toString(),
+        'edit',
+      ]);
     }
   }
 
@@ -1390,7 +1394,7 @@ export class ContractDetailComponent implements OnInit {
     if (this.contract) {
       this.contractService.delete(this.contract.id.toString()).subscribe({
         next: () => {
-          this.router.navigate(['/equipment/contracts']);
+          this.router.navigate(['/equipment/operaciones/contratos']);
         },
         error: (error) => {
           console.error('Failed to delete contract:', error);

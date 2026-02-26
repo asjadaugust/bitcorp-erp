@@ -16,6 +16,8 @@ import {
   Breadcrumb,
 } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-orden-alquiler-list',
@@ -28,6 +30,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     ActionsContainerComponent,
     AeroTableComponent,
     FilterBarComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -37,9 +41,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button type="button" class="btn btn-primary" routerLink="new">
-          <i class="fa-solid fa-plus"></i> Nueva Orden
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Orden"
+          (clicked)="navigateToCreate()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -47,24 +54,26 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="ordenes"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [serverSide]="true"
-        [totalItems]="total"
-        [pageSize]="limit"
-        (pageChange)="onPageChange($event)"
-        [templates]="{
-          codigo: codeTemplate,
-          proveedor: proveedorTemplate,
-          estado: estadoTemplate,
-          tarifa: tarifaTemplate,
-        }"
-        (rowClick)="verDetalle($event.id)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="ordenes"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="limit"
+          (pageChange)="onPageChange($event)"
+          [templates]="{
+            codigo: codeTemplate,
+            proveedor: proveedorTemplate,
+            estado: estadoTemplate,
+            tarifa: tarifaTemplate,
+          }"
+          (rowClick)="verDetalle($event.id)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <ng-template #codeTemplate let-row>
         <span class="code-badge">{{ row.codigo }}</span>
@@ -504,6 +513,7 @@ export class OrdenAlquilerListComponent implements OnInit {
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
+    { label: 'Operaciones', url: '/equipment/operaciones' },
     { label: 'Órdenes de Alquiler' },
   ];
 
@@ -563,8 +573,12 @@ export class OrdenAlquilerListComponent implements OnInit {
     this.cargar();
   }
 
+  navigateToCreate() {
+    this.router.navigate(['/equipment/operaciones/ordenes-alquiler/new']);
+  }
+
   verDetalle(id: number) {
-    this.router.navigate(['/equipment/ordenes-alquiler', id]);
+    this.router.navigate(['/equipment/operaciones/ordenes-alquiler', id]);
   }
 
   // Modal state

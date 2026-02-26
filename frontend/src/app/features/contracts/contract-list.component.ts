@@ -22,6 +22,8 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-contract-list',
@@ -35,6 +37,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -47,9 +51,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         <app-export-dropdown [disabled]="contracts.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <button type="button" class="btn btn-primary" (click)="createContract()">
-          <i class="fa-solid fa-plus"></i> Nuevo Contrato
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Contrato"
+          (clicked)="createContract()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -57,18 +64,20 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="contracts"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          numero_contrato: codeTemplate,
-          vigencia: vigenciaTemplate,
-        }"
-        (rowClick)="viewContract($event)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="contracts"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            numero_contrato: codeTemplate,
+            vigencia: vigenciaTemplate,
+          }"
+          (rowClick)="viewContract($event)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Column Templates -->
       <ng-template #codeTemplate let-row>
@@ -208,6 +217,7 @@ export class ContractListComponent implements OnInit {
   breadcrumbs = [
     { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
+    { label: 'Operaciones', url: '/equipment/operaciones' },
     { label: 'Contratos' },
   ];
 

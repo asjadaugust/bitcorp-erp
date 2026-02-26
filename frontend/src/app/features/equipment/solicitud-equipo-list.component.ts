@@ -24,6 +24,8 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-solicitud-equipo-list',
@@ -37,6 +39,8 @@ import {
     AeroTableComponent,
     FilterBarComponent,
     StatsGridComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -46,9 +50,12 @@ import {
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button type="button" class="btn btn-primary" routerLink="new">
-          <i class="fa-solid fa-plus"></i> Nueva Solicitud
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Solicitud"
+          (clicked)="navigateToCreate()"
+        ></app-button>
       </app-actions-container>
 
       <div class="stats-container-fade-in" *ngIf="statItems.length > 0">
@@ -60,23 +67,25 @@ import {
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="solicitudes"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [serverSide]="true"
-        [totalItems]="total"
-        [pageSize]="limit"
-        (pageChange)="onPageChange($event)"
-        [templates]="{
-          codigo: codeTemplate,
-          estado: estadoTemplate,
-          prioridad: prioridadTemplate,
-        }"
-        (rowClick)="verDetalle($event.id)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="solicitudes"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="limit"
+          (pageChange)="onPageChange($event)"
+          [templates]="{
+            codigo: codeTemplate,
+            estado: estadoTemplate,
+            prioridad: prioridadTemplate,
+          }"
+          (rowClick)="verDetalle($event.id)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
@@ -267,6 +276,7 @@ export class SolicitudEquipoListComponent implements OnInit {
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
     { label: 'Equipos', url: '/equipment' },
+    { label: 'Operaciones', url: '/equipment/operaciones' },
     { label: 'Solicitudes' },
   ];
 
@@ -376,8 +386,12 @@ export class SolicitudEquipoListComponent implements OnInit {
     return icons[estado] || 'fa-info-circle';
   }
 
+  navigateToCreate() {
+    this.router.navigate(['/equipment/operaciones/solicitudes/new']);
+  }
+
   verDetalle(id: number) {
-    this.router.navigate(['/equipment/solicitudes', id]);
+    this.router.navigate(['/equipment/operaciones/solicitudes', id]);
   }
 
   enviarAprobacion(event: Event, s: SolicitudEquipo) {

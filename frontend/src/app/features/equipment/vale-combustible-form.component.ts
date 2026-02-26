@@ -7,11 +7,23 @@ import {
   CreateValeDto,
 } from '../../core/services/vale-combustible.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+} from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-vale-combustible-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FormContainerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FormContainerComponent,
+    FormSectionComponent,
+    DropdownComponent,
+  ],
   template: `
     <app-form-container
       [title]="isEdit ? 'Editar Vale de Combustible' : 'Nuevo Vale de Combustible'"
@@ -25,185 +37,175 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
       submitIcon="fa-save"
       [loading]="saving"
       [disableSubmit]="saving"
-      (onSubmit)="guardar()"
-      (onCancel)="volver()"
+      (submitted)="guardar()"
+      (cancelled)="volver()"
     >
-      <form #f="ngForm" (ngSubmit)="guardar()">
-        <!-- ── Sección: Datos del Equipo ─────────────── -->
-        <div class="form-section">
-          <h3 class="section-title"><i class="fa-solid fa-tractor"></i> Equipo</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <span class="form-label required">ID Equipo</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.equipo_id"
-                name="equipo_id"
-                required
-                min="1"
-                placeholder="ID del equipo"
-                data-testid="input-equipo-id"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label"
-                >ID Parte Diario <span class="optional">(opcional)</span></span
-              >
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.parte_diario_id"
-                name="parte_diario_id"
-                min="1"
-                placeholder="Vincular a parte diario"
-                data-testid="input-parte-diario-id"
-              />
-              <small class="form-hint">Adjunte el vale a un parte diario existente</small>
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">ID Proyecto <span class="optional">(opcional)</span></span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.proyecto_id"
-                name="proyecto_id"
-                min="1"
-                placeholder="Proyecto relacionado"
-                data-testid="input-proyecto-id"
-              />
-            </div>
+      <form #f="ngForm" class="form-grid">
+        <!-- Section 1: Equipo -->
+        <app-form-section title="Equipo" icon="fa-tractor">
+          <div class="form-group">
+            <label class="form-label required" for="equipo_id">ID Equipo</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.equipo_id"
+              name="equipo_id"
+              required
+              min="1"
+              placeholder="ID del equipo"
+              data-testid="input-equipo-id"
+            />
           </div>
-        </div>
 
-        <!-- ── Sección: Datos del Vale ─────────────── -->
-        <div class="form-section">
-          <h3 class="section-title"><i class="fa-solid fa-receipt"></i> Datos del Vale</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <span class="form-label required">Fecha</span>
-              <input
-                type="date"
-                class="form-control"
-                [(ngModel)]="form.fecha"
-                name="fecha"
-                required
-                data-testid="input-fecha"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label required">Número de Vale</span>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="form.numero_vale"
-                name="numero_vale"
-                required
-                maxlength="50"
-                placeholder="Ej: V-001234"
-                data-testid="input-numero-vale"
-              />
-              <small class="form-hint">Número impreso en el vale físico</small>
-            </div>
-
-            <div class="form-group">
-              <span class="form-label required">Tipo de Combustible</span>
-              <select
-                class="form-control"
-                [(ngModel)]="form.tipo_combustible"
-                name="tipo_combustible"
-                required
-                data-testid="select-tipo-combustible"
-              >
-                <option value="DIESEL">Diesel</option>
-                <option value="GASOLINA_90">Gasolina 90</option>
-                <option value="GASOLINA_95">Gasolina 95</option>
-                <option value="GLP">GLP</option>
-                <option value="GNV">GNV</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <span class="form-label required">Cantidad (galones)</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.cantidad_galones"
-                name="cantidad_galones"
-                required
-                min="0.01"
-                step="0.01"
-                placeholder="0.00"
-                (ngModelChange)="calcularMonto()"
-                data-testid="input-cantidad-galones"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label"
-                >Precio Unitario (S/) <span class="optional">(opcional)</span></span
-              >
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.precio_unitario"
-                name="precio_unitario"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                (ngModelChange)="calcularMonto()"
-                data-testid="input-precio-unitario"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Monto Total (S/)</span>
-              <input
-                type="number"
-                class="form-control form-control-readonly"
-                [value]="montoCalculado"
-                name="monto_total_display"
-                readonly
-                placeholder="Calculado automáticamente"
-                data-testid="display-monto-total"
-              />
-              <small class="form-hint">Calculado: cantidad × precio unitario</small>
-            </div>
-
-            <div class="form-group span-2">
-              <span class="form-label"
-                >Proveedor / Grifo <span class="optional">(opcional)</span></span
-              >
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="form.proveedor"
-                name="proveedor"
-                maxlength="150"
-                placeholder="Ej: Grifo Central SAC"
-                data-testid="input-proveedor"
-              />
-            </div>
-
-            <div class="form-group span-2">
-              <span class="form-label"
-                >Observaciones <span class="optional">(opcional)</span></span
-              >
-              <textarea
-                class="form-control"
-                [(ngModel)]="form.observaciones"
-                name="observaciones"
-                rows="3"
-                maxlength="500"
-                placeholder="Notas adicionales sobre el abastecimiento..."
-                data-testid="textarea-observaciones"
-              ></textarea>
-            </div>
+          <div class="form-group">
+            <label class="form-label" for="parte_diario_id"
+              >ID Parte Diario <span class="optional">(opcional)</span></label
+            >
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.parte_diario_id"
+              name="parte_diario_id"
+              min="1"
+              placeholder="Vincular a parte diario"
+              data-testid="input-parte-diario-id"
+            />
+            <small class="form-hint">Adjunte el vale a un parte diario existente</small>
           </div>
-        </div>
+
+          <div class="form-group">
+            <label class="form-label" for="proyecto_id"
+              >ID Proyecto <span class="optional">(opcional)</span></label
+            >
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.proyecto_id"
+              name="proyecto_id"
+              min="1"
+              placeholder="Proyecto relacionado"
+              data-testid="input-proyecto-id"
+            />
+          </div>
+        </app-form-section>
+
+        <!-- Section 2: Datos del Vale -->
+        <app-form-section title="Datos del Vale" icon="fa-receipt">
+          <div class="form-group">
+            <label class="form-label required" for="fecha">Fecha</label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.fecha"
+              name="fecha"
+              required
+              data-testid="input-fecha"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="numero_vale">Numero de Vale</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="form.numero_vale"
+              name="numero_vale"
+              required
+              maxlength="50"
+              placeholder="Ej: V-001234"
+              data-testid="input-numero-vale"
+            />
+            <small class="form-hint">Numero impreso en el vale fisico</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="tipo_combustible">Tipo de Combustible</label>
+            <app-dropdown
+              [(ngModel)]="form.tipo_combustible"
+              name="tipo_combustible"
+              [options]="tipoCombustibleOptions"
+              placeholder="Seleccionar tipo"
+              data-testid="select-tipo-combustible"
+            ></app-dropdown>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="cantidad_galones">Cantidad (galones)</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.cantidad_galones"
+              name="cantidad_galones"
+              required
+              min="0.01"
+              step="0.01"
+              placeholder="0.00"
+              (ngModelChange)="calcularMonto()"
+              data-testid="input-cantidad-galones"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="precio_unitario"
+              >Precio Unitario (S/) <span class="optional">(opcional)</span></label
+            >
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.precio_unitario"
+              name="precio_unitario"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              (ngModelChange)="calcularMonto()"
+              data-testid="input-precio-unitario"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="monto_total">Monto Total (S/)</label>
+            <input
+              type="number"
+              class="form-control form-control-readonly"
+              [value]="montoCalculado"
+              name="monto_total_display"
+              readonly
+              placeholder="Calculado automaticamente"
+              data-testid="display-monto-total"
+            />
+            <small class="form-hint">Calculado: cantidad x precio unitario</small>
+          </div>
+
+          <div class="form-group span-2">
+            <label class="form-label" for="proveedor"
+              >Proveedor / Grifo <span class="optional">(opcional)</span></label
+            >
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="form.proveedor"
+              name="proveedor"
+              maxlength="150"
+              placeholder="Ej: Grifo Central SAC"
+              data-testid="input-proveedor"
+            />
+          </div>
+
+          <div class="form-group span-2">
+            <label class="form-label" for="observaciones"
+              >Observaciones <span class="optional">(opcional)</span></label
+            >
+            <textarea
+              class="form-control"
+              [(ngModel)]="form.observaciones"
+              name="observaciones"
+              rows="3"
+              maxlength="500"
+              placeholder="Notas adicionales sobre el abastecimiento..."
+              data-testid="textarea-observaciones"
+            ></textarea>
+          </div>
+        </app-form-section>
 
         <!-- Error message -->
         <div *ngIf="errorMsg" class="alert alert-danger" role="alert" data-testid="error-message">
@@ -214,22 +216,23 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
   `,
   styles: [
     `
-      .section-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-      }
-      .span-2 {
-        grid-column: span 2;
-      }
+      @use 'form-layout';
+
       .form-control-readonly {
         background: var(--grey-50);
         color: var(--grey-700);
       }
-      .optional {
-        color: var(--grey-400);
-        font-size: 0.85em;
-        font-weight: normal;
+
+      .alert-danger {
+        background: var(--error-50, #fef2f2);
+        color: var(--error-700, #b91c1c);
+        border: 1px solid var(--error-200, #fecaca);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
     `,
   ],
@@ -256,6 +259,14 @@ export class ValeCombustibleFormComponent implements OnInit {
     proveedor: null,
     observaciones: null,
   };
+
+  tipoCombustibleOptions: DropdownOption[] = [
+    { label: 'Diesel', value: 'DIESEL' },
+    { label: 'Gasolina 90', value: 'GASOLINA_90' },
+    { label: 'Gasolina 95', value: 'GASOLINA_95' },
+    { label: 'GLP', value: 'GLP' },
+    { label: 'GNV', value: 'GNV' },
+  ];
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');

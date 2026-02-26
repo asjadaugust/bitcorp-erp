@@ -3,230 +3,150 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { PeriodoInoperatividadService } from '../../core/services/periodo-inoperatividad.service';
-import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 
 @Component({
   selector: 'app-periodo-inoperatividad-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent],
+  imports: [CommonModule, FormsModule, RouterModule, FormContainerComponent, FormSectionComponent],
   template: `
-    <app-page-layout
-      title="Registrar Período de Inoperatividad"
+    <app-form-container
+      title="Registrar Periodo de Inoperatividad"
+      subtitle="Registre un periodo en que el equipo quedo fuera de servicio por desperfecto"
       icon="fa-triangle-exclamation"
-      [breadcrumbs]="breadcrumbs"
-      [loading]="loading"
+      [loading]="saving"
+      [disableSubmit]="saving || !isValid()"
+      submitLabel="Registrar Inoperatividad"
+      (submitted)="guardar()"
+      (cancelled)="cancelar()"
     >
-      <div class="form-card">
-        <div class="form-header">
-          <h3>Nueva Inoperatividad — Cláusula 7.6</h3>
-          <p class="form-desc">
-            Registre un período en que el equipo quedó fuera de servicio por desperfecto. El
-            arrendador tiene <strong>{{ form.dias_plazo }} días</strong> para repararlo o
-            reemplazarlo.
-          </p>
-        </div>
-
-        <div class="form-body">
-          <!-- Equipo ID -->
+      <form class="form-grid">
+        <!-- Section 1: Equipo y Contrato -->
+        <app-form-section title="Datos del Equipo" icon="fa-tractor">
           <div class="form-group">
-            <span class="label">Equipo ID *</span>
+            <label class="form-label required" for="equipo_id">Equipo ID</label>
             <input
+              id="equipo_id"
               type="number"
               class="form-control"
               [(ngModel)]="form.equipo_id"
+              name="equipo_id"
               placeholder="Ingrese el ID del equipo"
               [disabled]="!!equipoIdFromRoute"
             />
           </div>
 
-          <!-- Contrato -->
           <div class="form-group">
-            <span class="label">Contrato (opcional)</span>
+            <label class="form-label" for="contrato_id"
+              >Contrato <span class="optional">(opcional)</span></label
+            >
             <input
+              id="contrato_id"
               type="number"
               class="form-control"
               [(ngModel)]="form.contrato_id"
+              name="contrato_id"
               placeholder="ID del contrato relacionado"
             />
           </div>
+        </app-form-section>
 
-          <!-- Fecha inicio -->
+        <!-- Section 2: Detalle de Inoperatividad -->
+        <app-form-section title="Detalle de Inoperatividad - Clausula 7.6" icon="fa-clock">
           <div class="form-group">
-            <span class="label">Fecha de inicio de inoperatividad *</span>
-            <input type="date" class="form-control" [(ngModel)]="form.fecha_inicio" />
+            <label class="form-label required" for="fecha_inicio"
+              >Fecha de inicio de inoperatividad</label
+            >
+            <input
+              id="fecha_inicio"
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.fecha_inicio"
+              name="fecha_inicio"
+            />
             @if (diasActuales > 0) {
               <span class="field-hint" [class.hint-danger]="diasActuales >= form.dias_plazo">
                 <i class="fa-solid fa-clock"></i>
-                {{ diasActuales }} día{{ diasActuales !== 1 ? 's' : '' }} inoperativo
+                {{ diasActuales }} dia{{ diasActuales !== 1 ? 's' : '' }} inoperativo
                 @if (diasActuales >= form.dias_plazo) {
-                  — <strong>ya excede el plazo de {{ form.dias_plazo }} días</strong>
+                  — ya excede el plazo de {{ form.dias_plazo }} dias
                 }
               </span>
             }
           </div>
 
-          <!-- Motivo -->
           <div class="form-group">
-            <span class="label">Motivo / Descripción del desperfecto *</span>
-            <textarea
-              class="form-control"
-              rows="4"
-              [(ngModel)]="form.motivo"
-              placeholder="Describa el desperfecto o avería que causó la inoperatividad..."
-            ></textarea>
-          </div>
-
-          <!-- Días plazo -->
-          <div class="form-group">
-            <span class="label">Plazo de reparación (días)</span>
+            <label class="form-label" for="dias_plazo">Plazo de reparacion (dias)</label>
             <input
+              id="dias_plazo"
               type="number"
               class="form-control"
               [(ngModel)]="form.dias_plazo"
+              name="dias_plazo"
               min="1"
               max="30"
             />
-            <span class="field-hint">PRD Cláusula 7.6: valor estándar = 5 días</span>
+            <small class="form-hint">PRD Clausula 7.6: valor estandar = 5 dias</small>
           </div>
 
-          <!-- Alert if already exceeded -->
-          @if (diasActuales >= form.dias_plazo && form.fecha_inicio) {
-            <div class="alert alert-danger">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-              <strong>Atención:</strong> Este período ya excede el plazo contractual. Se registrará
-              como <strong>EXCEDIDO</strong> y se habilitará la aplicación de penalidad.
-            </div>
-          }
-        </div>
+          <div class="form-group span-2">
+            <label class="form-label required" for="motivo"
+              >Motivo / Descripcion del desperfecto</label
+            >
+            <textarea
+              id="motivo"
+              class="form-control"
+              rows="4"
+              [(ngModel)]="form.motivo"
+              name="motivo"
+              placeholder="Describa el desperfecto o averia que causo la inoperatividad..."
+            ></textarea>
+          </div>
+        </app-form-section>
 
-        <div class="form-footer">
-          <button type="button" class="btn btn-secondary" routerLink="..">Cancelar</button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            [disabled]="saving || !isValid()"
-            (click)="guardar()"
-          >
-            <i class="fa-solid fa-save"></i>
-            {{ saving ? 'Guardando...' : 'Registrar Inoperatividad' }}
-          </button>
-        </div>
-      </div>
-    </app-page-layout>
+        <!-- Alert if already exceeded -->
+        @if (diasActuales >= form.dias_plazo && form.fecha_inicio) {
+          <div class="alert-exceeded">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+              <strong>Atencion:</strong> Este periodo ya excede el plazo contractual. Se registrara
+              como <strong>EXCEDIDO</strong> y se habilitara la aplicacion de penalidad.
+            </div>
+          </div>
+        }
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
-      .form-card {
-        background: #fff;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-        max-width: 640px;
-      }
-      .form-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid #e2e8f0;
-        background: #f8fafc;
-      }
-      .form-header h3 {
-        margin: 0 0 6px;
-        font-size: 16px;
-        font-weight: 700;
-        color: #1e293b;
-      }
-      .form-desc {
-        margin: 0;
-        font-size: 13px;
-        color: #64748b;
-      }
-      .form-body {
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-      }
-      .form-footer {
-        padding: 16px 24px;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        background: #f8fafc;
-      }
-
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .form-group label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #374151;
-      }
-      .form-control {
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        padding: 8px 12px;
-        font-size: 14px;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .form-control:focus {
-        outline: none;
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-      }
-      .form-control:disabled {
-        background: #f8fafc;
-        color: #94a3b8;
-      }
+      @use 'form-layout';
 
       .field-hint {
         font-size: 12px;
-        color: #64748b;
+        color: var(--grey-500);
       }
+
       .field-hint.hint-danger {
-        color: #dc2626;
+        color: var(--error, #dc3545);
         font-weight: 600;
       }
 
-      .alert {
-        border-radius: 6px;
+      .alert-exceeded {
+        background: var(--error-50, #fef2f2);
+        color: var(--error-700, #b91c1c);
+        border: 1px solid var(--error-200, #fecaca);
+        border-radius: 8px;
         padding: 12px 16px;
         font-size: 13px;
         display: flex;
         align-items: flex-start;
         gap: 10px;
-      }
-      .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fca5a5;
-      }
 
-      .btn {
-        padding: 8px 18px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .btn-primary {
-        background: #4f46e5;
-        color: #fff;
-      }
-      .btn-secondary {
-        background: #f1f5f9;
-        color: #475569;
-      }
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
+        i {
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
       }
     `,
   ],
@@ -297,8 +217,13 @@ export class PeriodoInoperatividadFormComponent implements OnInit {
         },
         error: (err) => {
           this.saving = false;
-          alert(err?.error?.error?.message || 'Error al registrar el período');
+          // TODO: Replace with proper error handling via AlertComponent
+          alert(err?.error?.error?.message || 'Error al registrar el periodo');
         },
       });
+  }
+
+  cancelar() {
+    this.router.navigate(['..'], { relativeTo: this.route });
   }
 }

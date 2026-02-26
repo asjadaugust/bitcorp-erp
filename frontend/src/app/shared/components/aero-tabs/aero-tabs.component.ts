@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, HostListener } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+  ViewChild,
+  AfterViewInit,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TabItem } from '../page-layout/page-layout.component';
@@ -36,11 +45,15 @@ import { TabItem } from '../page-layout/page-layout.component';
 
         <!-- More Dropdown -->
         <div class="more-dropdown" *ngIf="hiddenTabs.length > 0" #moreDropdown>
-          <button class="tab-item more-trigger" [class.active]="isAnyHiddenActive" (click)="toggleDropdown($event)">
+          <button
+            class="tab-item more-trigger"
+            [class.active]="isAnyHiddenActive"
+            (click)="toggleDropdown($event)"
+          >
             <span>Más</span>
             <i class="fa-solid fa-chevron-down" [class.open]="dropdownOpen"></i>
           </button>
-          
+
           <div class="dropdown-menu" *ngIf="dropdownOpen">
             <ng-container *ngFor="let tab of hiddenTabs">
               <a
@@ -70,120 +83,128 @@ import { TabItem } from '../page-layout/page-layout.component';
       </nav>
     </div>
   `,
-  styles: [`
-    .tabs-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    .tab-navigation {
-      display: flex;
-      gap: 0;
-      border-bottom: 2px solid var(--grey-200);
-      min-height: 48px;
-      height: fit-content;
-      position: relative;
-    }
-
-    .tab-item {
-      padding: var(--s-12) var(--s-20);
-      color: var(--grey-700);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 14px;
-      border: none;
-      background: transparent;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.2s;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: var(--s-8);
-      min-height: 46px;
-      cursor: pointer;
-      font-family: inherit;
-    }
-
-    .tab-item:hover {
-      color: var(--primary-800);
-      background: var(--primary-100);
-      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-    }
-
-    .tab-item.active {
-      color: var(--primary-800);
-      border-bottom-color: var(--primary-500);
-      font-weight: 600;
-    }
-
-    .more-trigger {
-      position: relative;
-    }
-
-    .more-trigger i {
-      font-size: 10px;
-      transition: transform 0.2s;
-    }
-
-    .more-trigger i.open {
-      transform: rotate(180deg);
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: white;
-      border: 1px solid var(--grey-200);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-lg);
-      z-index: 100;
-      min-width: 200px;
-      padding: var(--s-8) 0;
-      margin-top: var(--s-4);
-      animation: fadeIn 0.15s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: var(--s-12);
-      padding: var(--s-10) var(--s-16);
-      color: var(--grey-700);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      width: 100%;
-      border: none;
-      background: transparent;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .dropdown-item:hover {
-      background: var(--grey-50);
-      color: var(--primary-600);
-    }
-
-    .dropdown-item.active {
-      color: var(--primary-600);
-      background: var(--primary-50);
-      font-weight: 600;
-    }
-
-    @media (max-width: 768px) {
-      .tab-item {
-        padding: var(--s-10) var(--s-12);
-        font-size: 13px;
+  styles: [
+    `
+      .tabs-wrapper {
+        position: relative;
+        width: 100%;
       }
-    }
-  `]
+
+      .tab-navigation {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid var(--grey-200);
+        min-height: 48px;
+        height: fit-content;
+        position: relative;
+      }
+
+      .tab-item {
+        padding: var(--s-12) var(--s-20);
+        color: var(--grey-700);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        border: none;
+        background: transparent;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+        min-height: 46px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .tab-item:hover {
+        color: var(--primary-800);
+        background: var(--primary-100);
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      }
+
+      .tab-item.active {
+        color: var(--primary-800);
+        border-bottom-color: var(--primary-500);
+        font-weight: 600;
+      }
+
+      .more-trigger {
+        position: relative;
+      }
+
+      .more-trigger i {
+        font-size: 10px;
+        transition: transform 0.2s;
+      }
+
+      .more-trigger i.open {
+        transform: rotate(180deg);
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid var(--grey-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        z-index: 100;
+        min-width: 200px;
+        padding: var(--s-8) 0;
+        margin-top: var(--s-4);
+        animation: fadeIn 0.15s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: var(--s-12);
+        padding: var(--s-10) var(--s-16);
+        color: var(--grey-700);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        border: none;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .dropdown-item:hover {
+        background: var(--grey-50);
+        color: var(--primary-600);
+      }
+
+      .dropdown-item.active {
+        color: var(--primary-600);
+        background: var(--primary-50);
+        font-weight: 600;
+      }
+
+      @media (max-width: 768px) {
+        .tab-item {
+          padding: var(--s-10) var(--s-12);
+          font-size: 13px;
+        }
+      }
+    `,
+  ],
 })
 export class AeroTabsComponent implements AfterViewInit {
   @Input() tabs: (TabItem & { id?: string })[] = [];
@@ -233,7 +254,7 @@ export class AeroTabsComponent implements AfterViewInit {
     // Always show at least 2 tabs + More if needed
     const showCount = Math.max(2, maxTabs - 1);
 
-    if (this.tabs.length > showCount && containerWidth < 800) {
+    if (this.tabs.length > showCount) {
       this.visibleTabs = this.tabs.slice(0, showCount);
       this.hiddenTabs = this.tabs.slice(showCount);
     } else {
@@ -254,6 +275,6 @@ export class AeroTabsComponent implements AfterViewInit {
 
   get isAnyHiddenActive(): boolean {
     // This is tricky for routerLinks. For now, check ID if static.
-    return this.hiddenTabs.some(t => t.id === this.activeTabId);
+    return this.hiddenTabs.some((t) => t.id === this.activeTabId);
   }
 }

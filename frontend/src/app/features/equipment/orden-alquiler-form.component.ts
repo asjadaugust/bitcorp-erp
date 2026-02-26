@@ -4,11 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { OrdenAlquilerService, OrdenAlquiler } from '../../core/services/orden-alquiler.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-orden-alquiler-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FormContainerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FormContainerComponent,
+    FormSectionComponent,
+    DropdownComponent,
+  ],
   template: `
     <app-form-container
       [title]="isEdit ? 'Editar Orden de Alquiler' : 'Nueva Orden de Alquiler'"
@@ -26,224 +35,215 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
       (onSubmit)="guardar()"
       (onCancel)="volver()"
     >
-      <form #f="ngForm" (ngSubmit)="guardar()">
-        <!-- ── Sección: Equipo y Proveedor ────────────── -->
-        <div class="form-section">
-          <h3 class="section-title"><i class="fa-solid fa-tractor"></i> Equipo y Proveedor</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <span class="form-label required">ID Proveedor</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.proveedor_id"
-                name="proveedor_id"
-                required
-                min="1"
-                placeholder="ID del proveedor registrado"
-              />
-              <small class="form-hint">Ingrese el ID numérico del proveedor</small>
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">ID Equipo <span class="optional">(opcional)</span></span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.equipo_id"
-                name="equipo_id"
-                min="1"
-                placeholder="ID del equipo si ya está definido"
-              />
-            </div>
-
-            <div class="form-group span-2">
-              <span class="form-label required">Descripción del Equipo</span>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="form.descripcion_equipo"
-                name="descripcion_equipo"
-                required
-                placeholder="Ej: Excavadora Caterpillar 320D, año 2020, Cap. 1.2m³"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">ID Proyecto <span class="optional">(opcional)</span></span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.proyecto_id"
-                name="proyecto_id"
-                min="1"
-                placeholder="Proyecto destino"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label"
-                >ID Solicitud de Equipo <span class="optional">(opcional)</span></span
-              >
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.solicitud_equipo_id"
-                name="solicitud_equipo_id"
-                min="1"
-                placeholder="Vinculada a solicitud"
-              />
-            </div>
+      <form #f="ngForm" (ngSubmit)="guardar()" class="form-grid">
+        <!-- Sección: Equipo y Proveedor -->
+        <app-form-section title="Equipo y Proveedor" icon="fa-tractor">
+          <div class="form-group">
+            <label class="form-label required">ID Proveedor</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.proveedor_id"
+              name="proveedor_id"
+              required
+              min="1"
+              placeholder="ID del proveedor registrado"
+            />
+            <small class="form-hint">Ingrese el ID numérico del proveedor</small>
           </div>
-        </div>
 
-        <!-- ── Sección: Fechas ─────────────────────────── -->
-        <div class="form-section">
-          <h3 class="section-title"><i class="fa-solid fa-calendar-days"></i> Fechas</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <span class="form-label required">Fecha de Orden</span>
-              <input
-                type="date"
-                class="form-control"
-                [(ngModel)]="form.fecha_orden"
-                name="fecha_orden"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Fecha Inicio Estimada</span>
-              <input
-                type="date"
-                class="form-control"
-                [(ngModel)]="form.fecha_inicio_estimada"
-                name="fecha_inicio_estimada"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Fecha Fin Estimada</span>
-              <input
-                type="date"
-                class="form-control"
-                [(ngModel)]="form.fecha_fin_estimada"
-                name="fecha_fin_estimada"
-              />
-            </div>
+          <div class="form-group">
+            <label class="form-label">ID Equipo <span class="optional">(opcional)</span></label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.equipo_id"
+              name="equipo_id"
+              min="1"
+              placeholder="ID del equipo si ya está definido"
+            />
           </div>
-        </div>
 
-        <!-- ── Sección: Condiciones Económicas ─────────── -->
-        <div class="form-section">
-          <h3 class="section-title">
-            <i class="fa-solid fa-dollar-sign"></i> Condiciones Económicas
-          </h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <span class="form-label required">Tarifa Acordada</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.tarifa_acordada"
-                name="tarifa_acordada"
-                required
-                min="0.01"
-                step="0.01"
-                placeholder="0.00"
-              />
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Tipo de Tarifa</span>
-              <select class="form-select" [(ngModel)]="form.tipo_tarifa" name="tipo_tarifa">
-                <option value="HORA">Por Hora</option>
-                <option value="DIA">Por Día</option>
-                <option value="MES">Por Mes</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <span class="form-label">Moneda</span>
-              <select class="form-select" [(ngModel)]="form.moneda" name="moneda">
-                <option value="PEN">PEN (Soles)</option>
-                <option value="USD">USD (Dólares)</option>
-              </select>
-            </div>
-
-            <div class="form-group" *ngIf="form.moneda === 'USD'">
-              <span class="form-label">Tipo de Cambio</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.tipo_cambio"
-                name="tipo_cambio"
-                min="0.0001"
-                step="0.0001"
-                placeholder="3.7500"
-              />
-            </div>
-
-            <div class="form-group" *ngIf="form.tipo_tarifa !== 'HORA'">
-              <span class="form-label">Horas Incluidas en la Tarifa</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.horas_incluidas"
-                name="horas_incluidas"
-                min="0"
-                step="0.5"
-                placeholder="8"
-              />
-            </div>
-
-            <div class="form-group" *ngIf="form.tipo_tarifa !== 'HORA'">
-              <span class="form-label">Penalidad por Hora Excedente</span>
-              <input
-                type="number"
-                class="form-control"
-                [(ngModel)]="form.penalidad_exceso"
-                name="penalidad_exceso"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-              />
-            </div>
+          <div class="form-group span-2">
+            <label class="form-label required">Descripción del Equipo</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="form.descripcion_equipo"
+              name="descripcion_equipo"
+              required
+              placeholder="Ej: Excavadora Caterpillar 320D, año 2020, Cap. 1.2m³"
+            />
           </div>
-        </div>
 
-        <!-- ── Sección: Condiciones y Observaciones ────── -->
-        <div class="form-section">
-          <h3 class="section-title">
-            <i class="fa-solid fa-file-lines"></i> Condiciones y Observaciones
-          </h3>
-          <div class="section-grid">
-            <div class="form-group span-2">
-              <span class="form-label">Condiciones Especiales</span>
-              <textarea
-                class="form-control"
-                [(ngModel)]="form.condiciones_especiales"
-                name="condiciones_especiales"
-                rows="3"
-                placeholder="Cláusulas o condiciones especiales pactadas con el proveedor..."
-              ></textarea>
-            </div>
-            <div class="form-group span-2">
-              <span class="form-label">Observaciones</span>
-              <textarea
-                class="form-control"
-                [(ngModel)]="form.observaciones"
-                name="observaciones"
-                rows="2"
-                placeholder="Observaciones generales..."
-              ></textarea>
-            </div>
+          <div class="form-group">
+            <label class="form-label">ID Proyecto <span class="optional">(opcional)</span></label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.proyecto_id"
+              name="proyecto_id"
+              min="1"
+              placeholder="Proyecto destino"
+            />
           </div>
-        </div>
+
+          <div class="form-group">
+            <label class="form-label"
+              >ID Solicitud de Equipo <span class="optional">(opcional)</span></label
+            >
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.solicitud_equipo_id"
+              name="solicitud_equipo_id"
+              min="1"
+              placeholder="Vinculada a solicitud"
+            />
+          </div>
+        </app-form-section>
+
+        <!-- Sección: Fechas -->
+        <app-form-section title="Fechas" icon="fa-calendar-days">
+          <div class="form-group">
+            <label class="form-label required">Fecha de Orden</label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.fecha_orden"
+              name="fecha_orden"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fecha Inicio Estimada</label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.fecha_inicio_estimada"
+              name="fecha_inicio_estimada"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fecha Fin Estimada</label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.fecha_fin_estimada"
+              name="fecha_fin_estimada"
+            />
+          </div>
+        </app-form-section>
+
+        <!-- Sección: Condiciones Económicas -->
+        <app-form-section title="Condiciones Económicas" icon="fa-dollar-sign">
+          <div class="form-group">
+            <label class="form-label required">Tarifa Acordada</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.tarifa_acordada"
+              name="tarifa_acordada"
+              required
+              min="0.01"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tipo de Tarifa</label>
+            <app-dropdown
+              [(ngModel)]="form.tipo_tarifa"
+              name="tipo_tarifa"
+              [options]="tipoTarifaOptions"
+              [placeholder]="'Seleccionar Tipo'"
+            ></app-dropdown>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Moneda</label>
+            <app-dropdown
+              [(ngModel)]="form.moneda"
+              name="moneda"
+              [options]="monedaOptions"
+              [placeholder]="'Seleccionar Moneda'"
+            ></app-dropdown>
+          </div>
+
+          <div class="form-group" *ngIf="form.moneda === 'USD'">
+            <label class="form-label">Tipo de Cambio</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.tipo_cambio"
+              name="tipo_cambio"
+              min="0.0001"
+              step="0.0001"
+              placeholder="3.7500"
+            />
+          </div>
+
+          <div class="form-group" *ngIf="form.tipo_tarifa !== 'HORA'">
+            <label class="form-label">Horas Incluidas en la Tarifa</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.horas_incluidas"
+              name="horas_incluidas"
+              min="0"
+              step="0.5"
+              placeholder="8"
+            />
+          </div>
+
+          <div class="form-group" *ngIf="form.tipo_tarifa !== 'HORA'">
+            <label class="form-label">Penalidad por Hora Excedente</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="form.penalidad_exceso"
+              name="penalidad_exceso"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+        </app-form-section>
+
+        <!-- Sección: Condiciones y Observaciones -->
+        <app-form-section title="Condiciones y Observaciones" icon="fa-file-lines" [columns]="1">
+          <div class="form-group">
+            <label class="form-label">Condiciones Especiales</label>
+            <textarea
+              class="form-control"
+              [(ngModel)]="form.condiciones_especiales"
+              name="condiciones_especiales"
+              rows="3"
+              placeholder="Cláusulas o condiciones especiales pactadas con el proveedor..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Observaciones</label>
+            <textarea
+              class="form-control"
+              [(ngModel)]="form.observaciones"
+              name="observaciones"
+              rows="2"
+              placeholder="Observaciones generales..."
+            ></textarea>
+          </div>
+        </app-form-section>
       </form>
     </app-form-container>
   `,
-  styles: [],
+  styles: [
+    `
+      @use 'form-layout';
+    `,
+  ],
 })
 export class OrdenAlquilerFormComponent implements OnInit {
   private service = inject(OrdenAlquilerService);
@@ -253,6 +253,17 @@ export class OrdenAlquilerFormComponent implements OnInit {
   isEdit = false;
   saving = false;
   ordenId?: number;
+
+  tipoTarifaOptions = [
+    { label: 'Por Hora', value: 'HORA' },
+    { label: 'Por Día', value: 'DIA' },
+    { label: 'Por Mes', value: 'MES' },
+  ];
+
+  monedaOptions = [
+    { label: 'PEN (Soles)', value: 'PEN' },
+    { label: 'USD (Dólares)', value: 'USD' },
+  ];
 
   form: Partial<OrdenAlquiler> = {
     proveedor_id: undefined,
@@ -316,7 +327,7 @@ export class OrdenAlquilerFormComponent implements OnInit {
     obs.subscribe({
       next: (o) => {
         this.saving = false;
-        this.router.navigate(['/equipment/ordenes-alquiler', o.id]);
+        this.router.navigate(['/equipment/operaciones/ordenes-alquiler', o.id]);
       },
       error: () => {
         this.saving = false;
@@ -326,9 +337,9 @@ export class OrdenAlquilerFormComponent implements OnInit {
 
   volver() {
     if (this.isEdit && this.ordenId) {
-      this.router.navigate(['/equipment/ordenes-alquiler', this.ordenId]);
+      this.router.navigate(['/equipment/operaciones/ordenes-alquiler', this.ordenId]);
     } else {
-      this.router.navigate(['/equipment/ordenes-alquiler']);
+      this.router.navigate(['/equipment/operaciones/ordenes-alquiler']);
     }
   }
 }

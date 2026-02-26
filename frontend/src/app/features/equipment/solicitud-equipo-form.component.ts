@@ -8,10 +8,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import {
-  SolicitudEquipoService,
-} from '../../core/services/solicitud-equipo.service';
+import { SolicitudEquipoService } from '../../core/services/solicitud-equipo.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import { ConfirmService } from '../../core/services/confirm.service';
 
@@ -24,6 +23,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     FormsModule,
     RouterModule,
     FormContainerComponent,
+    FormSectionComponent,
     DropdownComponent,
   ],
   template: `
@@ -43,148 +43,71 @@ import { ConfirmService } from '../../core/services/confirm.service';
     >
       <form [formGroup]="solicitudForm" class="form-grid">
         <!-- Section: Basic Information -->
-        <div class="form-section full-width">
-          <h3 class="section-title">
-            <i class="fa-solid fa-file-invoice"></i> Información de la Solicitud
-          </h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <span class="required">Tipo de Equipo</span>
-              <input
-                type="text"
-                class="form-control"
-                formControlName="tipo_equipo"
-                placeholder="Ej: Excavadora de oruga, Volquete 15m³..."
-              />
-              <div class="error-msg" *ngIf="hasError('tipo_equipo')">
-                Tipo de equipo es requerido
-              </div>
-            </div>
-
-            <div class="form-group">
-              <span class="required">Cantidad</span>
-              <input type="number" class="form-control" formControlName="cantidad" min="1" />
-              <div class="error-msg" *ngIf="hasError('cantidad')">Cantidad válida es requerida</div>
-            </div>
-
-            <div class="form-group">
-              <span class="required">Fecha Requerida</span>
-              <input type="date" class="form-control" formControlName="fecha_requerida" />
-              <div class="error-msg" *ngIf="hasError('fecha_requerida')">Fecha es requerida</div>
-            </div>
-
-            <div class="form-group">
-              <span class="label">Prioridad</span>
-              <app-dropdown
-                formControlName="prioridad"
-                [options]="[
-                  { label: 'Baja', value: 'BAJA' },
-                  { label: 'Media', value: 'MEDIA' },
-                  { label: 'Alta', value: 'ALTA' },
-                ]"
-              ></app-dropdown>
-            </div>
+        <app-form-section title="Información de la Solicitud" icon="fa-file-invoice">
+          <div class="form-group">
+            <label class="required">Tipo de Equipo</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="tipo_equipo"
+              placeholder="Ej: Excavadora de oruga, Volquete 15m³..."
+            />
+            <div class="error-msg" *ngIf="hasError('tipo_equipo')">Tipo de equipo es requerido</div>
           </div>
-        </div>
+
+          <div class="form-group">
+            <label class="required">Cantidad</label>
+            <input type="number" class="form-control" formControlName="cantidad" min="1" />
+            <div class="error-msg" *ngIf="hasError('cantidad')">Cantidad válida es requerida</div>
+          </div>
+
+          <div class="form-group">
+            <label class="required">Fecha Requerida</label>
+            <input type="date" class="form-control" formControlName="fecha_requerida" />
+            <div class="error-msg" *ngIf="hasError('fecha_requerida')">Fecha es requerida</div>
+          </div>
+
+          <div class="form-group">
+            <label>Prioridad</label>
+            <app-dropdown
+              formControlName="prioridad"
+              [options]="[
+                { label: 'Baja', value: 'BAJA' },
+                { label: 'Media', value: 'MEDIA' },
+                { label: 'Alta', value: 'ALTA' },
+              ]"
+            ></app-dropdown>
+          </div>
+        </app-form-section>
 
         <!-- Section: Technical Details -->
-        <div class="form-section full-width">
-          <h3 class="section-title">
-            <i class="fa-solid fa-wrench"></i> Detalles Técnicos y Justificación
-          </h3>
-          <div class="section-grid">
-            <div class="form-group full-width">
-              <span class="label">Descripción Técnica</span>
-              <textarea
-                class="form-control"
-                formControlName="descripcion"
-                rows="3"
-                placeholder="Especificaciones técnicas del equipo requerido..."
-              ></textarea>
-            </div>
-
-            <div class="form-group full-width">
-              <span class="label">Justificación Operativa</span>
-              <textarea
-                class="form-control"
-                formControlName="justificacion"
-                rows="4"
-                placeholder="Fundamento operativo o técnico de la solicitud..."
-              ></textarea>
-            </div>
+        <app-form-section title="Detalles Técnicos y Justificación" icon="fa-wrench" [columns]="1">
+          <div class="form-group">
+            <label>Descripción Técnica</label>
+            <textarea
+              class="form-control"
+              formControlName="descripcion"
+              rows="3"
+              placeholder="Especificaciones técnicas del equipo requerido..."
+            ></textarea>
           </div>
-        </div>
+
+          <div class="form-group">
+            <label>Justificación Operativa</label>
+            <textarea
+              class="form-control"
+              formControlName="justificacion"
+              rows="4"
+              placeholder="Fundamento operativo o técnico de la solicitud..."
+            ></textarea>
+          </div>
+        </app-form-section>
       </form>
     </app-form-container>
   `,
   styles: [
     `
-      .form-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .form-section h3 {
-        font-size: 16px;
-        color: var(--primary-800);
-        border-bottom: 1px solid var(--grey-200);
-        padding-bottom: 0.5rem;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-      }
-
-      .section-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-      }
-
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .full-width {
-        grid-column: 1 / -1;
-      }
-
-      label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-700);
-      }
-
-      label.required::after {
-        content: ' *';
-        color: var(--semantic-red-500);
-      }
-
-      .form-control {
-        padding: 0.625rem;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .form-control:focus {
-        border-color: var(--primary-500);
-        outline: none;
-        box-shadow: 0 0 0 3px var(--primary-100);
-      }
-
-      .error-msg {
-        color: var(--semantic-red-600);
-        font-size: 12px;
-      }
-
-      @media (max-width: 768px) {
-        .section-grid {
-          grid-template-columns: 1fr;
-        }
-      }
+      @use 'form-layout';
     `,
   ],
 })
@@ -258,11 +181,11 @@ export class SolicitudEquipoFormComponent implements OnInit {
         })
         .subscribe((confirmed) => {
           if (confirmed) {
-            this.router.navigate(['/equipment/solicitudes']);
+            this.router.navigate(['/equipment/operaciones/solicitudes']);
           }
         });
     } else {
-      this.router.navigate(['/equipment/solicitudes']);
+      this.router.navigate(['/equipment/operaciones/solicitudes']);
     }
   }
 
@@ -281,7 +204,7 @@ export class SolicitudEquipoFormComponent implements OnInit {
     obs.subscribe({
       next: (s) => {
         this.saving = false;
-        this.router.navigate(['/equipment/solicitudes', s.id]);
+        this.router.navigate(['/equipment/operaciones/solicitudes', s.id]);
       },
       error: () => {
         this.saving = false;

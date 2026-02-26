@@ -106,7 +106,10 @@ import {
                 <span class="label">Solicitud Origen</span>
                 <p>
                   <a
-                    [routerLink]="['/equipment/solicitudes', orden?.solicitud_equipo_id]"
+                    [routerLink]="[
+                      '/equipment/operaciones/solicitudes',
+                      orden?.solicitud_equipo_id,
+                    ]"
                     class="link-primary"
                   >
                     Ver Solicitud #{{ orden?.solicitud_equipo_id }}
@@ -191,7 +194,7 @@ import {
           *ngIf="orden && ['BORRADOR', 'ENVIADO'].includes(orden.estado)"
           type="button"
           class="btn btn-secondary btn-block"
-          [routerLink]="['/equipment/ordenes-alquiler', orden.id, 'edit']"
+          [routerLink]="['/equipment/operaciones/ordenes-alquiler', orden.id, 'edit']"
         >
           <i class="fa-solid fa-pen-to-square"></i> Editar Orden
         </button>

@@ -23,6 +23,8 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { forkJoin } from 'rxjs';
 import { ConfirmService } from '../../core/services/confirm.service';
 
@@ -38,6 +40,8 @@ import { ConfirmService } from '../../core/services/confirm.service';
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -49,9 +53,12 @@ import { ConfirmService } from '../../core/services/confirm.service';
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
 
-        <button type="button" class="btn btn-primary" (click)="createMaintenance()">
-          <i class="fa-solid fa-plus"></i> Nuevo Mantenimiento
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Mantenimiento"
+          (clicked)="navigateToCreate()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -59,18 +66,20 @@ import { ConfirmService } from '../../core/services/confirm.service';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="records"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          equipo: equipmentTemplate,
-          descripcion: descriptionTemplate,
-        }"
-        (rowClick)="viewRecord($event)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="records"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            equipo: equipmentTemplate,
+            descripcion: descriptionTemplate,
+          }"
+          (rowClick)="viewRecord($event)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #equipmentTemplate let-row>
@@ -372,6 +381,10 @@ export class MaintenanceListComponent implements OnInit {
         });
       }
     });
+  }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/equipment/maintenance/new']);
   }
 
   createMaintenance(): void {

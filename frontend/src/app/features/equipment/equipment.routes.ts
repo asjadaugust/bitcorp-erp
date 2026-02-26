@@ -6,7 +6,7 @@ export const EQUIPMENT_ROUTES: Routes = [
     path: '',
     component: EquipmentModuleLayoutComponent,
     children: [
-      // Config. Precalentamiento (WS-19)
+      // Config. Precalentamiento (WS-19) — accessible via direct URL, not in tabs
       {
         path: 'precalentamiento-config',
         loadComponent: () =>
@@ -15,7 +15,7 @@ export const EQUIPMENT_ROUTES: Routes = [
           ),
       },
 
-      // Períodos de Inoperatividad (WS-17)
+      // Períodos de Inoperatividad (WS-17) — accessible via direct URL, not in tabs
       {
         path: 'inoperatividad',
         loadComponent: () =>
@@ -38,51 +38,98 @@ export const EQUIPMENT_ROUTES: Routes = [
           import('./equipment-dashboard.component').then((m) => m.EquipmentDashboardComponent),
       },
 
-      // Equipment Requests Module
+      // === Operaciones sub-shell (Solicitudes + Órdenes + Contratos) ===
       {
-        path: 'solicitudes',
+        path: 'operaciones',
         loadComponent: () =>
-          import('./solicitud-equipo-list.component').then((m) => m.SolicitudEquipoListComponent),
-      },
-      {
-        path: 'solicitudes/new',
-        loadComponent: () =>
-          import('./solicitud-equipo-form.component').then((m) => m.SolicitudEquipoFormComponent),
-      },
-      {
-        path: 'solicitudes/:id',
-        loadComponent: () =>
-          import('./solicitud-equipo-detail.component').then(
-            (m) => m.SolicitudEquipoDetailComponent
-          ),
-      },
-      {
-        path: 'solicitudes/:id/edit',
-        loadComponent: () =>
-          import('./solicitud-equipo-form.component').then((m) => m.SolicitudEquipoFormComponent),
+          import('./operaciones-layout.component').then((m) => m.OperacionesLayoutComponent),
+        children: [
+          { path: '', redirectTo: 'solicitudes', pathMatch: 'full' },
+
+          // Solicitudes de Equipo
+          {
+            path: 'solicitudes',
+            loadComponent: () =>
+              import('./solicitud-equipo-list.component').then(
+                (m) => m.SolicitudEquipoListComponent
+              ),
+          },
+          {
+            path: 'solicitudes/new',
+            loadComponent: () =>
+              import('./solicitud-equipo-form.component').then(
+                (m) => m.SolicitudEquipoFormComponent
+              ),
+          },
+          {
+            path: 'solicitudes/:id',
+            loadComponent: () =>
+              import('./solicitud-equipo-detail.component').then(
+                (m) => m.SolicitudEquipoDetailComponent
+              ),
+          },
+          {
+            path: 'solicitudes/:id/edit',
+            loadComponent: () =>
+              import('./solicitud-equipo-form.component').then(
+                (m) => m.SolicitudEquipoFormComponent
+              ),
+          },
+
+          // Órdenes de Alquiler
+          {
+            path: 'ordenes-alquiler',
+            loadComponent: () =>
+              import('./orden-alquiler-list.component').then((m) => m.OrdenAlquilerListComponent),
+          },
+          {
+            path: 'ordenes-alquiler/new',
+            loadComponent: () =>
+              import('./orden-alquiler-form.component').then((m) => m.OrdenAlquilerFormComponent),
+          },
+          {
+            path: 'ordenes-alquiler/:id',
+            loadComponent: () =>
+              import('./orden-alquiler-detail.component').then(
+                (m) => m.OrdenAlquilerDetailComponent
+              ),
+          },
+          {
+            path: 'ordenes-alquiler/:id/edit',
+            loadComponent: () =>
+              import('./orden-alquiler-form.component').then((m) => m.OrdenAlquilerFormComponent),
+          },
+
+          // Contratos
+          {
+            path: 'contratos',
+            loadComponent: () =>
+              import('../contracts/contract-list.component').then((m) => m.ContractListComponent),
+          },
+          {
+            path: 'contratos/new',
+            loadComponent: () =>
+              import('../contracts/contract-form.component').then((m) => m.ContractFormComponent),
+          },
+          {
+            path: 'contratos/:id',
+            loadComponent: () =>
+              import('../contracts/contract-detail.component').then(
+                (m) => m.ContractDetailComponent
+              ),
+          },
+          {
+            path: 'contratos/:id/edit',
+            loadComponent: () =>
+              import('../contracts/contract-form.component').then((m) => m.ContractFormComponent),
+          },
+        ],
       },
 
-      // Órdenes de Alquiler
-      {
-        path: 'ordenes-alquiler',
-        loadComponent: () =>
-          import('./orden-alquiler-list.component').then((m) => m.OrdenAlquilerListComponent),
-      },
-      {
-        path: 'ordenes-alquiler/new',
-        loadComponent: () =>
-          import('./orden-alquiler-form.component').then((m) => m.OrdenAlquilerFormComponent),
-      },
-      {
-        path: 'ordenes-alquiler/:id',
-        loadComponent: () =>
-          import('./orden-alquiler-detail.component').then((m) => m.OrdenAlquilerDetailComponent),
-      },
-      {
-        path: 'ordenes-alquiler/:id/edit',
-        loadComponent: () =>
-          import('./orden-alquiler-form.component').then((m) => m.OrdenAlquilerFormComponent),
-      },
+      // Redirects for old paths
+      { path: 'solicitudes', redirectTo: 'operaciones/solicitudes', pathMatch: 'full' },
+      { path: 'ordenes-alquiler', redirectTo: 'operaciones/ordenes-alquiler', pathMatch: 'full' },
+      { path: 'contracts', redirectTo: 'operaciones/contratos', pathMatch: 'full' },
 
       // Actas de Devolución / Desmovilización
       {
@@ -180,7 +227,7 @@ export const EQUIPMENT_ROUTES: Routes = [
           ),
       },
 
-      // Maintenance Module
+      // Maintenance Module — accessible via direct URL, not in tabs
       {
         path: 'maintenance',
         children: [
@@ -244,28 +291,6 @@ export const EQUIPMENT_ROUTES: Routes = [
             ],
           },
         ],
-      },
-
-      // Contracts sub-module
-      {
-        path: 'contracts',
-        loadComponent: () =>
-          import('../contracts/contract-list.component').then((m) => m.ContractListComponent),
-      },
-      {
-        path: 'contracts/new',
-        loadComponent: () =>
-          import('../contracts/contract-form.component').then((m) => m.ContractFormComponent),
-      },
-      {
-        path: 'contracts/:id',
-        loadComponent: () =>
-          import('../contracts/contract-detail.component').then((m) => m.ContractDetailComponent),
-      },
-      {
-        path: 'contracts/:id/edit',
-        loadComponent: () =>
-          import('../contracts/contract-form.component').then((m) => m.ContractFormComponent),
       },
 
       // Valuations sub-module

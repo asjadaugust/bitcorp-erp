@@ -89,8 +89,8 @@ interface ModuleCategory {
             <div
               class="alert-card"
               *ngIf="getAlertTotal(documentAlerts.contracts) > 0"
-              (click)="navigateTo('/equipment/contracts')"
-              (keydown.enter)="navigateTo('/equipment/contracts')"
+              (click)="navigateTo('/equipment/operaciones/contratos')"
+              (keydown.enter)="navigateTo('/equipment/operaciones/contratos')"
               tabindex="0"
               role="button"
             >

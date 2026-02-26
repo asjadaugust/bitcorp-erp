@@ -13,6 +13,8 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
@@ -26,6 +28,8 @@ import { ConfirmService } from '../../core/services/confirm.service';
     ActionsContainerComponent,
     AeroTableComponent,
     FilterBarComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -35,9 +39,12 @@ import { ConfirmService } from '../../core/services/confirm.service';
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button type="button" class="btn btn-primary" routerLink="new">
-          <i class="fa-solid fa-plus"></i> Nueva Acta
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Acta"
+          (clicked)="navigateToCreate()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -45,20 +52,22 @@ import { ConfirmService } from '../../core/services/confirm.service';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="actas"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          tipo: tipoTemplate,
-          condicion: condicionTemplate,
-          estado: estadoTemplate,
-          firmas: firmasTemplate,
-        }"
-        (rowClick)="verDetalle($event.id)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="actas"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            tipo: tipoTemplate,
+            condicion: condicionTemplate,
+            estado: estadoTemplate,
+            firmas: firmasTemplate,
+          }"
+          (rowClick)="verDetalle($event.id)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Templates -->
       <ng-template #tipoTemplate let-row>
@@ -292,6 +301,10 @@ export class ActaDevolucionListComponent implements OnInit {
     this.filtroTipo = (filters['tipo'] as string) || '';
     this.page = 1;
     this.cargar();
+  }
+
+  navigateToCreate() {
+    this.router.navigate(['/equipment/actas-devolucion/new']);
   }
 
   verDetalle(id: number) {

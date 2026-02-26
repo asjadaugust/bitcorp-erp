@@ -61,7 +61,7 @@ import {
                 <span class="label">Contrato Relacionado</span>
                 <p>
                   <a
-                    [routerLink]="['/equipment/contracts', acta?.contrato_id]"
+                    [routerLink]="['/equipment/operaciones/contratos', acta?.contrato_id]"
                     class="link-primary"
                   >
                     <i

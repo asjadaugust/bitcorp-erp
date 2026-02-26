@@ -23,6 +23,8 @@ import {
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
@@ -37,6 +39,8 @@ import { ConfirmService } from '../../core/services/confirm.service';
     AeroTableComponent,
     FilterBarComponent,
     StatsGridComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -46,9 +50,13 @@ import { ConfirmService } from '../../core/services/confirm.service';
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button type="button" class="btn btn-primary" routerLink="new" data-testid="btn-nuevo-vale">
-          <i class="fa-solid fa-plus"></i> Nuevo Vale
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Vale"
+          (clicked)="navigateToCreate()"
+          data-testid="btn-nuevo-vale"
+        ></app-button>
       </app-actions-container>
 
       <div *ngIf="statItems.length > 0">
@@ -60,26 +68,28 @@ import { ConfirmService } from '../../core/services/confirm.service';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="vales"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [serverSide]="true"
-        [totalItems]="total"
-        [pageSize]="limit"
-        (pageChange)="onPageChange($event)"
-        [templates]="{
-          codigo: codeTemplate,
-          tipo_combustible: tipoTemplate,
-          cantidad_galones: cantidadTemplate,
-          monto_total: montoTemplate,
-          estado: estadoTemplate,
-        }"
-        (rowClick)="verDetalle($event.id)"
-        data-testid="vale-combustible-table"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="vales"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="limit"
+          (pageChange)="onPageChange($event)"
+          [templates]="{
+            codigo: codeTemplate,
+            tipo_combustible: tipoTemplate,
+            cantidad_galones: cantidadTemplate,
+            monto_total: montoTemplate,
+            estado: estadoTemplate,
+          }"
+          (rowClick)="verDetalle($event.id)"
+          data-testid="vale-combustible-table"
+        >
+        </aero-table>
+      </app-page-card>
 
       <ng-template #codeTemplate let-row>
         <span class="code-badge" data-testid="vale-codigo">{{ row.codigo }}</span>
@@ -298,6 +308,10 @@ export class ValeCombustibleListComponent implements OnInit {
   onPageChange(page: number) {
     this.page = page;
     this.cargar();
+  }
+
+  navigateToCreate() {
+    this.router.navigate(['/equipment/vales-combustible/new']);
   }
 
   verDetalle(id: number) {
