@@ -66,6 +66,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           [templates]="{
             nombre_completo: userTemplate,
           }"
+          (rowClick)="viewEmployee($event)"
         >
         </aero-table>
       </app-page-card>
@@ -84,6 +85,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
+            (clicked)="viewEmployee(row)"
+          ></app-button>
           <app-button
             variant="icon"
             size="sm"
@@ -231,6 +238,13 @@ export class EmployeeListComponent implements OnInit {
 
   navigateToCreate(): void {
     this.router.navigate(['/rrhh/employees/new']);
+  }
+
+  viewEmployee(employee: Employee | Record<string, unknown>): void {
+    const dni = (employee as Employee).dni ?? employee['dni'];
+    if (dni) {
+      this.router.navigate(['/rrhh/employees', dni]);
+    }
   }
 
   editEmployee(employee: Employee): void {

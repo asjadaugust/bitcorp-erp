@@ -217,6 +217,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'rrhh/employees/:id',
+        loadComponent: () =>
+          import('./features/hr/components/employee-detail/employee-detail.component').then(
+            (m) => m.EmployeeDetailComponent
+          ),
+      },
+      {
         path: 'rrhh/employees/:id/edit',
         loadComponent: () =>
           import('./features/hr/components/employee-form/employee-form.component').then(
