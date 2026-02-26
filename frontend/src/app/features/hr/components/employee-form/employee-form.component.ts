@@ -1,12 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee } from '../../models/employee.model';
@@ -17,27 +11,37 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
+import { AeroInputComponent } from '../../../../core/design-system/input/aero-input.component';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     ReactiveFormsModule,
     RouterModule,
     ValidationErrorsComponent,
     AlertComponent,
     FormContainerComponent,
+    FormSectionComponent,
+    AeroInputComponent,
   ],
   template: `
     <app-form-container
       [title]="isEditMode ? 'Editar Personal' : 'Nuevo Personal'"
-      [subtitle]="isEditMode ? 'Actualizar información del personal' : 'Registrar un nuevo empleado en el sistema'"
+      [subtitle]="
+        isEditMode
+          ? 'Actualizar información del personal'
+          : 'Registrar nuevo personal en el sistema'
+      "
+      [icon]="isEditMode ? 'fa-user-pen' : 'fa-user-plus'"
+      backUrl="/rrhh/employees"
       [loading]="loading || submitting"
       [disableSubmit]="submitting || (employeeForm && employeeForm.invalid)"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Personal'"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Error Handling -->
       <app-validation-errors
@@ -56,144 +60,135 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
         class="mb-4"
       ></app-alert>
 
-      <form id="standardForm" [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
-        <!-- Personal Info -->
-        <div class="form-section">
-          <h2 class="section-title">Información Personal</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="dni">DNI / C.EXT <span class="required">*</span></label>
-              <input
-                id="dni"
-                type="text"
-                formControlName="dni"
-                [class.error]="isFieldInvalid('dni')"
-                maxlength="12"
-                placeholder="DNI o Carnet de Extranjería"
-              />
-            </div>
-            <div class="form-group">
-              <label for="nombres">Nombres <span class="required">*</span></label>
-              <input
-                id="nombres"
-                type="text"
-                formControlName="nombres"
-                [class.error]="isFieldInvalid('nombres')"
-                placeholder="Nombres completos"
-              />
-            </div>
-            <div class="form-group">
-              <label for="apellido_paterno"
-                >Apellido Paterno <span class="required">*</span></label
-              >
-              <input
-                id="apellido_paterno"
-                type="text"
-                formControlName="apellido_paterno"
-                [class.error]="isFieldInvalid('apellido_paterno')"
-                placeholder="Apellido Paterno"
-              />
-            </div>
-            <div class="form-group">
-              <label for="apellido_materno">Apellido Materno</label>
-              <input
-                id="apellido_materno"
-                type="text"
-                formControlName="apellido_materno"
-                placeholder="Apellido Materno"
-              />
-            </div>
-            <div class="form-group">
-              <label for="fecha_nacimiento">Fecha Nacimiento</label>
-              <input id="fecha_nacimiento" type="date" formControlName="fecha_nacimiento" />
-            </div>
-            <div class="form-group">
-              <label for="cargo">Cargo</label>
-              <input
-                id="cargo"
-                type="text"
-                formControlName="cargo"
-                placeholder="Ej. Operario, Supervisor"
-              />
-            </div>
+      <form id="standardForm" [formGroup]="employeeForm">
+        <!-- Section 1: Personal Information -->
+        <app-form-section title="Información Personal" icon="fa-user" [columns]="2">
+          <div class="form-group">
+            <aero-input
+              label="DNI / C.EXT"
+              formControlName="dni"
+              placeholder="DNI o Carnet de Extranjería"
+              [required]="true"
+              [error]="isFieldInvalid('dni') ? 'DNI es requerido (mín. 8 caracteres)' : ''"
+            ></aero-input>
           </div>
-        </div>
 
-        <!-- Contact Info -->
-        <div class="form-section">
-          <h2 class="section-title">Contacto</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="telefono">Teléfono / Celular</label>
-              <input
-                id="telefono"
-                type="text"
-                formControlName="telefono"
-                placeholder="Número de contacto"
-              />
-            </div>
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                formControlName="email"
-                placeholder="correo@ejemplo.com"
-              />
-            </div>
-            <div class="form-group full-width">
-              <label for="direccion">Dirección</label>
-              <input
-                id="direccion"
-                type="text"
-                formControlName="direccion"
-                placeholder="Dirección de domicilio"
-              />
-            </div>
+          <div class="form-group">
+            <aero-input
+              label="Nombres"
+              formControlName="nombres"
+              placeholder="Nombres completos"
+              [required]="true"
+              [error]="isFieldInvalid('nombres') ? 'Nombres es requerido' : ''"
+            ></aero-input>
           </div>
-        </div>
 
-        <!-- Additional Info -->
-        <div class="form-section">
-          <h2 class="section-title">Información Laboral</h2>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="fecha_ingreso">Fecha Ingreso</label>
-              <input id="fecha_ingreso" type="date" formControlName="fecha_ingreso" />
-            </div>
-            <div class="form-group">
-              <label for="especialidad">Especialidad</label>
-              <input
-                id="especialidad"
-                type="text"
-                formControlName="especialidad"
-                placeholder="Especialidad técnica"
-              />
-            </div>
-            <div class="form-group">
-              <label for="tipo_contrato">Tipo Contrato</label>
-              <input
-                id="tipo_contrato"
-                type="text"
-                formControlName="tipo_contrato"
-                placeholder="Ej. Indeterminado, Plazo Fijo"
-              />
-            </div>
-            <div class="form-group">
-              <label for="licencia_conducir">Licencia Conducir</label>
-              <input
-                id="licencia_conducir"
-                type="text"
-                formControlName="licencia_conducir"
-                placeholder="Clase y Categoría"
-              />
-            </div>
+          <div class="form-group">
+            <aero-input
+              label="Apellido Paterno"
+              formControlName="apellido_paterno"
+              placeholder="Apellido Paterno"
+              [required]="true"
+              [error]="isFieldInvalid('apellido_paterno') ? 'Apellido Paterno es requerido' : ''"
+            ></aero-input>
           </div>
-        </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Apellido Materno"
+              formControlName="apellido_materno"
+              placeholder="Apellido Materno"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Fecha Nacimiento"
+              type="date"
+              formControlName="fecha_nacimiento"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Cargo"
+              formControlName="cargo"
+              placeholder="Ej. Operario, Supervisor"
+            ></aero-input>
+          </div>
+        </app-form-section>
+
+        <!-- Section 2: Contact -->
+        <app-form-section title="Contacto" icon="fa-address-book" [columns]="2">
+          <div class="form-group">
+            <aero-input
+              label="Teléfono / Celular"
+              formControlName="telefono"
+              placeholder="Número de contacto"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Email"
+              type="email"
+              formControlName="email"
+              placeholder="correo@ejemplo.com"
+              [error]="isFieldInvalid('email') ? 'Email inválido' : ''"
+            ></aero-input>
+          </div>
+
+          <div class="form-group full-width">
+            <aero-input
+              label="Dirección"
+              formControlName="direccion"
+              placeholder="Dirección de domicilio"
+            ></aero-input>
+          </div>
+        </app-form-section>
+
+        <!-- Section 3: Employment Details -->
+        <app-form-section title="Información Laboral" icon="fa-briefcase" [columns]="2">
+          <div class="form-group">
+            <aero-input
+              label="Fecha Ingreso"
+              type="date"
+              formControlName="fecha_ingreso"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Especialidad"
+              formControlName="especialidad"
+              placeholder="Especialidad técnica"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Tipo Contrato"
+              formControlName="tipo_contrato"
+              placeholder="Ej. Indeterminado, Plazo Fijo"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Licencia Conducir"
+              formControlName="licencia_conducir"
+              placeholder="Clase y Categoría"
+            ></aero-input>
+          </div>
+        </app-form-section>
       </form>
     </app-form-container>
   `,
-  styles: [],
+  styles: [
+    `
+      @use 'form-layout';
+    `,
+  ],
 })
 export class EmployeeFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -248,7 +243,7 @@ export class EmployeeFormComponent implements OnInit {
     this.employeeDni = this.route.snapshot.paramMap.get('id');
     if (this.employeeDni) {
       this.isEditMode = true;
-      this.employeeForm.get('dni')?.disable(); // Cannot change DNI in edit mode
+      this.employeeForm.get('dni')?.disable();
       this.loadEmployee(this.employeeDni);
     }
   }
@@ -258,7 +253,6 @@ export class EmployeeFormComponent implements OnInit {
     this.employeeService.getEmployeeByDni(dni).subscribe({
       next: (employee: Employee) => {
         this.employeeForm.patchValue(employee);
-        // ... handled dates next
         this.loading = false;
       },
       error: (err) => {

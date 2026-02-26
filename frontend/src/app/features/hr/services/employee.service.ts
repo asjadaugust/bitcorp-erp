@@ -5,6 +5,12 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { Employee } from '../models/employee.model';
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  pagination?: unknown;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -17,34 +23,28 @@ export class EmployeeService {
     if (search) {
       params = params.set('search', search);
     }
-    return this.http.get<{ success: boolean; data: Employee[] }>(this.apiUrl, { params }).pipe(
+    // API returns paginated response: {success, data, pagination}
+    // Interceptor does NOT unwrap when pagination exists, so we extract data here
+    return this.http.get<ApiResponse<Employee[]>>(this.apiUrl, { params }).pipe(
       map((response) => {
-        // Handle response that has success/data structure
-        const dataArray = response?.data || response;
-        return Array.isArray(dataArray) ? dataArray : [];
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data as Employee[];
+        }
+        return Array.isArray(response) ? (response as unknown as Employee[]) : [];
       })
     );
   }
 
   getEmployeeByDni(dni: string): Observable<Employee> {
-    return this.http.get<{ success: boolean; data: Employee }>(`${this.apiUrl}/${dni}`).pipe(
-      map((response) => {
-        // Handle response that has success/data structure
-        return response?.data || response;
-      })
-    );
+    return this.http.get<Employee>(`${this.apiUrl}/${dni}`);
   }
 
   createEmployee(employee: Employee): Observable<Employee> {
-    return this.http
-      .post<{ success: boolean; data: Employee }>(this.apiUrl, employee)
-      .pipe(map((response) => response?.data || response));
+    return this.http.post<Employee>(this.apiUrl, employee);
   }
 
   updateEmployee(dni: string, employee: Partial<Employee>): Observable<Employee> {
-    return this.http
-      .put<{ success: boolean; data: Employee }>(`${this.apiUrl}/${dni}`, employee)
-      .pipe(map((response) => response?.data || response));
+    return this.http.put<Employee>(`${this.apiUrl}/${dni}`, employee);
   }
 
   deleteEmployee(dni: string): Observable<void> {

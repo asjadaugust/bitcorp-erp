@@ -17,7 +17,8 @@ import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
-import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -31,7 +32,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ActionsContainerComponent,
+    ButtonComponent,
+    PageCardComponent,
   ],
   template: `
     <app-page-layout
@@ -41,113 +43,103 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       [tabs]="tabs"
       [loading]="loading"
     >
-      <app-actions-container actions>
-        <button class="btn btn-primary" (click)="navigateToCreate()">
-          <i class="fa-solid fa-plus"></i> Nuevo Personal
-        </button>
-      </app-actions-container>
+      <div actions>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Personal"
+          (clicked)="navigateToCreate()"
+        ></app-button>
+      </div>
 
       <app-filter-bar
         [config]="filterConfig"
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="employees"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          dni: dniTemplate,
-          fullName: fullNameTemplate,
-        }"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="employees"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            nombre_completo: userTemplate,
+          }"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
-      <ng-template #dniTemplate let-row>
-        <span class="badge badge-neutral">{{ row.dni }}</span>
-      </ng-template>
-
-      <ng-template #fullNameTemplate let-row>
-        <span class="font-medium">
-          {{ row.nombre_completo || row.nombres + ' ' + row.apellido_paterno }}
-        </span>
+      <ng-template #userTemplate let-row>
+        <div class="user-cell">
+          <div class="avatar-circle">{{ getInitials(row) }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ row.nombres }} {{ row.apellido_paterno }}</span>
+            <span class="user-role">{{ row.cargo || 'Personal' }}</span>
+          </div>
+        </div>
       </ng-template>
 
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button class="btn-icon" (click)="editEmployee(row)" title="Editar">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn-icon text-danger" (click)="deleteEmployee(row)" title="Eliminar">
-            <i class="fa-solid fa-trash"></i>
-          </button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
+            (clicked)="editEmployee(row)"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-trash"
+            (clicked)="deleteEmployee(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
+      .user-cell {
+        display: flex;
         align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
+        gap: 12px;
       }
 
-      .font-medium {
-        font-weight: 500;
-      }
-      .badge {
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
+      .avatar-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary-100);
+        color: var(--primary-700);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: 600;
+        font-size: 14px;
       }
-      .badge-neutral {
-        background: var(--grey-200);
-        color: var(--grey-700);
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .user-name {
+        font-weight: 500;
+        color: var(--grey-900);
+      }
+
+      .user-role {
+        font-size: 12px;
+        color: var(--grey-500);
       }
 
       .action-buttons {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-      }
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-      .btn-icon:hover {
-        color: var(--primary-500);
-      }
-      .text-danger:hover {
-        color: var(--semantic-error);
-      }
-
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
       }
     `,
   ],
@@ -183,11 +175,28 @@ export class EmployeeListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'dni', label: 'DNI', type: 'template' },
-    { key: 'nombre_completo', label: 'Nombre Completo', type: 'template' },
+    { key: 'dni', label: 'DNI', type: 'text' },
+    { key: 'nombre_completo', label: 'Personal', type: 'template' },
     { key: 'telefono', label: 'Teléfono', type: 'text' },
     { key: 'email', label: 'Email', type: 'text' },
     { key: 'cargo', label: 'Cargo', type: 'text' },
+    {
+      key: 'esta_activo',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        true: {
+          label: 'Activo',
+          class: 'status-badge status-active',
+          icon: 'fa-solid fa-check',
+        },
+        false: {
+          label: 'Inactivo',
+          class: 'status-badge status-inactive',
+          icon: 'fa-solid fa-ban',
+        },
+      },
+    },
   ];
 
   ngOnInit(): void {
@@ -212,6 +221,12 @@ export class EmployeeListComponent implements OnInit {
   onFilterChange(filters: Record<string, unknown>): void {
     this.searchTerm = (filters['search'] as string) || '';
     this.loadEmployees();
+  }
+
+  getInitials(employee: Employee): string {
+    const first = employee.nombres?.charAt(0) || '';
+    const last = employee.apellido_paterno?.charAt(0) || '';
+    return (first + last).toUpperCase();
   }
 
   navigateToCreate(): void {

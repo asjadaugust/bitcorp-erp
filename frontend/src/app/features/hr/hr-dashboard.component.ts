@@ -19,7 +19,13 @@ import {
     >
       <div class="module-grid">
         <!-- Personal Card -->
-        <div class="module-card" (click)="navigateTo('employees')" (keydown.enter)="navigateTo('employees')" tabindex="0" role="button">
+        <div
+          class="module-card"
+          (click)="navigateTo('employees')"
+          (keydown.enter)="navigateTo('employees')"
+          tabindex="0"
+          role="button"
+        >
           <div class="card-icon">
             <i class="fa-solid fa-users"></i>
           </div>
@@ -61,16 +67,16 @@ import {
       .module-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 24px;
+        gap: var(--s-24);
       }
 
       .module-card {
         background: var(--neutral-0);
-        border-radius: 12px;
-        padding: 24px;
+        border-radius: var(--s-12);
+        padding: var(--s-24);
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: var(--s-16);
         cursor: pointer;
         transition: all 0.2s ease;
         border: 1px solid var(--grey-200);
@@ -98,11 +104,11 @@ import {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: var(--type-h4-size);
       }
 
       .card-content h3 {
-        margin: 0 0 8px 0;
+        margin: 0 0 var(--s-8) 0;
         font-size: var(--type-h4-size);
         color: var(--grey-900);
       }
