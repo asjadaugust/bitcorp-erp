@@ -5,6 +5,9 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../../shared/components/stats-grid/stats-grid.component';
+import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
 
 interface DashboardStats {
   todayReports: number;
@@ -24,13 +27,17 @@ interface RecentReport {
 @Component({
   selector: 'app-operator-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, StatsGridComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    StatsGridComponent,
+    PageLayoutComponent,
+    ButtonComponent,
+    AeroBadgeComponent,
+  ],
   template: `
-    <div class="operator-dashboard">
-      <header class="dashboard-header">
-        <h1>Panel de Operador</h1>
-        <p class="subtitle">Bienvenido, {{ operatorName }}</p>
-      </header>
+    <app-page-layout title="Portal del Operador" icon="fa-hard-hat">
+      <p class="subtitle">Bienvenido, {{ operatorName }}</p>
 
       <!-- Quick Actions -->
       <div class="quick-actions">
@@ -68,44 +75,32 @@ interface RecentReport {
               <div class="report-meta">{{ report.date }} &bull; {{ report.hours }}h</div>
             </div>
             <div class="report-status">
-              <span class="status-badge" [class]="'badge-' + report.status">
+              <aero-badge [variant]="getBadgeVariant(report.status)">
                 {{ getStatusLabel(report.status) }}
-              </span>
+              </aero-badge>
             </div>
           </div>
 
           <div *ngIf="recentReports.length === 0" class="empty-state">
             <i class="fa-solid fa-file-pen empty-icon"></i>
             <p>No hay partes diarios registrados</p>
-            <a routerLink="/operator/daily-report" class="btn-link">Crear primer parte</a>
+            <app-button
+              label="Crear primer parte"
+              icon="fa-plus"
+              variant="primary"
+              routerLink="/operator/daily-report"
+            ></app-button>
           </div>
         </div>
       </div>
-    </div>
+    </app-page-layout>
   `,
   styles: [
     `
-      .operator-dashboard {
-        padding: 24px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      .dashboard-header {
-        margin-bottom: 32px;
-      }
-
-      .dashboard-header h1 {
-        font-size: 28px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin: 0 0 8px 0;
-      }
-
       .subtitle {
         font-size: 16px;
         color: var(--grey-700);
-        margin: 0;
+        margin: 0 0 24px 0;
       }
 
       .quick-actions {
@@ -120,15 +115,15 @@ interface RecentReport {
         align-items: center;
         padding: 24px;
         background: var(--neutral-0);
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border-radius: var(--radius-md, 12px);
+        box-shadow: var(--shadow-sm);
         text-decoration: none;
         transition: all 0.2s;
         border: 2px solid transparent;
       }
 
       .action-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
         transform: translateY(-2px);
       }
 
@@ -138,7 +133,7 @@ interface RecentReport {
       }
 
       .action-card.primary:hover {
-        box-shadow: 0 4px 16px rgba(0, 119, 205, 0.4);
+        box-shadow: 0 4px 16px color-mix(in srgb, var(--primary-500) 40%, transparent);
       }
 
       .action-icon {
@@ -174,9 +169,9 @@ interface RecentReport {
 
       .recent-section {
         background: var(--neutral-0);
-        border-radius: 12px;
+        border-radius: var(--radius-md, 12px);
         padding: 24px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
       }
 
       .recent-section h2 {
@@ -246,28 +241,6 @@ interface RecentReport {
         color: var(--grey-700);
       }
 
-      .status-badge {
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .badge-BORRADOR {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
-      }
-
-      .badge-ENVIADO {
-        background: var(--semantic-blue-100);
-        color: var(--primary-500);
-      }
-
-      .badge-APROBADO {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
-      }
-
       .empty-state {
         text-align: center;
         padding: 48px 24px;
@@ -285,26 +258,7 @@ interface RecentReport {
         margin-bottom: 16px;
       }
 
-      .btn-link {
-        display: inline-block;
-        padding: 10px 20px;
-        background: var(--primary-500);
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.2s;
-      }
-
-      .btn-link:hover {
-        background: var(--primary-800);
-      }
-
       @media (max-width: 768px) {
-        .operator-dashboard {
-          padding: 16px;
-        }
-
         .stats-grid {
           grid-template-columns: repeat(2, 1fr);
         }
@@ -391,5 +345,14 @@ export class OperatorDashboardComponent implements OnInit {
       APROBADO: 'Aprobado',
     };
     return labels[status] || status;
+  }
+
+  getBadgeVariant(status: string): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
+    const variants: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
+      BORRADOR: 'warning',
+      ENVIADO: 'info',
+      APROBADO: 'success',
+    };
+    return variants[status] || 'neutral';
   }
 }

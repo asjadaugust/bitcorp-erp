@@ -13,6 +13,9 @@ import {
   OperatorDisponibilidad,
   OperatorRendimiento,
 } from '../../../core/models/operator.model';
+import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
 
 interface ProfileData {
   operator: Operator;
@@ -25,17 +28,14 @@ interface ProfileData {
 @Component({
   selector: 'app-operator-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageLayoutComponent, ButtonComponent, AeroBadgeComponent],
   template: `
-    <div class="profile-container">
-      <header class="profile-header">
-        <h1>Mi Perfil</h1>
-        <p class="subtitle">Información personal y profesional</p>
-      </header>
+    <app-page-layout title="Mi Perfil" icon="fa-user">
+      <p class="subtitle">Información personal y profesional</p>
 
       <!-- Loading State -->
       <div *ngIf="loading" class="loading-overlay" data-testid="loading-spinner">
-        <div class="spinner"></div>
+        <i class="fa-solid fa-spinner fa-spin loading-icon"></i>
         <p>Cargando perfil...</p>
       </div>
 
@@ -46,9 +46,12 @@ interface ProfileData {
         </div>
         <h3>No se pudo cargar el perfil</h3>
         <p>{{ error }}</p>
-        <button class="btn btn-primary" (click)="retry()">
-          <i class="fa-solid fa-rotate-right"></i> Reintentar
-        </button>
+        <app-button
+          label="Reintentar"
+          icon="fa-rotate-right"
+          variant="primary"
+          (clicked)="retry()"
+        ></app-button>
       </div>
 
       <!-- Profile Content -->
@@ -67,12 +70,9 @@ interface ProfileData {
           <p class="profile-id" data-testid="profile-id">DNI: {{ profile.operator.dni }}</p>
 
           <!-- Availability Badge -->
-          <div class="availability-wrapper">
-            <span
-              class="availability-badge"
-              [class.disponible]="profile.disponibilidad.estado === 'DISPONIBLE'"
-              [class.asignado]="profile.disponibilidad.estado === 'ASIGNADO'"
-              data-testid="availability-badge"
+          <div class="availability-wrapper" data-testid="availability-badge">
+            <aero-badge
+              [variant]="profile.disponibilidad.estado === 'DISPONIBLE' ? 'success' : 'warning'"
             >
               <i
                 class="fa-solid"
@@ -80,7 +80,7 @@ interface ProfileData {
                 [class.fa-briefcase]="profile.disponibilidad.estado === 'ASIGNADO'"
               ></i>
               {{ profile.disponibilidad.estado === 'DISPONIBLE' ? 'Disponible' : 'Asignado' }}
-            </span>
+            </aero-badge>
           </div>
 
           <!-- Stats -->
@@ -246,18 +246,9 @@ interface ProfileData {
                   </ng-container>
                 </div>
               </div>
-              <div
-                class="cert-status"
-                [class.valid]="cert.estado === 'VIGENTE'"
-                [class.expired]="cert.estado === 'VENCIDO'"
-                [class.warning]="cert.estado === 'POR_VENCER'"
-              >
-                <ng-container [ngSwitch]="cert.estado">
-                  <span *ngSwitchCase="'VIGENTE'">Vigente</span>
-                  <span *ngSwitchCase="'VENCIDO'">Expirada</span>
-                  <span *ngSwitchCase="'POR_VENCER'">Por Vencer</span>
-                </ng-container>
-              </div>
+              <aero-badge [variant]="getCertBadgeVariant(cert.estado)">
+                {{ getCertStatusLabel(cert.estado) }}
+              </aero-badge>
             </div>
           </div>
           <ng-template #noCerts>
@@ -267,39 +258,22 @@ interface ProfileData {
 
         <!-- Actions -->
         <div class="profile-actions">
-          <button class="btn btn-secondary">
-            <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
-          </button>
-          <button class="btn btn-secondary">
-            <i class="fa-solid fa-lock"></i> Cambiar Contraseña
-          </button>
+          <app-button
+            label="Editar Perfil"
+            icon="fa-pen-to-square"
+            variant="secondary"
+          ></app-button>
+          <app-button label="Cambiar Contraseña" icon="fa-lock" variant="secondary"></app-button>
         </div>
       </div>
-    </div>
+    </app-page-layout>
   `,
   styles: [
     `
-      .profile-container {
-        padding: 24px;
-        max-width: 900px;
-        margin: 0 auto;
-      }
-
-      .profile-header {
-        margin-bottom: 32px;
-      }
-
-      .profile-header h1 {
-        font-size: 28px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin: 0 0 8px 0;
-      }
-
       .subtitle {
         font-size: 16px;
         color: var(--grey-700);
-        margin: 0;
+        margin: 0 0 24px 0;
       }
 
       /* Loading */
@@ -313,19 +287,9 @@ interface ProfileData {
         color: var(--grey-700);
       }
 
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid var(--grey-200);
-        border-top-color: var(--primary-500);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
+      .loading-icon {
+        font-size: 32px;
+        color: var(--primary-500);
       }
 
       /* Error State */
@@ -366,6 +330,7 @@ interface ProfileData {
         display: flex;
         flex-direction: column;
         gap: 24px;
+        max-width: 900px;
       }
 
       .profile-card {
@@ -374,19 +339,19 @@ interface ProfileData {
         border-radius: 16px;
         padding: 40px;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0, 119, 205, 0.3);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-500) 30%, transparent);
       }
 
       .profile-avatar {
         width: 100px;
         height: 100px;
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--state-white-hover);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
+        border: 4px solid var(--state-white-active);
       }
 
       .avatar-icon {
@@ -410,27 +375,6 @@ interface ProfileData {
         display: flex;
         justify-content: center;
         margin-bottom: 24px;
-      }
-
-      .availability-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.3px;
-      }
-
-      .availability-badge.disponible {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
-      }
-
-      .availability-badge.asignado {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
       }
 
       .profile-stats {
@@ -459,9 +403,9 @@ interface ProfileData {
       /* Info Sections */
       .info-section {
         background: var(--neutral-0);
-        border-radius: 12px;
+        border-radius: var(--radius-md, 12px);
         padding: 24px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
       }
 
       .info-section h3 {
@@ -643,8 +587,8 @@ interface ProfileData {
         color: var(--semantic-yellow-900);
       }
       .level-experto {
-        background: #ede9fe;
-        color: #5b21b6;
+        background: color-mix(in srgb, var(--semantic-purple-500, #7c3aed) 15%, white);
+        color: var(--semantic-purple-700, #5b21b6);
       }
 
       /* Certifications */
@@ -701,26 +645,6 @@ interface ProfileData {
         font-weight: 600;
       }
 
-      .cert-status {
-        padding: 6px 12px;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 600;
-      }
-
-      .cert-status.valid {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
-      }
-      .cert-status.expired {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
-      }
-      .cert-status.warning {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
-      }
-
       /* Empty state */
       .empty-text {
         color: var(--grey-500);
@@ -737,42 +661,7 @@ interface ProfileData {
         justify-content: center;
       }
 
-      .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-100);
-        color: var(--grey-800);
-      }
-
-      .btn-secondary:hover {
-        background: var(--grey-200);
-      }
-
       @media (max-width: 768px) {
-        .profile-container {
-          padding: 16px;
-        }
-
         .profile-card {
           padding: 24px;
         }
@@ -783,11 +672,6 @@ interface ProfileData {
 
         .profile-actions {
           flex-direction: column;
-        }
-
-        .btn {
-          width: 100%;
-          justify-content: center;
         }
       }
     `,
@@ -878,6 +762,24 @@ export class OperatorProfileComponent implements OnInit {
     if (this.currentOperatorId) {
       this.loadProfile(this.currentOperatorId);
     }
+  }
+
+  getCertBadgeVariant(estado: string): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
+    const variants: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
+      VIGENTE: 'success',
+      VENCIDO: 'error',
+      POR_VENCER: 'warning',
+    };
+    return variants[estado] || 'neutral';
+  }
+
+  getCertStatusLabel(estado: string): string {
+    const labels: Record<string, string> = {
+      VIGENTE: 'Vigente',
+      VENCIDO: 'Expirada',
+      POR_VENCER: 'Por Vencer',
+    };
+    return labels[estado] || estado;
   }
 
   formatDate(dateStr: string): string {

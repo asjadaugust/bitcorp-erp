@@ -2,11 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-operator-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ButtonComponent],
   template: `
     <div class="operator-layout">
       <!-- Sidebar Navigation -->
@@ -36,10 +37,13 @@ import { AuthService } from '../../core/services/auth.service';
         </nav>
 
         <div class="sidebar-footer">
-          <button (click)="logout()" class="logout-btn">
-            <i class="fa-solid fa-right-from-bracket nav-icon"></i>
-            <span class="label">Cerrar Sesión</span>
-          </button>
+          <app-button
+            variant="danger"
+            icon="fa-right-from-bracket"
+            label="Cerrar Sesión"
+            [fullWidth]="true"
+            (clicked)="logout()"
+          ></app-button>
         </div>
       </aside>
 
@@ -63,12 +67,12 @@ import { AuthService } from '../../core/services/auth.service';
         color: white;
         display: flex;
         flex-direction: column;
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
       }
 
       .sidebar-header {
         padding: 24px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--state-white-hover);
       }
 
       .logo {
@@ -124,30 +128,7 @@ import { AuthService } from '../../core/services/auth.service';
 
       .sidebar-footer {
         padding: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .logout-btn {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 12px 16px;
-        background: rgba(239, 68, 68, 0.2);
-        border: 1px solid rgba(239, 68, 68, 0.4);
-        border-radius: 6px;
-        color: white;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 14px;
-      }
-
-      .logout-btn:hover {
-        background: rgba(239, 68, 68, 0.3);
-      }
-
-      .logout-btn .nav-icon {
-        margin-right: 8px;
-        font-size: 16px;
+        border-top: 1px solid var(--state-white-hover);
       }
 
       .operator-main {
@@ -167,7 +148,7 @@ import { AuthService } from '../../core/services/auth.service';
           height: auto;
           flex-direction: row;
           padding: 0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: var(--shadow-sm);
         }
 
         .sidebar-header {
@@ -211,23 +192,7 @@ import { AuthService } from '../../core/services/auth.service';
         .sidebar-footer {
           padding: 12px;
           border-top: none;
-          border-left: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .logout-btn {
-          flex-direction: column;
-          padding: 8px;
-          min-width: 60px;
-        }
-
-        .logout-btn .nav-icon {
-          margin-right: 0;
-          margin-bottom: 2px;
-          font-size: 18px;
-        }
-
-        .logout-btn .label {
-          font-size: 10px;
+          border-left: 1px solid var(--state-white-hover);
         }
 
         .operator-main {

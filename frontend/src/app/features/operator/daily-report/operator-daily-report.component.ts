@@ -19,313 +19,284 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroInputComponent } from '../../../core/design-system/input/aero-input.component';
+import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
 
 @Component({
   selector: 'app-operator-daily-report',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SignaturePadComponent, DropdownComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    SignaturePadComponent,
+    DropdownComponent,
+    FormContainerComponent,
+    FormSectionComponent,
+    ButtonComponent,
+    AeroInputComponent,
+    AeroBadgeComponent,
+  ],
   template: `
-    <div class="daily-report-container">
-      <header class="report-header">
-        <h1>
-          {{
-            isEditMode
-              ? 'Editar Parte Diario'
-              : isViewMode
-                ? 'Detalle de Parte Diario'
-                : 'Parte Diario de Equipos'
-          }}
-        </h1>
-        <p class="subtitle">
-          {{ isViewMode ? 'Consulta de registro histórico' : 'Registro de trabajo diario' }}
-          <span class="draft-badge" *ngIf="hasDraft && !isViewMode && !isEditMode">
-            <i class="fa-solid fa-floppy-disk"></i> Borrador guardado
-          </span>
-        </p>
-      </header>
+    <app-form-container
+      [title]="
+        isViewMode
+          ? 'Detalle de Parte Diario'
+          : isEditMode
+            ? 'Editar Parte Diario'
+            : 'Parte Diario de Equipos'
+      "
+      icon="fa-clipboard-list"
+      [subtitle]="isViewMode ? 'Consulta de registro histórico' : 'Registro de trabajo diario'"
+      [showActions]="!isViewMode"
+      [showFooter]="!isViewMode"
+      [submitLabel]="isEditMode ? 'Actualizar' : 'Enviar Parte'"
+      submitIcon="fa-paper-plane"
+      [disableSubmit]="!reportForm.valid || saving"
+      [loading]="saving"
+      loadingText="Enviando..."
+      (submitted)="submitReport()"
+      (cancelled)="goBack()"
+    >
+      <aero-badge
+        variant="warning"
+        *ngIf="hasDraft && !isViewMode && !isEditMode"
+        class="draft-badge"
+      >
+        <i class="fa-solid fa-floppy-disk"></i> Borrador guardado
+      </aero-badge>
 
-      <form [formGroup]="reportForm" (ngSubmit)="submitReport()" class="report-form">
-        <!-- Date Section -->
-        <div class="form-section">
-          <h2><i class="fa-solid fa-circle-info section-icon"></i> Información General</h2>
-          <div class="form-grid">
-            <div class="form-field">
-              <span class="label">Fecha <span class="required" *ngIf="!isViewMode">*</span></span>
-              <input
-                type="date"
-                formControlName="date"
-                class="form-input"
-                [readonly]="isViewMode"
-              />
-              <span
-                class="error"
-                *ngIf="
-                  reportForm.get('date')?.touched && reportForm.get('date')?.errors && !isViewMode
-                "
-              >
-                Campo requerido
-              </span>
-            </div>
-
-            <div class="form-field">
-              <span class="label"
-                >Proyecto <span class="required" *ngIf="!isViewMode">*</span></span
-              >
-              <app-dropdown
-                formControlName="projectId"
-                [options]="projectOptions"
-                [placeholder]="'Seleccionar proyecto'"
-                [disabled]="isViewMode"
-              ></app-dropdown>
-            </div>
+      <form [formGroup]="reportForm">
+        <!-- General Info Section -->
+        <app-form-section title="Información General" icon="fa-circle-info" [columns]="2">
+          <aero-input
+            formControlName="date"
+            label="Fecha"
+            type="date"
+            [required]="!isViewMode"
+            [error]="getFieldError('date')"
+          ></aero-input>
+          <div class="form-group">
+            <label class="form-label"
+              >Proyecto <span class="required" *ngIf="!isViewMode">*</span></label
+            >
+            <app-dropdown
+              formControlName="projectId"
+              [options]="projectOptions"
+              [placeholder]="'Seleccionar proyecto'"
+              [disabled]="isViewMode"
+            ></app-dropdown>
           </div>
-        </div>
+        </app-form-section>
 
         <!-- Equipment Section -->
-        <div class="form-section">
-          <h2><i class="fa-solid fa-truck section-icon"></i> Equipo Utilizado</h2>
-          <div class="form-grid">
-            <div class="form-field full-width">
-              <span class="label"
-                >Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></span
-              >
-              <app-dropdown
-                formControlName="equipmentId"
-                [options]="equipmentOptions"
-                [placeholder]="'Seleccionar equipo'"
-                (ngModelChange)="onEquipmentSelect()"
-                [disabled]="isViewMode"
-                [searchable]="true"
-              ></app-dropdown>
-            </div>
-
-            <div class="form-field">
-              <span class="label"
-                >Horómetro Inicial <span class="required" *ngIf="!isViewMode">*</span></span
-              >
-              <input
-                type="number"
-                formControlName="horometerStart"
-                class="form-input"
-                placeholder="0"
-                step="0.1"
-                [readonly]="isViewMode"
-              />
-            </div>
-
-            <div class="form-field">
-              <span class="label"
-                >Horómetro Final <span class="required" *ngIf="!isViewMode">*</span></span
-              >
-              <input
-                type="number"
-                formControlName="horometerEnd"
-                class="form-input"
-                placeholder="0"
-                step="0.1"
-                [readonly]="isViewMode"
-              />
-            </div>
-
-            <div class="form-field">
-              <span class="label">Horas Trabajadas</span>
-              <input type="text" [value]="calculateHours()" class="form-input readonly" readonly />
-            </div>
+        <app-form-section title="Equipo Utilizado" icon="fa-truck" [columns]="2">
+          <div class="form-group full-width">
+            <label class="form-label"
+              >Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></label
+            >
+            <app-dropdown
+              formControlName="equipmentId"
+              [options]="equipmentOptions"
+              [placeholder]="'Seleccionar equipo'"
+              (ngModelChange)="onEquipmentSelect()"
+              [disabled]="isViewMode"
+              [searchable]="true"
+            ></app-dropdown>
           </div>
-        </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Horómetro Inicial <span class="required" *ngIf="!isViewMode">*</span></label
+            >
+            <input
+              type="number"
+              formControlName="horometerStart"
+              class="form-control"
+              placeholder="0"
+              step="0.1"
+              [readonly]="isViewMode"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Horómetro Final <span class="required" *ngIf="!isViewMode">*</span></label
+            >
+            <input
+              type="number"
+              formControlName="horometerEnd"
+              class="form-control"
+              placeholder="0"
+              step="0.1"
+              [readonly]="isViewMode"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Horas Trabajadas</label>
+            <input type="text" [value]="calculateHours()" class="form-control" readonly />
+          </div>
+        </app-form-section>
 
         <!-- Time Section -->
-        <div class="form-section">
-          <h2><i class="fa-regular fa-clock section-icon"></i> Horario de Trabajo</h2>
-          <div class="form-grid">
-            <div class="form-field">
-              <span class="label"
-                >Hora Inicio <span class="required" *ngIf="!isViewMode">*</span></span
-              >
-              <input
-                type="time"
-                formControlName="startTime"
-                class="form-input"
-                [readonly]="isViewMode"
-              />
-            </div>
-
-            <div class="form-field">
-              <span class="label"
-                >Hora Fin <span class="required" *ngIf="!isViewMode">*</span></span
-              >
-              <input
-                type="time"
-                formControlName="endTime"
-                class="form-input"
-                [readonly]="isViewMode"
-              />
-            </div>
-          </div>
-        </div>
+        <app-form-section title="Horario de Trabajo" icon="fa-clock" [columns]="2">
+          <aero-input
+            formControlName="startTime"
+            label="Hora Inicio"
+            type="time"
+            [required]="!isViewMode"
+            [error]="getFieldError('startTime')"
+          ></aero-input>
+          <aero-input
+            formControlName="endTime"
+            label="Hora Fin"
+            type="time"
+            [required]="!isViewMode"
+            [error]="getFieldError('endTime')"
+          ></aero-input>
+        </app-form-section>
 
         <!-- Fuel Section -->
-        <div class="form-section">
-          <h2><i class="fa-solid fa-gas-pump section-icon"></i> Consumo de Combustible</h2>
-          <div class="form-grid">
-            <div class="form-field">
-              <span class="label">Tanque Inicial (%)</span>
-              <input
-                type="number"
-                formControlName="fuelStart"
-                class="form-input"
-                placeholder="0"
-                min="0"
-                max="100"
-                [readonly]="isViewMode"
-              />
-            </div>
-
-            <div class="form-field">
-              <span class="label">Tanque Final (%)</span>
-              <input
-                type="number"
-                formControlName="fuelEnd"
-                class="form-input"
-                placeholder="0"
-                min="0"
-                max="100"
-                [readonly]="isViewMode"
-              />
-            </div>
-
-            <div class="form-field">
-              <span class="label">Combustible Cargado (L)</span>
-              <input
-                type="number"
-                formControlName="fuelAdded"
-                class="form-input"
-                placeholder="0"
-                step="0.1"
-                [readonly]="isViewMode"
-              />
-            </div>
-
-            <div class="form-field">
-              <span class="label">Consumo Total (L)</span>
-              <input
-                type="text"
-                [value]="calculateFuelConsumption()"
-                class="form-input readonly"
-                readonly
-              />
-            </div>
+        <app-form-section title="Consumo de Combustible" icon="fa-gas-pump" [columns]="2">
+          <div class="form-group">
+            <label class="form-label">Tanque Inicial (%)</label>
+            <input
+              type="number"
+              formControlName="fuelStart"
+              class="form-control"
+              placeholder="0"
+              min="0"
+              max="100"
+              [readonly]="isViewMode"
+            />
           </div>
-        </div>
+          <div class="form-group">
+            <label class="form-label">Tanque Final (%)</label>
+            <input
+              type="number"
+              formControlName="fuelEnd"
+              class="form-control"
+              placeholder="0"
+              min="0"
+              max="100"
+              [readonly]="isViewMode"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Combustible Cargado (L)</label>
+            <input
+              type="number"
+              formControlName="fuelAdded"
+              class="form-control"
+              placeholder="0"
+              step="0.1"
+              [readonly]="isViewMode"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Consumo Total (L)</label>
+            <input type="text" [value]="calculateFuelConsumption()" class="form-control" readonly />
+          </div>
+        </app-form-section>
 
         <!-- Location Section -->
-        <div class="form-section">
-          <h2><i class="fa-solid fa-location-dot section-icon"></i> Ubicación</h2>
-          <div class="form-grid">
-            <div class="form-field full-width">
-              <span class="label">Ubicación GPS</span>
-              <div class="gps-field">
-                <input
-                  type="text"
-                  formControlName="gpsLocation"
-                  class="form-input"
-                  placeholder="Capturar ubicación GPS"
-                  readonly
-                />
-                <button
-                  type="button"
-                  (click)="captureGPS()"
-                  class="btn-gps"
-                  [disabled]="capturingGPS || isViewMode"
-                  *ngIf="!isViewMode"
-                >
-                  <span *ngIf="!capturingGPS"
-                    ><i class="fa-solid fa-location-crosshairs"></i> Capturar</span
-                  >
-                  <span *ngIf="capturingGPS"
-                    ><i class="fa-solid fa-spinner fa-spin"></i> Capturando...</span
-                  >
-                </button>
-              </div>
-
-              <!-- Location details -->
-              <div class="location-details" *ngIf="locationResult">
-                <div class="detail-item">
-                  <span class="detail-label">Coordenadas DMS:</span>
-                  <span class="detail-value"
-                    >{{ locationResult.dms?.latitude }}, {{ locationResult.dms?.longitude }}</span
-                  >
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Precisión:</span>
-                  <span
-                    class="detail-value"
-                    [class.good-accuracy]="locationResult.coords.accuracy <= 50"
-                  >
-                    ±{{ locationResult.coords.accuracy.toFixed(0) }}m ({{
-                      geoService.getAccuracyLevel(locationResult.coords.accuracy)
-                    }})
-                  </span>
-                </div>
-                <div class="detail-item" *ngIf="locationResult.coords.altitude">
-                  <span class="detail-label">Altitud:</span>
-                  <span class="detail-value">{{ locationResult.coords.altitude.toFixed(0) }}m</span>
-                </div>
-              </div>
-
-              <!-- Error message -->
-              <div class="location-error" *ngIf="locationError">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>{{ locationError }}</span>
-              </div>
-            </div>
-
-            <div class="form-field full-width">
-              <span class="label">Ubicación Manual (Descripción)</span>
+        <app-form-section title="Ubicación" icon="fa-location-dot" [columns]="1">
+          <div class="form-group">
+            <label class="form-label">Ubicación GPS</label>
+            <div class="gps-field">
               <input
                 type="text"
-                formControlName="manualLocation"
-                class="form-input"
-                placeholder="Ej: Km 45 carretera norte..."
-                [readonly]="isViewMode"
+                formControlName="gpsLocation"
+                class="form-control"
+                placeholder="Capturar ubicación GPS"
+                readonly
               />
-              <p class="help-text" *ngIf="!isViewMode">
-                Describe la ubicación con tus propias palabras
-              </p>
+              <app-button
+                *ngIf="!isViewMode"
+                variant="success"
+                icon="fa-location-crosshairs"
+                label="Capturar"
+                [loading]="capturingGPS"
+                loadingText="Capturando..."
+                [disabled]="isViewMode"
+                (clicked)="captureGPS()"
+              ></app-button>
+            </div>
+
+            <!-- Location details -->
+            <div class="location-details" *ngIf="locationResult">
+              <div class="detail-item">
+                <span class="detail-label">Coordenadas DMS:</span>
+                <span class="detail-value"
+                  >{{ locationResult.dms?.latitude }}, {{ locationResult.dms?.longitude }}</span
+                >
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Precisión:</span>
+                <span
+                  class="detail-value"
+                  [class.good-accuracy]="locationResult.coords.accuracy <= 50"
+                >
+                  ±{{ locationResult.coords.accuracy.toFixed(0) }}m ({{
+                    geoService.getAccuracyLevel(locationResult.coords.accuracy)
+                  }})
+                </span>
+              </div>
+              <div class="detail-item" *ngIf="locationResult.coords.altitude">
+                <span class="detail-label">Altitud:</span>
+                <span class="detail-value">{{ locationResult.coords.altitude.toFixed(0) }}m</span>
+              </div>
+            </div>
+
+            <!-- Error message -->
+            <div class="location-error" *ngIf="locationError">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>{{ locationError }}</span>
             </div>
           </div>
-        </div>
+
+          <aero-input
+            formControlName="manualLocation"
+            label="Ubicación Manual (Descripción)"
+            type="text"
+            placeholder="Ej: Km 45 carretera norte..."
+            [hint]="!isViewMode ? 'Describe la ubicación con tus propias palabras' : ''"
+          ></aero-input>
+        </app-form-section>
 
         <!-- Work Description -->
-        <div class="form-section">
-          <h2><i class="fa-solid fa-list-check section-icon"></i> Descripción del Trabajo</h2>
-          <div class="form-field full-width">
-            <span class="label"
-              >Actividades Realizadas <span class="required" *ngIf="!isViewMode">*</span></span
+        <app-form-section title="Descripción del Trabajo" icon="fa-list-check" [columns]="1">
+          <div class="form-group">
+            <label class="form-label"
+              >Actividades Realizadas <span class="required" *ngIf="!isViewMode">*</span></label
             >
             <textarea
               formControlName="workDescription"
-              class="form-textarea"
+              class="form-control"
               rows="4"
               placeholder="Describa las actividades realizadas durante el día..."
               [readonly]="isViewMode"
             ></textarea>
           </div>
-        </div>
+        </app-form-section>
 
         <!-- Production Control Table -->
-        <div class="form-section" *ngIf="!isViewMode">
-          <h2><i class="fa-solid fa-table-cells section-icon"></i> Control de Producción</h2>
+        <app-form-section
+          title="Control de Producción"
+          icon="fa-table-cells"
+          [columns]="1"
+          *ngIf="!isViewMode"
+        >
           <div class="production-table">
             <div class="table-controls">
-              <button
-                type="button"
-                class="btn btn-sm"
-                (click)="addProductionRow()"
+              <app-button
+                variant="outline-primary"
+                icon="fa-plus"
+                label="Agregar Fila"
+                size="sm"
                 [disabled]="productionRows.length >= 16"
-              >
-                <i class="fa-solid fa-plus"></i> Agregar Fila
-              </button>
+                (clicked)="addProductionRow()"
+              ></app-button>
               <span class="help-text">{{ productionRows.length }}/16 filas</span>
             </div>
 
@@ -373,26 +344,28 @@ import {
                     </td>
                     <td><input type="text" formControlName="edtCodigo" class="form-input-sm" /></td>
                     <td>
-                      <button
-                        type="button"
-                        class="btn-remove"
-                        (click)="removeProductionRow(i)"
+                      <app-button
+                        variant="danger"
+                        icon="fa-xmark"
+                        size="sm"
                         [disabled]="productionRows.length <= 1"
-                      >
-                        <i class="fa-solid fa-xmark"></i>
-                      </button>
+                        (clicked)="removeProductionRow(i)"
+                      ></app-button>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
+        </app-form-section>
 
         <!-- Activities & Delays -->
-        <div class="form-section" *ngIf="!isViewMode">
-          <h2><i class="fa-solid fa-clipboard-check section-icon"></i> Actividades y Demoras</h2>
-
+        <app-form-section
+          title="Actividades y Demoras"
+          icon="fa-clipboard-check"
+          [columns]="1"
+          *ngIf="!isViewMode"
+        >
           <div class="checkbox-section">
             <h3>Actividades de Producción</h3>
             <div class="checkbox-grid" formGroupName="activities">
@@ -432,44 +405,39 @@ import {
               </label>
             </div>
           </div>
-        </div>
+        </app-form-section>
 
         <!-- Signatures -->
-        <div class="form-section" *ngIf="!isViewMode">
-          <h2><i class="fa-solid fa-signature section-icon"></i> Firmas</h2>
+        <app-form-section title="Firmas" icon="fa-signature" [columns]="1" *ngIf="!isViewMode">
           <div class="signatures-grid">
             <div class="signature-field">
-              <span class="label">Firma Operador</span>
+              <span class="sig-label">Firma Operador</span>
               <app-signature-pad
                 (signatureChange)="reportForm.patchValue({ firmaOperador: $event })"
                 [disabled]="isViewMode"
               ></app-signature-pad>
             </div>
-
             <div class="signature-field">
-              <span class="label">Firma Supervisor</span>
+              <span class="sig-label">Firma Supervisor</span>
               <app-signature-pad
                 (signatureChange)="reportForm.patchValue({ firmaSupervisor: $event })"
                 [disabled]="isViewMode"
               ></app-signature-pad>
             </div>
-
             <div class="signature-field">
-              <span class="label">Firma Jefe de Equipos</span>
+              <span class="sig-label">Firma Jefe de Equipos</span>
               <app-signature-pad
                 (signatureChange)="reportForm.patchValue({ firmaJefeEquipos: $event })"
                 [disabled]="isViewMode"
               ></app-signature-pad>
             </div>
           </div>
-        </div>
+        </app-form-section>
 
         <!-- Photos -->
-        <div class="form-section">
-          <h2><i class="fa-solid fa-camera section-icon"></i> Fotografías</h2>
+        <app-form-section title="Fotografías" icon="fa-camera" [columns]="1">
           <div class="photo-upload">
             <div class="photo-grid">
-              <!-- Existing photos -->
               <div
                 *ngFor="let photo of photos; let i = index"
                 class="photo-item"
@@ -477,7 +445,6 @@ import {
               >
                 <img [src]="photo.thumbnail || photo.url" [alt]="'Foto ' + (i + 1)" />
 
-                <!-- Upload progress -->
                 <div *ngIf="photo.status === 'uploading'" class="upload-progress">
                   <div class="progress-bar">
                     <div class="progress-fill" [style.width.%]="photo.progress || 0"></div>
@@ -485,13 +452,11 @@ import {
                   <span class="progress-text">Procesando...</span>
                 </div>
 
-                <!-- Error indicator -->
                 <div *ngIf="photo.status === 'error'" class="upload-error">
                   <i class="fa-solid fa-triangle-exclamation"></i>
                   <span class="error-text">Error al cargar</span>
                 </div>
 
-                <!-- Status badge -->
                 <span class="photo-status" [class]="photo.status">
                   <span *ngIf="photo.status === 'local'"
                     ><i class="fa-solid fa-mobile-screen"></i> Local</span
@@ -515,7 +480,6 @@ import {
                 </button>
               </div>
 
-              <!-- Add photo button -->
               <label
                 class="photo-add"
                 *ngIf="photos.length < 5 && !isViewMode"
@@ -540,214 +504,213 @@ import {
               automáticamente
             </p>
           </div>
+        </app-form-section>
+
+        <!-- Save Draft (inline, create mode only) -->
+        <div class="draft-actions" *ngIf="!isViewMode && !isEditMode">
+          <app-button
+            variant="ghost"
+            icon="fa-floppy-disk"
+            label="Guardar Borrador"
+            [loading]="saving"
+            (clicked)="saveDraft()"
+          ></app-button>
         </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="button" (click)="goBack()" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left" *ngIf="isViewMode"></i>
-            {{ isViewMode ? 'Volver' : 'Cancelar' }}
-          </button>
-          <button
-            type="button"
-            (click)="downloadPdf()"
-            class="btn btn-primary"
-            [disabled]="downloadingPdf"
-            *ngIf="isViewMode && reportId"
-          >
-            <span *ngIf="!downloadingPdf"><i class="fa-solid fa-file-pdf"></i> Descargar PDF</span>
-            <span *ngIf="downloadingPdf"
-              ><i class="fa-solid fa-spinner fa-spin"></i> Descargando...</span
-            >
-          </button>
-          <button
-            type="button"
-            (click)="saveDraft()"
-            class="btn btn-secondary"
-            [disabled]="saving"
-            *ngIf="!isViewMode"
-          >
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Borrador
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="!reportForm.valid || saving"
-            *ngIf="!isViewMode"
-          >
-            <span *ngIf="!saving"><i class="fa-solid fa-paper-plane"></i> Enviar Parte</span>
-            <span *ngIf="saving"><i class="fa-solid fa-spinner fa-spin"></i> Enviando...</span>
-          </button>
+        <!-- View Mode Actions -->
+        <div class="view-actions" *ngIf="isViewMode">
+          <app-button
+            variant="secondary"
+            icon="fa-arrow-left"
+            label="Volver"
+            (clicked)="goBack()"
+          ></app-button>
+          <app-button
+            *ngIf="reportId"
+            variant="primary"
+            icon="fa-file-pdf"
+            label="Descargar PDF"
+            [loading]="downloadingPdf"
+            loadingText="Descargando..."
+            (clicked)="downloadPdf()"
+          ></app-button>
         </div>
       </form>
-    </div>
+    </app-form-container>
   `,
   styles: [
     `
-      .daily-report-container {
-        padding: 24px;
-        max-width: 1000px;
-        margin: 0 auto;
-      }
-
-      .report-header {
-        margin-bottom: 32px;
-      }
-
-      .report-header h1 {
-        font-size: 28px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin: 0 0 8px 0;
-      }
-
-      .subtitle {
-        font-size: 16px;
-        color: var(--grey-700);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+      @use 'form-layout';
 
       .draft-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 2px 10px;
-        background: var(--semantic-amber-100, #fef3c7);
-        color: var(--semantic-amber-800, #92400e);
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
+        display: inline-block;
+        margin-bottom: var(--s-16);
       }
 
-      .report-form {
-        background: var(--neutral-0);
-        border-radius: 12px;
-        padding: 32px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-
-      .form-section {
-        margin-bottom: 32px;
-      }
-
-      .form-section:last-of-type {
-        margin-bottom: 0;
-      }
-
-      .form-section h2 {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin: 0 0 20px 0;
-        padding-bottom: 12px;
-        border-bottom: 2px solid var(--grey-200);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .section-icon {
-        color: var(--primary-500);
-        font-size: 16px;
-      }
-
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-      }
-
-      .form-field {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .form-field.full-width {
-        grid-column: 1 / -1;
-      }
-
-      .form-field .label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--grey-800);
-        margin-bottom: 6px;
-      }
-
-      .required {
-        color: var(--semantic-red-500);
-      }
-
-      .form-input,
-      .form-select,
-      .form-textarea {
-        padding: 10px 12px;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .form-input:focus,
-      .form-select:focus,
-      .form-textarea:focus {
-        outline: none;
-        border-color: var(--primary-500);
-        box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
-      }
-
-      .form-input.readonly {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-
-      .form-textarea {
-        resize: vertical;
-        font-family: inherit;
-      }
-
-      .error {
-        color: var(--semantic-red-500);
-        font-size: 12px;
-        margin-top: 4px;
-      }
-
+      /* GPS Field */
       .gps-field {
         display: flex;
         gap: 8px;
       }
 
-      .gps-field .form-input {
+      .gps-field .form-control {
         flex: 1;
       }
 
-      .btn-gps {
-        padding: 10px 16px;
-        background: var(--semantic-green-500);
-        color: white;
-        border: none;
+      /* Location */
+      .location-details {
+        margin-top: 12px;
+        padding: 12px;
+        background: var(--grey-100);
         border-radius: 6px;
+        border: 1px solid var(--grey-200);
+      }
+
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 14px;
+      }
+
+      .detail-label {
+        color: var(--grey-700);
         font-weight: 500;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s;
       }
 
-      .btn-gps:hover:not(:disabled) {
-        background: var(--semantic-green-900);
+      .detail-value {
+        color: var(--primary-900);
+        font-weight: 600;
+        text-align: right;
       }
 
-      .btn-gps:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
+      .detail-value.good-accuracy {
+        color: var(--semantic-green-500);
       }
 
-      .photo-upload {
+      .location-error {
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: var(--semantic-red-100);
+        border: 1px solid var(--semantic-red-300);
+        border-radius: 6px;
+        color: var(--semantic-red-500);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Production Table */
+      .production-table {
         margin-top: 12px;
       }
 
+      .table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+        border: 1px solid var(--grey-200);
+        border-radius: 6px;
+      }
+
+      .production-table-grid {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+      }
+
+      .production-table-grid th {
+        background: var(--grey-100);
+        padding: 8px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 2px solid var(--grey-200);
+      }
+
+      .production-table-grid td {
+        padding: 4px;
+        border-bottom: 1px solid var(--grey-200);
+      }
+
+      .form-input-sm {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid var(--grey-300);
+        border-radius: 4px;
+        font-size: 13px;
+      }
+
+      /* Checkbox Sections */
+      .checkbox-section {
+        margin-bottom: 24px;
+      }
+
+      .checkbox-section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--grey-800);
+        margin-bottom: 12px;
+      }
+
+      .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+
+      .checkbox-item:hover {
+        background: var(--grey-100);
+      }
+
+      .checkbox-item input[type='checkbox'] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--primary-500);
+      }
+
+      .checkbox-item span {
+        font-size: 14px;
+        color: var(--grey-800);
+      }
+
+      /* Signatures */
+      .signatures-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      .signature-field {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sig-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--grey-800);
+        margin-bottom: 8px;
+      }
+
+      /* Photo Upload */
       .photo-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -775,7 +738,7 @@ import {
         right: 4px;
         width: 24px;
         height: 24px;
-        background: rgba(239, 68, 68, 0.9);
+        background: var(--semantic-red-500);
         color: white;
         border: none;
         border-radius: 50%;
@@ -837,13 +800,13 @@ import {
         bottom: 0;
         left: 0;
         right: 0;
-        background: rgba(0, 0, 0, 0.7);
+        background: color-mix(in srgb, black 70%, transparent);
         padding: 8px;
       }
 
       .progress-bar {
         height: 4px;
-        background: rgba(255, 255, 255, 0.3);
+        background: color-mix(in srgb, white 30%, transparent);
         border-radius: 2px;
         overflow: hidden;
         margin-bottom: 4px;
@@ -866,7 +829,7 @@ import {
         position: absolute;
         top: 8px;
         left: 8px;
-        background: rgba(0, 0, 0, 0.7);
+        background: color-mix(in srgb, black 70%, transparent);
         color: white;
         padding: 4px 8px;
         border-radius: 4px;
@@ -889,255 +852,34 @@ import {
         font-size: 11px;
       }
 
-      .location-details {
-        margin-top: 12px;
-        padding: 12px;
-        background: var(--grey-100);
-        border-radius: 6px;
-        border: 1px solid var(--grey-200);
-      }
-
-      .detail-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 4px 0;
-        font-size: 14px;
-      }
-
-      .detail-label {
-        color: var(--grey-700);
-        font-weight: 500;
-      }
-
-      .detail-value {
-        color: var(--primary-900);
-        font-weight: 600;
-        text-align: right;
-      }
-
-      .detail-value.good-accuracy {
-        color: var(--semantic-green-500);
-      }
-
-      .location-error {
-        margin-top: 8px;
-        padding: 8px 12px;
-        background: var(--semantic-red-100);
-        border: 1px solid var(--semantic-red-300);
-        border-radius: 6px;
-        color: var(--semantic-red-500);
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .form-actions {
+      /* View/Draft Actions */
+      .view-actions,
+      .draft-actions {
         display: flex;
         gap: 12px;
         justify-content: flex-end;
-        margin-top: 32px;
-        padding-top: 24px;
+        margin-top: var(--s-24);
+        padding-top: var(--s-16);
         border-top: 1px solid var(--grey-200);
       }
 
-      .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 6px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background: var(--primary-800);
-      }
-
-      .btn-secondary {
-        background: var(--grey-100);
-        color: var(--grey-800);
-      }
-
-      .btn-secondary:hover:not(:disabled) {
-        background: var(--grey-200);
-      }
-
-      /* Production Table */
-      .production-table {
-        margin-top: 12px;
-      }
-
-      .table-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-
-      .btn-sm {
-        padding: 8px 16px;
-        font-size: 14px;
-      }
-
-      .table-responsive {
-        overflow-x: auto;
-        border: 1px solid var(--grey-200);
-        border-radius: 6px;
-      }
-
-      .production-table-grid {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 900px;
-      }
-
-      .production-table-grid th {
-        background: var(--grey-100);
-        padding: 8px;
-        text-align: left;
-        font-size: 12px;
-        font-weight: 600;
-        border-bottom: 2px solid var(--grey-200);
-      }
-
-      .production-table-grid td {
-        padding: 4px;
-        border-bottom: 1px solid var(--grey-200);
-      }
-
-      .form-input-sm {
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid var(--grey-300);
-        border-radius: 4px;
-        font-size: 13px;
-      }
-
-      .btn-remove {
-        width: 28px;
-        height: 28px;
-        background: var(--semantic-red-500);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .btn-remove:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      /* Checkbox Sections */
-      .checkbox-section {
-        margin-bottom: 24px;
-      }
-
-      .checkbox-section h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--grey-800);
-        margin-bottom: 12px;
-      }
-
-      .checkbox-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 12px;
-      }
-
-      .checkbox-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 4px;
-        transition: background 0.2s;
-      }
-
-      .checkbox-item:hover {
-        background: var(--grey-100);
-      }
-
-      .checkbox-item input[type='checkbox'] {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-      }
-
-      .checkbox-item span {
-        font-size: 14px;
-        color: var(--grey-800);
-      }
-
-      /* Signatures */
-      .signatures-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-top: 12px;
-      }
-
-      .signature-field {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .signature-field .label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--grey-800);
-        margin-bottom: 8px;
+      .draft-actions {
+        justify-content: flex-start;
+        border-top: none;
+        margin-top: var(--s-8);
       }
 
       @media (max-width: 768px) {
-        .daily-report-container {
-          padding: 16px;
-        }
-
-        .report-form {
-          padding: 20px;
-        }
-
-        .form-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .form-actions {
-          flex-direction: column-reverse;
-        }
-
-        .btn {
-          width: 100%;
-          justify-content: center;
-        }
-
         .checkbox-grid {
           grid-template-columns: 1fr;
         }
 
         .signatures-grid {
           grid-template-columns: 1fr;
+        }
+
+        .view-actions {
+          flex-direction: column-reverse;
         }
       }
     `,
@@ -1431,6 +1173,14 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
         this.router.navigate(['/operator/history']);
       },
     });
+  }
+
+  getFieldError(fieldName: string): string {
+    const control = this.reportForm.get(fieldName);
+    if (control?.touched && control?.errors && !this.isViewMode) {
+      if (control.errors['required']) return 'Campo requerido';
+    }
+    return '';
   }
 
   onEquipmentSelect() {

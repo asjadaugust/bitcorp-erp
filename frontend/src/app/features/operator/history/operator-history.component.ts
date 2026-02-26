@@ -9,6 +9,9 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
 
 interface HistoryReport {
   id: number;
@@ -23,14 +26,17 @@ interface HistoryReport {
 @Component({
   selector: 'app-operator-history',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, DropdownComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    DropdownComponent,
+    PageLayoutComponent,
+    ButtonComponent,
+    AeroBadgeComponent,
+  ],
   template: `
-    <div class="history-container">
-      <header class="history-header">
-        <h1>Historial de Partes Diarios</h1>
-        <p class="subtitle">Registro histórico de trabajos realizados</p>
-      </header>
-
+    <app-page-layout title="Historial de Partes" icon="fa-history">
       <!-- Filters -->
       <div class="filters-bar">
         <div class="filter-group">
@@ -106,83 +112,64 @@ interface HistoryReport {
             </div>
 
             <div class="report-status">
-              <span
-                class="status-badge"
-                [class]="'badge-' + report.status"
-                data-testid="report-status"
-              >
+              <aero-badge [variant]="getBadgeVariant(report.status)" data-testid="report-status">
                 {{ getStatusLabel(report.status) }}
-              </span>
+              </aero-badge>
             </div>
           </div>
 
           <div class="report-actions">
-            <button
+            <app-button
               *ngIf="report.status === 'BORRADOR'"
-              class="action-btn edit"
+              variant="outline-primary"
+              icon="fa-pen-to-square"
+              label="Editar"
+              size="sm"
               [attr.data-testid]="'btn-edit-' + report.id"
-              (click)="editReport(report)"
-            >
-              <i class="fa-solid fa-pen-to-square"></i> Editar
-            </button>
-            <button
-              class="action-btn view"
+              (clicked)="editReport(report)"
+            ></app-button>
+            <app-button
+              variant="ghost"
+              icon="fa-eye"
+              label="Ver"
+              size="sm"
               [attr.data-testid]="'btn-view-' + report.id"
-              (click)="viewReport(report)"
-            >
-              <i class="fa-solid fa-eye"></i> Ver
-            </button>
-            <button
-              class="action-btn download"
+              (clicked)="viewReport(report)"
+            ></app-button>
+            <app-button
+              variant="ghost"
+              icon="fa-file-pdf"
+              label="PDF"
+              size="sm"
               [attr.data-testid]="'btn-download-' + report.id"
-              (click)="downloadPdf(report)"
-            >
-              <i class="fa-solid fa-file-pdf"></i> PDF
-            </button>
-            <button
+              (clicked)="downloadPdf(report)"
+            ></app-button>
+            <app-button
               *ngIf="report.status === 'BORRADOR'"
-              class="action-btn delete"
+              variant="outline-danger"
+              icon="fa-trash"
+              size="sm"
               [attr.data-testid]="'btn-delete-' + report.id"
-              (click)="deleteReport(report)"
-            >
-              <i class="fa-solid fa-trash"></i>
-            </button>
+              (clicked)="deleteReport(report)"
+            ></app-button>
           </div>
         </div>
 
         <div *ngIf="filteredReports.length === 0" class="empty-state" data-testid="empty-state">
           <i class="fa-solid fa-clipboard-list empty-icon"></i>
           <p>No se encontraron partes diarios</p>
-          <a routerLink="/operator/daily-report" class="btn-link">Crear nuevo parte</a>
+          <app-button
+            label="Crear nuevo parte"
+            icon="fa-plus"
+            variant="primary"
+            routerLink="/operator/daily-report"
+          ></app-button>
         </div>
       </div>
-    </div>
+    </app-page-layout>
   `,
   styles: [
     `
-      .history-container {
-        padding: 24px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      .history-header {
-        margin-bottom: 24px;
-      }
-
-      .history-header h1 {
-        font-size: 28px;
-        font-weight: 600;
-        color: var(--primary-900);
-        margin: 0 0 8px 0;
-      }
-
-      .subtitle {
-        font-size: 16px;
-        color: var(--grey-700);
-        margin: 0;
-      }
-
       .filters-bar {
         display: flex;
         gap: 16px;
@@ -190,7 +177,7 @@ interface HistoryReport {
         padding: 16px;
         background: var(--neutral-0);
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
       }
 
       .filter-group {
@@ -212,7 +199,7 @@ interface HistoryReport {
         padding: 16px;
         background: var(--neutral-0);
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
       }
 
       .stat-item {
@@ -256,14 +243,14 @@ interface HistoryReport {
 
       .report-card {
         background: var(--neutral-0);
-        border-radius: 12px;
+        border-radius: var(--radius-md, 12px);
         padding: 20px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
         transition: all 0.2s;
       }
 
       .report-card.clickable:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
       }
 
       .report-main {
@@ -332,79 +319,17 @@ interface HistoryReport {
         font-size: 12px;
       }
 
-      .status-badge {
-        padding: 6px 14px;
-        border-radius: 14px;
-        font-size: 13px;
-        font-weight: 600;
-      }
-
-      .badge-BORRADOR {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
-      }
-
-      .badge-ENVIADO {
-        background: var(--semantic-blue-100);
-        color: var(--primary-500);
-      }
-
-      .badge-APROBADO {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
-      }
-
-      .badge-RECHAZADO {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
-      }
-
       .report-actions {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
       }
 
-      .action-btn {
-        padding: 8px 16px;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        background: var(--neutral-0);
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .action-btn:hover {
-        background: var(--grey-100);
-      }
-
-      .action-btn.edit {
-        border-color: var(--primary-500);
-        color: var(--primary-500);
-      }
-
-      .action-btn.edit:hover {
-        background: var(--primary-100);
-      }
-
-      .action-btn.delete {
-        border-color: var(--semantic-red-500);
-        color: var(--semantic-red-500);
-      }
-
-      .action-btn.delete:hover {
-        background: var(--semantic-red-100);
-      }
-
       .empty-state {
         text-align: center;
         padding: 64px 24px;
         background: var(--neutral-0);
-        border-radius: 12px;
+        border-radius: var(--radius-md, 12px);
       }
 
       .empty-icon {
@@ -420,26 +345,7 @@ interface HistoryReport {
         font-size: 16px;
       }
 
-      .btn-link {
-        display: inline-block;
-        padding: 12px 24px;
-        background: var(--primary-500);
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.2s;
-      }
-
-      .btn-link:hover {
-        background: var(--primary-800);
-      }
-
       @media (max-width: 768px) {
-        .history-container {
-          padding: 16px;
-        }
-
         .filters-bar {
           flex-direction: column;
         }
@@ -579,6 +485,16 @@ export class OperatorHistoryComponent implements OnInit {
       RECHAZADO: 'Rechazado',
     };
     return labels[status] || status;
+  }
+
+  getBadgeVariant(status: string): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
+    const variants: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
+      BORRADOR: 'warning',
+      ENVIADO: 'info',
+      APROBADO: 'success',
+      RECHAZADO: 'error',
+    };
+    return variants[status] || 'neutral';
   }
 
   viewReport(report: HistoryReport) {
