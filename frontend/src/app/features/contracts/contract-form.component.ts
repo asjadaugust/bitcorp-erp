@@ -49,8 +49,8 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       [loading]="loading"
       [disableSubmit]="contractForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Contrato'"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Validation Errors and Alerts -->
       <app-validation-errors

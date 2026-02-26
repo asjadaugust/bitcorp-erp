@@ -99,58 +99,33 @@ import { ConfirmService } from '../../core/services/confirm.service';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button
-            class="btn-icon"
-            (click)="viewRecord(row); $event.stopPropagation()"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
             title="Ver Detalles"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="editRecord(row); $event.stopPropagation()"
+            (clicked)="viewRecord(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
             title="Editar"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
-            class="btn-icon delete-btn"
-            (click)="deleteRecord(row); $event.stopPropagation()"
+            (clicked)="editRecord(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-trash"
             title="Eliminar"
-          >
-            <i class="fa-solid fa-trash"></i>
-          </button>
+            (clicked)="deleteRecord(row); $event.stopPropagation()"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
       .equipment-info {
         display: flex;
         flex-direction: column;
@@ -180,26 +155,6 @@ import { ConfirmService } from '../../core/services/confirm.service';
         justify-content: flex-end;
         gap: 8px;
         align-items: center;
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-      }
-
-      .btn-icon.delete-btn:hover {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
       }
     `,
   ],

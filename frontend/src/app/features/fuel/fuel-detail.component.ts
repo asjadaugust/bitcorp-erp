@@ -10,11 +10,14 @@ import {
   AuditEntry,
   TabConfig,
 } from '../../shared/components/entity-detail/entity-detail.types';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-fuel-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -113,54 +116,29 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ───────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button type="button" class="btn btn-primary btn-block" (click)="editRecord()">
-          <i class="fa-solid fa-pen-to-square"></i>
-          Editar Registro
-        </button>
-        <button type="button" class="btn btn-ghost btn-block" routerLink="/logistics/fuel">
-          <i class="fa-solid fa-arrow-left"></i>
-          Volver a Lista
-        </button>
-        <button type="button" class="btn btn-outline-danger btn-block" (click)="deleteRecord()">
-          <i class="fa-solid fa-trash-can"></i>
-          Eliminar Registro
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-pen-to-square"
+          label="Editar Registro"
+          [fullWidth]="true"
+          (clicked)="editRecord()"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          routerLink="/logistics/fuel"
+        ></app-button>
+        <app-button
+          variant="danger"
+          icon="fa-trash-can"
+          label="Eliminar Registro"
+          [fullWidth]="true"
+          (clicked)="deleteRecord()"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
-
-    <!-- Delete Confirmation Modal -->
-    <div
-      *ngIf="showDeleteModal"
-      class="modal-backdrop"
-      (click)="showDeleteModal = false"
-      (keydown.enter)="showDeleteModal = false"
-      tabindex="0"
-      role="button"
-    >
-      <div
-        class="modal-content animate-scale-in"
-        (click)="$event.stopPropagation()"
-        (keydown.enter)="$event.stopPropagation()"
-        tabindex="0"
-        role="dialog"
-      >
-        <div class="modal-header">
-          <h3>Eliminar Registro</h3>
-          <button class="btn-close" (click)="showDeleteModal = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>¿Está seguro de que desea eliminar este registro de combustible?</p>
-          <div class="alert alert-danger-light">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            Esta acción es permanente y no se puede deshacer.
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" (click)="showDeleteModal = false">Cancelar</button>
-          <button class="btn btn-danger" (click)="confirmDelete()">Eliminar Permanentemente</button>
-        </div>
-      </div>
-    </div>
   `,
   styles: [
     `
@@ -207,21 +185,6 @@ import {
         }
       }
 
-      .btn-block {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 12px;
-        padding: 10px 16px;
-        width: 100%;
-        text-align: left;
-        font-weight: 500;
-        i {
-          width: 16px;
-          text-align: center;
-        }
-      }
-
       .detail-sections {
         display: flex;
         flex-direction: column;
@@ -232,7 +195,7 @@ import {
         padding: 24px;
         border-radius: 12px;
         border: 1px solid var(--grey-100);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        box-shadow: var(--shadow-sm);
 
         .section-header {
           margin-bottom: 20px;
@@ -295,79 +258,6 @@ import {
           }
         }
       }
-
-      /* Modals */
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(4px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 20px;
-      }
-
-      .modal-content {
-        background: white;
-        width: 100%;
-        max-width: 500px;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      }
-
-      .modal-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--grey-100);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        h3 {
-          margin: 0;
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: var(--grey-900);
-        }
-        .btn-close {
-          border: none;
-          background: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: var(--grey-400);
-        }
-      }
-
-      .modal-body {
-        padding: 24px;
-        p {
-          color: var(--grey-600);
-          margin: 0 0 16px;
-        }
-      }
-
-      .modal-footer {
-        padding: 16px 24px;
-        background: var(--grey-50);
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-      }
-
-      .alert-danger-light {
-        background: #fee2e2;
-        color: #b91c1c;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        i {
-          font-size: 1.1rem;
-        }
-      }
     `,
   ],
 })
@@ -375,10 +265,11 @@ export class FuelDetailComponent implements OnInit {
   private fuelService = inject(FuelService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   record: FuelRecord | null = null;
   loading = true;
-  showDeleteModal = false;
   activeTab = 'general';
 
   tabConfigs: TabConfig[] = [
@@ -449,20 +340,19 @@ export class FuelDetailComponent implements OnInit {
   }
 
   deleteRecord(): void {
-    this.showDeleteModal = true;
-  }
-
-  confirmDelete(): void {
-    if (this.record) {
-      this.fuelService.delete(this.record.id).subscribe({
-        next: () => {
-          this.router.navigate(['/logistics/fuel']);
-        },
-        error: (error) => {
-          console.error('Failed to delete record:', error);
-          this.showDeleteModal = false;
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete('este registro de combustible').subscribe((confirmed) => {
+      if (confirmed && this.record) {
+        this.fuelService.delete(this.record.id).subscribe({
+          next: () => {
+            this.snackBar.open('Registro eliminado exitosamente', 'Cerrar', { duration: 3000 });
+            this.router.navigate(['/logistics/fuel']);
+          },
+          error: (error) => {
+            console.error('Failed to delete record:', error);
+            this.snackBar.open('Error al eliminar el registro', 'Cerrar', { duration: 3000 });
+          },
+        });
+      }
+    });
   }
 }

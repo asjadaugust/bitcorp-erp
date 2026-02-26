@@ -15,9 +15,7 @@ import {
 } from '../../../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
-import {
-  DropdownComponent,
-} from '../../../../shared/components/dropdown/dropdown.component';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 
 @Component({
@@ -45,8 +43,8 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
       submitIcon="fa-save"
       [loading]="loading"
       [disableSubmit]="form.invalid || loading"
-      (onSubmit)="onSubmit()"
-      (onCancel)="onCancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="onCancel()"
     >
       <app-validation-errors *ngIf="validationErrors.length > 0" [errors]="validationErrors">
       </app-validation-errors>

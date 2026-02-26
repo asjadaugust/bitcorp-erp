@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
 import { MainNavComponent } from '../../shared/components/main-nav.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import {
   DropdownComponent,
   DropdownOption,
@@ -21,6 +22,7 @@ import {
     MainNavComponent,
     PageCardComponent,
     DropdownComponent,
+    ButtonComponent,
   ],
   template: `
     <app-main-nav></app-main-nav>
@@ -109,7 +111,7 @@ import {
             </div>
 
             <div class="form-actions">
-              <button class="btn btn-primary">Guardar Preferencias</button>
+              <app-button variant="primary" label="Guardar Preferencias"></app-button>
             </div>
           </app-page-card>
 
@@ -230,9 +232,12 @@ import {
               </div>
 
               <div class="form-actions">
-                <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">
-                  Actualizar Contraseña
-                </button>
+                <app-button
+                  variant="primary"
+                  label="Actualizar Contraseña"
+                  [disabled]="passwordForm.invalid"
+                  (clicked)="onChangePassword()"
+                ></app-button>
               </div>
             </form>
           </app-page-card>
@@ -317,7 +322,7 @@ import {
         padding: 1.5rem;
         border-radius: 12px;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-sm);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -357,7 +362,7 @@ import {
         background: white;
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-sm);
       }
 
       .nav-item {
@@ -484,13 +489,13 @@ import {
       }
 
       .theme-preview.light {
-        background: #ffffff;
+        background: var(--neutral-0);
       }
       .theme-preview.dark {
-        background: #1f2937;
+        background: var(--grey-900);
       }
       .theme-preview.system {
-        background: linear-gradient(135deg, #ffffff 50%, #1f2937 50%);
+        background: linear-gradient(135deg, var(--neutral-0) 50%, var(--grey-900) 50%);
       }
 
       .theme-option input:checked + .theme-preview {
@@ -505,32 +510,6 @@ import {
         border-top: 1px solid var(--grey-200);
         display: flex;
         justify-content: flex-end;
-      }
-
-      .btn {
-        padding: 0.625rem 1.5rem;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-      }
-
-      .btn-primary:hover {
-        background: var(--primary-800);
-        transform: translateY(-1px);
-      }
-
-      .btn-primary:disabled {
-        background: var(--grey-300);
-        cursor: not-allowed;
-        transform: none;
       }
 
       /* Responsive */

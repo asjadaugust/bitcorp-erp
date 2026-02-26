@@ -20,6 +20,9 @@ import {
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-daily-report-list',
@@ -33,6 +36,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     ExportDropdownComponent,
     ActionsContainerComponent,
     AeroCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -49,14 +53,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         <app-export-dropdown [disabled]="reports.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="createNewReport()"
+        <app-button
+          variant="primary"
+          icon="fa-file-pen"
+          label="Nuevo Informe Diario"
+          (clicked)="createNewReport()"
           data-testid="btn-new-report"
-        >
-          <i class="fa-solid fa-file-pen"></i> Nuevo Informe Diario
-        </button>
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -156,9 +159,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         <p class="empty-state__description">
           Comience creando su primer parte diario para registrar el uso de equipos
         </p>
-        <button type="button" class="btn btn-primary" (click)="createNewReport()">
-          <i class="fa-solid fa-plus"></i> Crear Parte Diario
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Crear Parte Diario"
+          (clicked)="createNewReport()"
+        ></app-button>
       </div>
     </app-page-layout>
   `,
@@ -173,10 +179,10 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       /* Report Card */
       .report-card {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e8e8e8;
+        background: var(--neutral-0);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--grey-300);
         cursor: pointer;
         transition: all 0.2s ease;
         overflow: hidden;
@@ -186,15 +192,15 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       .report-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        border-color: #d0d0d0;
+        box-shadow: var(--shadow-md);
+        border-color: var(--grey-400);
       }
 
       /* Card Header */
       .report-card__header {
         padding: 1rem 1.25rem;
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-bottom: 1px solid #f0f0f0;
+        background: linear-gradient(135deg, var(--grey-100) 0%, var(--neutral-0) 100%);
+        border-bottom: 1px solid var(--grey-200);
       }
 
       .report-card__status-row {
@@ -217,41 +223,41 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       }
 
       .report-card__status--draft {
-        background: #f5f5f5;
-        color: #666666;
+        background: var(--grey-100);
+        color: var(--grey-500);
       }
 
       .report-card__status--submitted {
-        background: #e3f2fd;
-        color: #1565c0;
+        background: var(--primary-100);
+        color: var(--primary-500);
       }
 
       .report-card__status--approved,
       .report-card__status--finance_approved {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .report-card__status--rejected {
-        background: #ffebee;
-        color: #c62828;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
 
       .report-card__status--pending_supervisor,
       .report-card__status--pending_cost_engineer,
       .report-card__status--pending_finance {
-        background: #fff3e0;
-        color: #e65100;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
       }
 
       .report-card__status--supervisor_approved {
-        background: #e8f5e9;
-        color: #388e3c;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .report-card__status--cost_reviewed {
-        background: #e1f5fe;
-        color: #0277bd;
+        background: var(--primary-100);
+        color: var(--primary-500);
       }
 
       .report-card__date {
@@ -259,14 +265,14 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         align-items: center;
         gap: 0.375rem;
         font-size: 0.8125rem;
-        color: #666666;
+        color: var(--grey-500);
       }
 
       .report-card__title {
         margin: 0;
         font-size: 1rem;
         font-weight: 600;
-        color: #1a1a1a;
+        color: var(--grey-900);
         line-height: 1.3;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -293,7 +299,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       .report-card__info-item i {
         font-size: 0.875rem;
-        color: #9e9e9e;
+        color: var(--grey-400);
         margin-bottom: 0.125rem;
       }
 
@@ -301,13 +307,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         font-size: 0.6875rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #9e9e9e;
+        color: var(--grey-400);
         font-weight: 500;
       }
 
       .report-card__info-value {
         font-size: 0.875rem;
-        color: #333333;
+        color: var(--grey-800);
         font-weight: 500;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -315,20 +321,20 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       }
 
       .report-card__info-value--highlight {
-        color: #1565c0;
+        color: var(--primary-500);
         font-weight: 700;
       }
 
       .report-card__observations {
         margin-top: 0.875rem;
         padding-top: 0.875rem;
-        border-top: 1px dashed #e8e8e8;
+        border-top: 1px dashed var(--grey-300);
       }
 
       .report-card__observations p {
         margin: 0;
         font-size: 0.8125rem;
-        color: #666666;
+        color: var(--grey-500);
         line-height: 1.5;
       }
 
@@ -338,8 +344,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         justify-content: space-between;
         align-items: center;
         padding: 0.75rem 1.25rem;
-        background: #fafafa;
-        border-top: 1px solid #f0f0f0;
+        background: var(--grey-50);
+        border-top: 1px solid var(--grey-200);
       }
 
       .report-card__timestamp {
@@ -347,7 +353,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         align-items: center;
         gap: 0.375rem;
         font-size: 0.75rem;
-        color: #9e9e9e;
+        color: var(--grey-400);
       }
 
       .report-card__actions {
@@ -369,63 +375,63 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       }
 
       .report-card__btn--approve {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .report-card__btn--approve:hover {
-        background: #2e7d32;
-        color: white;
+        background: var(--semantic-green-500);
+        color: var(--neutral-0);
       }
 
       .report-card__btn--reject {
-        background: #ffebee;
-        color: #c62828;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
 
       .report-card__btn--reject:hover {
-        background: #c62828;
-        color: white;
+        background: var(--semantic-red-500);
+        color: var(--neutral-0);
       }
 
       .report-card__btn--edit {
-        background: #e3f2fd;
-        color: #1565c0;
+        background: var(--primary-100);
+        color: var(--primary-500);
       }
 
       .report-card__btn--edit:hover {
-        background: #1565c0;
-        color: white;
+        background: var(--primary-500);
+        color: var(--neutral-0);
       }
 
       .report-card__btn--view {
-        background: #f5f5f5;
-        color: #666666;
+        background: var(--grey-100);
+        color: var(--grey-500);
       }
 
       .report-card__btn--view:hover {
-        background: #666666;
-        color: white;
+        background: var(--grey-500);
+        color: var(--neutral-0);
       }
 
       .report-card__btn--sign {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .report-card__btn--sign:hover {
-        background: #2e7d32;
-        color: white;
+        background: var(--semantic-green-500);
+        color: var(--neutral-0);
       }
 
       .report-card__btn--pdf {
-        background: #fff3e0;
-        color: #e65100;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
       }
 
       .report-card__btn--pdf:hover {
-        background: #e65100;
-        color: white;
+        background: var(--semantic-yellow-900);
+        color: var(--neutral-0);
       }
 
       .report-card__btn--pdf:disabled {
@@ -437,16 +443,16 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        background: white;
-        border-radius: 12px;
-        border: 2px dashed #e0e0e0;
+        background: var(--neutral-0);
+        border-radius: var(--radius-lg);
+        border: 2px dashed var(--grey-300);
       }
 
       .empty-state__icon {
         width: 80px;
         height: 80px;
         margin: 0 auto 1.5rem;
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -455,20 +461,20 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 
       .empty-state__icon i {
         font-size: 2rem;
-        color: #1565c0;
+        color: var(--primary-500);
       }
 
       .empty-state__title {
         margin: 0 0 0.5rem;
         font-size: 1.25rem;
         font-weight: 600;
-        color: #333333;
+        color: var(--grey-800);
       }
 
       .empty-state__description {
         margin: 0 0 1.5rem;
         font-size: 0.9375rem;
-        color: #666666;
+        color: var(--grey-500);
         max-width: 400px;
         margin-left: auto;
         margin-right: auto;
@@ -511,6 +517,8 @@ export class DailyReportListComponent implements OnInit {
   private router = inject(Router);
   authService = inject(AuthService);
   excelService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   reports: DailyReport[] = [];
   loading = false;
@@ -676,15 +684,24 @@ export class DailyReportListComponent implements OnInit {
         `${user.nombres || ''} ${user.apellidos || ''}`.trim() ||
         'Residente'
       : 'Residente';
-    if (confirm(`¿Confirma su firma como Residente en el parte #${report.id}?`)) {
-      this.dailyReportService.firmarResidente(report.id, nombreResidente).subscribe({
-        next: () => this.loadReports(),
-        error: (err) => {
-          console.error('Error al firmar como residente', err);
-          alert('Error al registrar la firma.');
-        },
+    this.confirmSvc
+      .confirm({
+        title: 'Confirmar Firma',
+        message: `¿Confirma su firma como Residente en el parte #${report.id}?`,
+        icon: 'fa-signature',
+        confirmLabel: 'Firmar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.dailyReportService.firmarResidente(report.id, nombreResidente).subscribe({
+            next: () => this.loadReports(),
+            error: (err) => {
+              console.error('Error al firmar como residente', err);
+              this.snackBar.open('Error al registrar la firma.', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
       });
-    }
   }
 
   editReport(event: Event, report: DailyReport): void {
@@ -729,7 +746,7 @@ export class DailyReportListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.reports.length === 0) {
-      alert('No hay partes diarios para exportar');
+      this.snackBar.open('No hay partes diarios para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -763,7 +780,7 @@ export class DailyReportListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.reports.length === 0) {
-      alert('No hay partes diarios para exportar');
+      this.snackBar.open('No hay partes diarios para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

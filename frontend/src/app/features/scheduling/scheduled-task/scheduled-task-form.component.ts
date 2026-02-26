@@ -43,8 +43,8 @@ import {
       [loading]="loading"
       [disableSubmit]="taskForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Tarea'"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Validation Errors and Alerts -->
       <app-validation-errors

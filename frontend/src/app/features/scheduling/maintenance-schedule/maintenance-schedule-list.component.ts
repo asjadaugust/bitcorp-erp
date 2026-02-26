@@ -14,6 +14,9 @@ import {
   FilterConfig,
 } from '../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-maintenance-schedule-list',
@@ -26,6 +29,7 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
     FilterBarComponent,
     ActionsContainerComponent,
     MaintenanceCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -40,9 +44,12 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button type="button" class="btn btn-primary" (click)="createSchedule()">
-          <i class="fa-solid fa-plus"></i> Nueva Programación
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Programación"
+          (clicked)="createSchedule()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -67,9 +74,11 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
           <div class="empty-icon">📅</div>
           <h3>No hay programaciones</h3>
           <p>Crea una nueva programación de mantenimiento para tus equipos.</p>
-          <button type="button" class="btn btn-primary" (click)="createSchedule()">
-            Nueva Programación
-          </button>
+          <app-button
+            variant="primary"
+            label="Nueva Programación"
+            (clicked)="createSchedule()"
+          ></app-button>
         </div>
       </div>
     </app-page-layout>
@@ -83,17 +92,17 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       }
 
       .schedule-card {
-        background: white;
-        border-radius: 12px;
+        background: var(--neutral-0);
+        border-radius: var(--s-12);
         padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
         transition: all 0.3s ease;
-        border-top: 4px solid #3182ce;
+        border-top: 4px solid var(--primary-500);
       }
 
       .schedule-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow-md);
       }
 
       .card-header {
@@ -102,19 +111,19 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         align-items: center;
         margin-bottom: 1rem;
         padding-bottom: 1rem;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--grey-300);
       }
 
       .card-header h3 {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #2d3748;
+        color: var(--grey-800);
         margin: 0;
       }
 
       .status-badge {
         padding: 0.25rem 0.75rem;
-        border-radius: 12px;
+        border-radius: var(--s-12);
         font-size: 0.75rem;
         font-weight: 600;
       }
@@ -133,8 +142,8 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
         grid-column: 1 / -1;
         text-align: center;
         padding: 4rem;
-        background: white;
-        border-radius: 12px;
+        background: var(--neutral-0);
+        border-radius: var(--s-12);
       }
       .empty-icon {
         font-size: 3rem;
@@ -153,6 +162,8 @@ export class MaintenanceScheduleListComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private excelService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   schedules: MaintenanceSchedule[] = [];
   loading = false;
@@ -231,23 +242,34 @@ export class MaintenanceScheduleListComponent implements OnInit {
   }
 
   deleteSchedule(id: number | string) {
-    if (confirm('¿Estás seguro de eliminar esta programación?')) {
+    this.confirmSvc.confirmDelete('esta programación').subscribe((confirmed) => {
+      if (!confirmed) return;
       this.scheduleService.delete(id).subscribe({
-        next: () => this.loadSchedules(),
-        error: (err: unknown) => alert('Error al eliminar: ' + (err as Error).message),
+        next: () => {
+          this.snackBar.open('Programación eliminada correctamente', 'Cerrar', { duration: 3000 });
+          this.loadSchedules();
+        },
+        error: (err: unknown) =>
+          this.snackBar.open('Error al eliminar: ' + (err as Error).message, 'Cerrar', {
+            duration: 5000,
+          }),
       });
-    }
+    });
   }
 
   generateTasks() {
     this.loading = true;
     this.scheduleService.generateTasks(30).subscribe({
       next: (res: any) => {
-        alert(`Se generaron ${res.data?.tasksGenerated} tareas nuevas.`);
+        this.snackBar.open(`Se generaron ${res.data?.tasksGenerated} tareas nuevas.`, 'Cerrar', {
+          duration: 4000,
+        });
         this.loading = false;
       },
       error: (err: unknown) => {
-        alert('Error al generar tareas: ' + (err as Error).message);
+        this.snackBar.open('Error al generar tareas: ' + (err as Error).message, 'Cerrar', {
+          duration: 5000,
+        });
         this.loading = false;
       },
     });
@@ -283,7 +305,9 @@ export class MaintenanceScheduleListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.schedules.length === 0) {
-      alert('No hay programaciones de mantenimiento para exportar');
+      this.snackBar.open('No hay programaciones de mantenimiento para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -314,7 +338,9 @@ export class MaintenanceScheduleListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.schedules.length === 0) {
-      alert('No hay programaciones de mantenimiento para exportar');
+      this.snackBar.open('No hay programaciones de mantenimiento para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 

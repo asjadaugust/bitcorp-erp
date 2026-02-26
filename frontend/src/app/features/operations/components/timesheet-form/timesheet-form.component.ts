@@ -41,8 +41,8 @@ import {
       [loading]="loading"
       [disableSubmit]="form.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Parte'"
-      (onSubmit)="onSubmit()"
-      (onCancel)="onCancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="onCancel()"
     >
       <!-- Validation Errors and Alerts -->
       <app-validation-errors

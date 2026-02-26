@@ -51,8 +51,8 @@ import {
       "
       [loading]="loading || submitting"
       [disableSubmit]="submitting || (movementForm && movementForm.invalid)"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
       [showFooter]="!isEditMode"
     >
       <!-- Error Handling -->

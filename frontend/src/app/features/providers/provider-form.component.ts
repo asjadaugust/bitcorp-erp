@@ -47,8 +47,8 @@ import {
       [loading]="loading"
       [disableSubmit]="providerForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Proveedor'"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Validation Errors and Alerts -->
       <app-validation-errors

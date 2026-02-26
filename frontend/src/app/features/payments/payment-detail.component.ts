@@ -8,11 +8,14 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-payment-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -235,114 +238,70 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button
+        <app-button
           *ngIf="payment?.estado !== 'ANULADO'"
-          class="btn btn-primary btn-block"
-          (click)="editPayment()"
-        >
-          <i class="fa-solid fa-pen"></i> Editar Pago
-        </button>
-        <button
+          variant="primary"
+          icon="fa-pen"
+          label="Editar Pago"
+          [fullWidth]="true"
+          (clicked)="editPayment()"
+        ></app-button>
+        <app-button
           *ngIf="payment?.estado === 'CONFIRMADO' && !payment?.conciliado"
-          class="btn btn-success btn-block"
-          (click)="reconcilePayment()"
-        >
-          <i class="fa-solid fa-check-double"></i> Conciliar Pago
-        </button>
-        <button
+          variant="success"
+          icon="fa-check-double"
+          label="Conciliar Pago"
+          [fullWidth]="true"
+          (clicked)="reconcilePayment()"
+        ></app-button>
+        <app-button
           *ngIf="payment?.estado !== 'ANULADO'"
-          class="btn btn-danger btn-block"
-          (click)="cancelPayment()"
-        >
-          <i class="fa-solid fa-ban"></i> Anular Pago
-        </button>
-        <button
-          class="btn btn-ghost btn-block"
-          (click)="viewValuation()"
+          variant="danger"
+          icon="fa-ban"
+          label="Anular Pago"
+          [fullWidth]="true"
+          (clicked)="cancelPayment()"
+        ></app-button>
+        <app-button
           *ngIf="payment?.valorizacion_id"
-        >
-          <i class="fa-solid fa-file-invoice"></i> Ver Valorización
-        </button>
-        <button class="btn btn-ghost btn-block" routerLink="/payments">
-          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-        </button>
+          variant="ghost"
+          icon="fa-file-invoice"
+          label="Ver Valorización"
+          [fullWidth]="true"
+          (clicked)="viewValuation()"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          routerLink="/payments"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
   styles: [
     `
-      .detail-container {
-        padding: 2rem 0;
-      }
+      @use 'detail-layout' as *;
 
-      .breadcrumb {
-        margin-bottom: 1.5rem;
-      }
-
-      .breadcrumb-link {
-        color: #007bff;
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      .breadcrumb-link:hover {
-        text-decoration: underline;
-      }
-
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 2rem;
-      }
-
-      @media (max-width: 1024px) {
-        .detail-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .detail-header {
+      .amount-section-premium {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #e9ecef;
+        flex-direction: column;
+        gap: var(--s-16);
       }
 
-      .detail-header h1 {
-        margin: 0 0 0.5rem 0;
-        font-size: 2rem;
-        color: #333;
-      }
-
-      .detail-subtitle {
-        margin: 0;
-        color: #6c757d;
-        font-size: 1rem;
-      }
-
-      .amount-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
+      .amount-card {
+        background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+        color: var(--neutral-0);
+        padding: var(--s-24);
+        border-radius: var(--s-8);
         text-align: center;
       }
 
       .amount-label {
-        font-size: 0.875rem;
+        font-size: var(--type-label-size);
         opacity: 0.9;
-        margin-bottom: 0.5rem;
+        margin-bottom: var(--s-8);
         text-transform: uppercase;
         letter-spacing: 0.05em;
       }
@@ -350,38 +309,37 @@ import {
       .amount-value {
         font-size: 2.5rem;
         font-weight: bold;
-        margin-bottom: 0.5rem;
+        margin-bottom: var(--s-8);
       }
 
       .amount-details {
-        font-size: 0.875rem;
+        font-size: var(--type-label-size);
         opacity: 0.9;
       }
 
-      .tabs {
+      .tabs-header-premium {
         display: flex;
-        border-bottom: 2px solid #e9ecef;
-        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--grey-300);
       }
 
-      .tab {
-        padding: 1rem 1.5rem;
+      .tab-link {
+        padding: var(--s-12) var(--s-16);
         border: none;
         background: none;
-        color: #6c757d;
+        color: var(--grey-500);
         font-weight: 500;
         cursor: pointer;
         border-bottom: 3px solid transparent;
         transition: all 0.2s;
       }
 
-      .tab:hover {
-        color: #007bff;
+      .tab-link:hover {
+        color: var(--primary-500);
       }
 
-      .tab.active {
-        color: #007bff;
-        border-bottom-color: #007bff;
+      .tab-link.active {
+        color: var(--primary-500);
+        border-bottom-color: var(--primary-500);
       }
 
       .tab-content {
@@ -400,28 +358,28 @@ import {
       }
 
       .detail-section {
-        margin-bottom: 2rem;
+        margin-bottom: var(--s-24);
       }
 
       .detail-section h2 {
-        font-size: 1.25rem;
-        color: #333;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #e9ecef;
+        font-size: var(--type-h3-size);
+        color: var(--grey-800);
+        margin-bottom: var(--s-16);
+        padding-bottom: var(--s-8);
+        border-bottom: 1px solid var(--grey-300);
       }
 
       .info-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
+        gap: var(--s-24);
       }
 
-      .info-item label {
+      .info-item .label {
         display: block;
-        font-size: 0.75rem;
-        color: #6c757d;
-        margin-bottom: 0.5rem;
+        font-size: var(--type-label-size);
+        color: var(--grey-500);
+        margin-bottom: var(--s-4);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-weight: 600;
@@ -429,126 +387,54 @@ import {
 
       .info-item p {
         margin: 0;
-        color: #333;
+        color: var(--grey-800);
         font-size: 1rem;
       }
 
       .code-text {
         font-family: 'Courier New', monospace;
-        background-color: #f8f9fa;
-        padding: 0.25rem 0.5rem;
-        border-radius: 3px;
+        background-color: var(--grey-100);
+        padding: var(--s-4) var(--s-8);
+        border-radius: var(--s-4);
         font-size: 0.9rem;
       }
 
       .highlight {
         font-weight: 600;
-        color: #007bff;
+        color: var(--primary-500);
       }
 
       .observaciones-text {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 4px;
-        color: #495057;
+        background-color: var(--grey-100);
+        padding: var(--s-16);
+        border-radius: var(--s-4);
+        color: var(--grey-600);
         line-height: 1.6;
       }
 
       .badge {
-        padding: 0.35rem 0.75rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
+        padding: var(--s-4) var(--s-8);
+        border-radius: var(--s-4);
+        font-size: var(--type-label-size);
         font-weight: 600;
         display: inline-block;
       }
 
       .badge-success {
-        background-color: #28a745;
-        color: white;
+        background-color: var(--semantic-green-100);
+        color: var(--semantic-green-900);
       }
       .badge-warning {
-        background-color: #ffc107;
-        color: #212529;
+        background-color: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
       }
       .badge-danger {
-        background-color: #dc3545;
-        color: white;
+        background-color: var(--semantic-red-100);
+        color: var(--semantic-red-900);
       }
       .badge-secondary {
-        background-color: #6c757d;
-        color: white;
-      }
-
-      .ml-2 {
-        margin-left: 0.5rem;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 2rem;
-        color: #6c757d;
-      }
-
-      .text-muted {
-        color: #6c757d;
-      }
-
-      .action-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .btn-block {
-        width: 100%;
-      }
-
-      .info-list-item {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e9ecef;
-      }
-
-      .info-list-item:last-child {
-        border-bottom: none;
-      }
-
-      .info-list-item label {
-        font-size: 0.75rem;
-        color: #6c757d;
-        margin-bottom: 0.25rem;
-        display: block;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-weight: 600;
-      }
-
-      .info-list-item p {
-        margin: 0;
-        color: #333;
-      }
-
-      .loading {
-        text-align: center;
-        padding: 3rem;
-      }
-
-      .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #007bff;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 1rem;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+        background-color: var(--grey-200);
+        color: var(--grey-800);
       }
     `,
   ],
@@ -557,6 +443,8 @@ export class PaymentDetailComponent implements OnInit {
   paymentService = inject(PaymentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   payment: PaymentRecordDetail | null = null;
   loading = false;
@@ -600,7 +488,7 @@ export class PaymentDetailComponent implements OnInit {
       error: (error: unknown) => {
         console.error('Error loading payment:', error);
         this.loading = false;
-        alert('Error al cargar el pago');
+        this.snackBar.open('Error al cargar el pago', 'Cerrar', { duration: 3000 });
         this.router.navigate(['/payments']);
       },
     });
@@ -614,46 +502,64 @@ export class PaymentDetailComponent implements OnInit {
 
   reconcilePayment() {
     if (!this.payment) return;
-
-    const observaciones = prompt('Observaciones de conciliación (opcional):');
-    if (observaciones !== null) {
-      const today = new Date().toISOString().split('T')[0];
-      this.paymentService
-        .reconcilePayment(this.payment.id, {
-          fecha_conciliacion: today,
-          observaciones: observaciones || undefined,
-        })
-        .subscribe({
-          next: () => {
-            alert('Pago conciliado exitosamente');
-            this.loadPayment(this.payment!.id);
-          },
-          error: (error: unknown) => {
-            console.error('Error reconciling payment:', error);
-            alert('Error al conciliar el pago');
-          },
-        });
-    }
+    this.confirmSvc
+      .prompt({
+        title: 'Conciliar Pago',
+        message: '¿Está seguro de conciliar este pago?',
+        icon: 'fa-check-double',
+        confirmLabel: 'Conciliar',
+        inputLabel: 'Observaciones de conciliación (opcional)',
+        inputPlaceholder: 'Ingrese observaciones...',
+      })
+      .subscribe((observaciones) => {
+        if (observaciones !== null) {
+          const today = new Date().toISOString().split('T')[0];
+          this.paymentService
+            .reconcilePayment(this.payment!.id, {
+              fecha_conciliacion: today,
+              observaciones: observaciones || undefined,
+            })
+            .subscribe({
+              next: () => {
+                this.snackBar.open('Pago conciliado exitosamente', 'Cerrar', { duration: 3000 });
+                this.loadPayment(this.payment!.id);
+              },
+              error: (error: unknown) => {
+                console.error('Error reconciling payment:', error);
+                this.snackBar.open('Error al conciliar el pago', 'Cerrar', { duration: 3000 });
+              },
+            });
+        }
+      });
   }
 
   cancelPayment() {
     if (!this.payment) return;
-
-    const reason = prompt('Motivo de anulación:');
-    if (reason) {
-      if (confirm(`¿Está seguro de anular el pago ${this.payment.numero_pago}?`)) {
-        this.paymentService.cancelPayment(this.payment.id, reason).subscribe({
-          next: () => {
-            alert('Pago anulado exitosamente');
-            this.router.navigate(['/payments']);
-          },
-          error: (error: unknown) => {
-            console.error('Error canceling payment:', error);
-            alert('Error al anular el pago');
-          },
-        });
-      }
-    }
+    this.confirmSvc
+      .prompt({
+        title: 'Anular Pago',
+        message: `¿Está seguro de anular el pago ${this.payment.numero_pago}?`,
+        icon: 'fa-ban',
+        confirmLabel: 'Anular',
+        isDanger: true,
+        inputLabel: 'Motivo de anulación',
+        inputPlaceholder: 'Ingrese el motivo...',
+        inputRequired: true,
+      })
+      .subscribe((reason) => {
+        if (reason) {
+          this.paymentService.cancelPayment(this.payment!.id, reason).subscribe({
+            next: () => {
+              this.snackBar.open('Pago anulado exitosamente', 'Cerrar', { duration: 3000 });
+              this.router.navigate(['/payments']);
+            },
+            error: (error: unknown) => {
+              console.error('Error canceling payment:', error);
+              this.snackBar.open('Error al anular el pago', 'Cerrar', { duration: 3000 });
+            },
+          });
+        }
+      });
   }
 
   viewValuation() {

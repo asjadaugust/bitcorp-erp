@@ -22,523 +22,314 @@ import {
   PaymentSummary,
 } from '../../core/models/payment-record.model';
 import { Valuation } from '../../core/models/valuation.model';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-payment-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, DropdownComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    DropdownComponent,
+    FormContainerComponent,
+    FormSectionComponent,
+  ],
   template: `
-    <div class="form-container">
-      <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/payments" class="breadcrumb-link"> ← Volver a Registro de Pagos </a>
-        </div>
-
-        <div class="page-header">
-          <h1>{{ isEditMode ? 'Editar Pago' : 'Registrar Nuevo Pago' }}</h1>
-        </div>
-
-        <div class="form-grid">
-          <div class="form-main card">
-            <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
-              <!-- Valuation Selection -->
-              <section class="form-section">
-                <h2 class="section-title">
-                  <i class="fa-solid fa-file-invoice-dollar"></i> Valorización
-                </h2>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="valorizacion">Valorización *</label>
-                    <app-dropdown
-                      formControlName="valorizacion_id"
-                      [options]="valuationOptions"
-                      [placeholder]="'Seleccione una valorización'"
-                      [searchable]="true"
-                      [error]="isFieldInvalid('valorizacion_id')"
-                      (ngModelChange)="onValuationChange()"
-                      [disabled]="isEditMode"
-                    ></app-dropdown>
-                    <div *ngIf="isFieldInvalid('valorizacion_id')" class="error-message">
-                      Debe seleccionar una valorización
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Payment Summary -->
-                <div *ngIf="paymentSummary" class="payment-summary">
-                  <div class="summary-row">
-                    <span>Monto Total Valorización:</span>
-                    <strong>{{
-                      paymentService.formatCurrency(paymentSummary.monto_total_valorizacion, 'PEN')
-                    }}</strong>
-                  </div>
-                  <div class="summary-row">
-                    <span>Total Pagado:</span>
-                    <strong class="text-success">{{
-                      paymentService.formatCurrency(paymentSummary.total_pagado, 'PEN')
-                    }}</strong>
-                  </div>
-                  <div class="summary-row">
-                    <span>Saldo Pendiente:</span>
-                    <strong class="text-warning">{{
-                      paymentService.formatCurrency(paymentSummary.saldo_pendiente, 'PEN')
-                    }}</strong>
-                  </div>
-                  <div class="summary-row">
-                    <span>Estado:</span>
-                    <span
-                      [class]="
-                        'badge badge-' +
-                        paymentService.getSummaryStatusColor(paymentSummary.estado_pago)
-                      "
-                    >
-                      {{ paymentService.getSummaryStatusLabel(paymentSummary.estado_pago) }}
-                    </span>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Payment Details -->
-              <section class="form-section">
-                <h2 class="section-title">
-                  <i class="fa-solid fa-money-bill-transfer"></i> Detalles del Pago
-                </h2>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="fecha_pago">Fecha de Pago *</label>
-                    <input
-                      type="date"
-                      id="fecha_pago"
-                      formControlName="fecha_pago"
-                      class="form-control"
-                      [class.invalid]="isFieldInvalid('fecha_pago')"
-                    />
-                    <div *ngIf="isFieldInvalid('fecha_pago')" class="error-message">
-                      Fecha de pago requerida
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="monto_pagado">Monto Pagado *</label>
-                    <input
-                      type="number"
-                      id="monto_pagado"
-                      formControlName="monto_pagado"
-                      class="form-control"
-                      step="0.01"
-                      min="0"
-                      [class.invalid]="isFieldInvalid('monto_pagado')"
-                    />
-                    <div *ngIf="isFieldInvalid('monto_pagado')" class="error-message">
-                      Monto inválido
-                    </div>
-                    <div
-                      *ngIf="
-                        paymentSummary &&
-                        paymentForm.value.monto_pagado > paymentSummary.saldo_pendiente
-                      "
-                      class="warning-message"
-                    >
-                      ⚠️ El monto excede el saldo pendiente
-                    </div>
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="moneda">Moneda</label>
-                    <app-dropdown
-                      formControlName="moneda"
-                      [options]="currencyOptions"
-                    ></app-dropdown>
-                  </div>
-
-                  <div class="form-group" *ngIf="paymentForm.value.moneda === 'USD'">
-                    <label for="tipo_cambio">Tipo de Cambio</label>
-                    <input
-                      type="number"
-                      id="tipo_cambio"
-                      formControlName="tipo_cambio"
-                      class="form-control"
-                      step="0.0001"
-                      placeholder="Ej: 3.7500"
-                    />
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="metodo_pago">Método de Pago *</label>
-                    <app-dropdown
-                      formControlName="metodo_pago"
-                      [options]="metodoDropdownOptions"
-                      [placeholder]="'Seleccione método'"
-                      [error]="isFieldInvalid('metodo_pago')"
-                      (ngModelChange)="onPaymentMethodChange()"
-                    ></app-dropdown>
-                    <div *ngIf="isFieldInvalid('metodo_pago')" class="error-message">
-                      Método de pago requerido
-                    </div>
-                  </div>
-
-                  <div class="form-group" *ngIf="!isEditMode">
-                    <label for="estado">Estado</label>
-                    <app-dropdown
-                      formControlName="estado"
-                      [options]="statusDropdownOptions"
-                    ></app-dropdown>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Bank Details (conditional) -->
-              <section class="form-section" *ngIf="showBankFields()">
-                <h2 class="section-title">
-                  <i class="fa-solid fa-building-columns"></i> Información Bancaria
-                </h2>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="banco_origen">Banco Origen</label>
-                    <input
-                      type="text"
-                      id="banco_origen"
-                      formControlName="banco_origen"
-                      class="form-control"
-                      placeholder="Ej: BCP, BBVA, Interbank"
-                    />
-                  </div>
-
-                  <div class="form-group">
-                    <label for="cuenta_origen">Cuenta Origen</label>
-                    <input
-                      type="text"
-                      id="cuenta_origen"
-                      formControlName="cuenta_origen"
-                      class="form-control"
-                      placeholder="Número de cuenta"
-                    />
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="banco_destino">Banco Destino</label>
-                    <input
-                      type="text"
-                      id="banco_destino"
-                      formControlName="banco_destino"
-                      class="form-control"
-                      placeholder="Ej: BCP, BBVA, Interbank"
-                    />
-                  </div>
-
-                  <div class="form-group">
-                    <label for="cuenta_destino">Cuenta Destino</label>
-                    <input
-                      type="text"
-                      id="cuenta_destino"
-                      formControlName="cuenta_destino"
-                      class="form-control"
-                      placeholder="Número de cuenta"
-                    />
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="numero_operacion">Número de Operación</label>
-                    <input
-                      type="text"
-                      id="numero_operacion"
-                      formControlName="numero_operacion"
-                      class="form-control"
-                      placeholder="Número de operación bancaria"
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <!-- Check Details (conditional) -->
-              <section class="form-section" *ngIf="paymentForm.value.metodo_pago === 'CHEQUE'">
-                <h2 class="section-title">
-                  <i class="fa-solid fa-money-check"></i> Información del Cheque
-                </h2>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="numero_cheque">Número de Cheque</label>
-                    <input
-                      type="text"
-                      id="numero_cheque"
-                      formControlName="numero_cheque"
-                      class="form-control"
-                      placeholder="Número de cheque"
-                    />
-                  </div>
-
-                  <div class="form-group">
-                    <label for="banco_origen">Banco Emisor</label>
-                    <input
-                      type="text"
-                      id="banco_origen"
-                      formControlName="banco_origen"
-                      class="form-control"
-                      placeholder="Banco que emite el cheque"
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <!-- Receipt Details -->
-              <section class="form-section">
-                <h2 class="section-title">
-                  <i class="fa-solid fa-receipt"></i> Comprobante (Opcional)
-                </h2>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="comprobante_tipo">Tipo de Comprobante</label>
-                    <app-dropdown
-                      formControlName="comprobante_tipo"
-                      [options]="comprobanteDropdownOptions"
-                      [placeholder]="'Ninguno'"
-                    ></app-dropdown>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="comprobante_numero">Número de Comprobante</label>
-                    <input
-                      type="text"
-                      id="comprobante_numero"
-                      formControlName="comprobante_numero"
-                      class="form-control"
-                      placeholder="Ej: F001-12345"
-                    />
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label for="comprobante_fecha">Fecha de Comprobante</label>
-                    <input
-                      type="date"
-                      id="comprobante_fecha"
-                      formControlName="comprobante_fecha"
-                      class="form-control"
-                    />
-                  </div>
-
-                  <div class="form-group">
-                    <label for="referencia_interna">Referencia Interna</label>
-                    <input
-                      type="text"
-                      id="referencia_interna"
-                      formControlName="referencia_interna"
-                      class="form-control"
-                      placeholder="Código interno de referencia"
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <!-- Observations -->
-              <section class="form-section">
-                <h2 class="section-title"><i class="fa-solid fa-clipboard"></i> Observaciones</h2>
-                <div class="form-group">
-                  <textarea
-                    id="observaciones"
-                    formControlName="observaciones"
-                    class="form-control"
-                    rows="4"
-                    placeholder="Notas adicionales sobre el pago..."
-                  ></textarea>
-                </div>
-              </section>
-
-              <!-- Form Actions -->
-              <div class="form-actions">
-                <button type="button" class="btn btn-secondary" (click)="cancel()">
-                  <i class="fa-solid fa-times"></i> Cancelar
-                </button>
-                <button
-                  type="submit"
-                  class="btn btn-primary"
-                  [disabled]="paymentForm.invalid || submitting"
-                >
-                  <i
-                    class="fa-solid"
-                    [class.fa-save]="!submitting"
-                    [class.fa-spinner]="submitting"
-                    [class.fa-spin]="submitting"
-                  ></i>
-                  {{
-                    submitting ? 'Guardando...' : isEditMode ? 'Actualizar Pago' : 'Registrar Pago'
-                  }}
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Sidebar -->
-          <div class="form-sidebar">
-            <div class="card">
-              <h3>Información</h3>
-              <div class="info-text">
-                <p>
-                  <strong>Campos Obligatorios:</strong><br />
-                  - Valorización<br />
-                  - Fecha de pago<br />
-                  - Monto pagado<br />
-                  - Método de pago
-                </p>
-                <p class="mt-3">
-                  <strong>Nota:</strong> Los pagos se crean con estado PENDIENTE o CONFIRMADO. Los
-                  pagos CONFIRMADOS se suman al total pagado de la valorización.
-                </p>
-                <p class="mt-3">
-                  <strong>Conciliación:</strong> Los pagos CONFIRMADOS pueden ser conciliados
-                  posteriormente con los extractos bancarios.
-                </p>
-              </div>
+    <app-form-container
+      [icon]="isEditMode ? 'fa-pen' : 'fa-money-bill-transfer'"
+      [title]="isEditMode ? 'Editar Pago' : 'Registrar Nuevo Pago'"
+      [subtitle]="isEditMode ? 'Actualizar información del pago' : 'Completar datos del nuevo pago'"
+      [submitLabel]="isEditMode ? 'Actualizar Pago' : 'Registrar Pago'"
+      submitIcon="fa-save"
+      [loading]="submitting"
+      loadingText="Guardando..."
+      [disableSubmit]="paymentForm.invalid || submitting"
+      backUrl="/payments"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
+    >
+      <form [formGroup]="paymentForm">
+        <app-form-section title="Valorización" icon="fa-file-invoice-dollar" [columns]="1">
+          <div class="form-group">
+            <label for="valorizacion">Valorización *</label>
+            <app-dropdown
+              formControlName="valorizacion_id"
+              [options]="valuationOptions"
+              [placeholder]="'Seleccione una valorización'"
+              [searchable]="true"
+              [error]="isFieldInvalid('valorizacion_id')"
+              (ngModelChange)="onValuationChange()"
+              [disabled]="isEditMode"
+            ></app-dropdown>
+            <div *ngIf="isFieldInvalid('valorizacion_id')" class="error-msg">
+              Debe seleccionar una valorización
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <div *ngIf="paymentSummary" class="payment-summary">
+            <div class="summary-row">
+              <span>Monto Total Valorización:</span>
+              <strong>{{
+                paymentService.formatCurrency(paymentSummary.monto_total_valorizacion, 'PEN')
+              }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Total Pagado:</span>
+              <strong class="text-success">{{
+                paymentService.formatCurrency(paymentSummary.total_pagado, 'PEN')
+              }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Saldo Pendiente:</span>
+              <strong class="text-warning">{{
+                paymentService.formatCurrency(paymentSummary.saldo_pendiente, 'PEN')
+              }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Estado:</span>
+              <span
+                [class]="
+                  'badge badge-' + paymentService.getSummaryStatusColor(paymentSummary.estado_pago)
+                "
+              >
+                {{ paymentService.getSummaryStatusLabel(paymentSummary.estado_pago) }}
+              </span>
+            </div>
+          </div>
+        </app-form-section>
+
+        <app-form-section title="Detalles del Pago" icon="fa-money-bill-transfer" [columns]="2">
+          <div class="form-group">
+            <label for="fecha_pago">Fecha de Pago *</label>
+            <input
+              type="date"
+              id="fecha_pago"
+              formControlName="fecha_pago"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('fecha_pago')"
+            />
+            <div *ngIf="isFieldInvalid('fecha_pago')" class="error-msg">
+              Fecha de pago requerida
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="monto_pagado">Monto Pagado *</label>
+            <input
+              type="number"
+              id="monto_pagado"
+              formControlName="monto_pagado"
+              class="form-control"
+              step="0.01"
+              min="0"
+              [class.invalid]="isFieldInvalid('monto_pagado')"
+            />
+            <div *ngIf="isFieldInvalid('monto_pagado')" class="error-msg">Monto inválido</div>
+            <div
+              *ngIf="
+                paymentSummary && paymentForm.value.monto_pagado > paymentSummary.saldo_pendiente
+              "
+              class="warning-message"
+            >
+              El monto excede el saldo pendiente
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="moneda">Moneda</label>
+            <app-dropdown formControlName="moneda" [options]="currencyOptions"></app-dropdown>
+          </div>
+          <div class="form-group" *ngIf="paymentForm.value.moneda === 'USD'">
+            <label for="tipo_cambio">Tipo de Cambio</label>
+            <input
+              type="number"
+              id="tipo_cambio"
+              formControlName="tipo_cambio"
+              class="form-control"
+              step="0.0001"
+              placeholder="Ej: 3.7500"
+            />
+          </div>
+          <div class="form-group">
+            <label for="metodo_pago">Método de Pago *</label>
+            <app-dropdown
+              formControlName="metodo_pago"
+              [options]="metodoDropdownOptions"
+              [placeholder]="'Seleccione método'"
+              [error]="isFieldInvalid('metodo_pago')"
+              (ngModelChange)="onPaymentMethodChange()"
+            ></app-dropdown>
+            <div *ngIf="isFieldInvalid('metodo_pago')" class="error-msg">
+              Método de pago requerido
+            </div>
+          </div>
+          <div class="form-group" *ngIf="!isEditMode">
+            <label for="estado">Estado</label>
+            <app-dropdown formControlName="estado" [options]="statusDropdownOptions"></app-dropdown>
+          </div>
+        </app-form-section>
+
+        <app-form-section
+          *ngIf="showBankFields()"
+          title="Información Bancaria"
+          icon="fa-building-columns"
+          [columns]="2"
+        >
+          <div class="form-group">
+            <label for="banco_origen">Banco Origen</label>
+            <input
+              type="text"
+              id="banco_origen"
+              formControlName="banco_origen"
+              class="form-control"
+              placeholder="Ej: BCP, BBVA, Interbank"
+            />
+          </div>
+          <div class="form-group">
+            <label for="cuenta_origen">Cuenta Origen</label>
+            <input
+              type="text"
+              id="cuenta_origen"
+              formControlName="cuenta_origen"
+              class="form-control"
+              placeholder="Número de cuenta"
+            />
+          </div>
+          <div class="form-group">
+            <label for="banco_destino">Banco Destino</label>
+            <input
+              type="text"
+              id="banco_destino"
+              formControlName="banco_destino"
+              class="form-control"
+              placeholder="Ej: BCP, BBVA, Interbank"
+            />
+          </div>
+          <div class="form-group">
+            <label for="cuenta_destino">Cuenta Destino</label>
+            <input
+              type="text"
+              id="cuenta_destino"
+              formControlName="cuenta_destino"
+              class="form-control"
+              placeholder="Número de cuenta"
+            />
+          </div>
+          <div class="form-group">
+            <label for="numero_operacion">Número de Operación</label>
+            <input
+              type="text"
+              id="numero_operacion"
+              formControlName="numero_operacion"
+              class="form-control"
+              placeholder="Número de operación bancaria"
+            />
+          </div>
+        </app-form-section>
+
+        <app-form-section
+          *ngIf="paymentForm.value.metodo_pago === 'CHEQUE'"
+          title="Información del Cheque"
+          icon="fa-money-check"
+          [columns]="2"
+        >
+          <div class="form-group">
+            <label for="numero_cheque">Número de Cheque</label>
+            <input
+              type="text"
+              id="numero_cheque"
+              formControlName="numero_cheque"
+              class="form-control"
+              placeholder="Número de cheque"
+            />
+          </div>
+          <div class="form-group">
+            <label for="banco_origen_cheque">Banco Emisor</label>
+            <input
+              type="text"
+              id="banco_origen_cheque"
+              formControlName="banco_origen"
+              class="form-control"
+              placeholder="Banco que emite el cheque"
+            />
+          </div>
+        </app-form-section>
+
+        <app-form-section title="Comprobante (Opcional)" icon="fa-receipt" [columns]="2">
+          <div class="form-group">
+            <label for="comprobante_tipo">Tipo de Comprobante</label>
+            <app-dropdown
+              formControlName="comprobante_tipo"
+              [options]="comprobanteDropdownOptions"
+              [placeholder]="'Ninguno'"
+            ></app-dropdown>
+          </div>
+          <div class="form-group">
+            <label for="comprobante_numero">Número de Comprobante</label>
+            <input
+              type="text"
+              id="comprobante_numero"
+              formControlName="comprobante_numero"
+              class="form-control"
+              placeholder="Ej: F001-12345"
+            />
+          </div>
+          <div class="form-group">
+            <label for="comprobante_fecha">Fecha de Comprobante</label>
+            <input
+              type="date"
+              id="comprobante_fecha"
+              formControlName="comprobante_fecha"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="referencia_interna">Referencia Interna</label>
+            <input
+              type="text"
+              id="referencia_interna"
+              formControlName="referencia_interna"
+              class="form-control"
+              placeholder="Código interno de referencia"
+            />
+          </div>
+        </app-form-section>
+
+        <app-form-section title="Observaciones" icon="fa-clipboard" [columns]="1">
+          <div class="form-group">
+            <textarea
+              id="observaciones"
+              formControlName="observaciones"
+              class="form-control"
+              rows="4"
+              placeholder="Notas adicionales sobre el pago..."
+            ></textarea>
+          </div>
+        </app-form-section>
+      </form>
+    </app-form-container>
   `,
   styles: [
     `
-      .form-container {
-        padding: 2rem 0;
-      }
-
-      .page-header {
-        margin-bottom: 2rem;
-      }
-
-      .page-header h1 {
-        margin: 0;
-        font-size: 2rem;
-        color: #333;
-      }
-
-      .breadcrumb {
-        margin-bottom: 1.5rem;
-      }
-
-      .breadcrumb-link {
-        color: #007bff;
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 2rem;
-      }
-
-      @media (max-width: 1024px) {
-        .form-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .form-section {
-        margin-bottom: 2rem;
-        padding-bottom: 2rem;
-        border-bottom: 1px solid #e9ecef;
-      }
-
-      .form-section:last-child {
-        border-bottom: none;
-      }
-
-      .form-section h2 {
-        font-size: 1.25rem;
-        color: #333;
-        margin-bottom: 1.5rem;
-      }
-
-      .form-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 1rem;
-      }
-
-      .form-group {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .form-group label {
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: #555;
-        font-size: 0.9rem;
-      }
-
-      .form-control {
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 1rem;
-        transition: border-color 0.2s;
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-      }
-
-      .form-control.invalid {
-        border-color: #dc3545;
-      }
-
-      .form-control:disabled {
-        background-color: #f8f9fa;
-        cursor: not-allowed;
-      }
-
-      textarea.form-control {
-        resize: vertical;
-        min-height: 100px;
-      }
-
-      .error-message {
-        color: #dc3545;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-      }
-
-      .warning-message {
-        color: #ff6b00;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-        font-weight: 500;
-      }
+      @use 'form-layout';
 
       .payment-summary {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 1rem;
-        margin-top: 1rem;
+        background: var(--grey-50);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--radius-md);
+        padding: var(--s-16);
+        margin-top: var(--s-16);
       }
 
       .summary-row {
         display: flex;
         justify-content: space-between;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #dee2e6;
+        padding: var(--s-8) 0;
+        border-bottom: 1px solid var(--grey-200);
+        font-size: 0.9rem;
+        color: var(--grey-700);
       }
 
       .summary-row:last-child {
@@ -546,65 +337,40 @@ import { Valuation } from '../../core/models/valuation.model';
       }
 
       .text-success {
-        color: #28a745;
+        color: var(--semantic-green-500);
       }
 
       .text-warning {
-        color: #ff6b00;
+        color: var(--semantic-yellow-500);
       }
 
       .badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 4px;
+        padding: 4px 10px;
+        border-radius: var(--radius-md);
         font-size: 0.75rem;
         font-weight: 600;
       }
 
       .badge-success {
-        background-color: #28a745;
-        color: white;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
       }
+
       .badge-warning {
-        background-color: #ffc107;
-        color: #212529;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
+
       .badge-secondary {
-        background-color: #6c757d;
-        color: white;
+        background: var(--grey-100);
+        color: var(--grey-700);
       }
 
-      .form-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-        padding-top: 2rem;
-      }
-
-      .info-text {
+      .warning-message {
+        color: var(--semantic-yellow-500);
         font-size: 0.875rem;
-        color: #6c757d;
-        line-height: 1.6;
-      }
-
-      .info-text p {
-        margin-bottom: 0.5rem;
-      }
-
-      .mt-3 {
-        margin-top: 1rem;
-      }
-
-      .fa-spin {
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+        margin-top: 4px;
+        font-weight: 500;
       }
     `,
   ],
@@ -615,6 +381,7 @@ export class PaymentFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
 
   paymentForm!: FormGroup;
   valuations: Valuation[] = [];
@@ -732,7 +499,7 @@ export class PaymentFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading payment:', error);
-        alert('Error al cargar el pago');
+        this.snackBar.open('Error al cargar el pago', 'Cerrar', { duration: 3000 });
         this.router.navigate(['/payments']);
       },
     });
@@ -802,17 +569,21 @@ export class PaymentFormComponent implements OnInit {
 
     if (this.isEditMode && this.paymentId) {
       // Update existing payment
-      const { valorizacion_id: _vid, estado: _est, ...updateData } = formData as Record<string, unknown>;
+      const {
+        valorizacion_id: _vid,
+        estado: _est,
+        ...updateData
+      } = formData as Record<string, unknown>;
       const updatePayload: UpdatePaymentRecord = updateData as UpdatePaymentRecord;
 
       this.paymentService.updatePayment(this.paymentId, updatePayload).subscribe({
         next: () => {
-          alert('Pago actualizado exitosamente');
+          this.snackBar.open('Pago actualizado exitosamente', 'Cerrar', { duration: 3000 });
           this.router.navigate(['/payments', this.paymentId]);
         },
         error: (error) => {
           console.error('Error updating payment:', error);
-          alert('Error al actualizar el pago');
+          this.snackBar.open('Error al actualizar el pago', 'Cerrar', { duration: 3000 });
           this.submitting = false;
         },
       });
@@ -822,12 +593,16 @@ export class PaymentFormComponent implements OnInit {
 
       this.paymentService.createPayment(createData).subscribe({
         next: (payment) => {
-          alert('Pago registrado exitosamente');
+          this.snackBar.open('Pago registrado exitosamente', 'Cerrar', { duration: 3000 });
           this.router.navigate(['/payments', payment.id]);
         },
         error: (error) => {
           console.error('Error creating payment:', error);
-          alert(error.error?.error?.message || 'Error al registrar el pago');
+          this.snackBar.open(
+            error.error?.error?.message || 'Error al registrar el pago',
+            'Cerrar',
+            { duration: 3000 }
+          );
           this.submitting = false;
         },
       });

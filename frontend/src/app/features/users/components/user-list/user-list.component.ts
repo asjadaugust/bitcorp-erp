@@ -19,6 +19,7 @@ import {
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-user-list',
@@ -31,6 +32,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -40,9 +42,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button class="btn btn-primary" (click)="createUser()">
-          <i class="fa-solid fa-plus"></i> Nuevo Usuario
-        </button>
+        <app-button
+          variant="primary"
+          label="Nuevo Usuario"
+          icon="fa-plus"
+          (clicked)="createUser()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -87,29 +92,27 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button class="btn-icon" (click)="editUser(row); $event.stopPropagation()" title="Editar">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="openPasswordReset(row); $event.stopPropagation()"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
+            title="Editar"
+            (clicked)="editUser(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-key"
             title="Resetear Contraseña"
-          >
-            <i class="fa-solid fa-key"></i>
-          </button>
-          <button
-            class="btn-icon"
-            [class.btn-icon-danger]="row.is_active"
-            [class.btn-icon-success]="!row.is_active"
-            (click)="toggleActive(row); $event.stopPropagation()"
+            (clicked)="openPasswordReset(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            [icon]="row.is_active ? 'fa-ban' : 'fa-check'"
             [title]="row.is_active ? 'Desactivar' : 'Activar'"
-          >
-            <i
-              class="fa-solid"
-              [class.fa-ban]="row.is_active"
-              [class.fa-check]="!row.is_active"
-            ></i>
-          </button>
+            (clicked)="toggleActive(row); $event.stopPropagation()"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -130,9 +133,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       >
         <div class="modal-header">
           <h3><i class="fa-solid fa-key"></i> Resetear Contraseña</h3>
-          <button class="btn-icon" (click)="closePasswordReset()">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-xmark"
+            (clicked)="closePasswordReset()"
+          ></app-button>
         </div>
         <div class="modal-body">
           <p>
@@ -156,15 +162,18 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closePasswordReset()">Cancelar</button>
-          <button
-            class="btn btn-primary"
-            (click)="confirmPasswordReset()"
+          <app-button
+            variant="secondary"
+            label="Cancelar"
+            (clicked)="closePasswordReset()"
+          ></app-button>
+          <app-button
+            variant="primary"
+            label="Cambiar Contraseña"
+            [loading]="passwordResetLoading"
             [disabled]="!newPassword || newPassword.length < 8 || passwordResetLoading"
-          >
-            <i class="fa-solid fa-spinner fa-spin" *ngIf="passwordResetLoading"></i>
-            Cambiar Contraseña
-          </button>
+            (clicked)="confirmPasswordReset()"
+          ></app-button>
         </div>
       </div>
     </div>
@@ -209,29 +218,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         align-items: center;
       }
 
-      .btn-icon {
-        background: none;
-        border: none;
-        padding: 6px;
-        border-radius: 6px;
-        cursor: pointer;
-        color: var(--grey-600);
-        transition: all 0.15s ease;
-
-        &:hover {
-          background: var(--grey-100);
-          color: var(--primary-700);
-        }
-      }
-
       .btn-icon-danger:hover {
-        background: var(--red-50, #fef2f2);
-        color: var(--red-600, #dc2626);
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
 
       .btn-icon-success:hover {
-        background: var(--green-50, #f0fdf4);
-        color: var(--green-600, #16a34a);
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       /* Modal styles */
@@ -319,46 +313,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .success {
-        color: var(--green-600, #16a34a);
+        color: var(--semantic-green-500);
       }
 
       .error {
-        color: var(--red-600, #dc2626);
-      }
-
-      .btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 500;
-        cursor: pointer;
-        font-size: var(--type-body-size);
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
-
-        &:hover:not(:disabled) {
-          background: var(--primary-600);
-        }
-      }
-
-      .btn-secondary {
-        background: var(--grey-100);
-        color: var(--grey-700);
-
-        &:hover:not(:disabled) {
-          background: var(--grey-200);
-        }
+        color: var(--semantic-red-500);
       }
     `,
   ],

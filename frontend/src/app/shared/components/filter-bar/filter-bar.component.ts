@@ -104,7 +104,7 @@ import { ButtonComponent } from '../button/button.component';
             size="sm"
             label="Limpiar filtros"
             icon="fa-times"
-            (onClick)="clearFilters()"
+            (clicked)="clearFilters()"
           ></app-button>
         </div>
       </div>

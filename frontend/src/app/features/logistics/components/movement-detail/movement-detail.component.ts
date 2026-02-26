@@ -11,11 +11,18 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-movement-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroTableComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EntityDetailShellComponent,
+    AeroTableComponent,
+    ButtonComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -158,32 +165,36 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ───────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button
-          type="button"
-          class="btn btn-primary btn-block"
+        <app-button
+          variant="primary"
+          icon="fa-pen-to-square"
+          label="Editar Movimiento"
+          [fullWidth]="true"
           [disabled]="movement?.estado === 'ANULADO'"
-          (click)="editMovement()"
-        >
-          <i class="fa-solid fa-pen-to-square"></i>
-          Editar Movimiento
-        </button>
-        <button type="button" class="btn btn-secondary btn-block" (click)="activeTab = 'items'">
-          <i class="fa-solid fa-list-ul"></i>
-          Ver Detalle Items
-        </button>
-        <button type="button" class="btn btn-ghost btn-block" routerLink="/logistics/movements">
-          <i class="fa-solid fa-arrow-left"></i>
-          Volver a Lista
-        </button>
-        <button
-          type="button"
-          class="btn btn-outline-danger btn-block"
+          (clicked)="editMovement()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-list-ul"
+          label="Ver Detalle Items"
+          [fullWidth]="true"
+          (clicked)="activeTab = 'items'"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          (clicked)="goBack()"
+        ></app-button>
+        <app-button
+          variant="danger"
+          icon="fa-ban"
+          label="Anular Movimiento"
+          [fullWidth]="true"
           [disabled]="movement?.estado === 'ANULADO'"
-          (click)="cancelMovement()"
-        >
-          <i class="fa-solid fa-ban"></i>
-          Anular Movimiento
-        </button>
+          (clicked)="cancelMovement()"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -235,21 +246,6 @@ import {
         flex-direction: column;
         gap: var(--s-24);
         margin-top: var(--s-24);
-      }
-
-      .btn-block {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 12px;
-        padding: 10px 16px;
-        width: 100%;
-        text-align: left;
-        font-weight: 500;
-        i {
-          width: 16px;
-          text-align: center;
-        }
       }
 
       .items-container {
@@ -369,6 +365,10 @@ export class MovementDetailComponent implements OnInit {
       // Logic for cancellation (could call service)
       console.log('Cancel movement', this.movement?.id);
     }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/logistics/movements']);
   }
 
   editMovement(): void {

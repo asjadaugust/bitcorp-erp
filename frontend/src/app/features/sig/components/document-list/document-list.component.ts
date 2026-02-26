@@ -6,24 +6,26 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
-import {
-  Breadcrumb,
-} from '../../../../shared/components/page-layout/page-layout.component';
+import { Breadcrumb } from '../../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-document-list',
   standalone: true,
-  imports: [CommonModule, AeroTableComponent, FilterBarComponent],
+  imports: [CommonModule, AeroTableComponent, FilterBarComponent, ButtonComponent],
   template: `
     <div class="document-list-container">
       <div class="actions-bar">
-        <button class="btn btn-primary" (click)="uploadDocument()">
-          <i class="fa-solid fa-upload"></i> Subir Documento
-        </button>
+        <app-button
+          variant="primary"
+          label="Subir Documento"
+          icon="fa-upload"
+          (clicked)="uploadDocument()"
+        ></app-button>
       </div>
 
       <app-filter-bar
@@ -54,33 +56,13 @@ import {
         background: white;
         border-radius: 8px;
         padding: var(--s-24);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
       }
       .actions-bar {
         display: flex;
         justify-content: flex-end;
         margin-bottom: var(--s-16);
       }
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
       .btn-icon {
         color: var(--primary-500);
         text-decoration: none;

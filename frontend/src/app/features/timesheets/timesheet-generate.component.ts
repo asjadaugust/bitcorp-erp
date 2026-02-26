@@ -9,169 +9,116 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
+import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-timesheet-generate',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownComponent,
+    FormContainerComponent,
+    FormSectionComponent,
+  ],
   template: `
-    <div class="container">
-      <div class="page-header">
-        <h1>📊 Generar Planilla de Tiempo</h1>
-        <button class="btn btn-secondary" (click)="goBack()">
-          <i class="fa-solid fa-arrow-left"></i> Volver a Planillas
-        </button>
+    <app-form-container
+      title="Generar Planilla de Tiempo"
+      icon="fa-chart-bar"
+      submitLabel="Generar Planilla"
+      submitIcon="fa-wand-magic-sparkles"
+      [loading]="loading"
+      loadingText="Generando..."
+      [disableSubmit]="!isFormValid()"
+      backUrl="/operaciones/timesheets"
+      (submitted)="generateTimesheet()"
+      (cancelled)="goBack()"
+    >
+      <app-form-section title="Datos de la Planilla" icon="fa-clipboard-user" [columns]="1">
+        <div class="form-group">
+          <label for="operator">Operador *</label>
+          <app-dropdown
+            name="operator"
+            [(ngModel)]="formData.trabajadorId"
+            [options]="operatorOptions"
+            [placeholder]="'Seleccionar operador...'"
+            [searchable]="true"
+            [required]="true"
+          ></app-dropdown>
+        </div>
+
+        <div class="form-group">
+          <label for="project">Proyecto (Opcional)</label>
+          <app-dropdown
+            name="project"
+            [(ngModel)]="formData.projectId"
+            [options]="projectOptions"
+            [placeholder]="'Seleccionar proyecto'"
+            [searchable]="true"
+          ></app-dropdown>
+        </div>
+
+        <div class="form-group">
+          <label for="periodo">Período (Mes) *</label>
+          <input
+            type="month"
+            id="periodo"
+            name="periodo"
+            [(ngModel)]="formData.periodo"
+            required
+            class="form-control"
+          />
+        </div>
+      </app-form-section>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <div class="info-icon">
+          <i class="fa-solid fa-circle-info"></i>
+        </div>
+        <div class="info-content">
+          <strong>¿Cómo funciona?</strong>
+          <p>
+            La planilla se generará automáticamente desde los reportes diarios del operador en el
+            período seleccionado. Se calcularán las horas totales trabajadas y los días laborados.
+          </p>
+        </div>
       </div>
 
-      <div class="form-card">
-        <form #timesheetForm="ngForm" (ngSubmit)="generateTimesheet()">
-          <!-- Operator Selection -->
-          <div class="form-group">
-            <label for="operator">Operador *</label>
-            <app-dropdown
-              name="operator"
-              [(ngModel)]="formData.trabajadorId"
-              [options]="operatorOptions"
-              [placeholder]="'Seleccionar operador...'"
-              [searchable]="true"
-              [required]="true"
-            ></app-dropdown>
-          </div>
-
-          <!-- Project Selection (Optional) -->
-          <div class="form-group">
-            <label for="project">Proyecto (Opcional)</label>
-            <app-dropdown
-              name="project"
-              [(ngModel)]="formData.projectId"
-              [options]="projectOptions"
-              [placeholder]="'Seleccionar proyecto'"
-              [searchable]="true"
-            ></app-dropdown>
-          </div>
-
-          <!-- Date Range -->
-          <div class="form-group">
-            <label for="periodo">Período (Mes) *</label>
-            <input
-              type="month"
-              id="periodo"
-              name="periodo"
-              [(ngModel)]="formData.periodo"
-              required
-              class="form-control"
-            />
-          </div>
-
-          <!-- Info Box -->
-          <div class="info-box">
-            <div class="info-icon">ℹ️</div>
-            <div class="info-content">
-              <strong>¿Cómo funciona?</strong>
-              <p>
-                La planilla se generará automáticamente desde los reportes diarios del operador en
-                el período seleccionado. Se calcularán las horas totales trabajadas y los días
-                laborados.
-              </p>
-            </div>
-          </div>
-
-          <!-- Success Message -->
-          <div *ngIf="successMessage" class="success-message">✅ {{ successMessage }}</div>
-
-          <!-- Error Message -->
-          <div *ngIf="errorMessage" class="error-message">❌ {{ errorMessage }}</div>
-
-          <!-- Actions -->
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" (click)="goBack()">Cancelar</button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              [disabled]="!timesheetForm.valid || loading"
-            >
-              <span *ngIf="!loading">Generar Planilla</span>
-              <span *ngIf="loading">⏳ Generando...</span>
-            </button>
-          </div>
-        </form>
+      <!-- Status Messages -->
+      <div *ngIf="successMessage" class="success-message">
+        <i class="fa-solid fa-check-circle"></i> {{ successMessage }}
       </div>
-    </div>
+      <div *ngIf="errorMessage" class="error-message">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+      </div>
+    </app-form-container>
   `,
   styles: [
     `
-      .container {
-        padding: var(--s-24);
-        max-width: 800px;
-        margin: 0 auto;
-      }
-
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-24);
-      }
-
-      .page-header h1 {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--grey-900);
-        margin: 0;
-      }
-
-      .form-card {
-        background: var(--neutral-0);
-        border-radius: var(--s-12);
-        padding: var(--s-24);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      .form-group {
-        margin-bottom: var(--s-16);
-      }
-
-      .form-group label {
-        display: block;
-        font-weight: 600;
-        color: var(--grey-800);
-        margin-bottom: var(--s-8);
-        font-size: 14px;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: var(--s-12);
-        border: 1px solid var(--grey-300);
-        border-radius: var(--s-8);
-        font-size: 14px;
-        transition: border-color 0.2s;
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: var(--primary-500);
-        box-shadow: 0 0 0 3px var(--primary-100);
-      }
+      @use 'form-layout' as *;
 
       .info-box {
         display: flex;
         gap: var(--s-12);
-        background: var(--info-50);
-        border: 1px solid var(--info-200);
+        background: var(--primary-50);
+        border: 1px solid var(--primary-200);
         border-radius: var(--s-8);
         padding: var(--s-16);
-        margin: var(--s-24) 0;
+        margin: var(--s-16) 0;
       }
 
       .info-icon {
-        font-size: 24px;
+        font-size: 20px;
+        color: var(--primary-500);
         flex-shrink: 0;
       }
 
       .info-content strong {
         display: block;
-        color: var(--info-800);
+        color: var(--primary-900);
         margin-bottom: var(--s-4);
       }
 
@@ -183,77 +130,27 @@ import {
       }
 
       .success-message {
-        background: var(--success-100);
-        color: var(--success-800);
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
         padding: var(--s-16);
         border-radius: var(--s-8);
-        margin-bottom: var(--s-16);
+        margin-top: var(--s-16);
         font-weight: 500;
-      }
-
-      .error-message {
-        background: var(--error-100);
-        color: var(--error-800);
-        padding: var(--s-16);
-        border-radius: var(--s-8);
-        margin-bottom: var(--s-16);
-        font-weight: 500;
-      }
-
-      .form-actions {
         display: flex;
-        gap: var(--s-16);
-        justify-content: flex-end;
-        margin-top: var(--s-32);
-        padding-top: var(--s-24);
-        border-top: 1px solid var(--grey-200);
-      }
-
-      .btn {
-        padding: var(--s-12) var(--s-24);
-        border-radius: var(--s-8);
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
         align-items: center;
         gap: var(--s-8);
       }
 
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background: var(--primary-700);
-        transform: translateY(-2px);
-      }
-
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-800);
-      }
-
-      .btn-secondary:hover {
-        background: var(--grey-300);
-      }
-
-      @media (max-width: 640px) {
-        .form-actions {
-          flex-direction: column-reverse;
-        }
-
-        .btn {
-          width: 100%;
-          justify-content: center;
-        }
+      .error-message {
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-900);
+        padding: var(--s-16);
+        border-radius: var(--s-8);
+        margin-top: var(--s-16);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
       }
     `,
   ],
@@ -263,6 +160,7 @@ export class TimesheetGenerateComponent implements OnInit {
   private operatorService = inject(OperatorService);
   private projectService = inject(ProjectService);
   private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
 
   formData = {
     trabajadorId: null as number | null,
@@ -298,6 +196,10 @@ export class TimesheetGenerateComponent implements OnInit {
     this.loadOperators();
     this.loadProjects();
     this.setDefaultDates();
+  }
+
+  isFormValid(): boolean {
+    return !!this.formData.trabajadorId && !!this.formData.periodo;
   }
 
   setDefaultDates() {
@@ -344,18 +246,14 @@ export class TimesheetGenerateComponent implements OnInit {
       observaciones: this.formData.observaciones,
     };
 
-    console.log('Sending DTO:', dto);
-
     this.timesheetService.generateTimesheet(dto).subscribe({
       next: (res) => {
         this.loading = false;
-        // Navigate to detail
         this.router.navigate(['/operaciones/timesheets', res.id]);
       },
       error: (err) => {
         this.loading = false;
         console.error('Error generating timesheet:', err);
-        console.log('FULL ERROR OBJECT:', JSON.stringify(err, null, 2));
 
         if (err.error) {
           if (typeof err.error === 'string') {
@@ -364,7 +262,6 @@ export class TimesheetGenerateComponent implements OnInit {
             if (err.error.message) {
               this.errorMessage = err.error.message;
             } else if (err.error.error) {
-              // Handle nested error object from validation middleware
               if (typeof err.error.error === 'string') {
                 this.errorMessage = err.error.error;
               } else if (typeof err.error.error === 'object') {
@@ -372,7 +269,10 @@ export class TimesheetGenerateComponent implements OnInit {
                   this.errorMessage = err.error.error.message;
                   if (err.error.error.details && Array.isArray(err.error.error.details)) {
                     const details = err.error.error.details
-                      .map((d: Record<string, unknown>) => `${d['field']}: ${(d['errors'] as string[]).join(', ')}`)
+                      .map(
+                        (d: Record<string, unknown>) =>
+                          `${d['field']}: ${(d['errors'] as string[]).join(', ')}`
+                      )
                       .join('; ');
                     this.errorMessage += ` (${details})`;
                   }

@@ -177,7 +177,7 @@ interface ModuleCategory {
       .alerts-title {
         font-size: var(--type-bodyLarge-size);
         font-weight: 600;
-        color: var(--semantic-red-700);
+        color: var(--semantic-red-900);
         margin-bottom: var(--s-16);
         display: flex;
         align-items: center;
@@ -246,17 +246,17 @@ interface ModuleCategory {
       }
 
       .badge-red {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-900);
       }
 
       .badge-orange {
-        background: #fff3e0;
-        color: #e65100;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
 
       .badge-yellow {
-        background: var(--semantic-yellow-50);
+        background: var(--semantic-yellow-100);
         color: var(--semantic-yellow-700);
       }
 

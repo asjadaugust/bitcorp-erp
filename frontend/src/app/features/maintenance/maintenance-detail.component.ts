@@ -10,11 +10,12 @@ import {
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-maintenance-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -74,17 +75,29 @@ import { ConfirmService } from '../../core/services/confirm.service';
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button class="btn btn-primary btn-block" (click)="editMaintenance()">
-          <i class="fa-solid fa-pen"></i> Editar
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-pen"
+          label="Editar"
+          [fullWidth]="true"
+          (clicked)="editMaintenance()"
+        ></app-button>
         @if (record?.estado !== 'COMPLETADO' && record?.estado !== 'CANCELADO') {
-          <button class="btn btn-success btn-block" (click)="completeMaintenance()">
-            <i class="fa-solid fa-check"></i> Marcar Completado
-          </button>
+          <app-button
+            variant="success"
+            icon="fa-check"
+            label="Marcar Completado"
+            [fullWidth]="true"
+            (clicked)="completeMaintenance()"
+          ></app-button>
         }
-        <button class="btn btn-ghost btn-block" (click)="goBack()">
-          <i class="fa-solid fa-arrow-left"></i> Volver a Equipo
-        </button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Equipo"
+          [fullWidth]="true"
+          (clicked)="goBack()"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,

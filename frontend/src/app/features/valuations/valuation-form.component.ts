@@ -42,8 +42,8 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       [loading]="loading"
       [disableSubmit]="valuationForm.invalid || loading"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Valorización'"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Validation Errors and Alerts -->
       <app-validation-errors

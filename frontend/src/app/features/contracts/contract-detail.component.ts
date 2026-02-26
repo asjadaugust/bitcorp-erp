@@ -241,7 +241,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 size="sm"
                 icon="fa-list-check"
                 label="Inicializar Lista"
-                (onClick)="initObligaciones()"
+                (clicked)="initObligaciones()"
                 [disabled]="savingObligacion"
                 data-testid="btn-init-obligaciones"
               />
@@ -315,7 +315,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 size="sm"
                 icon="fa-list-check"
                 label="Inicializar Lista"
-                (onClick)="initObligacionesArrendatario()"
+                (clicked)="initObligacionesArrendatario()"
                 [disabled]="savingObligacionArrendatario"
                 data-testid="btn-init-obligaciones-arrendatario"
               />
@@ -388,7 +388,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             fullWidth="true"
             icon="fa-pen"
             label="Editar"
-            (onClick)="editContract()"
+            (clicked)="editContract()"
           />
         }
         <app-button
@@ -396,14 +396,14 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           fullWidth="true"
           icon="fa-file-signature"
           label="Ver Adendas"
-          (onClick)="viewAddendums()"
+          (clicked)="viewAddendums()"
         />
         <app-button
           variant="secondary"
           fullWidth="true"
           icon="fa-file-pdf"
           label="Descargar PDF"
-          (onClick)="downloadPDF()"
+          (clicked)="downloadPDF()"
         />
         @if (['ACTIVO', 'VENCIDO'].includes(contract?.estado || '')) {
           <app-button
@@ -412,7 +412,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             icon="fa-scale-balanced"
             label="Resolver Contrato"
             class="text-warning-important"
-            (onClick)="showResolverModal = true"
+            (clicked)="showResolverModal = true"
           />
         }
         @if (contract?.estado === 'RESUELTO') {
@@ -421,7 +421,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             fullWidth="true"
             icon="fa-circle-check"
             label="Liquidar Contrato"
-            (onClick)="abrirLiquidacion()"
+            (clicked)="abrirLiquidacion()"
           />
         }
         @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
@@ -430,7 +430,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             fullWidth="true"
             icon="fa-trash"
             label="Cancelar"
-            (onClick)="deleteContract()"
+            (clicked)="deleteContract()"
           />
         }
         <app-button
@@ -550,7 +550,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             <app-button
               variant="secondary"
               label="Cancelar"
-              (onClick)="showResolverModal = false"
+              (clicked)="showResolverModal = false"
             />
             <app-button
               variant="warning"
@@ -561,7 +561,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 !resolverForm.motivo_resolucion ||
                 !resolverForm.fecha_resolucion
               "
-              (onClick)="confirmarResolucion()"
+              (clicked)="confirmarResolucion()"
             />
           </div>
         </div>
@@ -666,14 +666,14 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             <app-button
               variant="secondary"
               label="Cancelar"
-              (onClick)="showLiquidarModal = false"
+              (clicked)="showLiquidarModal = false"
             />
             @if (liquidationCheck?.puede_liquidar) {
               <app-button
                 variant="primary"
                 [label]="savingLifecycle ? 'Guardando...' : 'Confirmar Liquidación'"
                 [disabled]="savingLifecycle || !liquidarForm.fecha_liquidacion"
-                (onClick)="confirmarLiquidacion()"
+                (clicked)="confirmarLiquidacion()"
               />
             }
           </div>

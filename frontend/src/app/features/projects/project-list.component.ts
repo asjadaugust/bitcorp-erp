@@ -24,6 +24,7 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-project-list',
@@ -37,6 +38,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -50,9 +52,12 @@ import { ConfirmService } from '../../core/services/confirm.service';
         <app-export-dropdown [disabled]="projects.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <button type="button" class="btn btn-primary" (click)="createProject()">
-          <i class="fa-solid fa-plus"></i> Nuevo Proyecto
-        </button>
+        <app-button
+          variant="primary"
+          label="Nuevo Proyecto"
+          icon="fa-plus"
+          (clicked)="createProject()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -98,53 +103,33 @@ import { ConfirmService } from '../../core/services/confirm.service';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button
-            class="btn-icon"
-            (click)="viewProject(row); $event.stopPropagation()"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
             title="Ver Detalles"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="editProject(row); $event.stopPropagation()"
+            (clicked)="viewProject(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
             title="Editar"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
-            class="btn-icon delete-btn"
-            (click)="deleteProject(row); $event.stopPropagation()"
+            (clicked)="editProject(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-trash"
             title="Eliminar"
-          >
-            <i class="fa-solid fa-trash"></i>
-          </button>
+            (clicked)="deleteProject(row); $event.stopPropagation()"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
       .code-badge {
         font-family: monospace;
         background: var(--grey-100);
@@ -186,18 +171,6 @@ import { ConfirmService } from '../../core/services/confirm.service';
       .date-range i {
         font-size: 10px;
         color: var(--grey-400);
-      }
-
-      .btn-icon.delete-btn:hover {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
-      }
-    `,
-    `
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
       }
     `,
   ],

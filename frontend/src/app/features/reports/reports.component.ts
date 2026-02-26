@@ -46,14 +46,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               label="Ver Datos"
               icon="fa-table"
               [loading]="loading"
-              (onClick)="generateReport()"
+              (clicked)="generateReport()"
             ></app-button>
             <app-button
               variant="success"
               label="Excel"
               icon="fa-file-excel"
               [loading]="loading"
-              (onClick)="exportExcel()"
+              (clicked)="exportExcel()"
             ></app-button>
           </div>
         </div>
@@ -215,12 +215,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         font-weight: 600;
       }
       .badge-success {
-        background: #c6f6d5;
-        color: #22543d;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
       }
       .badge-warning {
-        background: #feebc8;
-        color: #744210;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
       }
     `,
   ],

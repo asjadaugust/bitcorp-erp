@@ -11,11 +11,18 @@ import {
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-project-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroTabsComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EntityDetailShellComponent,
+    AeroTabsComponent,
+    ButtonComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -78,9 +85,13 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
             <section class="detail-section card">
               <div class="section-header">
                 <h3>Recursos Asignados</h3>
-                <button type="button" class="btn btn-primary btn-sm" (click)="assignResources()">
-                  <i class="fa-solid fa-plus"></i> Asignar
-                </button>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="fa-plus"
+                  label="Asignar"
+                  (clicked)="assignResources()"
+                ></app-button>
               </div>
               <div class="empty-state-placeholder">
                 <i class="fa-solid fa-users fa-3x"></i>
@@ -117,23 +128,35 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button type="button" class="btn btn-primary btn-block" (click)="editProject()">
-          <i class="fa-solid fa-pen"></i>
-          Editar Proyecto
-        </button>
-        <button type="button" class="btn btn-secondary btn-block" (click)="assignResources()">
-          <i class="fa-solid fa-users"></i>
-          Asignar Recursos
-        </button>
-        <button type="button" class="btn btn-ghost btn-block" (click)="navigateTo('/projects')">
-          <i class="fa-solid fa-arrow-left"></i>
-          Volver a Lista
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-pen"
+          label="Editar Proyecto"
+          [fullWidth]="true"
+          (clicked)="editProject()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-users"
+          label="Asignar Recursos"
+          [fullWidth]="true"
+          (clicked)="assignResources()"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          (clicked)="navigateTo('/projects')"
+        ></app-button>
         <div class="sidebar-divider"></div>
-        <button type="button" class="btn btn-danger btn-block" (click)="deleteProject()">
-          <i class="fa-solid fa-trash"></i>
-          Eliminar Proyecto
-        </button>
+        <app-button
+          variant="danger"
+          icon="fa-trash"
+          label="Eliminar Proyecto"
+          [fullWidth]="true"
+          (clicked)="deleteProject()"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -201,15 +224,6 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
           text-transform: uppercase;
           letter-spacing: 0.07em;
         }
-
-        .btn-sm {
-          padding: 6px 14px;
-          font-size: 0.8rem;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
       }
 
       .info-grid {
@@ -275,24 +289,6 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
         margin: var(--s-16) 0;
       }
 
-      .btn-block {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 12px;
-        width: 100%;
-        padding: 12px 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        border-radius: 10px;
-
-        i {
-          width: 20px;
-          text-align: center;
-          font-size: 1.1em;
-        }
-      }
-
       .notes {
         background: var(--grey-50);
         padding: var(--s-16);
@@ -304,9 +300,9 @@ import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.c
       }
 
       .alert-warning {
-        background: var(--semantic-yellow-50);
+        background: var(--semantic-yellow-100);
         color: var(--semantic-yellow-700);
-        border: 1px solid var(--semantic-yellow-200);
+        border: 1px solid var(--semantic-yellow-300);
       }
     `,
   ],

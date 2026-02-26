@@ -40,8 +40,8 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
       submitIcon="fa-save"
       [loading]="loading"
       [disableSubmit]="form.invalid || loading"
-      (onSubmit)="onSubmit()"
-      (onCancel)="onCancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="onCancel()"
     >
       <app-validation-errors *ngIf="validationErrors.length > 0" [errors]="validationErrors">
       </app-validation-errors>

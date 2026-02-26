@@ -32,8 +32,8 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
       submitIcon="fa-save"
       [loading]="loading"
       [disableSubmit]="form.invalid || loading"
-      (onSubmit)="onSubmit()"
-      (onCancel)="onCancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="onCancel()"
     >
       <form [formGroup]="form" class="form-grid">
         <!-- Section 1: Basic Information -->

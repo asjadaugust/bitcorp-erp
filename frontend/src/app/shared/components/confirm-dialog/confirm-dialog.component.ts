@@ -32,9 +32,9 @@ export interface ConfirmDialogData {
       [submitBtnClass]="data.isDanger ? 'btn-danger' : 'btn-primary'"
       [disableSubmit]="data.inputRequired && !inputValue"
       [showCancel]="!data.showAlertOnly"
-      (onCancel)="onCancel()"
-      (onSubmit)="onConfirm()"
-      (onClose)="onCancel()"
+      (cancelled)="onCancel()"
+      (submitted)="onConfirm()"
+      (closed)="onCancel()"
     >
       <div class="input-container" *ngIf="data.showInput">
         <span class="input-label" *ngIf="data.inputLabel">{{ data.inputLabel }}</span>

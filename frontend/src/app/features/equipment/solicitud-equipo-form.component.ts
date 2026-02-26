@@ -38,8 +38,8 @@ import { ConfirmService } from '../../core/services/confirm.service';
       [loading]="loading"
       [disableSubmit]="solicitudForm.invalid || saving"
       [submitLabel]="saving ? 'Guardando...' : isEdit ? 'Actualizar' : 'Crear Solicitud'"
-      (onSubmit)="guardar()"
-      (onCancel)="cancelar()"
+      (submitted)="guardar()"
+      (cancelled)="cancelar()"
     >
       <form [formGroup]="solicitudForm" class="form-grid">
         <!-- Section: Basic Information -->

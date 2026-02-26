@@ -35,8 +35,8 @@ import {
       [loading]="loading"
       [loadingText]="'Guardando...'"
       [showFooter]="true"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Success Message -->
       <div *ngIf="successMessage" class="alert alert-success">

@@ -133,8 +133,8 @@ import {
         min-width: 120px;
       }
       .summary-card.alert {
-        border-color: var(--error-300);
-        background: var(--error-50, #fef2f2);
+        border-color: var(--semantic-red-300);
+        background: var(--semantic-red-100);
       }
       .summary-value {
         font-size: 24px;
@@ -142,7 +142,7 @@ import {
         color: var(--grey-900);
       }
       .summary-card.alert .summary-value {
-        color: var(--error-600);
+        color: var(--semantic-red-500);
       }
       .summary-label {
         font-size: 12px;
@@ -169,13 +169,13 @@ import {
         transition: width 0.3s ease;
       }
       .progress-fill.red {
-        background: var(--error-500);
+        background: var(--semantic-red-500);
       }
       .progress-fill.yellow {
-        background: #f9a825;
+        background: var(--semantic-yellow-500);
       }
       .progress-fill.green {
-        background: var(--success-500, #22c55e);
+        background: var(--semantic-green-500);
       }
       .progress-text {
         font-size: 12px;
@@ -206,15 +206,15 @@ import {
         margin-top: 4px;
       }
       .fecha-chip {
-        background: var(--error-100);
-        color: var(--error-700);
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-900);
         font-size: 11px;
         padding: 2px 6px;
         border-radius: 4px;
       }
 
       .all-ok {
-        color: var(--success-600, #16a34a);
+        color: var(--semantic-green-500);
         font-size: 12px;
         font-weight: 600;
       }

@@ -11,156 +11,130 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import { EntityDetailShellComponent } from '../../shared/components/entity-detail/entity-detail-shell.component';
+import {
+  EntityDetailHeader,
+  AuditInfo,
+  NotFoundConfig,
+} from '../../shared/components/entity-detail/entity-detail.types';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-timesheet-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, AeroTableComponent, StatsGridComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    AeroTableComponent,
+    StatsGridComponent,
+    EntityDetailShellComponent,
+    ButtonComponent,
+  ],
   template: `
-    <div class="detail-container">
-      <div class="container">
-        <div *ngIf="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Cargando detalles de la planilla...</p>
+    <app-entity-detail-shell
+      [loading]="loading"
+      [entity]="timesheet"
+      [header]="header"
+      [auditInfo]="auditInfo"
+      [notFound]="notFoundConfig"
+    >
+      <!-- Stats below header -->
+      <div entity-header-below *ngIf="timesheet">
+        <app-stats-grid [items]="statItems" testId="timesheet-summary-stats"></app-stats-grid>
+      </div>
+
+      <!-- Main Content -->
+      <div entity-main-content class="detail-sections" *ngIf="timesheet">
+        <div class="detail-section">
+          <h2>Detalle Diario</h2>
+          <aero-table
+            [columns]="columns"
+            [data]="timesheet.details || []"
+            [templates]="{
+              project: projectTemplate,
+              equipment: equipmentTemplate,
+              hours: hoursTemplate,
+            }"
+          >
+          </aero-table>
+
+          <ng-template #projectTemplate let-row>
+            {{ row.project?.G00007_Nombre || '-' }}
+          </ng-template>
+
+          <ng-template #equipmentTemplate let-row>
+            {{ row.equipment?.C08001_Nombre || '-' }}
+          </ng-template>
+
+          <ng-template #hoursTemplate let-row>
+            <strong>{{ row.hours_worked }}</strong>
+          </ng-template>
         </div>
 
-        <div *ngIf="timesheet && !loading" class="detail-grid">
-          <div class="detail-main">
-            <!-- Header Card -->
-            <div class="card detail-header-card">
-              <div class="detail-header">
-                <div>
-                  <h1>Detalle de Planilla #{{ timesheet.id }}</h1>
-                  <p class="text-subtitle">
-                    {{ timesheet.fecha_inicio | date: 'dd/MM/yyyy' }} -
-                    {{ timesheet.fecha_fin | date: 'dd/MM/yyyy' }}
-                  </p>
-                </div>
-                <div class="detail-status">
-                  <span
-                    class="status-badge"
-                    [class.status-APROBADO]="timesheet.estado === 'APROBADO'"
-                    [class.status-PENDIENTE]="
-                      timesheet.estado === 'ENVIADO' || timesheet.estado === 'BORRADOR'
-                    "
-                    [class.status-CANCELADO]="timesheet.estado === 'RECHAZADO'"
-                  >
-                    {{ timesheet.estado }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Stats Grid -->
-              <app-stats-grid [items]="statItems" testId="timesheet-summary-stats"></app-stats-grid>
-            </div>
-
-            <!-- Details Table Card -->
-            <div class="card mt-6">
-              <div class="detail-section">
-                <h2>Detalle Diario</h2>
-                <div class="table-container">
-                  <aero-table
-                    [columns]="columns"
-                    [data]="timesheet.details || []"
-                    [templates]="{
-                      project: projectTemplate,
-                      equipment: equipmentTemplate,
-                      hours: hoursTemplate,
-                    }"
-                  >
-                  </aero-table>
-
-                  <ng-template #projectTemplate let-row>
-                    {{ row.project?.G00007_Nombre || '-' }}
-                  </ng-template>
-
-                  <ng-template #equipmentTemplate let-row>
-                    {{ row.equipment?.C08001_Nombre || '-' }}
-                  </ng-template>
-
-                  <ng-template #hoursTemplate let-row>
-                    <strong>{{ row.hours_worked }}</strong>
-                  </ng-template>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sidebar -->
-          <div class="detail-sidebar">
-            <div class="card">
-              <h3 class="sidebar-card-title">Acciones</h3>
-              <div class="quick-actions">
-                <button
-                  *ngIf="timesheet.estado === 'BORRADOR'"
-                  class="btn btn-primary btn-block"
-                  (click)="submitTimesheet()"
-                >
-                  <i class="fa-solid fa-paper-plane"></i> Enviar Planilla
-                </button>
-                <button
-                  *ngIf="timesheet.estado === 'ENVIADO'"
-                  class="btn btn-primary btn-block"
-                  (click)="approveTimesheet()"
-                >
-                  <i class="fa-solid fa-check"></i> Aprobar Planilla
-                </button>
-                <button
-                  *ngIf="timesheet.estado === 'ENVIADO'"
-                  class="btn btn-danger btn-block"
-                  (click)="rejectTimesheet()"
-                >
-                  <i class="fa-solid fa-xmark"></i> Rechazar Planilla
-                </button>
-                <button class="btn btn-ghost btn-block" routerLink="/operaciones/timesheets">
-                  <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-                </button>
-              </div>
-            </div>
-
-            <div class="card" *ngIf="timesheet.notes">
-              <h3 class="sidebar-card-title">Observaciones</h3>
-              <p class="text-sm text-grey-600">{{ timesheet.notes }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Error State -->
-        <div *ngIf="error && !loading" class="empty-state-card mt-6">
-          <i class="fa-solid fa-circle-exclamation text-danger"></i>
-          <h3>Error</h3>
-          <p>{{ error }}</p>
-          <button class="btn btn-primary mt-4" routerLink="/operaciones/timesheets">
-            Volver a la lista
-          </button>
+        <div class="detail-section" *ngIf="timesheet.observaciones">
+          <h2>Observaciones</h2>
+          <p class="text-body">{{ timesheet.observaciones }}</p>
         </div>
       </div>
-    </div>
+
+      <!-- Sidebar Actions -->
+      <ng-container entity-sidebar-actions *ngIf="timesheet">
+        <app-button
+          *ngIf="timesheet.estado === 'BORRADOR'"
+          variant="primary"
+          icon="fa-paper-plane"
+          label="Enviar Planilla"
+          [fullWidth]="true"
+          (clicked)="submitTimesheet()"
+        ></app-button>
+        <app-button
+          *ngIf="timesheet.estado === 'ENVIADO'"
+          variant="primary"
+          icon="fa-check"
+          label="Aprobar Planilla"
+          [fullWidth]="true"
+          (clicked)="approveTimesheet()"
+        ></app-button>
+        <app-button
+          *ngIf="timesheet.estado === 'ENVIADO'"
+          variant="danger"
+          icon="fa-xmark"
+          label="Rechazar Planilla"
+          [fullWidth]="true"
+          (clicked)="rejectTimesheet()"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          routerLink="/operaciones/timesheets"
+        ></app-button>
+      </ng-container>
+    </app-entity-detail-shell>
   `,
   styles: [
     `
       @use 'detail-layout' as *;
 
-      .mt-4 {
-        margin-top: 1rem;
-      }
-      .mt-6 {
-        margin-top: 1.5rem;
-      }
-      .text-sm {
-        font-size: 0.875rem;
-      }
-      .text-grey-600 {
-        color: var(--grey-600);
-      }
-      .text-subtitle {
-        font-size: 14px;
-        color: var(--grey-500);
-        margin-top: 4px;
+      .detail-sections {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-24);
       }
 
-      .detail-header-card {
-        padding-bottom: var(--s-24);
+      .detail-section h2 {
+        font-size: var(--type-h3-size);
+        font-weight: 700;
+        color: var(--grey-900);
+        margin-bottom: var(--s-16);
+      }
+
+      .text-body {
+        color: var(--grey-700);
+        line-height: 1.6;
       }
     `,
   ],
@@ -169,18 +143,28 @@ export class TimesheetDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private timesheetService = inject(TimesheetService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   timesheet: Timesheet | null = null;
   loading = true;
-  error = '';
   statItems: StatItem[] = [];
 
-  breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
-    { label: 'Operaciones', url: '/operaciones' },
-    { label: 'Planillas', url: '/operaciones/timesheets' },
-    { label: 'Detalle' },
-  ];
+  header: EntityDetailHeader = {
+    title: 'Detalle de Planilla',
+    statusLabel: '',
+    statusClass: '',
+  };
+
+  auditInfo: AuditInfo = { entries: [] };
+
+  notFoundConfig: NotFoundConfig = {
+    icon: 'fa-solid fa-clipboard-user',
+    title: 'Planilla no encontrada',
+    message: 'No se pudo cargar la planilla solicitada.',
+    backLabel: 'Volver a Planillas',
+    backRoute: '/operaciones/timesheets',
+  };
 
   columns: TableColumn[] = [
     { key: 'work_date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
@@ -197,7 +181,6 @@ export class TimesheetDetailComponent implements OnInit {
     if (id) {
       this.loadTimesheet(parseInt(id));
     } else {
-      this.error = 'ID de planilla no válido';
       this.loading = false;
     }
   }
@@ -207,15 +190,48 @@ export class TimesheetDetailComponent implements OnInit {
     this.timesheetService.getTimesheetById(id).subscribe({
       next: (res) => {
         this.timesheet = res;
+        this.updateHeader();
         this.calculateStatItems();
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'Error al cargar la planilla';
         this.loading = false;
+        this.timesheet = null;
         console.error(err);
       },
     });
+  }
+
+  private updateHeader(): void {
+    if (!this.timesheet) return;
+
+    const statusMap: Record<string, { label: string; css: string }> = {
+      BORRADOR: { label: 'Borrador', css: 'status-PENDIENTE' },
+      ENVIADO: { label: 'Enviado', css: 'status-PENDIENTE' },
+      APROBADO: { label: 'Aprobado', css: 'status-APROBADO' },
+      RECHAZADO: { label: 'Rechazado', css: 'status-CANCELADO' },
+    };
+
+    const status = statusMap[this.timesheet.estado || ''] || {
+      label: this.timesheet.estado || '',
+      css: '',
+    };
+
+    this.header = {
+      icon: 'fa-solid fa-clipboard-user',
+      title: `Planilla #${this.timesheet.id}`,
+      subtitle: this.timesheet.trabajador?.nombre_completo || '',
+      statusLabel: status.label,
+      statusClass: status.css,
+    };
+
+    this.auditInfo = {
+      entries: [
+        { label: 'Período', date: this.timesheet.periodo },
+        { label: 'Creado', date: this.timesheet.createdAt as string },
+        { label: 'Actualizado', date: this.timesheet.updatedAt as string },
+      ],
+    };
   }
 
   calculateStatItems() {
@@ -263,41 +279,77 @@ export class TimesheetDetailComponent implements OnInit {
 
   submitTimesheet() {
     if (!this.timesheet) return;
-    if (!confirm('¿Está seguro de enviar esta planilla para aprobación?')) return;
-
-    this.timesheetService.submitTimesheet(this.timesheet.id).subscribe({
-      next: (res) => {
-        this.timesheet = res;
-        alert('Planilla enviada exitosamente');
-      },
-      error: (_err) => alert('Error al enviar planilla'),
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Enviar Planilla',
+        message: '¿Está seguro de enviar esta planilla para aprobación?',
+        icon: 'fa-paper-plane',
+        confirmLabel: 'Enviar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.timesheetService.submitTimesheet(this.timesheet!.id).subscribe({
+            next: (res) => {
+              this.timesheet = res;
+              this.updateHeader();
+              this.snackBar.open('Planilla enviada exitosamente', 'Cerrar', { duration: 3000 });
+            },
+            error: () =>
+              this.snackBar.open('Error al enviar planilla', 'Cerrar', { duration: 3000 }),
+          });
+        }
+      });
   }
 
   approveTimesheet() {
     if (!this.timesheet) return;
-    if (!confirm('¿Aprobar esta planilla?')) return;
-
-    this.timesheetService.approveTimesheet(this.timesheet.id).subscribe({
-      next: (res) => {
-        this.timesheet = res;
-        alert('Planilla aprobada');
-      },
-      error: (_err) => alert('Error al aprobar planilla'),
-    });
+    this.confirmSvc
+      .confirm({
+        title: 'Aprobar Planilla',
+        message: '¿Está seguro de aprobar esta planilla?',
+        icon: 'fa-check',
+        confirmLabel: 'Aprobar',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.timesheetService.approveTimesheet(this.timesheet!.id).subscribe({
+            next: (res) => {
+              this.timesheet = res;
+              this.updateHeader();
+              this.snackBar.open('Planilla aprobada', 'Cerrar', { duration: 3000 });
+            },
+            error: () =>
+              this.snackBar.open('Error al aprobar planilla', 'Cerrar', { duration: 3000 }),
+          });
+        }
+      });
   }
 
   rejectTimesheet() {
     if (!this.timesheet) return;
-    const reason = prompt('Ingrese el motivo del rechazo:');
-    if (!reason) return;
-
-    this.timesheetService.rejectTimesheet(this.timesheet.id, reason).subscribe({
-      next: (res) => {
-        this.timesheet = res;
-        alert('Planilla rechazada');
-      },
-      error: (_err) => alert('Error al rechazar planilla'),
-    });
+    this.confirmSvc
+      .prompt({
+        title: 'Rechazar Planilla',
+        message: '¿Está seguro de rechazar esta planilla?',
+        icon: 'fa-xmark',
+        confirmLabel: 'Rechazar',
+        isDanger: true,
+        inputLabel: 'Motivo del rechazo',
+        inputPlaceholder: 'Ingrese el motivo del rechazo...',
+        inputRequired: true,
+      })
+      .subscribe((reason) => {
+        if (reason) {
+          this.timesheetService.rejectTimesheet(this.timesheet!.id, reason).subscribe({
+            next: (res) => {
+              this.timesheet = res;
+              this.updateHeader();
+              this.snackBar.open('Planilla rechazada', 'Cerrar', { duration: 3000 });
+            },
+            error: () =>
+              this.snackBar.open('Error al rechazar planilla', 'Cerrar', { duration: 3000 }),
+          });
+        }
+      });
   }
 }

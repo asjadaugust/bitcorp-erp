@@ -16,6 +16,7 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-notificaciones-list',
@@ -28,6 +29,7 @@ import {
     ActionsContainerComponent,
     FilterBarComponent,
     StatsGridComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -38,15 +40,14 @@ import {
     >
       <!-- Acciones -->
       <app-actions-container actions>
-        <button
-          type="button"
-          class="btn btn-outline"
-          (click)="marcarTodasLeidas()"
+        <app-button
+          variant="outline"
+          label="Marcar todo como leído"
+          icon="fa-check-double"
           [disabled]="svc.totalNoLeidas() === 0"
           data-testid="btn-marcar-todas-leidas"
-        >
-          <i class="fa-solid fa-check-double"></i> Marcar todo como leído
-        </button>
+          (clicked)="marcarTodasLeidas()"
+        ></app-button>
       </app-actions-container>
 
       <!-- Estadísticas -->
@@ -114,25 +115,23 @@ import {
 
           <!-- Acciones -->
           <div class="notif-acciones">
-            <button
+            <app-button
               *ngIf="!n.leido"
-              type="button"
-              class="btn btn-sm btn-outline"
+              variant="icon"
+              size="sm"
+              icon="fa-check"
               title="Marcar como leída"
-              (click)="marcarLeida(n)"
               [attr.data-testid]="'btn-marcar-leida-' + n.id"
-            >
-              <i class="fa-solid fa-check"></i>
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-danger-outline"
+              (clicked)="marcarLeida(n)"
+            ></app-button>
+            <app-button
+              variant="icon"
+              size="sm"
+              icon="fa-trash"
               title="Eliminar"
-              (click)="eliminar(n.id)"
               [attr.data-testid]="'btn-eliminar-' + n.id"
-            >
-              <i class="fa-solid fa-trash"></i>
-            </button>
+              (clicked)="eliminar(n.id)"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -162,7 +161,7 @@ import {
       }
       .notif-card.no-leida {
         border-left: 4px solid var(--primary-600);
-        background: #eff6ff;
+        background: var(--semantic-blue-100);
       }
 
       .notif-icono {
@@ -176,40 +175,40 @@ import {
         font-size: 16px;
       }
       .icono-warning {
-        background: #fef3c7;
-        color: #d97706;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
       .icono-error {
-        background: #fee2e2;
-        color: #dc2626;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
       .icono-success {
-        background: #dcfce7;
-        color: #16a34a;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
       .icono-info {
-        background: #dbeafe;
-        color: #2563eb;
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
       .icono-approval_required {
-        background: #ede9fe;
-        color: #7c3aed;
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
       .icono-approval_completed {
-        background: #dcfce7;
-        color: #15803d;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
       .icono-contract_expiry {
-        background: #fee2e2;
-        color: #dc2626;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
       .icono-maintenance_due {
-        background: #fef3c7;
-        color: #d97706;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
       .icono-schedule_assignment {
-        background: #dbeafe;
-        color: #2563eb;
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
       .icono-system {
         background: var(--grey-100);
@@ -240,28 +239,28 @@ import {
         text-transform: uppercase;
       }
       .badge-tipo-warning {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
       }
       .badge-tipo-error {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-900);
       }
       .badge-tipo-success {
-        background: #dcfce7;
-        color: #14532d;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
       }
       .badge-tipo-info {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-900);
       }
       .badge-tipo-approval_required {
-        background: #ede9fe;
-        color: #5b21b6;
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-900);
       }
       .badge-tipo-approval_completed {
-        background: #dcfce7;
-        color: #14532d;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
       }
       .badge-tipo-contract_expiry,
       .badge-tipo-maintenance_due,
@@ -306,21 +305,6 @@ import {
         gap: 6px;
         flex-shrink: 0;
       }
-      .btn-danger-outline {
-        background: transparent;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-500);
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        padding: 4px 8px;
-        font-size: 12px;
-      }
-      .btn-danger-outline:hover {
-        border-color: #dc2626;
-        color: #dc2626;
-        background: #fee2e2;
-      }
-
       .empty-center {
         text-align: center;
         padding: 48px 24px;

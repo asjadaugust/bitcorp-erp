@@ -35,8 +35,8 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       [loading]="loading"
       [loadingText]="'Guardando...'"
       [showFooter]="true"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Error Feedback -->
       <div *ngIf="errorMessage" class="alert alert-error mb-4">

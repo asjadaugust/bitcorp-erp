@@ -32,8 +32,8 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
       submitIcon="fa-save"
       [loading]="loading"
       [disableSubmit]="fuelForm.invalid || loading"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <form [formGroup]="fuelForm" class="form-grid">
         <!-- Section 1: Basic Information -->

@@ -23,6 +23,9 @@ import {
   AeroCardComponent,
   CardInfoItem,
 } from '../../../shared/components/aero-card/aero-card.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-scheduled-task-list',
@@ -36,6 +39,7 @@ import {
     ExportDropdownComponent,
     DropdownComponent,
     AeroCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -52,13 +56,18 @@ import {
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
 
-        <button type="button" class="btn btn-secondary" (click)="viewCalendar()">
-          <i class="fa-solid fa-calendar"></i> Ver Calendario
-        </button>
-
-        <button type="button" class="btn btn-primary" (click)="createTask()">
-          <i class="fa-solid fa-plus"></i> Nueva Tarea
-        </button>
+        <app-button
+          variant="secondary"
+          icon="fa-calendar"
+          label="Ver Calendario"
+          (clicked)="viewCalendar()"
+        ></app-button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Tarea"
+          (clicked)="createTask()"
+        ></app-button>
       </app-actions-container>
 
       <div class="filters-card">
@@ -99,9 +108,12 @@ import {
           <i class="fa-solid fa-circle-exclamation error-icon"></i>
           <h3>Error de Conexión</h3>
           <p>{{ error }}</p>
-          <button class="btn btn-secondary" (click)="loadTasks()">
-            <i class="fa-solid fa-sync"></i> Reintentar
-          </button>
+          <app-button
+            variant="secondary"
+            icon="fa-sync"
+            label="Reintentar"
+            (clicked)="loadTasks()"
+          ></app-button>
         </div>
       </div>
 
@@ -123,29 +135,29 @@ import {
             (cardClick)="viewTask(task.id)"
           >
             <div actions>
-              <button
+              <app-button
                 *ngIf="task.estado === 'pending'"
-                class="card-action-btn card-action-btn--primary"
-                (click)="assignTask(task, $event)"
+                variant="icon"
+                size="sm"
+                icon="fa-user-plus"
                 title="Asignar Operador"
-              >
-                <i class="fa-solid fa-user-plus"></i>
-              </button>
-              <button
+                (clicked)="assignTask(task, $event)"
+              ></app-button>
+              <app-button
                 *ngIf="task.estado !== 'completed' && task.estado !== 'cancelled'"
-                class="card-action-btn card-action-btn--success"
-                (click)="completeTask(task, $event)"
+                variant="icon"
+                size="sm"
+                icon="fa-check"
                 title="Completar Tarea"
-              >
-                <i class="fa-solid fa-check"></i>
-              </button>
-              <button
-                class="card-action-btn card-action-btn--info"
-                (click)="editTask(task.id, $event)"
+                (clicked)="completeTask(task, $event)"
+              ></app-button>
+              <app-button
+                variant="icon"
+                size="sm"
+                icon="fa-pen"
                 title="Editar"
-              >
-                <i class="fa-solid fa-pen"></i>
-              </button>
+                (clicked)="editTask(task.id, $event)"
+              ></app-button>
             </div>
           </app-aero-card>
         </div>
@@ -157,9 +169,12 @@ import {
           </div>
           <h3>No hay tareas</h3>
           <p>No se encontraron tareas programadas para los filtros seleccionados.</p>
-          <button class="btn btn-primary" (click)="createTask()">
-            <i class="fa-solid fa-plus"></i> Crear Primera Tarea
-          </button>
+          <app-button
+            variant="primary"
+            icon="fa-plus"
+            label="Crear Primera Tarea"
+            (clicked)="createTask()"
+          ></app-button>
         </div>
       </div>
     </app-page-layout>
@@ -174,232 +189,6 @@ import {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
         gap: var(--s-24);
-      }
-
-      .task-card {
-        background: var(--neutral-0);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        display: flex;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--grey-200);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-
-        &:hover {
-          transform: translateY(-4px);
-          box-shadow: var(--shadow-lg);
-          border-color: var(--primary-300);
-        }
-
-        &.priority-high {
-          border-left: 1px solid var(--semantic-red-300);
-        }
-      }
-
-      .card-status-indicator {
-        width: 6px;
-        flex-shrink: 0;
-
-        &.status-pending {
-          background-color: var(--grey-300);
-        }
-        &.status-assigned {
-          background-color: var(--semantic-blue-500);
-        }
-        &.status-in_progress {
-          background-color: var(--semantic-yellow-500);
-        }
-        &.status-completed {
-          background-color: var(--semantic-green-500);
-        }
-        &.status-cancelled,
-        &.status-overdue {
-          background-color: var(--semantic-red-500);
-        }
-      }
-
-      .card-main {
-        flex: 1;
-        padding: var(--s-20);
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-16);
-      }
-
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .header-type {
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-        color: var(--grey-500);
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-
-        i {
-          font-size: 14px;
-          color: var(--grey-400);
-        }
-      }
-
-      .priority-badge {
-        font-size: 10px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-
-        &.priority-low {
-          background: var(--grey-100);
-          color: var(--grey-700);
-        }
-        &.priority-medium {
-          background: var(--primary-100);
-          color: var(--primary-800);
-        }
-        &.priority-high {
-          background: var(--semantic-red-100);
-          color: var(--semantic-red-900);
-        }
-        &.priority-urgent {
-          background: var(--neutral-900);
-          color: var(--neutral-0);
-        }
-      }
-
-      .task-title {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--primary-900);
-        line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .task-details {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-12);
-      }
-
-      .detail-item {
-        display: flex;
-        align-items: center;
-        gap: var(--s-12);
-        font-size: 14px;
-
-        i {
-          width: 20px;
-          text-align: center;
-          color: var(--grey-400);
-          font-size: 16px;
-        }
-
-        .detail-label {
-          color: var(--grey-500);
-          font-weight: 500;
-          min-width: 75px;
-        }
-
-        .detail-value {
-          color: var(--grey-800);
-          font-weight: 600;
-        }
-
-        .text-unassigned {
-          color: var(--grey-400);
-          font-style: italic;
-          font-weight: 400;
-        }
-      }
-
-      .card-footer {
-        margin-top: auto;
-        padding-top: var(--s-16);
-        border-top: 1px solid var(--grey-100);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .status-pill {
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-        padding: 6px 14px;
-        border-radius: 30px;
-        font-size: 12px;
-        font-weight: 600;
-
-        i {
-          font-size: 8px;
-        }
-
-        &.status-pending {
-          background: var(--grey-100);
-          color: var(--grey-600);
-        }
-        &.status-assigned {
-          background: var(--semantic-blue-100);
-          color: var(--semantic-blue-900);
-        }
-        &.status-in_progress {
-          background: var(--semantic-yellow-100);
-          color: var(--semantic-yellow-900);
-        }
-        &.status-completed {
-          background: var(--semantic-green-100);
-          color: var(--semantic-green-900);
-        }
-        &.status-cancelled,
-        &.status-overdue {
-          background: var(--semantic-red-100);
-          color: var(--semantic-red-900);
-        }
-      }
-
-      .card-actions {
-        display: flex;
-        gap: var(--s-12);
-      }
-
-      .action-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        border: 1px solid var(--grey-200);
-        background: var(--neutral-0);
-        color: var(--grey-500);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        &:hover {
-          background: var(--grey-50);
-          transform: scale(1.05);
-        }
-
-        &.edit:hover {
-          color: var(--primary-500);
-          border-color: var(--primary-300);
-        }
-        &.delete:hover {
-          color: var(--semantic-red-500);
-          border-color: var(--semantic-red-300);
-        }
       }
 
       .empty-state {
@@ -478,6 +267,8 @@ export class ScheduledTaskListComponent implements OnInit {
   private taskService = inject(ScheduledTaskService);
   private router = inject(Router);
   private excelService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   tasks: ScheduledTask[] = [];
   loading = false;
@@ -552,12 +343,16 @@ export class ScheduledTaskListComponent implements OnInit {
   }
 
   deleteTask(id: number) {
-    if (confirm('¿Estás seguro de eliminar esta tarea?')) {
+    this.confirmSvc.confirmDelete('esta tarea').subscribe((confirmed) => {
+      if (!confirmed) return;
       this.taskService.delete(id).subscribe({
         next: () => this.loadTasks(),
-        error: (err: unknown) => alert('Error al eliminar: ' + (err as Error).message),
+        error: (err: unknown) =>
+          this.snackBar.open('Error al eliminar: ' + (err as Error).message, 'Cerrar', {
+            duration: 4000,
+          }),
       });
-    }
+    });
   }
 
   viewCalendar() {
@@ -623,7 +418,7 @@ export class ScheduledTaskListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.tasks.length === 0) {
-      alert('No hay tareas programadas para exportar');
+      this.snackBar.open('No hay tareas programadas para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -653,7 +448,7 @@ export class ScheduledTaskListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.tasks.length === 0) {
-      alert('No hay tareas programadas para exportar');
+      this.snackBar.open('No hay tareas programadas para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

@@ -4,20 +4,22 @@ import { TimesheetDetail } from '../../models/timesheet-detail.model';
 import { Trabajador } from '../../models/trabajador.model';
 import { Proyecto } from '../../models/project.model';
 import { User } from '../../models/user.model';
+import { CertificacionOperador } from '../../models/operador-certificacion.model';
+import { HabilidadOperador } from '../../models/operador-habilidad.model';
 
 /**
- * Seeds HR data: timesheets and timesheet details
+ * Seeds HR data: timesheets, timesheet details, operator certifications, operator skills
  */
 export class HrSeeder extends BaseSeeder {
   async run(): Promise<void> {
-    console.log('  → Seeding HR data (timesheets)...');
+    console.log('  → Seeding HR data (timesheets, certifications, skills)...');
 
     // Get references to existing data
     const trabajadorRepo = this.dataSource.getRepository(Trabajador);
     const projectRepo = this.dataSource.getRepository(Proyecto);
     const userRepo = this.dataSource.getRepository(User);
 
-    const trabajadores = await trabajadorRepo.find({ take: 2 });
+    const trabajadores = await trabajadorRepo.find({ take: 5 });
     const projects = await projectRepo.find({ take: 2 });
     const admin = await userRepo.findOne({ where: { username: 'admin' } });
 
@@ -175,9 +177,287 @@ export class HrSeeder extends BaseSeeder {
       }
     }
 
+    // 2. Operator Certifications
+    const certRepo = this.dataSource.getRepository(CertificacionOperador);
+
+    const existingCerts = await certRepo.count();
+    if (existingCerts === 0) {
+      const today = new Date();
+      const oneYearOut = new Date(today);
+      oneYearOut.setFullYear(today.getFullYear() + 1);
+      const thirtyDaysOut = new Date(today);
+      thirtyDaysOut.setDate(today.getDate() + 30);
+      const expiredDate = new Date(today);
+      expiredDate.setMonth(today.getMonth() - 3);
+      const lastYear = new Date(today);
+      lastYear.setFullYear(today.getFullYear() - 1);
+      const twoYearsAgo = new Date(today);
+      twoYearsAgo.setFullYear(today.getFullYear() - 2);
+
+      const certData = [];
+
+      // Worker 1 (Pedro Ramírez - Operador de Excavadora)
+      if (trabajadores[0]) {
+        certData.push(
+          certRepo.create({
+            trabajadorId: trabajadores[0].id,
+            nombreCertificacion: 'Certificado de Operador de Excavadora Hidráulica',
+            numeroCertificacion: 'CERT-EXC-2024-001',
+            fechaEmision: lastYear,
+            fechaVencimiento: oneYearOut,
+            entidadEmisora: 'SENCICO - Servicio Nacional de Capacitación',
+            estado: 'VIGENTE',
+            tenantId: 1,
+          }),
+          certRepo.create({
+            trabajadorId: trabajadores[0].id,
+            nombreCertificacion: 'Licencia de Conducir Categoría A-III-c',
+            numeroCertificacion: 'LIC-A3C-87654321',
+            fechaEmision: twoYearsAgo,
+            fechaVencimiento: thirtyDaysOut,
+            entidadEmisora: 'Ministerio de Transportes y Comunicaciones',
+            estado: 'POR_VENCER',
+            tenantId: 1,
+          }),
+          certRepo.create({
+            trabajadorId: trabajadores[0].id,
+            nombreCertificacion: 'Capacitación en Seguridad y Salud Ocupacional',
+            numeroCertificacion: 'SSO-2024-0456',
+            fechaEmision: lastYear,
+            fechaVencimiento: oneYearOut,
+            entidadEmisora: 'Instituto de Seguridad Minera - ISEM',
+            estado: 'VIGENTE',
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 2 (José Torres - Operador de Tractor)
+      if (trabajadores[1]) {
+        certData.push(
+          certRepo.create({
+            trabajadorId: trabajadores[1].id,
+            nombreCertificacion: 'Certificado de Operador de Tractor sobre Orugas',
+            numeroCertificacion: 'CERT-TRA-2023-045',
+            fechaEmision: twoYearsAgo,
+            fechaVencimiento: expiredDate,
+            entidadEmisora: 'TECSUP',
+            estado: 'VENCIDO',
+            tenantId: 1,
+          }),
+          certRepo.create({
+            trabajadorId: trabajadores[1].id,
+            nombreCertificacion: 'Licencia de Conducir Categoría A-III-c',
+            numeroCertificacion: 'LIC-A3C-76543210',
+            fechaEmision: lastYear,
+            fechaVencimiento: oneYearOut,
+            entidadEmisora: 'Ministerio de Transportes y Comunicaciones',
+            estado: 'VIGENTE',
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 3 (Carlos Huamán - Operador de Cargador Frontal)
+      if (trabajadores[2]) {
+        certData.push(
+          certRepo.create({
+            trabajadorId: trabajadores[2].id,
+            nombreCertificacion: 'Certificado de Operador de Cargador Frontal',
+            numeroCertificacion: 'CERT-CAR-2024-012',
+            fechaEmision: lastYear,
+            fechaVencimiento: oneYearOut,
+            entidadEmisora: 'SENCICO',
+            estado: 'VIGENTE',
+            tenantId: 1,
+          }),
+          certRepo.create({
+            trabajadorId: trabajadores[2].id,
+            nombreCertificacion: 'Certificado de Primeros Auxilios',
+            numeroCertificacion: 'PA-2024-0789',
+            fechaEmision: lastYear,
+            fechaVencimiento: thirtyDaysOut,
+            entidadEmisora: 'Cruz Roja Peruana',
+            estado: 'POR_VENCER',
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 4 (Miguel Condori - Operador de Rodillo)
+      if (trabajadores[3]) {
+        certData.push(
+          certRepo.create({
+            trabajadorId: trabajadores[3].id,
+            nombreCertificacion: 'Certificado de Operador de Rodillo Compactador',
+            numeroCertificacion: 'CERT-ROD-2024-033',
+            fechaEmision: lastYear,
+            fechaVencimiento: oneYearOut,
+            entidadEmisora: 'SENCICO',
+            estado: 'VIGENTE',
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 5 (Luis Flores - Conductor de Volquete)
+      if (trabajadores[4]) {
+        certData.push(
+          certRepo.create({
+            trabajadorId: trabajadores[4].id,
+            nombreCertificacion: 'Brevete Profesional Categoría A-III-c',
+            numeroCertificacion: 'LIC-A3C-23456789',
+            fechaEmision: twoYearsAgo,
+            fechaVencimiento: expiredDate,
+            entidadEmisora: 'Ministerio de Transportes y Comunicaciones',
+            estado: 'VENCIDO',
+            tenantId: 1,
+          }),
+          certRepo.create({
+            trabajadorId: trabajadores[4].id,
+            nombreCertificacion: 'Manejo Defensivo y Seguridad Vial',
+            numeroCertificacion: 'MDV-2024-0567',
+            fechaEmision: lastYear,
+            fechaVencimiento: oneYearOut,
+            entidadEmisora: 'Touring y Automóvil Club del Perú',
+            estado: 'VIGENTE',
+            tenantId: 1,
+          })
+        );
+      }
+
+      if (certData.length > 0) {
+        await certRepo.save(certData);
+      }
+    }
+
+    // 3. Operator Skills
+    const skillRepo = this.dataSource.getRepository(HabilidadOperador);
+
+    const existingSkills = await skillRepo.count();
+    if (existingSkills === 0) {
+      const today = new Date();
+      const recentVerification = new Date(today);
+      recentVerification.setMonth(today.getMonth() - 2);
+      const olderVerification = new Date(today);
+      olderVerification.setFullYear(today.getFullYear() - 1);
+
+      const skillData = [];
+
+      // Worker 1 (Pedro Ramírez)
+      if (trabajadores[0]) {
+        skillData.push(
+          skillRepo.create({
+            trabajadorId: trabajadores[0].id,
+            tipoEquipo: 'Excavadora Hidráulica',
+            nivelHabilidad: 'EXPERTO',
+            aniosExperiencia: 8.0,
+            ultimaVerificacion: recentVerification,
+            tenantId: 1,
+          }),
+          skillRepo.create({
+            trabajadorId: trabajadores[0].id,
+            tipoEquipo: 'Retroexcavadora',
+            nivelHabilidad: 'AVANZADO',
+            aniosExperiencia: 4.5,
+            ultimaVerificacion: olderVerification,
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 2 (José Torres)
+      if (trabajadores[1]) {
+        skillData.push(
+          skillRepo.create({
+            trabajadorId: trabajadores[1].id,
+            tipoEquipo: 'Tractor sobre Orugas',
+            nivelHabilidad: 'EXPERTO',
+            aniosExperiencia: 10.0,
+            ultimaVerificacion: recentVerification,
+            tenantId: 1,
+          }),
+          skillRepo.create({
+            trabajadorId: trabajadores[1].id,
+            tipoEquipo: 'Motoniveladora',
+            nivelHabilidad: 'INTERMEDIO',
+            aniosExperiencia: 2.0,
+            ultimaVerificacion: olderVerification,
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 3 (Carlos Huamán)
+      if (trabajadores[2]) {
+        skillData.push(
+          skillRepo.create({
+            trabajadorId: trabajadores[2].id,
+            tipoEquipo: 'Cargador Frontal',
+            nivelHabilidad: 'AVANZADO',
+            aniosExperiencia: 5.5,
+            ultimaVerificacion: recentVerification,
+            tenantId: 1,
+          }),
+          skillRepo.create({
+            trabajadorId: trabajadores[2].id,
+            tipoEquipo: 'Excavadora Hidráulica',
+            nivelHabilidad: 'INTERMEDIO',
+            aniosExperiencia: 2.0,
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 4 (Miguel Condori)
+      if (trabajadores[3]) {
+        skillData.push(
+          skillRepo.create({
+            trabajadorId: trabajadores[3].id,
+            tipoEquipo: 'Rodillo Compactador',
+            nivelHabilidad: 'EXPERTO',
+            aniosExperiencia: 12.0,
+            ultimaVerificacion: recentVerification,
+            tenantId: 1,
+          })
+        );
+      }
+
+      // Worker 5 (Luis Flores)
+      if (trabajadores[4]) {
+        skillData.push(
+          skillRepo.create({
+            trabajadorId: trabajadores[4].id,
+            tipoEquipo: 'Volquete',
+            nivelHabilidad: 'AVANZADO',
+            aniosExperiencia: 6.0,
+            ultimaVerificacion: recentVerification,
+            tenantId: 1,
+          }),
+          skillRepo.create({
+            trabajadorId: trabajadores[4].id,
+            tipoEquipo: 'Camión Cisterna',
+            nivelHabilidad: 'PRINCIPIANTE',
+            aniosExperiencia: 0.5,
+            tenantId: 1,
+          })
+        );
+      }
+
+      if (skillData.length > 0) {
+        await skillRepo.save(skillData);
+      }
+    }
+
+    // Summary
     const timesheetCount = await timesheetRepo.count();
     const detailCount = await detailRepo.count();
+    const certCount = await certRepo.count();
+    const skillCount = await skillRepo.count();
 
     console.log(`     ✓ Created ${timesheetCount} timesheets with ${detailCount} daily records`);
+    console.log(
+      `     ✓ Created ${certCount} operator certifications, ${skillCount} operator skills`
+    );
   }
 }

@@ -37,14 +37,14 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
           size="sm"
           label="Ver Lista"
           icon="fa-list"
-          (onClick)="viewList()"
+          (clicked)="viewList()"
         ></app-button>
         <app-button
           variant="primary"
           size="sm"
           label="Nueva Tarea"
           icon="fa-plus"
-          (onClick)="createTask()"
+          (clicked)="createTask()"
         ></app-button>
       </app-actions-container>
 
@@ -52,18 +52,26 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
         <!-- Calendar Header/Controls -->
         <div class="calendar-header-card">
           <div class="month-navigation">
-            <button class="nav-btn" (click)="prevMonth()" title="Mes Anterior">
-              <i class="fa-solid fa-chevron-left"></i>
-            </button>
+            <app-button
+              variant="icon"
+              size="sm"
+              icon="fa-chevron-left"
+              title="Mes Anterior"
+              (clicked)="prevMonth()"
+            ></app-button>
             <h2 class="current-month">
               {{ currentMonthName }} <span>{{ currentYear }}</span>
             </h2>
-            <button class="nav-btn" (click)="nextMonth()" title="Mes Siguiente">
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
+            <app-button
+              variant="icon"
+              size="sm"
+              icon="fa-chevron-right"
+              title="Mes Siguiente"
+              (clicked)="nextMonth()"
+            ></app-button>
           </div>
           <div class="calendar-actions">
-            <app-button variant="ghost" size="sm" label="Hoy" (onClick)="goToToday()"></app-button>
+            <app-button variant="ghost" size="sm" label="Hoy" (clicked)="goToToday()"></app-button>
           </div>
         </div>
 
@@ -146,26 +154,6 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
         gap: var(--s-24);
       }
 
-      .nav-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 1px solid var(--grey-200);
-        background: var(--neutral-0);
-        color: var(--grey-600);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        &:hover {
-          background: var(--grey-50);
-          border-color: var(--primary-300);
-          color: var(--primary-500);
-        }
-      }
-
       .current-month {
         margin: 0;
         font-size: 20px;
@@ -222,7 +210,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
         }
 
         &:hover {
-          background: rgba(0, 161, 222, 0.02);
+          background: var(--primary-50);
         }
 
         &.other-month {
@@ -233,7 +221,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
         }
 
         &.is-today {
-          background: rgba(0, 161, 222, 0.05);
+          background: var(--primary-100);
           .day-num {
             background: var(--klm-blue);
             color: white;
@@ -276,7 +264,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
 
         &:hover {
           background: var(--primary-100);
-          color: var(--primary-600);
+          color: var(--primary-500);
         }
       }
 
@@ -339,7 +327,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
         &.priority-high {
           background: var(--semantic-red-100);
           color: var(--semantic-red-900);
-          border-color: var(--semantic-red-200);
+          border-color: var(--semantic-red-300);
           .task-pill-dot {
             background: var(--semantic-red-500);
           }

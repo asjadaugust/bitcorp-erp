@@ -32,8 +32,8 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       [loading]="saving"
       [disableSubmit]="saving"
       [icon]="isEdit ? 'fa-pen' : 'fa-file-contract'"
-      (onSubmit)="guardar()"
-      (onCancel)="volver()"
+      (submitted)="guardar()"
+      (cancelled)="volver()"
     >
       <form #f="ngForm" (ngSubmit)="guardar()" class="form-grid">
         <!-- Sección: Equipo y Proveedor -->

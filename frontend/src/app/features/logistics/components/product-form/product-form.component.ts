@@ -47,8 +47,8 @@ import { AeroInputComponent } from '../../../../core/design-system/input/aero-in
       [icon]="isEditMode ? 'fa-pen' : 'fa-box'"
       [loading]="loading || submitting"
       [disableSubmit]="submitting || (productForm && productForm.invalid)"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Error Handling -->
       <app-validation-errors

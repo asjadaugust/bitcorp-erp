@@ -23,6 +23,7 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../../../shared/components/stats-grid/stats-grid.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-movement-list',
@@ -37,6 +38,7 @@ import {
     ExportDropdownComponent,
     ActionsContainerComponent,
     StatsGridComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -46,12 +48,18 @@ import {
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button class="btn btn-primary" (click)="registerMovement('entrada')">
-          <i class="fa-solid fa-arrow-right-to-bracket"></i> Registrar Ingreso
-        </button>
-        <button class="btn btn-danger" (click)="registerMovement('salida')">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i> Registrar Salida
-        </button>
+        <app-button
+          variant="primary"
+          label="Registrar Ingreso"
+          icon="fa-arrow-right-to-bracket"
+          (clicked)="registerMovement('entrada')"
+        ></app-button>
+        <app-button
+          variant="danger"
+          label="Registrar Salida"
+          icon="fa-arrow-right-from-bracket"
+          (clicked)="registerMovement('salida')"
+        ></app-button>
         <app-export-dropdown
           (export)="handleExport($event)"
           [disabled]="loading || movements.length === 0"
@@ -111,49 +119,19 @@ import {
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button class="btn-icon" (click)="viewDetails(row)" title="Ver Detalles">
-            <i class="fa-solid fa-eye"></i>
-          </button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
+            title="Ver Detalles"
+            (clicked)="viewDetails(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .btn-danger {
-        background: var(--semantic-red-500);
-        color: var(--neutral-0);
-      }
-      .btn-danger:hover {
-        background: var(--semantic-red-900);
-      }
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--primary-900);
-      }
-      .btn-secondary:hover {
-        background: var(--grey-300);
-      }
-
       /* Utilities */
       .equipment-code {
         color: var(--primary-500);
@@ -173,39 +151,18 @@ import {
         color: var(--grey-900);
       }
       .badge-status-in {
-        background: #d1fae5;
+        background: var(--semantic-green-100);
         color: var(--semantic-success);
       }
       .badge-status-out {
-        background: #fee2e2;
+        background: var(--semantic-red-100);
         color: var(--semantic-error);
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        padding: var(--s-4) var(--s-8);
-        color: var(--grey-500);
-      }
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
       }
 
       .action-buttons {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-      }
-    `,
-    `
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
       }
     `,
   ],

@@ -15,6 +15,7 @@ import {
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-tender-list',
@@ -25,6 +26,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -34,9 +36,12 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button class="btn btn-primary" (click)="createTender()">
-          <i class="fa-solid fa-plus"></i> Nueva Licitación
-        </button>
+        <app-button
+          variant="primary"
+          label="Nueva Licitación"
+          icon="fa-plus"
+          (clicked)="createTender()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -47,34 +52,7 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       <aero-table [columns]="columns" [data]="filteredTenders" [loading]="loading"> </aero-table>
     </app-page-layout>
   `,
-  styles: [
-    `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
-      }
-    `,
-  ],
+  styles: [],
 })
 export class TenderListComponent implements OnInit {
   private readonly tenderService = inject(TenderService);

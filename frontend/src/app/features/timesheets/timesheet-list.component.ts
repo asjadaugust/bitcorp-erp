@@ -23,6 +23,9 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-timesheet-list',
@@ -36,6 +39,7 @@ import {
     ExportDropdownComponent,
     ActionsContainerComponent,
     AeroTableComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -48,9 +52,12 @@ import {
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
 
-        <button class="btn btn-primary" (click)="navigateToGenerate()">
-          <i class="fa-solid fa-plus"></i> Generar Planilla
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Generar Planilla"
+          (clicked)="navigateToGenerate()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -65,7 +72,11 @@ import {
       <!-- Error State -->
       <div *ngIf="error" class="error-message">
         <p>❌ Error: {{ error }}</p>
-        <button class="btn btn-secondary" (click)="loadTimesheets()">Reintentar</button>
+        <app-button
+          variant="secondary"
+          label="Reintentar"
+          (clicked)="loadTimesheets()"
+        ></app-button>
       </div>
 
       <!-- Timesheets Table -->
@@ -106,21 +117,21 @@ import {
 
       <ng-template #accionesTemplate let-row>
         <div class="action-buttons">
-          <button
-            class="btn-icon view"
-            (click)="$event.stopPropagation(); viewTimesheet(row.id)"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
             title="Ver Detalle"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
+            (clicked)="viewTimesheet(row.id); $event.stopPropagation()"
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'BORRADOR'"
-            class="btn-icon delete"
-            (click)="$event.stopPropagation(); deleteTimesheet(row)"
+            variant="icon"
+            size="sm"
+            icon="fa-trash"
             title="Eliminar"
-          >
-            <i class="fa-solid fa-trash"></i>
-          </button>
+            (clicked)="deleteTimesheet(row); $event.stopPropagation()"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -175,6 +186,8 @@ export class TimesheetListComponent implements OnInit {
   private timesheetService = inject(TimesheetService);
   private router = inject(Router);
   private excelService = inject(ExcelExportService);
+  private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   timesheets: Timesheet[] = [];
   loading = false;
@@ -271,25 +284,21 @@ export class TimesheetListComponent implements OnInit {
   }
 
   deleteTimesheet(timesheet: Timesheet) {
-    if (
-      !confirm(
-        `¿Está seguro de eliminar la planilla #${timesheet.id}? Esta acción no se puede deshacer.`
-      )
-    ) {
-      return;
-    }
-
-    this.loading = true;
-    this.timesheetService.deleteTimesheet(timesheet.id).subscribe({
-      next: () => {
-        this.timesheets = this.timesheets.filter((t) => t.id !== timesheet.id);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error deleting timesheet:', err);
-        alert('Error al eliminar la planilla');
-        this.loading = false;
-      },
+    this.confirmSvc.confirmDelete(`la planilla #${timesheet.id}`).subscribe((confirmed) => {
+      if (confirmed) {
+        this.loading = true;
+        this.timesheetService.deleteTimesheet(timesheet.id).subscribe({
+          next: () => {
+            this.timesheets = this.timesheets.filter((t) => t.id !== timesheet.id);
+            this.loading = false;
+          },
+          error: (err) => {
+            console.error('Error deleting timesheet:', err);
+            this.snackBar.open('Error al eliminar la planilla', 'Cerrar', { duration: 3000 });
+            this.loading = false;
+          },
+        });
+      }
     });
   }
 
@@ -303,7 +312,7 @@ export class TimesheetListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.timesheets.length === 0) {
-      alert('No hay planillas para exportar');
+      this.snackBar.open('No hay planillas para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -339,7 +348,7 @@ export class TimesheetListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.timesheets.length === 0) {
-      alert('No hay planillas para exportar');
+      this.snackBar.open('No hay planillas para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 

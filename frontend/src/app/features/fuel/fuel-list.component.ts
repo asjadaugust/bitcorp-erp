@@ -19,6 +19,7 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-fuel-list',
@@ -32,6 +33,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -42,9 +44,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     >
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
-        <button class="btn btn-primary" (click)="createRecord()">
-          <i class="fa-solid fa-plus"></i> Nuevo Registro
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Registro"
+          (clicked)="createRecord()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -85,46 +90,26 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button
-            class="btn-icon"
-            (click)="viewRecord(row); $event.stopPropagation()"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
             title="Ver Detalles"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="editRecord(row); $event.stopPropagation()"
+            (clicked)="viewRecord(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
             title="Editar"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
+            (clicked)="editRecord(row); $event.stopPropagation()"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
       .equipment-info {
         display: flex;
         flex-direction: column;
@@ -151,21 +136,6 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
       }
     `,
     `

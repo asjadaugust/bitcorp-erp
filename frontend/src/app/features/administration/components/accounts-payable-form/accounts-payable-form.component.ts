@@ -36,8 +36,8 @@ import {
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
       [disableSubmit]="apForm.invalid || loading"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <!-- Error Handling -->
       <app-validation-errors

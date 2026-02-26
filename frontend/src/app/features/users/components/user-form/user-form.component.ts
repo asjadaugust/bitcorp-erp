@@ -35,8 +35,8 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
       [loading]="saving"
       [disableSubmit]="userForm.invalid || saving"
       [submitLabel]="isEditMode ? 'Guardar Cambios' : 'Crear Usuario'"
-      (onSubmit)="onSubmit()"
-      (onCancel)="cancel()"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
       <app-alert
         *ngIf="errorMessage"
