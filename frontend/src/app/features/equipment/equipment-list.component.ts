@@ -6,23 +6,25 @@ import { EquipmentService } from '../../core/services/equipment.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WebMcpService } from '../../core/services/webmcp.service';
 import { Equipment } from '../../core/models/equipment.model';
-import { ConfirmService } from '../../core/services/confirm.service'; // Added import
+import { ConfirmService } from '../../core/services/confirm.service';
 
 import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
+import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
-import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 
 @Component({
   selector: 'app-equipment-list',
@@ -34,8 +36,11 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
     ActionsContainerComponent,
     StatsGridComponent,
     AeroTableComponent,
+    AeroBadgeComponent,
     PageLayoutComponent,
+    PageCardComponent,
     FilterBarComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -43,30 +48,21 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
       icon="fa-tractor"
       [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Equipos' }]"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
-        <div class="actions-group">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            [class.active]="showStatistics"
-            (click)="toggleStatistics()"
-            [disabled]="loadingStatistics"
-          >
-            <i
-              class="fa-solid"
-              [class.fa-chart-simple]="!loadingStatistics"
-              [class.fa-spinner]="loadingStatistics"
-              [class.fa-spin]="loadingStatistics"
-            ></i>
-            {{ showStatistics ? 'Ocultar Estadísticas' : 'Ver Estadísticas' }}
-          </button>
-
-          <button type="button" class="btn btn-primary" (click)="navigateToCreate()">
-            <i class="fa-solid fa-plus"></i> Nuevo Equipo
-          </button>
-        </div>
+        <app-button
+          variant="secondary"
+          icon="fa-chart-simple"
+          [label]="showStatistics ? 'Ocultar Estadísticas' : 'Ver Estadísticas'"
+          [loading]="loadingStatistics"
+          (clicked)="toggleStatistics()"
+        ></app-button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nuevo Equipo"
+          (clicked)="navigateToCreate()"
+        ></app-button>
       </app-actions-container>
 
       <app-stats-grid
@@ -81,19 +77,21 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="equipment"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          codigo_equipo: codeTemplate,
-          brand_model: brandModelTemplate,
-          categoria: categoriaTemplate,
-        }"
-        (rowClick)="viewDetails($event)"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="equipment"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            codigo_equipo: codeTemplate,
+            brand_model: brandModelTemplate,
+            categoria: categoriaTemplate,
+          }"
+          (rowClick)="viewDetails($event)"
+        >
+        </aero-table>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
@@ -111,260 +109,45 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
         <div class="cat-cell">
           <span class="tipo-nombre">{{ row.tipo_equipo_nombre || row.categoria || '-' }}</span>
           @if (row.categoria_prd) {
-            <span class="cat-badge" [class]="getCategoriaPrdClass(row.categoria_prd)">
+            <aero-badge [variant]="getCategoriaBadgeVariant(row.categoria_prd)">
               {{ getCategoriaPrdLabel(row.categoria_prd) }}
-            </span>
+            </aero-badge>
           }
         </div>
       </ng-template>
 
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
-        <div class="action-buttons">
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="editEquipment(row); $event.stopPropagation()"
-            title="Editar"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="viewDetails(row); $event.stopPropagation()"
-            title="Ver"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            type="button"
-            class="btn-icon delete-btn"
-            (click)="eliminar(row); $event.stopPropagation()"
-            title="Eliminar"
-          >
-            <i class="fa-solid fa-trash"></i>
-          </button>
+        <div class="action-buttons" (click)="$event.stopPropagation()">
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
+            (clicked)="editEquipment(row)"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
+            (clicked)="viewDetails(row)"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-trash"
+            (clicked)="eliminar(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      /* Cards */
-      .card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-      }
-
-      .card-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid var(--grey-100);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .card-header h2 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--grey-900);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
-
-      .card-body {
-        padding: 1.5rem;
-      }
-
-      /* Form */
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-      }
-
-      .form-group {
-        margin-bottom: 1rem;
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-700);
-      }
-
-      .form-control {
-        width: 100%;
-        padding: 0.625rem 1rem;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.2s;
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: var(--primary-500);
-        box-shadow: 0 0 0 3px var(--primary-100);
-      }
-
-      .input-group {
-        position: relative;
-      }
-
-      .input-group .prefix {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--grey-500);
-        font-size: 14px;
-      }
-
-      .input-group input {
-        padding-left: 2.5rem;
-      }
-
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--grey-100);
-      }
-
-      .actions-group {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-      }
-
-      .btn.active {
-        background-color: var(--grey-200);
-        border-color: var(--grey-300);
-      }
-
-      /* Stats Grid */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-      }
-
-      .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 16px;
-        box-shadow:
-          0 4px 6px -1px rgba(0, 0, 0, 0.05),
-          0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
-        border: 1px solid var(--grey-100);
-      }
-
-      .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow:
-          0 10px 15px -3px rgba(0, 0, 0, 0.05),
-          0 4px 6px -2px rgba(0, 0, 0, 0.025);
-      }
-
-      /* Card variants for subtle bordering/coloring */
-      .stat-card.total-card {
-        border-left: 4px solid var(--primary-500);
-      }
-      .stat-card.available-card {
-        border-left: 4px solid var(--semantic-green-500);
-      }
-      .stat-card.in-use-card {
-        border-left: 4px solid var(--semantic-blue-500);
-      }
-      .stat-card.maintenance-card {
-        border-left: 4px solid var(--semantic-yellow-500);
-      }
-
-      .stat-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        flex-shrink: 0;
-      }
-
-      .stat-icon.total {
-        background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
-        color: var(--primary-600);
-      }
-      .stat-icon.available {
-        background: linear-gradient(
-          135deg,
-          var(--semantic-green-50) 0%,
-          var(--semantic-green-100) 100%
-        );
-        color: var(--semantic-green-600);
-      }
-      .stat-icon.in-use {
-        background: linear-gradient(
-          135deg,
-          var(--semantic-blue-50) 0%,
-          var(--semantic-blue-100) 100%
-        );
-        color: var(--semantic-blue-600);
-      }
-      .stat-icon.maintenance {
-        background: linear-gradient(
-          135deg,
-          var(--semantic-yellow-50) 0%,
-          var(--semantic-yellow-100) 100%
-        );
-        color: var(--semantic-yellow-600);
-      }
-
-      .stat-info {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .stat-info .label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-500);
-        margin-bottom: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .stat-info .value {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--grey-900);
-        line-height: 1.2;
-      }
-
       .code-badge {
         background: var(--grey-100);
         color: var(--grey-700);
         padding: 4px 8px;
-        border-radius: 6px;
+        border-radius: var(--radius-sm);
         font-family: monospace;
         font-size: 12px;
         font-weight: 600;
@@ -380,77 +163,37 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
         font-size: 12px;
       }
 
-      /* Status Badges - Removed local overrides to use global .status-badge */
-
-      /* Alerts */
-      .alert {
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
+      .cat-cell {
         display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .tipo-nombre {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--grey-800);
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: var(--s-4);
         align-items: center;
-        gap: 0.75rem;
-        font-size: 14px;
-      }
-
-      .alert-success {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
-        border: 1px solid var(--semantic-green-200);
-      }
-
-      .alert-error {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
-        border: 1px solid var(--semantic-red-200);
       }
 
       .fade-in {
         animation: fadeIn 0.3s ease-in-out;
       }
 
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
-      }
-
-      /* Category PRD badges */
-      .cat-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-      }
-      .tipo-nombre {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--grey-800);
-      }
-      .cat-badge {
-        display: inline-block;
-        font-size: 10px;
-        font-weight: 600;
-        padding: 1px 6px;
-        border-radius: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        width: fit-content;
-      }
-      .badge-cat-maquinaria {
-        background: #fef3c7;
-        color: #92400e;
-      }
-      .badge-cat-pesado {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-      .badge-cat-liviano {
-        background: #dbeafe;
-        color: #1e40af;
-      }
-      .badge-cat-menor {
-        background: #d1fae5;
-        color: #065f46;
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     `,
   ],
@@ -464,7 +207,6 @@ export class EquipmentListComponent implements OnInit {
 
   equipment: Equipment[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   loadingStatistics = false;
   showStatistics = false;
   errorMessage = '';
@@ -720,13 +462,13 @@ export class EquipmentListComponent implements OnInit {
     return labels[cat] ?? cat;
   }
 
-  getCategoriaPrdClass(cat: string): string {
-    const classes: Record<string, string> = {
-      MAQUINARIA_PESADA: 'badge-cat-maquinaria',
-      VEHICULOS_PESADOS: 'badge-cat-pesado',
-      VEHICULOS_LIVIANOS: 'badge-cat-liviano',
-      EQUIPOS_MENORES: 'badge-cat-menor',
+  getCategoriaBadgeVariant(cat: string): 'warning' | 'error' | 'info' | 'success' | 'neutral' {
+    const variants: Record<string, 'warning' | 'error' | 'info' | 'success'> = {
+      MAQUINARIA_PESADA: 'warning',
+      VEHICULOS_PESADOS: 'error',
+      VEHICULOS_LIVIANOS: 'info',
+      EQUIPOS_MENORES: 'success',
     };
-    return classes[cat] ?? '';
+    return variants[cat] ?? 'neutral';
   }
 }

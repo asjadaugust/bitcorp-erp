@@ -23,7 +23,6 @@ import {
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
@@ -45,7 +44,6 @@ import { ConfirmService } from '../../core/services/confirm.service';
       icon="fa-gas-pump"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" routerLink="new" data-testid="btn-nuevo-vale">
@@ -208,8 +206,6 @@ export class ValeCombustibleListComponent implements OnInit {
   total = 0;
   page = 1;
   limit = 20;
-
-  moduleTabs = EQUIPMENT_MODULE_TABS;
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Equipos', url: '/equipment' },

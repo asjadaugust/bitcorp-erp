@@ -13,7 +13,6 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
@@ -34,7 +33,6 @@ import { ConfirmService } from '../../core/services/confirm.service';
       icon="fa-file-signature"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" routerLink="new">
@@ -207,7 +205,6 @@ export class ActaDevolucionListComponent implements OnInit {
 
   actas: ActaDevolucion[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   filtroEstado = '';
   filtroTipo = '';
   search = '';

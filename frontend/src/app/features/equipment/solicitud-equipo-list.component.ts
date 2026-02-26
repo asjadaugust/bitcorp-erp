@@ -24,7 +24,6 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
-import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 @Component({
   selector: 'app-solicitud-equipo-list',
@@ -45,7 +44,6 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
       icon="fa-file-invoice"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" routerLink="new">
@@ -258,7 +256,6 @@ export class SolicitudEquipoListComponent implements OnInit {
 
   solicitudes: SolicitudEquipo[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   filtroEstado = '';
   page = 1;
   limit = 20;

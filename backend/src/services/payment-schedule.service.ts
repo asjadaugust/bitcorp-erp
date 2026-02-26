@@ -393,20 +393,19 @@ export class PaymentScheduleService {
       const limit = filters?.limit || 20;
       const skip = (page - 1) * limit;
 
-      // Sortable fields whitelist
+      // Sortable fields whitelist (use entity property names, not DB column names)
       const sortableFields: Record<string, string> = {
-        schedule_date: 'ps.schedule_date',
-        payment_date: 'ps.payment_date',
-        total_amount: 'ps.total_amount',
+        schedule_date: 'ps.scheduleDate',
+        total_amount: 'ps.totalAmount',
         status: 'ps.status',
-        currency: 'ps.currency',
-        created_at: 'ps.created_at',
+        periodo: 'ps.periodo',
+        created_at: 'ps.createdAt',
       };
 
       const sortBy =
         filters?.sort_by && sortableFields[filters.sort_by]
           ? sortableFields[filters.sort_by]
-          : 'ps.created_at';
+          : 'ps.createdAt';
       const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
 
       // TODO: [Phase 21 - Tenant Context] Add tenant filtering

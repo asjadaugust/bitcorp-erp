@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import {
   AnalyticsService,
   FlotaUtilizacionDto,
@@ -19,11 +20,15 @@ import {
 import {
   PageLayoutComponent,
   Breadcrumb,
+  TabItem,
 } from '../../shared/components/page-layout/page-layout.component';
 import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
+import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
+import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
+import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 
 type TabId = 'flota' | 'utilizacion' | 'combustible';
 
@@ -37,6 +42,9 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
     StatsGridComponent,
     PageLayoutComponent,
     DropdownComponent,
+    AeroInputComponent,
+    AeroCardComponent,
+    AeroTabsComponent,
   ],
   template: `
     <app-page-layout
@@ -47,39 +55,22 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
     >
       <!-- Standardized Period Selector -->
       <div actions class="period-controls-wrapper">
-        <div class="period-group">
-          <span class="label">Desde</span>
-          <input
-            type="date"
-            [(ngModel)]="fechaInicio"
-            (change)="onPeriodChange()"
-            class="standard-date-input"
-          />
-        </div>
-        <div class="period-group">
-          <span class="label">Hasta</span>
-          <input
-            type="date"
-            [(ngModel)]="fechaFin"
-            (change)="onPeriodChange()"
-            class="standard-date-input"
-          />
-        </div>
+        <aero-input
+          type="date"
+          label="Desde"
+          [(ngModel)]="fechaInicio"
+          (ngModelChange)="onPeriodChange()"
+        ></aero-input>
+        <aero-input
+          type="date"
+          label="Hasta"
+          [(ngModel)]="fechaFin"
+          (ngModelChange)="onPeriodChange()"
+        ></aero-input>
       </div>
 
       <!-- Detail Tabs Structure -->
-      <div class="detail-tabs mb-24">
-        <button
-          *ngFor="let tab of tabs"
-          class="tab-link"
-          [class.active]="tabActivo() === tab.id"
-          (click)="tabActivo.set(tab.id)"
-          [attr.data-testid]="'tab-' + tab.id"
-        >
-          <i [class]="tab.icon"></i>
-          {{ tab.label }}
-        </button>
-      </div>
+      <app-aero-tabs [tabs]="tabs"></app-aero-tabs>
 
       <!-- ══════════════════════════ TAB: FLOTA ══════════════════════════ -->
       <div *ngIf="tabActivo() === 'flota'" data-testid="panel-flota">
@@ -97,58 +88,48 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
 
           <div class="cards-grid">
             <!-- Mejores Equipos -->
-            <div class="card" data-testid="card-mejores-equipos">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-trophy"></i> Top Equipos por Utilización</h3>
+            <aero-card title="Top Equipos por Utilización" data-testid="card-mejores-equipos">
+              <div *ngIf="flota()!.mejores_equipos.length === 0" class="empty-list">
+                <i class="fa-solid fa-inbox"></i> Sin datos en el período
               </div>
-              <div class="card-body">
-                <div *ngIf="flota()!.mejores_equipos.length === 0" class="empty-list">
-                  <i class="fa-solid fa-inbox"></i> Sin datos en el período
+              <div
+                *ngFor="let eq of flota()!.mejores_equipos; let i = index"
+                class="rank-item"
+                [attr.data-testid]="'mejor-equipo-' + i"
+              >
+                <span class="rank-badge rank-{{ i + 1 }}">{{ i + 1 }}</span>
+                <span class="rank-code">{{ eq.codigo_equipo }}</span>
+                <div class="rank-bar-bg">
+                  <div
+                    class="rank-bar rank-bar-primary"
+                    [style.width.%]="eq.tasa_utilizacion"
+                  ></div>
                 </div>
-                <div
-                  *ngFor="let eq of flota()!.mejores_equipos; let i = index"
-                  class="rank-item"
-                  [attr.data-testid]="'mejor-equipo-' + i"
-                >
-                  <span class="rank-badge rank-{{ i + 1 }}">{{ i + 1 }}</span>
-                  <span class="rank-code">{{ eq.codigo_equipo }}</span>
-                  <div class="rank-bar-bg">
-                    <div
-                      class="rank-bar rank-bar-primary"
-                      [style.width.%]="eq.tasa_utilizacion"
-                    ></div>
-                  </div>
-                  <span class="rank-value">{{ eq.tasa_utilizacion | number: '1.1-1' }}%</span>
-                </div>
+                <span class="rank-value">{{ eq.tasa_utilizacion | number: '1.1-1' }}%</span>
               </div>
-            </div>
+            </aero-card>
 
             <!-- Equipos Sub-utilizados -->
-            <div class="card" data-testid="card-sub-utilizados">
-              <div class="card-header">
-                <h3><i class="fa-solid fa-triangle-exclamation"></i> Equipos Sub-utilizados</h3>
+            <aero-card title="Equipos Sub-utilizados" data-testid="card-sub-utilizados">
+              <div *ngIf="flota()!.equipos_sub_utilizados.length === 0" class="empty-list">
+                <i class="fa-solid fa-check-circle"></i> Todos los equipos con utilización óptima
               </div>
-              <div class="card-body">
-                <div *ngIf="flota()!.equipos_sub_utilizados.length === 0" class="empty-list">
-                  <i class="fa-solid fa-check-circle"></i> Todos los equipos con utilización óptima
+              <div
+                *ngFor="let eq of flota()!.equipos_sub_utilizados; let i = index"
+                class="rank-item"
+                [attr.data-testid]="'sub-utilizado-' + i"
+              >
+                <span class="warn-dot"></span>
+                <span class="rank-code">{{ eq.codigo_equipo }}</span>
+                <div class="rank-bar-bg">
+                  <div
+                    class="rank-bar rank-bar-warning"
+                    [style.width.%]="eq.tasa_utilizacion"
+                  ></div>
                 </div>
-                <div
-                  *ngFor="let eq of flota()!.equipos_sub_utilizados; let i = index"
-                  class="rank-item"
-                  [attr.data-testid]="'sub-utilizado-' + i"
-                >
-                  <span class="warn-dot"></span>
-                  <span class="rank-code">{{ eq.codigo_equipo }}</span>
-                  <div class="rank-bar-bg">
-                    <div
-                      class="rank-bar rank-bar-warning"
-                      [style.width.%]="eq.tasa_utilizacion"
-                    ></div>
-                  </div>
-                  <span class="rank-value warn">{{ eq.tasa_utilizacion | number: '1.1-1' }}%</span>
-                </div>
+                <span class="rank-value warn">{{ eq.tasa_utilizacion | number: '1.1-1' }}%</span>
               </div>
-            </div>
+            </aero-card>
           </div>
         </ng-container>
       </div>
@@ -177,37 +158,36 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
           <app-stats-grid [items]="statsUtilizacion()" testId="stats-utilizacion"></app-stats-grid>
 
           <!-- Trend Chart -->
-          <div class="card chart-card" data-testid="chart-tendencia-utilizacion">
-            <div class="card-header">
-              <h3><i class="fa-solid fa-chart-line"></i> Tendencia de Utilización Diaria</h3>
+          <aero-card
+            title="Tendencia de Utilización Diaria"
+            class="chart-card"
+            data-testid="chart-tendencia-utilizacion"
+          >
+            <div *ngIf="tendenciaUtilizacion().length === 0" class="empty-list">
+              <i class="fa-solid fa-inbox"></i> Sin datos de tendencia para el período
             </div>
-            <div class="card-body">
-              <div *ngIf="tendenciaUtilizacion().length === 0" class="empty-list">
-                <i class="fa-solid fa-inbox"></i> Sin datos de tendencia para el período
-              </div>
-              <div *ngIf="tendenciaUtilizacion().length > 0" class="bar-chart">
-                <div
-                  *ngFor="let punto of tendenciaUtilizacion()"
-                  class="bar-col"
-                  [attr.data-testid]="'barra-util-' + punto.fecha"
-                  [title]="punto.fecha + ': ' + (punto.tasa_utilizacion | number: '1.1-1') + '%'"
-                >
-                  <div class="bar-wrap">
-                    <div class="bar bar-primary" [style.height.%]="punto.tasa_utilizacion">
-                      <span class="bar-tooltip">
-                        {{ punto.tasa_utilizacion | number: '1.1-1' }}% <br />{{
-                          punto.horas_trabajadas | number: '1.1-1'
-                        }}h
-                      </span>
-                    </div>
+            <div *ngIf="tendenciaUtilizacion().length > 0" class="bar-chart">
+              <div
+                *ngFor="let punto of tendenciaUtilizacion()"
+                class="bar-col"
+                [attr.data-testid]="'barra-util-' + punto.fecha"
+                [title]="punto.fecha + ': ' + (punto.tasa_utilizacion | number: '1.1-1') + '%'"
+              >
+                <div class="bar-wrap">
+                  <div class="bar bar-primary" [style.height.%]="punto.tasa_utilizacion">
+                    <span class="bar-tooltip">
+                      {{ punto.tasa_utilizacion | number: '1.1-1' }}% <br />{{
+                        punto.horas_trabajadas | number: '1.1-1'
+                      }}h
+                    </span>
                   </div>
-                  <span class="bar-label"
-                    >{{ punto.fecha | slice: 8 : 10 }}/{{ punto.fecha | slice: 5 : 7 }}</span
-                  >
                 </div>
+                <span class="bar-label"
+                  >{{ punto.fecha | slice: 8 : 10 }}/{{ punto.fecha | slice: 5 : 7 }}</span
+                >
               </div>
             </div>
-          </div>
+          </aero-card>
         </ng-container>
 
         <div
@@ -261,41 +241,40 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
           </div>
 
           <!-- Fuel Trend Chart -->
-          <div class="card chart-card" data-testid="chart-tendencia-combustible">
-            <div class="card-header">
-              <h3><i class="fa-solid fa-gas-pump"></i> Tendencia de Consumo Diario</h3>
+          <aero-card
+            title="Tendencia de Consumo Diario"
+            class="chart-card"
+            data-testid="chart-tendencia-combustible"
+          >
+            <div *ngIf="tendenciaCombustible().length === 0" class="empty-list">
+              <i class="fa-solid fa-inbox"></i> Sin datos de tendencia para el período
             </div>
-            <div class="card-body">
-              <div *ngIf="tendenciaCombustible().length === 0" class="empty-list">
-                <i class="fa-solid fa-inbox"></i> Sin datos de tendencia para el período
-              </div>
-              <div *ngIf="tendenciaCombustible().length > 0" class="bar-chart">
-                <div
-                  *ngFor="let punto of tendenciaCombustible()"
-                  class="bar-col"
-                  [attr.data-testid]="'barra-comb-' + punto.fecha"
-                  [title]="
-                    punto.fecha + ': ' + (punto.combustible_consumido | number: '1.1-1') + ' gal'
-                  "
-                >
-                  <div class="bar-wrap">
-                    <div
-                      class="bar bar-fuel"
-                      [style.height.%]="barHeightCombustible(punto.combustible_consumido)"
-                    >
-                      <span class="bar-tooltip">
-                        {{ punto.combustible_consumido | number: '1.1-1' }} gal <br />S/
-                        {{ punto.costo_combustible | number: '1.2-2' }}
-                      </span>
-                    </div>
-                  </div>
-                  <span class="bar-label"
-                    >{{ punto.fecha | slice: 8 : 10 }}/{{ punto.fecha | slice: 5 : 7 }}</span
+            <div *ngIf="tendenciaCombustible().length > 0" class="bar-chart">
+              <div
+                *ngFor="let punto of tendenciaCombustible()"
+                class="bar-col"
+                [attr.data-testid]="'barra-comb-' + punto.fecha"
+                [title]="
+                  punto.fecha + ': ' + (punto.combustible_consumido | number: '1.1-1') + ' gal'
+                "
+              >
+                <div class="bar-wrap">
+                  <div
+                    class="bar bar-fuel"
+                    [style.height.%]="barHeightCombustible(punto.combustible_consumido)"
                   >
+                    <span class="bar-tooltip">
+                      {{ punto.combustible_consumido | number: '1.1-1' }} gal <br />S/
+                      {{ punto.costo_combustible | number: '1.2-2' }}
+                    </span>
+                  </div>
                 </div>
+                <span class="bar-label"
+                  >{{ punto.fecha | slice: 8 : 10 }}/{{ punto.fecha | slice: 5 : 7 }}</span
+                >
               </div>
             </div>
-          </div>
+          </aero-card>
         </ng-container>
 
         <div
@@ -323,79 +302,10 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       .period-controls-wrapper {
         display: flex;
         gap: var(--s-16);
-        align-items: center;
-      }
-      .period-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        label {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--grey-500);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-      }
-      .standard-date-input {
-        padding: 8px 12px;
-        border: 1px solid var(--grey-300);
-        border-radius: var(--radius-sm);
-        font-size: 14px;
-        color: var(--grey-900);
-        background: white;
-        transition: all 0.2s;
-        height: 42px;
-        &:focus {
-          border-color: var(--primary-500);
-          outline: none;
-          box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
-        }
-      }
+        align-items: flex-end;
 
-      /* Detail Tabs Structure (Standardized) */
-      .detail-tabs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        border-bottom: 2px solid var(--grey-200);
-        padding-bottom: 2px;
-
-        .tab-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 10px 20px;
-          border: none;
-          background: transparent;
-          color: var(--grey-600);
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-size: 14px;
-          position: relative;
-          border-bottom: 3px solid transparent;
-          margin-bottom: -2px;
-
-          i {
-            opacity: 0.7;
-            font-size: 14px;
-          }
-
-          &:hover {
-            color: var(--primary-700);
-            background: var(--grey-50);
-            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-          }
-
-          &.active {
-            color: var(--primary-800);
-            border-bottom-color: var(--primary-500);
-            font-weight: 600;
-            i {
-              opacity: 1;
-            }
-          }
+        ::ng-deep .aero-form-field {
+          margin-bottom: 0;
         }
       }
 
@@ -403,15 +313,14 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       .standard-selector-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: var(--s-8);
         margin-bottom: var(--s-24);
         max-width: 400px;
-        label {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--grey-500);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
+
+        .label {
+          font-size: var(--type-label-size);
+          font-weight: 500;
+          color: var(--primary-900);
         }
       }
       .selector-dropdown {
@@ -424,35 +333,10 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         grid-template-columns: 1fr 1fr;
         gap: var(--s-32);
         margin-top: var(--s-24);
-      }
-      .card {
-        background: white;
-        border: 1px solid var(--grey-200);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-      }
-      .card-header {
-        padding: var(--s-20);
-        border-bottom: 1px solid var(--grey-100);
-        h3 {
-          margin: 0;
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--grey-600);
-          text-transform: uppercase;
-          letter-spacing: 0.07em;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          i {
-            color: var(--primary-500);
-            font-size: 1.1em;
-          }
+
+        ::ng-deep aero-card {
+          margin-bottom: 0;
         }
-      }
-      .card-body {
-        padding: var(--s-20);
       }
       .chart-card {
         margin-top: var(--s-32);
@@ -483,22 +367,22 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         flex-shrink: 0;
       }
       .rank-badge.rank-1 {
-        background: #ffd700;
-        color: #7a5000;
+        background: var(--semantic-yellow-300);
+        color: var(--semantic-yellow-900);
       }
       .rank-badge.rank-2 {
-        background: #c0c0c0;
-        color: #444;
+        background: var(--grey-300);
+        color: var(--grey-800);
       }
       .rank-badge.rank-3 {
-        background: #cd7f32;
-        color: #fff;
+        background: var(--accent-500);
+        color: var(--neutral-0);
       }
       .warn-dot {
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: var(--semantic-yellow-500, #f59e0b);
+        background: var(--semantic-yellow-500);
         flex-shrink: 0;
       }
       .rank-code {
@@ -520,10 +404,10 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         transition: width 0.3s ease;
       }
       .rank-bar-primary {
-        background: var(--primary-500, #3b82f6);
+        background: var(--primary-500);
       }
       .rank-bar-warning {
-        background: var(--semantic-yellow-500, #f59e0b);
+        background: var(--semantic-yellow-500);
       }
       .rank-value {
         font-size: 0.8rem;
@@ -533,7 +417,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         text-align: right;
       }
       .rank-value.warn {
-        color: var(--semantic-yellow-600, #d97706);
+        color: var(--semantic-yellow-700);
       }
 
       /* Bar charts */
@@ -573,10 +457,10 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         }
       }
       .bar-primary {
-        background: var(--primary-500, #3b82f6);
+        background: var(--primary-500);
       }
       .bar-fuel {
-        background: var(--semantic-yellow-500, #f59e0b);
+        background: var(--semantic-yellow-500);
       }
       .bar-tooltip {
         display: none;
@@ -620,19 +504,19 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         }
       }
       .eficiencia-buena {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #86efac;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
+        border: 1px solid var(--semantic-green-300);
       }
       .eficiencia-promedio {
-        background: #fef9c3;
-        color: #854d0e;
-        border: 1px solid #fde047;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
+        border: 1px solid var(--semantic-yellow-300);
       }
       .eficiencia-deficiente {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fca5a5;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-900);
+        border: 1px solid var(--semantic-red-300);
       }
 
       /* States */
@@ -668,25 +552,19 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       }
 
       @media (max-width: 768px) {
-        .analytics-page {
-          padding: var(--s-16);
-        }
-        .page-header {
-          flex-direction: column;
-        }
         .cards-grid {
           grid-template-columns: 1fr;
-        }
-        .tabs {
-          overflow-x: auto;
         }
       }
     `,
   ],
 })
-export class AnalyticsDashboardComponent implements OnInit {
+export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
   private analyticsSvc = inject(AnalyticsService);
   private equipmentSvc = inject(EquipmentService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private routeSub?: Subscription;
 
   breadcrumbs: Breadcrumb[] = [{ label: 'Analítica' }];
 
@@ -694,12 +572,17 @@ export class AnalyticsDashboardComponent implements OnInit {
   fechaInicio: string;
   fechaFin: string;
 
-  // ── Tab state ───────────────────────────────────────────────────────────────
+  // ── Tab state (synced with route :tab param) ──────────────────────────────
   tabActivo = signal<TabId>('flota');
-  tabs: { id: TabId; label: string; icon: string }[] = [
-    { id: 'flota', label: 'Resumen de Flota', icon: 'fa-solid fa-truck-fast' },
-    { id: 'utilizacion', label: 'Utilización', icon: 'fa-solid fa-clock' },
-    { id: 'combustible', label: 'Combustible', icon: 'fa-solid fa-gas-pump' },
+  tabs: (TabItem & { id: string; route: string })[] = [
+    { id: 'flota', label: 'Resumen de Flota', icon: 'fa-truck-fast', route: '/analytics/flota' },
+    { id: 'utilizacion', label: 'Utilización', icon: 'fa-clock', route: '/analytics/utilizacion' },
+    {
+      id: 'combustible',
+      label: 'Combustible',
+      icon: 'fa-gas-pump',
+      route: '/analytics/combustible',
+    },
   ];
 
   // ── Equipment selector ──────────────────────────────────────────────────────
@@ -846,13 +729,31 @@ export class AnalyticsDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarEquipos();
+
+    // Sync tab state with route :tab param
+    this.routeSub = this.route.params.subscribe((params) => {
+      const tab = params['tab'] as TabId;
+      const validTabs: TabId[] = ['flota', 'utilizacion', 'combustible'];
+      if (validTabs.includes(tab)) {
+        this.tabActivo.set(tab);
+      } else {
+        this.router.navigate(['/analytics/flota'], { replaceUrl: true });
+      }
+    });
+
     this.cargarFlota();
+  }
+
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
   }
 
   cargarEquipos(): void {
     this.equipmentSvc.getAll({ limit: '200' }).subscribe({
       next: (res) => this.equipos.set(res.data || []),
-      error: () => { /* noop */ },
+      error: () => {
+        /* noop */
+      },
     });
   }
 
@@ -888,7 +789,9 @@ export class AnalyticsDashboardComponent implements OnInit {
 
     this.analyticsSvc.obtenerTendenciaUtilizacion(id, this.fechaInicio, this.fechaFin).subscribe({
       next: (data) => this.tendenciaUtilizacion.set(data),
-      error: () => { /* noop */ },
+      error: () => {
+        /* noop */
+      },
     });
   }
 
@@ -909,7 +812,9 @@ export class AnalyticsDashboardComponent implements OnInit {
 
     this.analyticsSvc.obtenerTendenciaCombustible(id, this.fechaInicio, this.fechaFin).subscribe({
       next: (data) => this.tendenciaCombustible.set(data),
-      error: () => { /* noop */ },
+      error: () => {
+        /* noop */
+      },
     });
   }
 

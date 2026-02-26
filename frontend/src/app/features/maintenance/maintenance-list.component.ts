@@ -24,7 +24,6 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { forkJoin } from 'rxjs';
-import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
 import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
@@ -46,7 +45,6 @@ import { ConfirmService } from '../../core/services/confirm.service';
       icon="fa-wrench"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
@@ -207,7 +205,6 @@ export class MaintenanceListComponent implements OnInit {
 
   records: MaintenanceRecord[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   filters = { status: '', type: '', search: '' };
   equipmentMap = new Map<number, Record<string, unknown>>();
 

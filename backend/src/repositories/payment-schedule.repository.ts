@@ -6,14 +6,14 @@ export const PaymentScheduleRepository = AppDataSource.getRepository(PaymentSche
   async findByStatus(status: string) {
     return this.find({
       where: { status },
-      relations: ['details', 'details.accounts_payable'],
+      relations: ['details'],
     });
   },
 
   async findWithDetails(id: number) {
     return this.findOne({
       where: { id },
-      relations: ['details', 'details.accounts_payable', 'details.accounts_payable.provider'],
+      relations: ['details'],
     });
   },
 });

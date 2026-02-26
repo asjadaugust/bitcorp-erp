@@ -12,7 +12,6 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
-import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 import {
@@ -41,7 +40,6 @@ import {
       icon="fa-file-invoice-dollar"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"></app-export-dropdown>
@@ -320,7 +318,6 @@ export class ValuationRegistryComponent implements OnInit {
   registryData: Record<string, unknown>[] = [];
   summary: Record<string, unknown> | null = null;
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   totalRecords = 0;
 
   breadcrumbs = [

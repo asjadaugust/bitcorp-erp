@@ -20,7 +20,6 @@ import {
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
 
 @Component({
   selector: 'app-daily-report-list',
@@ -42,10 +41,9 @@ import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
       [breadcrumbs]="[
         { label: 'Inicio', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
-        { label: 'Partes Diarios' }
+        { label: 'Partes Diarios' },
       ]"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown [disabled]="reports.length === 0" (export)="handleExport($event)">
@@ -516,7 +514,6 @@ export class DailyReportListComponent implements OnInit {
 
   reports: DailyReport[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   downloadingPdfId: number | null = null;
 
   filters = {
@@ -676,8 +673,8 @@ export class DailyReportListComponent implements OnInit {
     const user = this.authService.currentUser;
     const nombreResidente = user
       ? user.nombre_completo ||
-      `${user.nombres || ''} ${user.apellidos || ''}`.trim() ||
-      'Residente'
+        `${user.nombres || ''} ${user.apellidos || ''}`.trim() ||
+        'Residente'
       : 'Residente';
     if (confirm(`¿Confirma su firma como Residente en el parte #${report.id}?`)) {
       this.dailyReportService.firmarResidente(report.id, nombreResidente).subscribe({

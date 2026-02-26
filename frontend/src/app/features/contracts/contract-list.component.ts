@@ -22,7 +22,6 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
 
 @Component({
   selector: 'app-contract-list',
@@ -43,7 +42,6 @@ import { EQUIPMENT_MODULE_TABS } from '../equipment/equipment-tabs';
       icon="fa-file-contract"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown [disabled]="contracts.length === 0" (export)="handleExport($event)">
@@ -205,7 +203,6 @@ export class ContractListComponent implements OnInit {
 
   contracts: Contract[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   filters = { estado: '', search: '' };
 
   breadcrumbs = [

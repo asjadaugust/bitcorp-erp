@@ -459,22 +459,22 @@ export class AccountsPayableService {
     const limit = filters?.limit || 20;
     const skip = (page - 1) * limit;
 
-    // Sortable fields whitelist
+    // Sortable fields whitelist (use entity property names, not DB column names)
     const sortableFields: Record<string, string> = {
-      fecha_emision: 'ap.issue_date',
-      fecha_vencimiento: 'ap.due_date',
+      fecha_emision: 'ap.issueDate',
+      fecha_vencimiento: 'ap.dueDate',
       monto_total: 'ap.amount',
-      monto_pagado: 'ap.amount_paid',
+      monto_pagado: 'ap.amountPaid',
       saldo: 'ap.balance',
       estado: 'ap.status',
-      numero_factura: 'ap.document_number',
-      created_at: 'ap.created_at',
+      numero_factura: 'ap.documentNumber',
+      created_at: 'ap.createdAt',
     };
 
     const sortBy =
       filters?.sort_by && sortableFields[filters.sort_by]
         ? sortableFields[filters.sort_by]
-        : 'ap.created_at';
+        : 'ap.createdAt';
     const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
 
     try {

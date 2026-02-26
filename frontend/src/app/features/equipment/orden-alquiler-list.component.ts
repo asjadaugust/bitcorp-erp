@@ -16,7 +16,6 @@ import {
   Breadcrumb,
 } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 @Component({
   selector: 'app-orden-alquiler-list',
@@ -36,7 +35,6 @@ import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
       icon="fa-file-contract"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <app-actions-container actions>
         <button type="button" class="btn btn-primary" routerLink="new">
@@ -498,7 +496,6 @@ export class OrdenAlquilerListComponent implements OnInit {
 
   ordenes: OrdenAlquiler[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   filtroEstado = '';
   page = 1;
   limit = 20;

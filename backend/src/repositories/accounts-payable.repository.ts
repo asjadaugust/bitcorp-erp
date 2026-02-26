@@ -13,10 +13,9 @@ export const AccountsPayableRepository = AppDataSource.getRepository(AccountsPay
   async findPending(tenantId: number): Promise<AccountsPayable[]> {
     return this.createQueryBuilder('ap')
       .leftJoinAndSelect('ap.provider', 'provider')
-      .leftJoinAndSelect('ap.project', 'project')
       .where('ap.tenantId = :tenantId', { tenantId })
-      .andWhere("ap.status = 'pending'")
-      .orderBy('ap.due_date', 'ASC')
+      .andWhere("ap.status = 'PENDIENTE'")
+      .orderBy('ap.dueDate', 'ASC')
       .getMany();
   },
 

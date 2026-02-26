@@ -21,7 +21,7 @@ import { ButtonComponent } from '../button/button.component';
             <p class="subtitle" *ngIf="subtitle">{{ subtitle }}</p>
           </div>
         </div>
-        <div class="header-actions">
+        <div class="header-actions" *ngIf="showActions">
           <app-button
             variant="secondary"
             icon="fa-times"
@@ -210,6 +210,7 @@ export class FormContainerComponent {
   @Input() loading = false;
   @Input() loadingText = 'Guardando...';
   @Input() showFooter = true;
+  @Input() showActions = true;
   @Input() backUrl?: string;
 
   @Output() submitted = new EventEmitter<void>();

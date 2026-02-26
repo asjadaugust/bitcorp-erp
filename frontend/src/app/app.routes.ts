@@ -283,10 +283,16 @@ export const routes: Routes = [
       // Analytics
       {
         path: 'analytics',
-        loadComponent: () =>
-          import('./features/analytics/analytics-dashboard.component').then(
-            (m) => m.AnalyticsDashboardComponent
-          ),
+        children: [
+          { path: '', redirectTo: 'flota', pathMatch: 'full' },
+          {
+            path: ':tab',
+            loadComponent: () =>
+              import('./features/analytics/analytics-dashboard.component').then(
+                (m) => m.AnalyticsDashboardComponent
+              ),
+          },
+        ],
       },
     ],
   },

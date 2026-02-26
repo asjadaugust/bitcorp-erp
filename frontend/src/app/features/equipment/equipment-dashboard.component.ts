@@ -10,7 +10,6 @@ import {
 } from '../../core/services/daily-report.service';
 import { DashboardApiService, DocumentAlertsSummary } from '../../core/services/dashboard.service';
 import { EquipmentService } from '../../core/services/equipment.service';
-import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
@@ -32,7 +31,6 @@ import {
         { label: 'Dashboard' },
       ]"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <!-- Stats summary (Moved from actions to top of content) -->
       <div class="stats-section">
@@ -736,7 +734,6 @@ export class EquipmentDashboardComponent implements OnInit {
   soloAbiertas = true;
 
   selectedMonth: string = this.getCurrentMonth();
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   summaryStats: StatItem[] = [];
 
   ngOnInit(): void {

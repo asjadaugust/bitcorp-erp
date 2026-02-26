@@ -75,6 +75,13 @@ export const ADMINISTRACION_ROUTES: Routes = [
           ),
       },
       {
+        path: 'payment-schedules/:id',
+        loadComponent: () =>
+          import('./components/payment-schedule-form/payment-schedule-form.component').then(
+            (m) => m.PaymentScheduleFormComponent
+          ),
+      },
+      {
         path: 'payment-schedules/:id/edit',
         loadComponent: () =>
           import('./components/payment-schedule-form/payment-schedule-form.component').then(

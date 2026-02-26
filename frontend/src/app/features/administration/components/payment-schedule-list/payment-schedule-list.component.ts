@@ -22,6 +22,8 @@ import {
   ExportFormat,
 } from '../../../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-payment-schedule-list',
@@ -33,6 +35,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -45,9 +49,12 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         <app-export-dropdown [disabled]="schedules.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <button class="btn btn-primary" (click)="createSchedule()">
-          <i class="fa-solid fa-plus"></i> Nueva Programación
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Programación"
+          (clicked)="createSchedule()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -55,142 +62,84 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="filteredSchedules"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="filteredSchedules"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+        >
+        </aero-table>
+      </app-page-card>
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button class="btn-icon" (click)="viewSchedule(row)" title="Ver Detalles">
-            <i class="fa-solid fa-eye"></i>
-          </button>
+          <app-button
+            variant="ghost"
+            icon="fa-eye"
+            size="sm"
+            (clicked)="viewSchedule(row)"
+          ></app-button>
 
           <!-- Draft status actions -->
-          <button
-            class="btn-icon btn-success"
-            (click)="approveSchedule(row)"
-            title="Aprobar"
-            *ngIf="row.estado === 'BORRADOR'"
-          >
-            <i class="fa-solid fa-check"></i>
-          </button>
-          <button
-            class="btn-icon"
-            (click)="editSchedule(row)"
-            title="Editar"
-            *ngIf="row.estado === 'BORRADOR'"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
-            class="btn-icon btn-danger"
-            (click)="deleteSchedule(row)"
-            title="Eliminar"
-            *ngIf="row.estado === 'BORRADOR'"
-          >
-            <i class="fa-solid fa-trash"></i>
-          </button>
+          <ng-container *ngIf="row.estado === 'BORRADOR' || row.estado === 'PROGRAMADO'">
+            <app-button
+              variant="ghost"
+              icon="fa-check"
+              size="sm"
+              (clicked)="approveSchedule(row)"
+            ></app-button>
+            <app-button
+              variant="ghost"
+              icon="fa-pen"
+              size="sm"
+              (clicked)="editSchedule(row)"
+            ></app-button>
+            <app-button
+              variant="ghost"
+              icon="fa-trash"
+              size="sm"
+              (clicked)="deleteSchedule(row)"
+            ></app-button>
+          </ng-container>
 
           <!-- Approved status actions -->
-          <button
-            class="btn-icon btn-primary"
-            (click)="processSchedule(row)"
-            title="Procesar"
+          <app-button
             *ngIf="row.estado === 'APROBADO'"
-          >
-            <i class="fa-solid fa-play"></i>
-          </button>
+            variant="ghost"
+            icon="fa-play"
+            size="sm"
+            (clicked)="processSchedule(row)"
+          ></app-button>
 
-          <!-- Cancel button (for draft and approved) -->
-          <button
-            class="btn-icon btn-warning"
-            (click)="cancelSchedule(row)"
-            title="Cancelar"
-            *ngIf="row.estado === 'BORRADOR' || row.estado === 'APROBADO'"
-          >
-            <i class="fa-solid fa-ban"></i>
-          </button>
+          <!-- Cancel button (for draft/programado and approved) -->
+          <app-button
+            *ngIf="
+              row.estado === 'BORRADOR' || row.estado === 'PROGRAMADO' || row.estado === 'APROBADO'
+            "
+            variant="ghost"
+            icon="fa-ban"
+            size="sm"
+            (clicked)="cancelSchedule(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.btn-danger:hover {
-        background: var(--error-100);
-        color: var(--error-600);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.btn-success:hover {
-        background: var(--success-100);
-        color: var(--success-600);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.btn-primary:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.btn-warning:hover {
-        background: var(--warning-100);
-        color: var(--warning-700);
-        border-radius: var(--s-4);
-      }
-
       .action-buttons {
         display: flex;
         justify-content: flex-end;
-        gap: 8px;
+        gap: 4px;
       }
     `,
   ],
 })
 export class PaymentScheduleListComponent implements OnInit {
-  private adminService: AdministrationService = inject(AdministrationService);
-  private router: Router = inject(Router);
-  private excelService: ExcelExportService = inject(ExcelExportService);
+  private adminService = inject(AdministrationService);
+  private router = inject(Router);
+  private excelService = inject(ExcelExportService);
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
   loading = false;
@@ -212,22 +161,18 @@ export class PaymentScheduleListComponent implements OnInit {
       type: 'select',
       options: [
         { value: '', label: 'Todos' },
+        { value: 'PROGRAMADO', label: 'Programado' },
         { value: 'BORRADOR', label: 'Borrador' },
         { value: 'APROBADO', label: 'Aprobado' },
         { value: 'PROCESADO', label: 'Procesado' },
         { value: 'CANCELADO', label: 'Cancelado' },
       ],
     },
-    {
-      key: 'scheduleDate',
-      label: 'Fecha de Programación',
-      type: 'dateRange',
-    },
   ];
 
   columns: TableColumn[] = [
+    { key: 'periodo', label: 'Período', type: 'text' },
     { key: 'schedule_date', label: 'Fecha Programación', type: 'date' },
-    { key: 'payment_date', label: 'Fecha Pago', type: 'date' },
     { key: 'description', label: 'Descripción', type: 'text' },
     { key: 'total_amount', label: 'Monto Total', type: 'currency', format: 'PEN' },
     {
@@ -235,10 +180,11 @@ export class PaymentScheduleListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        BORRADOR: { label: 'Borrador', class: 'badge badge-secondary' },
-        APROBADO: { label: 'Aprobado', class: 'badge badge-info' },
-        PROCESADO: { label: 'Procesado', class: 'badge badge-success' },
-        CANCELADO: { label: 'Cancelado', class: 'badge badge-error' },
+        PROGRAMADO: { label: 'Programado', class: 'badge status-PROGRAMADO' },
+        BORRADOR: { label: 'Borrador', class: 'badge status-BORRADOR' },
+        APROBADO: { label: 'Aprobado', class: 'badge status-APROBADO' },
+        PROCESADO: { label: 'Procesado', class: 'badge status-COMPLETADO' },
+        CANCELADO: { label: 'Cancelado', class: 'badge status-CANCELADO' },
       },
     },
   ];
@@ -271,30 +217,12 @@ export class PaymentScheduleListComponent implements OnInit {
     this.filteredSchedules = this.schedules.filter((schedule) => {
       const matchesSearch =
         !this.filters['search'] ||
-        schedule.description?.toLowerCase().includes(this.filters['search'].toLowerCase());
+        schedule.description?.toLowerCase().includes(this.filters['search'].toLowerCase()) ||
+        schedule.periodo?.toLowerCase().includes(this.filters['search'].toLowerCase());
 
       const matchesStatus = !this.filters['estado'] || schedule.estado === this.filters['estado'];
 
-      // Date range filter
-      const scheduleDateStart = this.filters['scheduleDate_start'];
-      const scheduleDateEnd = this.filters['scheduleDate_end'];
-      let matchesDateRange = true;
-
-      if (scheduleDateStart || scheduleDateEnd) {
-        const recordDate = schedule.schedule_date ? new Date(schedule.schedule_date) : null;
-        if (recordDate) {
-          if (scheduleDateStart) {
-            matchesDateRange = matchesDateRange && recordDate >= new Date(scheduleDateStart);
-          }
-          if (scheduleDateEnd) {
-            matchesDateRange = matchesDateRange && recordDate <= new Date(scheduleDateEnd);
-          }
-        } else {
-          matchesDateRange = false;
-        }
-      }
-
-      return matchesSearch && matchesStatus && matchesDateRange;
+      return matchesSearch && matchesStatus;
     });
   }
 
@@ -318,7 +246,7 @@ export class PaymentScheduleListComponent implements OnInit {
             this.loadSchedules();
             this.snackBar.open('Programación eliminada', 'Cerrar', { duration: 3000 });
           },
-          error: (_err) => {
+          error: () => {
             this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
           },
         });
@@ -341,10 +269,8 @@ export class PaymentScheduleListComponent implements OnInit {
               this.loadSchedules();
               this.snackBar.open('Programación aprobada', 'Cerrar', { duration: 3000 });
             },
-            error: (err: unknown) => {
-              const errObj = err as any;
-              const msg = errObj['error']?.['error'] || 'No se pudo aprobar';
-              this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
+            error: () => {
+              this.snackBar.open('Error al aprobar', 'Cerrar', { duration: 3000 });
             },
           });
         }
@@ -369,10 +295,8 @@ export class PaymentScheduleListComponent implements OnInit {
                 duration: 3000,
               });
             },
-            error: (err: unknown) => {
-              const errObj = err as any;
-              const msg = errObj['error']?.['error'] || 'No se pudo procesar';
-              this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
+            error: () => {
+              this.snackBar.open('Error al procesar', 'Cerrar', { duration: 3000 });
             },
           });
         }
@@ -395,10 +319,8 @@ export class PaymentScheduleListComponent implements OnInit {
               this.loadSchedules();
               this.snackBar.open('Programación cancelada', 'Cerrar', { duration: 3000 });
             },
-            error: (err: unknown) => {
-              const errObj = err as any;
-              const msg = errObj['error']?.['error'] || 'No se pudo cancelar';
-              this.snackBar.open(`Error: ${msg}`, 'Cerrar', { duration: 3000 });
+            error: () => {
+              this.snackBar.open('Error al cancelar', 'Cerrar', { duration: 3000 });
             },
           });
         }
@@ -422,19 +344,13 @@ export class PaymentScheduleListComponent implements OnInit {
     }
 
     const exportData = this.schedules.map((schedule) => ({
+      Período: schedule.periodo || '',
       Descripción: schedule.description || '',
       'Fecha Programación': schedule.schedule_date
         ? new Date(schedule.schedule_date).toLocaleDateString('es-PE')
         : '',
-      'Fecha Pago': schedule.payment_date
-        ? new Date(schedule.payment_date).toLocaleDateString('es-PE')
-        : '',
-      'Monto Total': schedule.total_amount
-        ? `${schedule.currency} ${schedule.total_amount.toFixed(2)}`
-        : '',
-      Moneda: schedule.currency || '',
+      'Monto Total': schedule.total_amount ? `PEN ${Number(schedule.total_amount).toFixed(2)}` : '',
       Estado: this.getStatusLabel(schedule.estado),
-      Creado: schedule.created_at ? new Date(schedule.created_at).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToExcel(exportData, {
@@ -453,19 +369,13 @@ export class PaymentScheduleListComponent implements OnInit {
     }
 
     const exportData = this.schedules.map((schedule) => ({
+      Período: schedule.periodo || '',
       Descripción: schedule.description || '',
       'Fecha Programación': schedule.schedule_date
         ? new Date(schedule.schedule_date).toLocaleDateString('es-PE')
         : '',
-      'Fecha Pago': schedule.payment_date
-        ? new Date(schedule.payment_date).toLocaleDateString('es-PE')
-        : '',
-      'Monto Total': schedule.total_amount
-        ? `${schedule.currency} ${schedule.total_amount.toFixed(2)}`
-        : '',
-      Moneda: schedule.currency || '',
+      'Monto Total': schedule.total_amount ? `PEN ${Number(schedule.total_amount).toFixed(2)}` : '',
       Estado: this.getStatusLabel(schedule.estado),
-      Creado: schedule.created_at ? new Date(schedule.created_at).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'programacion-pagos');
@@ -473,6 +383,7 @@ export class PaymentScheduleListComponent implements OnInit {
 
   private getStatusLabel(estado: string): string {
     const statusMap: Record<string, string> = {
+      PROGRAMADO: 'Programado',
       BORRADOR: 'Borrador',
       APROBADO: 'Aprobado',
       PROCESADO: 'Procesado',

@@ -22,6 +22,8 @@ import {
   ExportFormat,
 } from '../../../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-accounts-payable-list',
@@ -33,6 +35,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -45,9 +49,12 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         <app-export-dropdown [disabled]="records.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <button class="btn btn-primary" (click)="createRecord()">
-          <i class="fa-solid fa-plus"></i> Nueva Cuenta por Pagar
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Nueva Cuenta por Pagar"
+          (clicked)="createRecord()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -55,14 +62,16 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="filteredRecords"
-        [loading]="loading"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{ mora: moraTemplate }"
-      >
-      </aero-table>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="filteredRecords"
+          [loading]="loading"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{ mora: moraTemplate }"
+        >
+        </aero-table>
+      </app-page-card>
 
       <ng-template #moraTemplate let-row>
         <span *ngIf="getDaysOverdue(row) > 0" class="mora-badge overdue">
@@ -82,62 +91,28 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button class="btn-icon" (click)="editRecord(row)" title="Editar">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn-icon btn-danger" (click)="deleteRecord(row)" title="Eliminar">
-            <i class="fa-solid fa-trash"></i>
-          </button>
+          <app-button
+            variant="ghost"
+            icon="fa-pen"
+            size="sm"
+            (clicked)="editRecord(row)"
+          ></app-button>
+          <app-button
+            variant="ghost"
+            icon="fa-trash"
+            size="sm"
+            (clicked)="deleteRecord(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.btn-danger:hover {
-        background: var(--error-100);
-        color: var(--error-600);
-      }
-
       .action-buttons {
         display: flex;
         justify-content: flex-end;
-        gap: 8px;
+        gap: 4px;
       }
 
       .mora-badge {
@@ -155,12 +130,12 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         color: var(--error-600);
       }
       .mora-badge.near {
-        background: #fff3e0;
-        color: #e65100;
+        background: var(--warning-100);
+        color: var(--warning-700);
       }
       .mora-badge.warning {
-        background: #fff8e1;
-        color: #f9a825;
+        background: var(--warning-50, var(--warning-100));
+        color: var(--warning-600, var(--warning-700));
       }
     `,
   ],
@@ -197,8 +172,9 @@ export class AccountsPayableListComponent implements OnInit {
       options: [
         { value: '', label: 'Todos' },
         { value: 'PENDIENTE', label: 'Pendiente' },
+        { value: 'PARCIAL', label: 'Parcial' },
         { value: 'PAGADO', label: 'Pagado' },
-        { value: 'CANCELADO', label: 'Cancelado' },
+        { value: 'ANULADO', label: 'Anulado' },
       ],
     },
     {
@@ -210,8 +186,7 @@ export class AccountsPayableListComponent implements OnInit {
 
   columns: TableColumn[] = [
     { key: 'numero_factura', label: 'N° Documento', type: 'text' },
-    // { key: 'document_type', label: 'Tipo', type: 'text' }, // Removed as it's not in the new interface
-    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' }, // We'll need to handle this mapping
+    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' },
     { key: 'monto_total', label: 'Monto', type: 'currency', format: 'PEN' },
     { key: 'fecha_vencimiento', label: 'Vencimiento', type: 'date' },
     { key: 'mora', label: 'Mora', type: 'template' },
@@ -220,10 +195,10 @@ export class AccountsPayableListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-on-hold', icon: 'fa-clock' },
-        PAGADO: { label: 'Pagado', class: 'status-badge status-paid', icon: 'fa-check-circle' },
-        CANCELADO: { label: 'Cancelado', class: 'status-badge status-cancelled', icon: 'fa-ban' },
-        PARCIAL: { label: 'Parcial', class: 'status-badge status-partial', icon: 'fa-chart-pie' },
+        PENDIENTE: { label: 'Pendiente', class: 'badge status-PENDIENTE' },
+        PARCIAL: { label: 'Parcial', class: 'badge status-in_progress' },
+        PAGADO: { label: 'Pagado', class: 'badge status-PAGADO' },
+        ANULADO: { label: 'Anulado', class: 'badge status-CANCELADO' },
       },
     },
   ];
@@ -236,13 +211,9 @@ export class AccountsPayableListComponent implements OnInit {
     this.loading = true;
     this.adminService.getAccountsPayable().subscribe({
       next: (records) => {
-        // Map provider name for the table if necessary, or let the table handle nested properties if it supports it.
-        // AeroTable might not support nested keys like 'provider.razonSocial' directly without configuration.
-        // Let's assume we flatten it for display or the table supports it.
-        // For now, I'll map it to a new property for safety.
         this.records = records.map((r) => ({
           ...r,
-          proveedor_razon_social: r.provider?.razonSocial || 'N/A',
+          proveedor_razon_social: r.provider?.razonSocial || r.provider?.nombreComercial || 'N/A',
         }));
         this.applyFilters();
         this.loading = false;
@@ -268,7 +239,6 @@ export class AccountsPayableListComponent implements OnInit {
 
       const matchesStatus = !this.filters['estado'] || record.estado === this.filters['estado'];
 
-      // Date range filter
       const dueDateStart = this.filters['dueDate_start'];
       const dueDateEnd = this.filters['dueDate_end'];
       let matchesDateRange = true;
@@ -309,7 +279,7 @@ export class AccountsPayableListComponent implements OnInit {
               this.loadRecords();
               this.snackBar.open('Cuenta por pagar eliminada', 'Cerrar', { duration: 3000 });
             },
-            error: (_err) => {
+            error: () => {
               this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 });
             },
           });
@@ -334,7 +304,6 @@ export class AccountsPayableListComponent implements OnInit {
     const exportData = this.records.map((record) => ({
       'Nro. Documento': record.numero_factura || '',
       Proveedor: record.provider?.razonSocial || '',
-      // Tipo: record.document_type || '', // Removed
       'Fecha Emisión': record.fecha_emision
         ? new Date(record.fecha_emision).toLocaleDateString('es-PE')
         : '',
@@ -345,7 +314,6 @@ export class AccountsPayableListComponent implements OnInit {
       Moneda: record.moneda || '',
       Estado: this.getStatusLabel(record.estado),
       Descripción: record.observaciones || '',
-      Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToExcel(exportData, {
@@ -364,7 +332,6 @@ export class AccountsPayableListComponent implements OnInit {
     const exportData = this.records.map((record) => ({
       'Nro. Documento': record.numero_factura || '',
       Proveedor: record.provider?.razonSocial || '',
-      // Tipo: record.document_type || '',
       'Fecha Emisión': record.fecha_emision
         ? new Date(record.fecha_emision).toLocaleDateString('es-PE')
         : '',
@@ -375,15 +342,13 @@ export class AccountsPayableListComponent implements OnInit {
       Moneda: record.moneda || '',
       Estado: this.getStatusLabel(record.estado),
       Descripción: record.observaciones || '',
-      Creado: record.created_at ? new Date(record.created_at).toLocaleDateString('es-PE') : '',
     }));
 
     this.excelService.exportToCSV(exportData, 'cuentas-por-pagar');
   }
 
   getDaysOverdue(row: AccountsPayable): number {
-    if (!row.fecha_vencimiento || row.estado === 'PAGADO' || row.estado === 'CANCELADO')
-      return -999;
+    if (!row.fecha_vencimiento || row.estado === 'PAGADO' || row.estado === 'ANULADO') return -999;
     const due = new Date(row.fecha_vencimiento);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -404,8 +369,8 @@ export class AccountsPayableListComponent implements OnInit {
     const statusMap: Record<string, string> = {
       PENDIENTE: 'Pendiente',
       PARCIAL: 'Parcial',
-      PAGADO: 'Pagada',
-      VENCIDO: 'Vencida',
+      PAGADO: 'Pagado',
+      ANULADO: 'Anulado',
     };
     return statusMap[estado] || estado;
   }

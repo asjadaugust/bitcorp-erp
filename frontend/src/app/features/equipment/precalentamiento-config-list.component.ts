@@ -2,10 +2,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { PrecalentamientoConfigService, PrecalentamientoConfig } from '../../core/services/precalentamiento-config.service';
+import {
+  PrecalentamientoConfigService,
+  PrecalentamientoConfig,
+} from '../../core/services/precalentamiento-config.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
-import { EQUIPMENT_MODULE_TABS } from './equipment-tabs';
 
 interface EditState {
   tipoEquipoId: number;
@@ -23,15 +25,14 @@ interface EditState {
       icon="fa-fire-flame-curved"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
-      [tabs]="moduleTabs"
     >
       <aero-card>
         <!-- Info banner -->
         <div class="info-banner" data-testid="info-banner">
           <i class="fa-solid fa-circle-info"></i>
           <span>
-            Según el <strong>Anexo B</strong> del PRD: Maquinaria Pesada = 0.50 h, Vehículos Pesados =
-            0.25 h, Vehículos Livianos / Equipos Menores = 0.00 h. Estos valores se aplican
+            Según el <strong>Anexo B</strong> del PRD: Maquinaria Pesada = 0.50 h, Vehículos Pesados
+            = 0.25 h, Vehículos Livianos / Equipos Menores = 0.00 h. Estos valores se aplican
             automáticamente al crear un parte diario.
           </span>
         </div>
@@ -367,7 +368,6 @@ export class PrecalentamientoConfigListComponent implements OnInit {
 
   configs: PrecalentamientoConfig[] = [];
   loading = false;
-  moduleTabs = EQUIPMENT_MODULE_TABS;
   saving = false;
   saveSuccess = false;
   saveError: string | null = null;

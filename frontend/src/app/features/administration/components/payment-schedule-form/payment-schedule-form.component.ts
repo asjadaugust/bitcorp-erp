@@ -8,247 +8,213 @@ import {
   AccountsPayable,
   PaymentScheduleDetail,
 } from '../../services/administration.service';
-import {
-  PageLayoutComponent,
-  Breadcrumb,
-} from '../../../../shared/components/page-layout/page-layout.component';
+import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-payment-schedule-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageLayoutComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FormContainerComponent,
+    FormSectionComponent,
+    ButtonComponent,
+  ],
   template: `
-    <app-page-layout
-      [title]="isEditMode ? 'Editar Programación' : 'Nueva Programación'"
+    <app-form-container
+      [title]="
+        isViewMode
+          ? 'Detalle Programación'
+          : isEditMode
+            ? 'Editar Programación'
+            : 'Nueva Programación'
+      "
       icon="fa-calendar-check"
-      [breadcrumbs]="breadcrumbs"
+      backUrl="/administracion/payment-schedules"
       [loading]="loading"
+      [disableSubmit]="!isFormValid() || loading"
+      [showFooter]="!isViewMode"
+      [showActions]="!isViewMode"
+      submitLabel="Guardar"
+      (submitted)="onSubmit()"
+      (cancelled)="cancel()"
     >
-      <form (ngSubmit)="onSubmit()" #psForm="ngForm" class="form-container">
-        <div class="form-grid">
-          <div class="form-group">
-            <span class="label">Fecha de Programación *</span>
-            <input
-              type="date"
-              [(ngModel)]="formData.schedule_date"
-              name="schedule_date"
-              required
-              class="form-control"
-            />
-          </div>
-
-          <div class="form-group">
-            <span class="label">Fecha de Pago *</span>
-            <input
-              type="date"
-              [(ngModel)]="formData.payment_date"
-              name="payment_date"
-              required
-              class="form-control"
-            />
-          </div>
-
-          <div class="form-group full-width">
-            <span class="label">Descripción</span>
-            <textarea
-              [(ngModel)]="formData.description"
-              name="description"
-              class="form-control"
-              rows="2"
-              placeholder="Ingrese una descripción..."
-            ></textarea>
-          </div>
+      <app-form-section title="Datos de Programación" icon="fa-calendar" [columns]="2">
+        <div class="form-group">
+          <label class="required">Fecha de Programación</label>
+          <input
+            type="date"
+            [(ngModel)]="formData.schedule_date"
+            name="schedule_date"
+            class="form-control"
+            [disabled]="isViewMode"
+            required
+          />
         </div>
 
-        <!-- Details Section -->
-        <div class="details-section">
-          <div class="section-header">
-            <h3>Items de Cuentas por Pagar</h3>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              (click)="showAddItemModal = true"
-              *ngIf="!isEditMode || formData.estado === 'BORRADOR'"
-            >
-              <i class="fa-solid fa-plus"></i> Agregar Item
-            </button>
-          </div>
+        <div class="form-group">
+          <label class="required">Fecha de Pago</label>
+          <input
+            type="date"
+            [(ngModel)]="formData.payment_date"
+            name="payment_date"
+            class="form-control"
+            [disabled]="isViewMode"
+            required
+          />
+        </div>
 
-          <table class="details-table" *ngIf="selectedDetails.length > 0">
+        <div class="form-group full-width">
+          <label>Descripción</label>
+          <textarea
+            [(ngModel)]="formData.description"
+            name="description"
+            class="form-control"
+            rows="2"
+            placeholder="Ingrese una descripción..."
+            [disabled]="isViewMode"
+          ></textarea>
+        </div>
+      </app-form-section>
+
+      <app-form-section
+        title="Items de Cuentas por Pagar"
+        icon="fa-file-invoice-dollar"
+        [columns]="1"
+      >
+        <div class="items-header" *ngIf="canEdit">
+          <app-button
+            variant="secondary"
+            icon="fa-plus"
+            label="Agregar Item"
+            size="sm"
+            (clicked)="showAddItemModal = true"
+          ></app-button>
+        </div>
+
+        <table class="details-table" *ngIf="selectedDetails.length > 0">
+          <thead>
+            <tr>
+              <th>Documento</th>
+              <th>Proveedor</th>
+              <th>Monto</th>
+              <th *ngIf="canEdit">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detail of selectedDetails">
+              <td>{{ detail.accounts_payable?.numero_factura }}</td>
+              <td>{{ detail.accounts_payable?.provider?.razonSocial || 'N/A' }}</td>
+              <td class="monto-cell">{{ detail.amount_to_pay | currency: 'PEN' : 'symbol' }}</td>
+              <td *ngIf="canEdit">
+                <app-button
+                  variant="ghost"
+                  icon="fa-trash"
+                  size="sm"
+                  (clicked)="removeDetail(detail)"
+                ></app-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="selectedDetails.length === 0">
+          <i class="fa-solid fa-inbox"></i>
+          <p>No hay items agregados. Haga clic en "Agregar Item" para comenzar.</p>
+        </div>
+      </app-form-section>
+
+      <!-- Total Summary -->
+      <div class="total-section">
+        <span class="total-label">Total Programado:</span>
+        <span class="total-amount">{{ calculateTotal() | currency: 'PEN' : 'symbol' }}</span>
+      </div>
+    </app-form-container>
+
+    <!-- Add Item Modal -->
+    <div class="modal-overlay" *ngIf="showAddItemModal" (click)="showAddItemModal = false">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Seleccionar Cuentas por Pagar Pendientes</h3>
+          <app-button
+            variant="ghost"
+            icon="fa-times"
+            size="sm"
+            (clicked)="showAddItemModal = false"
+          ></app-button>
+        </div>
+        <div class="modal-body">
+          <table class="modal-table" *ngIf="availableAP.length > 0">
             <thead>
               <tr>
+                <th class="col-check"></th>
                 <th>Documento</th>
                 <th>Proveedor</th>
                 <th>Monto</th>
-                <th *ngIf="!isEditMode || formData.estado === 'BORRADOR'">Acciones</th>
+                <th>Vencimiento</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let detail of selectedDetails">
-                <td>{{ detail.accounts_payable?.numero_factura }}</td>
-                <td>{{ detail.accounts_payable?.provider?.razonSocial || 'N/A' }}</td>
-                <td>{{ detail.amount_to_pay | currency: 'PEN' : 'symbol' }}</td>
-                <td *ngIf="!isEditMode || formData.estado === 'BORRADOR'">
-                  <button
-                    type="button"
-                    class="btn-icon btn-danger"
-                    (click)="removeDetail(detail)"
-                    title="Eliminar"
-                  >
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
+              <tr
+                *ngFor="let ap of availableAP"
+                (click)="ap.selected = !ap.selected"
+                class="selectable-row"
+              >
+                <td class="col-check">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="ap.selected"
+                    [ngModelOptions]="{ standalone: true }"
+                    (click)="$event.stopPropagation()"
+                  />
                 </td>
+                <td>{{ ap.numero_factura }}</td>
+                <td>{{ ap.provider?.razonSocial || 'N/A' }}</td>
+                <td class="monto-cell">{{ ap.monto_total | currency: 'PEN' : 'symbol' }}</td>
+                <td>{{ ap.fecha_vencimiento | date: 'dd/MM/yyyy' }}</td>
               </tr>
             </tbody>
           </table>
-
-          <div class="empty-state" *ngIf="selectedDetails.length === 0">
+          <div class="empty-state" *ngIf="availableAP.length === 0">
             <i class="fa-solid fa-inbox"></i>
-            <p>No hay items agregados. Haga clic en "Agregar Item" para comenzar.</p>
+            <p>No hay cuentas por pagar pendientes</p>
           </div>
         </div>
-
-        <!-- Total Summary -->
-        <div class="total-section">
-          <h3>Total: {{ calculateTotal() | currency: 'PEN' : 'symbol' }}</h3>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="!psForm.form.valid || loading || selectedDetails.length === 0"
-          >
-            <i
-              class="fa-solid"
-              [class.fa-save]="!loading"
-              [class.fa-spinner]="loading"
-              [class.fa-spin]="loading"
-            ></i>
-            {{ isEditMode ? 'Actualizar' : 'Crear' }}
-          </button>
-        </div>
-      </form>
-
-      <!-- Add Item Modal -->
-      <div class="modal" *ngIf="showAddItemModal" (click)="showAddItemModal = false" (keydown.enter)="showAddItemModal = false" tabindex="0" role="button">
-        <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="dialog">
-          <div class="modal-header">
-            <h3>Seleccionar Cuentas por Pagar Pendientes</h3>
-            <button type="button" class="btn-close" (click)="showAddItemModal = false">×</button>
-          </div>
-          <div class="modal-body">
-            <table class="modal-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Documento</th>
-                  <th>Proveedor</th>
-                  <th>Monto</th>
-                  <th>Vencimiento</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let ap of availableAP">
-                  <td>
-                    <input
-                      type="checkbox"
-                      [(ngModel)]="ap.selected"
-                      [ngModelOptions]="{ standalone: true }"
-                    />
-                  </td>
-                  <td>{{ ap.numero_factura }}</td>
-                  <td>{{ ap.provider?.razonSocial || 'N/A' }}</td>
-                  <td>{{ ap.monto_total | currency: 'PEN' : 'symbol' }}</td>
-                  <td>{{ ap.fecha_vencimiento | date: 'dd/MM/yyyy' }}</td>
-                </tr>
-                <tr *ngIf="availableAP.length === 0">
-                  <td colspan="5" class="text-center">No hay cuentas por pagar pendientes</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showAddItemModal = false">
-              Cancelar
-            </button>
-            <button type="button" class="btn btn-primary" (click)="addSelectedItems()">
-              Agregar Seleccionados
-            </button>
-          </div>
+        <div class="modal-footer">
+          <app-button
+            variant="secondary"
+            label="Cancelar"
+            (clicked)="showAddItemModal = false"
+          ></app-button>
+          <app-button
+            variant="primary"
+            label="Agregar Seleccionados"
+            [disabled]="!hasSelectedItems()"
+            (clicked)="addSelectedItems()"
+          ></app-button>
         </div>
       </div>
-    </app-page-layout>
+    </div>
   `,
   styles: [
     `
-      .form-container {
-        max-width: 1000px;
-        margin: 0 auto;
-      }
+      @use 'form-layout';
 
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--s-16);
-        margin-bottom: var(--s-24);
-      }
-
-      .form-group {
+      .items-header {
         display: flex;
-        flex-direction: column;
-        gap: var(--s-8);
-      }
-
-      .form-group.full-width {
-        grid-column: 1 / -1;
-      }
-
-      label {
-        font-weight: 600;
-        font-size: var(--type-bodySmall-size);
-        color: var(--grey-700);
-      }
-
-      .form-control {
-        padding: var(--s-8) var(--s-12);
-        border: 1px solid var(--grey-300);
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: var(--primary-500);
-      }
-
-      .details-section {
-        background: var(--grey-50);
-        padding: var(--s-20);
-        border-radius: var(--s-8);
-        margin-bottom: var(--s-20);
-      }
-
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--s-16);
-      }
-
-      .section-header h3 {
-        margin: 0;
-        color: var(--grey-800);
-        font-size: var(--type-h4-size);
+        justify-content: flex-end;
+        margin-bottom: var(--s-12);
       }
 
       .details-table {
         width: 100%;
         border-collapse: collapse;
         background: white;
-        border-radius: var(--s-8);
+        border-radius: 8px;
         overflow: hidden;
+        border: 1px solid var(--grey-200);
       }
 
       .details-table th,
@@ -259,10 +225,18 @@ import {
       }
 
       .details-table th {
-        background: var(--grey-100);
+        background: var(--grey-50);
         font-weight: 600;
-        font-size: var(--type-bodySmall-size);
+        font-size: 13px;
         color: var(--grey-700);
+      }
+
+      .details-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .monto-cell {
+        font-variant-numeric: tabular-nums;
       }
 
       .empty-state {
@@ -275,69 +249,40 @@ import {
         font-size: 48px;
         margin-bottom: var(--s-12);
         opacity: 0.3;
+        display: block;
+      }
+
+      .empty-state p {
+        margin: 0;
+        font-size: 14px;
       }
 
       .total-section {
-        background: var(--primary-100);
-        padding: var(--s-16);
-        border-radius: var(--s-8);
-        margin-bottom: var(--s-20);
-      }
-
-      .total-section h3 {
-        margin: 0;
-        color: var(--primary-800);
-        font-size: var(--type-h3-size);
-        text-align: right;
-      }
-
-      .form-actions {
         display: flex;
         justify-content: flex-end;
-        gap: var(--s-12);
-      }
-
-      .btn {
-        padding: var(--s-10) var(--s-20);
-        border: none;
-        border-radius: var(--s-8);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
         align-items: center;
-        gap: var(--s-8);
+        gap: var(--s-12);
+        background: var(--primary-100);
+        padding: var(--s-16) var(--s-20);
+        border-radius: 8px;
+        margin-top: var(--s-16);
       }
 
-      .btn-primary {
-        background: var(--primary-500);
-        color: white;
+      .total-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--primary-800);
       }
 
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-800);
+      .total-amount {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--primary-900);
+        font-variant-numeric: tabular-nums;
       }
 
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-      }
-
-      .btn-icon.btn-danger:hover {
-        background: var(--error-100);
-        color: var(--error-600);
-        border-radius: var(--s-4);
-      }
-
-      .modal {
+      /* Modal */
+      .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -358,6 +303,7 @@ import {
         max-height: 80vh;
         display: flex;
         flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
       }
 
       .modal-header {
@@ -370,14 +316,9 @@ import {
 
       .modal-header h3 {
         margin: 0;
-      }
-
-      .btn-close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: var(--grey-500);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--grey-900);
       }
 
       .modal-body {
@@ -400,20 +341,30 @@ import {
       .modal-table th {
         background: var(--grey-50);
         font-weight: 600;
+        font-size: 13px;
+        color: var(--grey-700);
+      }
+
+      .col-check {
+        width: 40px;
+        text-align: center !important;
+      }
+
+      .selectable-row {
+        cursor: pointer;
+        transition: background-color 0.15s;
+      }
+
+      .selectable-row:hover {
+        background: var(--grey-50);
       }
 
       .modal-footer {
-        padding: var(--s-20);
+        padding: var(--s-16) var(--s-20);
         border-top: 1px solid var(--grey-200);
         display: flex;
         justify-content: flex-end;
         gap: var(--s-12);
-      }
-
-      .text-center {
-        text-align: center;
-        padding: var(--s-24);
-        color: var(--grey-500);
       }
     `,
   ],
@@ -437,23 +388,27 @@ export class PaymentScheduleFormComponent implements OnInit {
   showAddItemModal = false;
   loading = false;
   isEditMode = false;
+  isViewMode = false;
   scheduleId?: number;
 
-  breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
-    { label: 'Administración', url: '/administracion' },
-    { label: 'Programación de Pagos', url: '/administracion/payment-schedules' },
-    { label: 'Formulario' },
-  ];
+  get canEdit(): boolean {
+    if (this.isViewMode) return false;
+    if (!this.isEditMode) return true;
+    return this.formData.estado === 'BORRADOR';
+  }
 
   ngOnInit() {
-    this.loadPendingAP();
-    this.scheduleId = Number(this.route.snapshot.paramMap.get('id'));
-    this.isEditMode = !!this.scheduleId;
+    const id = this.route.snapshot.paramMap.get('id');
+    const url = this.router.url;
 
-    if (this.isEditMode) {
+    if (id) {
+      this.scheduleId = Number(id);
+      this.isEditMode = url.endsWith('/edit');
+      this.isViewMode = !this.isEditMode;
       this.loadSchedule();
     }
+
+    this.loadPendingAP();
   }
 
   loadPendingAP() {
@@ -479,6 +434,18 @@ export class PaymentScheduleFormComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  isFormValid(): boolean {
+    return (
+      !!this.formData.schedule_date &&
+      !!this.formData.payment_date &&
+      this.selectedDetails.length > 0
+    );
+  }
+
+  hasSelectedItems(): boolean {
+    return this.availableAP.some((ap) => ap.selected);
   }
 
   addSelectedItems() {

@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SstService, SafetyIncident } from '../../services/sst.service';
+import { SstService, SstIncidente } from '../../services/sst.service';
 import {
   AeroTableComponent,
   TableColumn,
@@ -15,6 +15,8 @@ import {
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-incident-list',
@@ -25,6 +27,8 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
+    PageCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -34,9 +38,12 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
       [loading]="loading"
     >
       <app-actions-container actions>
-        <button class="btn btn-primary" (click)="reportIncident()">
-          <i class="fa-solid fa-plus"></i> Reportar Incidente
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-plus"
+          label="Reportar Incidente"
+          (clicked)="reportIncident()"
+        ></app-button>
       </app-actions-container>
 
       <app-filter-bar
@@ -44,96 +51,80 @@ import { ActionsContainerComponent } from '../../../../shared/components/actions
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
-        [columns]="columns"
-        [data]="filteredIncidents"
-        [loading]="loading"
-        [templates]="{
-          reportedBy: reportedByTemplate,
-        }"
-      >
-      </aero-table>
-
-      <ng-template #reportedByTemplate let-row>
-        {{ row.reportedBy?.firstName }} {{ row.reportedBy?.lastName }}
-      </ng-template>
+      <app-page-card [noPadding]="true">
+        <aero-table
+          [columns]="columns"
+          [data]="filteredIncidents"
+          [loading]="loading"
+          (rowClick)="onRowClick($event)"
+        >
+        </aero-table>
+      </app-page-card>
     </app-page-layout>
   `,
-  styles: [
-    `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
-      }
-    `,
-  ],
 })
 export class IncidentListComponent implements OnInit {
   private readonly sstService = inject(SstService);
   private readonly router = inject(Router);
 
-  incidents: SafetyIncident[] = [];
-  filteredIncidents: SafetyIncident[] = [];
+  incidents: SstIncidente[] = [];
+  filteredIncidents: SstIncidente[] = [];
   loading = false;
-  filters = { search: '', severity: '' };
+  filters = { search: '', severidad: '', estado: '' };
 
-  breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
-    { label: 'SST', url: '/sst' },
-    { label: 'Incidentes' },
-  ];
+  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'SST' }];
 
   filterConfig: FilterConfig[] = [
     { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar incidentes...' },
     {
-      key: 'severity',
+      key: 'severidad',
       label: 'Severidad',
       type: 'select',
       options: [
-        { label: 'Baja', value: 'Low' },
-        { label: 'Media', value: 'Medium' },
-        { label: 'Alta', value: 'High' },
-        { label: 'Crítica', value: 'Critical' },
+        { label: 'Leve', value: 'LEVE' },
+        { label: 'Moderado', value: 'MODERADO' },
+        { label: 'Grave', value: 'GRAVE' },
+        { label: 'Muy Grave', value: 'MUY_GRAVE' },
+      ],
+    },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'select',
+      options: [
+        { label: 'Abierto', value: 'ABIERTO' },
+        { label: 'En Investigación', value: 'EN_INVESTIGACION' },
+        { label: 'Cerrado', value: 'CERRADO' },
       ],
     },
   ];
 
   columns: TableColumn[] = [
-    { key: 'date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
-    { key: 'description', label: 'Descripción', type: 'text' },
-    { key: 'location', label: 'Ubicación', type: 'text' },
+    { key: 'fecha_incidente', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
+    { key: 'tipo_incidente', label: 'Tipo', type: 'text' },
+    { key: 'descripcion', label: 'Descripción', type: 'text' },
+    { key: 'ubicacion', label: 'Ubicación', type: 'text' },
     {
-      key: 'severity',
+      key: 'severidad',
       label: 'Severidad',
       type: 'badge',
       badgeConfig: {
-        Low: { label: 'Baja', class: 'badge low' },
-        Medium: { label: 'Media', class: 'badge medium' },
-        High: { label: 'Alta', class: 'badge high' },
-        Critical: { label: 'Crítica', class: 'badge critical' },
+        LEVE: { label: 'Leve', class: 'badge info' },
+        MODERADO: { label: 'Moderado', class: 'badge warning' },
+        GRAVE: { label: 'Grave', class: 'badge error' },
+        MUY_GRAVE: { label: 'Muy Grave', class: 'badge critical' },
       },
     },
-    { key: 'reportedBy', label: 'Reportado Por', type: 'template' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      badgeConfig: {
+        ABIERTO: { label: 'Abierto', class: 'badge warning' },
+        EN_INVESTIGACION: { label: 'En Investigación', class: 'badge info' },
+        CERRADO: { label: 'Cerrado', class: 'badge success' },
+      },
+    },
   ];
 
   ngOnInit() {
@@ -143,15 +134,8 @@ export class IncidentListComponent implements OnInit {
   loadIncidents() {
     this.loading = true;
     this.sstService.getIncidents().subscribe({
-      next: (response: unknown) => {
-        // Handle paginated response { success, data, meta/pagination } or direct array
-        if (response && typeof response === 'object' && 'data' in response) {
-          this.incidents = Array.isArray(response.data) ? response.data : [];
-        } else if (Array.isArray(response)) {
-          this.incidents = response;
-        } else {
-          this.incidents = [];
-        }
+      next: (incidents) => {
+        this.incidents = incidents;
         this.applyFilters();
         this.loading = false;
       },
@@ -165,7 +149,8 @@ export class IncidentListComponent implements OnInit {
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
-    this.filters.severity = (filters['severity'] as string) || '';
+    this.filters.severidad = (filters['severidad'] as string) || '';
+    this.filters.estado = (filters['estado'] as string) || '';
     this.applyFilters();
   }
 
@@ -173,16 +158,24 @@ export class IncidentListComponent implements OnInit {
     this.filteredIncidents = this.incidents.filter((incident) => {
       const matchesSearch =
         !this.filters.search ||
-        incident.description?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        incident.location?.toLowerCase().includes(this.filters.search.toLowerCase());
+        incident.descripcion?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        incident.ubicacion?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        incident.tipo_incidente?.toLowerCase().includes(this.filters.search.toLowerCase());
 
-      const matchesSeverity = !this.filters.severity || incident.severity === this.filters.severity;
+      const matchesSeveridad =
+        !this.filters.severidad || incident.severidad === this.filters.severidad;
 
-      return matchesSearch && matchesSeverity;
+      const matchesEstado = !this.filters.estado || incident.estado === this.filters.estado;
+
+      return matchesSearch && matchesSeveridad && matchesEstado;
     });
   }
 
   reportIncident(): void {
     this.router.navigate(['/sst/new']);
+  }
+
+  onRowClick(row: SstIncidente): void {
+    this.router.navigate(['/sst', row.id, 'edit']);
   }
 }

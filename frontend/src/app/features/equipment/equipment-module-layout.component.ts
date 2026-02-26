@@ -62,6 +62,7 @@ export class EquipmentModuleLayoutComponent implements OnInit {
         route: '/equipment/inoperatividad',
         icon: 'fa-triangle-exclamation',
       },
+      { label: 'Combustible', route: '/equipment/vales-combustible', icon: 'fa-gas-pump' },
     ];
 
     if (this.isAdmin) {
