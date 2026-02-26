@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -11,6 +11,7 @@ import {
 } from '../../../core/services/geolocation.service';
 import { EquipmentService } from '../../../core/services/equipment.service';
 import { ProjectService } from '../../../core/services/project.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { Project } from '../../../core/models/project.model';
 import { SignaturePadComponent } from '../../../shared/components/signature-pad.component';
@@ -37,6 +38,9 @@ import {
         </h1>
         <p class="subtitle">
           {{ isViewMode ? 'Consulta de registro histórico' : 'Registro de trabajo diario' }}
+          <span class="draft-badge" *ngIf="hasDraft && !isViewMode && !isEditMode">
+            <i class="fa-solid fa-floppy-disk"></i> Borrador guardado
+          </span>
         </p>
       </header>
 
@@ -601,6 +605,21 @@ import {
         font-size: 16px;
         color: var(--grey-700);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .draft-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        background: var(--semantic-amber-100, #fef3c7);
+        color: var(--semantic-amber-800, #92400e);
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
       }
 
       .report-form {
@@ -1124,7 +1143,7 @@ import {
     `,
   ],
 })
-export class OperatorDailyReportComponent implements OnInit {
+export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -1165,6 +1184,9 @@ export class OperatorDailyReportComponent implements OnInit {
   locationError: string | null = null;
   uploadingPhotos = false;
   downloadingPdf = false;
+  hasDraft = false;
+  private readonly DRAFT_KEY = 'bitcorp-daily-report-draft';
+  private autoSaveInterval: ReturnType<typeof setInterval> | null = null;
 
   // Activity and delay codes
   activityCodes = [
@@ -1214,6 +1236,7 @@ export class OperatorDailyReportComponent implements OnInit {
   geoService = inject(GeolocationService);
   private equipmentService = inject(EquipmentService);
   private projectService = inject(ProjectService);
+  private authService = inject(AuthService);
 
   constructor() {
     this.reportForm = this.fb.group({
@@ -1328,10 +1351,19 @@ export class OperatorDailyReportComponent implements OnInit {
         this.isViewMode = true; // Default to view mode for existing reports
         this.loadReport(this.reportId);
       } else {
-        // New report - auto-capture GPS
+        // New report - restore draft and start auto-save
+        this.restoreDraft();
+        this.autoSaveInterval = setInterval(() => this.autoSaveDraft(), 30000);
+        // Auto-capture GPS
         setTimeout(() => this.captureGPS(), 1000);
       }
     });
+  }
+
+  ngOnDestroy() {
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+    }
   }
 
   loadEquipmentAndProjects() {
@@ -1382,11 +1414,11 @@ export class OperatorDailyReportComponent implements OnInit {
           horometerEnd: report.horometro_final,
           startTime: report.hora_inicio,
           endTime: report.hora_fin,
-          fuelStart: (report as any)['fuel_start'] || report.diesel_gln,
-          fuelEnd: (report as any)['fuel_end'] || report.gasolina_gln,
-          gpsLocation: (report as any)['location'] || report.lugar_salida,
-          manualLocation: (report as any)['location'] || report.lugar_llegada,
-          workDescription: (report as any)['work_description'] || report.observaciones,
+          fuelStart: report.diesel_gln,
+          fuelEnd: report.gasolina_gln,
+          gpsLocation: report.lugar_salida,
+          manualLocation: report.lugar_llegada,
+          workDescription: report.observaciones,
         });
 
         if (this.isViewMode) {
@@ -1585,12 +1617,51 @@ export class OperatorDailyReportComponent implements OnInit {
 
   saveDraft() {
     this.saving = true;
-    // TODO: Save to local storage
-    console.log('Saving draft...', this.reportForm.value);
+    this.persistDraft();
     setTimeout(() => {
       this.saving = false;
       alert('Borrador guardado localmente');
-    }, 1000);
+    }, 300);
+  }
+
+  private autoSaveDraft(): void {
+    if (this.isViewMode || this.isEditMode) return;
+    this.persistDraft();
+  }
+
+  private persistDraft(): void {
+    const formValue = this.reportForm.getRawValue();
+    localStorage.setItem(this.DRAFT_KEY, JSON.stringify({ ...formValue, _savedAt: Date.now() }));
+    this.hasDraft = true;
+  }
+
+  private restoreDraft(): void {
+    const saved = localStorage.getItem(this.DRAFT_KEY);
+    if (!saved) return;
+    try {
+      const draft = JSON.parse(saved);
+      // Discard drafts older than 24 hours
+      if (draft._savedAt && Date.now() - draft._savedAt > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(this.DRAFT_KEY);
+        return;
+      }
+      delete draft._savedAt;
+      // Don't restore production rows or checkbox groups (complex nested structures)
+      delete draft.productionRows;
+      delete draft.activities;
+      delete draft.operationalDelays;
+      delete draft.otherEvents;
+      delete draft.mechanicalDelays;
+      this.reportForm.patchValue(draft);
+      this.hasDraft = true;
+    } catch {
+      localStorage.removeItem(this.DRAFT_KEY);
+    }
+  }
+
+  private clearDraft(): void {
+    localStorage.removeItem(this.DRAFT_KEY);
+    this.hasDraft = false;
   }
 
   submitReport() {
@@ -1602,7 +1673,7 @@ export class OperatorDailyReportComponent implements OnInit {
       const reportData = {
         fecha_parte: formValue.date,
         equipo_id: formValue.equipmentId,
-        trabajador_id: 1, // Get from auth service
+        trabajador_id: this.authService.currentUser?.id_usuario ?? 0,
         proyecto_id: formValue.projectId || null,
         horometro_inicial: formValue.horometerStart,
         horometro_final: formValue.horometerEnd,
@@ -1639,10 +1710,33 @@ export class OperatorDailyReportComponent implements OnInit {
       };
 
       this.dailyReportService.create(reportData).subscribe({
-        next: (_response) => {
-          this.saving = false;
-          alert('Parte diario enviado correctamente');
-          this.router.navigate(['/operator/history']);
+        next: (response) => {
+          this.clearDraft();
+          // Upload photos if any were captured
+          const localPhotos = this.photos.filter((p) => p.status === 'local' && p.file);
+          if (localPhotos.length > 0 && response?.id) {
+            const formData = new FormData();
+            for (const photo of localPhotos) {
+              formData.append('photos', photo.file!, photo.file!.name);
+            }
+            this.dailyReportService.uploadPhotos(response.id, formData).subscribe({
+              next: () => {
+                this.saving = false;
+                alert('Parte diario enviado correctamente con fotos');
+                this.router.navigate(['/operator/history']);
+              },
+              error: (err) => {
+                console.error('Photo upload failed (report was saved):', err);
+                this.saving = false;
+                alert('Parte diario enviado, pero las fotos no se pudieron subir');
+                this.router.navigate(['/operator/history']);
+              },
+            });
+          } else {
+            this.saving = false;
+            alert('Parte diario enviado correctamente');
+            this.router.navigate(['/operator/history']);
+          }
         },
         error: (error) => {
           console.error('Error submitting report:', error);

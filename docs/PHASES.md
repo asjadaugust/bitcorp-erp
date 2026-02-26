@@ -140,3 +140,18 @@ Identify what works and what does not work, make a list of things that don't wor
 Navigate to the application, click around thoroughly and not down every details, make use of WebMCP and note down the console messages and docker-compose logs.
 
 Focus on just making the list of things that dont work and suggestions for improvement only.
+
+
+  4 stories remain implementable:
+
+  ┌───────┬───────────────────────────────┬────────────────────────────────────┬─────────────────────────────────────────────┐
+  │   #   │             Story             │               Status               │                   Effort                    │
+  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ WS-28 │ Photo/Attachment Backend      │ Frontend 90%, backend 20%          │ 2–3 days                                    │
+  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ WS-33 │ Operator Daily Report Offline │ Online works, offline not wired    │ 1–2 days (quick win) to 5–8 days (full PWA) │
+  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ WS-31 │ Checklist Frequency Rules     │ 30% — schema exists, no automation │ 5–7 days                                    │
+  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
+  │ WS-32 │ Contract Legalization Flow    │ 0% — nothing exists                │ 8–10 days                                   │
+  └───────┴───────────────────────────────┴────────────────────────────────────┴─────────────────────────────────────────────┘

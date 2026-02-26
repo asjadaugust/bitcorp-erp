@@ -18,6 +18,8 @@ import Logger from '../utils/logger';
 import { NotFoundError } from '../errors/http.errors';
 import { ValidationError } from '../errors/validation.error';
 import { DashboardService } from './dashboard.service';
+import { DailyReportPhotoService } from './daily-report-photo.service';
+import { toParteDiarioFotoDto, ParteDiarioFotoDto } from '../types/dto/daily-report-photo.dto';
 import { Between, FindOptionsWhere, In } from 'typeorm';
 
 export interface EquipmentReceptionStatus {
@@ -63,10 +65,12 @@ export interface EquipmentReceptionStatus {
 export class ReportService {
   private dashboardService: DashboardService;
   private precalentamientoService: PrecalentamientoConfigService;
+  private photoService: DailyReportPhotoService;
 
   constructor() {
     this.dashboardService = new DashboardService();
     this.precalentamientoService = new PrecalentamientoConfigService();
+    this.photoService = new DailyReportPhotoService();
   }
 
   /**
@@ -169,6 +173,16 @@ export class ReportService {
       }
 
       const report = toDailyReportDto(entity);
+
+      // Enrich with photos
+      try {
+        const photoEntities = await this.photoService.getPhotosByReportId(tenantId, parseInt(id));
+        (report as DailyReportDto & { fotos: ParteDiarioFotoDto[] }).fotos =
+          photoEntities.map(toParteDiarioFotoDto);
+      } catch {
+        // Non-critical: continue without photos
+        (report as DailyReportDto & { fotos: ParteDiarioFotoDto[] }).fotos = [];
+      }
 
       Logger.info('Daily report fetched successfully', {
         tenantId,
@@ -625,11 +639,7 @@ export class ReportService {
         ]);
       }
 
-      const entity = await DailyReportModel.firmarResidente(
-        tenantId,
-        id,
-        firmaResidente.trim()
-      );
+      const entity = await DailyReportModel.firmarResidente(tenantId, id, firmaResidente.trim());
 
       if (!entity) {
         throw new NotFoundError('Daily report', id, { tenantId });

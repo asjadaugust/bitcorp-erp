@@ -1,3 +1,4 @@
+import { DataSource } from 'typeorm';
 import { EquipmentAnalyticsService } from './equipment-analytics.service';
 import {
   toUtilizacionDto,
@@ -13,7 +14,8 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
   let service: EquipmentAnalyticsService;
 
   beforeEach(() => {
-    service = new EquipmentAnalyticsService();
+    const mockDataSource = { getRepository: jest.fn() } as unknown as DataSource;
+    service = new EquipmentAnalyticsService(mockDataSource);
   });
 
   // ─── Instanciación ─────────────────────────────────────────────────────────

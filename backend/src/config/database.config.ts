@@ -78,6 +78,7 @@ import { ValeCombustible } from '../models/vale-combustible.model';
 import { CertificacionOperador } from '../models/operador-certificacion.model';
 import { HabilidadOperador } from '../models/operador-habilidad.model';
 import { DisponibilidadOperador } from '../models/disponibilidad-operador.model';
+import { DailyReportPhoto } from '../models/daily-report-photo.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -165,6 +166,7 @@ export const AppDataSource = new DataSource({
     CertificacionOperador,
     HabilidadOperador,
     DisponibilidadOperador,
+    DailyReportPhoto,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

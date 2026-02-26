@@ -12,8 +12,11 @@ import {
 import Logger from '../../utils/logger';
 import { NotFoundError } from '../../errors/http.errors';
 import { ValidationError } from '../../errors/validation.error';
+import { DailyReportPhotoService } from '../../services/daily-report-photo.service';
+import { toParteDiarioFotoDto } from '../../types/dto/daily-report-photo.dto';
 
 const reportService = new ReportService();
+const photoService = new DailyReportPhotoService();
 
 export class ReportController {
   async getReports(req: AuthRequest, res: Response) {
@@ -401,6 +404,79 @@ export class ReportController {
         return sendError(res, 404, error.name, error.message);
       }
       return sendError(res, 500, 'RESOLVE_FAILED', 'Failed to resolve observation');
+    }
+  }
+
+  async getPhotos(req: AuthRequest, res: Response) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const reportId = parseInt(req.params.id);
+      if (isNaN(reportId)) {
+        return sendError(res, 400, 'INVALID_ID', 'ID de reporte debe ser un número');
+      }
+
+      const photos = await photoService.getPhotosByReportId(tenantId, reportId);
+      sendSuccess(res, photos.map(toParteDiarioFotoDto));
+    } catch (error: any) {
+      Logger.error('Error fetching report photos', {
+        error: error instanceof Error ? error.message : String(error),
+        reportId: req.params.id,
+        context: 'ReportController.getPhotos',
+      });
+      return sendError(res, 500, 'PHOTOS_FETCH_FAILED', 'Failed to fetch photos', error.message);
+    }
+  }
+
+  async uploadPhotos(req: AuthRequest, res: Response) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const reportId = parseInt(req.params.id);
+      if (isNaN(reportId)) {
+        return sendError(res, 400, 'INVALID_ID', 'ID de reporte debe ser un número');
+      }
+
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return sendError(res, 400, 'NO_FILES', 'No se proporcionaron archivos');
+      }
+
+      const photos = await photoService.uploadPhotos(tenantId, reportId, files);
+      sendCreated(res, { photos: photos.map(toParteDiarioFotoDto) });
+    } catch (error: any) {
+      Logger.error('Error uploading report photos', {
+        error: error instanceof Error ? error.message : String(error),
+        reportId: req.params.id,
+        context: 'ReportController.uploadPhotos',
+      });
+      return sendError(res, 500, 'PHOTOS_UPLOAD_FAILED', 'Failed to upload photos', error.message);
+    }
+  }
+
+  async deletePhoto(req: AuthRequest, res: Response) {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const reportId = parseInt(req.params.id);
+      const photoId = parseInt(req.params.photoId);
+
+      if (isNaN(reportId) || isNaN(photoId)) {
+        return sendError(res, 400, 'INVALID_ID', 'IDs deben ser números');
+      }
+
+      await photoService.deletePhoto(tenantId, reportId, photoId);
+      res.status(204).send();
+    } catch (error: any) {
+      Logger.error('Error deleting report photo', {
+        error: error instanceof Error ? error.message : String(error),
+        reportId: req.params.id,
+        photoId: req.params.photoId,
+        context: 'ReportController.deletePhoto',
+      });
+
+      if (error instanceof NotFoundError) {
+        return sendError(res, 404, error.name, error.message);
+      }
+
+      return sendError(res, 500, 'PHOTO_DELETE_FAILED', 'Failed to delete photo', error.message);
     }
   }
 }

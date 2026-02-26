@@ -89,7 +89,7 @@ export class PhotoUploadService {
     formData.append('photos', photoFile);
 
     return this.http
-      .post<Record<string, unknown>>(`${this.API_URL}/daily-reports/${reportId}/photos`, formData, {
+      .post<Record<string, unknown>>(`${this.API_URL}/reports/${reportId}/photos`, formData, {
         reportProgress: true,
         observe: 'events',
       })

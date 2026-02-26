@@ -1,5 +1,4 @@
-import { Repository } from 'typeorm';
-import { AppDataSource } from '../config/database.config';
+import { Repository, DataSource } from 'typeorm';
 import { Equipment } from '../models/equipment.model';
 import { DailyReport } from '../models/daily-report-typeorm.model';
 import { NotFoundError, ValidationError, DatabaseError, DatabaseErrorType } from '../errors';
@@ -343,12 +342,14 @@ export class EquipmentAnalyticsService {
   private static readonly DEFAULT_HOURLY_RATE = 50.0;
   private static readonly FUEL_PRICE_PER_GALLON = 3.5;
 
+  constructor(private dataSource: DataSource) {}
+
   private get equipmentRepository(): Repository<Equipment> {
-    return AppDataSource.getRepository(Equipment);
+    return this.dataSource.getRepository(Equipment);
   }
 
   private get dailyReportRepository(): Repository<DailyReport> {
-    return AppDataSource.getRepository(DailyReport);
+    return this.dataSource.getRepository(DailyReport);
   }
 
   /**
@@ -1624,5 +1625,3 @@ export class EquipmentAnalyticsService {
     return diffDays * 24;
   }
 }
-
-export const equipmentAnalyticsService = new EquipmentAnalyticsService();

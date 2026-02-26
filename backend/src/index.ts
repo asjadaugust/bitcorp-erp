@@ -98,6 +98,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static uploads (photos, documents, etc.)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Request logging with correlation IDs
 app.use(requestLogger);
 
