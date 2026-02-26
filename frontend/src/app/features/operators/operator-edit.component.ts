@@ -8,6 +8,7 @@ import {
   ValidationError,
 } from '../../core/services/form-error-handler.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import {
@@ -24,6 +25,7 @@ import { AeroInputComponent } from '../../core/design-system/input/aero-input.co
     ReactiveFormsModule,
     RouterModule,
     FormContainerComponent,
+    FormSectionComponent,
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
@@ -36,11 +38,12 @@ import { AeroInputComponent } from '../../core/design-system/input/aero-input.co
         isNew ? 'Registrar un nuevo operador en el sistema' : 'Actualizar información del operador'
       "
       [icon]="isNew ? 'fa-user-plus' : 'fa-user-pen'"
+      backUrl="/operators"
       [loading]="loading"
       [disableSubmit]="operatorForm.invalid || loading || saving"
       [submitLabel]="isNew ? 'Crear Operador' : 'Guardar Cambios'"
-      (onSubmit)="saveOperator()"
-      (onCancel)="cancel()"
+      (submitted)="saveOperator()"
+      (cancelled)="cancel()"
     >
       <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage"></app-alert>
       <app-alert *ngIf="successMessage" type="success" [message]="successMessage"></app-alert>
@@ -54,118 +57,114 @@ import { AeroInputComponent } from '../../core/design-system/input/aero-input.co
 
       <form [formGroup]="operatorForm" class="form-grid" id="standardForm">
         <!-- Section 1: Personal Information -->
-        <div class="form-section">
-          <h3 class="section-title"><i class="fa-solid fa-user"></i> Información Personal</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <aero-input
-                label="DNI"
-                formControlName="dni"
-                placeholder="Ej. 12345678"
-                [required]="true"
-                [error]="hasError('dni') ? 'DNI es requerido (8 dígitos)' : ''"
-              ></aero-input>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Nombres"
-                formControlName="nombres"
-                placeholder="Ej. Juan"
-                [required]="true"
-                [error]="hasError('nombres') ? 'Nombres es requerido' : ''"
-              ></aero-input>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Apellido Paterno"
-                formControlName="apellido_paterno"
-                placeholder="Ej. Pérez"
-                [required]="true"
-                [error]="hasError('apellido_paterno') ? 'Apellido Paterno es requerido' : ''"
-              ></aero-input>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Apellido Materno"
-                formControlName="apellido_materno"
-                placeholder="Ej. Gomez"
-              ></aero-input>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Email"
-                type="email"
-                formControlName="correo_electronico"
-                placeholder="juan.perez@bitcorp.com"
-                [error]="hasError('correo_electronico') ? 'Email inválido' : ''"
-              ></aero-input>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Teléfono"
-                formControlName="telefono"
-                placeholder="+51 999 999 999"
-              ></aero-input>
-            </div>
+        <app-form-section title="Información Personal" icon="fa-user" [columns]="2">
+          <div class="form-group">
+            <aero-input
+              label="DNI"
+              formControlName="dni"
+              placeholder="Ej. 12345678"
+              [required]="true"
+              [error]="hasError('dni') ? 'DNI es requerido (8 dígitos)' : ''"
+            ></aero-input>
           </div>
-        </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Nombres"
+              formControlName="nombres"
+              placeholder="Ej. Juan"
+              [required]="true"
+              [error]="hasError('nombres') ? 'Nombres es requerido' : ''"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Apellido Paterno"
+              formControlName="apellido_paterno"
+              placeholder="Ej. Pérez"
+              [required]="true"
+              [error]="hasError('apellido_paterno') ? 'Apellido Paterno es requerido' : ''"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Apellido Materno"
+              formControlName="apellido_materno"
+              placeholder="Ej. Gomez"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Email"
+              type="email"
+              formControlName="correo_electronico"
+              placeholder="juan.perez@bitcorp.com"
+              [error]="hasError('correo_electronico') ? 'Email inválido' : ''"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Teléfono"
+              formControlName="telefono"
+              placeholder="+51 999 999 999"
+            ></aero-input>
+          </div>
+        </app-form-section>
 
         <!-- Section 2: Employment Details -->
-        <div class="form-section">
-          <h3 class="section-title"><i class="fa-solid fa-briefcase"></i> Información Laboral</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <label class="aero-label">Estado <span class="required">*</span></label>
-              <app-dropdown formControlName="is_active" [options]="statusOptions"></app-dropdown>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Cargo"
-                formControlName="cargo"
-                placeholder="Ej. Operador Maquinaria Pesada"
-              ></aero-input>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Fecha de Ingreso"
-                type="date"
-                formControlName="fecha_ingreso"
-              ></aero-input>
-            </div>
+        <app-form-section title="Información Laboral" icon="fa-briefcase" [columns]="2">
+          <div class="form-group">
+            <label class="aero-label">Estado <span class="required">*</span></label>
+            <app-dropdown formControlName="is_active" [options]="statusOptions"></app-dropdown>
           </div>
-        </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Cargo"
+              formControlName="cargo"
+              placeholder="Ej. Operador Maquinaria Pesada"
+            ></aero-input>
+          </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Fecha de Ingreso"
+              type="date"
+              formControlName="fecha_ingreso"
+            ></aero-input>
+          </div>
+        </app-form-section>
 
         <!-- Section 3: Driving License -->
-        <div class="form-section">
-          <h3 class="section-title"><i class="fa-solid fa-id-card"></i> Licencia de Conducir</h3>
-          <div class="section-grid">
-            <div class="form-group">
-              <aero-input
-                label="Nro. de Licencia"
-                formControlName="licencia_conducir"
-                placeholder="A-12345678"
-              ></aero-input>
-            </div>
-
-            <div class="form-group">
-              <aero-input
-                label="Vencimiento"
-                type="date"
-                formControlName="vencimiento_licencia"
-              ></aero-input>
-            </div>
+        <app-form-section title="Licencia de Conducir" icon="fa-id-card" [columns]="2">
+          <div class="form-group">
+            <aero-input
+              label="Nro. de Licencia"
+              formControlName="licencia_conducir"
+              placeholder="A-12345678"
+            ></aero-input>
           </div>
-        </div>
+
+          <div class="form-group">
+            <aero-input
+              label="Vencimiento"
+              type="date"
+              formControlName="vencimiento_licencia"
+            ></aero-input>
+          </div>
+        </app-form-section>
       </form>
     </app-form-container>
   `,
+  styles: [
+    `
+      @use 'form-layout';
+    `,
+  ],
 })
 export class OperatorEditComponent implements OnInit {
   private fb = inject(FormBuilder);
