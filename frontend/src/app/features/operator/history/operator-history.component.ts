@@ -70,7 +70,7 @@ interface HistoryReport {
 
       <!-- Loading State -->
       <div *ngIf="loading" class="loading-state" data-testid="loading-state">
-        <span class="loading-icon">⏳</span>
+        <i class="fa-solid fa-spinner fa-spin loading-icon"></i>
         <p>Cargando historial...</p>
       </div>
 
@@ -84,18 +84,24 @@ interface HistoryReport {
         >
           <div class="report-main">
             <div class="report-icon" [class]="'status-' + report.status">
-              <span *ngIf="report.status === 'BORRADOR'">📝</span>
-              <span *ngIf="report.status === 'ENVIADO'">⏳</span>
-              <span *ngIf="report.status === 'APROBADO'">✅</span>
-              <span *ngIf="report.status === 'RECHAZADO'">❌</span>
+              <i *ngIf="report.status === 'BORRADOR'" class="fa-solid fa-file-pen"></i>
+              <i *ngIf="report.status === 'ENVIADO'" class="fa-solid fa-clock"></i>
+              <i *ngIf="report.status === 'APROBADO'" class="fa-solid fa-circle-check"></i>
+              <i *ngIf="report.status === 'RECHAZADO'" class="fa-solid fa-circle-xmark"></i>
             </div>
 
             <div class="report-info">
               <div class="report-title">{{ report.equipment }}</div>
               <div class="report-meta">
-                <span class="meta-item">📅 {{ report.date }}</span>
-                <span class="meta-item">🏗️ {{ report.project }}</span>
-                <span class="meta-item">⏱️ {{ report.hours }}h</span>
+                <span class="meta-item"
+                  ><i class="fa-regular fa-calendar"></i> {{ report.date }}</span
+                >
+                <span class="meta-item"
+                  ><i class="fa-solid fa-hard-hat"></i> {{ report.project }}</span
+                >
+                <span class="meta-item"
+                  ><i class="fa-regular fa-clock"></i> {{ report.hours }}h</span
+                >
               </div>
             </div>
 
@@ -117,21 +123,21 @@ interface HistoryReport {
               [attr.data-testid]="'btn-edit-' + report.id"
               (click)="editReport(report)"
             >
-              ✏️ Editar
+              <i class="fa-solid fa-pen-to-square"></i> Editar
             </button>
             <button
               class="action-btn view"
               [attr.data-testid]="'btn-view-' + report.id"
               (click)="viewReport(report)"
             >
-              👁️ Ver
+              <i class="fa-solid fa-eye"></i> Ver
             </button>
             <button
               class="action-btn download"
               [attr.data-testid]="'btn-download-' + report.id"
               (click)="downloadPdf(report)"
             >
-              📥 PDF
+              <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
             <button
               *ngIf="report.status === 'BORRADOR'"
@@ -139,13 +145,13 @@ interface HistoryReport {
               [attr.data-testid]="'btn-delete-' + report.id"
               (click)="deleteReport(report)"
             >
-              🗑️
+              <i class="fa-solid fa-trash"></i>
             </button>
           </div>
         </div>
 
         <div *ngIf="filteredReports.length === 0" class="empty-state" data-testid="empty-state">
-          <span class="empty-icon">📋</span>
+          <i class="fa-solid fa-clipboard-list empty-icon"></i>
           <p>No se encontraron partes diarios</p>
           <a routerLink="/operator/daily-report" class="btn-link">Crear nuevo parte</a>
         </div>
@@ -167,13 +173,13 @@ interface HistoryReport {
       .history-header h1 {
         font-size: 28px;
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
         margin: 0 0 8px 0;
       }
 
       .subtitle {
         font-size: 16px;
-        color: #6b7280;
+        color: var(--grey-700);
         margin: 0;
       }
 
@@ -182,7 +188,7 @@ interface HistoryReport {
         gap: 16px;
         margin-bottom: 24px;
         padding: 16px;
-        background: white;
+        background: var(--neutral-0);
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
@@ -193,18 +199,10 @@ interface HistoryReport {
         gap: 8px;
       }
 
-      .filter-group label {
+      .filter-group .label {
         font-size: 14px;
         font-weight: 500;
-        color: #374151;
-      }
-
-      .filter-select {
-        padding: 8px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 14px;
-        cursor: pointer;
+        color: var(--grey-800);
       }
 
       .summary-stats {
@@ -212,7 +210,7 @@ interface HistoryReport {
         gap: 16px;
         margin-bottom: 24px;
         padding: 16px;
-        background: white;
+        background: var(--neutral-0);
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
@@ -222,19 +220,32 @@ interface HistoryReport {
         display: flex;
         justify-content: space-between;
         padding: 12px;
-        background: #f9fafb;
+        background: var(--grey-100);
         border-radius: 6px;
       }
 
       .stat-label {
         font-size: 14px;
-        color: #6b7280;
+        color: var(--grey-700);
       }
 
       .stat-value {
         font-size: 18px;
         font-weight: 700;
-        color: #0077cd;
+        color: var(--primary-500);
+      }
+
+      .loading-state {
+        text-align: center;
+        padding: 64px 24px;
+        color: var(--grey-700);
+      }
+
+      .loading-icon {
+        font-size: 32px;
+        color: var(--primary-500);
+        display: block;
+        margin-bottom: 16px;
       }
 
       .reports-list {
@@ -244,7 +255,7 @@ interface HistoryReport {
       }
 
       .report-card {
-        background: white;
+        background: var(--neutral-0);
         border-radius: 12px;
         padding: 20px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -262,7 +273,7 @@ interface HistoryReport {
       }
 
       .report-icon {
-        font-size: 32px;
+        font-size: 20px;
         margin-right: 16px;
         width: 48px;
         height: 48px;
@@ -273,19 +284,23 @@ interface HistoryReport {
       }
 
       .report-icon.status-BORRADOR {
-        background: rgba(255, 158, 24, 0.1);
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-500);
       }
 
       .report-icon.status-ENVIADO {
-        background: rgba(0, 119, 205, 0.1);
+        background: var(--primary-100);
+        color: var(--primary-500);
       }
 
       .report-icon.status-APROBADO {
-        background: rgba(0, 168, 98, 0.1);
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .report-icon.status-RECHAZADO {
-        background: rgba(229, 25, 55, 0.1);
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
 
       .report-info {
@@ -295,7 +310,7 @@ interface HistoryReport {
       .report-title {
         font-size: 16px;
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
         margin-bottom: 8px;
       }
 
@@ -307,7 +322,14 @@ interface HistoryReport {
 
       .meta-item {
         font-size: 13px;
-        color: #6b7280;
+        color: var(--grey-700);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .meta-item i {
+        font-size: 12px;
       }
 
       .status-badge {
@@ -318,23 +340,23 @@ interface HistoryReport {
       }
 
       .badge-BORRADOR {
-        background: #fff4e6;
-        color: #f59e0b;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
 
       .badge-ENVIADO {
-        background: #e6f2ff;
-        color: #0077cd;
+        background: var(--semantic-blue-100);
+        color: var(--primary-500);
       }
 
       .badge-APROBADO {
-        background: #d1fae5;
-        color: #059669;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .badge-RECHAZADO {
-        background: #fee2e2;
-        color: #dc2626;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
 
       .report-actions {
@@ -345,51 +367,55 @@ interface HistoryReport {
 
       .action-btn {
         padding: 8px 16px;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--grey-300);
         border-radius: 6px;
-        background: white;
+        background: var(--neutral-0);
         font-size: 13px;
         cursor: pointer;
         transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
 
       .action-btn:hover {
-        background: #f3f4f6;
+        background: var(--grey-100);
       }
 
       .action-btn.edit {
-        border-color: #0077cd;
-        color: #0077cd;
+        border-color: var(--primary-500);
+        color: var(--primary-500);
       }
 
       .action-btn.edit:hover {
-        background: #e6f2ff;
+        background: var(--primary-100);
       }
 
       .action-btn.delete {
-        border-color: #e51937;
-        color: #e51937;
+        border-color: var(--semantic-red-500);
+        color: var(--semantic-red-500);
       }
 
       .action-btn.delete:hover {
-        background: #fee2e2;
+        background: var(--semantic-red-100);
       }
 
       .empty-state {
         text-align: center;
         padding: 64px 24px;
-        background: white;
+        background: var(--neutral-0);
         border-radius: 12px;
       }
 
       .empty-icon {
-        font-size: 80px;
+        font-size: 48px;
+        color: var(--grey-300);
         display: block;
         margin-bottom: 16px;
       }
 
       .empty-state p {
-        color: #6b7280;
+        color: var(--grey-700);
         margin-bottom: 20px;
         font-size: 16px;
       }
@@ -397,7 +423,7 @@ interface HistoryReport {
       .btn-link {
         display: inline-block;
         padding: 12px 24px;
-        background: #0077cd;
+        background: var(--primary-500);
         color: white;
         text-decoration: none;
         border-radius: 6px;
@@ -406,7 +432,7 @@ interface HistoryReport {
       }
 
       .btn-link:hover {
-        background: #005fa3;
+        background: var(--primary-800);
       }
 
       @media (max-width: 768px) {

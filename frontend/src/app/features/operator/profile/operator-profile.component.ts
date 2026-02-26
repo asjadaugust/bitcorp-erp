@@ -41,10 +41,14 @@ interface ProfileData {
 
       <!-- Error State -->
       <div *ngIf="!loading && error" class="error-state" data-testid="error-state">
-        <div class="error-icon">!</div>
+        <div class="error-icon-circle">
+          <i class="fa-solid fa-exclamation"></i>
+        </div>
         <h3>No se pudo cargar el perfil</h3>
         <p>{{ error }}</p>
-        <button class="btn btn-primary" (click)="retry()">Reintentar</button>
+        <button class="btn btn-primary" (click)="retry()">
+          <i class="fa-solid fa-rotate-right"></i> Reintentar
+        </button>
       </div>
 
       <!-- Profile Content -->
@@ -52,7 +56,7 @@ interface ProfileData {
         <!-- Profile Card -->
         <div class="profile-card">
           <div class="profile-avatar">
-            <span class="avatar-icon">&#128100;</span>
+            <i class="fa-solid fa-user avatar-icon"></i>
           </div>
           <h2 data-testid="profile-name">
             {{
@@ -70,6 +74,11 @@ interface ProfileData {
               [class.asignado]="profile.disponibilidad.estado === 'ASIGNADO'"
               data-testid="availability-badge"
             >
+              <i
+                class="fa-solid"
+                [class.fa-circle-check]="profile.disponibilidad.estado === 'DISPONIBLE'"
+                [class.fa-briefcase]="profile.disponibilidad.estado === 'ASIGNADO'"
+              ></i>
               {{ profile.disponibilidad.estado === 'DISPONIBLE' ? 'Disponible' : 'Asignado' }}
             </span>
           </div>
@@ -93,10 +102,10 @@ interface ProfileData {
 
         <!-- Contact Information -->
         <div class="info-section">
-          <h3>Información de Contacto</h3>
+          <h3><i class="fa-solid fa-address-card section-icon"></i> Información de Contacto</h3>
           <div class="info-grid">
             <div class="info-item">
-              <span class="info-icon">&#128231;</span>
+              <i class="fa-solid fa-envelope info-icon"></i>
               <div class="info-content">
                 <div class="info-label">Email</div>
                 <div class="info-value">
@@ -105,35 +114,35 @@ interface ProfileData {
               </div>
             </div>
             <div class="info-item">
-              <span class="info-icon">&#128241;</span>
+              <i class="fa-solid fa-phone info-icon"></i>
               <div class="info-content">
                 <div class="info-label">Teléfono</div>
                 <div class="info-value">{{ profile.operator.telefono || 'No especificado' }}</div>
               </div>
             </div>
             <div class="info-item">
-              <span class="info-icon">&#128197;</span>
+              <i class="fa-solid fa-calendar info-icon"></i>
               <div class="info-content">
                 <div class="info-label">Fecha de Ingreso</div>
                 <div class="info-value">{{ formatDate(profile.operator.fecha_ingreso || '') }}</div>
               </div>
             </div>
             <div class="info-item" *ngIf="profile.operator.cargo">
-              <span class="info-icon">&#127970;</span>
+              <i class="fa-solid fa-briefcase info-icon"></i>
               <div class="info-content">
                 <div class="info-label">Cargo</div>
                 <div class="info-value">{{ profile.operator.cargo }}</div>
               </div>
             </div>
             <div class="info-item" *ngIf="profile.operator.especialidad">
-              <span class="info-icon">&#9881;</span>
+              <i class="fa-solid fa-gear info-icon"></i>
               <div class="info-content">
                 <div class="info-label">Especialidad</div>
                 <div class="info-value">{{ profile.operator.especialidad }}</div>
               </div>
             </div>
             <div class="info-item" *ngIf="profile.operator.licencia_conducir">
-              <span class="info-icon">&#128203;</span>
+              <i class="fa-solid fa-id-card info-icon"></i>
               <div class="info-content">
                 <div class="info-label">Licencia</div>
                 <div class="info-value">{{ profile.operator.licencia_conducir }}</div>
@@ -144,7 +153,10 @@ interface ProfileData {
 
         <!-- Performance Section -->
         <div class="info-section">
-          <h3>Rendimiento (Últimos {{ profile.rendimiento.periodo_dias }} días)</h3>
+          <h3>
+            <i class="fa-solid fa-chart-line section-icon"></i> Rendimiento (Últimos
+            {{ profile.rendimiento.periodo_dias }} días)
+          </h3>
           <div class="performance-grid">
             <div class="perf-stat">
               <div class="perf-value">{{ profile.rendimiento.total_partes }}</div>
@@ -192,7 +204,7 @@ interface ProfileData {
 
         <!-- Skills -->
         <div class="info-section">
-          <h3>Habilidades y Equipos</h3>
+          <h3><i class="fa-solid fa-wrench section-icon"></i> Habilidades y Equipos</h3>
           <div class="skills-list" *ngIf="profile.skills.length > 0; else noSkills">
             <span
               *ngFor="let skill of profile.skills"
@@ -213,14 +225,14 @@ interface ProfileData {
 
         <!-- Certifications -->
         <div class="info-section">
-          <h3>Certificaciones</h3>
+          <h3><i class="fa-solid fa-certificate section-icon"></i> Certificaciones</h3>
           <div class="certifications-list" *ngIf="profile.certifications.length > 0; else noCerts">
             <div
               *ngFor="let cert of profile.certifications; let i = index"
               class="cert-item"
               [attr.data-testid]="'cert-item-' + i"
             >
-              <div class="cert-icon">&#128220;</div>
+              <i class="fa-solid fa-file-certificate cert-icon"></i>
               <div class="cert-info">
                 <div class="cert-name">{{ cert.nombre_certificacion }}</div>
                 <div class="cert-meta" *ngIf="cert.entidad_emisora">{{ cert.entidad_emisora }}</div>
@@ -255,8 +267,12 @@ interface ProfileData {
 
         <!-- Actions -->
         <div class="profile-actions">
-          <button class="btn btn-secondary">Editar Perfil</button>
-          <button class="btn btn-secondary">Cambiar Contrasena</button>
+          <button class="btn btn-secondary">
+            <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
+          </button>
+          <button class="btn btn-secondary">
+            <i class="fa-solid fa-lock"></i> Cambiar Contraseña
+          </button>
         </div>
       </div>
     </div>
@@ -276,13 +292,13 @@ interface ProfileData {
       .profile-header h1 {
         font-size: 28px;
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
         margin: 0 0 8px 0;
       }
 
       .subtitle {
         font-size: 16px;
-        color: #6b7280;
+        color: var(--grey-700);
         margin: 0;
       }
 
@@ -294,14 +310,14 @@ interface ProfileData {
         justify-content: center;
         padding: 80px 24px;
         gap: 16px;
-        color: #6b7280;
+        color: var(--grey-700);
       }
 
       .spinner {
         width: 40px;
         height: 40px;
-        border: 3px solid #e5e7eb;
-        border-top-color: #0077cd;
+        border: 3px solid var(--grey-200);
+        border-top-color: var(--primary-500);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
@@ -322,27 +338,26 @@ interface ProfileData {
         text-align: center;
       }
 
-      .error-icon {
+      .error-icon-circle {
         width: 64px;
         height: 64px;
-        background: #fee2e2;
-        color: #dc2626;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 32px;
-        font-weight: 700;
+        font-size: 28px;
       }
 
       .error-state h3 {
         font-size: 20px;
-        color: #072b45;
+        color: var(--primary-900);
         margin: 0;
       }
 
       .error-state p {
-        color: #6b7280;
+        color: var(--grey-700);
         margin: 0;
       }
 
@@ -354,7 +369,7 @@ interface ProfileData {
       }
 
       .profile-card {
-        background: linear-gradient(135deg, #0077cd 0%, #00a1de 100%);
+        background: linear-gradient(135deg, var(--primary-500) 0%, var(--klm-blue) 100%);
         color: white;
         border-radius: 16px;
         padding: 40px;
@@ -375,7 +390,7 @@ interface ProfileData {
       }
 
       .avatar-icon {
-        font-size: 48px;
+        font-size: 40px;
       }
 
       .profile-card h2 {
@@ -409,13 +424,13 @@ interface ProfileData {
       }
 
       .availability-badge.disponible {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
       }
 
       .availability-badge.asignado {
-        background: #fff3cd;
-        color: #92400e;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
       }
 
       .profile-stats {
@@ -443,7 +458,7 @@ interface ProfileData {
 
       /* Info Sections */
       .info-section {
-        background: white;
+        background: var(--neutral-0);
         border-radius: 12px;
         padding: 24px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -453,7 +468,15 @@ interface ProfileData {
         margin: 0 0 20px 0;
         font-size: 18px;
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .section-icon {
+        color: var(--primary-500);
+        font-size: 16px;
       }
 
       .info-grid {
@@ -467,24 +490,27 @@ interface ProfileData {
         align-items: center;
         gap: 12px;
         padding: 16px;
-        background: #f9fafb;
+        background: var(--grey-100);
         border-radius: 8px;
       }
 
       .info-icon {
-        font-size: 28px;
+        font-size: 20px;
+        color: var(--primary-500);
+        width: 28px;
+        text-align: center;
       }
 
       .info-label {
         font-size: 12px;
-        color: #6b7280;
+        color: var(--grey-700);
         margin-bottom: 4px;
       }
 
       .info-value {
         font-size: 15px;
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
       }
 
       /* Performance Section */
@@ -500,31 +526,31 @@ interface ProfileData {
         min-width: 100px;
         text-align: center;
         padding: 16px 12px;
-        background: #f9fafb;
+        background: var(--grey-100);
         border-radius: 8px;
       }
 
       .perf-stat.success {
-        background: #d1fae5;
+        background: var(--semantic-green-100);
       }
       .perf-stat.warning {
-        background: #fff3cd;
+        background: var(--semantic-yellow-100);
       }
       .perf-stat.danger {
-        background: #fee2e2;
+        background: var(--semantic-red-100);
       }
 
       .perf-value {
         font-size: 28px;
         font-weight: 700;
-        color: #072b45;
+        color: var(--primary-900);
         line-height: 1;
         margin-bottom: 6px;
       }
 
       .perf-label {
         font-size: 12px;
-        color: #6b7280;
+        color: var(--grey-700);
       }
 
       /* Progress Bar */
@@ -541,20 +567,20 @@ interface ProfileData {
 
       .efficiency-label {
         font-size: 14px;
-        color: #6b7280;
+        color: var(--grey-700);
         font-weight: 500;
       }
 
       .efficiency-value {
         font-size: 16px;
         font-weight: 700;
-        color: #072b45;
+        color: var(--primary-900);
       }
 
       .performance-bar-track {
         width: 100%;
         height: 12px;
-        background: #e5e7eb;
+        background: var(--grey-200);
         border-radius: 6px;
         overflow: hidden;
       }
@@ -566,13 +592,13 @@ interface ProfileData {
       }
 
       .performance-bar.bar-high {
-        background: #059669;
+        background: var(--semantic-green-500);
       }
       .performance-bar.bar-mid {
-        background: #d97706;
+        background: var(--semantic-yellow-500);
       }
       .performance-bar.bar-low {
-        background: #dc2626;
+        background: var(--semantic-red-500);
       }
 
       /* Skills */
@@ -587,8 +613,8 @@ interface ProfileData {
         align-items: center;
         gap: 6px;
         padding: 8px 14px;
-        background: #e6f2ff;
-        color: #0077cd;
+        background: var(--semantic-blue-100);
+        color: var(--primary-500);
         border-radius: 20px;
         font-size: 14px;
         font-weight: 500;
@@ -605,16 +631,16 @@ interface ProfileData {
       }
 
       .level-principiante {
-        background: #d1fae5;
-        color: #065f46;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-900);
       }
       .level-intermedio {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-900);
       }
       .level-avanzado {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-900);
       }
       .level-experto {
         background: #ede9fe;
@@ -632,13 +658,16 @@ interface ProfileData {
         display: flex;
         align-items: center;
         padding: 16px;
-        background: #f9fafb;
+        background: var(--grey-100);
         border-radius: 8px;
       }
 
       .cert-icon {
-        font-size: 28px;
+        font-size: 20px;
+        color: var(--primary-500);
         margin-right: 16px;
+        width: 28px;
+        text-align: center;
       }
 
       .cert-info {
@@ -647,28 +676,28 @@ interface ProfileData {
 
       .cert-name {
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
         margin-bottom: 2px;
       }
 
       .cert-meta {
         font-size: 12px;
-        color: #6b7280;
+        color: var(--grey-700);
         margin-bottom: 2px;
       }
 
       .cert-expiry {
         font-size: 13px;
-        color: #6b7280;
+        color: var(--grey-700);
       }
 
       .cert-expiry.expired {
-        color: #dc2626;
+        color: var(--semantic-red-500);
         font-weight: 600;
       }
 
       .cert-expiry.por-vencer {
-        color: #d97706;
+        color: var(--semantic-yellow-700);
         font-weight: 600;
       }
 
@@ -680,21 +709,21 @@ interface ProfileData {
       }
 
       .cert-status.valid {
-        background: #d1fae5;
-        color: #059669;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
       .cert-status.expired {
-        background: #fee2e2;
-        color: #dc2626;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
       .cert-status.warning {
-        background: #fff3cd;
-        color: #d97706;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
 
       /* Empty state */
       .empty-text {
-        color: #9ca3af;
+        color: var(--grey-500);
         font-size: 14px;
         text-align: center;
         padding: 16px 0;
@@ -722,21 +751,21 @@ interface ProfileData {
       }
 
       .btn-primary {
-        background: #0077cd;
+        background: var(--primary-500);
         color: white;
       }
 
       .btn-primary:hover {
-        background: #005fa3;
+        background: var(--primary-800);
       }
 
       .btn-secondary {
-        background: #f3f4f6;
-        color: #374151;
+        background: var(--grey-100);
+        color: var(--grey-800);
       }
 
       .btn-secondary:hover {
-        background: #e5e7eb;
+        background: var(--grey-200);
       }
 
       @media (max-width: 768px) {

@@ -18,26 +18,26 @@ import { AuthService } from '../../core/services/auth.service';
 
         <nav class="sidebar-nav">
           <a routerLink="/operator/dashboard" routerLinkActive="active" class="nav-item">
-            <span class="icon">📊</span>
+            <i class="fa-solid fa-chart-line nav-icon"></i>
             <span class="label">Panel</span>
           </a>
           <a routerLink="/operator/daily-report" routerLinkActive="active" class="nav-item">
-            <span class="icon">📝</span>
+            <i class="fa-solid fa-file-pen nav-icon"></i>
             <span class="label">Parte Diario</span>
           </a>
           <a routerLink="/operator/history" routerLinkActive="active" class="nav-item">
-            <span class="icon">📋</span>
+            <i class="fa-solid fa-clipboard-list nav-icon"></i>
             <span class="label">Historial</span>
           </a>
           <a routerLink="/operator/profile" routerLinkActive="active" class="nav-item">
-            <span class="icon">👤</span>
+            <i class="fa-solid fa-user nav-icon"></i>
             <span class="label">Perfil</span>
           </a>
         </nav>
 
         <div class="sidebar-footer">
           <button (click)="logout()" class="logout-btn">
-            <span class="icon">🚪</span>
+            <i class="fa-solid fa-right-from-bracket nav-icon"></i>
             <span class="label">Cerrar Sesión</span>
           </button>
         </div>
@@ -54,12 +54,12 @@ import { AuthService } from '../../core/services/auth.service';
       .operator-layout {
         display: flex;
         height: 100vh;
-        background: #f5f7fa;
+        background: var(--grey-100);
       }
 
       .operator-sidebar {
         width: 260px;
-        background: linear-gradient(180deg, #072b45 0%, #0077cd 100%);
+        background: linear-gradient(180deg, var(--primary-900) 0%, var(--primary-500) 100%);
         color: white;
         display: flex;
         flex-direction: column;
@@ -100,18 +100,18 @@ import { AuthService } from '../../core/services/auth.service';
       }
 
       .nav-item:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--state-white-hover);
         color: white;
       }
 
       .nav-item.active {
-        background: rgba(255, 255, 255, 0.15);
+        background: var(--state-white-active);
         color: white;
-        border-left-color: #e37222;
+        border-left-color: var(--accent-500);
       }
 
-      .nav-item .icon {
-        font-size: 24px;
+      .nav-icon {
+        font-size: 18px;
         margin-right: 12px;
         width: 32px;
         text-align: center;
@@ -132,8 +132,8 @@ import { AuthService } from '../../core/services/auth.service';
         align-items: center;
         width: 100%;
         padding: 12px 16px;
-        background: rgba(229, 25, 55, 0.2);
-        border: 1px solid rgba(229, 25, 55, 0.4);
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.4);
         border-radius: 6px;
         color: white;
         cursor: pointer;
@@ -142,18 +142,18 @@ import { AuthService } from '../../core/services/auth.service';
       }
 
       .logout-btn:hover {
-        background: rgba(229, 25, 55, 0.3);
+        background: rgba(239, 68, 68, 0.3);
       }
 
-      .logout-btn .icon {
+      .logout-btn .nav-icon {
         margin-right: 8px;
-        font-size: 18px;
+        font-size: 16px;
       }
 
       .operator-main {
         flex: 1;
         overflow-y: auto;
-        background: #f5f7fa;
+        background: var(--grey-100);
       }
 
       /* Mobile-first for 412x915 and similar */
@@ -194,13 +194,13 @@ import { AuthService } from '../../core/services/auth.service';
 
         .nav-item.active {
           border-left-color: transparent;
-          border-bottom-color: #e37222;
+          border-bottom-color: var(--accent-500);
         }
 
-        .nav-item .icon {
+        .nav-icon {
           margin-right: 0;
           margin-bottom: 4px;
-          font-size: 20px;
+          font-size: 18px;
         }
 
         .nav-item .label {
@@ -220,10 +220,10 @@ import { AuthService } from '../../core/services/auth.service';
           min-width: 60px;
         }
 
-        .logout-btn .icon {
+        .logout-btn .nav-icon {
           margin-right: 0;
           margin-bottom: 2px;
-          font-size: 20px;
+          font-size: 18px;
         }
 
         .logout-btn .label {

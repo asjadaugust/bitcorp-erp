@@ -35,7 +35,7 @@ interface RecentReport {
       <!-- Quick Actions -->
       <div class="quick-actions">
         <a routerLink="/operator/daily-report" class="action-card primary">
-          <span class="icon">➕</span>
+          <i class="fa-solid fa-plus action-icon"></i>
           <div class="content">
             <h3>Nuevo Parte Diario</h3>
             <p>Registrar trabajo de hoy</p>
@@ -43,7 +43,7 @@ interface RecentReport {
         </a>
 
         <a routerLink="/operator/history" class="action-card">
-          <span class="icon">📋</span>
+          <i class="fa-solid fa-clipboard-list action-icon"></i>
           <div class="content">
             <h3>Ver Historial</h3>
             <p>Partes anteriores</p>
@@ -59,13 +59,13 @@ interface RecentReport {
         <div class="reports-list">
           <div *ngFor="let report of recentReports" class="report-item">
             <div class="report-icon" [class]="'status-' + report.status">
-              <span *ngIf="report.status === 'BORRADOR'">📝</span>
-              <span *ngIf="report.status === 'ENVIADO'">⏳</span>
-              <span *ngIf="report.status === 'APROBADO'">✅</span>
+              <i *ngIf="report.status === 'BORRADOR'" class="fa-solid fa-file-pen"></i>
+              <i *ngIf="report.status === 'ENVIADO'" class="fa-solid fa-clock"></i>
+              <i *ngIf="report.status === 'APROBADO'" class="fa-solid fa-circle-check"></i>
             </div>
             <div class="report-info">
               <div class="report-title">{{ report.equipment }}</div>
-              <div class="report-meta">{{ report.date }} • {{ report.hours }}h</div>
+              <div class="report-meta">{{ report.date }} &bull; {{ report.hours }}h</div>
             </div>
             <div class="report-status">
               <span class="status-badge" [class]="'badge-' + report.status">
@@ -75,7 +75,7 @@ interface RecentReport {
           </div>
 
           <div *ngIf="recentReports.length === 0" class="empty-state">
-            <span class="empty-icon">📝</span>
+            <i class="fa-solid fa-file-pen empty-icon"></i>
             <p>No hay partes diarios registrados</p>
             <a routerLink="/operator/daily-report" class="btn-link">Crear primer parte</a>
           </div>
@@ -104,7 +104,7 @@ interface RecentReport {
 
       .subtitle {
         font-size: 16px;
-        color: var(--grey-500);
+        color: var(--grey-700);
         margin: 0;
       }
 
@@ -141,9 +141,11 @@ interface RecentReport {
         box-shadow: 0 4px 16px rgba(0, 119, 205, 0.4);
       }
 
-      .action-card .icon {
-        font-size: 40px;
+      .action-icon {
+        font-size: 32px;
         margin-right: 16px;
+        width: 40px;
+        text-align: center;
       }
 
       .action-card .content h3 {
@@ -163,7 +165,11 @@ interface RecentReport {
       }
 
       .action-card:not(.primary) .content p {
-        color: var(--grey-500);
+        color: var(--grey-700);
+      }
+
+      .action-card:not(.primary) .action-icon {
+        color: var(--primary-500);
       }
 
       .recent-section {
@@ -200,7 +206,7 @@ interface RecentReport {
       }
 
       .report-icon {
-        font-size: 28px;
+        font-size: 20px;
         margin-right: 16px;
         width: 40px;
         height: 40px;
@@ -211,15 +217,18 @@ interface RecentReport {
       }
 
       .report-icon.status-BORRADOR {
-        background: rgba(255, 158, 24, 0.1);
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-500);
       }
 
       .report-icon.status-ENVIADO {
-        background: rgba(0, 119, 205, 0.1);
+        background: var(--primary-100);
+        color: var(--primary-500);
       }
 
       .report-icon.status-APROBADO {
-        background: rgba(0, 168, 98, 0.1);
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .report-info {
@@ -234,7 +243,7 @@ interface RecentReport {
 
       .report-meta {
         font-size: 13px;
-        color: var(--grey-500);
+        color: var(--grey-700);
       }
 
       .status-badge {
@@ -245,18 +254,18 @@ interface RecentReport {
       }
 
       .badge-BORRADOR {
-        background: #fff4e6;
-        color: #f59e0b;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
 
       .badge-ENVIADO {
-        background: #e6f2ff;
+        background: var(--semantic-blue-100);
         color: var(--primary-500);
       }
 
       .badge-APROBADO {
-        background: #d1fae5;
-        color: #059669;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .empty-state {
@@ -265,13 +274,14 @@ interface RecentReport {
       }
 
       .empty-icon {
-        font-size: 64px;
+        font-size: 48px;
+        color: var(--grey-300);
         display: block;
         margin-bottom: 16px;
       }
 
       .empty-state p {
-        color: var(--grey-500);
+        color: var(--grey-700);
         margin-bottom: 16px;
       }
 

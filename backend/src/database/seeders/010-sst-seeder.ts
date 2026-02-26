@@ -48,6 +48,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[0].id,
           reportadoPor: users[1 % users.length].id,
           estado: 'CERRADO' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2024-001',
         }),
 
@@ -63,6 +64,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[1 % projects.length].id,
           reportadoPor: users[2 % users.length].id,
           estado: 'EN_INVESTIGACION' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2024-002',
         }),
 
@@ -78,6 +80,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[0].id,
           reportadoPor: users[3 % users.length].id,
           estado: 'CERRADO' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2025-003',
         }),
 
@@ -93,6 +96,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[1 % projects.length].id,
           reportadoPor: users[1 % users.length].id,
           estado: 'EN_INVESTIGACION' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2025-004',
         }),
 
@@ -108,6 +112,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[0].id,
           reportadoPor: users[0].id, // Use first user instead of users[4]
           estado: 'ABIERTO' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2025-005',
         }),
 
@@ -123,6 +128,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[1 % projects.length].id,
           reportadoPor: users[2 % users.length].id,
           estado: 'ABIERTO' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2025-006',
         }),
 
@@ -138,6 +144,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[0].id,
           reportadoPor: users[3 % users.length].id,
           estado: 'ABIERTO' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2025-007',
         }),
 
@@ -153,6 +160,7 @@ export class SstSeeder extends BaseSeeder {
           proyectoId: projects[1 % projects.length].id,
           reportadoPor: users[1 % users.length].id,
           estado: 'ABIERTO' as EstadoIncidente,
+          tenantId: 1,
           legacyId: 'INC-2025-008',
         }),
       ]);

@@ -100,6 +100,7 @@ export class AdministrationSeeder extends BaseSeeder {
           balance: 18290.0,
           status: AccountsPayableStatus.PENDING,
           description: 'Compra de combustible diesel B5 - 1000 galones. Proveedor: Petroperú',
+          tenantId: 1,
         }),
         accountsPayableRepo.create({
           providerId: providers[1].id,
@@ -112,6 +113,7 @@ export class AdministrationSeeder extends BaseSeeder {
           balance: 0,
           status: AccountsPayableStatus.PAID,
           description: 'Compra de repuestos: filtros y lubricantes. Pagado.',
+          tenantId: 1,
         }),
         accountsPayableRepo.create({
           providerId: providers[0].id,
@@ -124,6 +126,7 @@ export class AdministrationSeeder extends BaseSeeder {
           balance: 5310.0,
           status: AccountsPayableStatus.PENDING,
           description: 'Servicio de mantenimiento mayor - Tractor Komatsu. Factura en USD.',
+          tenantId: 1,
         }),
         accountsPayableRepo.create({
           providerId: providers[1].id,
@@ -136,6 +139,7 @@ export class AdministrationSeeder extends BaseSeeder {
           balance: 5030.0,
           status: AccountsPayableStatus.PARTIAL,
           description: 'Alquiler de equipos auxiliares - Enero 2025. Pago parcial recibido.',
+          tenantId: 1,
         }),
       ]);
     }

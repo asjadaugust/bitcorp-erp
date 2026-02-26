@@ -43,6 +43,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           frecuencia: 'DIARIO',
           activo: true,
           createdBy: admin.id,
+          tenantId: 1,
         })
       );
 
@@ -57,6 +58,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           valorEsperado: 'Entre MIN y MAX',
           esCritico: true,
           instrucciones: 'Verificar con motor apagado en terreno nivelado',
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -66,6 +68,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Entre MIN y MAX',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -76,6 +79,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           valorEsperado: 'Sin fugas',
           esCritico: true,
           requiereFoto: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -85,6 +89,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Limpias, sin corrosión',
           esCritico: false,
+          tenantId: 1,
         }),
         // Sistema Hidráulico
         itemRepo.create({
@@ -95,6 +100,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Entre MIN y MAX',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -105,6 +111,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           valorEsperado: 'Sin fugas',
           esCritico: true,
           requiereFoto: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -114,6 +121,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Sin grietas ni desgaste',
           esCritico: true,
+          tenantId: 1,
         }),
         // Estructura y Tren de Rodaje
         itemRepo.create({
@@ -124,6 +132,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Tensión adecuada, sin eslabones rotos',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -133,6 +142,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Asegurados, sin holguras',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -142,6 +152,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Sin grietas, dientes en buen estado',
           esCritico: false,
+          tenantId: 1,
         }),
         // Seguridad y Cabina
         itemRepo.create({
@@ -152,6 +163,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Audible a 30 metros',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -161,6 +173,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Todas operativas',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -170,6 +183,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Operativo, sin rasgaduras',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -179,6 +193,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Limpios, completos, ajustados',
           esCritico: false,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template1.id,
@@ -188,6 +203,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Vigente, accesible, presurizado',
           esCritico: true,
+          tenantId: 1,
         }),
       ]);
 
@@ -201,6 +217,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           frecuencia: 'DIARIO',
           activo: true,
           createdBy: admin.id,
+          tenantId: 1,
         })
       );
 
@@ -214,6 +231,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Entre MIN y MAX',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -223,6 +241,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Entre MIN y MAX',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -233,6 +252,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           valorEsperado: 'Sin fugas',
           esCritico: true,
           requiereFoto: true,
+          tenantId: 1,
         }),
         // Frenos y Dirección
         itemRepo.create({
@@ -243,6 +263,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Respuesta inmediata',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -252,6 +273,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Mantiene vehículo detenido',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -261,6 +283,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'MEDICION',
           valorEsperado: '120-140 PSI',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -270,6 +293,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Menos de 5 cm',
           esCritico: true,
+          tenantId: 1,
         }),
         // Neumáticos
         itemRepo.create({
@@ -280,6 +304,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'MEDICION',
           valorEsperado: 'Según especificaciones fabricante',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -289,6 +314,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Sin cortes profundos, banda de rodadura > 3mm',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -298,6 +324,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Todas presentes y apretadas',
           esCritico: true,
+          tenantId: 1,
         }),
         // Tolva y Sistema Hidráulico
         itemRepo.create({
@@ -308,6 +335,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Sube y baja suavemente',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -317,6 +345,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Sin fugas, pasadores seguros',
           esCritico: true,
+          tenantId: 1,
         }),
         // Seguridad
         itemRepo.create({
@@ -327,6 +356,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Todas operativas',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -336,6 +366,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'AUDITIVO',
           valorEsperado: 'Audible a 15 metros',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -345,6 +376,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Operativo',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template2.id,
@@ -354,6 +386,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Vigentes, accesibles',
           esCritico: true,
+          tenantId: 1,
         }),
       ]);
 
@@ -367,6 +400,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           frecuencia: 'MENSUAL',
           activo: true,
           createdBy: admin.id,
+          tenantId: 1,
         })
       );
 
@@ -379,6 +413,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Completado',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template3.id,
@@ -388,6 +423,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Completado',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template3.id,
@@ -397,6 +433,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Completado',
           esCritico: true,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template3.id,
@@ -406,6 +443,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Sin obstrucciones',
           esCritico: false,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template3.id,
@@ -415,6 +453,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'FUNCIONAL',
           valorEsperado: 'Funcionamiento correcto',
           esCritico: false,
+          tenantId: 1,
         }),
         itemRepo.create({
           plantillaId: template3.id,
@@ -424,6 +463,7 @@ export class ChecklistsSeeder extends BaseSeeder {
           tipoVerificacion: 'VISUAL',
           valorEsperado: 'Actualizada',
           esCritico: false,
+          tenantId: 1,
         }),
       ]);
     }
@@ -463,6 +503,7 @@ export class ChecklistsSeeder extends BaseSeeder {
             requiereMantenimiento: false,
             equipoOperativo: true,
             completadoEn: twoDaysAgo,
+            tenantId: 1,
           }),
           inspectionRepo.create({
             codigo: 'INS-2025-002',
@@ -484,6 +525,7 @@ export class ChecklistsSeeder extends BaseSeeder {
             requiereMantenimiento: false,
             equipoOperativo: true,
             completadoEn: yesterday,
+            tenantId: 1,
           }),
         ]);
 
@@ -509,6 +551,7 @@ export class ChecklistsSeeder extends BaseSeeder {
               requiereMantenimiento: true,
               equipoOperativo: true,
               completadoEn: yesterday,
+              tenantId: 1,
             }),
             inspectionRepo.create({
               codigo: 'INS-2025-004',
@@ -525,6 +568,7 @@ export class ChecklistsSeeder extends BaseSeeder {
               itemsTotal: 16,
               requiereMantenimiento: false,
               equipoOperativo: true,
+              tenantId: 1,
             }),
           ]);
         }

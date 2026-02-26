@@ -43,7 +43,7 @@ import {
       <form [formGroup]="reportForm" (ngSubmit)="submitReport()" class="report-form">
         <!-- Date Section -->
         <div class="form-section">
-          <h2>Información General</h2>
+          <h2><i class="fa-solid fa-circle-info section-icon"></i> Información General</h2>
           <div class="form-grid">
             <div class="form-field">
               <span class="label">Fecha <span class="required" *ngIf="!isViewMode">*</span></span>
@@ -79,7 +79,7 @@ import {
 
         <!-- Equipment Section -->
         <div class="form-section">
-          <h2>Equipo Utilizado</h2>
+          <h2><i class="fa-solid fa-truck section-icon"></i> Equipo Utilizado</h2>
           <div class="form-grid">
             <div class="form-field full-width">
               <span class="label"
@@ -132,7 +132,7 @@ import {
 
         <!-- Time Section -->
         <div class="form-section">
-          <h2>Horario de Trabajo</h2>
+          <h2><i class="fa-regular fa-clock section-icon"></i> Horario de Trabajo</h2>
           <div class="form-grid">
             <div class="form-field">
               <span class="label"
@@ -162,7 +162,7 @@ import {
 
         <!-- Fuel Section -->
         <div class="form-section">
-          <h2>Consumo de Combustible</h2>
+          <h2><i class="fa-solid fa-gas-pump section-icon"></i> Consumo de Combustible</h2>
           <div class="form-grid">
             <div class="form-field">
               <span class="label">Tanque Inicial (%)</span>
@@ -216,7 +216,7 @@ import {
 
         <!-- Location Section -->
         <div class="form-section">
-          <h2>Ubicación</h2>
+          <h2><i class="fa-solid fa-location-dot section-icon"></i> Ubicación</h2>
           <div class="form-grid">
             <div class="form-field full-width">
               <span class="label">Ubicación GPS</span>
@@ -235,8 +235,12 @@ import {
                   [disabled]="capturingGPS || isViewMode"
                   *ngIf="!isViewMode"
                 >
-                  <span *ngIf="!capturingGPS">📍 Capturar</span>
-                  <span *ngIf="capturingGPS">🔄 Capturando...</span>
+                  <span *ngIf="!capturingGPS"
+                    ><i class="fa-solid fa-location-crosshairs"></i> Capturar</span
+                  >
+                  <span *ngIf="capturingGPS"
+                    ><i class="fa-solid fa-spinner fa-spin"></i> Capturando...</span
+                  >
                 </button>
               </div>
 
@@ -267,7 +271,7 @@ import {
 
               <!-- Error message -->
               <div class="location-error" *ngIf="locationError">
-                <span class="error-icon">⚠️</span>
+                <i class="fa-solid fa-triangle-exclamation"></i>
                 <span>{{ locationError }}</span>
               </div>
             </div>
@@ -290,7 +294,7 @@ import {
 
         <!-- Work Description -->
         <div class="form-section">
-          <h2>Descripción del Trabajo</h2>
+          <h2><i class="fa-solid fa-list-check section-icon"></i> Descripción del Trabajo</h2>
           <div class="form-field full-width">
             <span class="label"
               >Actividades Realizadas <span class="required" *ngIf="!isViewMode">*</span></span
@@ -307,7 +311,7 @@ import {
 
         <!-- Production Control Table -->
         <div class="form-section" *ngIf="!isViewMode">
-          <h2>Control de Producción</h2>
+          <h2><i class="fa-solid fa-table-cells section-icon"></i> Control de Producción</h2>
           <div class="production-table">
             <div class="table-controls">
               <button
@@ -316,7 +320,7 @@ import {
                 (click)="addProductionRow()"
                 [disabled]="productionRows.length >= 16"
               >
-                ➕ Agregar Fila
+                <i class="fa-solid fa-plus"></i> Agregar Fila
               </button>
               <span class="help-text">{{ productionRows.length }}/16 filas</span>
             </div>
@@ -371,7 +375,7 @@ import {
                         (click)="removeProductionRow(i)"
                         [disabled]="productionRows.length <= 1"
                       >
-                        ×
+                        <i class="fa-solid fa-xmark"></i>
                       </button>
                     </td>
                   </tr>
@@ -383,7 +387,7 @@ import {
 
         <!-- Activities & Delays -->
         <div class="form-section" *ngIf="!isViewMode">
-          <h2>Actividades y Demoras</h2>
+          <h2><i class="fa-solid fa-clipboard-check section-icon"></i> Actividades y Demoras</h2>
 
           <div class="checkbox-section">
             <h3>Actividades de Producción</h3>
@@ -428,7 +432,7 @@ import {
 
         <!-- Signatures -->
         <div class="form-section" *ngIf="!isViewMode">
-          <h2>Firmas</h2>
+          <h2><i class="fa-solid fa-signature section-icon"></i> Firmas</h2>
           <div class="signatures-grid">
             <div class="signature-field">
               <span class="label">Firma Operador</span>
@@ -458,7 +462,7 @@ import {
 
         <!-- Photos -->
         <div class="form-section">
-          <h2>Fotografías</h2>
+          <h2><i class="fa-solid fa-camera section-icon"></i> Fotografías</h2>
           <div class="photo-upload">
             <div class="photo-grid">
               <!-- Existing photos -->
@@ -479,15 +483,21 @@ import {
 
                 <!-- Error indicator -->
                 <div *ngIf="photo.status === 'error'" class="upload-error">
-                  <span class="error-icon">⚠️</span>
+                  <i class="fa-solid fa-triangle-exclamation"></i>
                   <span class="error-text">Error al cargar</span>
                 </div>
 
                 <!-- Status badge -->
                 <span class="photo-status" [class]="photo.status">
-                  <span *ngIf="photo.status === 'local'">📱 Local</span>
-                  <span *ngIf="photo.status === 'uploaded'">✅ Guardado</span>
-                  <span *ngIf="photo.status === 'uploading'">⏳</span>
+                  <span *ngIf="photo.status === 'local'"
+                    ><i class="fa-solid fa-mobile-screen"></i> Local</span
+                  >
+                  <span *ngIf="photo.status === 'uploaded'"
+                    ><i class="fa-solid fa-circle-check"></i> Guardado</span
+                  >
+                  <span *ngIf="photo.status === 'uploading'"
+                    ><i class="fa-solid fa-spinner fa-spin"></i
+                  ></span>
                 </span>
 
                 <button
@@ -497,7 +507,7 @@ import {
                   [disabled]="photo.status === 'uploading'"
                   *ngIf="!isViewMode"
                 >
-                  ×
+                  <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
 
@@ -515,14 +525,15 @@ import {
                   style="display: none"
                   [disabled]="uploadingPhotos"
                 />
-                <span class="add-icon">📷</span>
+                <i class="fa-solid fa-camera add-icon"></i>
                 <span class="add-text">{{
                   uploadingPhotos ? 'Procesando...' : 'Capturar Foto'
                 }}</span>
               </label>
             </div>
             <p class="help-text" *ngIf="!isViewMode">
-              Máximo 5 fotografías ({{ photos.length }}/5) • Las fotos se comprimen automáticamente
+              Máximo 5 fotografías ({{ photos.length }}/5) &bull; Las fotos se comprimen
+              automáticamente
             </p>
           </div>
         </div>
@@ -530,7 +541,8 @@ import {
         <!-- Form Actions -->
         <div class="form-actions">
           <button type="button" (click)="goBack()" class="btn btn-secondary">
-            {{ isViewMode ? '⬅️ Volver' : 'Cancelar' }}
+            <i class="fa-solid fa-arrow-left" *ngIf="isViewMode"></i>
+            {{ isViewMode ? 'Volver' : 'Cancelar' }}
           </button>
           <button
             type="button"
@@ -539,8 +551,10 @@ import {
             [disabled]="downloadingPdf"
             *ngIf="isViewMode && reportId"
           >
-            <span *ngIf="!downloadingPdf">📄 Descargar PDF</span>
-            <span *ngIf="downloadingPdf">🔄 Descargando...</span>
+            <span *ngIf="!downloadingPdf"><i class="fa-solid fa-file-pdf"></i> Descargar PDF</span>
+            <span *ngIf="downloadingPdf"
+              ><i class="fa-solid fa-spinner fa-spin"></i> Descargando...</span
+            >
           </button>
           <button
             type="button"
@@ -549,7 +563,7 @@ import {
             [disabled]="saving"
             *ngIf="!isViewMode"
           >
-            💾 Guardar Borrador
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Borrador
           </button>
           <button
             type="submit"
@@ -557,8 +571,8 @@ import {
             [disabled]="!reportForm.valid || saving"
             *ngIf="!isViewMode"
           >
-            <span *ngIf="!saving">📤 Enviar Parte</span>
-            <span *ngIf="saving">🔄 Enviando...</span>
+            <span *ngIf="!saving"><i class="fa-solid fa-paper-plane"></i> Enviar Parte</span>
+            <span *ngIf="saving"><i class="fa-solid fa-spinner fa-spin"></i> Enviando...</span>
           </button>
         </div>
       </form>
@@ -566,7 +580,6 @@ import {
   `,
   styles: [
     `
-      /* ... existing styles ... */
       .daily-report-container {
         padding: 24px;
         max-width: 1000px;
@@ -580,18 +593,18 @@ import {
       .report-header h1 {
         font-size: 28px;
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
         margin: 0 0 8px 0;
       }
 
       .subtitle {
         font-size: 16px;
-        color: #6b7280;
+        color: var(--grey-700);
         margin: 0;
       }
 
       .report-form {
-        background: white;
+        background: var(--neutral-0);
         border-radius: 12px;
         padding: 32px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -608,10 +621,18 @@ import {
       .form-section h2 {
         font-size: 18px;
         font-weight: 600;
-        color: #072b45;
+        color: var(--primary-900);
         margin: 0 0 20px 0;
         padding-bottom: 12px;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 2px solid var(--grey-200);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .section-icon {
+        color: var(--primary-500);
+        font-size: 16px;
       }
 
       .form-grid {
@@ -629,22 +650,22 @@ import {
         grid-column: 1 / -1;
       }
 
-      .form-field label {
+      .form-field .label {
         font-size: 14px;
         font-weight: 500;
-        color: #374151;
+        color: var(--grey-800);
         margin-bottom: 6px;
       }
 
       .required {
-        color: #e51937;
+        color: var(--semantic-red-500);
       }
 
       .form-input,
       .form-select,
       .form-textarea {
         padding: 10px 12px;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--grey-300);
         border-radius: 6px;
         font-size: 14px;
         transition: all 0.2s;
@@ -654,13 +675,13 @@ import {
       .form-select:focus,
       .form-textarea:focus {
         outline: none;
-        border-color: #0077cd;
+        border-color: var(--primary-500);
         box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
       }
 
       .form-input.readonly {
-        background: #f9fafb;
-        color: #6b7280;
+        background: var(--grey-100);
+        color: var(--grey-700);
       }
 
       .form-textarea {
@@ -669,7 +690,7 @@ import {
       }
 
       .error {
-        color: #e51937;
+        color: var(--semantic-red-500);
         font-size: 12px;
         margin-top: 4px;
       }
@@ -685,7 +706,7 @@ import {
 
       .btn-gps {
         padding: 10px 16px;
-        background: #00a862;
+        background: var(--semantic-green-500);
         color: white;
         border: none;
         border-radius: 6px;
@@ -696,7 +717,7 @@ import {
       }
 
       .btn-gps:hover:not(:disabled) {
-        background: #008a50;
+        background: var(--semantic-green-900);
       }
 
       .btn-gps:disabled {
@@ -720,7 +741,7 @@ import {
         aspect-ratio: 1;
         border-radius: 8px;
         overflow: hidden;
-        background: #f3f4f6;
+        background: var(--grey-100);
       }
 
       .photo-item img {
@@ -735,13 +756,12 @@ import {
         right: 4px;
         width: 24px;
         height: 24px;
-        background: rgba(229, 25, 55, 0.9);
+        background: rgba(239, 68, 68, 0.9);
         color: white;
         border: none;
         border-radius: 50%;
         cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
+        font-size: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -749,7 +769,7 @@ import {
 
       .photo-add {
         aspect-ratio: 1;
-        border: 2px dashed #d1d5db;
+        border: 2px dashed var(--grey-300);
         border-radius: 8px;
         display: flex;
         flex-direction: column;
@@ -757,28 +777,29 @@ import {
         justify-content: center;
         cursor: pointer;
         transition: all 0.2s;
-        background: #f9fafb;
+        background: var(--grey-100);
       }
 
       .photo-add:hover {
-        border-color: #0077cd;
-        background: #f0f9ff;
+        border-color: var(--primary-500);
+        background: var(--primary-100);
       }
 
       .add-icon {
-        font-size: 32px;
+        font-size: 24px;
         margin-bottom: 4px;
+        color: var(--grey-700);
       }
 
       .add-text {
         font-size: 12px;
-        color: #6b7280;
+        color: var(--grey-700);
         font-weight: 500;
       }
 
       .help-text {
         font-size: 12px;
-        color: #6b7280;
+        color: var(--grey-700);
         margin: 0;
       }
 
@@ -811,7 +832,7 @@ import {
 
       .progress-fill {
         height: 100%;
-        background: #00a1e0;
+        background: var(--klm-blue);
         transition: width 0.3s ease;
       }
 
@@ -838,7 +859,7 @@ import {
         bottom: 0;
         left: 0;
         right: 0;
-        background: #ef4444;
+        background: var(--semantic-red-500);
         color: white;
         padding: 8px;
         text-align: center;
@@ -852,9 +873,9 @@ import {
       .location-details {
         margin-top: 12px;
         padding: 12px;
-        background: #f9fafb;
+        background: var(--grey-100);
         border-radius: 6px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--grey-200);
       }
 
       .detail-item {
@@ -865,35 +886,31 @@ import {
       }
 
       .detail-label {
-        color: #6b7280;
+        color: var(--grey-700);
         font-weight: 500;
       }
 
       .detail-value {
-        color: #072b45;
+        color: var(--primary-900);
         font-weight: 600;
         text-align: right;
       }
 
       .detail-value.good-accuracy {
-        color: #10b981;
+        color: var(--semantic-green-500);
       }
 
       .location-error {
         margin-top: 8px;
         padding: 8px 12px;
-        background: #fee2e2;
-        border: 1px solid #fecaca;
+        background: var(--semantic-red-100);
+        border: 1px solid var(--semantic-red-300);
         border-radius: 6px;
-        color: #dc2626;
+        color: var(--semantic-red-500);
         font-size: 14px;
         display: flex;
         align-items: center;
         gap: 8px;
-      }
-
-      .error-icon {
-        font-size: 18px;
       }
 
       .form-actions {
@@ -902,7 +919,7 @@ import {
         justify-content: flex-end;
         margin-top: 32px;
         padding-top: 24px;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid var(--grey-200);
       }
 
       .btn {
@@ -924,21 +941,21 @@ import {
       }
 
       .btn-primary {
-        background: #0077cd;
+        background: var(--primary-500);
         color: white;
       }
 
       .btn-primary:hover:not(:disabled) {
-        background: #005fa3;
+        background: var(--primary-800);
       }
 
       .btn-secondary {
-        background: #f3f4f6;
-        color: #374151;
+        background: var(--grey-100);
+        color: var(--grey-800);
       }
 
       .btn-secondary:hover:not(:disabled) {
-        background: #e5e7eb;
+        background: var(--grey-200);
       }
 
       /* Production Table */
@@ -960,7 +977,7 @@ import {
 
       .table-responsive {
         overflow-x: auto;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--grey-200);
         border-radius: 6px;
       }
 
@@ -971,23 +988,23 @@ import {
       }
 
       .production-table-grid th {
-        background: #f9fafb;
+        background: var(--grey-100);
         padding: 8px;
         text-align: left;
         font-size: 12px;
         font-weight: 600;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 2px solid var(--grey-200);
       }
 
       .production-table-grid td {
         padding: 4px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--grey-200);
       }
 
       .form-input-sm {
         width: 100%;
         padding: 6px 8px;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--grey-300);
         border-radius: 4px;
         font-size: 13px;
       }
@@ -995,13 +1012,15 @@ import {
       .btn-remove {
         width: 28px;
         height: 28px;
-        background: #ef4444;
+        background: var(--semantic-red-500);
         color: white;
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .btn-remove:disabled {
@@ -1017,7 +1036,7 @@ import {
       .checkbox-section h3 {
         font-size: 16px;
         font-weight: 600;
-        color: #374151;
+        color: var(--grey-800);
         margin-bottom: 12px;
       }
 
@@ -1038,7 +1057,7 @@ import {
       }
 
       .checkbox-item:hover {
-        background: #f9fafb;
+        background: var(--grey-100);
       }
 
       .checkbox-item input[type='checkbox'] {
@@ -1049,7 +1068,7 @@ import {
 
       .checkbox-item span {
         font-size: 14px;
-        color: #374151;
+        color: var(--grey-800);
       }
 
       /* Signatures */
@@ -1065,10 +1084,10 @@ import {
         flex-direction: column;
       }
 
-      .signature-field label {
+      .signature-field .label {
         font-size: 14px;
         font-weight: 500;
-        color: #374151;
+        color: var(--grey-800);
         margin-bottom: 8px;
       }
 
@@ -1192,7 +1211,7 @@ export class OperatorDailyReportComponent implements OnInit {
   ];
 
   private photoUploadService = inject(PhotoUploadService);
-  private geoService = inject(GeolocationService);
+  geoService = inject(GeolocationService);
   private equipmentService = inject(EquipmentService);
   private projectService = inject(ProjectService);
 

@@ -30,6 +30,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-01-15'),
         archivoUrl: '/documents/sig/manual-calidad-2024.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
       sigRepo.create({
         legacyId: 'SIG002',
@@ -42,6 +43,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-02-10'),
         archivoUrl: '/documents/sig/control-documentos.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
       sigRepo.create({
         legacyId: 'SIG003',
@@ -54,6 +56,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-01-05'),
         archivoUrl: '/documents/sig/politica-calidad.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
     ]);
 
@@ -70,6 +73,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-01-20'),
         archivoUrl: '/documents/sig/manual-ambiental.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
       sigRepo.create({
         legacyId: 'SIG005',
@@ -82,6 +86,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-03-01'),
         archivoUrl: '/documents/sig/gestion-residuos.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
       sigRepo.create({
         legacyId: 'SIG006',
@@ -94,6 +99,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-01-10'),
         archivoUrl: '/documents/sig/politica-ambiental.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
     ]);
 
@@ -110,6 +116,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-02-01'),
         archivoUrl: '/documents/sig/manual-sst.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
       sigRepo.create({
         legacyId: 'SIG008',
@@ -122,6 +129,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-02-15'),
         archivoUrl: '/documents/sig/identificacion-peligros.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
       sigRepo.create({
         legacyId: 'SIG009',
@@ -134,6 +142,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2025-01-15'),
         archivoUrl: '/documents/sig/politica-sst.pdf',
         estado: 'VIGENTE',
+        tenantId: 1,
       }),
     ]);
 
@@ -150,6 +159,7 @@ export class SigSeeder extends BaseSeeder {
         fechaRevision: new Date('2024-01-15'),
         archivoUrl: '/documents/sig/manual-calidad-2023.pdf',
         estado: 'OBSOLETO',
+        tenantId: 1,
       })
     );
 
