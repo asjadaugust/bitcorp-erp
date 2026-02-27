@@ -8,7 +8,8 @@ const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 
 // Development mode: Disable caching
-const DEVELOPMENT_MODE = true; // Set to false in production
+const DEVELOPMENT_MODE =
+  self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
 
 // Static resources to cache immediately
 const STATIC_ASSETS = [
@@ -27,7 +28,15 @@ const STATIC_ASSETS = [
 ];
 
 // API routes that can be cached
-const API_CACHE_ROUTES = ['/api/equipment', '/api/operators', '/api/projects'];
+const API_CACHE_ROUTES = [
+  '/api/equipment',
+  '/api/operators',
+  '/api/projects',
+  '/api/reports',
+  '/api/tipos-equipo',
+  '/api/precalentamiento-config',
+  '/api/vales-combustible',
+];
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
