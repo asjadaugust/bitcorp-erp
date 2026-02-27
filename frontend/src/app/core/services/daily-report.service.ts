@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { DailyReport, CreateDailyReportDto } from '../models/daily-report.model';
+import { DailyReport, DailyReportPhoto, CreateDailyReportDto } from '../models/daily-report.model';
 
 import { environment } from '../../../environments/environment';
 
@@ -165,12 +165,19 @@ export class DailyReportService {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }
 
-  uploadPhotos(id: string | number, formData: FormData): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/photos`, formData);
+  getPhotos(id: string | number): Observable<DailyReportPhoto[]> {
+    return this.http.get<DailyReportPhoto[]>(`${this.apiUrl}/${id}/photos`);
   }
 
-  deletePhoto(id: string | number, photoIndex: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}/photos/${photoIndex}`);
+  uploadPhotos(
+    id: string | number,
+    formData: FormData
+  ): Observable<{ photos: DailyReportPhoto[] }> {
+    return this.http.post<{ photos: DailyReportPhoto[] }>(`${this.apiUrl}/${id}/photos`, formData);
+  }
+
+  deletePhoto(id: string | number, photoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}/photos/${photoId}`);
   }
 
   /**

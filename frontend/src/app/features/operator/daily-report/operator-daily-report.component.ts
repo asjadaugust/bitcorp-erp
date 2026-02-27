@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } fr
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DailyReportService } from '../../../core/services/daily-report.service';
+import { DailyReportPhoto } from '../../../core/models/daily-report.model';
 import { PhotoUploadService } from '../../../core/services/photo-upload.service';
 import {
   GeolocationService,
@@ -438,11 +439,21 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         <!-- Photos -->
         <app-form-section title="Fotografías" icon="fa-camera" [columns]="1">
           <div class="photo-upload">
-            <div class="photo-grid">
+            <div *ngIf="isViewMode && photos.length === 0 && !loadingPhotos" class="empty-photos">
+              <i class="fa-solid fa-image"></i>
+              <span>Sin fotografías adjuntas</span>
+            </div>
+            <div *ngIf="loadingPhotos" class="loading-photos">
+              <i class="fa-solid fa-spinner fa-spin"></i> Cargando fotografías...
+            </div>
+            <div class="photo-grid" *ngIf="photos.length > 0">
               <div
                 *ngFor="let photo of photos; let i = index"
                 class="photo-item"
                 [class.uploading]="photo.status === 'uploading'"
+                [class.clickable]="photo.status !== 'uploading'"
+                (click)="openLightbox(i)"
+                data-testid="photo-item"
               >
                 <img [src]="photo.thumbnail || photo.url" [alt]="'Foto ' + (i + 1)" />
 
@@ -472,7 +483,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
 
                 <button
                   type="button"
-                  (click)="removePhoto(i)"
+                  (click)="removePhoto(i); $event.stopPropagation()"
                   class="remove-photo"
                   [disabled]="photo.status === 'uploading'"
                   *ngIf="!isViewMode"
@@ -506,6 +517,45 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
             </p>
           </div>
         </app-form-section>
+
+        <!-- Photo Lightbox -->
+        <div
+          class="lightbox-overlay"
+          *ngIf="lightboxOpen"
+          (click)="closeLightbox()"
+          data-testid="lightbox"
+        >
+          <div class="lightbox-content" (click)="$event.stopPropagation()">
+            <button class="lightbox-close" (click)="closeLightbox()" data-testid="lightbox-close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+            <button
+              class="lightbox-nav lightbox-prev"
+              *ngIf="photos.length > 1"
+              (click)="lightboxPrev()"
+            >
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <img
+              class="lightbox-image"
+              [src]="photos[lightboxIndex]?.url"
+              [alt]="'Foto ' + (lightboxIndex + 1)"
+            />
+            <button
+              class="lightbox-nav lightbox-next"
+              *ngIf="photos.length > 1"
+              (click)="lightboxNext()"
+            >
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <div class="lightbox-caption">
+              <span>{{ lightboxIndex + 1 }} / {{ photos.length }}</span>
+              <span *ngIf="photos[lightboxIndex]?.originalName" class="lightbox-filename">
+                {{ photos[lightboxIndex].originalName }}
+              </span>
+            </div>
+          </div>
+        </div>
 
         <!-- Save Draft (inline, create mode only) -->
         <div class="draft-actions" *ngIf="!isViewMode && !isEditMode">
@@ -870,6 +920,137 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         margin-top: var(--s-8);
       }
 
+      .photo-item.clickable {
+        cursor: pointer;
+      }
+
+      .photo-item.clickable:hover img {
+        transform: scale(1.05);
+        transition: transform 0.2s;
+      }
+
+      .empty-photos {
+        text-align: center;
+        padding: 24px;
+        color: var(--grey-500);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .empty-photos i {
+        font-size: 32px;
+      }
+
+      .loading-photos {
+        text-align: center;
+        padding: 24px;
+        color: var(--grey-600);
+      }
+
+      /* Lightbox */
+      .lightbox-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .lightbox-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .lightbox-image {
+        max-width: 90vw;
+        max-height: 85vh;
+        object-fit: contain;
+        border-radius: 4px;
+      }
+
+      .lightbox-close {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+      }
+
+      .lightbox-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .lightbox-nav {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+      }
+
+      .lightbox-nav:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .lightbox-prev {
+        left: 16px;
+      }
+
+      .lightbox-next {
+        right: 16px;
+      }
+
+      .lightbox-caption {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 14px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 8px 16px;
+        border-radius: 8px;
+      }
+
+      .lightbox-filename {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+      }
+
       @media (max-width: 768px) {
         .checkbox-grid {
           grid-template-columns: 1fr;
@@ -897,16 +1078,20 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   availableEquipment: Equipment[] = [];
   availableProjects: Project[] = [];
   photos: {
-    id?: string;
+    id?: number;
+    serverId?: number;
     url: string;
     thumbnail?: string;
     status: 'local' | 'uploading' | 'uploaded' | 'error';
     progress?: number;
     error?: string;
     file?: File;
+    originalName?: string;
   }[] = [];
   capturingGPS = false;
   saving = false;
+  lightboxOpen = false;
+  lightboxIndex = 0;
 
   get projectOptions(): DropdownOption[] {
     return this.availableProjects.map((p) => ({
@@ -928,6 +1113,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   locationError: string | null = null;
   uploadingPhotos = false;
   downloadingPdf = false;
+  loadingPhotos = false;
   hasDraft = false;
   private readonly DRAFT_KEY = 'bitcorp-daily-report-draft';
   private autoSaveInterval: ReturnType<typeof setInterval> | null = null;
@@ -1168,11 +1354,34 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
         if (this.isViewMode) {
           this.reportForm.disable();
         }
+
+        // Load photos from server
+        this.loadPhotos(id);
       },
       error: (err) => {
         console.error('Error loading report', err);
         this.snackBar.open('Error al cargar el reporte', 'Cerrar', { duration: 5000 });
         this.router.navigate(['/operator/history']);
+      },
+    });
+  }
+
+  loadPhotos(reportId: number) {
+    this.loadingPhotos = true;
+    this.dailyReportService.getPhotos(reportId).subscribe({
+      next: (serverPhotos: DailyReportPhoto[]) => {
+        this.photos = serverPhotos.map((p) => ({
+          serverId: p.id,
+          url: p.url,
+          thumbnail: p.url,
+          status: 'uploaded' as const,
+          originalName: p.original_name ?? undefined,
+        }));
+        this.loadingPhotos = false;
+      },
+      error: (err) => {
+        console.error('Error loading photos:', err);
+        this.loadingPhotos = false;
       },
     });
   }
@@ -1359,6 +1568,19 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   removePhoto(index: number) {
     const photo = this.photos[index];
 
+    // Delete from server if uploaded
+    if (photo.serverId && this.reportId) {
+      this.dailyReportService.deletePhoto(this.reportId, photo.serverId).subscribe({
+        next: () => {
+          this.snackBar.open('Foto eliminada', 'Cerrar', { duration: 2000 });
+        },
+        error: (err) => {
+          console.error('Error deleting photo from server:', err);
+          this.snackBar.open('Error al eliminar foto del servidor', 'Cerrar', { duration: 3000 });
+        },
+      });
+    }
+
     // Revoke object URL if local
     if (photo.status === 'local' && photo.url.startsWith('blob:')) {
       URL.revokeObjectURL(photo.url);
@@ -1369,8 +1591,24 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
 
     // Remove from array
     this.photos.splice(index, 1);
+  }
 
-    // TODO: If uploaded to server, call API to delete
+  openLightbox(index: number) {
+    if (this.photos[index]?.status === 'uploading') return;
+    this.lightboxIndex = index;
+    this.lightboxOpen = true;
+  }
+
+  closeLightbox() {
+    this.lightboxOpen = false;
+  }
+
+  lightboxPrev() {
+    this.lightboxIndex = (this.lightboxIndex - 1 + this.photos.length) % this.photos.length;
+  }
+
+  lightboxNext() {
+    this.lightboxIndex = (this.lightboxIndex + 1) % this.photos.length;
   }
 
   saveDraft() {

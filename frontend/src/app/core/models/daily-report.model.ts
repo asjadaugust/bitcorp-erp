@@ -108,6 +108,18 @@ export interface EventCheckbox {
   checked: boolean;
 }
 
+export interface DailyReportPhoto {
+  id: number;
+  parte_diario_id: number;
+  filename: string;
+  original_name: string | null;
+  url: string;
+  mime_type: string;
+  size: number | null;
+  orden: number;
+  created_at: string;
+}
+
 export interface CreateDailyReportDto {
   fecha_parte: string;
   trabajador_id: number;
