@@ -211,6 +211,7 @@ import {
         <div class="panel dashboard-panel">
           <div class="panel-header">
             <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Seguimiento de Inspecciones</h3>
+            <a routerLink="/equipment/inspection-tracking" class="link-action">Ver todo</a>
             <div class="panel-controls">
               <label class="toggle-switch">
                 <input
