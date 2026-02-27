@@ -209,7 +209,7 @@ import {
 
       /* Form Card */
       .form-card {
-        background: white;
+        background: var(--neutral-0);
         padding: 2rem;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);

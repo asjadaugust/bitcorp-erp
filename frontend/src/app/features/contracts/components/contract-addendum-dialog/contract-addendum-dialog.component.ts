@@ -125,7 +125,7 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
       .current-state-card__icon {
         width: 40px;
         height: 40px;
-        background: white;
+        background: var(--neutral-0);
         color: var(--primary-500);
         border-radius: 50%;
         display: flex;

@@ -10,11 +10,13 @@ import {
   AuditEntry,
   TabConfig,
 } from '../../shared/components/entity-detail';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-orden-alquiler-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent],
+  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -190,51 +192,51 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button
+        <app-button
           *ngIf="orden && ['BORRADOR', 'ENVIADO'].includes(orden.estado)"
-          type="button"
-          class="btn btn-secondary btn-block"
+          variant="secondary"
+          icon="fa-pen-to-square"
+          label="Editar Orden"
+          [fullWidth]="true"
           [routerLink]="['/equipment/operaciones/ordenes-alquiler', orden.id, 'edit']"
-        >
-          <i class="fa-solid fa-pen-to-square"></i> Editar Orden
-        </button>
+        ></app-button>
 
-        <button
+        <app-button
           *ngIf="orden?.estado === 'BORRADOR'"
-          type="button"
-          class="btn btn-primary btn-block"
-          (click)="enviar()"
-        >
-          <i class="fa-solid fa-paper-plane"></i> Enviar al Proveedor
-        </button>
+          variant="primary"
+          icon="fa-paper-plane"
+          label="Enviar al Proveedor"
+          [fullWidth]="true"
+          (clicked)="enviar()"
+        ></app-button>
 
-        <button
+        <app-button
           *ngIf="orden?.estado === 'ENVIADO'"
-          type="button"
-          class="btn btn-success btn-block"
-          (click)="confirmar()"
-        >
-          <i class="fa-solid fa-circle-check"></i> Confirmar Orden
-        </button>
+          variant="success"
+          icon="fa-circle-check"
+          label="Confirmar Orden"
+          [fullWidth]="true"
+          (clicked)="confirmar()"
+        ></app-button>
 
-        <button
+        <app-button
           *ngIf="orden && ['BORRADOR', 'ENVIADO'].includes(orden.estado)"
-          type="button"
-          class="btn btn-danger btn-block"
-          (click)="cancelar()"
-        >
-          <i class="fa-solid fa-ban"></i> Cancelar Orden
-        </button>
+          variant="danger"
+          icon="fa-ban"
+          label="Cancelar Orden"
+          [fullWidth]="true"
+          (clicked)="cancelar()"
+        ></app-button>
 
-        <div class="sidebar-divider"></div>
+        <hr class="sidebar-divider" />
 
-        <button
-          type="button"
-          class="btn btn-ghost btn-block"
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a la Lista"
+          [fullWidth]="true"
           routerLink="/equipment/ordenes-alquiler"
-        >
-          <i class="fa-solid fa-arrow-left"></i> Volver a la Lista
-        </button>
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -304,19 +306,19 @@ import {
         margin-bottom: 4px;
 
         &.strip-enviado {
-          background: #dbeafe;
-          color: #1d4ed8;
-          border: 1px solid #bfdbfe;
+          background: var(--semantic-blue-50);
+          color: var(--semantic-blue-700);
+          border: 1px solid var(--semantic-blue-100);
         }
         &.strip-confirmado {
-          background: #dcfce7;
-          color: #15803d;
-          border: 1px solid #bbf7d0;
+          background: var(--semantic-green-50);
+          color: var(--semantic-green-700);
+          border: 1px solid var(--semantic-green-100);
         }
         &.strip-cancelado {
-          background: #fee2e2;
-          color: #b91c1c;
-          border: 1px solid #fecaca;
+          background: var(--semantic-red-50);
+          color: var(--semantic-red-700);
+          border: 1px solid var(--semantic-red-100);
         }
       }
       .strip-meta {
@@ -441,29 +443,10 @@ import {
         }
       }
 
-      /* Sidebar buttons */
       .sidebar-divider {
-        height: 1px;
-        background: var(--grey-100);
+        border: none;
+        border-top: 1px solid var(--grey-100);
         margin: var(--s-16) 0;
-      }
-
-      .btn-block {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 12px;
-        width: 100%;
-        padding: 12px 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        border-radius: 10px;
-
-        i {
-          width: 20px;
-          text-align: center;
-          font-size: 1.1em;
-        }
       }
     `,
   ],
@@ -472,6 +455,7 @@ export class OrdenAlquilerDetailComponent implements OnInit {
   private service = inject(OrdenAlquilerService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmSvc = inject(ConfirmService);
 
   orden: OrdenAlquiler | null = null;
   loading = false;
@@ -533,36 +517,68 @@ export class OrdenAlquilerDetailComponent implements OnInit {
   }
 
   enviar() {
-    const email = prompt(`Email del contacto proveedor para ${this.orden?.codigo} (opcional):`);
-    if (email === null) return;
-    this.service.enviar(this.orden!.id, email || undefined).subscribe({
-      next: (o) => {
-        this.orden = o;
-        this.updateHeader();
-      },
-    });
+    if (!this.orden) return;
+    this.confirmSvc
+      .prompt({
+        title: 'Enviar al Proveedor',
+        message: `Email del contacto proveedor para ${this.orden.codigo} (opcional):`,
+        icon: 'fa-paper-plane',
+        confirmLabel: 'Enviar',
+      })
+      .subscribe((email) => {
+        if (email !== null) {
+          this.service.enviar(this.orden!.id, email || undefined).subscribe({
+            next: (o) => {
+              this.orden = o;
+              this.updateHeader();
+            },
+          });
+        }
+      });
   }
 
   confirmar() {
-    const quien = prompt(`¿Quién confirmó la orden ${this.orden?.codigo} por parte del proveedor?`);
-    if (quien === null) return;
-    this.service.confirmar(this.orden!.id, quien || undefined).subscribe({
-      next: (o) => {
-        this.orden = o;
-        this.updateHeader();
-      },
-    });
+    if (!this.orden) return;
+    this.confirmSvc
+      .prompt({
+        title: 'Confirmar Orden',
+        message: `¿Quién confirmó la orden ${this.orden.codigo} por parte del proveedor?`,
+        icon: 'fa-circle-check',
+        confirmLabel: 'Confirmar',
+      })
+      .subscribe((quien) => {
+        if (quien !== null) {
+          this.service.confirmar(this.orden!.id, quien || undefined).subscribe({
+            next: (o) => {
+              this.orden = o;
+              this.updateHeader();
+            },
+          });
+        }
+      });
   }
 
   cancelar() {
-    const motivo = prompt(`Motivo de cancelación de la orden ${this.orden?.codigo}:`);
-    if (!motivo) return;
-    this.service.cancelar(this.orden!.id, motivo).subscribe({
-      next: (o) => {
-        this.orden = o;
-        this.updateHeader();
-      },
-    });
+    if (!this.orden) return;
+    this.confirmSvc
+      .prompt({
+        title: 'Cancelar Orden',
+        message: `Motivo de cancelación de la orden ${this.orden.codigo}:`,
+        icon: 'fa-ban',
+        confirmLabel: 'Cancelar Orden',
+        isDanger: true,
+        inputRequired: true,
+      })
+      .subscribe((motivo) => {
+        if (motivo) {
+          this.service.cancelar(this.orden!.id, motivo).subscribe({
+            next: (o) => {
+              this.orden = o;
+              this.updateHeader();
+            },
+          });
+        }
+      });
   }
 
   estadoLabel(estado: string): string {

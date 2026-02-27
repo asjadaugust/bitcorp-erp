@@ -7,23 +7,25 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-provider-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownComponent, ButtonComponent],
   template: `
     <div class="documents-section">
       <div class="section-header">
         <h3><i class="fa-solid fa-file-invoice"></i> Documentos</h3>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          (click)="showForm = !showForm"
+        <app-button
           *ngIf="!showForm"
-        >
-          <i class="fa-solid fa-plus"></i> Agregar Documento
-        </button>
+          variant="primary"
+          size="sm"
+          icon="fa-plus"
+          label="Agregar Documento"
+          (clicked)="showForm = !showForm"
+        ></app-button>
       </div>
 
       <!-- Form -->
@@ -93,9 +95,13 @@ import {
                     >Ver archivo actual</a
                   >
                 </div>
-                <button type="button" class="btn btn-sm btn-secondary" (click)="removeFile()">
-                  <i class="fa-solid fa-xmark"></i> Cambiar
-                </button>
+                <app-button
+                  variant="secondary"
+                  size="sm"
+                  icon="fa-xmark"
+                  label="Cambiar"
+                  (clicked)="removeFile()"
+                ></app-button>
               </div>
 
               <!-- Hidden input to store URL but keep validation working -->
@@ -114,14 +120,13 @@ import {
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancelar</button>
-            <button
-              type="submit"
-              class="btn btn-primary"
+            <app-button variant="secondary" label="Cancelar" (clicked)="cancelForm()"></app-button>
+            <app-button
+              variant="primary"
+              [label]="editingId ? 'Actualizar' : 'Guardar'"
               [disabled]="documentForm.invalid || uploading"
-            >
-              {{ editingId ? 'Actualizar' : 'Guardar' }}
-            </button>
+              (clicked)="onSubmit()"
+            ></app-button>
           </div>
         </form>
       </div>
@@ -165,17 +170,20 @@ import {
             >
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
-            <button type="button" class="btn-icon" (click)="editDocument(doc)" title="Editar">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button
-              type="button"
-              class="btn-icon btn-danger"
-              (click)="deleteDocument(doc.id)"
+            <app-button
+              variant="icon"
+              size="sm"
+              icon="fa-pen"
+              title="Editar"
+              (clicked)="editDocument(doc)"
+            ></app-button>
+            <app-button
+              variant="icon"
+              size="sm"
+              icon="fa-trash"
               title="Eliminar"
-            >
-              <i class="fa-solid fa-trash"></i>
-            </button>
+              (clicked)="deleteDocument(doc.id)"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -237,30 +245,6 @@ import {
         border: 1px solid var(--grey-300);
         border-radius: var(--s-4);
         font-family: inherit;
-      }
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .btn-secondary {
-        background: var(--grey-200);
-        color: var(--grey-700);
-      }
-      .btn-sm {
-        padding: var(--s-4) var(--s-12);
-        font-size: var(--type-bodySmall-size);
       }
       .form-actions {
         display: flex;
@@ -356,21 +340,6 @@ import {
         border-top: 1px solid var(--grey-100);
         padding-top: var(--s-12);
       }
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--s-6);
-        color: var(--grey-500);
-        font-size: 1rem;
-        transition: color 0.2s;
-      }
-      .btn-icon:hover {
-        color: var(--primary-500);
-      }
-      .btn-icon.btn-danger:hover {
-        color: var(--danger-500);
-      }
       .empty-state {
         text-align: center;
         padding: var(--s-48) var(--s-24);
@@ -391,6 +360,7 @@ export class ProviderDocumentsComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private providerService = inject(ProviderService);
+  private confirmSvc = inject(ConfirmService);
 
   documentsList: ProviderDocument[] = [];
   documentForm!: FormGroup;
@@ -471,9 +441,11 @@ export class ProviderDocumentsComponent implements OnInit {
   }
 
   deleteDocument(id: number): void {
-    if (!confirm('¿Eliminar este documento?')) return;
-
-    this.providerService.deleteDocument(id).subscribe(() => this.loadDocuments());
+    this.confirmSvc.confirmDelete('este documento').subscribe((confirmed) => {
+      if (confirmed) {
+        this.providerService.deleteDocument(id).subscribe(() => this.loadDocuments());
+      }
+    });
   }
 
   cancelForm(): void {

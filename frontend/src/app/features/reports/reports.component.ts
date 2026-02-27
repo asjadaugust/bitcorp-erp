@@ -148,7 +148,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .filter-card {
-        background: white;
+        background: var(--neutral-0);
         padding: 24px;
         border-radius: 12px;
         box-shadow: var(--shadow-sm);

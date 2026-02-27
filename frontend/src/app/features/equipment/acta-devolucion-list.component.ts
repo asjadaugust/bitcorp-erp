@@ -104,24 +104,29 @@ import { ConfirmService } from '../../core/services/confirm.service';
       </ng-template>
 
       <ng-template #actionsTemplate let-row>
-        <div class="action-buttons">
-          <button
+        <div
+          class="action-buttons"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="toolbar"
+        >
+          <app-button
             *ngIf="['BORRADOR', 'PENDIENTE'].includes(row.estado)"
-            class="btn-icon"
-            [routerLink]="[row.id, 'edit']"
-            (click)="$event.stopPropagation()"
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
             title="Editar"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
+            [routerLink]="[row.id, 'edit']"
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'BORRADOR'"
-            class="btn-icon"
+            variant="icon"
+            size="sm"
+            icon="fa-paper-plane"
             title="Enviar para firma"
-            (click)="enviarParaFirma(row); $event.stopPropagation()"
-          >
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
+            (clicked)="enviarParaFirma(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -136,48 +141,48 @@ import { ConfirmService } from '../../core/services/confirm.service';
         text-transform: uppercase;
       }
       .badge-borrador {
-        background: #e9ecef;
-        color: #495057;
+        background: var(--grey-100);
+        color: var(--grey-600);
       }
       .badge-pendiente {
-        background: #fff3cd;
-        color: #664d03;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .badge-firmado {
-        background: #d1e7dd;
-        color: #0a3622;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .badge-anulado {
-        background: #f8d7da;
-        color: #842029;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
       }
       .badge-devolucion {
-        background: #cff4fc;
-        color: #055160;
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
       }
       .badge-desmobil {
-        background: #e0cffc;
-        color: #432874;
+        background: var(--primary-50);
+        color: var(--primary-700);
       }
       .badge-transfer {
-        background: #ffd8a8;
-        color: #7d3e00;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-700);
       }
       .badge-bueno {
-        background: #d1e7dd;
-        color: #0a3622;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .badge-regular {
-        background: #fff3cd;
-        color: #664d03;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .badge-malo {
-        background: #f8d7da;
-        color: #842029;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
       }
       .badge-obs {
-        background: #cff4fc;
-        color: #055160;
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
       }
       .firma-indicators {
         display: flex;
@@ -186,20 +191,8 @@ import { ConfirmService } from '../../core/services/confirm.service';
       }
       .action-buttons {
         display: flex;
+        justify-content: flex-end;
         gap: 8px;
-      }
-      .btn-icon {
-        background: none;
-        border: none;
-        color: var(--grey-500);
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        transition: all 0.2s;
-      }
-      .btn-icon:hover {
-        color: var(--primary-500);
-        background: var(--primary-50);
       }
       .text-success {
         color: var(--semantic-green-500);

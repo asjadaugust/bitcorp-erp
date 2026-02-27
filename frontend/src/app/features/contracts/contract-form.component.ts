@@ -22,6 +22,7 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-contract-form',
@@ -36,6 +37,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
+    ButtonComponent,
   ],
   template: `
     <app-form-container
@@ -314,26 +316,31 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 [ngModelOptions]="{ standalone: true }"
                 placeholder="Notas..."
               />
-              <button
-                type="button"
-                class="btn btn-icon btn-danger-ghost"
-                (click)="removeAnnexItem('A', i)"
-              >
-                <i class="fa-solid fa-trash"></i>
-              </button>
+              <app-button
+                variant="icon"
+                size="sm"
+                icon="fa-trash"
+                title="Eliminar"
+                (clicked)="removeAnnexItem('A', i)"
+              ></app-button>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" (click)="addAnnexItem('A')">
-              <i class="fa-solid fa-plus"></i> Agregar ítem
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              style="margin-left: 8px"
-              (click)="saveAnnex('A')"
-              [disabled]="savingAnnexA"
-            >
-              <i class="fa-solid fa-save"></i> Guardar Anexo A
-            </button>
+            <div class="annex-actions-row">
+              <app-button
+                variant="secondary"
+                size="sm"
+                icon="fa-plus"
+                label="Agregar ítem"
+                (clicked)="addAnnexItem('A')"
+              ></app-button>
+              <app-button
+                variant="primary"
+                size="sm"
+                icon="fa-save"
+                label="Guardar Anexo A"
+                [disabled]="savingAnnexA"
+                (clicked)="saveAnnex('A')"
+              ></app-button>
+            </div>
           </div>
         </div>
 
@@ -369,26 +376,31 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
                 [ngModelOptions]="{ standalone: true }"
                 placeholder="Notas..."
               />
-              <button
-                type="button"
-                class="btn btn-icon btn-danger-ghost"
-                (click)="removeAnnexItem('B', i)"
-              >
-                <i class="fa-solid fa-trash"></i>
-              </button>
+              <app-button
+                variant="icon"
+                size="sm"
+                icon="fa-trash"
+                title="Eliminar"
+                (clicked)="removeAnnexItem('B', i)"
+              ></app-button>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" (click)="addAnnexItem('B')">
-              <i class="fa-solid fa-plus"></i> Agregar ítem
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              style="margin-left: 8px"
-              (click)="saveAnnex('B')"
-              [disabled]="savingAnnexB"
-            >
-              <i class="fa-solid fa-save"></i> Guardar Anexo B
-            </button>
+            <div class="annex-actions-row">
+              <app-button
+                variant="secondary"
+                size="sm"
+                icon="fa-plus"
+                label="Agregar ítem"
+                (clicked)="addAnnexItem('B')"
+              ></app-button>
+              <app-button
+                variant="primary"
+                size="sm"
+                icon="fa-save"
+                label="Guardar Anexo B"
+                [disabled]="savingAnnexB"
+                (clicked)="saveAnnex('B')"
+              ></app-button>
+            </div>
           </div>
         </div>
 
@@ -464,28 +476,10 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         justify-content: center;
       }
 
-      .btn-icon {
-        width: 32px;
-        height: 32px;
-        padding: 0;
+      .annex-actions-row {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        color: var(--grey-500);
-        border-radius: 4px;
-      }
-
-      .btn-icon:hover {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
-      }
-
-      .btn-sm {
-        padding: 0.375rem 0.75rem;
-        font-size: 13px;
+        gap: var(--s-8);
+        margin-top: var(--s-8);
       }
     `,
   ],

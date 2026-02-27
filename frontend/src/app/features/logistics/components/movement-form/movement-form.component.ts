@@ -19,6 +19,7 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import {
   DropdownComponent,
   DropdownOption,
@@ -36,6 +37,7 @@ import {
     AlertComponent,
     FormContainerComponent,
     DropdownComponent,
+    ButtonComponent,
   ],
   template: `
     <app-form-container
@@ -158,14 +160,14 @@ import {
         <div class="form-section">
           <div class="section-header">
             <h2 class="section-title">Items del Movimiento</h2>
-            <button
-              type="button"
-              class="btn btn-outline btn-sm"
-              (click)="addItem()"
+            <app-button
               *ngIf="!isEditMode"
-            >
-              <i class="fa-solid fa-plus"></i> Agregar Item
-            </button>
+              variant="secondary"
+              size="sm"
+              icon="fa-plus"
+              label="Agregar Item"
+              (clicked)="addItem()"
+            ></app-button>
           </div>
 
           <div class="table-wrapper">
@@ -226,9 +228,13 @@ import {
                     />
                   </td>
                   <td *ngIf="!isEditMode">
-                    <button type="button" class="btn-icon text-danger" (click)="removeItem(i)">
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
+                    <app-button
+                      variant="icon"
+                      size="sm"
+                      icon="fa-trash"
+                      title="Eliminar"
+                      (clicked)="removeItem(i)"
+                    ></app-button>
                   </td>
                 </tr>
                 <tr *ngIf="items.length === 0">

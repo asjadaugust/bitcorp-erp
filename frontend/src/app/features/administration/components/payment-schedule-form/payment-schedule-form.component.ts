@@ -211,7 +211,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       .details-table {
         width: 100%;
         border-collapse: collapse;
-        background: white;
+        background: var(--neutral-0);
         border-radius: 8px;
         overflow: hidden;
         border: 1px solid var(--grey-200);
@@ -288,7 +288,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: color-mix(in srgb, var(--grey-900) 50%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -296,7 +296,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       }
 
       .modal-content {
-        background: white;
+        background: var(--neutral-0);
         border-radius: var(--s-12);
         max-width: 800px;
         width: 90%;

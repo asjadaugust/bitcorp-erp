@@ -224,7 +224,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
           background: var(--primary-100);
           .day-num {
             background: var(--klm-blue);
-            color: white;
+            color: var(--neutral-0);
             width: 28px;
             height: 28px;
             display: flex;

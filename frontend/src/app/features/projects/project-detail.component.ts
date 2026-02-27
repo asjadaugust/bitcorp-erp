@@ -12,6 +12,7 @@ import {
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-project-detail',
@@ -312,6 +313,7 @@ export class ProjectDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   project: Project | null = null;
   loading = true;
@@ -385,15 +387,15 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   assignResources(): void {
-    alert('Asignar Recursos - ¡Próximamente!');
+    this.snackBar.open('Asignar Recursos — próximamente', 'Cerrar', { duration: 3000 });
   }
 
   viewReports(): void {
-    alert('Ver Reportes - ¡Próximamente!');
+    this.snackBar.open('Ver Reportes — próximamente', 'Cerrar', { duration: 3000 });
   }
 
   viewBudget(): void {
-    alert('Ver Presupuesto - ¡Próximamente!');
+    this.snackBar.open('Ver Presupuesto — próximamente', 'Cerrar', { duration: 3000 });
   }
 
   navigateTo(path: string): void {

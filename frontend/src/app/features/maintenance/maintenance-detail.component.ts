@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaintenanceService } from '../../core/services/maintenance.service';
 import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
 import {
@@ -176,6 +177,7 @@ export class MaintenanceDetailComponent implements OnInit {
   private maintenanceService = inject(MaintenanceService);
   private route = inject(ActivatedRoute);
   private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
   router = inject(Router);
 
   record: MaintenanceRecord | null = null;
@@ -240,7 +242,7 @@ export class MaintenanceDetailComponent implements OnInit {
 
   completeMaintenance(): void {
     // Placeholder — implement status transition when backend supports it
-    alert('Marcar como completado — próximamente');
+    this.snackBar.open('Marcar como completado — próximamente', 'Cerrar', { duration: 3000 });
   }
 
   goBack(): void {

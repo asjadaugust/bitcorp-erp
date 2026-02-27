@@ -64,7 +64,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       .operator-sidebar {
         width: 260px;
         background: linear-gradient(180deg, var(--primary-900) 0%, var(--primary-500) 100%);
-        color: white;
+        color: var(--neutral-0);
         display: flex;
         flex-direction: column;
         box-shadow: var(--shadow-sm);
@@ -84,7 +84,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         margin: 0;
         font-size: 20px;
         font-weight: 600;
-        color: white;
+        color: var(--neutral-0);
       }
 
       .sidebar-nav {
@@ -96,7 +96,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         display: flex;
         align-items: center;
         padding: 16px 20px;
-        color: rgba(255, 255, 255, 0.8);
+        color: color-mix(in srgb, var(--neutral-0) 80%, transparent);
         text-decoration: none;
         transition: all 0.2s;
         cursor: pointer;
@@ -105,12 +105,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       .nav-item:hover {
         background: var(--state-white-hover);
-        color: white;
+        color: var(--neutral-0);
       }
 
       .nav-item.active {
         background: var(--state-white-active);
-        color: white;
+        color: var(--neutral-0);
         border-left-color: var(--accent-500);
       }
 

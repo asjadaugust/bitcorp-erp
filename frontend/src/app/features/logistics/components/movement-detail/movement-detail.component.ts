@@ -12,6 +12,7 @@ import {
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-movement-detail',
@@ -297,6 +298,7 @@ export class MovementDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private inventoryService = inject(InventoryService);
+  private confirmSvc = inject(ConfirmService);
 
   movement: Movement | null = null;
   loading = true;
@@ -361,10 +363,12 @@ export class MovementDetailComponent implements OnInit {
   }
 
   cancelMovement(): void {
-    if (confirm('¿Está seguro de anular este movimiento?')) {
-      // Logic for cancellation (could call service)
-      console.log('Cancel movement', this.movement?.id);
-    }
+    this.confirmSvc.confirmDelete('este movimiento').subscribe((confirmed) => {
+      if (confirmed) {
+        // Logic for cancellation (could call service)
+        console.log('Cancel movement', this.movement?.id);
+      }
+    });
   }
 
   goBack(): void {

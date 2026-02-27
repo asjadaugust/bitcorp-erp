@@ -114,38 +114,38 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="toolbar"
         >
-          <button
+          <app-button
             *ngIf="row.estado === 'BORRADOR'"
-            class="btn-icon"
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
             title="Editar"
             [routerLink]="[row.id, 'edit']"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'BORRADOR'"
-            class="btn-icon text-success"
+            variant="icon"
+            size="sm"
+            icon="fa-paper-plane"
             title="Enviar para aprobación"
-            (click)="enviarAprobacion($event, row)"
-          >
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-          <button
+            (clicked)="enviarAprobacion($event, row)"
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'ENVIADO'"
-            class="btn-icon text-success"
+            variant="icon"
+            size="sm"
+            icon="fa-check"
             title="Aprobar"
-            (click)="aprobar(row)"
-          >
-            <i class="fa-solid fa-check"></i>
-          </button>
-          <button
+            (clicked)="aprobar(row)"
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'ENVIADO'"
-            class="btn-icon text-danger"
+            variant="icon"
+            size="sm"
+            icon="fa-times"
             title="Rechazar"
-            (click)="rechazar(row)"
-          >
-            <i class="fa-solid fa-times"></i>
-          </button>
+            (clicked)="rechazar(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -198,47 +198,22 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .priority-alta {
-        background: #fef2f2;
-        color: #ef4444;
+        background: var(--semantic-red-100);
+        color: var(--semantic-red-500);
       }
       .priority-media {
-        background: #fffbeb;
-        color: #f59e0b;
+        background: var(--semantic-yellow-100);
+        color: var(--semantic-yellow-500);
       }
       .priority-baja {
-        background: #f0fdf4;
-        color: #22c55e;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-500);
       }
 
       .action-buttons {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: all 0.2s;
-        border-radius: 4px;
-      }
-
-      .btn-icon:hover {
-        background: var(--grey-100);
-        color: var(--primary-500);
-      }
-
-      .btn-icon.text-success:hover {
-        background: var(--semantic-green-50);
-        color: var(--semantic-green-600);
-      }
-
-      .btn-icon.text-danger:hover {
-        background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
       }
 
       .fade-in {

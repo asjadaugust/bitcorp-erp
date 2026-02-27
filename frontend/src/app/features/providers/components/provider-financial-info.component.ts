@@ -7,6 +7,8 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface InfoFinanciera {
   id?: number;
@@ -24,19 +26,19 @@ interface InfoFinanciera {
 @Component({
   selector: 'app-provider-financial-info',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownComponent, ButtonComponent],
   template: `
     <div class="financial-info-section">
       <div class="section-header">
         <h3><i class="fa-solid fa-building-columns"></i> Información Financiera</h3>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          (click)="showForm = !showForm"
+        <app-button
           *ngIf="!showForm && !readOnly"
-        >
-          <i class="fa-solid fa-plus"></i> Agregar Cuenta
-        </button>
+          variant="primary"
+          size="sm"
+          icon="fa-plus"
+          label="Agregar Cuenta"
+          (clicked)="showForm = !showForm"
+        ></app-button>
       </div>
 
       <!-- Form -->
@@ -97,14 +99,13 @@ interface InfoFinanciera {
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancelar</button>
-            <button
-              type="submit"
-              class="btn btn-primary"
+            <app-button variant="secondary" label="Cancelar" (clicked)="cancelForm()"></app-button>
+            <app-button
+              variant="primary"
+              [label]="editingId ? 'Actualizar' : 'Guardar'"
               [disabled]="financialForm.invalid || loading"
-            >
-              {{ editingId ? 'Actualizar' : 'Guardar' }}
-            </button>
+              (clicked)="onSubmit()"
+            ></app-button>
           </div>
         </form>
       </div>
@@ -121,16 +122,18 @@ interface InfoFinanciera {
               </div>
             </div>
             <div class="actions" *ngIf="!readOnly">
-              <button type="button" class="btn-icon" (click)="editFinancialInfo(info)">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <button
-                type="button"
-                class="btn-icon btn-danger"
-                (click)="deleteFinancialInfo(info.id!)"
-              >
-                <i class="fa-solid fa-trash"></i>
-              </button>
+              <app-button
+                variant="icon"
+                size="sm"
+                icon="fa-pen"
+                (clicked)="editFinancialInfo(info)"
+              ></app-button>
+              <app-button
+                variant="icon"
+                size="sm"
+                icon="fa-trash"
+                (clicked)="deleteFinancialInfo(info.id!)"
+              ></app-button>
             </div>
           </div>
           <div class="card-body">
@@ -195,25 +198,6 @@ interface InfoFinanciera {
         padding: var(--s-8) var(--s-12);
         border: 1px solid var(--grey-300);
         border-radius: var(--s-4);
-      }
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-secondary {
-        background: var(--grey-300);
-        color: var(--grey-700);
-      }
-      .btn-sm {
-        padding: var(--s-4) var(--s-12);
-        font-size: var(--type-bodySmall-size);
       }
       .form-actions {
         display: flex;
@@ -281,22 +265,6 @@ interface InfoFinanciera {
         color: var(--grey-700);
         border: 1px solid var(--grey-200);
       }
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--s-4);
-        color: var(--grey-400);
-        transition: color 0.2s;
-
-        &:hover {
-          color: var(--primary-600);
-        }
-
-        &.btn-danger:hover {
-          color: var(--semantic-red-600);
-        }
-      }
       .card-body {
         padding: var(--s-20);
         display: flex;
@@ -347,6 +315,7 @@ export class ProviderFinancialInfoComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  private confirmSvc = inject(ConfirmService);
 
   financialInfoList: InfoFinanciera[] = [];
   financialForm!: FormGroup;
@@ -418,11 +387,13 @@ export class ProviderFinancialInfoComponent implements OnInit {
   }
 
   deleteFinancialInfo(id: number): void {
-    if (!confirm('¿Eliminar esta cuenta?')) return;
-
-    this.http
-      .delete(`${environment.apiUrl}/providers/financial-info/${id}`)
-      .subscribe(() => this.loadFinancialInfo());
+    this.confirmSvc.confirmDelete('esta cuenta').subscribe((confirmed) => {
+      if (confirmed) {
+        this.http
+          .delete(`${environment.apiUrl}/providers/financial-info/${id}`)
+          .subscribe(() => this.loadFinancialInfo());
+      }
+    });
   }
 
   cancelForm(): void {

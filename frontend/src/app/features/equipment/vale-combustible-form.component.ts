@@ -224,9 +224,9 @@ import {
       }
 
       .alert-danger {
-        background: var(--error-50, #fef2f2);
-        color: var(--error-700, #b91c1c);
-        border: 1px solid var(--error-200, #fecaca);
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        border: 1px solid var(--semantic-red-200);
         border-radius: 8px;
         padding: 12px 16px;
         font-size: 13px;

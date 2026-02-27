@@ -8,6 +8,7 @@ import {
 } from '../../core/services/precalentamiento-config.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 interface EditState {
   tipoEquipoId: number;
@@ -17,7 +18,14 @@ interface EditState {
 @Component({
   selector: 'app-precalentamiento-config-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PageLayoutComponent, AeroCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    PageLayoutComponent,
+    AeroCardComponent,
+    ButtonComponent,
+  ],
   template: `
     <app-page-layout
       title="Config. de Precalentamiento"
@@ -107,31 +115,32 @@ interface EditState {
                   </td>
                   <td class="col-actions">
                     @if (editState?.tipoEquipoId === cfg.tipo_equipo_id) {
-                      <button
-                        class="btn btn-sm btn-primary"
-                        [attr.data-testid]="'save-btn-' + cfg.tipo_equipo_id"
+                      <app-button
+                        variant="primary"
+                        size="sm"
+                        icon="fa-check"
+                        [label]="saving ? 'Guardando…' : 'Guardar'"
                         [disabled]="saving"
-                        (click)="guardar()"
-                      >
-                        <i class="fa-solid fa-check"></i>
-                        {{ saving ? 'Guardando…' : 'Guardar' }}
-                      </button>
-                      <button
-                        class="btn btn-sm btn-ghost"
+                        (clicked)="guardar()"
+                        [attr.data-testid]="'save-btn-' + cfg.tipo_equipo_id"
+                      ></app-button>
+                      <app-button
+                        variant="ghost"
+                        size="sm"
+                        icon="fa-xmark"
+                        label="Cancelar"
+                        (clicked)="cancelar()"
                         [attr.data-testid]="'cancel-btn-' + cfg.tipo_equipo_id"
-                        (click)="cancelar()"
-                      >
-                        <i class="fa-solid fa-xmark"></i> Cancelar
-                      </button>
+                      ></app-button>
                     } @else {
-                      <button
-                        class="btn-icon"
-                        [attr.data-testid]="'edit-btn-' + cfg.tipo_equipo_id"
-                        (click)="editar(cfg)"
+                      <app-button
+                        variant="icon"
+                        size="sm"
+                        icon="fa-pencil"
                         title="Editar"
-                      >
-                        <i class="fa-solid fa-pencil"></i>
-                      </button>
+                        (clicked)="editar(cfg)"
+                        [attr.data-testid]="'edit-btn-' + cfg.tipo_equipo_id"
+                      ></app-button>
                     }
                   </td>
                 </tr>
@@ -158,18 +167,18 @@ interface EditState {
         display: flex;
         align-items: flex-start;
         gap: var(--s-8);
-        background: var(--info-50, #eff6ff);
-        border: 1px solid var(--info-200, #bfdbfe);
+        background: var(--semantic-blue-50);
+        border: 1px solid var(--semantic-blue-200);
         border-radius: var(--radius-md);
         padding: var(--s-12) var(--s-16);
         margin-bottom: var(--s-16);
         font-size: 0.875rem;
-        color: var(--info-800, #1e40af);
+        color: var(--semantic-blue-700);
         line-height: 1.5;
 
         i {
           margin-top: 2px;
-          color: var(--info-500, #3b82f6);
+          color: var(--semantic-blue-500);
           flex-shrink: 0;
         }
       }
@@ -185,15 +194,15 @@ interface EditState {
       }
 
       .alert-success {
-        background: var(--success-50, #f0fdf4);
-        border: 1px solid var(--success-200, #bbf7d0);
-        color: var(--success-800, #166534);
+        background: var(--semantic-green-50);
+        border: 1px solid var(--semantic-green-200);
+        color: var(--semantic-green-700);
       }
 
       .alert-danger {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #991b1b;
+        background: var(--semantic-red-50);
+        border: 1px solid var(--semantic-red-200);
+        color: var(--semantic-red-700);
       }
 
       .config-table-wrapper {
@@ -233,7 +242,7 @@ interface EditState {
           border-bottom: none;
         }
         tbody tr:hover {
-          background: var(--grey-25, #fcfcfd);
+          background: var(--grey-50);
         }
       }
 
@@ -270,20 +279,20 @@ interface EditState {
       }
 
       .badge-cat-maquinaria {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .badge-cat-pesado {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
       }
       .badge-cat-liviano {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
       }
       .badge-cat-menor {
-        background: #dcfce7;
-        color: #166534;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
 
       .horas-value {
@@ -295,7 +304,7 @@ interface EditState {
       .horas-input {
         width: 80px;
         padding: 4px 8px;
-        border: 1.5px solid var(--primary-400, #60a5fa);
+        border: 1.5px solid var(--primary-400);
         border-radius: var(--radius-sm);
         font-size: 0.875rem;
         outline: none;
@@ -303,7 +312,7 @@ interface EditState {
 
         &:focus {
           border-color: var(--primary-600);
-          box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-500) 20%, transparent);
         }
       }
 
@@ -313,34 +322,6 @@ interface EditState {
         font-size: 0.8rem;
       }
 
-      .btn-ghost {
-        background: none;
-        border: 1px solid var(--grey-300);
-        color: var(--grey-600);
-        font-weight: 500;
-
-        &:hover {
-          background: var(--grey-100);
-          color: var(--grey-800);
-        }
-      }
-
-      .btn-icon {
-        background: none;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        padding: var(--s-4) var(--s-8);
-        color: var(--grey-500);
-        border-radius: var(--radius-sm);
-        transition: all 0.2s;
-
-        &:hover {
-          background: var(--primary-50);
-          color: var(--primary-600);
-        }
-      }
-
       .empty-state {
         text-align: center;
         color: var(--grey-400);
@@ -348,12 +329,9 @@ interface EditState {
       }
 
       .col-actions {
-        .btn {
-          margin-right: 4px;
-        }
-        .btn:last-child {
-          margin-right: 0;
-        }
+        display: flex;
+        gap: 4px;
+        align-items: center;
       }
     `,
   ],

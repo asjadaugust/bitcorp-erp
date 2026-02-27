@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ActaDevolucionService, ActaDevolucion } from '../../core/services/acta-devolucion.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { Breadcrumb } from '../../shared/components/page-layout/page-layout.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 import {
   EntityDetailShellComponent,
   EntityDetailHeader,
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-acta-devolucion-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent],
+  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -151,10 +152,17 @@ import {
                 <input type="number" class="form-control" [(ngModel)]="firmaDto.recibido_por" />
               </div>
               <div class="firma-actions">
-                <button class="btn btn-ghost" (click)="mostrarFirma = false">Cancelar</button>
-                <button class="btn btn-success" (click)="firmar()">
-                  <i class="fa-solid fa-check"></i> Confirmar Firmas
-                </button>
+                <app-button
+                  variant="secondary"
+                  label="Cancelar"
+                  (clicked)="mostrarFirma = false"
+                ></app-button>
+                <app-button
+                  variant="success"
+                  icon="fa-check"
+                  label="Confirmar Firmas"
+                  (clicked)="firmar()"
+                ></app-button>
               </div>
             </div>
           </div>
@@ -213,47 +221,51 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ───────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button
+        <app-button
           *ngIf="acta && ['BORRADOR', 'PENDIENTE'].includes(acta.estado)"
-          class="btn btn-secondary btn-block"
+          variant="secondary"
+          icon="fa-pen-to-square"
+          label="Editar Acta"
+          [fullWidth]="true"
           [routerLink]="['edit']"
-        >
-          <i class="fa-solid fa-pen-to-square"></i> Editar Acta
-        </button>
+        ></app-button>
 
-        <button
+        <app-button
           *ngIf="acta?.estado === 'BORRADOR'"
-          class="btn btn-primary btn-block"
-          (click)="enviarParaFirma()"
-        >
-          <i class="fa-solid fa-paper-plane"></i> Enviar para Firma
-        </button>
+          variant="primary"
+          icon="fa-paper-plane"
+          label="Enviar para Firma"
+          [fullWidth]="true"
+          (clicked)="enviarParaFirma()"
+        ></app-button>
 
-        <button
+        <app-button
           *ngIf="acta?.estado === 'PENDIENTE'"
-          class="btn btn-success btn-block"
-          (click)="mostrarFirma = true; activeTab = 'signatures'"
-        >
-          <i class="fa-solid fa-pen-nib"></i> Registrar Firma
-        </button>
+          variant="success"
+          icon="fa-pen-nib"
+          label="Registrar Firma"
+          [fullWidth]="true"
+          (clicked)="mostrarFirma = true; activeTab = 'signatures'"
+        ></app-button>
 
-        <button
+        <app-button
           *ngIf="acta && !['ANULADO', 'FIRMADO'].includes(acta.estado)"
-          class="btn btn-danger btn-block"
-          (click)="anular()"
-        >
-          <i class="fa-solid fa-ban"></i> Anular Acta
-        </button>
+          variant="danger"
+          icon="fa-ban"
+          label="Anular Acta"
+          [fullWidth]="true"
+          (clicked)="anular()"
+        ></app-button>
 
-        <div class="sidebar-divider"></div>
+        <hr class="sidebar-divider" />
 
-        <button
-          type="button"
-          class="btn btn-ghost btn-block"
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a la Lista"
+          [fullWidth]="true"
           routerLink="/equipment/actas-devolucion"
-        >
-          <i class="fa-solid fa-arrow-left"></i> Volver a la Lista
-        </button>
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -398,20 +410,20 @@ import {
         letter-spacing: 0.03em;
 
         &.badge-bueno {
-          background: #d1fae5;
-          color: #065f46;
+          background: var(--semantic-green-50);
+          color: var(--semantic-green-700);
         }
         &.badge-regular {
-          background: #fef3c7;
-          color: #92400e;
+          background: var(--semantic-yellow-50);
+          color: var(--semantic-yellow-700);
         }
         &.badge-malo {
-          background: #fee2e2;
-          color: #991b1b;
+          background: var(--semantic-red-50);
+          color: var(--semantic-red-700);
         }
         &.badge-obs {
-          background: #dbeafe;
-          color: #1e40af;
+          background: var(--semantic-blue-50);
+          color: var(--semantic-blue-700);
         }
       }
 
@@ -487,7 +499,7 @@ import {
         color: var(--grey-600);
       }
       .text-danger-soft {
-        color: #991b1b;
+        color: var(--semantic-red-700);
         font-style: italic;
       }
       .mt-24 {
@@ -495,27 +507,9 @@ import {
       }
 
       .sidebar-divider {
-        height: 1px;
-        background: var(--grey-100);
+        border: none;
+        border-top: 1px solid var(--grey-100);
         margin: var(--s-16) 0;
-      }
-
-      .btn-block {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 12px;
-        width: 100%;
-        padding: 12px 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        border-radius: 10px;
-
-        i {
-          width: 20px;
-          text-align: center;
-          font-size: 1.1em;
-        }
       }
     `,
   ],
@@ -631,18 +625,17 @@ export class ActaDevolucionDetailComponent implements OnInit {
 
   anular() {
     if (!this.acta) return;
-    const obs = prompt('Motivo de anulación:');
-    if (!obs) return;
     this.confirmSvc
-      .confirm({
+      .prompt({
         title: 'Anular Acta',
-        message: `¿Está seguro de anular el acta ${this.acta.codigo}? Esta acción no se puede deshacer.`,
+        message: `Ingrese el motivo de anulación del acta ${this.acta.codigo}:`,
         icon: 'fa-ban',
         confirmLabel: 'Anular',
         isDanger: true,
+        inputRequired: true,
       })
-      .subscribe((confirmed) => {
-        if (confirmed) {
+      .subscribe((obs) => {
+        if (obs) {
           this.svc.anular(this.acta!.id, obs).subscribe({
             next: (a) => {
               this.acta = a;

@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { PeriodoInoperatividadService } from '../../core/services/periodo-inoperatividad.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-periodo-inoperatividad-form',
@@ -128,14 +129,14 @@ import { FormSectionComponent } from '../../shared/components/form-section/form-
       }
 
       .field-hint.hint-danger {
-        color: var(--error, #dc3545);
+        color: var(--semantic-red-500);
         font-weight: 600;
       }
 
       .alert-exceeded {
-        background: var(--error-50, #fef2f2);
-        color: var(--error-700, #b91c1c);
-        border: 1px solid var(--error-200, #fecaca);
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        border: 1px solid var(--semantic-red-200);
         border-radius: 8px;
         padding: 12px 16px;
         font-size: 13px;
@@ -155,6 +156,7 @@ export class PeriodoInoperatividadFormComponent implements OnInit {
   private service = inject(PeriodoInoperatividadService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
 
   loading = false;
   saving = false;
@@ -218,7 +220,11 @@ export class PeriodoInoperatividadFormComponent implements OnInit {
         error: (err) => {
           this.saving = false;
           // TODO: Replace with proper error handling via AlertComponent
-          alert(err?.error?.error?.message || 'Error al registrar el periodo');
+          this.snackBar.open(
+            err?.error?.error?.message || 'Error al registrar el periodo',
+            'Cerrar',
+            { duration: 5000 }
+          );
         },
       });
   }

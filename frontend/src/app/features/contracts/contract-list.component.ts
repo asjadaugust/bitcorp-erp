@@ -100,48 +100,26 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <button
-            type="button"
-            class="btn-icon"
-            (click)="viewContract(row); $event.stopPropagation()"
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
             title="Ver Detalles"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
-            type="button"
-            class="btn-icon text-danger"
-            (click)="deleteContract(row); $event.stopPropagation()"
+            (clicked)="viewContract(row); $event.stopPropagation()"
+          ></app-button>
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-trash"
             title="Eliminar"
-          >
-            <i class="fa-solid fa-trash"></i>
-          </button>
+            (clicked)="deleteContract(row); $event.stopPropagation()"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
   `,
   styles: [
     `
-      .btn {
-        padding: var(--s-8) var(--s-16);
-        border: none;
-        border-radius: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-8);
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary-500);
-        color: var(--neutral-0);
-      }
-      .btn-primary:hover {
-        background: var(--primary-800);
-      }
-
       .code-badge {
         font-family: monospace;
         background: var(--grey-100);
@@ -176,28 +154,8 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         gap: 8px;
       }
 
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: color 0.2s;
-      }
-
-      .btn-icon:hover {
-        background: var(--primary-100);
-        color: var(--primary-500);
-        border-radius: var(--s-4);
-      }
-
-      .btn-icon.text-danger:hover {
-        background: var(--error-100);
-        color: var(--error-600);
-      }
-
       .text-warning {
-        color: #f59e0b;
+        color: var(--semantic-yellow-500);
       }
     `,
   ],

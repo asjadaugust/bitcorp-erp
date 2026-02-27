@@ -232,7 +232,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: color-mix(in srgb, var(--grey-900) 50%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -240,7 +240,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       }
 
       .modal-content {
-        background: var(--neutral-0, #fff);
+        background: var(--neutral-0);
         border-radius: 12px;
         width: 100%;
         max-width: 440px;

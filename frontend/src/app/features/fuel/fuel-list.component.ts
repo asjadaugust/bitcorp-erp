@@ -20,6 +20,7 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-fuel-list',
@@ -152,6 +153,7 @@ export class FuelListComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private excelService = inject(ExcelExportService);
+  private snackBar = inject(MatSnackBar);
 
   records: FuelRecord[] = [];
   loading = false;
@@ -231,7 +233,9 @@ export class FuelListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.records.length === 0) {
-      alert('No hay registros de combustible para exportar');
+      this.snackBar.open('No hay registros de combustible para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -256,7 +260,9 @@ export class FuelListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.records.length === 0) {
-      alert('No hay registros de combustible para exportar');
+      this.snackBar.open('No hay registros de combustible para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 

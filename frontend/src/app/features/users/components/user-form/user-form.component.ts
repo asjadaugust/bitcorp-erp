@@ -256,7 +256,7 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
       }
 
       .error-msg {
-        color: var(--red-600, #dc2626);
+        color: var(--semantic-red-600);
         font-size: var(--type-label-size);
         margin-top: 4px;
       }

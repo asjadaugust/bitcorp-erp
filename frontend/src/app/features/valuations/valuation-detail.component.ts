@@ -20,6 +20,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-valuation-detail',
@@ -31,6 +32,7 @@ import {
     DropdownComponent,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -291,13 +293,13 @@ import {
           <div class="section-header">
             <h2>Pagos Registrados</h2>
             @if (valuation?.estado === 'APROBADO' || valuation?.estado === 'PAGADO') {
-              <button
-                type="button"
-                class="btn btn-primary btn-sm"
-                (click)="navigateToCreatePayment()"
-              >
-                <i class="fa-solid fa-plus"></i> Registrar Pago
-              </button>
+              <app-button
+                variant="primary"
+                size="sm"
+                icon="fa-plus"
+                label="Registrar Pago"
+                (clicked)="navigateToCreatePayment()"
+              ></app-button>
             }
           </div>
 
@@ -401,13 +403,13 @@ import {
               <i class="fa-solid fa-money-bill-wave empty-icon"></i>
               <p class="empty-text">No hay pagos registrados para esta valorización.</p>
               @if (valuation?.estado === 'APROBADO') {
-                <button
-                  type="button"
-                  class="btn btn-primary btn-sm"
-                  (click)="navigateToCreatePayment()"
-                >
-                  <i class="fa-solid fa-plus"></i> Registrar Primer Pago
-                </button>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="fa-plus"
+                  label="Registrar Primer Pago"
+                  (clicked)="navigateToCreatePayment()"
+                ></app-button>
               }
             </div>
           }
@@ -419,103 +421,101 @@ import {
         @if (valuation) {
           <!-- BORRADOR -->
           @if (valuation.estado === 'BORRADOR') {
-            <button
-              type="button"
-              class="btn btn-primary btn-block"
-              (click)="submitDraft()"
+            <app-button
+              variant="primary"
+              [fullWidth]="true"
+              icon="fa-paper-plane"
+              [label]="processingWorkflow ? 'Procesando...' : 'Marcar como Pendiente'"
               [disabled]="processingWorkflow"
-            >
-              <i class="fa-solid fa-paper-plane"></i>
-              {{ processingWorkflow ? 'Procesando...' : 'Marcar como Pendiente' }}
-            </button>
-            <button type="button" class="btn btn-secondary btn-block" (click)="editValuation()">
-              <i class="fa-solid fa-pen"></i> Editar Valorización
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline btn-block"
-              (click)="recalculate()"
+              (clicked)="submitDraft()"
+            ></app-button>
+            <app-button
+              variant="secondary"
+              [fullWidth]="true"
+              icon="fa-pen"
+              label="Editar Valorización"
+              (clicked)="editValuation()"
+            ></app-button>
+            <app-button
+              variant="outline-primary"
+              [fullWidth]="true"
+              icon="fa-calculator"
+              [label]="recalculating ? 'Recalculando...' : 'Recalcular'"
               [disabled]="recalculating"
-            >
-              <i class="fa-solid fa-calculator"></i>
-              {{ recalculating ? 'Recalculando...' : 'Recalcular' }}
-            </button>
+              (clicked)="recalculate()"
+            ></app-button>
           }
 
           <!-- PENDIENTE -->
           @if (valuation.estado === 'PENDIENTE') {
-            <button
-              type="button"
-              class="btn btn-primary btn-block"
-              (click)="submitForReview()"
+            <app-button
+              variant="primary"
+              [fullWidth]="true"
+              icon="fa-paper-plane"
+              [label]="processingWorkflow ? 'Procesando...' : 'Enviar a Revisión'"
               [disabled]="processingWorkflow || !valuation.conformidadProveedor"
-            >
-              <i class="fa-solid fa-paper-plane"></i>
-              {{ processingWorkflow ? 'Procesando...' : 'Enviar a Revisión' }}
-            </button>
+              (clicked)="submitForReview()"
+            ></app-button>
           }
 
           <!-- EN_REVISION -->
           @if (valuation.estado === 'EN_REVISION' && canValidate()) {
-            <button
-              type="button"
-              class="btn btn-success btn-block"
-              (click)="confirmValidate()"
+            <app-button
+              variant="success"
+              [fullWidth]="true"
+              icon="fa-check-double"
+              [label]="processingWorkflow ? 'Procesando...' : 'Validar'"
               [disabled]="processingWorkflow"
-            >
-              <i class="fa-solid fa-check-double"></i>
-              {{ processingWorkflow ? 'Procesando...' : 'Validar' }}
-            </button>
+              (clicked)="confirmValidate()"
+            ></app-button>
           }
 
           <!-- VALIDADO -->
           @if (valuation.estado === 'VALIDADO' && canApprove()) {
-            <button
-              type="button"
-              class="btn btn-success btn-block"
-              (click)="showApproveModal = true"
+            <app-button
+              variant="success"
+              [fullWidth]="true"
+              icon="fa-circle-check"
+              label="Aprobar Valorización"
               [disabled]="processingWorkflow"
-            >
-              <i class="fa-solid fa-circle-check"></i> Aprobar Valorización
-            </button>
+              (clicked)="showApproveModal = true"
+            ></app-button>
           }
 
           <!-- APROBADO + canMarkAsPaid -->
           @if (valuation.estado === 'APROBADO' && canMarkAsPaid()) {
-            <button
-              type="button"
-              class="btn btn-success btn-block"
-              (click)="showMarkPaidModal = true"
+            <app-button
+              variant="success"
+              [fullWidth]="true"
+              icon="fa-money-check-dollar"
+              label="Marcar como Pagada"
               [disabled]="processingWorkflow"
-            >
-              <i class="fa-solid fa-money-check-dollar"></i> Marcar como Pagada
-            </button>
+              (clicked)="showMarkPaidModal = true"
+            ></app-button>
           }
 
           <!-- RECHAZADO -->
           @if (valuation.estado === 'RECHAZADO') {
-            <button
-              type="button"
-              class="btn btn-secondary btn-block"
-              (click)="confirmReopen()"
+            <app-button
+              variant="secondary"
+              [fullWidth]="true"
+              icon="fa-rotate-left"
+              [label]="processingWorkflow ? 'Procesando...' : 'Reabrir Valorización'"
               [disabled]="processingWorkflow"
-            >
-              <i class="fa-solid fa-rotate-left"></i>
-              {{ processingWorkflow ? 'Procesando...' : 'Reabrir Valorización' }}
-            </button>
+              (clicked)="confirmReopen()"
+            ></app-button>
           }
 
           <!-- Reject (multi-state) -->
           @if (canRejectCurrentState() && canReject()) {
-            <button
-              type="button"
-              class="btn btn-danger btn-block"
-              (click)="showRejectModal = true"
+            <app-button
+              variant="danger"
+              [fullWidth]="true"
+              icon="fa-ban"
+              label="Rechazar"
               [disabled]="processingWorkflow"
-            >
-              <i class="fa-solid fa-ban"></i>
-              Rechazar
-            </button>
+              (clicked)="showRejectModal = true"
+            ></app-button>
           }
 
           <!-- Workflow hint -->
@@ -526,22 +526,34 @@ import {
           <hr style="border:none;border-top:1px solid var(--grey-100);margin:var(--s-8) 0" />
 
           <!-- Common actions -->
-          <button type="button" class="btn btn-secondary btn-block" (click)="downloadPDF()">
-            <i class="fa-solid fa-file-pdf"></i>
-            Descargar PDF
-          </button>
-          <button type="button" class="btn btn-ghost btn-block" (click)="editValuation()">
-            <i class="fa-solid fa-pen-to-square"></i>
-            Editar Detalles
-          </button>
-          <button type="button" class="btn btn-ghost btn-block" routerLink="/equipment/valuations">
-            <i class="fa-solid fa-arrow-left-long"></i>
-            Volver a Lista
-          </button>
-          <button type="button" class="btn btn-danger btn-block" (click)="deleteValuation()">
-            <i class="fa-solid fa-trash-can"></i>
-            Eliminar
-          </button>
+          <app-button
+            variant="secondary"
+            [fullWidth]="true"
+            icon="fa-file-pdf"
+            label="Descargar PDF"
+            (clicked)="downloadPDF()"
+          ></app-button>
+          <app-button
+            variant="ghost"
+            [fullWidth]="true"
+            icon="fa-pen-to-square"
+            label="Editar Detalles"
+            (clicked)="editValuation()"
+          ></app-button>
+          <app-button
+            variant="ghost"
+            [fullWidth]="true"
+            icon="fa-arrow-left-long"
+            label="Volver a Lista"
+            routerLink="/equipment/valuations"
+          ></app-button>
+          <app-button
+            variant="danger"
+            [fullWidth]="true"
+            icon="fa-trash-can"
+            label="Eliminar"
+            (clicked)="deleteValuation()"
+          ></app-button>
         }
       </ng-container>
 
@@ -570,13 +582,14 @@ import {
               </div>
             </div>
             @if (valuation.estado === 'PENDIENTE') {
-              <button
-                type="button"
-                class="btn btn-secondary btn-block mt-8"
-                (click)="showConformidadModal = true"
-              >
-                <i class="fa-solid fa-signature"></i> Registrar Conformidad
-              </button>
+              <app-button
+                variant="secondary"
+                [fullWidth]="true"
+                icon="fa-signature"
+                label="Registrar Conformidad"
+                class="mt-8"
+                (clicked)="showConformidadModal = true"
+              ></app-button>
             }
           }
         </app-entity-detail-sidebar-card>
@@ -626,14 +639,13 @@ import {
                     <p class="discount-event-desc">{{ event.descripcion }}</p>
                   }
                   @if (valuation.estado === 'BORRADOR') {
-                    <button
-                      type="button"
-                      class="btn-action btn-action-danger"
-                      (click)="removeDiscountEvent(event.id)"
+                    <app-button
+                      variant="icon"
+                      size="sm"
+                      icon="fa-trash-can"
                       title="Eliminar evento"
-                    >
-                      <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                      (clicked)="removeDiscountEvent(event.id)"
+                    ></app-button>
                   }
                 </div>
               }
@@ -642,13 +654,14 @@ import {
             <p class="empty-docs">Sin descuentos registrados.</p>
           }
           @if (valuation.estado === 'BORRADOR') {
-            <button
-              type="button"
-              class="btn btn-secondary btn-block mt-8"
-              (click)="showAddDiscountModal = true"
-            >
-              <i class="fa-solid fa-plus"></i> Agregar Descuento
-            </button>
+            <app-button
+              variant="secondary"
+              [fullWidth]="true"
+              icon="fa-plus"
+              label="Agregar Descuento"
+              class="mt-8"
+              (clicked)="showAddDiscountModal = true"
+            ></app-button>
           }
         </app-entity-detail-sidebar-card>
       }
@@ -707,9 +720,11 @@ import {
         >
           <div class="modal-header">
             <h2>Confirmar Aprobación</h2>
-            <button type="button" class="close" (click)="showApproveModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
+            <app-button
+              variant="icon"
+              icon="fa-xmark"
+              (clicked)="showApproveModal = false"
+            ></app-button>
           </div>
           <div class="modal-body">
             <p>¿Confirmas la aprobación final de esta valorización?</p>
@@ -726,17 +741,17 @@ import {
             </p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showApproveModal = false">
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
-              (click)="confirmApprove()"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="showApproveModal = false"
+            ></app-button>
+            <app-button
+              variant="success"
+              [label]="processingWorkflow ? 'Aprobando...' : 'Confirmar Aprobación'"
               [disabled]="processingWorkflow"
-            >
-              {{ processingWorkflow ? 'Aprobando...' : 'Confirmar Aprobación' }}
-            </button>
+              (clicked)="confirmApprove()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -760,9 +775,11 @@ import {
         >
           <div class="modal-header">
             <h2>Rechazar Valorización</h2>
-            <button type="button" class="close" (click)="showRejectModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
+            <app-button
+              variant="icon"
+              icon="fa-xmark"
+              (clicked)="showRejectModal = false"
+            ></app-button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -777,17 +794,17 @@ import {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showRejectModal = false">
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-danger"
-              (click)="confirmReject()"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="showRejectModal = false"
+            ></app-button>
+            <app-button
+              variant="danger"
+              [label]="processingWorkflow ? 'Rechazando...' : 'Confirmar Rechazo'"
               [disabled]="processingWorkflow || !rejectReason"
-            >
-              {{ processingWorkflow ? 'Rechazando...' : 'Confirmar Rechazo' }}
-            </button>
+              (clicked)="confirmReject()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -811,9 +828,11 @@ import {
         >
           <div class="modal-header">
             <h2>Registrar Pago</h2>
-            <button type="button" class="close" (click)="showMarkPaidModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
+            <app-button
+              variant="icon"
+              icon="fa-xmark"
+              (clicked)="showMarkPaidModal = false"
+            ></app-button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -841,17 +860,17 @@ import {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showMarkPaidModal = false">
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
-              (click)="confirmMarkAsPaid()"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="showMarkPaidModal = false"
+            ></app-button>
+            <app-button
+              variant="success"
+              [label]="processingWorkflow ? 'Guardando...' : 'Confirmar Pago'"
               [disabled]="processingWorkflow || !isPaymentDataValid()"
-            >
-              {{ processingWorkflow ? 'Guardando...' : 'Confirmar Pago' }}
-            </button>
+              (clicked)="confirmMarkAsPaid()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -875,9 +894,11 @@ import {
         >
           <div class="modal-header">
             <h2>Agregar Evento de Descuento</h2>
-            <button type="button" class="close" (click)="showAddDiscountModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
+            <app-button
+              variant="icon"
+              icon="fa-xmark"
+              (clicked)="showAddDiscountModal = false"
+            ></app-button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -978,17 +999,17 @@ import {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showAddDiscountModal = false">
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="confirmAddDiscountEvent()"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="showAddDiscountModal = false"
+            ></app-button>
+            <app-button
+              variant="primary"
+              label="Agregar Descuento"
               [disabled]="!newDiscountEvent.fecha || !newDiscountEvent.tipo"
-            >
-              Agregar Descuento
-            </button>
+              (clicked)="confirmAddDiscountEvent()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -1012,9 +1033,11 @@ import {
         >
           <div class="modal-header">
             <h2>Registrar Conformidad del Proveedor</h2>
-            <button type="button" class="close" (click)="showConformidadModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
+            <app-button
+              variant="icon"
+              icon="fa-xmark"
+              (clicked)="showConformidadModal = false"
+            ></app-button>
           </div>
           <div class="modal-body">
             <p class="alert alert-info">
@@ -1036,17 +1059,17 @@ import {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showConformidadModal = false">
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="confirmConformidad()"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="showConformidadModal = false"
+            ></app-button>
+            <app-button
+              variant="primary"
+              [label]="processingWorkflow ? 'Guardando...' : 'Registrar Conformidad'"
               [disabled]="processingWorkflow || !conformidadData.fecha"
-            >
-              {{ processingWorkflow ? 'Guardando...' : 'Registrar Conformidad' }}
-            </button>
+              (clicked)="confirmConformidad()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -1178,7 +1201,7 @@ import {
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: white;
+          background: var(--neutral-0);
           border: 2px solid var(--grey-300);
           z-index: 1;
           transition: all 0.3s ease;
@@ -1287,7 +1310,7 @@ import {
       }
 
       .payment-summary-widget {
-        background: var(--neutral-0, white);
+        background: var(--neutral-0);
         border: 1px solid var(--grey-200);
         padding: var(--s-24);
         border-radius: var(--radius-md);
@@ -1377,7 +1400,7 @@ import {
       .payments-table {
         width: 100%;
         border-collapse: collapse;
-        background: white;
+        background: var(--neutral-0);
 
         th {
           background: var(--grey-50);
@@ -1395,7 +1418,7 @@ import {
           padding: var(--s-12) var(--s-16);
           border-bottom: 1px solid var(--grey-100);
           font-size: 14px;
-          color: #333;
+          color: var(--grey-900);
         }
 
         tbody tr:hover {
@@ -1592,37 +1615,15 @@ import {
         font-size: 11px;
         padding: 2px 8px;
         border-radius: 4px;
-        background: #dbeafe;
-        color: #1d4ed8;
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
         font-weight: 600;
       }
 
-      .discount-event-item .btn-action {
+      .discount-event-item app-button {
         position: absolute;
         top: 4px;
         right: 4px;
-      }
-
-      .btn-action {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--radius-sm);
-        transition: background 0.2s ease;
-        font-size: 14px;
-
-        &:hover {
-          background: var(--grey-100);
-        }
-      }
-
-      .btn-action-danger {
-        color: var(--semantic-red-500);
-
-        &:hover {
-          background: var(--semantic-red-50);
-        }
       }
 
       .empty-docs {
@@ -1693,7 +1694,7 @@ import {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background: color-mix(in srgb, var(--grey-900) 50%, transparent);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -1701,7 +1702,7 @@ import {
       }
 
       .modal-content {
-        background: white;
+        background: var(--neutral-0);
         padding: 0;
         border-radius: var(--radius-md);
         width: 90%;
@@ -1719,14 +1720,6 @@ import {
         h2 {
           margin: 0;
           font-size: 18px;
-        }
-
-        .close {
-          background: none;
-          border: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: var(--grey-500);
         }
       }
 

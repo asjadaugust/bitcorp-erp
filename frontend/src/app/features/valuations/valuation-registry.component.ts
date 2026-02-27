@@ -254,7 +254,7 @@ import {
         background: var(--semantic-blue-500);
       }
       .status-validado {
-        background: #2e7d32;
+        background: var(--semantic-green-700);
       }
       .status-aprobado {
         background: var(--semantic-green-500);
@@ -291,8 +291,8 @@ import {
         color: var(--semantic-blue-700);
       }
       .status-VALIDADO {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .status-APROBADO {
         background: var(--semantic-green-50);

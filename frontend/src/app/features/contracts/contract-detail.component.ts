@@ -17,6 +17,7 @@ import { Valuation } from '../../core/models/valuation.model';
 import { ConfirmService } from '../../core/services/confirm.service';
 
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ContractAddendumDialogComponent } from './components/contract-addendum-dialog/contract-addendum-dialog.component';
 
 import {
@@ -503,9 +504,12 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         >
           <div class="modal-header">
             <h2><i class="fa-solid fa-scale-balanced"></i> Resolver Contrato</h2>
-            <button type="button" class="close" (click)="showResolverModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
+            <app-button
+              variant="icon"
+              size="sm"
+              icon="fa-times"
+              (clicked)="showResolverModal = false"
+            ></app-button>
           </div>
           <div class="modal-body">
             <p class="modal-desc">
@@ -586,9 +590,12 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         >
           <div class="modal-header">
             <h2><i class="fa-solid fa-circle-check"></i> Liquidar Contrato</h2>
-            <button type="button" class="close" (click)="showLiquidarModal = false">
-              <i class="fa-solid fa-times"></i>
-            </button>
+            <app-button
+              variant="icon"
+              size="sm"
+              icon="fa-times"
+              (clicked)="showLiquidarModal = false"
+            ></app-button>
           </div>
           <div class="modal-body">
             <!-- Prerequisites check -->
@@ -798,7 +805,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       .modal {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: color-mix(in srgb, var(--grey-900) 50%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -812,7 +819,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         max-width: 95vw;
         max-height: 90vh;
         overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 20px 60px color-mix(in srgb, var(--grey-900) 20%, transparent);
       }
 
       .modal-header {
@@ -830,18 +837,6 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           align-items: center;
           gap: 8px;
           margin: 0;
-        }
-
-        .close {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--grey-400);
-          padding: 4px;
-          border-radius: 4px;
-          &:hover {
-            color: var(--grey-700);
-          }
         }
       }
 
@@ -917,12 +912,12 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         }
 
         &.prereq-ok {
-          background: #dcfce7;
-          border: 1px solid #86efac;
+          background: var(--semantic-green-50);
+          border: 1px solid var(--semantic-green-300);
         }
         &.prereq-fail {
-          background: #fef2f2;
-          border: 1px solid #fca5a5;
+          background: var(--semantic-red-50);
+          border: 1px solid var(--semantic-red-200);
         }
       }
 
@@ -942,21 +937,21 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           color: var(--grey-600);
 
           &.ok {
-            color: #15803d;
+            color: var(--semantic-green-700);
           }
 
           i.fa-check {
-            color: #22c55e;
+            color: var(--semantic-green-500);
           }
           i.fa-xmark {
-            color: #ef4444;
+            color: var(--semantic-red-500);
           }
         }
       }
 
       .prereq-warning {
         font-size: 12px;
-        color: #b91c1c;
+        color: var(--semantic-red-700);
         margin: 8px 0 0;
         font-style: italic;
       }
@@ -1000,12 +995,12 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         transition: background 0.15s;
 
         &.obligacion-cumplida {
-          background: var(--semantic-green-50, #f0fdf4);
-          border-color: var(--semantic-green-200, #bbf7d0);
+          background: var(--semantic-green-50);
+          border-color: var(--semantic-green-200);
         }
         &.obligacion-incumplida {
-          background: #fff5f5;
-          border-color: #fecaca;
+          background: var(--semantic-red-50);
+          border-color: var(--semantic-red-200);
         }
       }
 
@@ -1051,9 +1046,9 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         flex-wrap: wrap;
 
         .badge-danger {
-          background: #fee2e2;
-          color: #b91c1c;
-          border-color: #fecaca;
+          background: var(--semantic-red-50);
+          color: var(--semantic-red-700);
+          border-color: var(--semantic-red-200);
         }
       }
 
@@ -1072,6 +1067,7 @@ export class ContractDetailComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
   router = inject(Router);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   contract: Contract | null = null;
   valuations: Valuation[] = [];
@@ -1429,7 +1425,7 @@ export class ContractDetailComponent implements OnInit {
         this.contractService.createAddendum(this.contract.id.toString(), result).subscribe({
           next: () => {
             this.loadContract(this.contract!.id.toString());
-            alert('Adenda creada exitosamente');
+            this.snackBar.open('Adenda creada exitosamente', 'Cerrar', { duration: 3000 });
           },
           error: (err) => console.error('Error creating addendum', err),
         });
@@ -1451,7 +1447,7 @@ export class ContractDetailComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error downloading PDF', err);
-        alert('Error al descargar el PDF. Asegúrese de que el backend soporte esta funcionalidad.');
+        this.snackBar.open('Error al descargar el PDF', 'Cerrar', { duration: 5000 });
       },
     });
   }
@@ -1484,7 +1480,11 @@ export class ContractDetailComponent implements OnInit {
         this.showLiquidarModal = true;
       },
       error: (err: HttpErrorResponse) =>
-        alert('Error verificando requisitos: ' + (err.error?.error?.message || err.message)),
+        this.snackBar.open(
+          'Error verificando requisitos: ' + (err.error?.error?.message || err.message),
+          'Cerrar',
+          { duration: 5000 }
+        ),
     });
   }
 
@@ -1506,7 +1506,9 @@ export class ContractDetailComponent implements OnInit {
         },
         error: (err: HttpErrorResponse) => {
           this.savingLifecycle = false;
-          alert('Error: ' + (err.error?.error?.message || err.message));
+          this.snackBar.open(err.error?.error?.message || err.message, 'Cerrar', {
+            duration: 5000,
+          });
         },
       });
   }
@@ -1528,7 +1530,9 @@ export class ContractDetailComponent implements OnInit {
         },
         error: (err: HttpErrorResponse) => {
           this.savingLifecycle = false;
-          alert('Error: ' + (err.error?.error?.message || err.message));
+          this.snackBar.open(err.error?.error?.message || err.message, 'Cerrar', {
+            duration: 5000,
+          });
         },
       });
   }

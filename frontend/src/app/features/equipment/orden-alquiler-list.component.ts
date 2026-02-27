@@ -107,38 +107,38 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="toolbar"
         >
-          <button
+          <app-button
             *ngIf="['BORRADOR', 'ENVIADO'].includes(row.estado)"
-            class="btn-icon"
+            variant="icon"
+            size="sm"
+            icon="fa-pen"
             title="Editar"
             [routerLink]="[row.id, 'edit']"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'BORRADOR'"
-            class="btn-icon text-info"
+            variant="icon"
+            size="sm"
+            icon="fa-paper-plane"
             title="Enviar al proveedor"
-            (click)="abrirModalEnviar(row)"
-          >
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-          <button
+            (clicked)="abrirModalEnviar(row)"
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'ENVIADO'"
-            class="btn-icon text-success"
+            variant="icon"
+            size="sm"
+            icon="fa-check"
             title="Confirmar orden"
-            (click)="abrirModalConfirmar(row)"
-          >
-            <i class="fa-solid fa-check"></i>
-          </button>
-          <button
+            (clicked)="abrirModalConfirmar(row)"
+          ></app-button>
+          <app-button
             *ngIf="['BORRADOR', 'ENVIADO'].includes(row.estado)"
-            class="btn-icon text-danger"
+            variant="icon"
+            size="sm"
+            icon="fa-ban"
             title="Cancelar"
-            (click)="abrirModalCancelar(row)"
-          >
-            <i class="fa-solid fa-ban"></i>
-          </button>
+            (clicked)="abrirModalCancelar(row)"
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -159,9 +159,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="dialog"
         >
-          <button class="btn-close" (click)="cerrarModales()">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <app-button
+            variant="icon"
+            icon="fa-xmark"
+            class="modal-close-btn"
+            (clicked)="cerrarModales()"
+          ></app-button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong> →
@@ -180,10 +183,18 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="cerrarModales()">Cancelar</button>
-            <button class="btn btn-info" [disabled]="saving" (click)="confirmarEnviar()">
-              <i class="fa-solid fa-paper-plane"></i> {{ saving ? 'Enviando...' : 'Enviar' }}
-            </button>
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="cerrarModales()"
+            ></app-button>
+            <app-button
+              variant="primary"
+              icon="fa-paper-plane"
+              [label]="saving ? 'Enviando...' : 'Enviar'"
+              [disabled]="saving"
+              (clicked)="confirmarEnviar()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -205,9 +216,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="dialog"
         >
-          <button class="btn-close" (click)="cerrarModales()">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <app-button
+            variant="icon"
+            icon="fa-xmark"
+            class="modal-close-btn"
+            (clicked)="cerrarModales()"
+          ></app-button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
@@ -226,10 +240,18 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="cerrarModales()">Cancelar</button>
-            <button class="btn btn-success" [disabled]="saving" (click)="confirmarConfirmar()">
-              <i class="fa-solid fa-check"></i> {{ saving ? 'Procesando...' : 'Confirmar Orden' }}
-            </button>
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="cerrarModales()"
+            ></app-button>
+            <app-button
+              variant="success"
+              icon="fa-check"
+              [label]="saving ? 'Procesando...' : 'Confirmar Orden'"
+              [disabled]="saving"
+              (clicked)="confirmarConfirmar()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -251,9 +273,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="dialog"
         >
-          <button class="btn-close" (click)="cerrarModales()">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <app-button
+            variant="icon"
+            icon="fa-xmark"
+            class="modal-close-btn"
+            (clicked)="cerrarModales()"
+          ></app-button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
@@ -269,15 +294,18 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="cerrarModales()">Cancelar</button>
-            <button
-              class="btn btn-danger"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="cerrarModales()"
+            ></app-button>
+            <app-button
+              variant="danger"
+              icon="fa-ban"
+              [label]="saving ? 'Cancelando...' : 'Confirmar Cancelación'"
               [disabled]="saving || !modalMotivo.trim()"
-              (click)="confirmarCancelar()"
-            >
-              <i class="fa-solid fa-ban"></i>
-              {{ saving ? 'Cancelando...' : 'Confirmar Cancelación' }}
-            </button>
+              (clicked)="confirmarCancelar()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -311,16 +339,16 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         color: var(--grey-600);
       }
       .status-enviado {
-        background: #dbeafe;
-        color: #1d4ed8;
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
       }
       .status-confirmado {
-        background: #dcfce7;
-        color: #15803d;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .status-cancelado {
-        background: #fee2e2;
-        color: #b91c1c;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
       }
 
       .proveedor-cell {
@@ -341,84 +369,30 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         gap: 8px;
       }
 
-      .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: var(--grey-500);
-        transition: all 0.2s;
-        border-radius: 4px;
-      }
-
-      .btn-icon:hover {
-        background: var(--grey-100);
-        color: var(--primary-500);
-      }
-
-      .btn-icon.text-info {
-        color: #3b82f6;
-      }
-      .btn-icon.text-info:hover {
-        background: #eff6ff;
-        color: #1d4ed8;
-      }
-
-      .btn-icon.text-success {
-        color: #22c55e;
-      }
-      .btn-icon.text-success:hover {
-        background: #f0fdf4;
-        color: #15803d;
-      }
-
-      .btn-icon.text-danger {
-        color: #ef4444;
-      }
-      .btn-icon.text-danger:hover {
-        background: #fef2f2;
-        color: #b91c1c;
-      }
-
       .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.45);
+        background: color-mix(in srgb, var(--grey-900) 45%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
       }
       .modal-panel {
-        background: #fff;
-        border-radius: 8px;
+        background: var(--neutral-0);
+        border-radius: var(--radius-md);
         width: 100%;
         max-width: 480px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        box-shadow: var(
+          --shadow-lg,
+          0 20px 60px color-mix(in srgb, var(--grey-900) 20%, transparent)
+        );
+        position: relative;
       }
-      .modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 20px;
-        border-bottom: 1px solid #e2e8f0;
-        h3 {
-          margin: 0;
-          font-size: 16px;
-          font-weight: 700;
-          color: #1e293b;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-      }
-      .btn-close {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #94a3b8;
-        font-size: 18px;
-        padding: 4px;
+      .modal-close-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
       }
       .modal-body {
         padding: 20px;
@@ -428,12 +402,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
       .modal-desc {
         font-size: 14px;
-        color: #475569;
+        color: var(--grey-600);
         margin: 0;
       }
       .modal-footer {
         padding: 16px 20px;
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid var(--grey-200);
         display: flex;
         justify-content: flex-end;
         gap: 10px;
@@ -443,17 +417,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         flex-direction: column;
         gap: 6px;
       }
-      .form-group label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #374151;
-      }
       .optional {
         font-weight: 400;
-        color: #9ca3af;
+        color: var(--grey-400);
       }
       .form-control {
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--grey-300);
         border-radius: 6px;
         padding: 8px 12px;
         font-size: 14px;
@@ -462,39 +431,8 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
       .form-control:focus {
         outline: none;
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-      }
-      .btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .btn-secondary {
-        background: #f1f5f9;
-        color: #475569;
-      }
-      .btn-info {
-        background: #3b82f6;
-        color: #fff;
-      }
-      .btn-success {
-        background: #16a34a;
-        color: #fff;
-      }
-      .btn-danger {
-        background: #dc2626;
-        color: #fff;
-      }
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-500) 20%, transparent);
       }
     `,
   ],

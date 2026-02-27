@@ -18,6 +18,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-provider-form',
@@ -34,6 +35,7 @@ import {
     ProviderDocumentsComponent,
     FormContainerComponent,
     DropdownComponent,
+    ButtonComponent,
   ],
   template: `
     <app-form-container
@@ -87,15 +89,13 @@ import {
                   placeholder="ej. 20123456789"
                   maxlength="11"
                 />
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-icon"
-                  (click)="lookupRuc()"
-                  [disabled]="loading || providerForm.get('ruc')?.invalid"
+                <app-button
+                  variant="secondary"
+                  icon="fa-magnifying-glass"
                   title="Buscar RUC en SUNAT"
-                >
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
+                  [disabled]="loading || providerForm.get('ruc')?.invalid"
+                  (clicked)="lookupRuc()"
+                ></app-button>
               </div>
               <div class="error-msg" *ngIf="hasError('ruc')">
                 <span *ngIf="providerForm.get('ruc')?.hasError('required')">RUC es requerido</span>
@@ -317,11 +317,11 @@ import {
       .tab-link.active {
         color: var(--primary-600);
         border-bottom-color: var(--primary-600);
-        background: white;
+        background: var(--neutral-0);
       }
       .tab-pane {
         padding: 1.5rem;
-        background: white;
+        background: var(--neutral-0);
       }
 
       @media (max-width: 768px) {

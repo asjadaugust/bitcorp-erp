@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { DailyReportService } from '../../../core/services/daily-report.service';
 import { PhotoUploadService } from '../../../core/services/photo-upload.service';
 import {
@@ -739,7 +740,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         width: 24px;
         height: 24px;
         background: var(--semantic-red-500);
-        color: white;
+        color: var(--neutral-0);
         border: none;
         border-radius: 50%;
         cursor: pointer;
@@ -820,7 +821,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
 
       .progress-text {
         font-size: 12px;
-        color: white;
+        color: var(--neutral-0);
         text-align: center;
         display: block;
       }
@@ -830,7 +831,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         top: 8px;
         left: 8px;
         background: color-mix(in srgb, black 70%, transparent);
-        color: white;
+        color: var(--neutral-0);
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 11px;
@@ -842,7 +843,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         left: 0;
         right: 0;
         background: var(--semantic-red-500);
-        color: white;
+        color: var(--neutral-0);
         padding: 8px;
         text-align: center;
         font-size: 11px;
@@ -890,6 +891,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private dailyReportService = inject(DailyReportService);
+  private snackBar = inject(MatSnackBar);
 
   reportForm: FormGroup;
   availableEquipment: Equipment[] = [];
@@ -1169,7 +1171,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading report', err);
-        alert('Error al cargar el reporte');
+        this.snackBar.open('Error al cargar el reporte', 'Cerrar', { duration: 5000 });
         this.router.navigate(['/operator/history']);
       },
     });
@@ -1209,7 +1211,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   captureGPS() {
     if (!this.geoService.isAvailable()) {
       this.locationError = 'Tu dispositivo no soporta GPS';
-      alert(this.locationError);
+      this.snackBar.open(this.locationError, 'Cerrar', { duration: 5000 });
       return;
     }
 
@@ -1261,7 +1263,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
         error: (error: LocationError) => {
           this.locationError = error.userMessage;
           this.capturingGPS = false;
-          alert(error.userMessage);
+          this.snackBar.open(error.userMessage, 'Cerrar', { duration: 5000 });
           console.error('GPS error:', error);
         },
       });
@@ -1280,7 +1282,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
     }
 
     if (this.uploadingPhotos || this.photos.length >= 5) {
-      alert('Máximo 5 fotografías permitidas');
+      this.snackBar.open('Máximo 5 fotografías permitidas', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -1288,13 +1290,17 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
 
     // Validate file type
     if (!this.photoUploadService.isValidImage(file)) {
-      alert('Por favor selecciona un archivo de imagen válido');
+      this.snackBar.open('Por favor selecciona un archivo de imagen válido', 'Cerrar', {
+        duration: 5000,
+      });
       return;
     }
 
     // Validate file size (max 50MB before compression)
     if (!this.photoUploadService.isValidSize(file, 50)) {
-      alert('La imagen es demasiado grande. Máximo 50MB');
+      this.snackBar.open('La imagen es demasiado grande. Máximo 50MB', 'Cerrar', {
+        duration: 5000,
+      });
       return;
     }
 
@@ -1339,7 +1345,9 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Photo processing error:', error);
       this.uploadingPhotos = false;
-      alert('Error al procesar foto: ' + (error as Error).message);
+      this.snackBar.open(`Error al procesar foto: ${(error as Error).message}`, 'Cerrar', {
+        duration: 5000,
+      });
 
       // Remove failed photo
       if (this.photos[this.photos.length - 1]?.status === 'uploading') {
@@ -1370,7 +1378,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
     this.persistDraft();
     setTimeout(() => {
       this.saving = false;
-      alert('Borrador guardado localmente');
+      this.snackBar.open('Borrador guardado localmente', 'Cerrar', { duration: 3000 });
     }, 300);
   }
 
@@ -1472,26 +1480,36 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
             this.dailyReportService.uploadPhotos(response.id, formData).subscribe({
               next: () => {
                 this.saving = false;
-                alert('Parte diario enviado correctamente con fotos');
+                this.snackBar.open('Parte diario enviado correctamente con fotos', 'Cerrar', {
+                  duration: 3000,
+                });
                 this.router.navigate(['/operator/history']);
               },
               error: (err) => {
                 console.error('Photo upload failed (report was saved):', err);
                 this.saving = false;
-                alert('Parte diario enviado, pero las fotos no se pudieron subir');
+                this.snackBar.open(
+                  'Parte diario enviado, pero las fotos no se pudieron subir',
+                  'Cerrar',
+                  { duration: 5000 }
+                );
                 this.router.navigate(['/operator/history']);
               },
             });
           } else {
             this.saving = false;
-            alert('Parte diario enviado correctamente');
+            this.snackBar.open('Parte diario enviado correctamente', 'Cerrar', { duration: 3000 });
             this.router.navigate(['/operator/history']);
           }
         },
         error: (error) => {
           console.error('Error submitting report:', error);
           this.saving = false;
-          alert('Error al enviar el parte diario: ' + (error.error?.error || 'Error desconocido'));
+          this.snackBar.open(
+            `Error al enviar el parte diario: ${error.error?.error || 'Error desconocido'}`,
+            'Cerrar',
+            { duration: 5000 }
+          );
         },
       });
     }
@@ -1516,7 +1534,9 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
 
   downloadPdf() {
     if (!this.reportId) {
-      alert('No se puede descargar el PDF sin un ID de reporte válido');
+      this.snackBar.open('No se puede descargar el PDF sin un ID de reporte válido', 'Cerrar', {
+        duration: 5000,
+      });
       return;
     }
 
@@ -1538,7 +1558,11 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error downloading PDF:', error);
         this.downloadingPdf = false;
-        alert('Error al descargar el PDF: ' + (error.error?.message || 'Error desconocido'));
+        this.snackBar.open(
+          `Error al descargar el PDF: ${error.error?.message || 'Error desconocido'}`,
+          'Cerrar',
+          { duration: 5000 }
+        );
       },
     });
   }

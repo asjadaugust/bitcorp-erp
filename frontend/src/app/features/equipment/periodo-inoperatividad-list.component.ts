@@ -16,6 +16,8 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-periodo-inoperatividad-list',
@@ -28,6 +30,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     ActionsContainerComponent,
     AeroTableComponent,
     FilterBarComponent,
+    ButtonComponent,
   ],
   template: `
     <!-- Standalone page (when accessed via /equipment/inoperatividad) -->
@@ -39,9 +42,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         [loading]="loading"
       >
         <app-actions-container actions>
-          <button type="button" class="btn btn-primary" (click)="irANuevo()">
-            <i class="fa-solid fa-plus"></i> Registrar Inoperatividad
-          </button>
+          <app-button
+            variant="primary"
+            icon="fa-plus"
+            label="Registrar Inoperatividad"
+            (clicked)="irANuevo()"
+          ></app-button>
         </app-actions-container>
 
         <app-filter-bar
@@ -71,9 +77,13 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     @if (equipoId) {
       <div class="embedded-header">
         <h4><i class="fa-solid fa-triangle-exclamation"></i> Períodos de Inoperatividad</h4>
-        <button type="button" class="btn btn-sm btn-primary" (click)="irANuevo()">
-          <i class="fa-solid fa-plus"></i> Registrar
-        </button>
+        <app-button
+          variant="primary"
+          size="sm"
+          icon="fa-plus"
+          label="Registrar"
+          (clicked)="irANuevo()"
+        ></app-button>
       </div>
 
       <app-filter-bar
@@ -135,22 +145,30 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
     </ng-template>
 
     <ng-template #actionsTemplate let-row>
-      <div class="row-actions">
+      <div
+        class="row-actions"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        tabindex="0"
+        role="toolbar"
+      >
         @if (row.estado === 'ACTIVO') {
-          <button
-            class="btn btn-sm btn-success"
-            (click)="$event.stopPropagation(); abrirResolver(row)"
-          >
-            <i class="fa-solid fa-check"></i> Resolver
-          </button>
+          <app-button
+            variant="success"
+            size="sm"
+            icon="fa-check"
+            label="Resolver"
+            (clicked)="abrirResolver(row)"
+          ></app-button>
         }
         @if (row.excede_plazo && !row.penalidad_aplicada) {
-          <button
-            class="btn btn-sm btn-danger"
-            (click)="$event.stopPropagation(); abrirPenalidad(row)"
-          >
-            <i class="fa-solid fa-gavel"></i> Penalizar
-          </button>
+          <app-button
+            variant="danger"
+            size="sm"
+            icon="fa-gavel"
+            label="Penalizar"
+            (clicked)="abrirPenalidad(row)"
+          ></app-button>
         }
       </div>
     </ng-template>
@@ -173,9 +191,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         >
           <div class="modal-header">
             <h3>Resolver Período de Inoperatividad</h3>
-            <button class="btn-close" (click)="cerrarModales()">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+            <app-button variant="icon" icon="fa-xmark" (clicked)="cerrarModales()"></app-button>
           </div>
           <div class="modal-body">
             <p class="info-text">
@@ -197,15 +213,18 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="cerrarModales()">Cancelar</button>
-            <button
-              class="btn btn-success"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="cerrarModales()"
+            ></app-button>
+            <app-button
+              variant="success"
+              icon="fa-check"
+              [label]="saving ? 'Guardando...' : 'Confirmar Resolución'"
               [disabled]="saving || !resolverForm.fecha_fin"
-              (click)="confirmarResolver()"
-            >
-              <i class="fa-solid fa-check"></i>
-              {{ saving ? 'Guardando...' : 'Confirmar Resolución' }}
-            </button>
+              (clicked)="confirmarResolver()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -229,9 +248,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         >
           <div class="modal-header">
             <h3>Aplicar Penalidad — Cláusula 7.6</h3>
-            <button class="btn-close" (click)="cerrarModales()">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+            <app-button variant="icon" icon="fa-xmark" (clicked)="cerrarModales()"></app-button>
           </div>
           <div class="modal-body">
             <div class="alert alert-danger">
@@ -261,14 +278,18 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="cerrarModales()">Cancelar</button>
-            <button
-              class="btn btn-danger"
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="cerrarModales()"
+            ></app-button>
+            <app-button
+              variant="danger"
+              icon="fa-gavel"
+              [label]="saving ? 'Guardando...' : 'Aplicar Penalidad'"
               [disabled]="saving || !penalidadForm.monto_penalidad"
-              (click)="confirmarPenalidad()"
-            >
-              <i class="fa-solid fa-gavel"></i> {{ saving ? 'Guardando...' : 'Aplicar Penalidad' }}
-            </button>
+              (clicked)="confirmarPenalidad()"
+            ></app-button>
           </div>
         </div>
       </div>
@@ -281,12 +302,12 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         align-items: center;
         justify-content: space-between;
         padding: 16px 20px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--grey-200);
         h4 {
           margin: 0;
           font-size: 15px;
           font-weight: 700;
-          color: #1e293b;
+          color: var(--grey-900);
           display: flex;
           align-items: center;
           gap: 8px;
@@ -298,37 +319,37 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         align-items: center;
         gap: 4px;
         padding: 3px 8px;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         font-size: 12px;
         font-weight: 600;
       }
       .badge-danger {
-        background: #fee2e2;
-        color: #dc2626;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-600);
       }
       .badge-warning {
-        background: #fef9c3;
-        color: #ca8a04;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .badge-success {
-        background: #dcfce7;
-        color: #16a34a;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-600);
       }
       .badge-secondary {
-        background: #f1f5f9;
-        color: #475569;
+        background: var(--grey-100);
+        color: var(--grey-600);
       }
 
       .dias-danger {
-        color: #dc2626;
+        color: var(--semantic-red-600);
         font-weight: 700;
       }
       .dias-warning {
-        color: #ca8a04;
+        color: var(--semantic-yellow-700);
         font-weight: 600;
       }
       .dias-ok {
-        color: #475569;
+        color: var(--grey-600);
       }
 
       .equipo-cell {
@@ -340,15 +361,15 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         font-family: monospace;
         font-size: 12px;
         font-weight: 700;
-        color: #1e293b;
-        background: #f1f5f9;
+        color: var(--grey-900);
+        background: var(--grey-100);
         padding: 2px 6px;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         display: inline-block;
       }
       .equipo-desc {
         font-size: 12px;
-        color: #64748b;
+        color: var(--grey-500);
       }
 
       .row-actions {
@@ -359,39 +380,31 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.45);
+        background: color-mix(in srgb, var(--grey-900) 45%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
       }
       .modal-panel {
-        background: #fff;
-        border-radius: 8px;
+        background: var(--neutral-0);
+        border-radius: var(--radius-md);
         width: 100%;
         max-width: 480px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        box-shadow: var(--shadow-lg);
       }
       .modal-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 16px 20px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--grey-200);
       }
       .modal-header h3 {
         margin: 0;
         font-size: 16px;
         font-weight: 700;
-        color: #1e293b;
-      }
-      .btn-close {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #94a3b8;
-        font-size: 18px;
-        padding: 4px;
+        color: var(--grey-900);
       }
       .modal-body {
         padding: 20px;
@@ -401,7 +414,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       }
       .modal-footer {
         padding: 16px 20px;
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid var(--grey-200);
         display: flex;
         justify-content: flex-end;
         gap: 10px;
@@ -415,10 +428,10 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       .form-group label {
         font-size: 13px;
         font-weight: 600;
-        color: #374151;
+        color: var(--grey-700);
       }
       .form-control {
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--grey-300);
         border-radius: 6px;
         padding: 8px 12px;
         font-size: 14px;
@@ -427,8 +440,8 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
       }
       .form-control:focus {
         outline: none;
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-500) 20%, transparent);
       }
 
       .alert {
@@ -437,51 +450,15 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         font-size: 13px;
       }
       .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fca5a5;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        border: 1px solid var(--semantic-red-200);
       }
 
       .info-text {
         font-size: 13px;
-        color: #475569;
+        color: var(--grey-600);
         margin: 0;
-      }
-
-      .btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .btn-primary {
-        background: #4f46e5;
-        color: #fff;
-      }
-      .btn-secondary {
-        background: #f1f5f9;
-        color: #475569;
-      }
-      .btn-success {
-        background: #16a34a;
-        color: #fff;
-      }
-      .btn-danger {
-        background: #dc2626;
-        color: #fff;
-      }
-      .btn-sm {
-        padding: 4px 10px;
-        font-size: 12px;
-      }
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
       }
     `,
   ],
@@ -491,6 +468,7 @@ export class PeriodoInoperatividadListComponent implements OnInit {
 
   private service = inject(PeriodoInoperatividadService);
   private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
 
   loading = false;
   saving = false;
@@ -611,7 +589,9 @@ export class PeriodoInoperatividadListComponent implements OnInit {
       },
       error: (err) => {
         this.saving = false;
-        alert(err?.error?.error?.message || 'Error al resolver el período');
+        this.snackBar.open(err?.error?.error?.message || 'Error al resolver el período', 'Cerrar', {
+          duration: 5000,
+        });
       },
     });
   }
@@ -627,7 +607,11 @@ export class PeriodoInoperatividadListComponent implements OnInit {
       },
       error: (err) => {
         this.saving = false;
-        alert(err?.error?.error?.message || 'Error al aplicar la penalidad');
+        this.snackBar.open(
+          err?.error?.error?.message || 'Error al aplicar la penalidad',
+          'Cerrar',
+          { duration: 5000 }
+        );
       },
     });
   }

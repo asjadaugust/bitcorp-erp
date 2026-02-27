@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
 import { MainNavComponent } from '../../shared/components/main-nav.component';
@@ -318,7 +319,7 @@ import {
       }
 
       .user-mini-profile {
-        background: white;
+        background: var(--neutral-0);
         padding: 1.5rem;
         border-radius: 12px;
         text-align: center;
@@ -359,7 +360,7 @@ import {
       }
 
       .settings-nav {
-        background: white;
+        background: var(--neutral-0);
         border-radius: 12px;
         overflow: hidden;
         box-shadow: var(--shadow-sm);
@@ -544,6 +545,7 @@ import {
 export class SettingsComponent {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
 
   currentUser: User | null = null;
   activeTab = 'general';
@@ -589,7 +591,9 @@ export class SettingsComponent {
   onChangePassword() {
     if (this.passwordForm.valid) {
       console.log('Password change requested', this.passwordForm.value);
-      alert('Funcionalidad de cambio de contraseña en desarrollo');
+      this.snackBar.open('Funcionalidad de cambio de contraseña en desarrollo', 'Cerrar', {
+        duration: 3000,
+      });
       this.passwordForm.reset();
     } else {
       this.passwordForm.markAllAsTouched();

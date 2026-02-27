@@ -9,6 +9,8 @@ import { DailyReportService } from '../../../core/services/daily-report.service'
 import { ContractService } from '../../../core/services/contract.service';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   EntityDetailShellComponent,
   EntityDetailHeader,
@@ -38,6 +40,7 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
     AeroTableComponent,
     PeriodoInoperatividadListComponent,
     AeroTabsComponent,
+    ButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -200,9 +203,13 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
             <div class="detail-section card">
               <div class="section-header">
                 <h3>Historial de Mantenimiento</h3>
-                <button class="btn btn-primary btn-sm" (click)="scheduleMaintenance()">
-                  <i class="fa-solid fa-plus"></i> Programar
-                </button>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="fa-plus"
+                  label="Programar"
+                  (clicked)="scheduleMaintenance()"
+                ></app-button>
               </div>
 
               <aero-table
@@ -289,13 +296,17 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
             <div class="detail-section card">
               <div class="section-header">
                 <h3>Vales de Combustible</h3>
-                <a
-                  [routerLink]="['/equipment/vales-combustible/new']"
-                  [queryParams]="{ equipo_id: equipment.id }"
-                  class="btn btn-sm btn-primary"
-                >
-                  <i class="fa-solid fa-plus"></i> Nuevo Vale
-                </a>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="fa-plus"
+                  label="Nuevo Vale"
+                  (clicked)="
+                    router.navigate(['/equipment/vales-combustible/new'], {
+                      queryParams: { equipo_id: equipment.id },
+                    })
+                  "
+                ></app-button>
               </div>
               <aero-table
                 [columns]="fuelColumns"
@@ -320,37 +331,57 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
       </div>
 
       <ng-container entity-sidebar-actions>
-        <button class="btn btn-secondary btn-block" (click)="editEquipment()">
-          <i class="fa-solid fa-pen-to-square"></i> Editar Equipo
-        </button>
-
-        <button class="btn btn-primary btn-block" (click)="assignToProject()">
-          <i class="fa-solid fa-location-dot"></i> Asignar a Proyecto
-        </button>
-
-        <button class="btn btn-secondary btn-block" (click)="scheduleMaintenance()">
-          <i class="fa-solid fa-screwdriver-wrench"></i> Programar Mantenimiento
-        </button>
-
-        <button class="btn btn-warning btn-block" (click)="registrarInoperatividad()">
-          <i class="fa-solid fa-triangle-exclamation"></i> Registrar Inoperatividad
-        </button>
-
-        <button class="btn btn-secondary btn-block" (click)="viewHistory()">
-          <i class="fa-solid fa-clock-rotate-left"></i> Ver Historial
-        </button>
-
-        <div class="sidebar-divider"></div>
-
-        <button class="btn btn-danger btn-block" (click)="deleteEquipment()">
-          <i class="fa-solid fa-trash"></i> Eliminar Equipo
-        </button>
-
-        <div class="sidebar-divider"></div>
-
-        <button class="btn btn-ghost btn-block" routerLink="/equipment">
-          <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-        </button>
+        <app-button
+          variant="secondary"
+          icon="fa-pen-to-square"
+          label="Editar Equipo"
+          [fullWidth]="true"
+          (clicked)="editEquipment()"
+        ></app-button>
+        <app-button
+          variant="primary"
+          icon="fa-location-dot"
+          label="Asignar a Proyecto"
+          [fullWidth]="true"
+          (clicked)="assignToProject()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-screwdriver-wrench"
+          label="Programar Mantenimiento"
+          [fullWidth]="true"
+          (clicked)="scheduleMaintenance()"
+        ></app-button>
+        <app-button
+          variant="outline"
+          icon="fa-triangle-exclamation"
+          label="Registrar Inoperatividad"
+          [fullWidth]="true"
+          (clicked)="registrarInoperatividad()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-clock-rotate-left"
+          label="Ver Historial"
+          [fullWidth]="true"
+          (clicked)="viewHistory()"
+        ></app-button>
+        <hr class="sidebar-divider" />
+        <app-button
+          variant="danger"
+          icon="fa-trash"
+          label="Eliminar Equipo"
+          [fullWidth]="true"
+          (clicked)="deleteEquipment()"
+        ></app-button>
+        <hr class="sidebar-divider" />
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          routerLink="/equipment"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -359,27 +390,9 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
       @use 'detail-layout' as *;
 
       .sidebar-divider {
-        height: 1px;
-        background: var(--grey-100);
+        border: none;
+        border-top: 1px solid var(--grey-100);
         margin: var(--s-16) 0;
-      }
-
-      .btn-block {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 12px;
-        width: 100%;
-        padding: 12px 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        border-radius: 10px;
-
-        i {
-          width: 20px;
-          text-align: center;
-          font-size: 1.1em;
-        }
       }
 
       .detail-sections {
@@ -415,15 +428,6 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.07em;
-        }
-
-        .btn-sm {
-          padding: 6px 14px;
-          font-size: 0.8rem;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
         }
       }
 
@@ -518,12 +522,12 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
         font-weight: 600;
       }
       .badge-propio {
-        background: var(--semantic-green-50, #e8f5e9);
-        color: var(--semantic-green-700, #2e7d32);
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .badge-tercero {
-        background: var(--primary-50, #e3f2fd);
-        color: var(--primary-700, #1565c0);
+        background: var(--primary-50);
+        color: var(--primary-700);
       }
 
       .cat-badge {
@@ -536,20 +540,20 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
         letter-spacing: 0.3px;
       }
       .badge-cat-maquinaria {
-        background: var(--semantic-yellow-50, #fef3c7);
-        color: var(--semantic-yellow-800, #92400e);
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .badge-cat-pesado {
-        background: var(--semantic-red-50, #fee2e2);
-        color: var(--semantic-red-800, #991b1b);
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
       }
       .badge-cat-liviano {
-        background: var(--primary-50, #dbeafe);
-        color: var(--primary-800, #1e40af);
+        background: var(--primary-50);
+        color: var(--primary-700);
       }
       .badge-cat-menor {
-        background: var(--semantic-green-50, #d1fae5);
-        color: var(--semantic-green-800, #065f46);
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
 
       .status-badge {
@@ -574,6 +578,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   private solicitudService = inject(SolicitudEquipoService);
   private valeCombustibleService = inject(ValeCombustibleService);
   private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
   private destroy$ = new Subject<void>();
 
   loading = true;
@@ -832,15 +837,15 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   }
 
   assignToProject(): void {
-    alert('Asignar a Proyecto - ¡Próximamente!');
+    this.snackBar.open('Asignar a Proyecto — Próximamente', 'Cerrar', { duration: 3000 });
   }
 
   scheduleMaintenance(): void {
-    alert('Programar Mantenimiento - ¡Próximamente!');
+    this.snackBar.open('Programar Mantenimiento — Próximamente', 'Cerrar', { duration: 3000 });
   }
 
   viewHistory(): void {
-    alert('Ver Historial - ¡Próximamente!');
+    this.snackBar.open('Ver Historial — Próximamente', 'Cerrar', { duration: 3000 });
   }
 
   deleteEquipment(): void {

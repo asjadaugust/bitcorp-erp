@@ -24,6 +24,7 @@ import {
   StatItem,
 } from '../../../../shared/components/stats-grid/stats-grid.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-movement-list',
@@ -305,7 +306,7 @@ export class MovementListComponent implements OnInit {
 
   handleExport(format: ExportFormat): void {
     if (this.movements.length === 0) {
-      alert('No hay movimientos para exportar');
+      this.snackBar.open('No hay movimientos para exportar', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -337,4 +338,5 @@ export class MovementListComponent implements OnInit {
 
   private excelService = inject(ExcelExportService);
   private csvService = inject(CsvExportService);
+  private snackBar = inject(MatSnackBar);
 }

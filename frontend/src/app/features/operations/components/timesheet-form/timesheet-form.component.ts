@@ -231,7 +231,7 @@ import {
 
       /* Form Card */
       .form-card {
-        background: white;
+        background: var(--neutral-0);
         padding: 2rem;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -311,7 +311,7 @@ import {
 
       .btn-primary {
         background: var(--primary-500);
-        color: white;
+        color: var(--neutral-0);
       }
       .btn-primary:hover {
         background: var(--primary-800);
@@ -322,7 +322,7 @@ import {
       }
 
       .btn-secondary {
-        background: white;
+        background: var(--neutral-0);
         border: 1px solid var(--grey-300);
         color: var(--grey-700);
       }

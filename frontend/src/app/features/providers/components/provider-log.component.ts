@@ -1,18 +1,23 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProviderService } from '../../../core/services/provider.service';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-provider-log',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ButtonComponent],
   template: `
     <div class="log-container">
       <div class="section-header">
         <h3>Historial de Cambios</h3>
-        <button class="btn btn-sm btn-secondary" (click)="loadLogs()">
-          <i class="fa-solid fa-sync" [class.fa-spin]="loading"></i> Refrescar
-        </button>
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="fa-sync"
+          label="Refrescar"
+          (clicked)="loadLogs()"
+        ></app-button>
       </div>
 
       <div class="table-container">
@@ -108,11 +113,26 @@ import { ProviderService } from '../../../core/services/provider.service';
         font-weight: 600;
       }
 
-      .action-create { background: var(--semantic-green-50); color: var(--semantic-green-700); }
-      .action-update { background: var(--primary-50); color: var(--primary-700); }
-      .action-delete { background: var(--semantic-red-50); color: var(--semantic-red-700); }
-      .action-activate { background: var(--semantic-green-50); color: var(--semantic-green-700); }
-      .action-deactivate { background: var(--semantic-yellow-50); color: var(--semantic-yellow-700); }
+      .action-create {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .action-update {
+        background: var(--primary-50);
+        color: var(--primary-700);
+      }
+      .action-delete {
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+      }
+      .action-activate {
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
+      }
+      .action-deactivate {
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
+      }
 
       .value-cell {
         max-width: 150px;
@@ -121,19 +141,12 @@ import { ProviderService } from '../../../core/services/provider.service';
         white-space: nowrap;
       }
 
-      .empty-row, .loading-row {
+      .empty-row,
+      .loading-row {
         text-align: center;
         padding: 2rem !important;
         color: var(--grey-500);
         font-style: italic;
-      }
-
-      .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
       }
     `,
   ],

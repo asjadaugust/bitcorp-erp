@@ -115,46 +115,48 @@ import { ConfirmService } from '../../core/services/confirm.service';
       </ng-template>
 
       <ng-template #actionsTemplate let-row>
-        <div class="table-actions">
-          <button
-            type="button"
-            class="btn btn-sm btn-outline"
-            [routerLink]="[row.id]"
+        <div
+          class="table-actions"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="toolbar"
+        >
+          <app-button
+            variant="icon"
+            size="sm"
+            icon="fa-eye"
             title="Ver detalle"
+            [routerLink]="[row.id]"
             [attr.data-testid]="'btn-ver-' + row.id"
-          >
-            <i class="fa-solid fa-eye"></i>
-          </button>
-          <button
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'PENDIENTE'"
-            type="button"
-            class="btn btn-sm btn-outline"
-            [routerLink]="[row.id, 'edit']"
+            variant="icon"
+            size="sm"
+            icon="fa-pen-to-square"
             title="Editar"
+            [routerLink]="[row.id, 'edit']"
             [attr.data-testid]="'btn-editar-' + row.id"
-          >
-            <i class="fa-solid fa-pen-to-square"></i>
-          </button>
-          <button
+          ></app-button>
+          <app-button
             *ngIf="row.estado === 'PENDIENTE'"
-            type="button"
-            class="btn btn-sm btn-success"
-            (click)="registrar($event, row)"
+            variant="icon"
+            size="sm"
+            icon="fa-check"
             title="Registrar vale"
+            (clicked)="registrar($event, row)"
             [attr.data-testid]="'btn-registrar-' + row.id"
-          >
-            <i class="fa-solid fa-check"></i>
-          </button>
-          <button
+          ></app-button>
+          <app-button
             *ngIf="row.estado !== 'ANULADO'"
-            type="button"
-            class="btn btn-sm btn-danger"
-            (click)="anular($event, row)"
+            variant="icon"
+            size="sm"
+            icon="fa-ban"
             title="Anular"
+            (clicked)="anular($event, row)"
             [attr.data-testid]="'btn-anular-' + row.id"
-          >
-            <i class="fa-solid fa-ban"></i>
-          </button>
+          ></app-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -177,24 +179,24 @@ import { ConfirmService } from '../../core/services/confirm.service';
         text-transform: uppercase;
       }
       .fuel-type-diesel {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
       }
       .fuel-type-gasolina_90 {
-        background: #dcfce7;
-        color: #166534;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .fuel-type-gasolina_95 {
-        background: #bbf7d0;
-        color: #14532d;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-700);
       }
       .fuel-type-glp {
-        background: #fef9c3;
-        color: #713f12;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .fuel-type-gnv {
-        background: #f3e8ff;
-        color: #6b21a8;
+        background: var(--primary-50);
+        color: var(--primary-700);
       }
       .table-actions {
         display: flex;

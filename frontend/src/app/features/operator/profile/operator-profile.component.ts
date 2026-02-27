@@ -335,7 +335,7 @@ interface ProfileData {
 
       .profile-card {
         background: linear-gradient(135deg, var(--primary-500) 0%, var(--klm-blue) 100%);
-        color: white;
+        color: var(--neutral-0);
         border-radius: 16px;
         padding: 40px;
         text-align: center;
@@ -587,8 +587,8 @@ interface ProfileData {
         color: var(--semantic-yellow-900);
       }
       .level-experto {
-        background: color-mix(in srgb, var(--semantic-purple-500, #7c3aed) 15%, white);
-        color: var(--semantic-purple-700, #5b21b6);
+        background: color-mix(in srgb, var(--semantic-purple-500) 15%, var(--neutral-0));
+        color: var(--semantic-purple-700);
       }
 
       /* Certifications */

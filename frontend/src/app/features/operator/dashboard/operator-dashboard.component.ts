@@ -129,7 +129,7 @@ interface RecentReport {
 
       .action-card.primary {
         background: linear-gradient(135deg, var(--primary-500) 0%, var(--klm-blue) 100%);
-        color: white;
+        color: var(--neutral-0);
       }
 
       .action-card.primary:hover {

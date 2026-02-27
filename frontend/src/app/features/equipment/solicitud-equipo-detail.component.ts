@@ -13,6 +13,7 @@ import {
   AuditInfo,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-solicitud-equipo-detail',
@@ -23,6 +24,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     RouterModule,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
+    ButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -91,28 +93,48 @@ import { ConfirmService } from '../../core/services/confirm.service';
       <ng-container entity-sidebar-actions>
         @if (solicitud) {
           @if (solicitud.estado === 'BORRADOR') {
-            <button type="button" class="btn btn-primary btn-block" (click)="enviar()">
-              <i class="fa-solid fa-paper-plane"></i> Enviar para Aprobación
-            </button>
-            <button type="button" class="btn btn-secondary btn-block" [routerLink]="['edit']">
-              <i class="fa-solid fa-pen"></i> Editar Solicitud
-            </button>
+            <app-button
+              variant="primary"
+              icon="fa-paper-plane"
+              label="Enviar para Aprobación"
+              [fullWidth]="true"
+              (clicked)="enviar()"
+            ></app-button>
+            <app-button
+              variant="secondary"
+              icon="fa-pen"
+              label="Editar Solicitud"
+              [fullWidth]="true"
+              [routerLink]="['edit']"
+            ></app-button>
           }
 
           @if (solicitud.estado === 'ENVIADO') {
-            <button type="button" class="btn btn-success btn-block" (click)="aprobar()">
-              <i class="fa-solid fa-check"></i> Aprobar Solicitud
-            </button>
-            <button type="button" class="btn btn-danger btn-block" (click)="rechazar()">
-              <i class="fa-solid fa-times"></i> Rechazar Solicitud
-            </button>
+            <app-button
+              variant="success"
+              icon="fa-check"
+              label="Aprobar Solicitud"
+              [fullWidth]="true"
+              (clicked)="aprobar()"
+            ></app-button>
+            <app-button
+              variant="danger"
+              icon="fa-times"
+              label="Rechazar Solicitud"
+              [fullWidth]="true"
+              (clicked)="rechazar()"
+            ></app-button>
           }
 
           <hr class="sidebar-divider" />
 
-          <button type="button" class="btn btn-ghost btn-block" routerLink="/equipment/solicitudes">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Lista
-          </button>
+          <app-button
+            variant="ghost"
+            icon="fa-arrow-left"
+            label="Volver a Lista"
+            [fullWidth]="true"
+            routerLink="/equipment/solicitudes"
+          ></app-button>
         }
       </ng-container>
 
@@ -227,16 +249,16 @@ import { ConfirmService } from '../../core/services/confirm.service';
       }
 
       .priority-alta {
-        background: #fef2f2;
-        color: #ef4444;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-500);
       }
       .priority-media {
-        background: #fffbeb;
-        color: #f59e0b;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-500);
       }
       .priority-baja {
-        background: #f0fdf4;
-        color: #22c55e;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-500);
       }
 
       .status-info-card {

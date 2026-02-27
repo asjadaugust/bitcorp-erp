@@ -13,6 +13,8 @@ import {
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-provider-detail',
@@ -25,6 +27,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     ProviderFinancialInfoComponent,
     ProviderContactsComponent,
     EntityDetailShellComponent,
+    ButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -174,26 +177,41 @@ import { ConfirmService } from '../../core/services/confirm.service';
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button type="button" class="btn btn-primary btn-block" (click)="editProvider()">
-          <i class="fa-solid fa-pen-to-square"></i>
-          Editar Detalles
-        </button>
-        <button type="button" class="btn btn-secondary btn-block" (click)="activeTab = 'financial'">
-          <i class="fa-solid fa-file-contract"></i>
-          Ver Información Financiera
-        </button>
-        <button type="button" class="btn btn-secondary btn-block" (click)="activeTab = 'equipment'">
-          <i class="fa-solid fa-truck-front"></i>
-          Ver Equipos
-        </button>
-        <button type="button" class="btn btn-ghost btn-block" routerLink="/providers">
-          <i class="fa-solid fa-arrow-left-long"></i>
-          Volver a Lista
-        </button>
-        <button type="button" class="btn btn-danger btn-block" (click)="deleteProvider()">
-          <i class="fa-solid fa-trash-can"></i>
-          Eliminar Proveedor
-        </button>
+        <app-button
+          variant="primary"
+          icon="fa-pen-to-square"
+          label="Editar Detalles"
+          [fullWidth]="true"
+          (clicked)="editProvider()"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-building-columns"
+          label="Ver Información Financiera"
+          [fullWidth]="true"
+          (clicked)="activeTab = 'financial'"
+        ></app-button>
+        <app-button
+          variant="secondary"
+          icon="fa-truck-front"
+          label="Ver Equipos"
+          [fullWidth]="true"
+          (clicked)="activeTab = 'equipment'"
+        ></app-button>
+        <app-button
+          variant="ghost"
+          icon="fa-arrow-left"
+          label="Volver a Lista"
+          [fullWidth]="true"
+          routerLink="/providers"
+        ></app-button>
+        <app-button
+          variant="danger"
+          icon="fa-trash-can"
+          label="Eliminar Proveedor"
+          [fullWidth]="true"
+          (clicked)="deleteProvider()"
+        ></app-button>
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -291,6 +309,7 @@ export class ProviderDetailComponent implements OnInit {
   private providerService = inject(ProviderService);
   private route = inject(ActivatedRoute);
   private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
   router = inject(Router);
 
   provider: Provider | null = null;
@@ -377,10 +396,10 @@ export class ProviderDetailComponent implements OnInit {
   }
 
   viewContracts(): void {
-    alert('Ver Contratos - ¡Próximamente!');
+    this.snackBar.open('Ver Contratos — próximamente', 'Cerrar', { duration: 3000 });
   }
 
   viewEquipment(): void {
-    alert('Ver Equipos - ¡Próximamente!');
+    this.snackBar.open('Ver Equipos — próximamente', 'Cerrar', { duration: 3000 });
   }
 }

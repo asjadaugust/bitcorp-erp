@@ -12,11 +12,12 @@ import {
   AuditInfo,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-vale-combustible-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent],
+  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -27,35 +28,35 @@ import { ConfirmService } from '../../core/services/confirm.service';
     >
       <!-- ── ACTIONS ─────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <button
+        <app-button
           *ngIf="vale?.estado === 'PENDIENTE'"
-          type="button"
-          class="btn btn-outline"
+          variant="secondary"
+          icon="fa-pen-to-square"
+          label="Editar"
+          [fullWidth]="true"
           [routerLink]="['edit']"
           data-testid="btn-edit"
-        >
-          <i class="fa-solid fa-pen-to-square"></i> Editar
-        </button>
-        <button
+        ></app-button>
+        <app-button
           *ngIf="vale?.estado === 'PENDIENTE'"
-          type="button"
-          class="btn btn-success"
-          (click)="registrar()"
+          variant="success"
+          icon="fa-check"
+          label="Registrar"
+          [fullWidth]="true"
           [disabled]="actioning"
+          (clicked)="registrar()"
           data-testid="btn-registrar"
-        >
-          <i class="fa-solid fa-check"></i> Registrar
-        </button>
-        <button
+        ></app-button>
+        <app-button
           *ngIf="vale?.estado !== 'ANULADO'"
-          type="button"
-          class="btn btn-danger"
-          (click)="anular()"
+          variant="danger"
+          icon="fa-ban"
+          label="Anular"
+          [fullWidth]="true"
           [disabled]="actioning"
+          (clicked)="anular()"
           data-testid="btn-anular"
-        >
-          <i class="fa-solid fa-ban"></i> Anular
-        </button>
+        ></app-button>
       </ng-container>
 
       <!-- ── MAIN CONTENT ──────────────────────────── -->
@@ -276,24 +277,24 @@ import { ConfirmService } from '../../core/services/confirm.service';
         font-weight: 600;
       }
       .fuel-diesel {
-        background: #dbeafe;
-        color: #1e40af;
+        background: var(--semantic-blue-50);
+        color: var(--semantic-blue-700);
       }
       .fuel-gasolina_90 {
-        background: #dcfce7;
-        color: #166534;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .fuel-gasolina_95 {
-        background: #bbf7d0;
-        color: #14532d;
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-700);
       }
       .fuel-glp {
-        background: #fef9c3;
-        color: #713f12;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .fuel-gnv {
-        background: #f3e8ff;
-        color: #6b21a8;
+        background: var(--primary-50);
+        color: var(--primary-700);
       }
       .estado-strip {
         display: flex;
@@ -306,16 +307,16 @@ import { ConfirmService } from '../../core/services/confirm.service';
         font-size: 0.9rem;
       }
       .strip-pendiente {
-        background: #fef9c3;
-        color: #713f12;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
       .strip-registrado {
-        background: #dcfce7;
-        color: #166534;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
       .strip-anulado {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
       }
     `,
   ],

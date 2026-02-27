@@ -129,7 +129,7 @@ import {
       .page-header h1 {
         margin: 0;
         font-size: 1.5rem;
-        color: #072b45;
+        color: var(--primary-900);
       }
       .header-actions {
         display: flex;
@@ -147,7 +147,7 @@ import {
       .calendar-nav h2 {
         margin: 0;
         font-size: 1.4rem;
-        color: #2d3748;
+        color: var(--grey-800);
         min-width: 200px;
         text-align: center;
       }
@@ -155,9 +155,9 @@ import {
       .loading-state {
         text-align: center;
         padding: 3rem;
-        background: white;
+        background: var(--neutral-0);
         border-radius: 12px;
-        color: #6b7280;
+        color: var(--grey-500);
       }
 
       .legend {
@@ -173,17 +173,17 @@ import {
         gap: 6px;
       }
       .legend-item.available {
-        color: #059669;
+        color: var(--semantic-green-600);
       }
       .legend-item.unavailable {
-        color: #dc2626;
+        color: var(--semantic-red-600);
       }
       .legend-item.saving {
-        color: #d97706;
+        color: var(--semantic-yellow-700);
       }
 
       .card {
-        background: white;
+        background: var(--neutral-0);
         border-radius: 12px;
         padding: 1.5rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -193,18 +193,18 @@ import {
       .availability-grid {
         display: grid;
         gap: 1px;
-        background: #e2e8f0;
-        border: 1px solid #e2e8f0;
+        background: var(--grey-200);
+        border: 1px solid var(--grey-200);
         min-width: 600px;
       }
 
       .grid-header {
-        background: #f7fafc;
+        background: var(--grey-50);
         padding: 0.5rem 0.25rem;
         font-weight: 600;
         text-align: center;
         font-size: 12px;
-        color: #4a5568;
+        color: var(--grey-600);
       }
       .grid-header--operator {
         text-align: left;
@@ -212,19 +212,19 @@ import {
       }
 
       .operator-name {
-        background: white;
+        background: var(--neutral-0);
         padding: 0.5rem 0.75rem;
         font-size: 13px;
         font-weight: 500;
-        color: #2d3748;
-        border-right: 1px solid #e2e8f0;
+        color: var(--grey-800);
+        border-right: 1px solid var(--grey-200);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
       .day-cell {
-        background: white;
+        background: var(--neutral-0);
         height: 36px;
         cursor: pointer;
         transition: background 0.15s;
@@ -233,10 +233,10 @@ import {
         filter: brightness(0.95);
       }
       .day-cell.available {
-        background: #c6f6d5;
+        background: var(--semantic-green-100);
       }
       .day-cell.unavailable {
-        background: #fed7d7;
+        background: var(--semantic-red-100);
       }
       .day-cell.saving {
         opacity: 0.5;
@@ -246,7 +246,7 @@ import {
       .empty-state {
         text-align: center;
         padding: 2rem;
-        color: #9ca3af;
+        color: var(--grey-400);
       }
 
       .btn {
@@ -262,24 +262,24 @@ import {
         font-size: 14px;
       }
       .btn-secondary {
-        background: #e2e8f0;
-        color: #4a5568;
+        background: var(--grey-200);
+        color: var(--grey-600);
       }
       .btn-secondary:hover {
-        background: #cbd5e0;
+        background: var(--grey-300);
       }
       .btn-icon {
         background: none;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--grey-200);
         border-radius: 6px;
         cursor: pointer;
         font-size: 1.4rem;
-        color: #4a5568;
+        color: var(--grey-600);
         padding: 0.25rem 0.75rem;
         line-height: 1;
       }
       .btn-icon:hover {
-        background: #f7fafc;
+        background: var(--grey-50);
       }
     `,
   ],

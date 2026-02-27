@@ -342,13 +342,11 @@ import {
       }
 
       .dashboard-panel {
-        background: white;
+        background: var(--neutral-0);
         border: 1px solid var(--grey-100);
         border-radius: var(--radius-lg);
         padding: var(--s-24);
-        box-shadow:
-          0 4px 6px -1px rgba(0, 0, 0, 0.05),
-          0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-sm);
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -418,13 +416,13 @@ import {
 
         &:hover {
           border-color: var(--grey-200);
-          background: white;
+          background: var(--neutral-0);
           box-shadow: var(--shadow-sm);
         }
 
         &.has-alerts {
-          border-color: #fecaca;
-          background: #fff5f5;
+          border-color: var(--semantic-red-200);
+          background: var(--semantic-red-50);
         }
       }
 
@@ -458,23 +456,23 @@ import {
       }
 
       .pill-red {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
       }
 
       .pill-orange {
-        background: #ffedd5;
-        color: #9a3412;
+        background: var(--semantic-orange-50);
+        color: var(--semantic-orange-700);
       }
 
       .pill-yellow {
-        background: #fef9c3;
-        color: #854d0e;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-700);
       }
 
       .pill-green {
-        background: #dcfce7;
-        color: #166534;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-700);
       }
 
       .month-input-premium {
@@ -483,7 +481,7 @@ import {
         padding: 6px 12px;
         font-size: 13px;
         color: var(--grey-700);
-        background: white;
+        background: var(--neutral-0);
         font-weight: 500;
         outline: none;
         transition: border-color 0.2s;
@@ -517,7 +515,7 @@ import {
 
         td {
           padding: 12px;
-          background: white;
+          background: var(--neutral-0);
           border-top: 1px solid var(--grey-50);
           border-bottom: 1px solid var(--grey-50);
 
@@ -545,13 +543,13 @@ import {
       }
 
       .row-soft-danger td {
-        background: #fffafa !important;
-        border-color: #fce8e8 !important;
+        background: var(--semantic-red-50) !important;
+        border-color: var(--semantic-red-100) !important;
       }
 
       .row-soft-warning td {
-        background: #fffdf5 !important;
-        border-color: #fcf6d6 !important;
+        background: var(--semantic-yellow-50) !important;
+        border-color: var(--semantic-yellow-100) !important;
       }
 
       .equipo-cell {
@@ -576,11 +574,11 @@ import {
       }
 
       .text-success {
-        color: #166534;
+        color: var(--semantic-green-700);
       }
 
       .text-danger {
-        color: #991b1b;
+        color: var(--semantic-red-700);
       }
 
       .progress-cell-premium {
@@ -638,13 +636,13 @@ import {
       }
 
       .count-red {
-        background: #fee2e2;
-        color: #ef4444;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-500);
       }
 
       .count-green {
-        background: #dcfce7;
-        color: #22c55e;
+        background: var(--semantic-green-50);
+        color: var(--semantic-green-500);
       }
 
       .obs-summary {
@@ -703,7 +701,7 @@ import {
             width: 14px;
             left: 2px;
             bottom: 2px;
-            background-color: white;
+            background-color: var(--neutral-0);
             transition: 0.4s;
             border-radius: 50%;
           }
@@ -733,8 +731,8 @@ import {
       .dots-loader {
         width: 40px;
         height: 10px;
-        background: radial-gradient(circle closest-side, var(--primary-300) 90%, #0000) 0 0/33% 100%
-          space;
+        background: radial-gradient(circle closest-side, var(--primary-300) 90%, transparent) 0
+          0/33% 100% space;
         animation: d 0.75s infinite linear;
       }
 
@@ -787,7 +785,7 @@ import {
         align-items: center;
         gap: var(--s-16);
         padding: var(--s-16) var(--s-24);
-        background: white;
+        background: var(--neutral-0);
         border: 1px solid var(--grey-100);
         border-radius: var(--radius-lg);
         text-decoration: none;
@@ -814,13 +812,13 @@ import {
       }
 
       .ql-icon-warning {
-        background: #fff7ed;
-        color: #ea580c;
+        background: var(--semantic-orange-50);
+        color: var(--semantic-orange-600);
       }
 
       .ql-icon-config {
-        background: #fef3c7;
-        color: #d97706;
+        background: var(--semantic-yellow-50);
+        color: var(--semantic-yellow-600);
       }
 
       .ql-info {

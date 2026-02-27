@@ -27,6 +27,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-equipment-form',
@@ -41,6 +42,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
     FormContainerComponent,
     FormSectionComponent,
     DropdownComponent,
+    ButtonComponent,
   ],
   template: `
     <app-form-container
@@ -319,9 +321,13 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
             <h3 class="section-title">
               <i class="fa-solid fa-folder-open"></i> Documentación Adicional
             </h3>
-            <button type="button" class="btn btn-sm btn-secondary" (click)="addDocument()">
-              <i class="fa-solid fa-plus"></i> Agregar Documento
-            </button>
+            <app-button
+              variant="secondary"
+              size="sm"
+              icon="fa-plus"
+              label="Agregar Documento"
+              (clicked)="addDocument()"
+            ></app-button>
           </div>
           <div class="table-container">
             <table class="data-table">
@@ -371,13 +377,13 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
                     </div>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-icon btn-danger"
-                      (click)="removeDocument(i)"
-                    >
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
+                    <app-button
+                      variant="icon"
+                      size="sm"
+                      icon="fa-trash"
+                      title="Eliminar"
+                      (clicked)="removeDocument(i)"
+                    ></app-button>
                   </td>
                 </tr>
                 <tr *ngIf="equipmentDocuments.length === 0">
@@ -466,22 +472,6 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         height: 100%;
         opacity: 0;
         cursor: pointer;
-      }
-
-      .btn-sm {
-        padding: 0.25rem 0.75rem;
-        font-size: 13px;
-      }
-
-      .btn-icon.btn-danger {
-        color: var(--semantic-red-500);
-        background: transparent;
-        border: 1px solid transparent;
-      }
-
-      .btn-icon.btn-danger:hover {
-        background: var(--semantic-red-50);
-        border-color: var(--semantic-red-200);
       }
     `,
   ],

@@ -5,6 +5,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { MaintenanceService } from '../../core/services/maintenance.service';
 import { EquipmentService } from '../../core/services/equipment.service';
 import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExcelExportService } from '../../core/services/excel-export.service';
 import {
   AeroTableComponent,
@@ -166,6 +167,7 @@ export class MaintenanceListComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private excelService = inject(ExcelExportService);
   private confirmSvc = inject(ConfirmService);
+  private snackBar = inject(MatSnackBar);
 
   records: MaintenanceRecord[] = [];
   loading = false;
@@ -356,7 +358,9 @@ export class MaintenanceListComponent implements OnInit {
 
   exportToExcel(): void {
     if (this.records.length === 0) {
-      alert('No hay registros de mantenimiento para exportar');
+      this.snackBar.open('No hay registros de mantenimiento para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -385,7 +389,9 @@ export class MaintenanceListComponent implements OnInit {
 
   exportToCSV(): void {
     if (this.records.length === 0) {
-      alert('No hay registros de mantenimiento para exportar');
+      this.snackBar.open('No hay registros de mantenimiento para exportar', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 

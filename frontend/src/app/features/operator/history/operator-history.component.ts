@@ -12,6 +12,8 @@ import {
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface HistoryReport {
   id: number;
@@ -370,6 +372,8 @@ export class OperatorHistoryComponent implements OnInit {
   private router = inject(Router);
   private dailyReportService = inject(DailyReportService);
   private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
+  private confirmSvc = inject(ConfirmService);
 
   selectedPeriod = 'month';
   selectedStatus = 'all';
@@ -511,18 +515,22 @@ export class OperatorHistoryComponent implements OnInit {
   }
 
   deleteReport(report: HistoryReport) {
-    if (confirm('¿Está seguro de eliminar este borrador?')) {
-      this.dailyReportService.delete(report.id).subscribe({
-        next: () => {
-          this.allReports = this.allReports.filter((r) => r.id !== report.id);
-          this.filterReports();
-        },
-        error: (err) => {
-          console.error('Error al eliminar el parte diario:', err);
-          alert('Error al eliminar el parte diario. Inténtelo de nuevo.');
-        },
-      });
-    }
+    this.confirmSvc.confirmDelete('este borrador').subscribe((confirmed) => {
+      if (confirmed) {
+        this.dailyReportService.delete(report.id).subscribe({
+          next: () => {
+            this.allReports = this.allReports.filter((r) => r.id !== report.id);
+            this.filterReports();
+          },
+          error: (err) => {
+            console.error('Error al eliminar el parte diario:', err);
+            this.snackBar.open('Error al eliminar el parte diario. Inténtelo de nuevo.', 'Cerrar', {
+              duration: 5000,
+            });
+          },
+        });
+      }
+    });
   }
 
   downloadPdf(report: HistoryReport) {
@@ -537,7 +545,7 @@ export class OperatorHistoryComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error downloading PDF:', err);
-        alert('Error al descargar el PDF');
+        this.snackBar.open('Error al descargar el PDF', 'Cerrar', { duration: 5000 });
       },
     });
   }

@@ -150,7 +150,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         display: flex;
         align-items: flex-start;
         gap: 16px;
-        background: white;
+        background: var(--neutral-0);
         border: 1px solid var(--grey-200);
         border-radius: var(--radius-md);
         padding: 16px;
