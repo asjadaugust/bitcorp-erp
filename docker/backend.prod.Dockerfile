@@ -3,19 +3,19 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy backend package files only
-COPY backend/package*.json ./
+COPY package*.json ./
 RUN npm install
 
 # Copy backend source code
-COPY backend/ .
+COPY . .
 RUN npm run build
 
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy backend package files only  
-COPY backend/package*.json ./
+# Copy backend package files only
+COPY package*.json ./
 # Remove prepare script to prevent husky from running, but allow other scripts (like bcrypt)
 RUN npm pkg delete scripts.prepare
 # Install production dependencies (bcrypt needs scripts to run)
