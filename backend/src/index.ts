@@ -35,6 +35,7 @@ import periodosInoperatividadRoutes from './api/periodos-inoperatividad/periodos
 import tiposEquipoRoutes from './api/tipos-equipo/tipos-equipo.routes';
 import precalentamientoConfigRoutes from './api/precalentamiento-config/precalentamiento-config.routes';
 import valesCombustibleRoutes from './api/vales-combustible/vales-combustible.routes';
+import cotizacionesRoutes from './api/cotizaciones/cotizaciones.routes';
 import analyticsRoutes from './api/analytics';
 import testErrorRoutes from './api/test-errors/test-errors.routes';
 import paymentRoutes from './api/payments/payment-record.routes';
@@ -163,6 +164,7 @@ app.use('/api/checklists', checklistRoutes);
 app.use('/api/admin/cost-centers', costCenterRoutes);
 app.use('/api/accounts-payable', accountsPayableRoutes);
 app.use('/api/payment-schedules', paymentScheduleRoutes);
+app.use('/api/cotizaciones', cotizacionesRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);

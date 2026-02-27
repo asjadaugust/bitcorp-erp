@@ -109,6 +109,16 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             ></app-button>
           }
 
+          @if (solicitud.estado === 'APROBADO') {
+            <app-button
+              variant="primary"
+              icon="fa-balance-scale"
+              label="Cuadro Comparativo"
+              [fullWidth]="true"
+              [routerLink]="['comparacion']"
+            ></app-button>
+          }
+
           @if (solicitud.estado === 'ENVIADO') {
             <app-button
               variant="success"
@@ -401,6 +411,10 @@ export class SolicitudEquipoDetailComponent implements OnInit {
       RECHAZADO: 'fa-times',
     };
     return icons[estado] || 'fa-info-circle';
+  }
+
+  enviar() {
+    this.enviarAprobacion();
   }
 
   enviarAprobacion() {

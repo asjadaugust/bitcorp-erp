@@ -76,6 +76,15 @@ export const EQUIPMENT_ROUTES: Routes = [
               ),
           },
 
+          // Cotizaciones / Cuadro Comparativo (WS-34)
+          {
+            path: 'solicitudes/:solicitudId/comparacion',
+            loadComponent: () =>
+              import('./cotizacion-comparacion.component').then(
+                (m) => m.CotizacionComparacionComponent
+              ),
+          },
+
           // Órdenes de Alquiler
           {
             path: 'ordenes-alquiler',
