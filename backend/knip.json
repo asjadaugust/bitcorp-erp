@@ -3,6 +3,8 @@
   "project": ["src/**/*.ts"],
   "ignore": ["src/database/migrations/**", "src/database/seeders/**", "eslint-rules/**"],
   "ignoreDependencies": ["reflect-metadata", "ts-node-dev"],
+  "ignoreExportsUsedInFile": true,
+  "exclude": ["duplicates", "types"],
   "typescript": {
     "config": "tsconfig.json"
   }

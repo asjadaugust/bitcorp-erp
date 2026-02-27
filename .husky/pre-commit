@@ -26,6 +26,10 @@ echo "Running pre-commit checks..."
 # Run lint-staged
 npx lint-staged
 
+# Dead code detection (advisory — does not block commit)
+echo "Running dead code check..."
+npm run deadcode 2>/dev/null || echo "⚠️  Dead code detected. Run 'npm run deadcode' to see unused exports."
+
 # Run tests
 npm run test:all
 
