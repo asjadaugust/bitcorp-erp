@@ -1361,12 +1361,8 @@ export class ChecklistService {
           // Check each equipment against the frequency
           for (const equip of matchingEquipment) {
             const lastInspRaw = lastInspMap.get(equip.id);
-            // PostgreSQL may return Date object or string — normalize to YYYY-MM-DD string
-            const lastInsp = lastInspRaw
-              ? lastInspRaw instanceof Date
-                ? lastInspRaw.toISOString().slice(0, 10)
-                : String(lastInspRaw).slice(0, 10)
-              : undefined;
+            // Normalize to YYYY-MM-DD string
+            const lastInsp = lastInspRaw ? lastInspRaw.slice(0, 10) : undefined;
             const dueInfo = this.checkOverdue(template.frecuencia, lastInsp, todayStr);
 
             if (dueInfo.overdue) {
