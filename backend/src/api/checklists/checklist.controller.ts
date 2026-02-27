@@ -615,4 +615,18 @@ export class ChecklistController {
       next(error);
     }
   };
+
+  /**
+   * GET /api/checklists/inspections/overdue
+   * Get all overdue inspections based on template frequency rules
+   */
+  getOverdueInspections = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const tenantId = req.user!.id_empresa;
+      const data = await this.checklistService.getOverdueInspections(tenantId);
+      return sendSuccess(res, data);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

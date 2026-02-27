@@ -91,6 +91,13 @@ router.delete('/items/:id', controller.deleteItem);
 // ============================================================================
 
 /**
+ * @route   GET /api/checklists/inspections/overdue
+ * @desc    Get overdue inspections based on template frequency rules
+ * @access  Private
+ */
+router.get('/inspections/overdue', controller.getOverdueInspections);
+
+/**
  * @route   GET /api/checklists/inspections/stats
  * @desc    Get inspection statistics
  * @query   startDate, endDate

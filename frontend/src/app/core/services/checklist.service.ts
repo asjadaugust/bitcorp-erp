@@ -287,4 +287,28 @@ export class ChecklistService {
       .get<Record<string, unknown>>(`${this.apiUrl}/inspections/stats`, { params })
       .pipe(map((res) => (res?.['data'] || res) as unknown as ChecklistStats));
   }
+
+  /**
+   * Get overdue inspections based on template frequency rules
+   */
+  getOverdueInspections(): Observable<OverdueInspection[]> {
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/inspections/overdue`)
+      .pipe(map((res) => (res?.['data'] || res) as unknown as OverdueInspection[]));
+  }
+}
+
+export interface OverdueInspection {
+  equipo_id: number;
+  codigo_equipo: string;
+  marca: string | null;
+  modelo: string | null;
+  categoria_prd: string | null;
+  plantilla_id: number;
+  plantilla_codigo: string;
+  plantilla_nombre: string;
+  frecuencia: string;
+  ultima_inspeccion: string | null;
+  dias_vencido: number;
+  fecha_vencimiento: string;
 }

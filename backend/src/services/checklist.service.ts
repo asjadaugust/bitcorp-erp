@@ -402,7 +402,11 @@ export class ChecklistService {
    * @throws {NotFoundError} If item does not exist
    * @throws {DatabaseError} If database operation fails
    */
-  async updateItem(tenantId: number, id: number, data: Partial<ChecklistItem>): Promise<ChecklistItemDto | null> {
+  async updateItem(
+    tenantId: number,
+    id: number,
+    data: Partial<ChecklistItem>
+  ): Promise<ChecklistItemDto | null> {
     try {
       // Check if item exists
       const existing = await this.itemRepository.findOne({ where: { id, tenantId } });
@@ -535,7 +539,10 @@ export class ChecklistService {
    * @returns Paginated inspection list
    * @throws {DatabaseError} If database query fails
    */
-  async getAllInspections(tenantId: number, filters?: any): Promise<{
+  async getAllInspections(
+    tenantId: number,
+    filters?: any
+  ): Promise<{
     data: ChecklistInspectionListDto[];
     total: number;
     page: number;
@@ -632,7 +639,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If database query fails
    */
-  async getInspectionById(tenantId: number, id: number): Promise<ChecklistInspectionDetailDto | null> {
+  async getInspectionById(
+    tenantId: number,
+    id: number
+  ): Promise<ChecklistInspectionDetailDto | null> {
     try {
       const inspection = await this.inspectionRepository.findOne({
         where: { id, tenantId },
@@ -682,7 +692,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If database query fails
    */
-  async getInspectionWithResults(tenantId: number, id: number): Promise<ChecklistInspectionWithResultsDto | null> {
+  async getInspectionWithResults(
+    tenantId: number,
+    id: number
+  ): Promise<ChecklistInspectionWithResultsDto | null> {
     try {
       const inspection = await this.inspectionRepository.findOne({
         where: { id, tenantId },
@@ -884,14 +897,19 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If transaction fails
    */
-  async completeInspection(tenantId: number, id: number): Promise<ChecklistInspectionDetailDto | null> {
+  async completeInspection(
+    tenantId: number,
+    id: number
+  ): Promise<ChecklistInspectionDetailDto | null> {
     const queryRunner: QueryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
       // Check if inspection exists
-      const existing = await queryRunner.manager.findOne(ChecklistInspection, { where: { id, tenantId } });
+      const existing = await queryRunner.manager.findOne(ChecklistInspection, {
+        where: { id, tenantId },
+      });
       if (!existing) {
         throw new NotFoundError('ChecklistInspection', id);
       }
@@ -987,7 +1005,10 @@ export class ChecklistService {
    * @throws {NotFoundError} If inspection does not exist
    * @throws {DatabaseError} If database operation fails
    */
-  async cancelInspection(tenantId: number, id: number): Promise<ChecklistInspectionDetailDto | null> {
+  async cancelInspection(
+    tenantId: number,
+    id: number
+  ): Promise<ChecklistInspectionDetailDto | null> {
     try {
       // Check if inspection exists
       const existing = await this.inspectionRepository.findOne({ where: { id, tenantId } });
@@ -1117,7 +1138,10 @@ export class ChecklistService {
    * @returns Array of result DTOs with item details
    * @throws {DatabaseError} If database query fails
    */
-  async getResultsByInspection(tenantId: number, inspeccionId: number): Promise<ChecklistResultDto[]> {
+  async getResultsByInspection(
+    tenantId: number,
+    inspeccionId: number
+  ): Promise<ChecklistResultDto[]> {
     try {
       const results = await this.resultRepository.find({
         where: { inspeccionId, tenantId },
@@ -1245,4 +1269,242 @@ export class ChecklistService {
       );
     }
   }
+
+  // ===== FREQUENCY ENFORCEMENT =====
+
+  /**
+   * Get overdue inspections — equipment that haven't been inspected
+   * according to the template's frequency schedule.
+   *
+   * Frequency rules:
+   *   DIARIO   → should have inspection every working day (Mon-Sat)
+   *   SEMANAL  → should have inspection every Monday
+   *   MENSUAL  → should have inspection at least once per calendar month
+   */
+  async getOverdueInspections(tenantId: number): Promise<OverdueInspectionDto[]> {
+    try {
+      const queryRunner = AppDataSource.createQueryRunner();
+      try {
+        // Get all active templates with their frequency
+        const templates = await this.templateRepository.find({
+          where: { activo: true, tenantId },
+        });
+
+        if (templates.length === 0) {
+          return [];
+        }
+
+        // Get all active equipment with their tipo_equipo for category info
+        const equipmentRows: any[] = await queryRunner.query(
+          `
+          SELECT e.id, e.codigo_equipo AS codigo, e.marca, e.modelo, e.estado,
+                 te.nombre AS tipo_equipo_nombre, te.categoria_prd
+          FROM equipo.equipo e
+          LEFT JOIN equipo.tipo_equipo te ON e.tipo_equipo_id = te.id
+          WHERE e.estado IN ('DISPONIBLE', 'EN_USO', 'OPERATIVO')
+            AND e.tenant_id = $1
+        `,
+          [tenantId]
+        );
+
+        if (equipmentRows.length === 0) {
+          return [];
+        }
+
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10);
+        const results: OverdueInspectionDto[] = [];
+
+        // For each template, check which equipment is overdue
+        for (const template of templates) {
+          if (!template.frecuencia || template.frecuencia === 'ANTES_USO') {
+            continue; // ANTES_USO has no time-based schedule
+          }
+
+          // Find equipment that matches this template's tipo_equipo
+          // "TODOS" or empty means all equipment; otherwise partial match
+          const tipoFilter = template.tipoEquipo?.toUpperCase();
+          const matchingEquipment =
+            !tipoFilter || tipoFilter === 'TODOS'
+              ? equipmentRows
+              : equipmentRows.filter((e: any) => {
+                  const nombre = e.tipo_equipo_nombre?.toUpperCase() || '';
+                  return (
+                    nombre === tipoFilter ||
+                    nombre.includes(tipoFilter) ||
+                    tipoFilter.includes(nombre)
+                  );
+                });
+
+          if (matchingEquipment.length === 0) continue;
+
+          const equipIds = matchingEquipment.map((e: any) => e.id);
+
+          // Get last completed inspection date per equipment for this template
+          const lastInspections: any[] = await queryRunner.query(
+            `
+            SELECT ci.equipo_id, MAX(ci.fecha_inspeccion) AS ultima_inspeccion
+            FROM equipo.checklist_inspeccion ci
+            WHERE ci.plantilla_id = $1
+              AND ci.estado = 'COMPLETADO'
+              AND ci.equipo_id = ANY($2)
+            GROUP BY ci.equipo_id
+          `,
+            [template.id, equipIds]
+          );
+
+          const lastInspMap = new Map<number, string>();
+          for (const row of lastInspections) {
+            lastInspMap.set(row.equipo_id, row.ultima_inspeccion);
+          }
+
+          // Check each equipment against the frequency
+          for (const equip of matchingEquipment) {
+            const lastInspRaw = lastInspMap.get(equip.id);
+            // PostgreSQL may return Date object or string — normalize to YYYY-MM-DD string
+            const lastInsp = lastInspRaw
+              ? lastInspRaw instanceof Date
+                ? lastInspRaw.toISOString().slice(0, 10)
+                : String(lastInspRaw).slice(0, 10)
+              : undefined;
+            const dueInfo = this.checkOverdue(template.frecuencia, lastInsp, todayStr);
+
+            if (dueInfo.overdue) {
+              results.push({
+                equipo_id: equip.id,
+                codigo_equipo: equip.codigo,
+                marca: equip.marca,
+                modelo: equip.modelo,
+                categoria_prd: equip.categoria_prd || null,
+                plantilla_id: template.id,
+                plantilla_codigo: template.codigo,
+                plantilla_nombre: template.nombre,
+                frecuencia: template.frecuencia,
+                ultima_inspeccion: lastInsp || null,
+                dias_vencido: dueInfo.diasVencido,
+                fecha_vencimiento: dueInfo.fechaVencimiento,
+              });
+            }
+          }
+        }
+
+        // Sort by dias_vencido descending (most overdue first)
+        results.sort((a, b) => b.dias_vencido - a.dias_vencido);
+
+        logger.info('Retrieved overdue inspections', {
+          tenantId,
+          total: results.length,
+          context: 'ChecklistService.getOverdueInspections',
+        });
+
+        return results;
+      } finally {
+        await queryRunner.release();
+      }
+    } catch (error) {
+      logger.error('Error retrieving overdue inspections', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
+        context: 'ChecklistService.getOverdueInspections',
+      });
+      throw new DatabaseError(
+        'Failed to retrieve overdue inspections',
+        DatabaseErrorType.QUERY,
+        error as Error
+      );
+    }
+  }
+
+  /**
+   * Check if an inspection is overdue based on frequency and last inspection date.
+   */
+  private checkOverdue(
+    frecuencia: string,
+    lastInspDate: string | undefined,
+    todayStr: string
+  ): { overdue: boolean; diasVencido: number; fechaVencimiento: string } {
+    const today = new Date(todayStr + 'T00:00:00');
+    const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ... 6=Sat
+
+    if (!lastInspDate) {
+      // Never inspected — overdue by at least 1 day
+      return { overdue: true, diasVencido: 999, fechaVencimiento: todayStr };
+    }
+
+    const lastDate = new Date(lastInspDate + 'T00:00:00');
+    const diffMs = today.getTime() - lastDate.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    switch (frecuencia) {
+      case 'DIARIO': {
+        // Overdue if last inspection was more than 1 working day ago
+        // Working days = Mon-Sat. If today is Monday, last inspection should be Saturday (1 day gap)
+        // If today is Tuesday-Saturday, last inspection should be yesterday
+        let expectedGap = 1;
+        if (dayOfWeek === 1) expectedGap = 2; // Monday → last should be Saturday (2 calendar days)
+        if (dayOfWeek === 0) return { overdue: false, diasVencido: 0, fechaVencimiento: todayStr }; // Sunday, not a working day
+
+        const overdue = diffDays > expectedGap;
+        const dueDate = new Date(lastDate);
+        dueDate.setDate(dueDate.getDate() + expectedGap);
+        return {
+          overdue,
+          diasVencido: overdue ? diffDays - expectedGap : 0,
+          fechaVencimiento: dueDate.toISOString().slice(0, 10),
+        };
+      }
+      case 'SEMANAL': {
+        // Overdue if last inspection was more than 7 days ago
+        const overdue = diffDays > 7;
+        const dueDate = new Date(lastDate);
+        dueDate.setDate(dueDate.getDate() + 7);
+        return {
+          overdue,
+          diasVencido: overdue ? diffDays - 7 : 0,
+          fechaVencimiento: dueDate.toISOString().slice(0, 10),
+        };
+      }
+      case 'MENSUAL': {
+        // Overdue if last inspection was in a previous month AND more than 31 days ago
+        const lastMonth = lastDate.getMonth();
+        const lastYear = lastDate.getFullYear();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        // Same month = not overdue
+        if (lastYear === currentYear && lastMonth === currentMonth) {
+          return { overdue: false, diasVencido: 0, fechaVencimiento: todayStr };
+        }
+
+        // Previous month(s) — overdue
+        const dueDate = new Date(lastYear, lastMonth + 1, 1); // first of next month
+        const overdueDays = Math.floor(
+          (today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        return {
+          overdue: true,
+          diasVencido: Math.max(overdueDays, 1),
+          fechaVencimiento: dueDate.toISOString().slice(0, 10),
+        };
+      }
+      default:
+        return { overdue: false, diasVencido: 0, fechaVencimiento: todayStr };
+    }
+  }
+}
+
+export interface OverdueInspectionDto {
+  equipo_id: number;
+  codigo_equipo: string;
+  marca: string | null;
+  modelo: string | null;
+  categoria_prd: string | null;
+  plantilla_id: number;
+  plantilla_codigo: string;
+  plantilla_nombre: string;
+  frecuencia: string;
+  ultima_inspeccion: string | null;
+  dias_vencido: number;
+  fecha_vencimiento: string;
 }

@@ -10,6 +10,7 @@ import {
 } from '../../core/services/daily-report.service';
 import { DashboardApiService, DocumentAlertsSummary } from '../../core/services/dashboard.service';
 import { EquipmentService } from '../../core/services/equipment.service';
+import { ChecklistService, OverdueInspection } from '../../core/services/checklist.service';
 
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
@@ -125,6 +126,46 @@ import {
               </div>
             </div>
           </div>
+        </div>
+      }
+
+      <!-- Overdue Inspections Alert -->
+      @if (overdueInspections.length > 0) {
+        <div class="panel dashboard-panel overdue-panel">
+          <div class="panel-header">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Inspecciones Vencidas</h3>
+            <a routerLink="/checklists/inspections" class="link-action">Ir a inspecciones</a>
+          </div>
+          <div class="overdue-list">
+            @for (
+              item of overdueInspections.slice(0, 8);
+              track item.equipo_id + '-' + item.plantilla_id
+            ) {
+              <div class="overdue-row">
+                <div class="overdue-equipo">
+                  <span class="overdue-codigo">{{ item.codigo_equipo }}</span>
+                  <span class="overdue-desc">{{ item.marca }} {{ item.modelo }}</span>
+                </div>
+                <div class="overdue-template">{{ item.plantilla_nombre }}</div>
+                <div class="overdue-meta">
+                  <span class="pill pill-red" *ngIf="item.dias_vencido >= 999"
+                    >Nunca inspeccionado</span
+                  >
+                  <span
+                    class="pill pill-red"
+                    *ngIf="item.dias_vencido > 0 && item.dias_vencido < 999"
+                    >{{ item.dias_vencido }}d vencido</span
+                  >
+                  <span class="pill pill-grey">{{ item.frecuencia }}</span>
+                </div>
+              </div>
+            }
+          </div>
+          @if (overdueInspections.length > 8) {
+            <div class="panel-footer">
+              <span class="text-muted">y {{ overdueInspections.length - 8 }} más...</span>
+            </div>
+          }
         </div>
       }
 
@@ -474,6 +515,65 @@ import {
       .pill-green {
         background: var(--semantic-green-50);
         color: var(--semantic-green-700);
+      }
+
+      .pill-grey {
+        background: var(--grey-100);
+        color: var(--grey-600);
+      }
+
+      /* Overdue Panel */
+      .overdue-panel {
+        border-color: var(--semantic-red-200);
+        background: var(--semantic-red-50, #fef2f2);
+      }
+      .overdue-list {
+        display: flex;
+        flex-direction: column;
+      }
+      .overdue-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--semantic-red-100, #fecaca);
+        font-size: 13px;
+      }
+      .overdue-row:last-child {
+        border-bottom: none;
+      }
+      .overdue-equipo {
+        flex: 0 0 200px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .overdue-codigo {
+        font-weight: 700;
+        color: var(--primary-700);
+      }
+      .overdue-desc {
+        color: var(--grey-600);
+        font-size: 12px;
+      }
+      .overdue-template {
+        flex: 1;
+        color: var(--grey-700);
+        font-size: 12px;
+      }
+      .overdue-meta {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .panel-footer {
+        padding: 8px 16px;
+        text-align: center;
+        border-top: 1px solid var(--semantic-red-100, #fecaca);
+      }
+      .text-muted {
+        color: var(--grey-500);
+        font-size: 12px;
       }
 
       .month-input-premium {
@@ -853,6 +953,7 @@ export class EquipmentDashboardComponent implements OnInit {
   private dailyReportService = inject(DailyReportService);
   private dashboardService = inject(DashboardApiService);
   private equipmentService = inject(EquipmentService);
+  private checklistService = inject(ChecklistService);
 
   loading = false;
   loadingReception = false;
@@ -861,6 +962,7 @@ export class EquipmentDashboardComponent implements OnInit {
   documentAlerts: DocumentAlertsSummary | null = null;
   receptionStatus: EquipmentReceptionStatus[] = [];
   inspectionTracking: EquipmentInspectionTracking[] = [];
+  overdueInspections: OverdueInspection[] = [];
   soloAbiertas = true;
 
   selectedMonth: string = this.getCurrentMonth();
@@ -876,6 +978,7 @@ export class EquipmentDashboardComponent implements OnInit {
     this.loadReceptionStatus();
     this.loadEquipmentStats();
     this.loadInspectionTracking();
+    this.loadOverdueInspections();
   }
 
   loadInspectionTracking(): void {
@@ -891,6 +994,17 @@ export class EquipmentDashboardComponent implements OnInit {
           this.loadingInspection = false;
         },
       });
+  }
+
+  loadOverdueInspections(): void {
+    this.checklistService.getOverdueInspections().subscribe({
+      next: (data) => {
+        this.overdueInspections = data;
+      },
+      error: () => {
+        this.overdueInspections = [];
+      },
+    });
   }
 
   loadDocumentAlerts(): void {
