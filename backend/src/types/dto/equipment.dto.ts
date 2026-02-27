@@ -414,6 +414,18 @@ export class EquipmentCreateDto {
   @IsOptional()
   @IsNumber({}, { message: 'creado_por debe ser un número' })
   creado_por?: number;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_venc_soat debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_venc_soat?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_venc_poliza debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_venc_poliza?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_venc_citv debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_venc_citv?: string;
 }
 
 /**
@@ -516,6 +528,18 @@ export class EquipmentUpdateDto {
   @IsOptional()
   @IsNumber({}, { message: 'actualizado_por debe ser un número' })
   actualizado_por?: number;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_venc_soat debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_venc_soat?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_venc_poliza debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_venc_poliza?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'fecha_venc_citv debe ser una fecha válida (YYYY-MM-DD)' })
+  fecha_venc_citv?: string;
 }
 
 /**
