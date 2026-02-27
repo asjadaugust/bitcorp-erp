@@ -9,7 +9,8 @@ FROM base AS development
 COPY frontend/package*.json ./
 # Install dependencies with legacy peer deps to resolve conflicts
 # Note: --legacy-peer-deps resolves Angular 19 dependency conflicts
-RUN npm install --legacy-peer-deps --loglevel=info
+RUN npm install --legacy-peer-deps --loglevel=info && \
+    npm install --no-save @rollup/rollup-linux-x64-gnu
 COPY frontend/ .
 RUN rm -rf .angular node_modules/.cache
 EXPOSE 3420
