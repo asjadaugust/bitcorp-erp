@@ -806,4 +806,150 @@ export class ContractController {
       }
     }
   }
+
+  // ─── WS-32b: Notarial Legalization Flow (PRD P-001 §4.3.3) ───────────────
+
+  private static toLegalizacionDto(paso: any) {
+    return {
+      id: paso.id,
+      contrato_id: paso.contratoId,
+      numero_paso: paso.numeroPaso,
+      tipo_paso: paso.tipoPaso,
+      completado: paso.completado,
+      fecha_completado: paso.fechaCompletado || null,
+      completado_por: paso.completadoPor || null,
+      observaciones: paso.observaciones || null,
+      created_at: paso.createdAt,
+      updated_at: paso.updatedAt,
+    };
+  }
+
+  /** GET /api/contracts/:id/legalizacion — Get legalization steps */
+  static async getLegalizacion(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de contrato inválido');
+        return;
+      }
+
+      const tenantId = req.user!.id_empresa;
+      const pasos = await contractService.getLegalizacion(tenantId, id);
+      sendSuccess(res, pasos.map(ContractController.toLegalizacionDto));
+    } catch (error: any) {
+      Logger.error('Error getting legalizacion', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ContractController.getLegalizacion',
+      });
+      if (error.name === 'NotFoundError') {
+        sendError(res, 404, 'NOT_FOUND', error.message);
+      } else {
+        sendError(
+          res,
+          500,
+          'LEGALIZACION_FETCH_FAILED',
+          'Error al obtener legalización',
+          error.message
+        );
+      }
+    }
+  }
+
+  /** POST /api/contracts/:id/legalizacion/iniciar — Initialize legalization flow */
+  static async iniciarLegalizacion(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de contrato inválido');
+        return;
+      }
+
+      const tenantId = req.user!.id_empresa;
+      const usuarioId = Number(req.user!.id_usuario);
+      const pasos = await contractService.iniciarLegalizacion(tenantId, id, usuarioId);
+      sendSuccess(res, pasos.map(ContractController.toLegalizacionDto));
+    } catch (error: any) {
+      Logger.error('Error initiating legalizacion', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ContractController.iniciarLegalizacion',
+      });
+      if (error.name === 'NotFoundError') {
+        sendError(res, 404, 'NOT_FOUND', error.message);
+      } else if (error.name === 'BusinessRuleError') {
+        sendError(res, 422, 'BUSINESS_RULE_ERROR', error.message);
+      } else {
+        sendError(
+          res,
+          500,
+          'LEGALIZACION_INIT_FAILED',
+          'Error al iniciar legalización',
+          error.message
+        );
+      }
+    }
+  }
+
+  /** POST /api/contracts/:id/legalizacion/paso/:numero — Complete a legalization step */
+  static async completarPasoLegalizacion(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const numero = parseInt(req.params.numero);
+      if (isNaN(id) || isNaN(numero)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de contrato o número de paso inválido');
+        return;
+      }
+
+      const tenantId = req.user!.id_empresa;
+      const usuarioId = Number(req.user!.id_usuario);
+      const { observaciones } = req.body;
+
+      const pasos = await contractService.completarPasoLegalizacion(tenantId, id, numero, {
+        observaciones,
+        usuarioId,
+      });
+      sendSuccess(res, pasos.map(ContractController.toLegalizacionDto));
+    } catch (error: any) {
+      Logger.error('Error completing legalizacion step', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ContractController.completarPasoLegalizacion',
+      });
+      if (error.name === 'NotFoundError') {
+        sendError(res, 404, 'NOT_FOUND', error.message);
+      } else if (error.name === 'BusinessRuleError' || error.name === 'ConflictError') {
+        sendError(res, 422, error.name.toUpperCase(), error.message);
+      } else {
+        sendError(res, 500, 'LEGALIZACION_STEP_FAILED', 'Error al completar paso', error.message);
+      }
+    }
+  }
+
+  /** POST /api/contracts/:id/legalizacion/paso/:numero/revertir — Undo a step */
+  static async revertirPasoLegalizacion(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const numero = parseInt(req.params.numero);
+      if (isNaN(id) || isNaN(numero)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de contrato o número de paso inválido');
+        return;
+      }
+
+      const tenantId = req.user!.id_empresa;
+      const usuarioId = Number(req.user!.id_usuario);
+
+      const pasos = await contractService.revertirPasoLegalizacion(tenantId, id, numero, usuarioId);
+      sendSuccess(res, pasos.map(ContractController.toLegalizacionDto));
+    } catch (error: any) {
+      Logger.error('Error reverting legalizacion step', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'ContractController.revertirPasoLegalizacion',
+      });
+      if (error.name === 'NotFoundError') {
+        sendError(res, 404, 'NOT_FOUND', error.message);
+      } else if (error.name === 'BusinessRuleError' || error.name === 'ConflictError') {
+        sendError(res, 422, error.name.toUpperCase(), error.message);
+      } else {
+        sendError(res, 500, 'LEGALIZACION_REVERT_FAILED', 'Error al revertir paso', error.message);
+      }
+    }
+  }
 }

@@ -13,6 +13,11 @@ import {
   TipoObligacionArrendatario,
   OBLIGACION_ARRENDATARIO_LABELS,
 } from '../models/contract-obligacion-arrendatario.model';
+import {
+  ContratoLegalizacionPaso,
+  LEGALIZACION_PASOS,
+  LEGALIZACION_PASO_LABELS,
+} from '../models/contrato-legalizacion-paso.model';
 import { Repository, Between } from 'typeorm';
 import {
   ContractDto,
@@ -2022,5 +2027,199 @@ export class ContractService {
         error as Error
       );
     }
+  }
+
+  // ─── WS-32b: Notarial Legalization Flow (PRD P-001 §4.3.3) ───────────────
+
+  private get legalizacionRepository(): Repository<ContratoLegalizacionPaso> {
+    return AppDataSource.getRepository(ContratoLegalizacionPaso);
+  }
+
+  /**
+   * Get legalization steps for a contract.
+   * Returns empty array if legalization hasn't been initialized.
+   */
+  async getLegalizacion(tenantId: number, contratoId: number): Promise<ContratoLegalizacionPaso[]> {
+    const contract = await this.contractRepository.findOne({
+      where: { id: contratoId, tenantId },
+    });
+    if (!contract) throw new NotFoundError('Contract', contratoId);
+
+    return this.legalizacionRepository.find({
+      where: { contratoId },
+      order: { numeroPaso: 'ASC' },
+    });
+  }
+
+  /**
+   * Initialize the 4 legalization steps for a contract.
+   * Idempotent — returns existing steps if already initialized.
+   */
+  async iniciarLegalizacion(
+    tenantId: number,
+    contratoId: number,
+    _usuarioId: number
+  ): Promise<ContratoLegalizacionPaso[]> {
+    const contract = await this.contractRepository.findOne({
+      where: { id: contratoId, tenantId },
+    });
+    if (!contract) throw new NotFoundError('Contract', contratoId);
+
+    if (!['ACTIVO', 'BORRADOR'].includes(contract.estado)) {
+      throw new BusinessRuleError(
+        `No se puede iniciar legalización en estado ${contract.estado}. Solo contratos ACTIVO o BORRADOR.`,
+        'LEGALIZACION_ESTADO_INVALIDO'
+      );
+    }
+
+    // Check if already initialized
+    const existing = await this.legalizacionRepository.find({
+      where: { contratoId },
+    });
+    if (existing.length > 0) {
+      return existing.sort((a, b) => a.numeroPaso - b.numeroPaso);
+    }
+
+    // Create the 4 steps
+    const pasos = LEGALIZACION_PASOS.map((p) =>
+      this.legalizacionRepository.create({
+        contratoId,
+        numeroPaso: p.numero,
+        tipoPaso: p.tipo,
+        completado: false,
+        tenantId,
+      })
+    );
+
+    const saved = await this.legalizacionRepository.save(pasos);
+    logger.info('Legalization initialized', {
+      contratoId,
+      pasos: saved.length,
+      numero: contract.numeroContrato,
+    });
+
+    return saved.sort((a, b) => a.numeroPaso - b.numeroPaso);
+  }
+
+  /**
+   * Complete a legalization step (must be done in order).
+   */
+  async completarPasoLegalizacion(
+    tenantId: number,
+    contratoId: number,
+    numeroPaso: number,
+    dto: { observaciones?: string; usuarioId: number }
+  ): Promise<ContratoLegalizacionPaso[]> {
+    const contract = await this.contractRepository.findOne({
+      where: { id: contratoId, tenantId },
+    });
+    if (!contract) throw new NotFoundError('Contract', contratoId);
+
+    const pasos = await this.legalizacionRepository.find({
+      where: { contratoId },
+      order: { numeroPaso: 'ASC' },
+    });
+
+    if (pasos.length === 0) {
+      throw new BusinessRuleError(
+        'La legalización no ha sido iniciada. Use el botón "Iniciar Legalización" primero.',
+        'LEGALIZACION_NO_INICIADA'
+      );
+    }
+
+    const paso = pasos.find((p) => p.numeroPaso === numeroPaso);
+    if (!paso) {
+      throw new NotFoundError('PasoLegalizacion', numeroPaso);
+    }
+
+    if (paso.completado) {
+      throw new ConflictError(
+        `El paso ${numeroPaso} (${LEGALIZACION_PASO_LABELS[paso.tipoPaso]}) ya fue completado.`
+      );
+    }
+
+    // Steps must be completed in order
+    const previousIncomplete = pasos.find((p) => p.numeroPaso < numeroPaso && !p.completado);
+    if (previousIncomplete) {
+      throw new BusinessRuleError(
+        `Debe completar el paso ${previousIncomplete.numeroPaso} (${LEGALIZACION_PASO_LABELS[previousIncomplete.tipoPaso]}) antes de continuar.`,
+        'LEGALIZACION_PASO_FUERA_DE_ORDEN'
+      );
+    }
+
+    // Complete the step
+    paso.completado = true;
+    paso.fechaCompletado = new Date();
+    paso.completadoPor = dto.usuarioId;
+    if (dto.observaciones) paso.observaciones = dto.observaciones;
+
+    await this.legalizacionRepository.save(paso);
+
+    logger.info('Legalization step completed', {
+      contratoId,
+      numeroPaso,
+      tipoPaso: paso.tipoPaso,
+      numero: contract.numeroContrato,
+    });
+
+    // Return all steps (refreshed)
+    return this.legalizacionRepository.find({
+      where: { contratoId },
+      order: { numeroPaso: 'ASC' },
+    });
+  }
+
+  /**
+   * Undo a legalization step (revert to pending).
+   * Can only undo the last completed step.
+   */
+  async revertirPasoLegalizacion(
+    tenantId: number,
+    contratoId: number,
+    numeroPaso: number,
+    usuarioId: number
+  ): Promise<ContratoLegalizacionPaso[]> {
+    const contract = await this.contractRepository.findOne({
+      where: { id: contratoId, tenantId },
+    });
+    if (!contract) throw new NotFoundError('Contract', contratoId);
+
+    const pasos = await this.legalizacionRepository.find({
+      where: { contratoId },
+      order: { numeroPaso: 'ASC' },
+    });
+
+    const paso = pasos.find((p) => p.numeroPaso === numeroPaso);
+    if (!paso) throw new NotFoundError('PasoLegalizacion', numeroPaso);
+    if (!paso.completado) {
+      throw new ConflictError(`El paso ${numeroPaso} aún no ha sido completado.`);
+    }
+
+    // Can only undo the last completed step
+    const laterCompleted = pasos.find((p) => p.numeroPaso > numeroPaso && p.completado);
+    if (laterCompleted) {
+      throw new BusinessRuleError(
+        `No se puede revertir el paso ${numeroPaso}. Debe revertir primero el paso ${laterCompleted.numeroPaso}.`,
+        'LEGALIZACION_REVERTIR_FUERA_DE_ORDEN'
+      );
+    }
+
+    paso.completado = false;
+    paso.fechaCompletado = undefined;
+    paso.completadoPor = undefined;
+    paso.observaciones = undefined;
+
+    await this.legalizacionRepository.save(paso);
+
+    logger.info('Legalization step reverted', {
+      contratoId,
+      numeroPaso,
+      revertedBy: usuarioId,
+    });
+
+    return this.legalizacionRepository.find({
+      where: { contratoId },
+      order: { numeroPaso: 'ASC' },
+    });
   }
 }

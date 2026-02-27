@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { ContractService } from '../../core/services/contract.service';
+import { ContractService, LegalizacionPaso } from '../../core/services/contract.service';
 import {
   Contract,
   ContractObligacion,
@@ -484,6 +484,105 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           </div>
         </app-entity-detail-sidebar-card>
       }
+
+      <!-- Legalización Notarial (WS-32b — PRD P-001 §4.3.3) -->
+      <app-entity-detail-sidebar-card entity-sidebar-after title="Legalización Notarial">
+        @if (legalizacionPasos.length === 0) {
+          <div class="legalizacion-empty">
+            <p class="empty-hint">
+              <i class="fa-solid fa-stamp"></i>
+              Proceso de legalización notarial no iniciado.
+            </p>
+            @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
+              <app-button
+                variant="secondary"
+                size="sm"
+                fullWidth="true"
+                icon="fa-play"
+                label="Iniciar Legalización"
+                (clicked)="initLegalizacion()"
+                [disabled]="savingLegalizacion"
+                data-testid="btn-init-legalizacion"
+              />
+            }
+          </div>
+        }
+        @if (legalizacionPasos.length > 0) {
+          <div class="legalizacion-stepper" data-testid="legalizacion-stepper">
+            @for (paso of legalizacionPasos; track paso.id) {
+              <div
+                class="leg-step"
+                [class.leg-step-done]="paso.completado"
+                [class.leg-step-active]="isNextStep(paso)"
+                [attr.data-testid]="'leg-step-' + paso.numero_paso"
+              >
+                <div class="leg-step-indicator">
+                  @if (paso.completado) {
+                    <i class="fa-solid fa-circle-check"></i>
+                  } @else if (isNextStep(paso)) {
+                    <span class="leg-step-num">{{ paso.numero_paso }}</span>
+                  } @else {
+                    <span class="leg-step-num muted">{{ paso.numero_paso }}</span>
+                  }
+                  @if (paso.numero_paso < 4) {
+                    <div class="leg-step-line" [class.done]="paso.completado"></div>
+                  }
+                </div>
+                <div class="leg-step-body">
+                  <span class="leg-step-label">{{
+                    translatePasoLegalizacion(paso.tipo_paso)
+                  }}</span>
+                  @if (paso.completado && paso.fecha_completado) {
+                    <span class="leg-step-date">
+                      <i class="fa-regular fa-calendar-check"></i>
+                      {{ paso.fecha_completado | date: 'dd/MM/yyyy' }}
+                    </span>
+                  }
+                  @if (paso.observaciones) {
+                    <span class="leg-step-obs">{{ paso.observaciones }}</span>
+                  }
+                  @if (isNextStep(paso)) {
+                    <app-button
+                      variant="primary"
+                      size="sm"
+                      icon="fa-check"
+                      [label]="savingLegalizacion ? 'Guardando...' : 'Completar Paso'"
+                      (clicked)="completarPaso(paso.numero_paso)"
+                      [disabled]="savingLegalizacion"
+                      [attr.data-testid]="'btn-completar-paso-' + paso.numero_paso"
+                    />
+                  }
+                  @if (paso.completado && isLastCompleted(paso)) {
+                    <app-button
+                      variant="ghost"
+                      size="sm"
+                      icon="fa-rotate-left"
+                      label="Revertir"
+                      (clicked)="revertirPaso(paso.numero_paso)"
+                      [disabled]="savingLegalizacion"
+                      class="btn-revert"
+                      [attr.data-testid]="'btn-revertir-paso-' + paso.numero_paso"
+                    />
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Summary badge -->
+            <div class="legalizacion-summary">
+              @if (allLegalizacionComplete()) {
+                <aero-badge variant="success">
+                  <i class="fa-solid fa-stamp"></i> Legalización Completa
+                </aero-badge>
+              } @else {
+                <aero-badge variant="warning">
+                  {{ completedLegalizacionCount() }}/4 pasos completados
+                </aero-badge>
+              }
+            </div>
+          </div>
+        }
+      </app-entity-detail-sidebar-card>
     </app-entity-detail-shell>
 
     <!-- ── MODAL: Resolver Contrato ──────────────────────────── -->
@@ -1057,6 +1156,114 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         color: var(--semantic-green-700);
         border: 1px solid var(--semantic-green-200);
       }
+
+      /* WS-32b: Legalization Stepper */
+      .legalizacion-empty {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-12);
+      }
+
+      .legalizacion-stepper {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .leg-step {
+        display: flex;
+        gap: 10px;
+        min-height: 60px;
+      }
+
+      .leg-step-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 24px;
+        flex-shrink: 0;
+
+        i.fa-circle-check {
+          color: var(--semantic-green-500);
+          font-size: 18px;
+        }
+
+        .leg-step-num {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          font-weight: 700;
+          background: var(--primary-500);
+          color: var(--white);
+
+          &.muted {
+            background: var(--grey-200);
+            color: var(--grey-500);
+          }
+        }
+      }
+
+      .leg-step-line {
+        flex: 1;
+        width: 2px;
+        background: var(--grey-200);
+        margin: 4px 0;
+
+        &.done {
+          background: var(--semantic-green-400);
+        }
+      }
+
+      .leg-step-body {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding-bottom: 12px;
+        flex: 1;
+      }
+
+      .leg-step-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--grey-800);
+      }
+
+      .leg-step-done .leg-step-label {
+        color: var(--semantic-green-700);
+      }
+
+      .leg-step-active .leg-step-label {
+        color: var(--primary-700);
+        font-weight: 600;
+      }
+
+      .leg-step-date {
+        font-size: 11px;
+        color: var(--grey-500);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .leg-step-obs {
+        font-size: 11px;
+        color: var(--grey-500);
+        font-style: italic;
+      }
+
+      .btn-revert {
+        margin-top: 2px;
+      }
+
+      .legalizacion-summary {
+        margin-top: 8px;
+        display: flex;
+        justify-content: center;
+      }
     `,
   ],
 })
@@ -1084,6 +1291,10 @@ export class ContractDetailComponent implements OnInit {
   // WS-22: Obligaciones del Arrendatario
   obligacionesArrendatario: ContractObligacionArrendatario[] = [];
   savingObligacionArrendatario = false;
+
+  // WS-32b: Legalization
+  legalizacionPasos: LegalizacionPaso[] = [];
+  savingLegalizacion = false;
 
   // WS-16: Lifecycle modals
   showResolverModal = false;
@@ -1231,6 +1442,7 @@ export class ContractDetailComponent implements OnInit {
         this.loadRequiredDocs(id);
         this.loadObligaciones(id);
         this.loadObligacionesArrendatario(id);
+        this.loadLegalizacion(id);
       },
       error: () => {
         this.loading = false;
@@ -1374,6 +1586,107 @@ export class ContractDetailComponent implements OnInit {
       LICENCIA_CONDUCIR: 'Licencia de Conducir',
     };
     return map[tipo] || tipo;
+  }
+
+  // ─── WS-32b: Legalización Notarial ───────────────────────────────
+
+  loadLegalizacion(id: string): void {
+    this.contractService.getLegalizacion(id).subscribe({
+      next: (pasos) => (this.legalizacionPasos = pasos),
+      error: (err) => console.error('Error loading legalizacion', err),
+    });
+  }
+
+  initLegalizacion(): void {
+    if (!this.contract) return;
+    this.savingLegalizacion = true;
+    this.contractService.iniciarLegalizacion(this.contract.id.toString()).subscribe({
+      next: (pasos) => {
+        this.legalizacionPasos = pasos;
+        this.savingLegalizacion = false;
+      },
+      error: (err) => {
+        console.error('Error initializing legalizacion', err);
+        this.savingLegalizacion = false;
+        this.snackBar.open(
+          err?.error?.error?.message || 'Error al iniciar legalización',
+          'Cerrar',
+          { duration: 5000 }
+        );
+      },
+    });
+  }
+
+  completarPaso(numeroPaso: number): void {
+    if (!this.contract) return;
+    this.savingLegalizacion = true;
+    this.contractService
+      .completarPasoLegalizacion(this.contract.id.toString(), numeroPaso)
+      .subscribe({
+        next: (pasos) => {
+          this.legalizacionPasos = pasos;
+          this.savingLegalizacion = false;
+        },
+        error: (err) => {
+          console.error('Error completing legalizacion step', err);
+          this.savingLegalizacion = false;
+          this.snackBar.open(err?.error?.error?.message || 'Error al completar paso', 'Cerrar', {
+            duration: 5000,
+          });
+        },
+      });
+  }
+
+  revertirPaso(numeroPaso: number): void {
+    if (!this.contract) return;
+    this.savingLegalizacion = true;
+    this.contractService
+      .revertirPasoLegalizacion(this.contract.id.toString(), numeroPaso)
+      .subscribe({
+        next: (pasos) => {
+          this.legalizacionPasos = pasos;
+          this.savingLegalizacion = false;
+        },
+        error: (err) => {
+          console.error('Error reverting legalizacion step', err);
+          this.savingLegalizacion = false;
+          this.snackBar.open(err?.error?.error?.message || 'Error al revertir paso', 'Cerrar', {
+            duration: 5000,
+          });
+        },
+      });
+  }
+
+  translatePasoLegalizacion(tipo: string): string {
+    const map: Record<string, string> = {
+      ENVIO_PROVEEDOR: 'Envío al Proveedor',
+      ENVIO_CENTRAL: 'Envío a Oficina Central',
+      ARCHIVADO: 'Archivado de documentos',
+      COMPLETADO: 'Legalización completada',
+    };
+    return map[tipo] || tipo;
+  }
+
+  isNextStep(paso: LegalizacionPaso): boolean {
+    if (paso.completado) return false;
+    // It's the next step if all previous steps are completed
+    return this.legalizacionPasos
+      .filter((p) => p.numero_paso < paso.numero_paso)
+      .every((p) => p.completado);
+  }
+
+  isLastCompleted(paso: LegalizacionPaso): boolean {
+    if (!paso.completado) return false;
+    // It's the last completed step if no later step is completed
+    return !this.legalizacionPasos.some((p) => p.numero_paso > paso.numero_paso && p.completado);
+  }
+
+  allLegalizacionComplete(): boolean {
+    return this.legalizacionPasos.length === 4 && this.legalizacionPasos.every((p) => p.completado);
+  }
+
+  completedLegalizacionCount(): number {
+    return this.legalizacionPasos.filter((p) => p.completado).length;
   }
 
   editContract(): void {

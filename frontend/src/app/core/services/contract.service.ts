@@ -410,4 +410,69 @@ export class ContractService {
         )
       );
   }
+
+  // ─── Legalization (WS-32b — PRD P-001 §4.3.3) ───
+
+  getLegalizacion(contractId: string): Observable<LegalizacionPaso[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${contractId}/legalizacion`).pipe(
+      map((response) => {
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? (data as unknown as LegalizacionPaso[]) : [];
+      })
+    );
+  }
+
+  iniciarLegalizacion(contractId: string): Observable<LegalizacionPaso[]> {
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${contractId}/legalizacion/iniciar`, {})
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? (data as unknown as LegalizacionPaso[]) : [];
+        })
+      );
+  }
+
+  completarPasoLegalizacion(
+    contractId: string,
+    numeroPaso: number,
+    observaciones?: string
+  ): Observable<LegalizacionPaso[]> {
+    return this.http
+      .post<
+        Record<string, unknown>
+      >(`${this.apiUrl}/${contractId}/legalizacion/paso/${numeroPaso}`, { observaciones })
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? (data as unknown as LegalizacionPaso[]) : [];
+        })
+      );
+  }
+
+  revertirPasoLegalizacion(contractId: string, numeroPaso: number): Observable<LegalizacionPaso[]> {
+    return this.http
+      .post<
+        Record<string, unknown>
+      >(`${this.apiUrl}/${contractId}/legalizacion/paso/${numeroPaso}/revertir`, {})
+      .pipe(
+        map((response) => {
+          const data = response?.['data'] || response;
+          return Array.isArray(data) ? (data as unknown as LegalizacionPaso[]) : [];
+        })
+      );
+  }
+}
+
+export interface LegalizacionPaso {
+  id: number;
+  contrato_id: number;
+  numero_paso: number;
+  tipo_paso: string;
+  completado: boolean;
+  fecha_completado: string | null;
+  completado_por: number | null;
+  observaciones: string | null;
+  created_at: string;
+  updated_at: string;
 }

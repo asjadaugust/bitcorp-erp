@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Router } from 'express';
 import { ContractController } from './contract.controller';
+import { authenticate } from '../../middleware/auth.middleware';
 import { validateDto } from '../../middleware/validation.middleware';
 import { ContractCreateDto, ContractUpdateDto } from '../../types/dto/contract.dto';
 
 const router = Router();
+router.use(authenticate);
 
 /**
  * @openapi
@@ -167,5 +169,11 @@ router.put(
 router.post('/:id/resolver', ContractController.resolver);
 router.get('/:id/liquidation-check', ContractController.liquidationCheck);
 router.post('/:id/liquidar', ContractController.liquidar);
+
+// ─── Legalization routes (WS-32b — PRD P-001 §4.3.3) ───
+router.get('/:id/legalizacion', ContractController.getLegalizacion);
+router.post('/:id/legalizacion/iniciar', ContractController.iniciarLegalizacion);
+router.post('/:id/legalizacion/paso/:numero', ContractController.completarPasoLegalizacion);
+router.post('/:id/legalizacion/paso/:numero/revertir', ContractController.revertirPasoLegalizacion);
 
 export default router;
