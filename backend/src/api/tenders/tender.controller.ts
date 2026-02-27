@@ -25,8 +25,7 @@ export class TenderController {
    */
   getTenders = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      // TODO: Get tenantId from req.tenantContext when multi-tenancy is fully implemented
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       // Extract pagination parameters
       const page = parseInt(req.query.page as string) || 1;
@@ -65,8 +64,7 @@ export class TenderController {
    */
   getTenderById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      // TODO: Get tenantId from req.tenantContext
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       const tender = await this.tenderService.findById(tenantId, id);
@@ -91,8 +89,7 @@ export class TenderController {
    */
   createTender = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      // TODO: Get tenantId from req.tenantContext
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const tender = await this.tenderService.create(tenantId, req.body);
       sendCreated(res, tender);
@@ -116,8 +113,7 @@ export class TenderController {
    */
   updateTender = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      // TODO: Get tenantId from req.tenantContext
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       const tender = await this.tenderService.update(tenantId, id, req.body);
@@ -146,8 +142,7 @@ export class TenderController {
    */
   deleteTender = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      // TODO: Get tenantId from req.tenantContext
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       await this.tenderService.delete(tenantId, id);

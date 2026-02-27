@@ -16,9 +16,6 @@ import { AppError } from '../../errors/base.error';
  * - ✅ Passes tenantId to service calls
  * - ✅ Maps service errors to HTTP status codes
  * - ✅ Returns standardized responses
- *
- * TODO: Update JWT payload to include tenantId field
- * Currently: Hardcoded to tenantId = 1 for development
  */
 export class SigController {
   private sigService = new SigService();
@@ -29,8 +26,7 @@ export class SigController {
    */
   getDocuments = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       // Extract pagination params
       const page = parseInt(req.query.page as string) || 1;
@@ -69,8 +65,7 @@ export class SigController {
    */
   createDocument = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const document = await this.sigService.createDocument(tenantId, req.body);
 
@@ -108,8 +103,7 @@ export class SigController {
         return;
       }
 
-      // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const document = await this.sigService.getDocumentById(tenantId, id);
 
@@ -147,8 +141,7 @@ export class SigController {
         return;
       }
 
-      // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       const document = await this.sigService.updateDocument(tenantId, id, req.body);
 
@@ -188,8 +181,7 @@ export class SigController {
         return;
       }
 
-      // TODO: Extract from JWT payload: const tenantId = req.user.tenantId;
-      const tenantId = req.user!.id_empresa; // Get tenantId from JWT token (multi-tenant context)
+      const tenantId = req.user!.id_empresa;
 
       await this.sigService.deleteDocument(tenantId, id);
 

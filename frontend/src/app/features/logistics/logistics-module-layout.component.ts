@@ -37,6 +37,5 @@ export class LogisticsModuleLayoutComponent {
   tabs: TabItem[] = [
     { label: 'Productos', route: '/logistics/products', icon: 'fa-boxes-stacked' },
     { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-dolly' },
-    { label: 'Combustible', route: '/logistics/fuel', icon: 'fa-gas-pump' },
   ];
 }
