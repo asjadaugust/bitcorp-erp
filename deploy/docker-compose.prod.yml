@@ -40,7 +40,7 @@ services:
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET:-production_secret_key_change_me}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-production_refresh_secret_key_change_me}
-      CORS_ORIGIN: http://bitcorp.mohammadasjad.com,http://localhost,http://localhost:3420
+      CORS_ORIGIN: "https://${DOMAIN},http://localhost,http://localhost:3420"
     ports:
       - "3400:3400"
     depends_on:
