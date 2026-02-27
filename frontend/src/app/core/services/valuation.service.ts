@@ -425,4 +425,65 @@ export class ValuationService {
   deleteDiscountEvent(eventId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/discount-events/${eventId}`);
   }
+
+  // ─── Manual Deductions (WS-38) ───
+
+  getManualDeductions(valuationId: number): Observable<DeduccionManual[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/deducciones`).pipe(
+      map((response) => {
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  createManualDeduction(
+    valuationId: number,
+    data: {
+      tipo: string;
+      concepto: string;
+      monto: number;
+      num_documento?: string;
+      fecha?: string;
+      observaciones?: string;
+    }
+  ): Observable<unknown> {
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/deducciones`, data)
+      .pipe(map((response) => response?.['data'] || response));
+  }
+
+  updateManualDeduction(
+    deduccionId: number,
+    data: {
+      tipo?: string;
+      concepto?: string;
+      monto?: number;
+      num_documento?: string;
+      fecha?: string;
+      observaciones?: string;
+    }
+  ): Observable<unknown> {
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/deducciones/${deduccionId}`, data)
+      .pipe(map((response) => response?.['data'] || response));
+  }
+
+  deleteManualDeduction(deduccionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/deducciones/${deduccionId}`);
+  }
+}
+
+export interface DeduccionManual {
+  id: number;
+  valorizacion_id: number;
+  tipo: string;
+  concepto: string;
+  num_documento?: string;
+  fecha?: string;
+  monto: number;
+  observaciones?: string;
+  creado_por?: number;
+  created_at: string;
+  updated_at: string;
 }

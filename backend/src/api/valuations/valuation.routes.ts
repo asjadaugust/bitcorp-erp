@@ -74,6 +74,18 @@ router.post(
     controller.downloadPdf(req, res, next);
   }
 );
+// Manual deductions (WS-38) — must be before /:id to avoid param collision
+router.put(
+  '/deducciones/:deduccionId',
+  authorize(ROLES.ADMIN, ROLES.JEFE_EQUIPO),
+  controller.updateManualDeduction
+);
+router.delete(
+  '/deducciones/:deduccionId',
+  authorize(ROLES.ADMIN, ROLES.JEFE_EQUIPO),
+  controller.deleteManualDeduction
+);
+
 router.put(
   '/:id',
   authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
@@ -150,6 +162,18 @@ router.delete(
   '/discount-events/:eventId',
   authorize(ROLES.ADMIN, ROLES.JEFE_EQUIPO),
   controller.deleteDiscountEvent
+);
+
+// Manual deduction sub-resource endpoints (WS-38)
+router.get(
+  '/:id/deducciones',
+  authorize(ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO),
+  controller.getManualDeductions
+);
+router.post(
+  '/:id/deducciones',
+  authorize(ROLES.ADMIN, ROLES.JEFE_EQUIPO),
+  controller.createManualDeduction
 );
 
 // Payment-related endpoints for valuations

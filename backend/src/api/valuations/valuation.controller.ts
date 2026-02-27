@@ -785,4 +785,121 @@ export class ValuationController {
       next(error);
     }
   };
+
+  // ─── Manual Deductions (WS-38) ───
+
+  private toDeduccionDto(d: any) {
+    return {
+      id: d.id,
+      valorizacion_id: d.valorizacionId,
+      tipo: d.tipo,
+      concepto: d.concepto,
+      num_documento: d.numDocumento || null,
+      fecha: d.fecha || null,
+      monto: d.monto,
+      observaciones: d.observaciones || null,
+      creado_por: d.creadoPor || null,
+      created_at: d.createdAt,
+      updated_at: d.updatedAt,
+    };
+  }
+
+  getManualDeductions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const deductions = await this.valuationService.getManualDeductions(id);
+      sendSuccess(
+        res,
+        deductions.map((d) => this.toDeduccionDto(d))
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createManualDeduction = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        sendError(res, 400, 'INVALID_ID', 'ID inválido');
+        return;
+      }
+
+      const { tipo, concepto, monto, num_documento, fecha, observaciones } = req.body;
+      if (!tipo || !concepto || monto === undefined) {
+        sendError(res, 400, 'MISSING_FIELDS', 'Campos requeridos: tipo, concepto, monto');
+        return;
+      }
+
+      const userId = (req as AuthRequest).user?.id_usuario;
+      const deduction = await this.valuationService.createManualDeduction({
+        valorizacionId: id,
+        tipo,
+        concepto,
+        monto: parseFloat(monto),
+        numDocumento: num_documento,
+        fecha,
+        observaciones,
+        creadoPor: userId,
+      });
+      sendCreated(res, deduction.id, 'Deducción manual creada');
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateManualDeduction = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const deduccionId = parseInt(req.params.deduccionId);
+      if (isNaN(deduccionId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de deducción inválido');
+        return;
+      }
+
+      const { tipo, concepto, monto, num_documento, fecha, observaciones } = req.body;
+      const updated = await this.valuationService.updateManualDeduction(deduccionId, {
+        tipo,
+        concepto,
+        monto: monto !== undefined ? parseFloat(monto) : undefined,
+        numDocumento: num_documento,
+        fecha,
+        observaciones,
+      });
+      sendSuccess(res, this.toDeduccionDto(updated));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteManualDeduction = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const deduccionId = parseInt(req.params.deduccionId);
+      if (isNaN(deduccionId)) {
+        sendError(res, 400, 'INVALID_ID', 'ID de deducción inválido');
+        return;
+      }
+
+      await this.valuationService.deleteManualDeduction(deduccionId);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
 }

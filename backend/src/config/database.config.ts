@@ -79,6 +79,7 @@ import { CertificacionOperador } from '../models/operador-certificacion.model';
 import { HabilidadOperador } from '../models/operador-habilidad.model';
 import { DisponibilidadOperador } from '../models/disponibilidad-operador.model';
 import { DailyReportPhoto } from '../models/daily-report-photo.model';
+import { DeduccionManual } from '../models/deduccion-manual.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -167,6 +168,7 @@ export const AppDataSource = new DataSource({
     HabilidadOperador,
     DisponibilidadOperador,
     DailyReportPhoto,
+    DeduccionManual,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

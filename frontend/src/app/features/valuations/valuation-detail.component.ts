@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { ValuationService } from '../../core/services/valuation.service';
+import { ValuationService, DeduccionManual } from '../../core/services/valuation.service';
 import { Valuation, PaymentData, ValuationSummary } from '../../core/models/valuation.model';
 import { AuthService } from '../../core/services/auth.service';
 import { PaymentService } from '../../core/services/payment.service';
@@ -666,6 +666,64 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         </app-entity-detail-sidebar-card>
       }
 
+      <!-- Deducciones Manuales (WS-38) -->
+      @if (
+        valuation &&
+        (valuation.estado === 'BORRADOR' ||
+          valuation.estado === 'PENDIENTE' ||
+          manualDeductions.length > 0)
+      ) {
+        <app-entity-detail-sidebar-card entity-sidebar-after title="Deducciones Manuales">
+          <p class="section-hint">Deducciones por repuestos, combustible, adelantos, etc.</p>
+          @if (manualDeductions.length > 0) {
+            <div class="deductions-list">
+              @for (ded of manualDeductions; track ded.id) {
+                <div class="deduction-item">
+                  <div class="deduction-header">
+                    <span class="deduction-type-badge">{{ translateDeductionType(ded.tipo) }}</span>
+                    <span class="deduction-amount"
+                      >-{{ ded.monto | currency: 'PEN' : 'symbol' : '1.2-2' }}</span
+                    >
+                  </div>
+                  <p class="deduction-concepto">{{ ded.concepto }}</p>
+                  @if (ded.num_documento) {
+                    <p class="deduction-meta">Doc: {{ ded.num_documento }}</p>
+                  }
+                  @if (ded.fecha) {
+                    <p class="deduction-meta">{{ ded.fecha | date: 'dd/MM/yy' }}</p>
+                  }
+                  @if (valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE') {
+                    <app-button
+                      variant="icon"
+                      size="sm"
+                      icon="fa-trash-can"
+                      title="Eliminar deducción"
+                      (clicked)="removeManualDeduction(ded.id)"
+                    ></app-button>
+                  }
+                </div>
+              }
+              <div class="deductions-total">
+                <span>Total Deducciones:</span>
+                <strong>-{{ totalManualDeductions | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+              </div>
+            </div>
+          } @else {
+            <p class="empty-docs">Sin deducciones manuales registradas.</p>
+          }
+          @if (valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE') {
+            <app-button
+              variant="secondary"
+              [fullWidth]="true"
+              icon="fa-plus"
+              label="Agregar Deducción"
+              class="mt-8"
+              (clicked)="showAddDeductionModal = true"
+            ></app-button>
+          }
+        </app-entity-detail-sidebar-card>
+      }
+
       <!-- Documentos de Pago -->
       @if (paymentDocs.length > 0) {
         <app-entity-detail-sidebar-card entity-sidebar-after title="Documentos de Pago">
@@ -1009,6 +1067,104 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               label="Agregar Descuento"
               [disabled]="!newDiscountEvent.fecha || !newDiscountEvent.tipo"
               (clicked)="confirmAddDiscountEvent()"
+            ></app-button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Add Manual Deduction Modal -->
+    @if (showAddDeductionModal) {
+      <div
+        class="modal"
+        (click)="showAddDeductionModal = false"
+        (keydown.enter)="showAddDeductionModal = false"
+        tabindex="0"
+        role="button"
+      >
+        <div
+          class="modal-content"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="dialog"
+        >
+          <div class="modal-header">
+            <h2>Agregar Deducción Manual</h2>
+            <app-button
+              variant="icon"
+              icon="fa-xmark"
+              (clicked)="showAddDeductionModal = false"
+            ></app-button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <span class="label">Tipo de Deducción<span class="required">*</span></span>
+              <app-dropdown
+                [options]="deductionTypeOptions"
+                [placeholder]="'Seleccionar tipo'"
+                [(value)]="newDeduction.tipo"
+              ></app-dropdown>
+            </div>
+            <div class="form-group">
+              <span class="label">Concepto<span class="required">*</span></span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newDeduction.concepto"
+                placeholder="Descripción de la deducción..."
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">Monto (S/)<span class="required">*</span></span>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="newDeduction.monto"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">N° Documento</span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newDeduction.num_documento"
+                placeholder="Factura, boleta, etc."
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">Fecha</span>
+              <input type="date" class="form-control" [(ngModel)]="newDeduction.fecha" />
+            </div>
+            <div class="form-group">
+              <span class="label">Observaciones</span>
+              <textarea
+                class="form-control"
+                rows="3"
+                [(ngModel)]="newDeduction.observaciones"
+                placeholder="Notas adicionales..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <app-button
+              variant="secondary"
+              label="Cancelar"
+              (clicked)="showAddDeductionModal = false"
+            ></app-button>
+            <app-button
+              variant="primary"
+              label="Agregar Deducción"
+              [disabled]="
+                !newDeduction.tipo ||
+                !newDeduction.concepto ||
+                !newDeduction.monto ||
+                newDeduction.monto <= 0
+              "
+              (clicked)="confirmAddDeduction()"
             ></app-button>
           </div>
         </div>
@@ -1633,6 +1789,71 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         padding: 8px;
       }
 
+      /* Manual Deductions */
+      .deductions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .deduction-item {
+        padding: 8px;
+        border: 1px solid var(--grey-200);
+        border-radius: 6px;
+        position: relative;
+      }
+
+      .deduction-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .deduction-type-badge {
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--semantic-red-50);
+        color: var(--semantic-red-700);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .deduction-amount {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--semantic-red-700);
+        font-family: monospace;
+      }
+
+      .deduction-concepto {
+        font-size: 13px;
+        color: var(--grey-800);
+        margin: 2px 0;
+      }
+
+      .deduction-meta {
+        font-size: 11px;
+        color: var(--grey-500);
+        margin: 1px 0;
+      }
+
+      .deduction-item app-button {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+      }
+
+      .deductions-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        border-top: 2px solid var(--grey-200);
+        margin-top: 4px;
+        font-size: 13px;
+        color: var(--semantic-red-700);
+      }
+
       /* Payment docs */
       .payment-docs-list {
         display: flex;
@@ -1962,6 +2183,30 @@ export class ValuationDetailComponent implements OnInit {
     return null;
   }
 
+  // Manual deductions (WS-38)
+  manualDeductions: DeduccionManual[] = [];
+  showAddDeductionModal = false;
+  newDeduction = {
+    tipo: '',
+    concepto: '',
+    monto: 0,
+    num_documento: '',
+    fecha: '',
+    observaciones: '',
+  };
+  deductionTypeOptions: DropdownOption[] = [
+    { label: 'Repuestos / Spare Parts', value: 'REPUESTOS' },
+    { label: 'Manipuleo de Combustible', value: 'MANIPULEO_COMBUSTIBLE' },
+    { label: 'Amortización de Adelanto', value: 'AMORTIZACION_ADELANTO' },
+    { label: 'Penalidad', value: 'PENALIDAD' },
+    { label: 'Retención', value: 'RETENCION' },
+    { label: 'Otro', value: 'OTRO' },
+  ];
+
+  get totalManualDeductions(): number {
+    return this.manualDeductions.reduce((sum, d) => sum + (parseFloat(String(d.monto)) || 0), 0);
+  }
+
   // Modal states
   showApproveModal = false;
   showRejectModal = false;
@@ -2024,6 +2269,7 @@ export class ValuationDetailComponent implements OnInit {
     this.loadPayments(id);
     this.loadPaymentSummary(id);
     this.loadDiscountEvents(id);
+    this.loadManualDeductions(id);
   }
 
   loadValuation(id: number): void {
@@ -2506,6 +2752,88 @@ export class ValuationDetailComponent implements OnInit {
       dias_descuento: 0,
       horas_horometro_mecanica: null,
       descripcion: '',
+    };
+  }
+
+  // ─── Manual Deductions (WS-38) ───
+
+  loadManualDeductions(valuationId: number): void {
+    this.valuationService.getManualDeductions(valuationId).subscribe({
+      next: (deductions) => (this.manualDeductions = deductions),
+    });
+  }
+
+  translateDeductionType(tipo: string): string {
+    const map: Record<string, string> = {
+      REPUESTOS: 'Repuestos',
+      MANIPULEO_COMBUSTIBLE: 'Manipuleo Comb.',
+      AMORTIZACION_ADELANTO: 'Amort. Adelanto',
+      PENALIDAD: 'Penalidad',
+      RETENCION: 'Retención',
+      OTRO: 'Otro',
+    };
+    return map[tipo] || tipo;
+  }
+
+  confirmAddDeduction(): void {
+    if (
+      !this.valuation ||
+      !this.newDeduction.tipo ||
+      !this.newDeduction.concepto ||
+      !this.newDeduction.monto
+    )
+      return;
+
+    this.valuationService
+      .createManualDeduction(this.valuation.id, {
+        tipo: this.newDeduction.tipo,
+        concepto: this.newDeduction.concepto,
+        monto: this.newDeduction.monto,
+        num_documento: this.newDeduction.num_documento || undefined,
+        fecha: this.newDeduction.fecha || undefined,
+        observaciones: this.newDeduction.observaciones || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.showAddDeductionModal = false;
+          this.resetDeductionForm();
+          this.loadManualDeductions(this.valuation!.id);
+          this.snackBar.open('Deducción agregada exitosamente', 'Cerrar', { duration: 3000 });
+        },
+        error: (err) => {
+          this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+            duration: 5000,
+          });
+        },
+      });
+  }
+
+  removeManualDeduction(deduccionId: number): void {
+    this.confirmSvc.confirmDelete('esta deducción manual').subscribe((confirmed) => {
+      if (confirmed) {
+        this.valuationService.deleteManualDeduction(deduccionId).subscribe({
+          next: () => {
+            this.loadManualDeductions(this.valuation!.id);
+            this.snackBar.open('Deducción eliminada', 'Cerrar', { duration: 3000 });
+          },
+          error: (err) => {
+            this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+              duration: 5000,
+            });
+          },
+        });
+      }
+    });
+  }
+
+  private resetDeductionForm(): void {
+    this.newDeduction = {
+      tipo: '',
+      concepto: '',
+      monto: 0,
+      num_documento: '',
+      fecha: '',
+      observaciones: '',
     };
   }
 

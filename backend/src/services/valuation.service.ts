@@ -7,6 +7,7 @@ import { WorkExpense } from '../models/work-expense.model';
 import { AdvanceAmortization } from '../models/advance-amortization.model';
 import { ValuationPaymentDocument } from '../models/valuation-payment-document.model';
 import { DiscountEvent, TipoEventoDescuento } from '../models/discount-event.model';
+import { DeduccionManual } from '../models/deduccion-manual.model';
 import { Repository } from 'typeorm';
 import { valuationEmailNotifier } from './valuation-email-notifier';
 import {
@@ -1865,16 +1866,20 @@ export class ValuationService {
     let importeGastoObra = 0;
     let importeAdelanto = 0;
     let importeExcesoCombustible = 0;
+    let importeDeduccionesManual = 0;
     if (valuationId) {
-      [importeGastoObra, importeAdelanto, importeExcesoCombustible] = await Promise.all([
-        this.sumWorkExpenses(tenantId, valuationId),
-        this.sumAdvanceAmortizations(tenantId, valuationId),
-        this.sumExcessFuel(tenantId, valuationId),
-      ]);
+      [importeGastoObra, importeAdelanto, importeExcesoCombustible, importeDeduccionesManual] =
+        await Promise.all([
+          this.sumWorkExpenses(tenantId, valuationId),
+          this.sumAdvanceAmortizations(tenantId, valuationId),
+          this.sumExcessFuel(tenantId, valuationId),
+          this.sumManualDeductions(tenantId, valuationId),
+        ]);
     }
 
     // Totals (Anexo B formula)
-    const descuentoMonto = importeGastoObra + importeAdelanto + importeExcesoCombustible;
+    const descuentoMonto =
+      importeGastoObra + importeAdelanto + importeExcesoCombustible + importeDeduccionesManual;
     const totalValorizado = costoBase + importeManipuleo - descuentoMonto;
     const igvMonto = totalValorizado * 0.18;
     const totalConIgv = totalValorizado + igvMonto;
@@ -1901,6 +1906,7 @@ export class ValuationService {
       importe_gasto_obra: round2(importeGastoObra),
       importe_adelanto: round2(importeAdelanto),
       importe_exceso_combustible: round2(importeExcesoCombustible),
+      importe_deducciones_manual: round2(importeDeduccionesManual),
       descuento_monto: round2(descuentoMonto),
       total_valorizado: round2(totalValorizado),
       igv_monto: round2(igvMonto),
@@ -3150,6 +3156,159 @@ export class ValuationService {
     }
 
     await repo.remove(event);
+    return true;
+  }
+
+  // ─── Manual Deductions (WS-38) ──────────────────────────────────────────────
+
+  private get deduccionManualRepository(): Repository<DeduccionManual> {
+    if (!AppDataSource.isInitialized) {
+      throw new Error('Database not initialized');
+    }
+    return AppDataSource.getRepository(DeduccionManual);
+  }
+
+  /**
+   * Sum manual deductions for a valuation.
+   */
+  private async sumManualDeductions(_tenantId: number, valuationId: number): Promise<number> {
+    const result = await AppDataSource.query(
+      `SELECT COALESCE(SUM(monto), 0)::numeric AS total
+       FROM equipo.deduccion_manual
+       WHERE valorizacion_id = $1`,
+      [valuationId]
+    );
+    return parseFloat(result[0]?.total) || 0;
+  }
+
+  /**
+   * Get all manual deduction line items for a valuation.
+   */
+  async getManualDeductions(valuationId: number): Promise<DeduccionManual[]> {
+    return this.deduccionManualRepository.find({
+      where: { valorizacionId: valuationId },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
+  /**
+   * Create a manual deduction line item.
+   * Only allowed on BORRADOR or PENDIENTE valuations.
+   */
+  async createManualDeduction(data: {
+    valorizacionId: number;
+    tipo: string;
+    concepto: string;
+    monto: number;
+    numDocumento?: string;
+    fecha?: string;
+    observaciones?: string;
+    creadoPor?: number;
+  }): Promise<DeduccionManual> {
+    const valuation = await this.repository.findOne({
+      where: { id: data.valorizacionId },
+    });
+
+    if (!valuation) {
+      throw new NotFoundError('Valuation', data.valorizacionId);
+    }
+
+    if (!['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+      throw new BusinessRuleError(
+        `Cannot add deductions to valuation in state ${valuation.estado}. Only BORRADOR or PENDIENTE allowed.`,
+        'INVALID_VALUATION_STATE'
+      );
+    }
+
+    if (data.monto <= 0) {
+      throw new ValidationError('El monto de la deducción debe ser mayor a cero', []);
+    }
+
+    const deduccion = this.deduccionManualRepository.create({
+      valorizacionId: data.valorizacionId,
+      tipo: data.tipo as any,
+      concepto: data.concepto,
+      monto: data.monto,
+      numDocumento: data.numDocumento,
+      fecha: data.fecha ? new Date(data.fecha) : undefined,
+      observaciones: data.observaciones,
+      creadoPor: data.creadoPor,
+    });
+
+    return this.deduccionManualRepository.save(deduccion);
+  }
+
+  /**
+   * Update a manual deduction line item.
+   */
+  async updateManualDeduction(
+    deduccionId: number,
+    data: {
+      tipo?: string;
+      concepto?: string;
+      monto?: number;
+      numDocumento?: string;
+      fecha?: string;
+      observaciones?: string;
+    }
+  ): Promise<DeduccionManual> {
+    const deduccion = await this.deduccionManualRepository.findOne({
+      where: { id: deduccionId },
+    });
+
+    if (!deduccion) {
+      throw new NotFoundError('DeduccionManual', deduccionId);
+    }
+
+    // Check valuation state
+    const valuation = await this.repository.findOne({
+      where: { id: deduccion.valorizacionId },
+    });
+    if (valuation && !['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+      throw new BusinessRuleError(
+        `Cannot edit deductions on valuation in state ${valuation.estado}`,
+        'INVALID_VALUATION_STATE'
+      );
+    }
+
+    if (data.tipo !== undefined) deduccion.tipo = data.tipo as any;
+    if (data.concepto !== undefined) deduccion.concepto = data.concepto;
+    if (data.monto !== undefined) {
+      if (data.monto <= 0) {
+        throw new ValidationError('El monto de la deducción debe ser mayor a cero', []);
+      }
+      deduccion.monto = data.monto;
+    }
+    if (data.numDocumento !== undefined) deduccion.numDocumento = data.numDocumento;
+    if (data.fecha !== undefined) deduccion.fecha = data.fecha ? new Date(data.fecha) : undefined;
+    if (data.observaciones !== undefined) deduccion.observaciones = data.observaciones;
+
+    return this.deduccionManualRepository.save(deduccion);
+  }
+
+  /**
+   * Delete a manual deduction line item.
+   */
+  async deleteManualDeduction(deduccionId: number): Promise<boolean> {
+    const deduccion = await this.deduccionManualRepository.findOne({
+      where: { id: deduccionId },
+    });
+
+    if (!deduccion) {
+      throw new NotFoundError('DeduccionManual', deduccionId);
+    }
+
+    const valuation = await this.repository.findOne({
+      where: { id: deduccion.valorizacionId },
+    });
+    if (valuation && !['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+      throw new BusinessRuleError(
+        `Cannot remove deductions from valuation in state ${valuation.estado}`,
+        'INVALID_VALUATION_STATE'
+      );
+    }
+
+    await this.deduccionManualRepository.remove(deduccion);
     return true;
   }
 }
