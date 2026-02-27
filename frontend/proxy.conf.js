@@ -19,6 +19,11 @@ const PROXY_CONFIG = {
       res.end('Proxy error: ' + err.message);
     },
   },
+  '/uploads/**': {
+    target: 'http://backend:3400',
+    secure: false,
+    changeOrigin: true,
+  },
 };
 
 module.exports = PROXY_CONFIG;
