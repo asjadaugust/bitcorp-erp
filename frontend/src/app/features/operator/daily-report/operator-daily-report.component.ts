@@ -14,6 +14,8 @@ import {
 import { EquipmentService } from '../../../core/services/equipment.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SyncManager } from '../../../core/services/sync-manager.service';
+import { ServiceWorkerService } from '../../../core/services/service-worker.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { Project } from '../../../core/models/project.model';
 import { SignaturePadComponent } from '../../../shared/components/signature-pad.component';
@@ -1167,6 +1169,8 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   private equipmentService = inject(EquipmentService);
   private projectService = inject(ProjectService);
   private authService = inject(AuthService);
+  private syncManager = inject(SyncManager);
+  private swService = inject(ServiceWorkerService);
 
   constructor() {
     this.reportForm = this.fb.group({
@@ -1270,7 +1274,12 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
     }
   }
 
+  private onlineListener = () => this.swService.syncPendingReports();
+
   ngOnInit() {
+    // Sync pending reports when back online
+    window.addEventListener('online', this.onlineListener);
+
     // Load equipment and projects
     this.loadEquipmentAndProjects();
 
@@ -1291,6 +1300,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    window.removeEventListener('online', this.onlineListener);
     if (this.autoSaveInterval) {
       clearInterval(this.autoSaveInterval);
     }
@@ -1743,11 +1753,28 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error submitting report:', error);
           this.saving = false;
-          this.snackBar.open(
-            `Error al enviar el parte diario: ${error.error?.error || 'Error desconocido'}`,
-            'Cerrar',
-            { duration: 5000 }
-          );
+
+          // If network error, save offline for later sync
+          if (!navigator.onLine || error.status === 0 || error.status === 503) {
+            this.syncManager.storePendingReport(reportData as Record<string, unknown>).then(
+              () => {
+                this.snackBar.open(
+                  'Guardado localmente. Se sincronizará cuando haya conexión.',
+                  'Cerrar',
+                  { duration: 5000 }
+                );
+              },
+              () => {
+                this.snackBar.open('Error al guardar localmente', 'Cerrar', { duration: 5000 });
+              }
+            );
+          } else {
+            this.snackBar.open(
+              `Error al enviar el parte diario: ${error.error?.error || 'Error desconocido'}`,
+              'Cerrar',
+              { duration: 5000 }
+            );
+          }
         },
       });
     }

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { SyncManager } from './sync-manager.service';
 
 @Injectable({
@@ -8,6 +8,9 @@ export class ServiceWorkerService {
   private swRegistration: ServiceWorkerRegistration | null = null;
   private isOnline = navigator.onLine;
   private syncManager = inject(SyncManager);
+
+  /** Observable sync status for UI components */
+  syncStatus = signal<'idle' | 'syncing' | 'done' | 'error'>('idle');
 
   constructor() {
     this.init();
@@ -113,6 +116,8 @@ export class ServiceWorkerService {
       return;
     }
 
+    this.syncStatus.set('syncing');
+
     try {
       const pendingReports = await this.syncManager.getPendingReports();
       console.log(`[PWA] Syncing ${pendingReports.length} pending reports`);
@@ -131,8 +136,10 @@ export class ServiceWorkerService {
       // Cleanup old synced reports
       await this.syncManager.clearSyncedReports();
       console.log('[PWA] Sync complete');
+      this.syncStatus.set('done');
     } catch (error) {
       console.error('[PWA] Sync failed:', error);
+      this.syncStatus.set('error');
     }
   }
 

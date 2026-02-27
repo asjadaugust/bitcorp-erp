@@ -13,6 +13,8 @@ import { DailyReportService } from '../../../../core/services/daily-report.servi
 import { AuthService } from '../../../../core/services/auth.service';
 import { PrecalentamientoConfigService } from '../../../../core/services/precalentamiento-config.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { SyncManager } from '../../../../core/services/sync-manager.service';
+import { ServiceWorkerService } from '../../../../core/services/service-worker.service';
 import {
   DropdownComponent,
   DropdownOption,
@@ -91,6 +93,8 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   private precalentamientoService = inject(PrecalentamientoConfigService);
   private snackBar = inject(MatSnackBar);
   private confirmSvc = inject(ConfirmService);
+  private syncManager = inject(SyncManager);
+  private swService = inject(ServiceWorkerService);
 
   ngOnInit(): void {
     this.initForm();
@@ -436,7 +440,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     window.addEventListener('online', () => {
       this.isOffline = false;
       this.showSuccess('Conexión restaurada. Sincronizando...');
-      // TODO: Sync pending reports from IndexedDB
+      this.swService.syncPendingReports();
     });
 
     window.addEventListener('offline', () => {
@@ -527,8 +531,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         this.saving = false;
 
         if (this.isOffline) {
-          // TODO: Save to IndexedDB for later sync
-          this.showWarning('Guardado localmente. Se sincronizará cuando haya conexión.');
+          this.syncManager.storePendingReport(reportData as Record<string, unknown>).then(
+            () => this.showWarning('Guardado localmente. Se sincronizará cuando haya conexión.'),
+            () => this.showError('Error al guardar localmente')
+          );
         } else {
           this.showError('Error al guardar el reporte');
         }
