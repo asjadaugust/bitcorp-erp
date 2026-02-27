@@ -20,11 +20,32 @@ import { SyncManager } from '../../../core/services/sync-manager.service';
       </div>
 
       <!-- Pending Sync Badge -->
-      <div class="pending-badge" *ngIf="pendingCount() > 0" (click)="syncNow()" (keydown.enter)="syncNow()" tabindex="0" role="button">
+      <div
+        class="pending-badge"
+        *ngIf="pendingCount() > 0"
+        (click)="syncNow()"
+        (keydown.enter)="syncNow()"
+        tabindex="0"
+        role="button"
+      >
         <span class="icon">🔄</span>
         <span class="count">{{ pendingCount() }}</span>
         <span class="text" *ngIf="isOnline()">pendientes - toca para sincronizar</span>
         <span class="text" *ngIf="!isOnline()">guardados offline</span>
+      </div>
+
+      <!-- Dead letter badge -->
+      <div
+        class="dead-letter-badge"
+        *ngIf="deadLetterCount() > 0"
+        (click)="retryDeadLetters()"
+        (keydown.enter)="retryDeadLetters()"
+        tabindex="0"
+        role="button"
+      >
+        <span class="icon">⚠️</span>
+        <span class="count">{{ deadLetterCount() }}</span>
+        <span class="text">fallidos - toca para reintentar</span>
       </div>
 
       <!-- Sync in progress -->
@@ -90,6 +111,34 @@ import { SyncManager } from '../../../core/services/sync-manager.service';
         }
       }
 
+      .dead-letter-badge {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+        color: white;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:hover {
+          background: linear-gradient(90deg, #dc2626, #b91c1c);
+        }
+
+        .count {
+          background: white;
+          color: #dc2626;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-weight: 700;
+          min-width: 24px;
+          text-align: center;
+        }
+      }
+
       .syncing-indicator {
         background: linear-gradient(90deg, #3b82f6, #2563eb);
         color: white;
@@ -131,6 +180,7 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
 
   isOnline = signal(navigator.onLine);
   pendingCount = signal(0);
+  deadLetterCount = signal(0);
   isSyncing = signal(false);
 
   private onlineHandler = () => this.isOnline.set(true);
@@ -158,6 +208,8 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
     try {
       const count = await this.syncManager.getPendingCount();
       this.pendingCount.set(count);
+      const dlCount = await this.syncManager.getDeadLetterCount();
+      this.deadLetterCount.set(dlCount);
     } catch {
       // IndexedDB may not be initialized yet
     }
@@ -174,6 +226,21 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
       console.error('Sync failed:', e);
     } finally {
       this.isSyncing.set(false);
+    }
+  }
+
+  async retryDeadLetters() {
+    if (!this.isOnline() || this.isSyncing()) return;
+
+    try {
+      const deadLetters = await this.syncManager.getDeadLetters();
+      for (const dl of deadLetters) {
+        await this.syncManager.retryDeadLetter(dl['id'] as number);
+      }
+      // Trigger sync after resetting
+      await this.syncNow();
+    } catch (e) {
+      console.error('Retry dead letters failed:', e);
     }
   }
 }

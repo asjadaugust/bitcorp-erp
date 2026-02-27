@@ -12,6 +12,10 @@ export class ServiceWorkerService {
   /** Observable sync status for UI components */
   syncStatus = signal<'idle' | 'syncing' | 'done' | 'error'>('idle');
 
+  /** Retry constants */
+  private static readonly MAX_SYNC_ATTEMPTS = 5;
+  private static readonly BASE_BACKOFF_MS = 5000;
+
   constructor() {
     this.init();
     this.setupEventListeners();
@@ -124,6 +128,30 @@ export class ServiceWorkerService {
 
       for (const report of pendingReports) {
         const localId = report['id'] as number;
+        const attempts = (report['syncAttempts'] as number) || 0;
+        const lastAttempt = (report['lastSyncAttempt'] as number) || 0;
+
+        // Skip dead-lettered reports
+        if (report['deadLetter'] === 1) continue;
+
+        // Move to dead letter if max attempts exceeded
+        if (attempts >= ServiceWorkerService.MAX_SYNC_ATTEMPTS) {
+          console.warn(`[PWA] Report ${localId} exceeded max attempts, moving to dead letter`);
+          await this.syncManager.moveToDeadLetter(localId);
+          continue;
+        }
+
+        // Exponential backoff: skip if too soon since last attempt
+        if (attempts > 0 && lastAttempt > 0) {
+          const backoffMs = ServiceWorkerService.BASE_BACKOFF_MS * Math.pow(2, attempts - 1);
+          if (Date.now() - lastAttempt < backoffMs) {
+            console.log(
+              `[PWA] Report ${localId} backing off (attempt ${attempts}, wait ${backoffMs}ms)`
+            );
+            continue;
+          }
+        }
+
         try {
           const serverResponse = await this.syncReport(report);
           await this.syncManager.markAsSynced(localId);
