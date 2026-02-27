@@ -123,13 +123,17 @@ export class ServiceWorkerService {
       console.log(`[PWA] Syncing ${pendingReports.length} pending reports`);
 
       for (const report of pendingReports) {
+        const localId = report['id'] as number;
         try {
-          await this.syncReport(report);
-          await this.syncManager.markAsSynced(report['id'] as number);
-          console.log(`[PWA] Report ${report['id']} synced successfully`);
+          const serverResponse = await this.syncReport(report);
+          await this.syncManager.markAsSynced(localId);
+          console.log(`[PWA] Report ${localId} synced successfully`);
+
+          // Upload associated photos if any
+          await this.syncPhotosForReport(localId, serverResponse);
         } catch (error) {
-          console.error(`[PWA] Failed to sync report ${report['id']}:`, error);
-          await this.syncManager.incrementSyncAttempts(report['id'] as number);
+          console.error(`[PWA] Failed to sync report ${localId}:`, error);
+          await this.syncManager.incrementSyncAttempts(localId);
         }
       }
 
@@ -146,7 +150,7 @@ export class ServiceWorkerService {
   /**
    * Sync individual report
    */
-  private async syncReport(report: Record<string, unknown>): Promise<void> {
+  private async syncReport(report: Record<string, unknown>): Promise<Record<string, unknown>> {
     const response = await fetch('/api/reports', {
       method: 'POST',
       headers: {
@@ -161,6 +165,46 @@ export class ServiceWorkerService {
     }
 
     return response.json();
+  }
+
+  /**
+   * Upload photos stored in IndexedDB for a synced report
+   */
+  private async syncPhotosForReport(
+    localReportId: number,
+    serverResponse: Record<string, unknown>
+  ): Promise<void> {
+    const photos = await this.syncManager.getPhotosForReport(localReportId);
+    if (photos.length === 0) return;
+
+    const data = serverResponse['data'] as Record<string, unknown> | undefined;
+    const serverId = (serverResponse['id'] ?? data?.['id']) as number | undefined;
+    if (!serverId) {
+      console.warn('[PWA] No server report ID, skipping photo upload');
+      return;
+    }
+
+    console.log(`[PWA] Uploading ${photos.length} photos for report ${serverId}`);
+
+    const formData = new FormData();
+    for (const photo of photos) {
+      formData.append('photos', photo.blob, photo.filename);
+    }
+
+    const uploadResponse = await fetch(`/api/reports/${serverId}/photos`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: formData,
+    });
+
+    if (uploadResponse.ok) {
+      await this.syncManager.deletePhotosForReport(localReportId);
+      console.log(`[PWA] Photos uploaded and cleaned up for report ${serverId}`);
+    } else {
+      console.error(`[PWA] Photo upload failed: ${uploadResponse.status}`);
+    }
   }
 
   /**

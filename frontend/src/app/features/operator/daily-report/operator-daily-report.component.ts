@@ -1548,14 +1548,20 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
       const compressedSize = this.photoUploadService.getReadableFileSize(compressedBlob.size);
       console.log(`Compressed to: ${compressedSize}`);
 
-      // For now, just store locally with blob URL
-      // TODO: Upload to server when report ID is available
+      // Store locally with blob URL for immediate display
       this.photos[photoIndex] = {
         url: URL.createObjectURL(compressedBlob),
         thumbnail,
         status: 'local',
         file: new File([compressedBlob], file.name, { type: 'image/jpeg' }),
       };
+
+      // Persist photo blob to IndexedDB for offline resilience
+      // Use a placeholder reportLocalId of 0 (will be matched when report is saved)
+      const thumbnailBlob = await fetch(thumbnail).then((r) => r.blob());
+      this.syncManager
+        .storePhoto(0, compressedBlob, file.name, 'image/jpeg', thumbnailBlob)
+        .catch((err) => console.warn('[PWA] Failed to persist photo to IndexedDB:', err));
 
       this.uploadingPhotos = false;
 

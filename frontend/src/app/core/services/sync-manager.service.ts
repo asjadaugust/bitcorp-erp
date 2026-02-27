@@ -1,13 +1,14 @@
 /**
  * IndexedDB Sync Manager for Offline Daily Reports
- * Handles storing and syncing daily reports when offline
+ * Handles storing and syncing daily reports and photos when offline
  */
 
 import { Injectable } from '@angular/core';
 
 const DB_NAME = 'bitcorp-erp-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'pending-reports';
+const PHOTO_STORE_NAME = 'pending-photos';
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +40,16 @@ export class SyncManager {
           });
           store.createIndex('timestamp', 'timestamp', { unique: false });
           store.createIndex('synced', 'synced', { unique: false });
+        }
+
+        // Create object store for pending photos (v2)
+        if (!db.objectStoreNames.contains(PHOTO_STORE_NAME)) {
+          const photoStore = db.createObjectStore(PHOTO_STORE_NAME, {
+            keyPath: 'id',
+            autoIncrement: true,
+          });
+          photoStore.createIndex('reportLocalId', 'reportLocalId', { unique: false });
+          photoStore.createIndex('createdAt', 'createdAt', { unique: false });
         }
       };
     });
@@ -203,6 +214,170 @@ export class SyncManager {
       request.onerror = () => reject(request.error);
     });
   }
-}
 
-// Singleton instance removed - use Dependency Injection
+  // ─── Photo Storage ───────────────────────────────────────────────
+
+  /**
+   * Store a photo blob for a pending report
+   */
+  async storePhoto(
+    reportLocalId: number,
+    blob: Blob,
+    filename: string,
+    mimeType: string,
+    thumbnail: Blob
+  ): Promise<number> {
+    if (!this.db) await this.init();
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([PHOTO_STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(PHOTO_STORE_NAME);
+
+      const photo = {
+        reportLocalId,
+        blob,
+        filename,
+        mimeType,
+        thumbnail,
+        createdAt: Date.now(),
+      };
+
+      const request = store.add(photo);
+
+      request.onsuccess = () => resolve(request.result as number);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Get all photos for a given local report ID
+   */
+  async getPhotosForReport(
+    reportLocalId: number
+  ): Promise<
+    {
+      id: number;
+      reportLocalId: number;
+      blob: Blob;
+      filename: string;
+      mimeType: string;
+      thumbnail: Blob;
+      createdAt: number;
+    }[]
+  > {
+    if (!this.db) await this.init();
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([PHOTO_STORE_NAME], 'readonly');
+      const store = transaction.objectStore(PHOTO_STORE_NAME);
+      const index = store.index('reportLocalId');
+      const request = index.getAll(IDBKeyRange.only(reportLocalId));
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Delete all photos for a given local report ID
+   */
+  async deletePhotosForReport(reportLocalId: number): Promise<void> {
+    if (!this.db) await this.init();
+
+    const photos = await this.getPhotosForReport(reportLocalId);
+    if (photos.length === 0) return;
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([PHOTO_STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(PHOTO_STORE_NAME);
+
+      let completed = 0;
+      for (const photo of photos) {
+        const request = store.delete(photo.id);
+        request.onsuccess = () => {
+          completed++;
+          if (completed === photos.length) resolve();
+        };
+        request.onerror = () => reject(request.error);
+      }
+    });
+  }
+
+  // ─── Dead Letter ──────────────────────────────────────────────────
+
+  /**
+   * Move a report to dead letter (flag it)
+   */
+  async moveToDeadLetter(id: number): Promise<void> {
+    if (!this.db) await this.init();
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(id);
+
+      request.onsuccess = () => {
+        const report = request.result;
+        if (report) {
+          report.deadLetter = 1;
+          report.deadLetteredAt = Date.now();
+          const updateRequest = store.put(report);
+          updateRequest.onsuccess = () => resolve();
+          updateRequest.onerror = () => reject(updateRequest.error);
+        } else {
+          resolve();
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Get all dead-letter reports
+   */
+  async getDeadLetters(): Promise<Record<string, unknown>[]> {
+    if (!this.db) await this.init();
+
+    // No dedicated index — scan unsynced reports and filter
+    const pending = await this.getPendingReports();
+    return pending.filter((r) => r['deadLetter'] === 1);
+  }
+
+  /**
+   * Retry a dead-letter report (reset attempts and flag)
+   */
+  async retryDeadLetter(id: number): Promise<void> {
+    if (!this.db) await this.init();
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(id);
+
+      request.onsuccess = () => {
+        const report = request.result;
+        if (report) {
+          report.deadLetter = 0;
+          report.syncAttempts = 0;
+          report.lastSyncAttempt = null;
+          const updateRequest = store.put(report);
+          updateRequest.onsuccess = () => resolve();
+          updateRequest.onerror = () => reject(updateRequest.error);
+        } else {
+          resolve();
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Get count of dead-letter reports
+   */
+  async getDeadLetterCount(): Promise<number> {
+    const deadLetters = await this.getDeadLetters();
+    return deadLetters.length;
+  }
+}
