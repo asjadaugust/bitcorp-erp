@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ServiceWorkerService } from '../../../core/services/service-worker.service';
 import { SyncManager } from '../../../core/services/sync-manager.service';
 
@@ -32,6 +33,7 @@ import { SyncManager } from '../../../core/services/sync-manager.service';
         <span class="count">{{ pendingCount() }}</span>
         <span class="text" *ngIf="isOnline()">pendientes - toca para sincronizar</span>
         <span class="text" *ngIf="!isOnline()">guardados offline</span>
+        <span class="details-link" (click)="goToDetails($event)">(ver detalles)</span>
       </div>
 
       <!-- Dead letter badge -->
@@ -154,6 +156,18 @@ import { SyncManager } from '../../../core/services/sync-manager.service';
         }
       }
 
+      .details-link {
+        text-decoration: underline;
+        cursor: pointer;
+        opacity: 0.8;
+        font-size: 12px;
+        margin-left: 4px;
+      }
+
+      .details-link:hover {
+        opacity: 1;
+      }
+
       @keyframes slideDown {
         from {
           transform: translateY(-100%);
@@ -177,6 +191,7 @@ import { SyncManager } from '../../../core/services/sync-manager.service';
 export class OfflineIndicatorComponent implements OnInit, OnDestroy {
   private swService = inject(ServiceWorkerService);
   private syncManager = inject(SyncManager);
+  private router = inject(Router);
 
   isOnline = signal(navigator.onLine);
   pendingCount = signal(0);
@@ -227,6 +242,11 @@ export class OfflineIndicatorComponent implements OnInit, OnDestroy {
     } finally {
       this.isSyncing.set(false);
     }
+  }
+
+  goToDetails(event: Event) {
+    event.stopPropagation();
+    this.router.navigate(['/operator/pending-reports']);
   }
 
   async retryDeadLetters() {

@@ -313,6 +313,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pending-reports',
+        loadComponent: () =>
+          import('./features/operator/pending-reports/operator-pending-reports.component').then(
+            (m) => m.OperatorPendingReportsComponent
+          ),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/operator/profile/operator-profile.component').then(

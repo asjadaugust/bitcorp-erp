@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { SyncManager } from '../../../core/services/sync-manager.service';
 import {
   StatsGridComponent,
   StatItem,
@@ -56,6 +57,16 @@ interface RecentReport {
             <p>Partes anteriores</p>
           </div>
         </a>
+
+        @if (pendingCount() > 0) {
+          <a routerLink="/operator/pending-reports" class="action-card warning">
+            <i class="fa-solid fa-clock-rotate-left action-icon"></i>
+            <div class="content">
+              <h3>{{ pendingCount() }} Pendientes</h3>
+              <p>Reportes sin sincronizar</p>
+            </div>
+          </a>
+        }
       </div>
 
       <app-stats-grid [items]="statItems" testId="operator-stats"></app-stats-grid>
@@ -163,8 +174,25 @@ interface RecentReport {
         color: var(--grey-700);
       }
 
-      .action-card:not(.primary) .action-icon {
+      .action-card:not(.primary):not(.warning) .action-icon {
         color: var(--primary-500);
+      }
+
+      .action-card.warning {
+        border-color: var(--semantic-yellow-500, #f59e0b);
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      }
+
+      .action-card.warning .action-icon {
+        color: var(--semantic-yellow-600, #d97706);
+      }
+
+      .action-card.warning .content h3 {
+        color: var(--semantic-yellow-800, #92400e);
+      }
+
+      .action-card.warning .content p {
+        color: var(--semantic-yellow-700, #a16207);
       }
 
       .recent-section {
@@ -267,7 +295,9 @@ interface RecentReport {
   ],
 })
 export class OperatorDashboardComponent implements OnInit {
+  private syncManager = inject(SyncManager);
   operatorName = 'Juan Pérez';
+  pendingCount = signal(0);
   statItems: StatItem[] = [];
 
   stats: DashboardStats = {
@@ -303,6 +333,8 @@ export class OperatorDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadDashboardData();
+    this.syncManager.getPendingCount().then((c) => this.pendingCount.set(c));
+    this.syncManager.getDeadLetterCount().then((c) => this.pendingCount.update((v) => v + c));
   }
 
   loadDashboardData() {

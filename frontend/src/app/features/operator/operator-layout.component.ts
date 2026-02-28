@@ -30,6 +30,10 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             <i class="fa-solid fa-clipboard-list nav-icon"></i>
             <span class="label">Historial</span>
           </a>
+          <a routerLink="/operator/pending-reports" routerLinkActive="active" class="nav-item">
+            <i class="fa-solid fa-clock-rotate-left nav-icon"></i>
+            <span class="label">Pendientes</span>
+          </a>
           <a routerLink="/operator/profile" routerLinkActive="active" class="nav-item">
             <i class="fa-solid fa-user nav-icon"></i>
             <span class="label">Perfil</span>
