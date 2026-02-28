@@ -22,12 +22,12 @@ dependencies = [
     # Redis
     "redis[hiredis]>=5.2.0",
     # Validation & Config
-    "pydantic>=2.10.0",
+    "pydantic[email]>=2.10.0",
     "pydantic-settings>=2.7.0",
     # Auth
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
-    "bcrypt>=4.2.0",
+    "bcrypt>=4.0.0,<4.1.0",
     # PDF
     "jinja2>=3.1.4",
     "playwright>=1.49.0",
@@ -64,6 +64,8 @@ ignore = ["N818", "UP046"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
 pythonpath = ["."]
 

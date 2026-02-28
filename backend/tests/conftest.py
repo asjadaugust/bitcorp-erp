@@ -7,15 +7,20 @@ from app.main import app
 
 
 @pytest.fixture
-def cliente_test():
-    """Cliente HTTP síncrono para tests simples."""
-    transport = ASGITransport(app=app)
-    return AsyncClient(transport=transport, base_url="http://test")
-
-
-@pytest.fixture
 async def cliente_async():
-    """Cliente HTTP asíncrono para tests async."""
+    """Cliente HTTP asíncrono para tests."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as cliente:
         yield cliente
+
+
+async def obtener_token_admin() -> str:
+    """Helper: obtener token de admin para tests autenticados."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        resp = await c.post(
+            "/api/auth/login",
+            json={"username": "admin", "password": "admin123"},
+        )
+        token: str = resp.json()["data"]["access_token"]
+        return token
