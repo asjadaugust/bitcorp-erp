@@ -1,39 +1,15 @@
-FROM node:20-alpine AS base
+FROM python:3.12-slim AS base
 WORKDIR /app
 
-# Install Chromium and dependencies for Puppeteer
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    font-noto-emoji
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Tell Puppeteer to use the installed Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+COPY backend/pyproject.toml ./
+RUN pip install --no-cache-dir -e ".[dev]"
 
-FROM base AS development
-COPY backend/package*.json ./
-RUN npm install
 COPY backend/ .
-EXPOSE 3400 9229
-CMD ["npm", "run", "dev"]
 
-FROM base AS production
-COPY backend/package*.json ./
-RUN npm ci --only=production
+EXPOSE 3410
 
-# Add user for running Chromium (it won't run as root)
-RUN addgroup -g 1001 -S nodejs \
-    && adduser -S nodejs -u 1001
-
-COPY backend/dist ./dist
-COPY backend/src/templates ./src/templates
-RUN chown -R nodejs:nodejs /app
-
-USER nodejs
-EXPOSE 3400
-CMD ["npm", "start"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3410", "--reload"]

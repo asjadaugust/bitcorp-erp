@@ -39,12 +39,12 @@ services:
       timeout: 5s
       retries: 5
 
-  backend:
+  bff:
     build:
       context: .
-      dockerfile: docker/backend.Dockerfile
+      dockerfile: docker/bff.Dockerfile
       target: development
-    container_name: bitcorp-backend-dev
+    container_name: bitcorp-bff-dev
     environment:
       NODE_ENV: development
       PORT: 3400
@@ -65,7 +65,7 @@ services:
       - "3400:3400"
       - "3429:9229"
     volumes:
-      - ./backend:/app
+      - ./bff:/app
       - /app/node_modules
       - ./docs:/app/docs:ro
     depends_on:
@@ -76,6 +76,37 @@ services:
     networks:
       - bitcorp-network
     command: npm run dev
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: bitcorp-backend-dev
+    environment:
+      DATABASE_URL: postgresql+asyncpg://bitcorp:dev_password_change_me@postgres:5432/bitcorp_dev
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      POSTGRES_DB: bitcorp_dev
+      POSTGRES_USER: bitcorp
+      POSTGRES_PASSWORD: dev_password_change_me
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      JWT_REFRESH_SECRET: dev_refresh_secret_change_in_production
+      CORS_ORIGINS: http://localhost:3420,http://localhost:4200,http://127.0.0.1:3420,http://127.0.0.1:4200
+      LOG_LEVEL: debug
+      ENVIRONMENT: development
+      PORT: "3410"
+    ports:
+      - "3410:3410"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bitcorp-network
 
   frontend:
     build:
@@ -95,7 +126,7 @@ services:
     networks:
       - bitcorp-network
     depends_on:
-      - backend
+      - bff
     command: npm run start -- --poll 2000
 
   pgadmin:
