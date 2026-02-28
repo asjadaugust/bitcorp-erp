@@ -1,27 +1,23 @@
 import { BaseSeeder } from './base-seeder';
 import { Movement, MovementDetail } from '../../models/movement.model';
-import { RegistroCombustible } from '../../models/fuel-record.model';
 import { Producto } from '../../models/product.model';
 import { Proyecto } from '../../models/project.model';
-import { Valorizacion } from '../../models/valuation.model';
 import { User } from '../../models/user.model';
 
 /**
- * Seeds logistics: movements, movement details, fuel records
+ * Seeds logistics: movements and movement details
  */
 export class LogisticsSeeder extends BaseSeeder {
   async run(): Promise<void> {
-    console.log('  → Seeding logistics (movements, fuel records)...');
+    console.log('  → Seeding logistics (movements)...');
 
     // Get references to existing data
     const productRepo = this.dataSource.getRepository(Producto);
     const projectRepo = this.dataSource.getRepository(Proyecto);
-    const valuationRepo = this.dataSource.getRepository(Valorizacion);
     const userRepo = this.dataSource.getRepository(User);
 
     const products = await productRepo.find({ take: 3 });
     const projects = await projectRepo.find({ take: 2 });
-    const valuations = await valuationRepo.find({ take: 2 });
     const admin = await userRepo.findOne({ where: { username: 'admin' } });
 
     if (products.length === 0 || projects.length === 0 || !admin) {
@@ -250,66 +246,9 @@ export class LogisticsSeeder extends BaseSeeder {
       );
     }
 
-    // 2. Fuel Records (Registros de Combustible por Valorización)
-    const fuelRepo = this.dataSource.getRepository(RegistroCombustible);
-
-    const existingFuel = await fuelRepo.count();
-    if (existingFuel === 0 && valuations.length > 0) {
-      const today = new Date();
-      const dates = [];
-      for (let i = 25; i >= 1; i--) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - i);
-        dates.push(date);
-      }
-
-      const fuelRecords = [];
-
-      // Fuel records for first valuation
-      for (let i = 0; i < 15; i++) {
-        fuelRecords.push(
-          fuelRepo.create({
-            valorizacionId: valuations[0].id,
-            fecha: dates[i],
-            cantidad: 45.0 + Math.random() * 20,
-            precioUnitario: 15.5,
-            montoTotal: (45.0 + Math.random() * 20) * 15.5,
-            tipoCombustible: 'DIESEL',
-            proveedor: 'Petroperú',
-            numeroDocumento: `BOLETA-${10001 + i}`,
-            observaciones: `Abastecimiento diario - Excavadora CAT 320D`,
-          })
-        );
-      }
-
-      // Fuel records for second valuation
-      if (valuations.length > 1) {
-        for (let i = 15; i < 25; i++) {
-          fuelRecords.push(
-            fuelRepo.create({
-              valorizacionId: valuations[1].id,
-              fecha: dates[i],
-              cantidad: 52.0 + Math.random() * 18,
-              precioUnitario: 15.5,
-              montoTotal: (52.0 + Math.random() * 18) * 15.5,
-              tipoCombustible: 'DIESEL',
-              proveedor: 'Repsol',
-              numeroDocumento: `BOLETA-${20001 + (i - 15)}`,
-              observaciones: `Abastecimiento diario - Tractor Komatsu D65EX`,
-            })
-          );
-        }
-      }
-
-      await fuelRepo.save(fuelRecords);
-    }
-
     const movementCount = await movementRepo.count();
     const detailCount = await detailRepo.count();
-    const fuelCount = await fuelRepo.count();
 
-    console.log(
-      `     ✓ Created ${movementCount} movements with ${detailCount} detail lines, ${fuelCount} fuel records`
-    );
+    console.log(`     ✓ Created ${movementCount} movements with ${detailCount} detail lines`);
   }
 }

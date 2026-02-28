@@ -44,7 +44,6 @@ import { Trabajador } from '../models/trabajador.model';
 import { Timesheet } from '../models/timesheet.model';
 import { TimesheetDetail } from '../models/timesheet-detail.model';
 import { EquipmentAssignment } from '../models/equipment-assignment.model';
-import { FuelRecord } from '../models/fuel-record.model';
 import { ChecklistTemplate } from '../models/checklist-template.model';
 import { ChecklistItem } from '../models/checklist-item.model';
 import { ChecklistInspection } from '../models/checklist-inspection.model';
@@ -139,7 +138,6 @@ export const AppDataSource = new DataSource({
     Timesheet,
     TimesheetDetail,
     EquipmentAssignment,
-    FuelRecord,
     ChecklistTemplate,
     ChecklistItem,
     ChecklistInspection,
