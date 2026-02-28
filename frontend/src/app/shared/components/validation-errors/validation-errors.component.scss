@@ -30,8 +30,8 @@
 .notification__title {
   font-family: var(--font-family-base);
   font-weight: 700;
-  font-size: var(--type-h5-size);
-  line-height: var(--type-h5-line-height);
+  font-size: var(--type-bodySmall-size);
+  line-height: var(--type-bodySmall-line-height);
   color: var(--primary-900);
 }
 
@@ -48,8 +48,8 @@
 }
 
 .notification__error-item {
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line-height);
+  font-size: var(--type-bodySmall-size);
+  line-height: var(--type-bodySmall-line-height);
   color: var(--primary-900);
   padding: var(--s-4) 0;
 

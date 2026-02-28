@@ -467,7 +467,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
   `,
   styles: [
     `
-      @use 'klm-tokens' as *;
+      @use 'tokens' as *;
 
       .loading-state {
         display: flex;
