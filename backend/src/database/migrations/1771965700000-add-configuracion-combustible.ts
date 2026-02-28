@@ -7,7 +7,7 @@ export class AddConfiguracionCombustible1771965700000 implements MigrationInterf
         id SERIAL PRIMARY KEY,
         precio_manipuleo DECIMAL(10,2) NOT NULL DEFAULT 0.80,
         activo BOOLEAN NOT NULL DEFAULT TRUE,
-        updated_by INTEGER REFERENCES sistema.usuarios(id),
+        updated_by INTEGER,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
