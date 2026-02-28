@@ -50,4 +50,18 @@ export class ValidationErrorsComponent {
   hasErrors(): boolean {
     return this.errors && this.errors.length > 0;
   }
+
+  /**
+   * Strip the leading snake_case field name from backend validation messages.
+   * e.g. "correo_electronico debe ser un correo electrónico válido" → "Debe ser un correo electrónico válido"
+   */
+  cleanMessage(fieldName: string, message: string): string {
+    const escaped = fieldName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`^${escaped}\\s+`, 'i');
+    if (regex.test(message)) {
+      const cleaned = message.replace(regex, '').trim();
+      return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    }
+    return message;
+  }
 }

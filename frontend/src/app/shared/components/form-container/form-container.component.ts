@@ -40,7 +40,7 @@ import { ButtonComponent } from '../button/button.component';
       </div>
 
       <!-- Form Content -->
-      <div class="card form-card">
+      <div class="card form-card show-validation">
         <ng-content></ng-content>
 
         <!-- Optional Footer Actions -->

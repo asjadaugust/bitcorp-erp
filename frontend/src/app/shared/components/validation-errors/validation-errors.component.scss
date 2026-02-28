@@ -1,70 +1,64 @@
-.validation-errors {
-  background-color: #ffebee;
-  border: 1px solid #f44336;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  margin-top: 1rem;
+.notification {
+  border-radius: var(--radius-md);
+  padding: var(--s-16);
+  margin-bottom: var(--s-24);
+  animation: slideIn 0.3s ease-out;
 }
 
-.error-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(244, 67, 54, 0.2);
+.notification--error {
+  background-color: var(--aero-notify-bg-danger);
+  border: 1px solid var(--aero-notify-border-danger);
 }
 
-.error-header mat-icon {
-  color: #f44336;
-  width: 20px;
-  height: 20px;
-}
-
-.error-title {
-  color: #c62828;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.error-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.error-item {
+.notification__header {
   display: flex;
   align-items: flex-start;
-  gap: 0.25rem;
-  padding: 0.5rem 0;
-  color: #b91c1c;
-  font-size: 14px;
-  line-height: 1.5;
+  gap: var(--s-12);
+  padding-top: var(--s-8);
 }
 
-.error-item::before {
-  content: '•';
-  color: #f44336;
-  font-weight: bold;
+.notification__icon {
   flex-shrink: 0;
+  padding-top: 2px;
+
+  i {
+    font-size: 24px;
+    color: var(--aero-notify-icon-danger);
+  }
 }
 
-.field-label {
-  font-weight: 600;
-  color: #991b1b;
-  flex-shrink: 0;
+.notification__title {
+  font-family: var(--font-family-base);
+  font-weight: 700;
+  font-size: var(--type-h5-size);
+  line-height: var(--type-h5-line-height);
+  color: var(--primary-900);
 }
 
-.error-messages {
-  display: inline;
+.notification__body {
+  padding-left: 36px;
+  padding-bottom: var(--s-16);
+  padding-right: var(--s-32);
 }
 
-.error-message {
-  color: #dc2626;
+.notification__error-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--s-8) 0 0;
 }
 
-.error-separator {
-  color: #ef4444;
+.notification__error-item {
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line-height);
+  color: var(--primary-900);
+  padding: var(--s-4) 0;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

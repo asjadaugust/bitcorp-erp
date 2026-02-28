@@ -1,12 +1,16 @@
-<div *ngIf="message" class="alert alert-{{ type }}" role="alert">
-  <mat-icon class="alert-icon">{{ getIcon() }}</mat-icon>
-  <span class="alert-message">{{ message }}</span>
-  <button
-    *ngIf="dismissible"
-    (click)="dismiss()"
-    class="alert-close"
-    mat-icon-button
-    aria-label="Cerrar alerta">
-    <mat-icon>close</mat-icon>
-  </button>
+<div *ngIf="message"
+     class="notification notification--{{ type }}"
+     role="alert">
+  <div class="notification__header">
+    <div class="notification__icon">
+      <i class="fa-solid" [ngClass]="iconClass"></i>
+    </div>
+    <div class="notification__title">{{ message }}</div>
+    <button *ngIf="dismissible"
+            class="notification__close"
+            (click)="dismiss()"
+            aria-label="Cerrar">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
 </div>

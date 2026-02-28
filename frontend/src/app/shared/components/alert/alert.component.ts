@@ -7,8 +7,6 @@ import {
   OnDestroy, OnChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 
 /**
  * Alert Type Union
@@ -17,9 +15,10 @@ import { MatIconModule } from '@angular/material/icon';
 export type AlertType = 'success' | 'error' | 'warning' | 'info';
 
 /**
- * Alert Component
+ * Alert Component — AERO Top-of-Page Notification
  *
  * Displays success/error/warning/info messages with auto-dismiss support.
+ * Styled per AERO Enterprise Library Figma spec.
  *
  * @example
  * <app-alert
@@ -32,7 +31,7 @@ export type AlertType = 'success' | 'error' | 'warning' | 'info';
 @Component({
   selector: 'app-alert',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,20 +73,19 @@ export class AlertComponent implements OnDestroy, OnChanges {
   private dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
-   * Icon for the current alert type
+   * FontAwesome icon class for the current alert type
    */
-  getIcon(): string {
+  get iconClass(): string {
     switch (this.type) {
-      case 'success':
-        return 'check_circle';
       case 'error':
-        return 'error';
+        return 'fa-circle-exclamation';
       case 'warning':
-        return 'warning';
+        return 'fa-triangle-exclamation';
+      case 'success':
+        return 'fa-circle-check';
       case 'info':
-        return 'info';
       default:
-        return 'info';
+        return 'fa-circle-info';
     }
   }
 

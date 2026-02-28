@@ -366,6 +366,8 @@ When building a new page, read the matching reference file FIRST:
 | List      | `features/equipment/equipment-list.component.ts`  | `<app-page-layout>`, `<app-page-card>`, `<aero-table>`, `<app-filter-bar>`, `<app-button>`              |
 | Detail    | `features/contracts/contract-detail.component.ts` | `<app-entity-detail-shell>`, `@use 'detail-layout'`, `<app-entity-detail-sidebar-card>`, `<app-button>` |
 | Form      | `features/contracts/contract-form.component.ts`   | `<app-form-container>`, `<app-form-section>`, `@use 'form-layout'`, `<app-dropdown>`                    |
+| Notification (Inline) | `shared/components/validation-errors/validation-errors.component.ts` | AERO Inline Error: `--aero-notify-*` tokens, BEM `.notification__*` classes |
+| Notification (Alert)  | `shared/components/alert/alert.component.ts`                         | AERO Top-of-page: 4 variants (error/warning/success/info), FontAwesome icons  |
 
 ### Form Page Rules
 

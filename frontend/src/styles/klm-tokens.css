@@ -129,4 +129,20 @@
   /* States - Opacity White */
   --state-white-hover: rgba(255, 255, 255, 0.16);
   --state-white-active: rgba(255, 255, 255, 0.24);
+
+  /* AERO Notification Tokens (from Figma AERO Enterprise Library) */
+  --aero-notify-bg-danger: #ffe0e8;
+  --aero-notify-bg-warning: #fff3e0;
+  --aero-notify-bg-success: #e8f5e9;
+  --aero-notify-bg-info: #e3f2fd;
+  --aero-notify-bg-neutral: #eaebec;
+  --aero-notify-border-danger: #d10031;
+  --aero-notify-border-warning: #e65100;
+  --aero-notify-border-success: #2e7d32;
+  --aero-notify-border-info: #0077cd;
+  --aero-notify-border-neutral: #aab0b5;
+  --aero-notify-icon-danger: #d10031;
+  --aero-notify-icon-warning: #e65100;
+  --aero-notify-icon-success: #2e7d32;
+  --aero-notify-icon-info: #0077cd;
 }

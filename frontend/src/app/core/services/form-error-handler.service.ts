@@ -78,7 +78,7 @@ export class FormErrorHandlerService {
     // Handle validation errors
     const validationErrors = this.extractValidationErrors(error);
     if (validationErrors.length > 0) {
-      return 'Por favor corrige los errores en el formulario';
+      return '';
     }
 
     // Handle backend errors with message

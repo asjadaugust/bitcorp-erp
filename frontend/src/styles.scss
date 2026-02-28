@@ -679,3 +679,12 @@ body {
     color: var(--semantic-red-600);
   }
 }
+
+// Show invalid fields when form explicitly requests validation display
+.show-validation aero-input.ng-invalid .aero-input {
+  border-color: var(--semantic-red-500);
+}
+
+.show-validation app-dropdown.ng-invalid .dropdown-trigger {
+  border-color: var(--semantic-red-500);
+}

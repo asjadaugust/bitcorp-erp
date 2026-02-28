@@ -172,6 +172,15 @@ label.required::after {
             box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
         }
     }
+
+    // Show invalid fields when form explicitly requests it
+    .show-validation &.ng-invalid {
+        border-color: var(--error, #dc3545);
+
+        &:focus {
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+        }
+    }
 }
 
 // Textarea overrides
