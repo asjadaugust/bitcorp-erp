@@ -11,6 +11,7 @@ import { DiscountEvent, TipoEventoDescuento } from '../models/discount-event.mod
 import { DeduccionManual } from '../models/deduccion-manual.model';
 import { Repository } from 'typeorm';
 import { valuationEmailNotifier } from './valuation-email-notifier';
+import { CombustibleConfigService } from './combustible-config.service';
 import {
   transformToValuationPage1Dto,
   transformToValuationPage2Dto,
@@ -54,6 +55,8 @@ import logger from '../config/logger.config';
  * @since 1.0.0
  */
 export class ValuationService {
+  private combustibleConfigService = new CombustibleConfigService();
+
   private get repository(): Repository<Valorizacion> {
     if (!AppDataSource.isInitialized) {
       throw new Error('Database not initialized');
@@ -1881,8 +1884,8 @@ export class ValuationService {
       costoBase = effectiveHours * tarifa;
     }
 
-    // Manipuleo de combustible: S/ 0.80 per gallon
-    const MANIPULEO_RATE = 0.8;
+    // Manipuleo de combustible (configurable rate)
+    const MANIPULEO_RATE = await this.combustibleConfigService.obtenerPrecioManipuleo();
     const importeManipuleo = agg.combustibleConsumido * MANIPULEO_RATE;
 
     // Deductions from linked financial entities (only if valuation exists)
@@ -2284,12 +2287,16 @@ export class ValuationService {
       // Fetch financial totals for Page 1 summary
       const financialTotals = await this.getFinancialTotals(id);
 
+      // Fetch configurable manipuleo rate
+      const manipuleoRate = await this.combustibleConfigService.obtenerPrecioManipuleo();
+
       // Transform entities to DTO using centralized transformer
       const result = transformToValuationPage1Dto(
         valuation,
         contract,
         contract.equipo,
-        financialTotals
+        financialTotals,
+        manipuleoRate
       );
 
       logger.info('Page 1 data fetched successfully', {
@@ -2413,11 +2420,15 @@ export class ValuationService {
         contract: val.contratoId ? contractMap.get(val.contratoId) : null,
       }));
 
+      // Fetch configurable manipuleo rate
+      const manipuleoRate = await this.combustibleConfigService.obtenerPrecioManipuleo();
+
       // Transform to Page 2 DTO
       const result = transformToValuationPage2Dto(
         currentValuation,
         valuationsWithContracts as any,
-        contract.equipo
+        contract.equipo,
+        manipuleoRate
       );
 
       logger.info('Page 2 data fetched successfully', {
@@ -2886,11 +2897,15 @@ export class ValuationService {
       // Fetch financial totals for Page 7 summary
       const financialTotals = await this.getFinancialTotals(id);
 
+      // Fetch configurable manipuleo rate
+      const manipuleoRate = await this.combustibleConfigService.obtenerPrecioManipuleo();
+
       const result = transformToValuationPage7Dto(
         valuation,
         contract,
         contract.equipo,
-        financialTotals
+        financialTotals,
+        manipuleoRate
       );
 
       logger.info('Page 7 data fetched successfully', {

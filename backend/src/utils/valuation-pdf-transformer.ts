@@ -43,7 +43,8 @@ export function transformToValuationPage1Dto(
     importe_gasto_obra?: number;
     importe_adelanto?: number;
     importe_exceso_combustible?: number;
-  }
+  },
+  precioManipuleo: number = 0.8
 ): ValuationPage1Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
@@ -93,7 +94,8 @@ export function transformToValuationPage1Dto(
   const financieroDto: ValuationFinancialDto = calculateFinancials(
     valuation,
     contract,
-    financialTotals
+    financialTotals,
+    precioManipuleo
   );
 
   return {
@@ -115,7 +117,8 @@ function calculateFinancials(
     importe_gasto_obra?: number;
     importe_adelanto?: number;
     importe_exceso_combustible?: number;
-  }
+  },
+  precioManipuleo: number = 0.8
 ): ValuationFinancialDto {
   // Parse all numeric values (TypeORM returns decimals as strings)
   const horasTrabajadas = parseFloat(String(valuation.horasTrabajadas || 0));
@@ -136,9 +139,8 @@ function calculateFinancials(
   // Fuel costs
   const precioCombustible = combustibleConsumido > 0 ? costoCombustible / combustibleConsumido : 0;
 
-  // Fuel handling charge (standard rate: S/. 0.80 per gallon)
-  // TODO: Get actual rate from configuration or contract
-  const precioManipuleoCombustible = 0.8;
+  // Fuel handling charge (configurable, defaults to S/. 0.80 per gallon)
+  const precioManipuleoCombustible = precioManipuleo;
   const importeManipuleoCombustible = combustibleConsumido * precioManipuleoCombustible;
 
   // Work expenses
@@ -200,7 +202,8 @@ function calculateFinancials(
 export function transformToValuationPage2Dto(
   currentValuation: Valorizacion,
   historicalValuations: Valorizacion[],
-  equipment: Equipment
+  equipment: Equipment,
+  precioManipuleo: number = 0.8
 ): ValuationPage2Dto {
   // Equipment information (reuse from Page 1)
   const equipoDto: ValuationEquipmentDto = {
@@ -249,7 +252,7 @@ export function transformToValuationPage2Dto(
 
     // Calculate total discounts (fuel, handling, work expenses, advances, excess fuel)
     const combustibleConsumido = parseFloat(String(val.combustibleConsumido || 0));
-    const precioManipuleoCombustible = 0.8;
+    const precioManipuleoCombustible = precioManipuleo;
     const importeManipuleoCombustible = combustibleConsumido * precioManipuleoCombustible;
     const descuentoTotal = costoCombustible + importeManipuleoCombustible;
 
@@ -563,7 +566,8 @@ export function transformToValuationPage7Dto(
     importe_gasto_obra?: number;
     importe_adelanto?: number;
     importe_exceso_combustible?: number;
-  }
+  },
+  precioManipuleo: number = 0.8
 ): ValuationPage7Dto {
   // Equipment information
   const equipoDto: ValuationEquipmentDto = {
@@ -596,7 +600,8 @@ export function transformToValuationPage7Dto(
   const financieroDto: ValuationFinancialDto = calculateFinancials(
     valuation,
     contract,
-    financialTotals
+    financialTotals,
+    precioManipuleo
   );
 
   return {
