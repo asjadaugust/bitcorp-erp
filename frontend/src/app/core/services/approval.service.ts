@@ -31,6 +31,13 @@ export interface PlantillaAprobacionDto {
   pasos?: PlantillaPasoDto[];
 }
 
+export interface PasoActualInfoDto {
+  nombre_paso: string;
+  tipo_aprobador: string;
+  rol?: string;
+  usuario_aprobador_id?: number;
+}
+
 export interface PasoSolicitudDto {
   id: number;
   solicitud_id: number;
@@ -39,6 +46,10 @@ export interface PasoSolicitudDto {
   estado_paso: string;
   accion_fecha?: string;
   comentario?: string;
+  nombre_paso?: string;
+  tipo_aprobador?: string;
+  rol?: string;
+  usuario_aprobador_id?: number;
 }
 
 export interface SolicitudAprobacionDto {
@@ -58,6 +69,20 @@ export interface SolicitudAprobacionDto {
   fecha_completado?: string;
   completado_por_id?: number;
   pasos?: PasoSolicitudDto[];
+  paso_actual_info?: PasoActualInfoDto;
+}
+
+export interface DashboardItemDto {
+  id: number;
+  tipo: 'template' | 'adhoc';
+  titulo: string;
+  estado: string;
+  module_name?: string;
+  fecha_creacion: string;
+  usuario_solicitante_id: number;
+  paso_actual?: number;
+  total_pasos?: number;
+  paso_actual_info?: PasoActualInfoDto;
 }
 
 export interface SolicitudAdhocDto {
@@ -78,6 +103,13 @@ export interface DashboardStatsDto {
   pendientes_enviados: number;
   aprobados_hoy: number;
   rechazados_hoy: number;
+}
+
+export interface UserSearchResult {
+  id: number;
+  nombre: string;
+  email: string;
+  rol?: string;
 }
 
 export interface AuditoriaItem {
@@ -147,12 +179,12 @@ export class ApprovalService {
   }
 
   // Dashboard
-  getDashboardRecibidos(): Observable<SolicitudAprobacionDto[]> {
-    return this.http.get<SolicitudAprobacionDto[]>(`${this.apiUrl}/dashboard/recibidos`);
+  getDashboardRecibidos(): Observable<DashboardItemDto[]> {
+    return this.http.get<DashboardItemDto[]>(`${this.apiUrl}/dashboard/recibidos`);
   }
 
-  getDashboardEnviados(): Observable<SolicitudAprobacionDto[]> {
-    return this.http.get<SolicitudAprobacionDto[]>(`${this.apiUrl}/dashboard/enviados`);
+  getDashboardEnviados(): Observable<DashboardItemDto[]> {
+    return this.http.get<DashboardItemDto[]>(`${this.apiUrl}/dashboard/enviados`);
   }
 
   getDashboardStats(): Observable<DashboardStatsDto> {
@@ -203,6 +235,16 @@ export class ApprovalService {
     return this.http.post<SolicitudAdhocDto>(`${this.apiUrl}/adhoc/${id}/respond`, {
       respuesta,
       comentario,
+    });
+  }
+
+  cancelRequest(id: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/requests/${id}/cancel`, {});
+  }
+
+  searchUsers(query: string): Observable<UserSearchResult[]> {
+    return this.http.get<UserSearchResult[]>(`${environment.apiUrl}/users/search`, {
+      params: { q: query },
     });
   }
 }

@@ -40,6 +40,7 @@ router.post(
   authorize(ROLES.ADMIN),
   controller.rebaseRequest.bind(controller)
 );
+router.post('/requests/:id/cancel', controller.cancelRequest.bind(controller));
 router.get('/requests/:id/audit', controller.getRequestAudit.bind(controller));
 
 // Ad-hoc Requests

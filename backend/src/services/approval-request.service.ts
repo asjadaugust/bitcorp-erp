@@ -9,15 +9,18 @@ import { NotFoundError, ConflictError } from '../errors';
 import {
   SolicitudAprobacionDto,
   DashboardStatsDto,
+  DashboardItemDto,
   toSolicitudDto,
 } from '../types/dto/approval.dto';
 import { ApprovalTemplateService } from './approval-template.service';
 import { ApprovalCallbackService } from './approval-callback.service';
+import { ApprovalAdhocService } from './approval-adhoc.service';
 import logger from '../utils/logger';
 
 export class ApprovalRequestService {
   private templateSvc = new ApprovalTemplateService();
   private callbackSvc = new ApprovalCallbackService();
+  private adhocSvc = new ApprovalAdhocService();
 
   private get repo() {
     return AppDataSource.getRepository(SolicitudAprobacion);
@@ -343,8 +346,8 @@ export class ApprovalRequestService {
     return toSolicitudDto(updated!);
   }
 
-  async getDashboardRecibidos(userId: number, userRole: string): Promise<SolicitudAprobacionDto[]> {
-    // Find solicitudes where the current step's plantilla_paso matches the user's role or user_id
+  async getDashboardRecibidos(userId: number, userRole: string): Promise<DashboardItemDto[]> {
+    // Template-based solicitudes where the current step matches user's role or user_id
     const solicitudes = await this.repo
       .createQueryBuilder('s')
       .innerJoin(
@@ -357,19 +360,72 @@ export class ApprovalRequestService {
         '(pp.tipo_aprobador = :role_type AND pp.rol = :role) OR (pp.tipo_aprobador = :user_type AND pp.usuario_id = :uid)',
         { role_type: 'ROLE', role: userRole, user_type: 'USER_ID', uid: userId }
       )
+      .leftJoinAndSelect('s.pasos', 'pasos')
       .orderBy('s.fecha_creacion', 'DESC')
       .getMany();
 
-    return solicitudes.map(toSolicitudDto);
+    const templateItems: DashboardItemDto[] = solicitudes.map((s) => ({
+      id: s.id,
+      tipo: 'template' as const,
+      titulo: s.titulo,
+      estado: s.estado,
+      module_name: s.moduleName,
+      fecha_creacion: s.fechaCreacion?.toISOString(),
+      usuario_solicitante_id: s.usuarioSolicitanteId,
+      paso_actual: s.pasoActual,
+      total_pasos: s.pasos?.length,
+    }));
+
+    // Adhoc solicitudes pending for this user
+    const adhocPendientes = await this.adhocSvc.listarPendientes(userId);
+    const adhocItems: DashboardItemDto[] = adhocPendientes.map((a) => ({
+      id: a.id,
+      tipo: 'adhoc' as const,
+      titulo: a.titulo,
+      estado: a.estado,
+      module_name: 'adhoc',
+      fecha_creacion: a.fecha_creacion,
+      usuario_solicitante_id: a.usuario_solicitante_id,
+    }));
+
+    return [...templateItems, ...adhocItems].sort(
+      (a, b) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime()
+    );
   }
 
-  async getDashboardEnviados(userId: number): Promise<SolicitudAprobacionDto[]> {
+  async getDashboardEnviados(userId: number): Promise<DashboardItemDto[]> {
     const solicitudes = await this.repo.find({
       where: { usuarioSolicitanteId: userId } as any,
       relations: ['pasos'],
       order: { fechaCreacion: 'DESC' } as any,
     });
-    return solicitudes.map(toSolicitudDto);
+
+    const templateItems: DashboardItemDto[] = solicitudes.map((s) => ({
+      id: s.id,
+      tipo: 'template' as const,
+      titulo: s.titulo,
+      estado: s.estado,
+      module_name: s.moduleName,
+      fecha_creacion: s.fechaCreacion?.toISOString(),
+      usuario_solicitante_id: s.usuarioSolicitanteId,
+      paso_actual: s.pasoActual,
+      total_pasos: s.pasos?.length,
+    }));
+
+    const adhocMios = await this.adhocSvc.listarMios(userId);
+    const adhocItems: DashboardItemDto[] = adhocMios.map((a) => ({
+      id: a.id,
+      tipo: 'adhoc' as const,
+      titulo: a.titulo,
+      estado: a.estado,
+      module_name: 'adhoc',
+      fecha_creacion: a.fecha_creacion,
+      usuario_solicitante_id: a.usuario_solicitante_id,
+    }));
+
+    return [...templateItems, ...adhocItems].sort(
+      (a, b) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime()
+    );
   }
 
   async getDashboardStats(userId: number, userRole: string): Promise<DashboardStatsDto> {
@@ -380,11 +436,11 @@ export class ApprovalRequestService {
     today.setHours(0, 0, 0, 0);
 
     const aprobadosHoy = enviados.filter(
-      (s) => s.estado === 'APROBADO' && s.fecha_completado && new Date(s.fecha_completado) >= today
+      (s) => s.estado === 'APROBADO' && s.fecha_creacion && new Date(s.fecha_creacion) >= today
     ).length;
 
     const rechazadosHoy = enviados.filter(
-      (s) => s.estado === 'RECHAZADO' && s.fecha_completado && new Date(s.fecha_completado) >= today
+      (s) => s.estado === 'RECHAZADO' && s.fecha_creacion && new Date(s.fecha_creacion) >= today
     ).length;
 
     return {
@@ -399,7 +455,17 @@ export class ApprovalRequestService {
   async getSolicitud(id: number): Promise<SolicitudAprobacionDto> {
     const s = await this.repo.findOne({ where: { id }, relations: ['pasos'] });
     if (!s) throw new NotFoundError('SolicitudAprobacion', id);
-    return toSolicitudDto(s);
+
+    // Load plantilla pasos for enrichment
+    let plantillaPasos: PlantillaPaso[] = [];
+    if (s.plantillaId) {
+      plantillaPasos = await this.pasoPlantillaRepo.find({
+        where: { plantillaId: s.plantillaId } as any,
+        order: { pasoNumero: 'ASC' } as any,
+      });
+    }
+
+    return toSolicitudDto(s, plantillaPasos);
   }
 
   async listar(): Promise<SolicitudAprobacionDto[]> {
@@ -407,7 +473,7 @@ export class ApprovalRequestService {
       relations: ['pasos'],
       order: { fechaCreacion: 'DESC' } as any,
     });
-    return all.map(toSolicitudDto);
+    return all.map((s) => toSolicitudDto(s));
   }
 
   async getAuditTrail(solicitudId: number): Promise<any[]> {

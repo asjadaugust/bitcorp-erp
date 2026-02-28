@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface StatItem {
@@ -19,7 +19,9 @@ export interface StatItem {
         *ngFor="let item of items; let i = index"
         class="stat-card"
         [class]="item.color || 'primary'"
+        [class.clickable]="itemClicked.observed"
         [attr.data-testid]="item.testId || 'stat-card-' + i"
+        (click)="itemClicked.emit(i)"
       >
         <div class="stat-icon" *ngIf="item.icon">
           <i class="fa-solid" [ngClass]="item.icon"></i>
@@ -56,6 +58,10 @@ export interface StatItem {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
         border-color: var(--grey-200);
+      }
+
+      .stat-card.clickable {
+        cursor: pointer;
       }
 
       .stat-icon {
@@ -113,4 +119,5 @@ export interface StatItem {
 export class StatsGridComponent {
   @Input() items: StatItem[] = [];
   @Input() testId?: string;
+  @Output() itemClicked = new EventEmitter<number>();
 }

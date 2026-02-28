@@ -9,8 +9,13 @@ import { CreateUserDto, UpdateUserDto, ChangePasswordDto } from '../../types/dto
 const router = Router();
 const usersController = new UsersController();
 
-// All routes require authentication + ADMIN role
+// All routes require authentication
 router.use(authenticate);
+
+// Lightweight search — open to all authenticated users (before ADMIN guard)
+router.get('/search', usersController.search);
+
+// All remaining routes require ADMIN role
 router.use(authorize(ROLES.ADMIN));
 
 // Static routes before parameterized routes

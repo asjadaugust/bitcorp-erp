@@ -34,6 +34,13 @@ export interface PlantillaAprobacionDto {
   pasos?: PlantillaPasoDto[];
 }
 
+export interface PasoActualInfoDto {
+  nombre_paso: string;
+  tipo_aprobador: string;
+  rol?: string;
+  usuario_aprobador_id?: number;
+}
+
 export interface PasoSolicitudDto {
   id: number;
   solicitud_id: number;
@@ -42,6 +49,10 @@ export interface PasoSolicitudDto {
   estado_paso: string;
   accion_fecha?: string;
   comentario?: string;
+  nombre_paso?: string;
+  tipo_aprobador?: string;
+  rol?: string;
+  usuario_aprobador_id?: number;
 }
 
 export interface SolicitudAprobacionDto {
@@ -61,6 +72,20 @@ export interface SolicitudAprobacionDto {
   fecha_completado?: string;
   completado_por_id?: number;
   pasos?: PasoSolicitudDto[];
+  paso_actual_info?: PasoActualInfoDto;
+}
+
+export interface DashboardItemDto {
+  id: number;
+  tipo: 'template' | 'adhoc';
+  titulo: string;
+  estado: string;
+  module_name?: string;
+  fecha_creacion: string;
+  usuario_solicitante_id: number;
+  paso_actual?: number;
+  total_pasos?: number;
+  paso_actual_info?: PasoActualInfoDto;
 }
 
 export interface RespuestaAdhocDto {
@@ -180,7 +205,10 @@ export function toPlantillaDto(plantilla: PlantillaAprobacion): PlantillaAprobac
   };
 }
 
-export function toPasoSolicitudDto(paso: PasoSolicitud): PasoSolicitudDto {
+export function toPasoSolicitudDto(
+  paso: PasoSolicitud,
+  plantillaPaso?: PlantillaPaso
+): PasoSolicitudDto {
   return {
     id: paso.id,
     solicitud_id: paso.solicitudId,
@@ -189,10 +217,26 @@ export function toPasoSolicitudDto(paso: PasoSolicitud): PasoSolicitudDto {
     estado_paso: paso.estadoPaso,
     accion_fecha: paso.accionFecha?.toISOString(),
     comentario: paso.comentario,
+    nombre_paso: plantillaPaso?.nombrePaso,
+    tipo_aprobador: plantillaPaso?.tipoAprobador,
+    rol: plantillaPaso?.rol,
+    usuario_aprobador_id: plantillaPaso?.usuarioId,
   };
 }
 
-export function toSolicitudDto(solicitud: SolicitudAprobacion): SolicitudAprobacionDto {
+export function toSolicitudDto(
+  solicitud: SolicitudAprobacion,
+  plantillaPasos?: PlantillaPaso[]
+): SolicitudAprobacionDto {
+  const pasoMap = new Map<number, PlantillaPaso>();
+  if (plantillaPasos) {
+    for (const pp of plantillaPasos) {
+      pasoMap.set(pp.pasoNumero, pp);
+    }
+  }
+
+  const currentPP = pasoMap.get(solicitud.pasoActual);
+
   return {
     id: solicitud.id,
     tenant_id: solicitud.tenantId,
@@ -209,7 +253,15 @@ export function toSolicitudDto(solicitud: SolicitudAprobacion): SolicitudAprobac
     fecha_creacion: solicitud.fechaCreacion?.toISOString(),
     fecha_completado: solicitud.fechaCompletado?.toISOString(),
     completado_por_id: solicitud.completadoPorId,
-    pasos: solicitud.pasos?.map(toPasoSolicitudDto),
+    pasos: solicitud.pasos?.map((p) => toPasoSolicitudDto(p, pasoMap.get(p.pasoNumero))),
+    paso_actual_info: currentPP
+      ? {
+          nombre_paso: currentPP.nombrePaso,
+          tipo_aprobador: currentPP.tipoAprobador,
+          rol: currentPP.rol,
+          usuario_aprobador_id: currentPP.usuarioId,
+        }
+      : undefined,
   };
 }
 

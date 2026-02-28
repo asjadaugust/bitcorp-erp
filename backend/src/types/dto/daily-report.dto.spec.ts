@@ -76,6 +76,7 @@ describe('DailyReportDto Transformations', () => {
         firma_residente: undefined,
         firma_planeamiento_control: undefined,
         numero_vale_combustible: undefined,
+        solicitud_aprobacion_id: null,
       });
     });
 

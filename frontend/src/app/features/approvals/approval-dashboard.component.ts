@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import {
   ApprovalService,
-  SolicitudAprobacionDto,
-  SolicitudAdhocDto,
+  DashboardItemDto,
   DashboardStatsDto,
 } from '../../core/services/approval.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
@@ -15,9 +14,8 @@ import {
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { forkJoin } from 'rxjs';
 
 type DashboardTab = 'recibidos' | 'enviados';
@@ -33,9 +31,8 @@ type DashboardTab = 'recibidos' | 'enviados';
     PageCardComponent,
     StatsGridComponent,
     ButtonComponent,
-    AeroBadgeComponent,
     ActionsContainerComponent,
-    AeroTabsComponent,
+    AlertComponent,
   ],
   template: `
     <app-page-layout
@@ -60,7 +57,20 @@ type DashboardTab = 'recibidos' | 'enviados';
       </app-actions-container>
 
       <!-- Stats Grid -->
-      <app-stats-grid [items]="statItems" class="mb-4"></app-stats-grid>
+      <app-stats-grid
+        [items]="statItems"
+        (itemClicked)="onStatClick($event)"
+        class="mb-4"
+      ></app-stats-grid>
+
+      <!-- Error Alert -->
+      <app-alert
+        *ngIf="errorMsg()"
+        type="error"
+        [message]="errorMsg()"
+        [dismissible]="true"
+        (dismissed)="errorMsg.set('')"
+      ></app-alert>
 
       <!-- Tabs -->
       <app-page-card [noPadding]="false">
@@ -90,6 +100,12 @@ type DashboardTab = 'recibidos' | 'enviados';
             <i class="fa-regular fa-circle-check empty-icon"></i>
             <p class="empty-title">Todo al día</p>
             <p class="empty-desc">No tienes solicitudes pendientes de aprobación</p>
+            <app-button
+              variant="primary"
+              icon="fa-plus"
+              label="Crear Solicitud Ad-hoc"
+              (clicked)="router.navigate(['/approvals/adhoc/new'])"
+            ></app-button>
           </div>
 
           <div class="approval-cards" *ngIf="recibidos().length > 0">
@@ -99,16 +115,23 @@ type DashboardTab = 'recibidos' | 'enviados';
               [class.approval-card--urgent]="isUrgent(item)"
             >
               <div class="approval-card__header">
-                <span class="module-badge" [class]="'module-badge--' + item.module_name">
-                  <i class="fa-solid" [class]="getModuleIcon(item.module_name)"></i>
-                  {{ getModuleLabel(item.module_name) }}
+                <span
+                  class="module-badge"
+                  [class]="'module-badge--' + (item.module_name || 'adhoc')"
+                >
+                  <i class="fa-solid" [class]="getModuleIcon(item.module_name || 'adhoc')"></i>
+                  {{ getModuleLabel(item.module_name || 'adhoc') }}
                 </span>
-                <span class="step-progress"> Paso {{ item.paso_actual }} </span>
+                <span class="step-progress" *ngIf="item.tipo === 'template'">
+                  Paso {{ item.paso_actual }}
+                </span>
+                <span class="tipo-badge tipo-badge--adhoc" *ngIf="item.tipo === 'adhoc'">
+                  Ad-hoc
+                </span>
               </div>
 
               <div class="approval-card__body">
                 <h3 class="approval-title">{{ item.titulo }}</h3>
-                <p class="approval-meta" *ngIf="item.descripcion">{{ item.descripcion }}</p>
                 <p class="approval-date">
                   <i class="fa-regular fa-clock"></i>
                   {{ item.fecha_creacion | date: 'dd MMM yyyy, HH:mm' }}
@@ -120,15 +143,17 @@ type DashboardTab = 'recibidos' | 'enviados';
                   variant="ghost"
                   icon="fa-eye"
                   label="Ver detalle"
-                  (clicked)="viewDetail(item.id)"
+                  (clicked)="viewDetail(item)"
                 ></app-button>
                 <app-button
+                  *ngIf="item.tipo === 'template'"
                   variant="danger-outline"
                   icon="fa-xmark"
                   label="Rechazar"
                   (clicked)="promptReject(item)"
                 ></app-button>
                 <app-button
+                  *ngIf="item.tipo === 'template'"
                   variant="success"
                   icon="fa-check"
                   label="Aprobar"
@@ -145,14 +170,23 @@ type DashboardTab = 'recibidos' | 'enviados';
             <i class="fa-regular fa-paper-plane empty-icon"></i>
             <p class="empty-title">Sin solicitudes enviadas</p>
             <p class="empty-desc">Las solicitudes que envíes aparecerán aquí</p>
+            <app-button
+              variant="primary"
+              icon="fa-plus"
+              label="Crear Solicitud Ad-hoc"
+              (clicked)="router.navigate(['/approvals/adhoc/new'])"
+            ></app-button>
           </div>
 
           <div class="approval-cards" *ngIf="enviados().length > 0">
             <div *ngFor="let item of enviados()" class="approval-card">
               <div class="approval-card__header">
-                <span class="module-badge" [class]="'module-badge--' + item.module_name">
-                  <i class="fa-solid" [class]="getModuleIcon(item.module_name)"></i>
-                  {{ getModuleLabel(item.module_name) }}
+                <span
+                  class="module-badge"
+                  [class]="'module-badge--' + (item.module_name || 'adhoc')"
+                >
+                  <i class="fa-solid" [class]="getModuleIcon(item.module_name || 'adhoc')"></i>
+                  {{ getModuleLabel(item.module_name || 'adhoc') }}
                 </span>
                 <span class="estado-badge" [class]="'estado--' + item.estado.toLowerCase()">
                   <i class="fa-solid" [class]="getEstadoIcon(item.estado)"></i>
@@ -162,33 +196,6 @@ type DashboardTab = 'recibidos' | 'enviados';
 
               <div class="approval-card__body">
                 <h3 class="approval-title">{{ item.titulo }}</h3>
-
-                <!-- Progress chain -->
-                <div class="approval-chain" *ngIf="item.pasos && item.pasos.length > 0">
-                  <div
-                    *ngFor="let paso of item.pasos"
-                    class="chain-step"
-                    [class.chain-step--done]="paso.estado_paso === 'APROBADO'"
-                    [class.chain-step--active]="
-                      paso.paso_numero === item.paso_actual && item.estado !== 'APROBADO'
-                    "
-                    [class.chain-step--rejected]="paso.estado_paso === 'RECHAZADO'"
-                  >
-                    <i
-                      class="fa-solid"
-                      [class.fa-check-circle]="paso.estado_paso === 'APROBADO'"
-                      [class.fa-circle-xmark]="paso.estado_paso === 'RECHAZADO'"
-                      [class.fa-circle-dot]="
-                        paso.paso_numero === item.paso_actual && item.estado !== 'APROBADO'
-                      "
-                      [class.fa-circle]="
-                        paso.estado_paso === 'PENDIENTE' && paso.paso_numero !== item.paso_actual
-                      "
-                    ></i>
-                    <span>Paso {{ paso.paso_numero }}</span>
-                  </div>
-                </div>
-
                 <p class="approval-date">
                   <i class="fa-regular fa-clock"></i>
                   {{ item.fecha_creacion | date: 'dd MMM yyyy, HH:mm' }}
@@ -200,7 +207,7 @@ type DashboardTab = 'recibidos' | 'enviados';
                   variant="ghost"
                   icon="fa-eye"
                   label="Ver detalle"
-                  (clicked)="viewDetail(item.id)"
+                  (clicked)="viewDetail(item)"
                 ></app-button>
               </div>
             </div>
@@ -221,6 +228,15 @@ type DashboardTab = 'recibidos' | 'enviados';
           <h3>{{ modalAction === 'approve' ? 'Confirmar Aprobación' : 'Rechazar Solicitud' }}</h3>
         </div>
         <p class="modal-subtitle">{{ selectedItem?.titulo }}</p>
+
+        <app-alert
+          *ngIf="modalError()"
+          type="error"
+          [message]="modalError()"
+          [dismissible]="true"
+          (dismissed)="modalError.set('')"
+        ></app-alert>
+
         <textarea
           class="modal-comment"
           placeholder="{{
@@ -250,7 +266,7 @@ type DashboardTab = 'recibidos' | 'enviados';
         display: block;
       }
 
-      /* ── Tab Header ─────────────────────────────────────────── */
+      /* Tab Header */
       .approval-tabs-header {
         display: flex;
         gap: var(--s-4, 4px);
@@ -272,17 +288,15 @@ type DashboardTab = 'recibidos' | 'enviados';
         border-bottom: 2px solid transparent;
         margin-bottom: -2px;
         transition: all 0.15s ease;
-
-        &:hover {
-          color: var(--primary-700, #0057b8);
-          background: var(--grey-50, #f9fafb);
-        }
-
-        &.active {
-          color: var(--primary-700, #0057b8);
-          border-bottom-color: var(--primary-700, #0057b8);
-          font-weight: 600;
-        }
+      }
+      .tab-btn:hover {
+        color: var(--primary-700, #0057b8);
+        background: var(--grey-50, #f9fafb);
+      }
+      .tab-btn.active {
+        color: var(--primary-700, #0057b8);
+        border-bottom-color: var(--primary-700, #0057b8);
+        font-weight: 600;
       }
 
       .tab-badge {
@@ -294,7 +308,7 @@ type DashboardTab = 'recibidos' | 'enviados';
         font-weight: 700;
       }
 
-      /* ── Approval Cards ──────────────────────────────────────── */
+      /* Approval Cards */
       .approval-cards {
         display: flex;
         flex-direction: column;
@@ -309,15 +323,13 @@ type DashboardTab = 'recibidos' | 'enviados';
         transition:
           box-shadow 0.15s ease,
           border-color 0.15s ease;
-
-        &:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-          border-color: var(--grey-300, #d1d5db);
-        }
-
-        &--urgent {
-          border-left: 4px solid var(--warning-500, #f59e0b);
-        }
+      }
+      .approval-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: var(--grey-300, #d1d5db);
+      }
+      .approval-card--urgent {
+        border-left: 4px solid var(--warning-500, #f59e0b);
       }
 
       .approval-card__header {
@@ -346,12 +358,6 @@ type DashboardTab = 'recibidos' | 'enviados';
         margin: 0 0 4px;
       }
 
-      .approval-meta {
-        font-size: 0.85rem;
-        color: var(--grey-500, #6b7280);
-        margin: 0 0 6px;
-      }
-
       .approval-date {
         font-size: 0.8rem;
         color: var(--grey-400, #9ca3af);
@@ -361,7 +367,7 @@ type DashboardTab = 'recibidos' | 'enviados';
         gap: 4px;
       }
 
-      /* ── Module Badges ───────────────────────────────────────── */
+      /* Module Badges */
       .module-badge {
         display: inline-flex;
         align-items: center;
@@ -372,26 +378,25 @@ type DashboardTab = 'recibidos' | 'enviados';
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
-
-        &--daily_report {
-          background: #dbeafe;
-          color: #1d4ed8;
-        }
-        &--valorizacion {
-          background: #d1fae5;
-          color: #065f46;
-        }
-        &--solicitud_equipo {
-          background: #fef3c7;
-          color: #92400e;
-        }
-        &--adhoc {
-          background: #ede9fe;
-          color: #5b21b6;
-        }
+      }
+      .module-badge--daily_report {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .module-badge--valorizacion {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .module-badge--solicitud_equipo {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .module-badge--adhoc {
+        background: #ede9fe;
+        color: #5b21b6;
       }
 
-      /* ── Estado Badges ───────────────────────────────────────── */
+      /* Estado Badges */
       .estado-badge {
         display: inline-flex;
         align-items: center;
@@ -400,27 +405,26 @@ type DashboardTab = 'recibidos' | 'enviados';
         border-radius: 12px;
         font-size: 0.78rem;
         font-weight: 600;
-
-        &.estado--pendiente {
-          background: #fef3c7;
-          color: #92400e;
-        }
-        &.estado--en_revision {
-          background: #dbeafe;
-          color: #1e40af;
-        }
-        &.estado--aprobado {
-          background: #d1fae5;
-          color: #065f46;
-        }
-        &.estado--rechazado {
-          background: #fee2e2;
-          color: #991b1b;
-        }
-        &.estado--cancelado {
-          background: #f3f4f6;
-          color: #374151;
-        }
+      }
+      .estado--pendiente {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .estado--en_revision {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .estado--aprobado {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .estado--rechazado {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .estado--cancelado {
+        background: #f3f4f6;
+        color: #374151;
       }
 
       .step-progress {
@@ -429,41 +433,16 @@ type DashboardTab = 'recibidos' | 'enviados';
         font-weight: 500;
       }
 
-      /* ── Approval Chain (Enviados) ───────────────────────────── */
-      .approval-chain {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin: 8px 0;
-        flex-wrap: wrap;
+      .tipo-badge--adhoc {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #5b21b6;
+        background: #ede9fe;
+        padding: 2px 8px;
+        border-radius: 4px;
       }
 
-      .chain-step {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 0.78rem;
-        color: var(--grey-400);
-
-        & + .chain-step::before {
-          content: '→';
-          color: var(--grey-300);
-          margin-right: 4px;
-        }
-
-        &--done {
-          color: #059669;
-        }
-        &--active {
-          color: #2563eb;
-          font-weight: 600;
-        }
-        &--rejected {
-          color: #dc2626;
-        }
-      }
-
-      /* ── Empty State ─────────────────────────────────────────── */
+      /* Empty State */
       .empty-state {
         text-align: center;
         padding: var(--s-48, 48px) var(--s-24, 24px);
@@ -486,10 +465,10 @@ type DashboardTab = 'recibidos' | 'enviados';
 
       .empty-desc {
         font-size: 0.9rem;
-        margin: 0;
+        margin: 0 0 16px;
       }
 
-      /* ── Modal ───────────────────────────────────────────────── */
+      /* Modal */
       .modal-overlay {
         position: fixed;
         inset: 0;
@@ -547,12 +526,11 @@ type DashboardTab = 'recibidos' | 'enviados';
         margin-bottom: 16px;
         box-sizing: border-box;
         transition: border-color 0.15s ease;
-
-        &:focus {
-          outline: none;
-          border-color: var(--primary-500, #3b82f6);
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
+      }
+      .modal-comment:focus {
+        outline: none;
+        border-color: var(--primary-500, #3b82f6);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
       }
 
       .modal-actions {
@@ -568,16 +546,18 @@ export class ApprovalDashboardComponent implements OnInit {
   private approvalSvc = inject(ApprovalService);
 
   loading = signal(true);
-  recibidos = signal<SolicitudAprobacionDto[]>([]);
-  enviados = signal<SolicitudAprobacionDto[]>([]);
+  recibidos = signal<DashboardItemDto[]>([]);
+  enviados = signal<DashboardItemDto[]>([]);
   stats = signal<DashboardStatsDto | null>(null);
+  errorMsg = signal('');
+  modalError = signal('');
 
   activeTab: DashboardTab = 'recibidos';
 
   showCommentModal = false;
   modalAction: 'approve' | 'reject' = 'approve';
   modalComment = '';
-  selectedItem: SolicitudAprobacionDto | null = null;
+  selectedItem: DashboardItemDto | null = null;
   actionLoading = false;
 
   get statItems(): StatItem[] {
@@ -631,25 +611,45 @@ export class ApprovalDashboardComponent implements OnInit {
     });
   }
 
+  onStatClick(index: number) {
+    if (index === 0) {
+      // Pendientes recibidos → switch to recibidos tab
+      this.activeTab = 'recibidos';
+    } else if (index === 1) {
+      // Mis solicitudes en curso → switch to enviados tab
+      this.activeTab = 'enviados';
+    } else if (index === 2) {
+      // Aprobados hoy → switch to enviados, could filter
+      this.activeTab = 'enviados';
+    } else if (index === 3) {
+      // Rechazados hoy → switch to enviados
+      this.activeTab = 'enviados';
+    }
+  }
+
   switchTab(tab: DashboardTab) {
     this.activeTab = tab;
   }
 
-  viewDetail(id: number) {
-    this.router.navigate(['/approvals/requests', id]);
+  viewDetail(item: DashboardItemDto) {
+    this.router.navigate(['/approvals/requests', item.id], {
+      queryParams: item.tipo === 'adhoc' ? { tipo: 'adhoc' } : undefined,
+    });
   }
 
-  promptApprove(item: SolicitudAprobacionDto) {
+  promptApprove(item: DashboardItemDto) {
     this.selectedItem = item;
     this.modalAction = 'approve';
     this.modalComment = '';
+    this.modalError.set('');
     this.showCommentModal = true;
   }
 
-  promptReject(item: SolicitudAprobacionDto) {
+  promptReject(item: DashboardItemDto) {
     this.selectedItem = item;
     this.modalAction = 'reject';
     this.modalComment = '';
+    this.modalError.set('');
     this.showCommentModal = true;
   }
 
@@ -657,11 +657,15 @@ export class ApprovalDashboardComponent implements OnInit {
     this.showCommentModal = false;
     this.selectedItem = null;
     this.modalComment = '';
+    this.modalError.set('');
   }
 
   confirmAction() {
     if (!this.selectedItem) return;
-    if (this.modalAction === 'reject' && !this.modalComment.trim()) return;
+    if (this.modalAction === 'reject' && !this.modalComment.trim()) {
+      this.modalError.set('Debe ingresar un comentario para rechazar.');
+      return;
+    }
 
     this.actionLoading = true;
     const obs =
@@ -675,13 +679,15 @@ export class ApprovalDashboardComponent implements OnInit {
         this.closeModal();
         this.loadData();
       },
-      error: () => {
+      error: (err) => {
         this.actionLoading = false;
+        const msg = err?.error?.error?.message || 'Error al procesar la solicitud.';
+        this.modalError.set(msg);
       },
     });
   }
 
-  isUrgent(item: SolicitudAprobacionDto): boolean {
+  isUrgent(item: DashboardItemDto): boolean {
     const created = new Date(item.fecha_creacion);
     const hours = (Date.now() - created.getTime()) / 3600000;
     return hours > 24;

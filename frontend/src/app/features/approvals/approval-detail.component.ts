@@ -7,6 +7,7 @@ import {
   SolicitudAprobacionDto,
   AuditoriaItem,
 } from '../../core/services/approval.service';
+import { AuthService } from '../../core/services/auth.service';
 import {
   EntityDetailShellComponent,
   EntityDetailSidebarCardComponent,
@@ -14,6 +15,7 @@ import {
   AuditInfo,
 } from '../../shared/components/entity-detail';
 import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -26,6 +28,7 @@ import { forkJoin } from 'rxjs';
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
     ButtonComponent,
+    AlertComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -35,7 +38,27 @@ import { forkJoin } from 'rxjs';
       [auditInfo]="auditInfoObj"
     >
       <!-- Main Content -->
-      <div>
+      <div entity-main-content>
+        <!-- Error Alert -->
+        <app-alert
+          *ngIf="errorMsg()"
+          type="error"
+          [message]="errorMsg()"
+          [dismissible]="true"
+          (dismissed)="errorMsg.set('')"
+        ></app-alert>
+
+        <!-- Success Alert -->
+        <app-alert
+          *ngIf="successMsg()"
+          type="success"
+          [message]="successMsg()"
+          [dismissible]="true"
+          [autoDismiss]="true"
+          [autoDismissDelay]="3000"
+          (dismissed)="successMsg.set('')"
+        ></app-alert>
+
         <!-- Estado Banner -->
         <div
           class="estado-banner"
@@ -52,6 +75,14 @@ import { forkJoin } from 'rxjs';
         <div class="detail-section" *ngIf="solicitud()?.descripcion">
           <label>Descripción</label>
           <p>{{ solicitud()?.descripcion }}</p>
+        </div>
+
+        <!-- Entity Link (U4) -->
+        <div class="detail-section" *ngIf="entityRoute()">
+          <a [routerLink]="entityRoute()" class="entity-link">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            Ver registro original
+          </a>
         </div>
 
         <!-- Approval Chain -->
@@ -76,10 +107,19 @@ import { forkJoin } from 'rxjs';
                 ></i>
               </div>
               <div class="chain-info">
-                <span class="chain-step-num">Paso {{ paso.paso_numero }}</span>
+                <span class="chain-step-num">
+                  {{ paso.nombre_paso || 'Paso ' + paso.paso_numero }}
+                </span>
+                <span class="chain-step-role" *ngIf="paso.tipo_aprobador">
+                  {{
+                    paso.tipo_aprobador === 'ROLE'
+                      ? paso.rol
+                      : 'Usuario #' + paso.usuario_aprobador_id
+                  }}
+                </span>
                 <span class="chain-state">{{ paso.estado_paso }}</span>
                 <span class="chain-date" *ngIf="paso.accion_fecha">
-                  {{ paso.accion_fecha | date: 'dd/MM/yyyy HH:mm' }}
+                  {{ formatRelativeTime(paso.accion_fecha) }}
                 </span>
                 <span class="chain-comment" *ngIf="paso.comentario">"{{ paso.comentario }}"</span>
               </div>
@@ -114,48 +154,77 @@ import { forkJoin } from 'rxjs';
             ></app-button>
           </div>
         </div>
+
+        <!-- Cancel Action (U5) -->
+        <div class="detail-section" *ngIf="canCancel()">
+          <app-button
+            variant="ghost"
+            icon="fa-ban"
+            label="Cancelar Solicitud"
+            [loading]="cancelLoading"
+            (clicked)="cancelRequest()"
+          ></app-button>
+        </div>
       </div>
 
       <!-- Sidebar Cards -->
-      <ng-container sidebar>
-        <app-entity-detail-sidebar-card title="Información" icon="fa-info-circle">
-          <div class="info-rows">
-            <div class="info-row">
-              <span class="info-label">Módulo</span>
-              <span class="module-chip module-chip--{{ solicitud()?.module_name }}">
-                <i class="fa-solid" [class]="getModuleIcon(solicitud()?.module_name ?? '')"></i>
-                {{ getModuleLabel(solicitud()?.module_name ?? '') }}
-              </span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Entity ID</span>
-              <span class="info-value">#{{ solicitud()?.entity_id }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Paso actual</span>
-              <span class="info-value">{{ solicitud()?.paso_actual }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Versión plantilla</span>
-              <span class="info-value">v{{ solicitud()?.plantilla_version }}</span>
-            </div>
+      <app-entity-detail-sidebar-card
+        entity-sidebar-after
+        title="Información"
+        icon="fa-info-circle"
+      >
+        <div class="info-rows">
+          <div class="info-row">
+            <span class="info-label">Módulo</span>
+            <span class="module-chip module-chip--{{ solicitud()?.module_name }}">
+              <i class="fa-solid" [class]="getModuleIcon(solicitud()?.module_name ?? '')"></i>
+              {{ getModuleLabel(solicitud()?.module_name ?? '') }}
+            </span>
           </div>
-        </app-entity-detail-sidebar-card>
+          <div class="info-row">
+            <span class="info-label">Entity ID</span>
+            <span class="info-value">#{{ solicitud()?.entity_id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Paso actual</span>
+            <span class="info-value">
+              {{ solicitud()?.paso_actual_info?.nombre_paso || 'Paso ' + solicitud()?.paso_actual }}
+            </span>
+          </div>
+          <div class="info-row" *ngIf="solicitud()?.paso_actual_info?.tipo_aprobador">
+            <span class="info-label">Aprobador</span>
+            <span class="info-value">
+              {{
+                solicitud()!.paso_actual_info!.tipo_aprobador === 'ROLE'
+                  ? solicitud()!.paso_actual_info!.rol
+                  : 'Usuario #' + solicitud()!.paso_actual_info!.usuario_aprobador_id
+              }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Versión plantilla</span>
+            <span class="info-value">v{{ solicitud()?.plantilla_version }}</span>
+          </div>
+        </div>
+      </app-entity-detail-sidebar-card>
 
-        <app-entity-detail-sidebar-card title="Historial de Auditoría" icon="fa-history">
-          <div *ngIf="auditTrail().length === 0" class="audit-empty">Sin registros</div>
-          <div class="audit-timeline">
-            <div *ngFor="let entry of auditTrail()" class="audit-entry">
-              <div class="audit-dot" [class]="'audit-dot--' + entry.accion.toLowerCase()"></div>
-              <div class="audit-content">
-                <span class="audit-action">{{ formatAccion(entry.accion) }}</span>
-                <span class="audit-time">{{ entry.timestamp | date: 'dd/MM HH:mm' }}</span>
-                <span class="audit-comment" *ngIf="entry.comentario">{{ entry.comentario }}</span>
-              </div>
+      <app-entity-detail-sidebar-card
+        entity-sidebar-after
+        title="Historial de Auditoría"
+        icon="fa-history"
+      >
+        <div *ngIf="auditTrail().length === 0" class="audit-empty">Sin registros</div>
+        <div class="audit-timeline">
+          <div *ngFor="let entry of auditTrail()" class="audit-entry">
+            <div class="audit-dot" [class]="'audit-dot--' + entry.accion.toLowerCase()"></div>
+            <div class="audit-content">
+              <span class="audit-action">{{ formatAccion(entry.accion) }}</span>
+              <span class="audit-time">{{ formatRelativeTime(entry.timestamp) }}</span>
+              <span class="audit-comment" *ngIf="entry.comentario">{{ entry.comentario }}</span>
             </div>
           </div>
-        </app-entity-detail-sidebar-card>
-      </ng-container>
+        </div>
+      </app-entity-detail-sidebar-card>
     </app-entity-detail-shell>
   `,
   styles: [
@@ -172,27 +241,26 @@ import { forkJoin } from 'rxjs';
         border-radius: var(--radius-md, 8px);
         margin-bottom: 20px;
         font-size: 0.9rem;
-
-        &--pendiente {
-          background: #fef3c7;
-          color: #92400e;
-        }
-        &--en_revision {
-          background: #dbeafe;
-          color: #1e40af;
-        }
-        &--aprobado {
-          background: #d1fae5;
-          color: #065f46;
-        }
-        &--rechazado {
-          background: #fee2e2;
-          color: #991b1b;
-        }
-        &--cancelado {
-          background: #f3f4f6;
-          color: #374151;
-        }
+      }
+      .estado-banner--pendiente {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .estado-banner--en_revision {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .estado-banner--aprobado {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .estado-banner--rechazado {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .estado-banner--cancelado {
+        background: #f3f4f6;
+        color: #374151;
       }
 
       .detail-section {
@@ -214,6 +282,23 @@ import { forkJoin } from 'rxjs';
         }
       }
 
+      .entity-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--primary-700, #0057b8);
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: 6px;
+        background: var(--primary-50, #eff6ff);
+        transition: background 0.15s ease;
+      }
+      .entity-link:hover {
+        background: var(--primary-100, #dbeafe);
+      }
+
       .chain-visual {
         display: flex;
         flex-direction: column;
@@ -230,21 +315,21 @@ import { forkJoin } from 'rxjs';
         &:last-child {
           padding-bottom: 0;
         }
-        &--done .chain-circle {
-          background: #059669;
-          border-color: #059669;
-          color: white;
-        }
-        &--active .chain-circle {
-          background: var(--primary-700, #0057b8);
-          border-color: var(--primary-700);
-          color: white;
-        }
-        &--rejected .chain-circle {
-          background: #dc2626;
-          border-color: #dc2626;
-          color: white;
-        }
+      }
+      .chain-node--done .chain-circle {
+        background: #059669;
+        border-color: #059669;
+        color: white;
+      }
+      .chain-node--active .chain-circle {
+        background: var(--primary-700, #0057b8);
+        border-color: var(--primary-700);
+        color: white;
+      }
+      .chain-node--rejected .chain-circle {
+        background: #dc2626;
+        border-color: #dc2626;
+        color: white;
       }
 
       .chain-circle {
@@ -283,6 +368,11 @@ import { forkJoin } from 'rxjs';
         font-weight: 600;
         font-size: 0.9rem;
         color: var(--grey-800);
+      }
+      .chain-step-role {
+        font-size: 0.78rem;
+        color: var(--primary-600, #2563eb);
+        font-weight: 500;
       }
       .chain-state {
         font-size: 0.78rem;
@@ -366,23 +456,22 @@ import { forkJoin } from 'rxjs';
         border-radius: 4px;
         font-size: 0.75rem;
         font-weight: 600;
-
-        &--daily_report {
-          background: #dbeafe;
-          color: #1d4ed8;
-        }
-        &--valorizacion {
-          background: #d1fae5;
-          color: #065f46;
-        }
-        &--solicitud_equipo {
-          background: #fef3c7;
-          color: #92400e;
-        }
-        &--adhoc {
-          background: #ede9fe;
-          color: #5b21b6;
-        }
+      }
+      .module-chip--daily_report {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .module-chip--valorizacion {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .module-chip--solicitud_equipo {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .module-chip--adhoc {
+        background: #ede9fe;
+        color: #5b21b6;
       }
 
       .audit-empty {
@@ -409,28 +498,27 @@ import { forkJoin } from 'rxjs';
         margin-top: 5px;
         flex-shrink: 0;
         background: var(--grey-400);
-
-        &--created {
-          background: #2563eb;
-        }
-        &--step_approved {
-          background: #059669;
-        }
-        &--step_rejected {
-          background: #dc2626;
-        }
-        &--completed {
-          background: #059669;
-        }
-        &--rejected {
-          background: #dc2626;
-        }
-        &--cancelled {
-          background: #6b7280;
-        }
-        &--rebased {
-          background: #7c3aed;
-        }
+      }
+      .audit-dot--created {
+        background: #2563eb;
+      }
+      .audit-dot--step_approved {
+        background: #059669;
+      }
+      .audit-dot--step_rejected {
+        background: #dc2626;
+      }
+      .audit-dot--completed {
+        background: #059669;
+      }
+      .audit-dot--rejected {
+        background: #dc2626;
+      }
+      .audit-dot--cancelled {
+        background: #6b7280;
+      }
+      .audit-dot--rebased {
+        background: #7c3aed;
       }
 
       .audit-content {
@@ -459,14 +547,20 @@ export class ApprovalDetailComponent implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
   private approvalSvc = inject(ApprovalService);
+  private authService = inject(AuthService);
 
   loading = signal(true);
   solicitud = signal<SolicitudAprobacionDto | null>(null);
   auditTrail = signal<AuditoriaItem[]>([]);
+  errorMsg = signal('');
+  successMsg = signal('');
+  entityRoute = signal<string | null>(null);
 
   comentario = '';
   actionLoading = false;
+  cancelLoading = false;
   canAct = signal(false);
+  canCancel = signal(false);
 
   get header(): EntityDetailHeader {
     const s = this.solicitud();
@@ -503,41 +597,134 @@ export class ApprovalDetailComponent implements OnInit {
       next: ({ solicitud, audit }) => {
         this.solicitud.set(solicitud);
         this.auditTrail.set(audit);
-        this.canAct.set(['PENDIENTE', 'EN_REVISION'].includes(solicitud.estado));
+        this.computeCanAct(solicitud);
+        this.computeCanCancel(solicitud);
+        this.computeEntityRoute(solicitud);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
   }
 
+  private computeCanAct(solicitud: SolicitudAprobacionDto) {
+    const isActiveEstado = ['PENDIENTE', 'EN_REVISION'].includes(solicitud.estado);
+    const stepInfo = solicitud.paso_actual_info;
+    const userRole = this.authService.currentUser?.rol;
+    const userId = this.authService.currentUser?.id_usuario;
+
+    const canApprove = stepInfo
+      ? (stepInfo.tipo_aprobador === 'ROLE' && stepInfo.rol === userRole) ||
+        (stepInfo.tipo_aprobador === 'USER_ID' && stepInfo.usuario_aprobador_id === userId)
+      : true; // fallback for adhoc or old data
+
+    this.canAct.set(isActiveEstado && canApprove);
+  }
+
+  private computeCanCancel(solicitud: SolicitudAprobacionDto) {
+    const userId = this.authService.currentUser?.id_usuario;
+    const isOwner = solicitud.usuario_solicitante_id === userId;
+    const isCancellable = ['PENDIENTE', 'EN_REVISION'].includes(solicitud.estado);
+    this.canCancel.set(isOwner && isCancellable);
+  }
+
+  private computeEntityRoute(solicitud: SolicitudAprobacionDto) {
+    const routeMap: Record<string, string> = {
+      daily_report: '/equipment/daily-reports',
+      valorizacion: '/equipment/valuations',
+      solicitud_equipo: '/equipment/solicitudes-equipo',
+    };
+    const base = routeMap[solicitud.module_name];
+    this.entityRoute.set(base ? `${base}/${solicitud.entity_id}` : null);
+  }
+
   approve() {
     const s = this.solicitud();
     if (!s) return;
+    this.errorMsg.set('');
     this.actionLoading = true;
     this.approvalSvc.approveRequest(s.id, this.comentario || undefined).subscribe({
       next: () => {
         this.actionLoading = false;
+        this.comentario = '';
+        this.successMsg.set('Solicitud aprobada exitosamente.');
         this.loadData(s.id);
       },
-      error: () => {
+      error: (err) => {
         this.actionLoading = false;
+        const msg =
+          err?.error?.error?.message || 'Error al aprobar la solicitud. Intente nuevamente.';
+        this.errorMsg.set(msg);
       },
     });
   }
 
   reject() {
     const s = this.solicitud();
-    if (!s || !this.comentario.trim()) return;
+    if (!s) return;
+    this.errorMsg.set('');
+
+    // B4: Reject validation message
+    if (!this.comentario.trim()) {
+      this.errorMsg.set('Debe ingresar un comentario para rechazar.');
+      return;
+    }
+
     this.actionLoading = true;
     this.approvalSvc.rejectRequest(s.id, this.comentario).subscribe({
       next: () => {
         this.actionLoading = false;
+        this.comentario = '';
+        this.successMsg.set('Solicitud rechazada.');
         this.loadData(s.id);
       },
-      error: () => {
+      error: (err) => {
         this.actionLoading = false;
+        const msg =
+          err?.error?.error?.message || 'Error al rechazar la solicitud. Intente nuevamente.';
+        this.errorMsg.set(msg);
       },
     });
+  }
+
+  cancelRequest() {
+    const s = this.solicitud();
+    if (!s) return;
+    this.errorMsg.set('');
+    this.cancelLoading = true;
+    this.approvalSvc.cancelRequest(s.id).subscribe({
+      next: () => {
+        this.cancelLoading = false;
+        this.successMsg.set('Solicitud cancelada.');
+        this.loadData(s.id);
+      },
+      error: (err) => {
+        this.cancelLoading = false;
+        const msg = err?.error?.error?.message || 'Error al cancelar la solicitud.';
+        this.errorMsg.set(msg);
+      },
+    });
+  }
+
+  formatRelativeTime(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = diffMs / 3600000;
+
+    if (diffHours < 1) {
+      const mins = Math.floor(diffMs / 60000);
+      return mins <= 1 ? 'hace un momento' : `hace ${mins} min`;
+    }
+    if (diffHours < 24) {
+      return `hace ${Math.floor(diffHours)} h`;
+    }
+    // Absolute for older
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   }
 
   getEstadoClass(estado: string): string {

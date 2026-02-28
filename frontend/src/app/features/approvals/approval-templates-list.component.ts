@@ -1,11 +1,16 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { ApprovalService, PlantillaAprobacionDto } from '../../core/services/approval.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-approval-templates-list',
@@ -93,14 +98,14 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
                     variant="ghost"
                     icon="fa-play"
                     label="Activar"
-                    (clicked)="activate(t.id)"
+                    (clicked)="confirmActivate(t)"
                   ></app-button>
                   <app-button
                     *ngIf="t.estado !== 'ARCHIVADO'"
                     variant="ghost"
                     icon="fa-archive"
                     label="Archivar"
-                    (clicked)="archive(t.id)"
+                    (clicked)="confirmArchive(t)"
                   ></app-button>
                 </div>
               </td>
@@ -168,23 +173,22 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
-
-        &--daily_report {
-          background: #dbeafe;
-          color: #1d4ed8;
-        }
-        &--valorizacion {
-          background: #d1fae5;
-          color: #065f46;
-        }
-        &--solicitud_equipo {
-          background: #fef3c7;
-          color: #92400e;
-        }
-        &--adhoc {
-          background: #ede9fe;
-          color: #5b21b6;
-        }
+      }
+      .module-chip--daily_report {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .module-chip--valorizacion {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .module-chip--solicitud_equipo {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .module-chip--adhoc {
+        background: #ede9fe;
+        color: #5b21b6;
       }
 
       .estado-pill {
@@ -193,19 +197,18 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
         border-radius: 10px;
         font-size: 0.75rem;
         font-weight: 600;
-
-        &--activo {
-          background: #d1fae5;
-          color: #065f46;
-        }
-        &--inactivo {
-          background: #fef3c7;
-          color: #92400e;
-        }
-        &--archivado {
-          background: #f3f4f6;
-          color: #374151;
-        }
+      }
+      .estado-pill--activo {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .estado-pill--inactivo {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .estado-pill--archivado {
+        background: #f3f4f6;
+        color: #374151;
       }
 
       .row-actions {
@@ -244,6 +247,7 @@ import { ActionsContainerComponent } from '../../shared/components/actions-conta
 export class ApprovalTemplatesListComponent implements OnInit {
   router = inject(Router);
   private approvalSvc = inject(ApprovalService);
+  private dialog = inject(MatDialog);
 
   loading = signal(true);
   templates = signal<PlantillaAprobacionDto[]>([]);
@@ -263,11 +267,42 @@ export class ApprovalTemplatesListComponent implements OnInit {
     });
   }
 
-  activate(id: number) {
+  confirmActivate(template: PlantillaAprobacionDto) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Activar Plantilla',
+        message: `¿Está seguro de activar la plantilla "${template.nombre}"?`,
+        confirmLabel: 'Activar',
+        icon: 'fa-play',
+      } as ConfirmDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) this.activate(template.id);
+    });
+  }
+
+  confirmArchive(template: PlantillaAprobacionDto) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Archivar Plantilla',
+        message: `¿Está seguro de archivar la plantilla "${template.nombre}"? Las solicitudes existentes no se verán afectadas.`,
+        confirmLabel: 'Archivar',
+        isDanger: true,
+        icon: 'fa-archive',
+      } as ConfirmDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) this.archive(template.id);
+    });
+  }
+
+  private activate(id: number) {
     this.approvalSvc.activateTemplate(id).subscribe({ next: () => this.load() });
   }
 
-  archive(id: number) {
+  private archive(id: number) {
     this.approvalSvc.archiveTemplate(id).subscribe({ next: () => this.load() });
   }
 

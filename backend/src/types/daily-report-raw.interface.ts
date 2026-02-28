@@ -71,6 +71,9 @@ export interface DailyReportRawRow {
   firma_residente?: string | null;
   firma_planeamiento_control?: string | null;
 
+  // Approval link
+  solicitud_aprobacion_id?: number | null;
+
   // camelCase fields for TypeORM entities compatibility
   firmaOperador?: string | null;
   firmaSupervisor?: string | null;

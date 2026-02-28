@@ -40,7 +40,7 @@ import { ButtonComponent } from '../button/button.component';
       </div>
 
       <!-- Form Content -->
-      <div class="card form-card show-validation">
+      <div class="card form-card" [class.show-validation]="isSubmitted">
         <ng-content></ng-content>
 
         <!-- Optional Footer Actions -->
@@ -216,13 +216,20 @@ export class FormContainerComponent {
   @Output() submitted = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
 
+  isSubmitted = false;
+
   handleSubmit(): void {
     if (!this.disableSubmit && !this.loading) {
+      this.isSubmitted = true;
       this.submitted.emit();
     }
   }
 
   handleCancel(): void {
     this.cancelled.emit();
+  }
+
+  resetValidation(): void {
+    this.isSubmitted = false;
   }
 }

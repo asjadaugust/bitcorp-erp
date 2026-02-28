@@ -80,6 +80,9 @@ export interface DailyReportDto {
 
   // Pre-warming hours (auto-populated from precalentamiento_config)
   horas_precalentamiento?: number | null;
+
+  // Approval link
+  solicitud_aprobacion_id?: number | null;
 }
 
 import { DailyReportRawRow } from '../daily-report-raw.interface';
@@ -126,6 +129,7 @@ export function toDailyReportDto(entity: DailyReportRawRow): DailyReportDto {
     firma_planeamiento_control:
       entity.firma_planeamiento_control || entity.firmaPlaneamientoControl,
     horas_precalentamiento: entity.horas_precalentamiento ?? 0,
+    solicitud_aprobacion_id: entity.solicitud_aprobacion_id ?? null,
   };
 }
 

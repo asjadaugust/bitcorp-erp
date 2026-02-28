@@ -12,6 +12,33 @@ import {
 export class UsersController {
   private userService = new UserService();
 
+  search = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const q = ((req.query.q as string) || '').trim();
+      if (!q || q.length < 2) {
+        sendSuccess(res, []);
+        return;
+      }
+
+      const tenantId = req.user!.id_empresa;
+      const { data } = await this.userService.findAll(tenantId, {
+        search: q,
+        page: 1,
+        limit: 20,
+      });
+
+      const results = data.map((u: any) => ({
+        id: u.id,
+        nombre: u.full_name || `${u.first_name || ''} ${u.last_name || ''}`.trim(),
+        email: u.email,
+        rol: u.rol?.name || u.rol?.code || '',
+      }));
+      sendSuccess(res, results);
+    } catch (error: any) {
+      sendError(res, 500, 'USER_SEARCH_FAILED', error.message);
+    }
+  };
+
   findAll = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { search, role, status, page, limit } = req.query;

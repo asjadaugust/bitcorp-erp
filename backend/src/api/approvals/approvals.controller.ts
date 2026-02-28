@@ -235,6 +235,20 @@ export class ApprovalsController {
     }
   }
 
+  async cancelRequest(req: AuthRequest, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      const userId = req.user!.id_usuario;
+      await requestSvc.cancelar(id, userId);
+      sendSuccess(res, { message: 'Solicitud cancelada' });
+    } catch (error: any) {
+      if (error instanceof NotFoundError) return sendError(res, 404, 'NOT_FOUND', error.message);
+      if (error instanceof ConflictError) return sendError(res, 409, 'CONFLICT', error.message);
+      sendError(res, 500, 'CANCEL_FAILED', 'Error al cancelar solicitud', error.message);
+    }
+  }
+
   async getRequestAudit(req: AuthRequest, res: Response) {
     try {
       const id = parseInt(req.params.id);
