@@ -6,15 +6,10 @@ import { ProviderService } from './provider.service';
  * Note: These are lightweight tests focusing on service instantiation and method signatures.
  * We do NOT call actual methods (which would attempt database access) in unit tests.
  *
- * Full integration tests with database should be added when:
- * 1. Multi-tenancy schema migration is complete (Phase 21)
- * 2. Test database fixtures are established
- * 3. Repository mocking pattern is standardized
- *
  * Current coverage:
  * - Service instantiation
  * - Method existence and signatures
- * - Parameter counts validation
+ * - Parameter counts validation (all methods require tenantId as first param)
  *
  * @see dashboard.service.spec.ts for reference pattern
  * @see cost-center.service.spec.ts for reference pattern
@@ -41,6 +36,7 @@ describe('ProviderService', () => {
       expect(typeof service.delete).toBe('function');
       expect(typeof service.findByType).toBe('function');
       expect(typeof service.getActiveCount).toBe('function');
+      expect(typeof service.getLogs).toBe('function');
     });
   });
 
@@ -49,10 +45,10 @@ describe('ProviderService', () => {
       expect(service.findAll).toBeDefined();
     });
 
-    it('should accept filters parameter (page and limit have defaults)', () => {
-      // findAll(filters?, page = 1, limit = 10)
-      // First param has no default, so length = 1
-      expect(service.findAll.length).toBe(1);
+    it('should accept tenantId as first required parameter (filters, page, limit have defaults)', () => {
+      // findAll(tenantId, filters?, page = 1, limit = 10)
+      // tenantId + filters? are before first default (page = 1), so length = 2
+      expect(service.findAll.length).toBe(2);
     });
   });
 
@@ -61,8 +57,8 @@ describe('ProviderService', () => {
       expect(service.findById).toBeDefined();
     });
 
-    it('should accept id parameter', () => {
-      expect(service.findById.length).toBe(1);
+    it('should accept tenantId and id parameters', () => {
+      expect(service.findById.length).toBe(2);
     });
   });
 
@@ -71,8 +67,8 @@ describe('ProviderService', () => {
       expect(service.findByRuc).toBeDefined();
     });
 
-    it('should accept ruc parameter', () => {
-      expect(service.findByRuc.length).toBe(1);
+    it('should accept tenantId and ruc parameters', () => {
+      expect(service.findByRuc.length).toBe(2);
     });
   });
 
@@ -81,8 +77,8 @@ describe('ProviderService', () => {
       expect(service.create).toBeDefined();
     });
 
-    it('should accept data parameter', () => {
-      expect(service.create.length).toBe(1);
+    it('should accept tenantId and data parameters', () => {
+      expect(service.create.length).toBe(2);
     });
   });
 
@@ -91,8 +87,8 @@ describe('ProviderService', () => {
       expect(service.update).toBeDefined();
     });
 
-    it('should accept id and data parameters', () => {
-      expect(service.update.length).toBe(2);
+    it('should accept tenantId, id and data parameters', () => {
+      expect(service.update.length).toBe(3);
     });
   });
 
@@ -101,8 +97,8 @@ describe('ProviderService', () => {
       expect(service.delete).toBeDefined();
     });
 
-    it('should accept id parameter', () => {
-      expect(service.delete.length).toBe(1);
+    it('should accept tenantId and id parameters', () => {
+      expect(service.delete.length).toBe(2);
     });
   });
 
@@ -111,8 +107,8 @@ describe('ProviderService', () => {
       expect(service.findByType).toBeDefined();
     });
 
-    it('should accept tipo parameter', () => {
-      expect(service.findByType.length).toBe(1);
+    it('should accept tenantId and tipo parameters', () => {
+      expect(service.findByType.length).toBe(2);
     });
   });
 
@@ -121,8 +117,18 @@ describe('ProviderService', () => {
       expect(service.getActiveCount).toBeDefined();
     });
 
-    it('should not require parameters', () => {
-      expect(service.getActiveCount.length).toBe(0);
+    it('should accept tenantId parameter', () => {
+      expect(service.getActiveCount.length).toBe(1);
+    });
+  });
+
+  describe('getLogs', () => {
+    it('should be defined', () => {
+      expect(service.getLogs).toBeDefined();
+    });
+
+    it('should accept tenantId and providerId parameters', () => {
+      expect(service.getLogs.length).toBe(2);
     });
   });
 });

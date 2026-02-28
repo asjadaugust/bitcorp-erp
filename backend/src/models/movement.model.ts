@@ -56,6 +56,9 @@ export class Movement {
   @Column({ name: 'aprobado_en', type: 'timestamp', nullable: true })
   approvedAt?: Date;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

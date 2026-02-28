@@ -5,12 +5,19 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { PeriodoInoperatividadService } from '../../core/services/periodo-inoperatividad.service';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-periodo-inoperatividad-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FormContainerComponent, FormSectionComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FormContainerComponent,
+    FormSectionComponent,
+    AlertComponent,
+  ],
   template: `
     <app-form-container
       title="Registrar Periodo de Inoperatividad"
@@ -22,6 +29,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       (submitted)="guardar()"
       (cancelled)="cancelar()"
     >
+      @if (errorMessage) {
+        <app-alert type="error" [message]="errorMessage" [dismissible]="true"></app-alert>
+      }
       <form class="form-grid">
         <!-- Section 1: Equipo y Contrato -->
         <app-form-section title="Datos del Equipo" icon="fa-tractor">
@@ -156,10 +166,9 @@ export class PeriodoInoperatividadFormComponent implements OnInit {
   private service = inject(PeriodoInoperatividadService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private snackBar = inject(MatSnackBar);
-
   loading = false;
   saving = false;
+  errorMessage = '';
   equipoIdFromRoute: number | null = null;
 
   form = {
@@ -204,6 +213,7 @@ export class PeriodoInoperatividadFormComponent implements OnInit {
   guardar() {
     if (!this.isValid()) return;
     this.saving = true;
+    this.errorMessage = '';
     this.service
       .crear({
         equipo_id: this.form.equipo_id,
@@ -219,12 +229,7 @@ export class PeriodoInoperatividadFormComponent implements OnInit {
         },
         error: (err) => {
           this.saving = false;
-          // TODO: Replace with proper error handling via AlertComponent
-          this.snackBar.open(
-            err?.error?.error?.message || 'Error al registrar el periodo',
-            'Cerrar',
-            { duration: 5000 }
-          );
+          this.errorMessage = err?.error?.error?.message || 'Error al registrar el periodo';
         },
       });
   }

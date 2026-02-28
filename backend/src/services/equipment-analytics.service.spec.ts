@@ -63,24 +63,24 @@ describe('EquipmentAnalyticsService — Analítica de Flota (WS-25)', () => {
   // ─── Firmas de métodos ─────────────────────────────────────────────────────
 
   describe('Firmas de métodos', () => {
-    it('getEquipmentUtilization debe aceptar 3 parámetros (equipmentId, startDate, endDate)', () => {
-      expect(service.getEquipmentUtilization.length).toBe(3);
+    it('getEquipmentUtilization debe aceptar 4 parámetros (tenantId, equipmentId, startDate, endDate)', () => {
+      expect(service.getEquipmentUtilization.length).toBe(4);
     });
 
-    it('getUtilizationTrend debe aceptar 3 parámetros (equipmentId, startDate, endDate)', () => {
-      expect(service.getUtilizationTrend.length).toBe(3);
+    it('getUtilizationTrend debe aceptar 4 parámetros (tenantId, equipmentId, startDate, endDate)', () => {
+      expect(service.getUtilizationTrend.length).toBe(4);
     });
 
-    it('getFleetUtilization debe aceptar al menos 2 parámetros (startDate, endDate)', () => {
-      expect(service.getFleetUtilization.length).toBeGreaterThanOrEqual(2);
+    it('getFleetUtilization debe aceptar al menos 3 parámetros (tenantId, startDate, endDate)', () => {
+      expect(service.getFleetUtilization.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('getFuelMetrics debe aceptar 3 parámetros (equipmentId, startDate, endDate)', () => {
-      expect(service.getFuelMetrics.length).toBe(3);
+    it('getFuelMetrics debe aceptar 4 parámetros (tenantId, equipmentId, startDate, endDate)', () => {
+      expect(service.getFuelMetrics.length).toBe(4);
     });
 
-    it('getFuelTrend debe aceptar 3 parámetros (equipmentId, startDate, endDate)', () => {
-      expect(service.getFuelTrend.length).toBe(3);
+    it('getFuelTrend debe aceptar 4 parámetros (tenantId, equipmentId, startDate, endDate)', () => {
+      expect(service.getFuelTrend.length).toBe(4);
     });
   });
 

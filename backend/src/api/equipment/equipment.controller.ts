@@ -53,7 +53,7 @@ export class EquipmentController {
         creado_por: this.cleanNumeric(req.body.creado_por),
       };
 
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const equipment = await this.equipmentService.create(tenantId, data);
       sendCreated(res, equipment);
     } catch (error: any) {
@@ -90,7 +90,7 @@ export class EquipmentController {
       const pageNum = parseInt(page as string) || 1;
       const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Max 100
 
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const { data, total } = await this.equipmentService.findAll(
         tenantId,
         filters,
@@ -111,7 +111,7 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const equipment = await this.equipmentService.findById(tenantId, id);
 
       if (!equipment) {
@@ -132,7 +132,7 @@ export class EquipmentController {
   findByCode = async (req: Request, res: Response): Promise<void> => {
     try {
       const { code } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const equipment = await this.equipmentService.findByCode(tenantId, code as string);
 
       if (!equipment) {
@@ -175,7 +175,7 @@ export class EquipmentController {
         actualizado_por: this.cleanNumeric(req.body.actualizado_por),
       };
 
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const equipment = await this.equipmentService.update(tenantId, id, data);
       res.json({ success: true, data: equipment });
     } catch (error: any) {
@@ -194,7 +194,7 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       await this.equipmentService.delete(tenantId, id);
       res.status(204).send();
     } catch (error: any) {
@@ -209,7 +209,7 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const { status } = req.body;
       const equipment = await this.equipmentService.updateStatus(tenantId, id, status);
       res.json({ success: true, data: equipment });
@@ -229,7 +229,7 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateHourmeter(tenantId, id, reading);
       res.json({ success: true, data: equipment });
@@ -245,7 +245,7 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const { reading } = req.body;
       const equipment = await this.equipmentService.updateOdometer(tenantId, id, reading);
       res.json({ success: true, data: equipment });
@@ -256,7 +256,7 @@ export class EquipmentController {
 
   getAvailable = async (req: Request, res: Response): Promise<void> => {
     try {
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const equipment = await this.equipmentService.getAvailableEquipment(tenantId);
       res.json({ success: true, data: equipment });
     } catch (error: any) {
@@ -272,7 +272,7 @@ export class EquipmentController {
 
   getTypes = async (req: Request, res: Response): Promise<void> => {
     try {
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const types = await this.equipmentService.getEquipmentTypes(tenantId);
       res.json({ success: true, data: types });
     } catch (error: any) {
@@ -288,7 +288,7 @@ export class EquipmentController {
 
   getStatistics = async (req: Request, res: Response): Promise<void> => {
     try {
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const stats = await this.equipmentService.getStatistics(tenantId);
       res.json({ success: true, data: stats });
     } catch (error: any) {
@@ -299,9 +299,9 @@ export class EquipmentController {
   exportExcel = async (req: Request, res: Response): Promise<void> => {
     try {
       const { status, equipment_type, search } = req.query;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const result = await this.equipmentService.findAll(
-        Number(tenantId),
+        tenantId,
         {
           estado: status ? (status as string) : 'DISPONIBLE',
           equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
@@ -347,9 +347,9 @@ export class EquipmentController {
   exportCSV = async (req: Request, res: Response): Promise<void> => {
     try {
       const { status, equipment_type, search } = req.query;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const result = await this.equipmentService.findAll(
-        Number(tenantId),
+        tenantId,
         {
           estado: status ? (status as string) : 'DISPONIBLE',
           equipmentTypeId: equipment_type ? Number(equipment_type) : undefined,
@@ -402,15 +402,16 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
+      const tenantId = req.user!.id_empresa;
       const { project_id, site_id, assignment_date, notes } = req.body;
-      const user_id = (req as any).user?.id || 1;
+      const user_id = req.user!.id_usuario;
 
       if (!project_id) {
         sendError(res, 400, 'MISSING_PROJECT_ID', 'Project ID is required');
         return;
       }
 
-      const assignment = await this.equipmentService.assignToProject(id, {
+      const assignment = await this.equipmentService.assignToProject(tenantId, id, {
         project_id,
         site_id,
         assignment_date: assignment_date || new Date(),
@@ -434,15 +435,16 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
+      const tenantId = req.user!.id_empresa;
       const { from_project_id, to_project_id, to_site_id, transfer_date, reason, notes } = req.body;
-      const user_id = (req as any).user?.id || 1;
+      const user_id = req.user!.id_usuario;
 
       if (!to_project_id) {
         sendError(res, 400, 'MISSING_PROJECT_ID', 'Destination project ID is required');
         return;
       }
 
-      const transfer = await this.equipmentService.transferEquipment(id, {
+      const transfer = await this.equipmentService.transferEquipment(tenantId, id, {
         from_project_id,
         to_project_id,
         to_site_id,
@@ -464,13 +466,14 @@ export class EquipmentController {
   getAvailability = async (req: Request, res: Response): Promise<void> => {
     try {
       const { start_date, end_date, equipment_type, project_id } = req.query;
+      const tenantId = req.user!.id_empresa;
 
       if (!start_date || !end_date) {
         sendError(res, 400, 'MISSING_DATES', 'Start date and end date are required');
         return;
       }
 
-      const availability = await this.equipmentService.getAvailability({
+      const availability = await this.equipmentService.getAvailability(tenantId, {
         start_date: new Date(start_date as string),
         end_date: new Date(end_date as string),
         equipment_type: equipment_type as string,
@@ -493,7 +496,8 @@ export class EquipmentController {
         sendError(res, 400, 'INVALID_ID', 'ID de equipo inválido');
         return;
       }
-      const history = await this.equipmentService.getAssignmentHistory(id);
+      const tenantId = req.user!.id_empresa;
+      const history = await this.equipmentService.getAssignmentHistory(tenantId, id);
       res.json({ success: true, data: history });
     } catch (error: any) {
       sendError(res, 500, 'HISTORY_FAILED', 'Failed to fetch assignment history', error.message);

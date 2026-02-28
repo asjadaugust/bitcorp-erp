@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import {
   sendSuccess,
   sendPaginatedSuccess,
@@ -8,6 +8,7 @@ import {
 } from '../../utils/api-response';
 import { MaintenanceScheduleRecurringService } from '../../services/maintenance-schedule-recurring.service';
 import Logger from '../../utils/logger';
+import { AuthRequest } from '../../middleware/auth.middleware';
 
 /**
  * Maintenance Schedule Controller
@@ -28,8 +29,10 @@ const service = new MaintenanceScheduleRecurringService();
  * GET /api/scheduling/maintenance-schedules
  * List all maintenance schedules with pagination, sorting, and filters
  */
-export const listSchedules = async (req: Request, res: Response) => {
+export const listSchedules = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
+
     // Extract pagination params
     const page = parseInt(req.query.page as string) || 1;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
@@ -64,7 +67,7 @@ export const listSchedules = async (req: Request, res: Response) => {
       filters.maintenanceType = maintenance_type;
     }
 
-    const result = await service.findAll(filters);
+    const result = await service.findAll(tenantId, filters);
 
     return sendPaginatedSuccess(res, result.data, { page, limit, total: result.total });
   } catch (error: any) {
@@ -87,14 +90,15 @@ export const listSchedules = async (req: Request, res: Response) => {
  * GET /api/scheduling/maintenance-schedules/:id
  * Get a single maintenance schedule by ID
  */
-export const getScheduleById = async (req: Request, res: Response) => {
+export const getScheduleById = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       return sendError(res, 400, 'INVALID_ID', 'ID inválido');
     }
 
-    const schedule = await service.findById(id);
+    const schedule = await service.findById(tenantId, id);
 
     if (!schedule) {
       return sendError(
@@ -127,8 +131,9 @@ export const getScheduleById = async (req: Request, res: Response) => {
  * POST /api/scheduling/maintenance-schedules
  * Create a new maintenance schedule
  */
-export const createSchedule = async (req: Request, res: Response) => {
+export const createSchedule = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const {
       equipment_id,
       project_id,
@@ -140,9 +145,9 @@ export const createSchedule = async (req: Request, res: Response) => {
       auto_generate_tasks,
     } = req.body;
 
-    const createdBy = (req as any).user?.id;
+    const createdBy = req.user!.id_usuario;
 
-    const schedule = await service.create({
+    const schedule = await service.create(tenantId, {
       equipment_id,
       project_id,
       maintenance_type,
@@ -175,8 +180,9 @@ export const createSchedule = async (req: Request, res: Response) => {
  * PUT /api/scheduling/maintenance-schedules/:id
  * Update an existing maintenance schedule
  */
-export const updateSchedule = async (req: Request, res: Response) => {
+export const updateSchedule = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       return sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -208,7 +214,7 @@ export const updateSchedule = async (req: Request, res: Response) => {
       return sendError(res, 400, 'NO_FIELDS', 'No hay campos válidos para actualizar');
     }
 
-    const schedule = await service.update(id, dto);
+    const schedule = await service.update(tenantId, id, dto);
 
     if (!schedule) {
       return sendError(
@@ -241,14 +247,15 @@ export const updateSchedule = async (req: Request, res: Response) => {
  * DELETE /api/scheduling/maintenance-schedules/:id
  * Delete a maintenance schedule
  */
-export const deleteSchedule = async (req: Request, res: Response) => {
+export const deleteSchedule = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       return sendError(res, 400, 'INVALID_ID', 'ID inválido');
     }
 
-    const deleted = await service.delete(id);
+    const deleted = await service.delete(tenantId, id);
 
     if (!deleted) {
       return sendError(
@@ -281,11 +288,12 @@ export const deleteSchedule = async (req: Request, res: Response) => {
  * POST /api/scheduling/maintenance-schedules/generate-tasks
  * Generate tasks from all active schedules that are due soon
  */
-export const generateTasks = async (req: Request, res: Response) => {
+export const generateTasks = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const { daysAhead = 30 } = req.body;
 
-    const schedules = await service.findDueSoon(daysAhead);
+    const schedules = await service.findDueSoon(tenantId, daysAhead);
 
     return sendSuccess(res, {
       tasksGenerated: schedules.length,
@@ -306,8 +314,9 @@ export const generateTasks = async (req: Request, res: Response) => {
  * POST /api/scheduling/maintenance-schedules/:id/complete
  * Mark a schedule as completed and recalculate next due
  */
-export const completeSchedule = async (req: Request, res: Response) => {
+export const completeSchedule = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       return sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -315,7 +324,7 @@ export const completeSchedule = async (req: Request, res: Response) => {
 
     const { completionHours } = req.body;
 
-    const schedule = await service.complete(id, completionHours);
+    const schedule = await service.complete(tenantId, id, completionHours);
 
     if (!schedule) {
       return sendError(

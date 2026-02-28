@@ -25,7 +25,7 @@ export interface Contract {
   moneda: 'PEN' | 'USD';
   tipo_tarifa: string; // POR_HORA, POR_DIA, POR_MES, FIJO (Spanish uppercase)
   tarifa: string; // API returns string
-  modalidad?: string; // ALQUILER SOLO EQUIPO, etc.
+  modalidad?: 'alquiler_seco' | 'alquiler_con_operador' | 'alquiler_todo_costo' | 'servicio';
   minimo_por?: string; // DIA, HORA, etc.
   cantidad_minima?: number;
 

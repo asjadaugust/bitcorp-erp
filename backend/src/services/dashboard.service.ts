@@ -60,11 +60,8 @@ export interface DocumentAlertsSummary {
  * - ✅ Custom error classes (NotFoundError)
  * - ✅ Return DTOs (not raw objects)
  * - ✅ Comprehensive logging (info + error)
- * - ⚠️ Tenant context: DEFERRED (schema lacks tenant_id fields)
+ * - ✅ Tenant context: All queries filter by tenantId
  * - ✅ Business rule documentation
- *
- * TODO: Add tenant isolation when schema migration is complete
- * Required: Add tenant_id to User, Equipment, Trabajador, DailyReport, Project models
  *
  * Note: Module-related methods (getModulesForUser) are marked as not implemented
  * because the required tables (sistema.modulo, usuario_modulo_permiso, module_pages)
@@ -141,8 +138,6 @@ export class DashboardService {
    * Tables needed: sistema.modulo, sistema.usuario_modulo_permiso, sistema.module_pages
    *
    * Returns empty array until module system is implemented
-   *
-   * TODO: Add tenantId parameter when implemented
    */
   async getModulesForUser(userId: string): Promise<ModuleWithPermissions[]> {
     Logger.warn('Module system not implemented', {
@@ -166,22 +161,21 @@ export class DashboardService {
    * - Returns projects where user is creator or updater (workaround - no junction table)
    * - active_project is always null (field doesn't exist yet in schema)
    *
-   * TODO: Add tenantId parameter and filter by tenant_id when schema is updated
-   *
+   * @param tenantId - Tenant ID for multi-tenant filtering
    * @param userId - User ID to fetch info for
    * @returns User info with roles and assigned projects
    * @throws NotFoundError if user doesn't exist
    */
-  async getUserInfo(userId: string): Promise<UserInfoDto> {
+  async getUserInfo(tenantId: number, userId: string): Promise<UserInfoDto> {
     Logger.info('Fetching user info', {
+      tenantId,
       userId,
       context: 'DashboardService.getUserInfo',
     });
 
     try {
-      // TODO: Add tenant_id filter when User model has tenant_id field
       const user = await this.userRepository.findOne({
-        where: { id: parseInt(userId) },
+        where: { id: parseInt(userId), tenantId },
         relations: ['roles', 'rol', 'unidadOperativa'],
       });
 
@@ -200,12 +194,13 @@ export class DashboardService {
       // Get all assigned projects from proyectos.edt where user is related
       // Note: There's no user_projects junction table, so we'll query projects
       // where the user is creator or updater
-      // TODO: Add tenant_id filter when Project model has tenant_id field
+      // Project model uses companyId (empresa_id) instead of tenantId
       const assignedProjects = await this.projectRepository
         .createQueryBuilder('p')
         .where('p.createdBy = :userId OR p.updatedBy = :userId', {
           userId: parseInt(userId),
         })
+        .andWhere('p.companyId = :tenantId', { tenantId })
         .andWhere('p.isActive = :isActive', { isActive: true })
         .orderBy('p.nombre', 'ASC')
         .select([
@@ -275,14 +270,17 @@ export class DashboardService {
    *
    * This is a planned feature.
    *
-   * TODO: Add tenantId parameter and verify project belongs to tenant
-   *
+   * @param tenantId - Tenant ID for multi-tenant filtering
    * @param userId - User ID requesting switch
    * @param projectId - Project ID to switch to
    * @returns Project info with not-implemented message
    * @throws NotFoundError if project doesn't exist
    */
-  async switchProject(userId: string, projectId: string): Promise<ProjectSwitchResponseDto> {
+  async switchProject(
+    tenantId: number,
+    userId: string,
+    projectId: string
+  ): Promise<ProjectSwitchResponseDto> {
     Logger.warn('Active project switching not implemented', {
       message: 'Required: sistema.usuario.active_project_id column and sistema.user_projects table',
       userId,
@@ -291,9 +289,9 @@ export class DashboardService {
     });
 
     try {
-      // TODO: Add tenant_id filter when Project model has tenant_id field
+      // Project model uses companyId (empresa_id) instead of tenantId
       const project = await this.projectRepository.findOne({
-        where: { id: parseInt(projectId) },
+        where: { id: parseInt(projectId), companyId: tenantId },
       });
 
       if (!project) {
@@ -357,20 +355,22 @@ export class DashboardService {
    * - Without cache: ~500ms (4 database queries)
    * - With cache hit: ~5ms (0 database queries, 95% faster)
    *
-   * TODO: Add tenantId parameter and filter all queries by tenant_id
-   * TODO: Implement project filtering when equipment-project relationships are clarified
-   *
    * Fully migrated to TypeORM - ELIMINATED 4 RAW SQL QUERIES
    *
    * Note: projectId filter is ignored as equipo.equipo table doesn't have a project_id column.
    * Equipment-project relationships are managed through equipo.equipo_edt (EquipmentAssignment).
    *
+   * @param tenantId - Tenant ID for multi-tenant filtering
    * @param userId - User ID requesting stats (for logging and cache key)
    * @param _projectId - Project ID filter (currently ignored - see note above)
    * @returns Dashboard statistics
    */
-  async getDashboardStats(userId: string, _projectId?: string): Promise<DashboardStatsDto> {
-    const cacheKey = `dashboard:stats:${userId}:${_projectId || 'all'}`;
+  async getDashboardStats(
+    tenantId: number,
+    userId: string,
+    _projectId?: string
+  ): Promise<DashboardStatsDto> {
+    const cacheKey = `dashboard:stats:${tenantId}:${userId}:${_projectId || 'all'}`;
 
     // Try cache first
     const cached = await cacheService.get<DashboardStatsDto>(cacheKey);
@@ -402,16 +402,15 @@ export class DashboardService {
 
       // Equipment stats - using TypeORM simple count
       // Note: Project filtering not implemented as equipment table lacks project_id
-      // TODO: Add tenant_id filter when Equipment model has tenant_id field
       stats.total_equipment = await this.equipmentRepository.count({
-        where: { isActive: true },
+        where: { isActive: true, tenantId },
       });
 
       // Active equipment (in use or available) - using TypeORM QueryBuilder
-      // TODO: Add tenant_id filter when Equipment model has tenant_id field
       const activeEquipmentQuery = this.equipmentRepository
         .createQueryBuilder('e')
         .where('e.isActive = :isActive', { isActive: true })
+        .andWhere('e.tenantId = :tenantId', { tenantId })
         .andWhere('e.estado IN (:...statuses)', {
           statuses: ['DISPONIBLE', 'EN_USO'],
         });
@@ -419,19 +418,18 @@ export class DashboardService {
       stats.active_equipment = await activeEquipmentQuery.getCount();
 
       // Operators count - using TypeORM simple count
-      // TODO: Add tenant_id filter when Trabajador model has tenant_id field
       stats.total_operators = await this.trabajadorRepository.count({
-        where: { isActive: true },
+        where: { isActive: true, tenantId },
       });
 
       // Pending reports (from today) - using TypeORM QueryBuilder with date
       const { start, end } = this.getTodayDateRange();
 
-      // TODO: Add tenant_id filter when DailyReport model has tenant_id field
       stats.pending_reports = await this.dailyReportRepository
         .createQueryBuilder('dr')
         .where('dr.createdAt >= :start', { start })
         .andWhere('dr.createdAt < :end', { end })
+        .andWhere('dr.tenantId = :tenantId', { tenantId })
         .getCount();
 
       // Cache the results for 5 minutes (300 seconds)
@@ -467,10 +465,11 @@ export class DashboardService {
    * - Operator documents (licenses, certifications)
    * - Contract required documents
    *
+   * @param tenantId - Tenant ID for multi-tenant filtering
    * @returns DocumentAlertsSummary with counts and details
    */
-  async getDocumentAlerts(): Promise<DocumentAlertsSummary> {
-    const cacheKey = 'dashboard:document-alerts';
+  async getDocumentAlerts(tenantId: number): Promise<DocumentAlertsSummary> {
+    const cacheKey = `dashboard:document-alerts:${tenantId}`;
     const cached = await cacheService.get<DocumentAlertsSummary>(cacheKey);
     if (cached) {
       return cached;
@@ -486,6 +485,7 @@ export class DashboardService {
       const equipmentWithDocs = await this.equipmentRepository
         .createQueryBuilder('e')
         .where('e.isActive = :isActive', { isActive: true })
+        .andWhere('e.tenantId = :tenantId', { tenantId })
         .andWhere(
           '(e.fechaVencSoat <= :threshold OR e.fechaVencPoliza <= :threshold OR e.fechaVencCitv <= :threshold)',
           { threshold: thirtyDaysFromNow }
@@ -535,7 +535,7 @@ export class DashboardService {
         }
       }
 
-      // Operator documents
+      // Operator documents (filter via joined trabajador.tenantId since OperatorDocument has no tenantId)
       const operatorDocRepo = AppDataSource.getRepository(OperatorDocument);
       const expiringOperatorDocs = await operatorDocRepo
         .createQueryBuilder('doc')
@@ -543,6 +543,7 @@ export class DashboardService {
         .where('doc.fechaVencimiento <= :threshold', { threshold: thirtyDaysFromNow })
         .andWhere('doc.fechaVencimiento IS NOT NULL')
         .andWhere('trabajador.isActive = :isActive', { isActive: true })
+        .andWhere('trabajador.tenantId = :tenantId', { tenantId })
         .orderBy('doc.fechaVencimiento', 'ASC')
         .getMany();
 
@@ -583,13 +584,15 @@ export class DashboardService {
         });
       }
 
-      // Contract required documents
+      // Contract required documents (filter via joined contrato.tenantId since ContractRequiredDocument has no tenantId)
       const contractDocRepo = AppDataSource.getRepository(ContractRequiredDocument);
       const expiringContractDocs = await contractDocRepo
         .createQueryBuilder('cd')
+        .leftJoin('cd.contrato', 'contrato')
         .where('cd.fechaVencimiento <= :threshold', { threshold: thirtyDaysFromNow })
         .andWhere('cd.fechaVencimiento IS NOT NULL')
         .andWhere('cd.estado != :estado', { estado: 'CUMPLIDO' })
+        .andWhere('contrato.tenantId = :tenantId', { tenantId })
         .getMany();
 
       const contractAlerts = { expired: 0, critical: 0, warning: 0 };

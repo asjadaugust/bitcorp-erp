@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { AppDataSource } from '../../config/database.config';
 import { Movement, MovementDetail } from '../../models/movement.model';
 import { Product } from '../../models/product.model';
@@ -43,8 +44,10 @@ export class MovementController {
    * @query sort_order - Sort order 'ASC' or 'DESC' (default: 'DESC')
    * @returns MovementListDto[] with Spanish snake_case fields and pagination
    */
-  async getAll(req: Request, res: Response) {
+  async getAll(req: AuthRequest, res: Response) {
     try {
+      const tenantId = req.user!.id_empresa;
+
       // Parse pagination parameters
       const page = parseInt(req.query.page as string) || 1;
       const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100
@@ -79,12 +82,13 @@ export class MovementController {
       // Get sort field or default
       const sortField = validSortFields[sortBy] || 'm.fecha';
 
-      // Build query
+      // Build query with tenant isolation
       const queryBuilder = movementRepo
         .createQueryBuilder('m')
         .leftJoinAndSelect('m.project', 'p')
         .leftJoinAndSelect('m.creator', 'u')
         .loadRelationCountAndMap('m.items_count', 'm.details')
+        .andWhere('m.tenantId = :tenantId', { tenantId })
         .orderBy(sortField, sortOrder);
 
       // Apply filters
@@ -155,8 +159,9 @@ export class MovementController {
    * Get single movement with details
    * @returns MovementDetailDto with Spanish snake_case fields
    */
-  async getById(req: Request, res: Response) {
+  async getById(req: AuthRequest, res: Response) {
     try {
+      const tenantId = req.user!.id_empresa;
       const { id } = req.params;
       const movementRepo = AppDataSource.getRepository(Movement);
 
@@ -168,6 +173,7 @@ export class MovementController {
         .leftJoinAndSelect('m.details', 'md')
         .leftJoinAndSelect('md.product', 'prod')
         .where('m.id = :id', { id: parseInt(id) })
+        .andWhere('m.tenantId = :tenantId', { tenantId })
         .getOne();
 
       if (!movement) {
@@ -201,20 +207,21 @@ export class MovementController {
    * @body MovementCreateDto (Spanish snake_case fields)
    * @returns MovementDetailDto with created movement
    */
-  async create(req: Request, res: Response) {
+  async create(req: AuthRequest, res: Response) {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const createdBy = (req as any).user?.id;
+      const tenantId = req.user!.id_empresa;
+      const createdBy = req.user!.id_usuario;
 
       // Transform DTO to entity fields
       const movementData = fromMovementCreateDto(req.body, createdBy);
 
-      // Create movement
+      // Create movement with tenant isolation
       const movementRepo = queryRunner.manager.getRepository(Movement);
-      const movement = movementRepo.create(movementData);
+      const movement = movementRepo.create({ ...movementData, tenantId });
       const savedMovement = await movementRepo.save(movement);
 
       // Create movement details
@@ -232,7 +239,7 @@ export class MovementController {
         const productRepo = queryRunner.manager.getRepository(Product);
         for (const item of req.body.items) {
           const product = await productRepo.findOne({
-            where: { id: parseInt(item.producto_id) },
+            where: { id: parseInt(item.producto_id), tenantId },
           });
 
           if (product) {
@@ -288,13 +295,14 @@ export class MovementController {
    * Approve a movement
    * @returns MovementDetailDto with updated movement
    */
-  async approve(req: Request, res: Response) {
+  async approve(req: AuthRequest, res: Response) {
     try {
+      const tenantId = req.user!.id_empresa;
       const { id } = req.params;
       const movementRepo = AppDataSource.getRepository(Movement);
 
       const movement = await movementRepo.findOne({
-        where: { id: parseInt(id) },
+        where: { id: parseInt(id), tenantId },
         relations: ['project', 'creator', 'approver'],
       });
 
@@ -303,7 +311,7 @@ export class MovementController {
       }
 
       movement.estado = 'aprobado';
-      movement.approvedBy = (req as any).user?.id;
+      movement.approvedBy = req.user!.id_usuario;
       movement.approvedAt = new Date();
 
       await movementRepo.save(movement);
@@ -329,10 +337,11 @@ export class MovementController {
     }
   }
 
-  getStats = async (req: Request, res: Response) => {
+  getStats = async (req: AuthRequest, res: Response) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { startDate, endDate } = req.query;
-      const stats = await this.inventoryService.getStats({
+      const stats = await this.inventoryService.getStats(tenantId, {
         startDate: startDate as string,
         endDate: endDate as string,
       });

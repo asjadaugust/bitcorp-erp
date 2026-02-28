@@ -45,16 +45,16 @@ describe('ContractService — Obligaciones del Arrendador (WS-21)', () => {
   // ─── Method Signatures ────────────────────────────────────────────────────
 
   describe('Method Signatures', () => {
-    it('getObligaciones should accept contratoId parameter', () => {
-      expect(service.getObligaciones.length).toBe(1);
+    it('getObligaciones should accept tenantId and contratoId parameters', () => {
+      expect(service.getObligaciones.length).toBe(2);
     });
 
-    it('initializeObligaciones should accept contratoId parameter', () => {
-      expect(service.initializeObligaciones.length).toBe(1);
+    it('initializeObligaciones should accept tenantId and contratoId parameters', () => {
+      expect(service.initializeObligaciones.length).toBe(2);
     });
 
-    it('updateObligacion should accept id and data parameters', () => {
-      expect(service.updateObligacion.length).toBe(2);
+    it('updateObligacion should accept tenantId, id, and data parameters', () => {
+      expect(service.updateObligacion.length).toBe(3);
     });
   });
 

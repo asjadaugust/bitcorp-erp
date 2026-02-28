@@ -422,7 +422,6 @@ export class OperatorService {
         context: 'OperatorService.getStats',
       });
 
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
       const total = await this.repository.count({ where: { tenantId } });
       const activos = await this.repository.count({ where: { isActive: true, tenantId } });
 

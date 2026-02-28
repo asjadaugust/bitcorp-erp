@@ -16,13 +16,14 @@ export class ProviderContactController {
    */
   getByProviderId = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const providerId = parseInt(req.params.providerId);
       if (isNaN(providerId)) {
         sendError(res, 400, 'INVALID_ID', 'ID de proveedor inválido');
         return;
       }
 
-      const contacts = await this.service.findByProviderId(providerId);
+      const contacts = await this.service.findByProviderId(tenantId, providerId);
       sendSuccess(res, contacts);
     } catch (error: any) {
       sendError(
@@ -41,13 +42,14 @@ export class ProviderContactController {
    */
   getById = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const contact = await this.service.findById(id);
+      const contact = await this.service.findById(tenantId, id);
       if (!contact) {
         sendError(res, 404, 'PROVIDER_CONTACT_NOT_FOUND', 'Contacto no encontrado');
         return;
@@ -74,6 +76,7 @@ export class ProviderContactController {
    */
   create = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const providerId = parseInt(req.params.providerId);
       if (isNaN(providerId)) {
         sendError(res, 400, 'INVALID_ID', 'ID de proveedor inválido');
@@ -82,11 +85,11 @@ export class ProviderContactController {
 
       const data = {
         ...req.body,
-        provider_id: providerId,
-        created_by: (req as any).user?.id,
+        id_proveedor: providerId,
+        created_by: req.user?.id_usuario,
       };
 
-      const contact = await this.service.create(data);
+      const contact = await this.service.create(tenantId, data);
       sendCreated(res, contact);
     } catch (error: any) {
       sendError(
@@ -105,6 +108,7 @@ export class ProviderContactController {
    */
   update = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -113,10 +117,10 @@ export class ProviderContactController {
 
       const data = {
         ...req.body,
-        updated_by: (req as any).user?.id,
+        updated_by: req.user?.id_usuario,
       };
 
-      const contact = await this.service.update(id, data);
+      const contact = await this.service.update(tenantId, id, data);
       if (!contact) {
         sendError(res, 404, 'PROVIDER_CONTACT_NOT_FOUND', 'Contacto no encontrado');
         return;
@@ -143,13 +147,14 @@ export class ProviderContactController {
    */
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const deleted = await this.service.delete(id);
+      const deleted = await this.service.delete(tenantId, id);
 
       if (deleted) {
         res.status(204).send();

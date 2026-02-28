@@ -42,16 +42,16 @@ describe('ContractService — Obligaciones del Arrendatario (WS-22)', () => {
   // ─── Method Signatures ────────────────────────────────────────────────────
 
   describe('Method Signatures', () => {
-    it('getObligacionesArrendatario should accept contratoId parameter', () => {
-      expect(service.getObligacionesArrendatario.length).toBe(1);
+    it('getObligacionesArrendatario should accept tenantId and contratoId parameters', () => {
+      expect(service.getObligacionesArrendatario.length).toBe(2);
     });
 
-    it('initializeObligacionesArrendatario should accept contratoId parameter', () => {
-      expect(service.initializeObligacionesArrendatario.length).toBe(1);
+    it('initializeObligacionesArrendatario should accept tenantId and contratoId parameters', () => {
+      expect(service.initializeObligacionesArrendatario.length).toBe(2);
     });
 
-    it('updateObligacionArrendatario should accept id and data parameters', () => {
-      expect(service.updateObligacionArrendatario.length).toBe(2);
+    it('updateObligacionArrendatario should accept tenantId, id, and data parameters', () => {
+      expect(service.updateObligacionArrendatario.length).toBe(3);
     });
   });
 

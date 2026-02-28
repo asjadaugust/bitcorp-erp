@@ -80,41 +80,41 @@ describe('CostCenterService', () => {
   });
 
   describe('Method Parameters', () => {
-    it('findById should accept id parameter', () => {
-      expect(service.findById.length).toBe(1);
+    it('findById should accept tenantId and id parameters', () => {
+      expect(service.findById.length).toBe(2);
     });
 
-    it('findByCode should accept codigo parameter', () => {
-      expect(service.findByCode.length).toBe(1);
+    it('findByCode should accept tenantId and codigo parameters', () => {
+      expect(service.findByCode.length).toBe(2);
     });
 
-    it('findByProject should accept projectId parameter', () => {
-      expect(service.findByProject.length).toBe(1);
+    it('findByProject should accept tenantId and projectId parameters', () => {
+      expect(service.findByProject.length).toBe(2);
     });
 
-    it('findAll should accept optional filters parameter', () => {
-      // findAll accepts 1 optional parameter (filters)
-      expect(service.findAll.length).toBe(1);
+    it('findAll should accept tenantId and optional filters parameter', () => {
+      // tenantId (required) + filters (optional but no default = still counted by Function.length)
+      expect(service.findAll.length).toBe(2);
     });
 
-    it('create should accept data parameter', () => {
-      expect(service.create.length).toBe(1);
+    it('create should accept tenantId and data parameters', () => {
+      expect(service.create.length).toBe(2);
     });
 
-    it('update should accept id and data parameters', () => {
-      expect(service.update.length).toBe(2);
+    it('update should accept tenantId, id and data parameters', () => {
+      expect(service.update.length).toBe(3);
     });
 
-    it('delete should accept id parameter', () => {
-      expect(service.delete.length).toBe(1);
+    it('delete should accept tenantId and id parameters', () => {
+      expect(service.delete.length).toBe(2);
     });
 
-    it('getTotalBudgetByProject should accept projectId parameter', () => {
-      expect(service.getTotalBudgetByProject.length).toBe(1);
+    it('getTotalBudgetByProject should accept tenantId and projectId parameters', () => {
+      expect(service.getTotalBudgetByProject.length).toBe(2);
     });
 
-    it('getActiveCount should not require parameters', () => {
-      expect(service.getActiveCount.length).toBe(0);
+    it('getActiveCount should accept tenantId parameter', () => {
+      expect(service.getActiveCount.length).toBe(1);
     });
   });
 });

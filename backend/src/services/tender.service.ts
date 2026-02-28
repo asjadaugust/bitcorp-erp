@@ -71,7 +71,7 @@ export class TenderService {
 
   /**
    * Find all tenders with optional filters and pagination
-   * @param tenantId - Company tenant ID (for future multi-tenancy)
+   * @param tenantId - Company tenant ID
    * @param filters - Optional search and estado filters
    * @param page - Page number (1-indexed)
    * @param limit - Items per page
@@ -94,8 +94,7 @@ export class TenderService {
 
       const queryBuilder = this.repository.createQueryBuilder('l');
 
-      // TODO: Add tenant_id filter when column exists in licitaciones table
-      // queryBuilder.andWhere('l.tenant_id = :tenantId', { tenantId });
+      queryBuilder.where('l.tenantId = :tenantId', { tenantId });
 
       if (filters?.estado) {
         queryBuilder.andWhere('l.estado = :estado', { estado: filters.estado });
@@ -156,9 +155,7 @@ export class TenderService {
     try {
       Logger.info('Fetching tender', { tenantId, id, context: 'TenderService.findById' });
 
-      // TODO: Add tenant_id filter when column exists
-      // const licitacion = await this.repository.findOne({ where: { id, tenantId } });
-      const licitacion = await this.repository.findOne({ where: { id } });
+      const licitacion = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!licitacion) {
         throw new NotFoundError('Tender', id, { tenantId });
@@ -211,10 +208,8 @@ export class TenderService {
         }
       }
 
-      // Check if codigo already exists
-      // TODO: Add tenant_id filter when column exists
-      // const existing = await this.repository.findOne({ where: { codigo: data.codigo, tenantId } });
-      const existing = await this.repository.findOne({ where: { codigo: data.codigo } });
+      // Check if codigo already exists within this tenant
+      const existing = await this.repository.findOne({ where: { codigo: data.codigo, tenantId } });
 
       if (existing) {
         throw new ConflictError(`A tender with codigo '${data.codigo}' already exists`, {
@@ -232,8 +227,7 @@ export class TenderService {
         fechaPresentacion: data.fecha_presentacion ? new Date(data.fecha_presentacion) : undefined,
         estado: data.estado || 'PUBLICADO',
         observaciones: data.observaciones,
-        // TODO: Add tenantId when column exists
-        // tenantId,
+        tenantId,
       };
 
       const licitacion = this.repository.create(licitacionData);
@@ -273,9 +267,7 @@ export class TenderService {
       Logger.info('Updating tender', { tenantId, id, context: 'TenderService.update' });
 
       // Fetch existing tender
-      // TODO: Add tenant_id filter when column exists
-      // const licitacion = await this.repository.findOne({ where: { id, tenantId } });
-      const licitacion = await this.repository.findOne({ where: { id } });
+      const licitacion = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!licitacion) {
         throw new NotFoundError('Tender', id, { tenantId });
@@ -333,9 +325,7 @@ export class TenderService {
       Logger.info('Deleting tender', { tenantId, id, context: 'TenderService.delete' });
 
       // Verify tender exists before deleting
-      // TODO: Add tenant_id filter when column exists
-      // const licitacion = await this.repository.findOne({ where: { id, tenantId } });
-      const licitacion = await this.repository.findOne({ where: { id } });
+      const licitacion = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!licitacion) {
         throw new NotFoundError('Tender', id, { tenantId });

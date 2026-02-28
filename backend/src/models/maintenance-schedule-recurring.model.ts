@@ -87,6 +87,9 @@ export class MaintenanceScheduleRecurring {
   @JoinColumn({ name: 'created_by' })
   createdBy?: User;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

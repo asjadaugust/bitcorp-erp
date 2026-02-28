@@ -19,17 +19,15 @@ import {
 /**
  * EmployeeService - HR Employee/Worker Management
  *
- * ✅ PHASE 20 STANDARDIZED - Session 6
  * - All methods accept tenantId parameter (multi-tenant ready)
  * - Throws NotFoundError instead of returning null
  * - Comprehensive try/catch with Logger.info and Logger.error
  * - Service-level pagination and sorting (no controller pagination)
  * - Uses ConflictError for duplicate DNI
  * - Returns Spanish snake_case DTOs (EmployeeListDto, EmployeeDetailDto)
+ * - Multi-tenant isolation via tenantId filter on all queries
  *
  * Database schema: rrhh.trabajador
- * ⚠️ TODO: Add tenant_id column to rrhh.trabajador table for true multi-tenant isolation
- *
  * API compliance: ARCHITECTURE.md 3.2 (Spanish snake_case)
  */
 export class EmployeeService {
@@ -39,8 +37,6 @@ export class EmployeeService {
 
   /**
    * Get all active employees with pagination, sorting, and filters
-   *
-   * ✅ PHASE 20: Added tenantId, pagination, sorting, filters, logging
    *
    * @param tenantId - Company ID for multi-tenant isolation
    * @param page - Page number (1-indexed)
@@ -69,13 +65,11 @@ export class EmployeeService {
         context: 'EmployeeService.getAllEmployees',
       });
 
-      // Build query with filters
+      // Build query with filters and tenant isolation
       const queryBuilder = this.trabajadorRepository
         .createQueryBuilder('t')
-        .where('t.isActive = :isActive', { isActive: true });
-
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
-      // .andWhere('t.tenantId = :tenantId', { tenantId })
+        .where('t.isActive = :isActive', { isActive: true })
+        .andWhere('t.tenantId = :tenantId', { tenantId });
 
       // Apply filters
       if (filters?.search) {
@@ -172,8 +166,6 @@ export class EmployeeService {
   /**
    * Get employee by DNI
    *
-   * ✅ PHASE 20: Added tenantId, NotFoundError, logging
-   *
    * @param tenantId - Company ID for multi-tenant isolation
    * @param dni - Employee DNI (national ID number)
    * @returns Employee details
@@ -187,9 +179,8 @@ export class EmployeeService {
         context: 'EmployeeService.getEmployeeByDni',
       });
 
-      // TODO: Add tenant_id filter when column exists in rrhh.trabajador table
       const trabajador = await this.trabajadorRepository.findOne({
-        where: { dni, isActive: true },
+        where: { dni, isActive: true, tenantId },
       });
 
       if (!trabajador) {
@@ -219,8 +210,6 @@ export class EmployeeService {
   /**
    * Create new employee
    *
-   * ✅ PHASE 20: Added tenantId, ConflictError, logging
-   *
    * @param tenantId - Company ID for multi-tenant isolation
    * @param data - Employee creation data
    * @param user - Username of user creating the employee
@@ -242,11 +231,10 @@ export class EmployeeService {
         context: 'EmployeeService.createEmployee',
       });
 
-      // Check for duplicate DNI
+      // Check for duplicate DNI within tenant
       if (data.dni) {
-        // TODO: Add tenant_id filter when column exists
         const existing = await this.trabajadorRepository.findOne({
-          where: { dni: data.dni },
+          where: { dni: data.dni, tenantId },
         });
 
         if (existing) {
@@ -257,8 +245,8 @@ export class EmployeeService {
       // Create employee entity
       const trabajador = this.trabajadorRepository.create(fromEmployeeCreateDto(data));
 
-      // TODO: Set tenant_id when column exists
-      // trabajador.tenantId = tenantId;
+      // Set tenant_id for multi-tenant isolation
+      trabajador.tenantId = tenantId;
 
       // Save to database
       const saved = await this.trabajadorRepository.save(trabajador);
@@ -288,8 +276,6 @@ export class EmployeeService {
   /**
    * Update employee by DNI
    *
-   * ✅ PHASE 20: Added tenantId, NotFoundError, logging
-   *
    * @param tenantId - Company ID for multi-tenant isolation
    * @param dni - Employee DNI to update
    * @param data - Partial update data
@@ -312,9 +298,8 @@ export class EmployeeService {
         context: 'EmployeeService.updateEmployee',
       });
 
-      // TODO: Add tenant_id filter when column exists
       const trabajador = await this.trabajadorRepository.findOne({
-        where: { dni, isActive: true },
+        where: { dni, isActive: true, tenantId },
       });
 
       if (!trabajador) {
@@ -353,8 +338,6 @@ export class EmployeeService {
   /**
    * Soft delete employee (sets is_active = false)
    *
-   * ✅ PHASE 20: Added tenantId, NotFoundError, logging, returns void
-   *
    * @param tenantId - Company ID for multi-tenant isolation
    * @param dni - Employee DNI to delete
    * @throws NotFoundError if employee not found or already inactive
@@ -367,9 +350,8 @@ export class EmployeeService {
         context: 'EmployeeService.deleteEmployee',
       });
 
-      // TODO: Add tenant_id filter when column exists
       const result = await this.trabajadorRepository.update(
-        { dni, isActive: true },
+        { dni, isActive: true, tenantId },
         { isActive: false }
       );
 
@@ -397,8 +379,7 @@ export class EmployeeService {
   /**
    * Search employees by name or DNI
    *
-   * ✅ PHASE 20: Added tenantId, pagination, logging
-   * ⚠️ DEPRECATED: Use getAllEmployees with filters.search instead
+   * DEPRECATED: Use getAllEmployees with filters.search instead
    *
    * @param tenantId - Company ID for multi-tenant isolation
    * @param query - Search query string

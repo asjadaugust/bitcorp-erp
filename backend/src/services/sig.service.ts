@@ -24,10 +24,8 @@ import {
  * - ✅ Logging: Success (info) and errors (error) with context
  * - ✅ Business Rules: Document lifecycle validation
  *
- * Known Limitations:
- * - ⚠️ sig.documento table lacks tenant_id column (schema limitation)
- * - ⚠️ Tenant isolation not enforced at database level
- * - ⚠️ Future: Add tenant_id column via migration
+ * Multi-Tenancy:
+ * - All queries are filtered by tenantId
  */
 export class SigService {
   private sigRepository = AppDataSource.getRepository(SigDocument);
@@ -40,8 +38,6 @@ export class SigService {
    * @param limit - Items per page (default: 10)
    * @returns Paginated list of SIG documents
    *
-   * TODO: Add tenant_id filter once schema migration adds column
-   * Currently: No tenant filtering (schema limitation)
    */
   async getAllDocuments(
     tenantId: number,
@@ -56,8 +52,6 @@ export class SigService {
         context: 'SigService.getAllDocuments',
       });
 
-      // TODO: Add tenant_id filter when column exists
-      // where: { tenant_id: tenantId }
       const [documents, total] = await this.sigRepository.findAndCount({
         where: { tenantId },
         order: { createdAt: 'DESC' },
@@ -163,8 +157,6 @@ export class SigService {
    * @param id - Document ID
    * @returns SIG document detail
    * @throws NotFoundError if document not found
-   *
-   * TODO: Add tenant ownership verification once tenant_id column exists
    */
   async getDocumentById(tenantId: number, id: string): Promise<SigDocumentDetailDto> {
     try {
@@ -174,8 +166,6 @@ export class SigService {
         context: 'SigService.getDocumentById',
       });
 
-      // TODO: Add tenant_id filter when column exists
-      // where: { id: parseInt(id), tenant_id: tenantId }
       const document = await this.sigRepository.findOne({
         where: { id: parseInt(id), tenantId },
       });

@@ -71,10 +71,8 @@ export class OperatorDocumentService {
 
       const query = this.repository
         .createQueryBuilder('doc')
-        .leftJoinAndSelect('doc.trabajador', 'trabajador');
-
-      // TODO: Add tenant_id filter when column exists in rrhh.documento_trabajador
-      // query.andWhere('doc.tenant_id = :tenantId', { tenantId });
+        .leftJoinAndSelect('doc.trabajador', 'trabajador')
+        .where('doc.tenantId = :tenantId', { tenantId });
 
       if (filters?.trabajadorId) {
         query.andWhere('doc.trabajadorId = :trabajadorId', {
@@ -131,9 +129,7 @@ export class OperatorDocumentService {
       });
 
       const entity = await this.repository.findOne({
-        where: { id },
-        // TODO: Add tenant_id filter when column exists in rrhh.documento_trabajador
-        // where: { id, tenant_id: tenantId },
+        where: { id, tenantId },
         relations: ['trabajador'],
       });
 
@@ -172,9 +168,7 @@ export class OperatorDocumentService {
       });
 
       const entities = await this.repository.find({
-        where: { trabajadorId: operatorId },
-        // TODO: Add tenant_id filter when column exists in rrhh.documento_trabajador
-        // where: { trabajadorId: operatorId, tenant_id: tenantId },
+        where: { trabajadorId: operatorId, tenantId },
         relations: ['trabajador'],
         order: { tipoDocumento: 'ASC' },
       });
@@ -223,13 +217,11 @@ export class OperatorDocumentService {
       const query = this.repository
         .createQueryBuilder('doc')
         .leftJoinAndSelect('doc.trabajador', 'trabajador')
-        .where('doc.fechaVencimiento IS NOT NULL')
+        .where('doc.tenantId = :tenantId', { tenantId })
+        .andWhere('doc.fechaVencimiento IS NOT NULL')
         .andWhere('doc.fechaVencimiento <= :futureDate', { futureDate })
         .andWhere('doc.fechaVencimiento >= CURRENT_DATE')
         .orderBy('doc.fechaVencimiento', 'ASC');
-
-      // TODO: Add tenant_id filter when column exists in rrhh.documento_trabajador
-      // query.andWhere('doc.tenant_id = :tenantId', { tenantId });
 
       const [entities, total] = await query
         .skip((page - 1) * limit)
@@ -287,13 +279,13 @@ export class OperatorDocumentService {
         });
       }
 
-      // Business rule: Check for duplicate active documents (same type for same operator)
+      // Business rule: Check for duplicate active documents (same type for same operator within tenant)
       const existing = await this.repository.findOne({
         where: {
           trabajadorId: data.trabajador_id,
           tipoDocumento: data.tipo_documento,
+          tenantId,
         },
-        // TODO: Add tenant_id filter when column exists
       });
 
       if (existing && existing.fechaVencimiento && existing.fechaVencimiento > new Date()) {
@@ -312,13 +304,14 @@ export class OperatorDocumentService {
         fechaVencimiento: data.fecha_vencimiento ? new Date(data.fecha_vencimiento) : undefined,
         archivoUrl: data.archivo_url,
         observaciones: data.observaciones,
+        tenantId,
       });
 
       const saved = await this.repository.save(document);
 
       // Reload with relations
       const entity = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['trabajador'],
       });
 
@@ -357,7 +350,7 @@ export class OperatorDocumentService {
         context: 'OperatorDocumentService.update',
       });
 
-      // Verify document exists (with tenant check when available)
+      // Verify document exists (with tenant check)
       await this.findById(tenantId, id);
 
       // Business rule: Validate document type if provided
@@ -378,15 +371,18 @@ export class OperatorDocumentService {
         });
       }
 
-      await this.repository.update(id, {
-        trabajadorId: data.trabajador_id,
-        tipoDocumento: data.tipo_documento,
-        numeroDocumento: data.numero_documento,
-        fechaEmision: data.fecha_emision ? new Date(data.fecha_emision) : undefined,
-        fechaVencimiento: data.fecha_vencimiento ? new Date(data.fecha_vencimiento) : undefined,
-        archivoUrl: data.archivo_url,
-        observaciones: data.observaciones,
-      });
+      await this.repository.update(
+        { id, tenantId },
+        {
+          trabajadorId: data.trabajador_id,
+          tipoDocumento: data.tipo_documento,
+          numeroDocumento: data.numero_documento,
+          fechaEmision: data.fecha_emision ? new Date(data.fecha_emision) : undefined,
+          fechaVencimiento: data.fecha_vencimiento ? new Date(data.fecha_vencimiento) : undefined,
+          archivoUrl: data.archivo_url,
+          observaciones: data.observaciones,
+        }
+      );
 
       Logger.info('Operator document updated', {
         tenantId,
@@ -422,17 +418,14 @@ export class OperatorDocumentService {
       // Verify document exists and get file URL for cleanup
       const entity = await this.findById(tenantId, id);
 
-      // TODO: Delete file from storage if exists
       if (entity.archivo_url) {
         Logger.info('File deletion pending (not implemented)', {
           archivo_url: entity.archivo_url,
           context: 'OperatorDocumentService.delete',
         });
-        // await this.fileStorageService.delete(entity.archivo_url);
       }
 
-      const result = await this.repository.delete(id);
-      // TODO: Add tenant_id filter when column exists
+      const result = await this.repository.delete({ id, tenantId });
 
       if ((result.affected || 0) === 0) {
         throw new NotFoundError('Operator document', id, { tenantId });

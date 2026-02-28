@@ -60,8 +60,8 @@ describe('DashboardService', () => {
       expect(service.getUserInfo).toBeDefined();
     });
 
-    it('should accept userId parameter', () => {
-      expect(service.getUserInfo.length).toBe(1);
+    it('should accept tenantId and userId parameters', () => {
+      expect(service.getUserInfo.length).toBe(2);
     });
   });
 
@@ -70,8 +70,8 @@ describe('DashboardService', () => {
       expect(service.switchProject).toBeDefined();
     });
 
-    it('should accept userId and projectId parameters', () => {
-      expect(service.switchProject.length).toBe(2);
+    it('should accept tenantId, userId and projectId parameters', () => {
+      expect(service.switchProject.length).toBe(3);
     });
   });
 
@@ -80,8 +80,8 @@ describe('DashboardService', () => {
       expect(service.getDashboardStats).toBeDefined();
     });
 
-    it('should accept userId and optional projectId parameters', () => {
-      expect(service.getDashboardStats.length).toBe(2);
+    it('should accept tenantId, userId and optional projectId parameters', () => {
+      expect(service.getDashboardStats.length).toBe(3);
     });
   });
 
@@ -101,9 +101,9 @@ describe('DashboardService', () => {
 
         (cacheService.get as jest.Mock).mockResolvedValue(mockStats);
 
-        const result = await service.getDashboardStats('user-123', 'project-456');
+        const result = await service.getDashboardStats(1, 'user-123', 'project-456');
 
-        expect(cacheService.get).toHaveBeenCalledWith('dashboard:stats:user-123:project-456');
+        expect(cacheService.get).toHaveBeenCalledWith('dashboard:stats:1:user-123:project-456');
         expect(result).toEqual(mockStats);
       });
 
@@ -117,9 +117,9 @@ describe('DashboardService', () => {
 
         (cacheService.get as jest.Mock).mockResolvedValue(mockStats);
 
-        await service.getDashboardStats('user-789');
+        await service.getDashboardStats(1, 'user-789');
 
-        expect(cacheService.get).toHaveBeenCalledWith('dashboard:stats:user-789:all');
+        expect(cacheService.get).toHaveBeenCalledWith('dashboard:stats:1:user-789:all');
       });
 
       it('should return cached data if cache hit (CACHE HIT path)', async () => {
@@ -132,7 +132,7 @@ describe('DashboardService', () => {
 
         (cacheService.get as jest.Mock).mockResolvedValue(mockCachedStats);
 
-        const result = await service.getDashboardStats('user-cache-test');
+        const result = await service.getDashboardStats(1, 'user-cache-test');
 
         expect(cacheService.get).toHaveBeenCalledTimes(1);
         expect(result).toEqual(mockCachedStats);
@@ -146,11 +146,11 @@ describe('DashboardService', () => {
         // This will fail because we can't mock the database in this test
         // but it demonstrates the cache miss path
         try {
-          await service.getDashboardStats('user-no-cache');
+          await service.getDashboardStats(1, 'user-no-cache');
         } catch {
           // Expected to fail because database is not mocked
           // The important part is that cache.get was called
-          expect(cacheService.get).toHaveBeenCalledWith('dashboard:stats:user-no-cache:all');
+          expect(cacheService.get).toHaveBeenCalledWith('dashboard:stats:1:user-no-cache:all');
         }
       });
     });

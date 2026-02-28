@@ -227,33 +227,9 @@ import type {
  *
  * ---
  *
- * ## Multi-Tenancy Context
+ * ## Multi-Tenancy
  *
- * ### Current State: ⚠️ NO TENANT FILTERING
- *
- * All methods query without tenant context, creating **cross-tenant data leakage risk**.
- *
- * ### Tenant Filtering (Deferred to Phase 21)
- *
- * **Tables Requiring Tenant Filter**:
- *
- * 1. **equipo.equipo**: `WHERE equipo.unidad_operativa_id = :tenantId`
- * 2. **equipo.programa_mantenimiento**: `WHERE equipo.unidad_operativa_id = :tenantId`
- * 3. **logistica.movimiento**: `WHERE movimiento.unidad_operativa_id = :tenantId`
- * 4. **rrhh.trabajador**: `WHERE trabajador.unidad_operativa_id = :tenantId`
- *
- * **Implementation Pattern**:
- * ```typescript
- * const tenantId = this.getTenantId(); // From request context
- *
- * const query = `
- *   SELECT ...
- *   FROM equipo.equipo e
- *   WHERE e.unidad_operativa_id = $3
- *   AND ...
- * `;
- * const results = await AppDataSource.query(query, [startDate, endDate, tenantId]);
- * ```
+ * All queries are filtered by `tenantId` for data isolation.
  *
  * ---
  *
@@ -568,17 +544,15 @@ export class ReportingService {
    * ```
    */
   async getEquipmentUtilization(
+    tenantId: number,
     _startDate?: string,
     _endDate?: string
   ): Promise<EquipmentUtilizationReport[]> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // WHERE e.unidad_operativa_id = :tenantId
-
       // Since parte_diario doesn't exist, return equipment list with mock/zero data
       // This maintains API compatibility while working with existing schema
       const query = `
-        SELECT 
+        SELECT
           e.codigo_equipo as code,
           COALESCE(e.marca || ' ' || e.modelo, e.codigo_equipo) as equipment,
           COALESCE(e.categoria, 'Unknown') as equipment_type,
@@ -588,10 +562,11 @@ export class ReportingService {
           0 as total_fuel
         FROM equipo.equipo e
         WHERE e.codigo_equipo IS NOT NULL
+          AND e.tenant_id = $1
         ORDER BY e.codigo_equipo
       `;
 
-      const results = await AppDataSource.query(query);
+      const results = await AppDataSource.query(query, [tenantId]);
 
       const report = results.map((row: Record<string, unknown>) => ({
         code: row.code as string,
@@ -685,6 +660,7 @@ export class ReportingService {
    * ```
    */
   async getMaintenanceHistory(
+    tenantId: number,
     startDate: string,
     endDate: string
   ): Promise<MaintenanceHistoryReport[]> {
@@ -710,11 +686,8 @@ export class ReportingService {
         ]);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // WHERE pm.unidad_operativa_id = :tenantId
-
       const query = `
-        SELECT 
+        SELECT
           pm.id,
           pm.fecha_programada as start_date,
           pm.fecha_realizada as end_date,
@@ -729,10 +702,11 @@ export class ReportingService {
         LEFT JOIN equipo.equipo e ON pm.equipo_id = e.id
         LEFT JOIN proveedores.proveedor p ON e.proveedor_id = p.id
         WHERE pm.fecha_programada >= $1 AND pm.fecha_programada <= $2
+          AND pm.tenant_id = $3
         ORDER BY pm.fecha_programada DESC
       `;
 
-      const results = await AppDataSource.query(query, [startDate, endDate]);
+      const results = await AppDataSource.query(query, [startDate, endDate, tenantId]);
 
       const report = results.map((row: Record<string, unknown>) => ({
         id: Number(row.id),
@@ -839,6 +813,7 @@ export class ReportingService {
    * ```
    */
   async getInventoryMovements(
+    tenantId: number,
     startDate: string,
     endDate: string
   ): Promise<InventoryMovementReport[]> {
@@ -864,11 +839,8 @@ export class ReportingService {
         ]);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // WHERE m.unidad_operativa_id = :tenantId
-
       const query = `
-        SELECT 
+        SELECT
           m.id,
           m.fecha,
           m.tipo_movimiento,
@@ -880,11 +852,12 @@ export class ReportingService {
         LEFT JOIN proyectos.edt p ON m.proyecto_id = p.id
         LEFT JOIN logistica.detalle_movimiento md ON m.id = md.movimiento_id
         WHERE m.fecha >= $1 AND m.fecha <= $2
+          AND m.tenant_id = $3
         GROUP BY m.id, m.fecha, m.tipo_movimiento, m.numero_documento, p.nombre
         ORDER BY m.fecha DESC
       `;
 
-      const results = await AppDataSource.query(query, [startDate, endDate]);
+      const results = await AppDataSource.query(query, [startDate, endDate, tenantId]);
 
       const report = results.map((row: Record<string, unknown>) => ({
         id: Number(row.id),
@@ -996,28 +969,27 @@ export class ReportingService {
    * ```
    */
   async getOperatorTimesheet(
+    tenantId: number,
     _startDate?: string,
     _endDate?: string
   ): Promise<OperatorTimesheetReport[]> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // WHERE o.unidad_operativa_id = :tenantId
-
       // Since parte_diario doesn't exist, return trabajador list with zero data
       // This maintains API compatibility
       const query = `
-        SELECT 
+        SELECT
           o.nombres || ' ' || o.apellido_paterno as operator_name,
           'N/A' as project_name,
           0 as days_worked,
           0 as total_hours,
           0 as overtime_hours
         FROM rrhh.trabajador o
+        WHERE o.tenant_id = $1
         ORDER BY operator_name
         LIMIT 100
       `;
 
-      const results = await AppDataSource.query(query);
+      const results = await AppDataSource.query(query, [tenantId]);
 
       const report = results.map((row: Record<string, unknown>) => ({
         operator_name: row.operator_name as string,

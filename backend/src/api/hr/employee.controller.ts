@@ -16,12 +16,6 @@ const employeeService = new EmployeeService();
  * GET /api/employees
  * List all employees with pagination, sorting, and optional search/filters
  *
- * ✅ PHASE 20 STANDARDIZED - Session 6
- * - Pagination now handled by service layer
- * - Sorting done by database (SQL ORDER BY)
- * - Passes tenantId to service
- * - No manual in-memory sorting
- *
  * @query page - Page number (default: 1)
  * @query limit - Items per page (default: 10, max: 100)
  * @query search - Search by name, DNI, or cargo
@@ -35,8 +29,7 @@ const employeeService = new EmployeeService();
  */
 export const getEmployees = async (req: Request, res: Response) => {
   try {
-    // Get tenant ID from context
-    const tenantId = (req as any).tenantContext?.id_empresa || 1; // Default to 1 for testing
+    const tenantId = req.user!.id_empresa;
 
     // Parse pagination parameters
     const page = parseInt(req.query.page as string) || 1;
@@ -82,15 +75,11 @@ export const getEmployees = async (req: Request, res: Response) => {
  * GET /api/employees/:dni
  * Get single employee by DNI
  *
- * ✅ PHASE 20 STANDARDIZED - Session 6
- * - Passes tenantId to service
- * - Catches NotFoundError instead of checking null
- *
  * @returns EmployeeDetailDto with Spanish snake_case fields
  */
 export const getEmployee = async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).tenantContext?.id_empresa || 1;
+    const tenantId = req.user!.id_empresa;
     const { dni } = req.params;
 
     const employee = await employeeService.getEmployeeByDni(tenantId, dni);
@@ -107,16 +96,12 @@ export const getEmployee = async (req: Request, res: Response) => {
  * POST /api/employees
  * Create new employee
  *
- * ✅ PHASE 20 STANDARDIZED - Session 6
- * - Passes tenantId to service
- * - Catches ConflictError for duplicate DNI
- *
  * @body EmployeeCreateDto (Spanish snake_case fields)
  * @returns EmployeeDetailDto with created employee
  */
 export const createEmployee = async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).tenantContext?.id_empresa || 1;
+    const tenantId = req.user!.id_empresa;
     const user = (req as any).user?.username || 'SYSTEM';
 
     const employee = await employeeService.createEmployee(tenantId, req.body, user);
@@ -133,16 +118,12 @@ export const createEmployee = async (req: Request, res: Response) => {
  * PUT /api/employees/:dni
  * Update employee
  *
- * ✅ PHASE 20 STANDARDIZED - Session 6
- * - Passes tenantId to service
- * - Catches NotFoundError instead of checking null
- *
  * @body EmployeeUpdateDto (Spanish snake_case fields, partial)
  * @returns EmployeeDetailDto with updated employee
  */
 export const updateEmployee = async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).tenantContext?.id_empresa || 1;
+    const tenantId = req.user!.id_empresa;
     const { dni } = req.params;
     const user = (req as any).user?.username || 'SYSTEM';
 
@@ -160,15 +141,11 @@ export const updateEmployee = async (req: Request, res: Response) => {
  * DELETE /api/employees/:dni
  * Soft delete employee (sets esta_activo = false)
  *
- * ✅ PHASE 20 STANDARDIZED - Session 6
- * - Passes tenantId to service
- * - Catches NotFoundError instead of checking success boolean
- *
  * @returns 204 No Content on success
  */
 export const deleteEmployee = async (req: Request, res: Response) => {
   try {
-    const tenantId = (req as any).tenantContext?.id_empresa || 1;
+    const tenantId = req.user!.id_empresa;
     const { dni } = req.params;
 
     await employeeService.deleteEmployee(tenantId, dni);

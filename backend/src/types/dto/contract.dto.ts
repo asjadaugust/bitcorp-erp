@@ -16,6 +16,8 @@ import {
   Min,
 } from 'class-validator';
 
+import { MODALIDADES_CONTRATO, ModalidadContrato } from '../../models/contract.model';
+
 export interface ContractDto {
   id: number;
   legacy_id?: string | null;
@@ -42,7 +44,7 @@ export interface ContractDto {
   moneda: string; // PEN, USD, etc.
   tipo_tarifa?: string | null;
   tarifa?: number | null;
-  modalidad?: string | null;
+  modalidad?: ModalidadContrato | null;
   minimo_por?: string | null;
 
   // Included services
@@ -247,9 +249,10 @@ export class ContractCreateDto {
   tarifa?: number | null;
 
   @IsOptional()
-  @IsString({ message: 'modalidad debe ser texto' })
-  @MaxLength(100, { message: 'modalidad no puede exceder 100 caracteres' })
-  modalidad?: string | null;
+  @IsIn(MODALIDADES_CONTRATO, {
+    message: `modalidad debe ser uno de: ${MODALIDADES_CONTRATO.join(', ')}`,
+  })
+  modalidad?: ModalidadContrato | null;
 
   @IsOptional()
   @IsString({ message: 'minimo_por debe ser texto' })
@@ -388,9 +391,10 @@ export class ContractUpdateDto {
   tarifa?: number | null;
 
   @IsOptional()
-  @IsString({ message: 'modalidad debe ser texto' })
-  @MaxLength(100, { message: 'modalidad no puede exceder 100 caracteres' })
-  modalidad?: string | null;
+  @IsIn(MODALIDADES_CONTRATO, {
+    message: `modalidad debe ser uno de: ${MODALIDADES_CONTRATO.join(', ')}`,
+  })
+  modalidad?: ModalidadContrato | null;
 
   @IsOptional()
   @IsString({ message: 'minimo_por debe ser texto' })

@@ -199,8 +199,6 @@ export class ChecklistService {
         ]);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Add tenant assignment
-
       const template = this.templateRepository.create({
         ...data,
         createdBy: userId,
@@ -258,8 +256,6 @@ export class ChecklistService {
         throw new NotFoundError('ChecklistTemplate', id);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
-
       await this.templateRepository.update(id, data);
 
       logger.info('Updated checklist template', {
@@ -307,8 +303,6 @@ export class ChecklistService {
       if (!existing) {
         throw new NotFoundError('ChecklistTemplate', id);
       }
-
-      // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
 
       const result = await this.templateRepository.delete({ id, tenantId });
 
@@ -359,8 +353,6 @@ export class ChecklistService {
           { field: 'descripcion', rule: 'required', message: 'Item description is required' },
         ]);
       }
-
-      // TODO: [Phase 21 - Tenant Context] Add tenant assignment
 
       const item = this.itemRepository.create({ ...data, tenantId });
       const saved = await this.itemRepository.save(item);
@@ -414,8 +406,6 @@ export class ChecklistService {
         throw new NotFoundError('ChecklistItem', id);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
-
       await this.itemRepository.update(id, data);
       const item = await this.itemRepository.findOne({ where: { id, tenantId } });
 
@@ -463,8 +453,6 @@ export class ChecklistService {
       if (!existing) {
         throw new NotFoundError('ChecklistItem', id);
       }
-
-      // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
 
       const result = await this.itemRepository.delete(id);
 
@@ -559,8 +547,6 @@ export class ChecklistService {
       const sortOrder = filters?.sort_order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
       const where: any = { tenantId };
-
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
 
       if (filters?.equipoId) where.equipoId = filters.equipoId;
       if (filters?.trabajadorId) where.trabajadorId = filters.trabajadorId;
@@ -766,8 +752,6 @@ export class ChecklistService {
         ]);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Add tenant assignment
-
       // Generate codigo
       const year = new Date().getFullYear();
       const count = await this.inspectionRepository.count();
@@ -843,8 +827,6 @@ export class ChecklistService {
         throw new NotFoundError('ChecklistInspection', id);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
-
       await this.inspectionRepository.update(id, data);
 
       logger.info('Updated checklist inspection', {
@@ -913,8 +895,6 @@ export class ChecklistService {
       if (!existing) {
         throw new NotFoundError('ChecklistInspection', id);
       }
-
-      // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
 
       // Fetch results within transaction
       const results = await queryRunner.manager.find(ChecklistResult, {
@@ -1016,8 +996,6 @@ export class ChecklistService {
         throw new NotFoundError('ChecklistInspection', id);
       }
 
-      // TODO: [Phase 21 - Tenant Context] Verify tenant ownership
-
       await this.inspectionRepository.update(id, { estado: 'CANCELADO' });
 
       logger.info('Cancelled checklist inspection', {
@@ -1068,8 +1046,6 @@ export class ChecklistService {
           { field: 'itemId', rule: 'required', message: 'Item ID is required' },
         ]);
       }
-
-      // TODO: [Phase 21 - Tenant Context] Add tenant assignment
 
       // Upsert logic
       const existing = await this.resultRepository.findOne({
@@ -1193,7 +1169,6 @@ export class ChecklistService {
     try {
       const where: any = { tenantId };
 
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
       // TODO: Implement date range filtering with QueryBuilder
       if (filters?.startDate || filters?.endDate) {
         // For date range, we'd need to use QueryBuilder

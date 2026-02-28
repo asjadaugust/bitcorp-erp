@@ -19,6 +19,7 @@ export class CostCenterController {
    */
   static async getAll(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { search, project_id, is_active } = req.query;
       const page = parseInt(req.query.page as string) || 1;
       const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
@@ -37,7 +38,7 @@ export class CostCenterController {
       if (project_id) filters.projectId = parseInt(String(project_id));
       if (is_active !== undefined) filters.isActive = is_active === 'true';
 
-      const result = await costCenterService.findAll(filters);
+      const result = await costCenterService.findAll(tenantId, filters);
 
       // Transform entities to DTOs (snake_case)
       const dtos = toCostCenterListDtoArray(result.data as unknown as Record<string, unknown>[]);
@@ -69,6 +70,7 @@ export class CostCenterController {
    */
   static async getById(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -76,7 +78,7 @@ export class CostCenterController {
         return;
       }
 
-      const costCenter = await costCenterService.findById(id);
+      const costCenter = await costCenterService.findById(tenantId, id);
 
       // Transform to DTO (snake_case)
       const dto = toCostCenterDetailDto(costCenter as any);
@@ -111,9 +113,10 @@ export class CostCenterController {
    */
   static async getByCode(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { code } = req.params;
 
-      const costCenter = await costCenterService.findByCode(code);
+      const costCenter = await costCenterService.findByCode(tenantId, code);
 
       if (!costCenter) {
         sendError(res, 404, 'COST_CENTER_NOT_FOUND', 'Centro de costo no encontrado');
@@ -147,6 +150,7 @@ export class CostCenterController {
    */
   static async getByProject(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const project_id = parseInt(req.params.project_id);
 
       if (isNaN(project_id)) {
@@ -154,7 +158,7 @@ export class CostCenterController {
         return;
       }
 
-      const costCenters = await costCenterService.findByProject(project_id);
+      const costCenters = await costCenterService.findByProject(tenantId, project_id);
 
       // Transform to DTOs (snake_case)
       const dtos = toCostCenterListDtoArray(costCenters as unknown as Record<string, unknown>[]);
@@ -183,7 +187,8 @@ export class CostCenterController {
    */
   static async create(req: Request, res: Response): Promise<void> {
     try {
-      const costCenter = await costCenterService.create(req.body);
+      const tenantId = (req as any).user!.id_empresa;
+      const costCenter = await costCenterService.create(tenantId, req.body);
 
       sendCreated(res, costCenter.id, 'Centro de costo creado exitosamente');
     } catch (error: any) {
@@ -219,6 +224,7 @@ export class CostCenterController {
    */
   static async update(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -226,7 +232,7 @@ export class CostCenterController {
         return;
       }
 
-      const costCenter = await costCenterService.update(id, req.body);
+      const costCenter = await costCenterService.update(tenantId, id, req.body);
 
       // Transform to DTO (snake_case)
       const dto = toCostCenterDetailDto(costCenter as any);
@@ -266,6 +272,7 @@ export class CostCenterController {
    */
   static async remove(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -273,7 +280,7 @@ export class CostCenterController {
         return;
       }
 
-      await costCenterService.delete(id);
+      await costCenterService.delete(tenantId, id);
 
       res.status(204).send();
     } catch (error: any) {
@@ -299,7 +306,8 @@ export class CostCenterController {
    */
   static async getActiveCount(req: Request, res: Response): Promise<void> {
     try {
-      const count = await costCenterService.getActiveCount();
+      const tenantId = (req as any).user!.id_empresa;
+      const count = await costCenterService.getActiveCount(tenantId);
 
       sendSuccess(res, { count });
     } catch (error: any) {
@@ -324,6 +332,7 @@ export class CostCenterController {
    */
   static async getProjectBudget(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const project_id = parseInt(req.params.project_id);
 
       if (isNaN(project_id)) {
@@ -331,7 +340,7 @@ export class CostCenterController {
         return;
       }
 
-      const total = await costCenterService.getTotalBudgetByProject(project_id);
+      const total = await costCenterService.getTotalBudgetByProject(tenantId, project_id);
 
       sendSuccess(res, { project_id, total_budget: total });
     } catch (error: any) {

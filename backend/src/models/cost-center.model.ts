@@ -32,6 +32,9 @@ export class CentroCosto {
   @Column({ name: 'presupuesto', type: 'decimal', precision: 15, scale: 2, nullable: true })
   presupuesto?: number;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 

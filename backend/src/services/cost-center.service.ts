@@ -47,9 +47,7 @@ export class CostCenterService {
    * - Default pagination: page=1, limit=20
    * - Supports sorting by: codigo, nombre, presupuesto, proyecto_id, created_at
    *
-   * TODO: Add tenant_id filter when schema migration complete
-   * Current: No tenant isolation (all cost centers visible across companies)
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param filters - Query filters (search, projectId, isActive, pagination, sorting)
    * @returns Paginated list of cost centers with total count
    * @throws {DatabaseError} If query fails
@@ -64,15 +62,18 @@ export class CostCenterService {
    * });
    * ```
    */
-  async findAll(filters?: {
-    search?: string;
-    projectId?: number;
-    isActive?: boolean;
-    page?: number;
-    limit?: number;
-    sort_by?: string;
-    sort_order?: 'ASC' | 'DESC';
-  }): Promise<{ data: CostCenterListDto[]; total: number }> {
+  async findAll(
+    tenantId: number,
+    filters?: {
+      search?: string;
+      projectId?: number;
+      isActive?: boolean;
+      page?: number;
+      limit?: number;
+      sort_by?: string;
+      sort_order?: 'ASC' | 'DESC';
+    }
+  ): Promise<{ data: CostCenterListDto[]; total: number }> {
     try {
       const page = filters?.page || 1;
       const limit = filters?.limit || 20;
@@ -94,11 +95,10 @@ export class CostCenterService {
           : 'cc.codigo';
       const sortOrder = filters?.sort_order === 'DESC' ? 'DESC' : 'ASC';
 
-      // TODO: Add tenant_id filter when schema updated
-      // .where('cc.tenantId = :tenantId', { tenantId })
       const queryBuilder = this.repository
         .createQueryBuilder('cc')
-        .where('cc.isActive = :isActive', { isActive: filters?.isActive ?? true });
+        .where('cc.isActive = :isActive', { isActive: filters?.isActive ?? true })
+        .andWhere('cc.tenantId = :tenantId', { tenantId });
 
       if (filters?.projectId) {
         queryBuilder.andWhere('cc.projectId = :projectId', { projectId: filters.projectId });
@@ -149,19 +149,16 @@ export class CostCenterService {
    * - Returns full cost center details
    * - Throws NotFoundError if cost center doesn't exist
    *
-   * TODO: Add tenant_id filter when schema updated
-   * Current: No tenant isolation check
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param id - Cost center ID
    * @returns Cost center detail DTO
    * @throws {NotFoundError} If cost center not found
    * @throws {DatabaseError} If query fails
    */
-  async findById(id: number): Promise<CostCenterDetailDto> {
+  async findById(tenantId: number, id: number): Promise<CostCenterDetailDto> {
     try {
-      // TODO: Add tenant_id filter: where: { id, tenantId }
       const costCenter = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!costCenter) {
@@ -196,18 +193,15 @@ export class CostCenterService {
    * - codigo is unique within tenant (future: within tenant when schema updated)
    * - Returns null if not found (not an error)
    *
-   * TODO: Add tenant_id filter when schema updated
-   * Current: codigo unique globally (should be per tenant)
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param codigo - Cost center unique code
    * @returns Cost center detail DTO or null if not found
    * @throws {DatabaseError} If query fails
    */
-  async findByCode(codigo: string): Promise<CostCenterDetailDto | null> {
+  async findByCode(tenantId: number, codigo: string): Promise<CostCenterDetailDto | null> {
     try {
-      // TODO: Add tenant_id filter: where: { codigo, tenantId }
       const costCenter = await this.repository.findOne({
-        where: { codigo },
+        where: { codigo, tenantId },
       });
 
       if (!costCenter) {
@@ -239,18 +233,15 @@ export class CostCenterService {
    * - Returns only active cost centers (isActive = true)
    * - Ordered by codigo ascending
    *
-   * TODO: Add tenant_id filter when schema updated
-   * Current: No tenant isolation
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param projectId - Project ID to filter by
    * @returns Array of cost center list DTOs
    * @throws {DatabaseError} If query fails
    */
-  async findByProject(projectId: number): Promise<CostCenterListDto[]> {
+  async findByProject(tenantId: number, projectId: number): Promise<CostCenterListDto[]> {
     try {
-      // TODO: Add tenant_id filter: where: { projectId, tenantId, isActive: true }
       const costCenters = await this.repository.find({
-        where: { projectId: projectId, isActive: true },
+        where: { projectId: projectId, tenantId, isActive: true },
         order: { codigo: 'ASC' },
       });
 
@@ -282,9 +273,7 @@ export class CostCenterService {
    * - presupuesto (budget) is optional
    * - Can be associated with a project (proyecto_id)
    *
-   * TODO: Add tenant_id when schema updated
-   * Current: No tenant association on create
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param data - Cost center creation data
    * @returns Created cost center detail DTO
    * @throws {ValidationError} If required fields missing or invalid
@@ -301,7 +290,7 @@ export class CostCenterService {
    * });
    * ```
    */
-  async create(data: CostCenterCreateDto): Promise<CostCenterDetailDto> {
+  async create(tenantId: number, data: CostCenterCreateDto): Promise<CostCenterDetailDto> {
     try {
       // Validate required fields
       if (!data.codigo || data.codigo.trim() === '') {
@@ -312,9 +301,8 @@ export class CostCenterService {
         throw new ValidationError('nombre is required and cannot be empty');
       }
 
-      // Check if codigo already exists
-      // TODO: Add tenant_id check when schema updated (unique per tenant)
-      const existing = await this.findByCode(data.codigo);
+      // Check if codigo already exists (within tenant)
+      const existing = await this.findByCode(tenantId, data.codigo);
       if (existing) {
         throw new ConflictError(`Cost center with codigo '${data.codigo}' already exists`, {
           field: 'codigo',
@@ -326,7 +314,7 @@ export class CostCenterService {
       const entityData = fromCostCenterCreateDto(data);
 
       // Create and save cost center
-      const costCenter = this.repository.create(entityData);
+      const costCenter = this.repository.create({ ...entityData, tenantId });
       const saved = await this.repository.save(costCenter);
 
       Logger.info('Cost center created successfully', {
@@ -359,9 +347,7 @@ export class CostCenterService {
    * - If updating codigo, must verify uniqueness (within tenant when schema updated)
    * - Cannot update to null/empty codigo or nombre
    *
-   * TODO: Add tenant_id check when schema updated
-   * Current: No tenant isolation on update
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param id - Cost center ID to update
    * @param data - Partial cost center update data
    * @returns Updated cost center detail DTO
@@ -370,15 +356,18 @@ export class CostCenterService {
    * @throws {ValidationError} If update data invalid
    * @throws {DatabaseError} If update operation fails
    */
-  async update(id: number, data: CostCenterUpdateDto): Promise<CostCenterDetailDto> {
+  async update(
+    tenantId: number,
+    id: number,
+    data: CostCenterUpdateDto
+  ): Promise<CostCenterDetailDto> {
     try {
       // Find existing cost center (throws NotFoundError if not found)
-      const existing = await this.findById(id);
+      const existing = await this.findById(tenantId, id);
 
-      // If updating codigo, check uniqueness
+      // If updating codigo, check uniqueness (within tenant)
       if (data.codigo && data.codigo !== existing.codigo) {
-        // TODO: Add tenant_id check when schema updated
-        const duplicate = await this.findByCode(data.codigo);
+        const duplicate = await this.findByCode(tenantId, data.codigo);
         if (duplicate && duplicate.id !== id) {
           throw new ConflictError(`Cost center with codigo '${data.codigo}' already exists`, {
             field: 'codigo',
@@ -391,7 +380,7 @@ export class CostCenterService {
       const updates = fromCostCenterUpdateDto(data);
 
       // Apply updates
-      const costCenter = await this.repository.findOne({ where: { id } });
+      const costCenter = await this.repository.findOne({ where: { id, tenantId } });
       if (!costCenter) {
         throw new NotFoundError('CentroCosto', id);
       }
@@ -432,21 +421,18 @@ export class CostCenterService {
    * - Preserves data for audit trail
    * - Can be reactivated by updating isActive to true
    *
-   * TODO: Add tenant_id check when schema updated
-   * Current: No tenant isolation on delete
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param id - Cost center ID to delete
    * @returns void
    * @throws {NotFoundError} If cost center not found
    * @throws {DatabaseError} If delete operation fails
    */
-  async delete(id: number): Promise<void> {
+  async delete(tenantId: number, id: number): Promise<void> {
     try {
       // Verify cost center exists (throws NotFoundError if not found)
-      await this.findById(id);
+      await this.findById(tenantId, id);
 
-      // Soft delete: set isActive = false
-      // TODO: Add tenant_id check when schema updated
+      // Soft delete: set isActive = false (scoped to tenant via findById check above)
       await this.repository.update(id, { isActive: false });
 
       Logger.info('Cost center deleted successfully (soft delete)', {
@@ -475,20 +461,18 @@ export class CostCenterService {
    * - Only includes active cost centers (isActive = true)
    * - Returns 0 if no cost centers or no budgets defined
    *
-   * TODO: Add tenant_id filter when schema updated
-   * Current: No tenant isolation
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @param projectId - Project ID to calculate budget for
    * @returns Total budget sum
    * @throws {DatabaseError} If query fails
    */
-  async getTotalBudgetByProject(projectId: number): Promise<number> {
+  async getTotalBudgetByProject(tenantId: number, projectId: number): Promise<number> {
     try {
-      // TODO: Add tenant_id filter: .andWhere('cc.tenantId = :tenantId', { tenantId })
       const result = await this.repository
         .createQueryBuilder('cc')
         .select('SUM(cc.presupuesto)', 'total')
         .where('cc.projectId = :projectId', { projectId })
+        .andWhere('cc.tenantId = :tenantId', { tenantId })
         .andWhere('cc.isActive = true')
         .getRawOne();
 
@@ -518,17 +502,14 @@ export class CostCenterService {
    * Business Rules:
    * - Counts only active cost centers (isActive = true)
    *
-   * TODO: Add tenant_id filter when schema updated
-   * Current: Counts all cost centers globally (should be per tenant)
-   *
+   * @param tenantId - Company tenant ID for isolation
    * @returns Count of active cost centers
    * @throws {DatabaseError} If query fails
    */
-  async getActiveCount(): Promise<number> {
+  async getActiveCount(tenantId: number): Promise<number> {
     try {
-      // TODO: Add tenant_id filter: where: { isActive: true, tenantId }
       const count = await this.repository.count({
-        where: { isActive: true },
+        where: { isActive: true, tenantId },
       });
 
       Logger.info('Active cost centers counted', {

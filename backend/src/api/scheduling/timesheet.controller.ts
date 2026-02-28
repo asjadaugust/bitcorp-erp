@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Request, Response } from 'express';
 import { TimesheetService } from '../../services/timesheet.service';
-import { AppDataSource } from '../../config/database.config';
-import { Timesheet } from '../../models/timesheet.model';
 import {
   sendSuccess,
   sendCreated,
@@ -26,6 +24,8 @@ const timesheetService = new TimesheetService();
  */
 export const listTimesheets = async (req: Request, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
+
     // Pagination parameters
     const page = parseInt(req.query.page as string) || 1;
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100 items
@@ -43,8 +43,8 @@ export const listTimesheets = async (req: Request, res: Response) => {
     if (estado) filters.estado = estado as string;
     if (creado_por) filters.creadoPor = parseInt(creado_por as string);
 
-    // Get all timesheets from service
-    const allTimesheets = await timesheetService.listTimesheets(filters);
+    // Get all timesheets from service (tenant-filtered)
+    const allTimesheets = await timesheetService.listTimesheets(tenantId, filters);
 
     // Apply sorting in memory
     const validSortFields = [
@@ -102,12 +102,13 @@ export const listTimesheets = async (req: Request, res: Response) => {
  */
 export const getTimesheetById = async (req: Request, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return sendError(res, 400, 'INVALID_ID', 'ID invalido');
     }
 
-    const timesheet = await timesheetService.getTimesheetWithDetails(id);
+    const timesheet = await timesheetService.getTimesheetWithDetails(tenantId, id);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
     Logger.error('Error getting timesheet', {
@@ -129,23 +130,24 @@ export const getTimesheetById = async (req: Request, res: Response) => {
  */
 export const generateTimesheet = async (req: Request, res: Response) => {
   try {
-    const { 
-      trabajadorId, 
-      trabajador_id, 
-      periodo, 
-      totalDiasTrabajados, 
+    const tenantId = req.user!.id_empresa;
+    const {
+      trabajadorId,
+      trabajador_id,
+      periodo,
+      totalDiasTrabajados,
       total_dias_trabajados,
-      totalHoras, 
+      totalHoras,
       total_hours, // Handle potential snake_case from frontend if any
-      observaciones 
+      observaciones,
     } = req.body;
-    
+
     // Normalize inputs
     const tId = trabajadorId || trabajador_id;
     const days = totalDiasTrabajados || total_dias_trabajados;
     const hours = totalHoras || total_hours;
 
-    const creadoPor = (req as any).user?.id || 1;
+    const creadoPor = req.user!.id_usuario;
 
     if (!tId || !periodo) {
       return sendError(
@@ -156,7 +158,7 @@ export const generateTimesheet = async (req: Request, res: Response) => {
       );
     }
 
-    const timesheet = await timesheetService.generateTimesheet({
+    const timesheet = await timesheetService.generateTimesheet(tenantId, {
       trabajadorId: parseInt(tId),
       periodo,
       totalDiasTrabajados: days ? parseInt(days) : 0,
@@ -167,7 +169,6 @@ export const generateTimesheet = async (req: Request, res: Response) => {
 
     return sendCreated(res, timesheet);
   } catch (error: any) {
-
     Logger.error('Error generating timesheet', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
@@ -175,13 +176,21 @@ export const generateTimesheet = async (req: Request, res: Response) => {
       periodo: req.body.periodo,
       context: 'TimesheetController.generateTimesheet',
     });
-    
+
     // Handle specific errors
-    if (error.name === 'NotFoundError' || error.message.includes('not found') || error.message.includes('no encontrado')) {
+    if (
+      error.name === 'NotFoundError' ||
+      error.message.includes('not found') ||
+      error.message.includes('no encontrado')
+    ) {
       return sendError(res, 404, 'RESOURCE_NOT_FOUND', error.message);
     }
-    
-    if (error.name === 'ConflictError' || error.message.includes('exists') || error.message.includes('existe')) {
+
+    if (
+      error.name === 'ConflictError' ||
+      error.message.includes('exists') ||
+      error.message.includes('existe')
+    ) {
       return sendError(res, 409, 'RESOURCE_CONFLICT', error.message);
     }
 
@@ -200,14 +209,15 @@ export const generateTimesheet = async (req: Request, res: Response) => {
  */
 export const submitTimesheet = async (req: Request, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return sendError(res, 400, 'INVALID_ID', 'ID invalido');
     }
 
-    const submittedBy = (req as any).user?.id || 1; // Default to 1 if no user
+    const submittedBy = req.user!.id_usuario;
 
-    const timesheet = await timesheetService.submitTimesheet(id, submittedBy);
+    const timesheet = await timesheetService.submitTimesheet(tenantId, id, submittedBy);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
     Logger.error('Error submitting timesheet', {
@@ -233,14 +243,15 @@ export const submitTimesheet = async (req: Request, res: Response) => {
  */
 export const approveTimesheet = async (req: Request, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return sendError(res, 400, 'INVALID_ID', 'ID invalido');
     }
 
-    const approvedBy = (req as any).user?.id || 1; // Default to 1 if no user
+    const approvedBy = req.user!.id_usuario;
 
-    const timesheet = await timesheetService.approveTimesheet(id, approvedBy);
+    const timesheet = await timesheetService.approveTimesheet(tenantId, id, approvedBy);
     return sendSuccess(res, timesheet);
   } catch (error: any) {
     Logger.error('Error approving timesheet', {
@@ -266,24 +277,25 @@ export const approveTimesheet = async (req: Request, res: Response) => {
  */
 export const rejectTimesheet = async (req: Request, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return sendError(res, 400, 'INVALID_ID', 'ID invalido');
     }
 
     const { reason } = req.body;
-    const rejectedBy = (req as any).user?.id || 1; // Default to 1 if no user
+    const rejectedBy = req.user!.id_usuario;
 
     if (!reason) {
       return sendError(
         res,
         400,
         'TIMESHEET_REJECT_REASON_REQUIRED',
-        'La razón de rechazo es requerida'
+        'La razon de rechazo es requerida'
       );
     }
 
-    const timesheet = await timesheetService.rejectTimesheet(id, rejectedBy, reason);
+    const timesheet = await timesheetService.rejectTimesheet(tenantId, id, rejectedBy, reason);
 
     return sendSuccess(res, timesheet);
   } catch (error: any) {
@@ -310,32 +322,14 @@ export const rejectTimesheet = async (req: Request, res: Response) => {
  */
 export const updateTimesheet = async (req: Request, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return sendError(res, 400, 'INVALID_ID', 'ID invalido');
     }
 
-    const repo = AppDataSource.getRepository(Timesheet);
-    const timesheet = await repo.findOne({ where: { id } });
-
-    if (!timesheet) {
-      return sendError(res, 404, 'TIMESHEET_NOT_FOUND', 'Tareo no encontrado');
-    }
-
-    // Only allow updates to draft timesheets
-    if (timesheet.estado !== 'BORRADOR') {
-      return sendError(
-        res,
-        400,
-        'TIMESHEET_UPDATE_NOT_ALLOWED',
-        'Solo los tareos en borrador pueden ser actualizados'
-      );
-    }
-
-    Object.assign(timesheet, req.body);
-    const updatedTimesheet = await repo.save(timesheet);
-
-    return sendSuccess(res, updatedTimesheet);
+    const timesheet = await timesheetService.updateTimesheet(tenantId, id, req.body);
+    return sendSuccess(res, timesheet);
   } catch (error: any) {
     Logger.error('Error updating timesheet', {
       error: error instanceof Error ? error.message : String(error),
@@ -343,6 +337,12 @@ export const updateTimesheet = async (req: Request, res: Response) => {
       timesheetId: req.params.id,
       context: 'TimesheetController.updateTimesheet',
     });
+    if (error.name === 'BusinessRuleError') {
+      return sendError(res, 400, 'TIMESHEET_UPDATE_NOT_ALLOWED', error.message);
+    }
+    if (error.message.includes('no encontrado') || error.message.includes('not found')) {
+      return sendError(res, 404, 'TIMESHEET_NOT_FOUND', error.message);
+    }
     return sendError(
       res,
       500,
@@ -359,29 +359,13 @@ export const updateTimesheet = async (req: Request, res: Response) => {
  */
 export const deleteTimesheet = async (req: Request, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      return sendError(res, 400, 'INVALID_ID', 'ID inválido');
+      return sendError(res, 400, 'INVALID_ID', 'ID invalido');
     }
 
-    const repo = AppDataSource.getRepository(Timesheet);
-    const timesheet = await repo.findOne({ where: { id } });
-
-    if (!timesheet) {
-      return sendError(res, 404, 'TIMESHEET_NOT_FOUND', 'Tareo no encontrado');
-    }
-
-    // Only allow deletion of draft timesheets
-    if (timesheet.estado !== 'BORRADOR') {
-      return sendError(
-        res,
-        400,
-        'TIMESHEET_DELETE_NOT_ALLOWED',
-        'Solo los tareos en borrador pueden ser eliminados'
-      );
-    }
-
-    await repo.delete(id);
+    await timesheetService.deleteTimesheet(tenantId, id);
 
     return res.status(204).send();
   } catch (error: any) {
@@ -391,6 +375,9 @@ export const deleteTimesheet = async (req: Request, res: Response) => {
       timesheetId: req.params.id,
       context: 'TimesheetController.deleteTimesheet',
     });
+    if (error.name === 'BusinessRuleError') {
+      return sendError(res, 400, 'TIMESHEET_DELETE_NOT_ALLOWED', error.message);
+    }
     return sendError(res, 500, 'TIMESHEET_DELETE_FAILED', 'Error al eliminar tareo', error.message);
   }
 };

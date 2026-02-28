@@ -21,6 +21,7 @@ const router = Router();
  */
 router.get('/equipment/:id/utilization', authenticate, async (req: Request, res: Response) => {
   try {
+    const tenantId = (req as any).user!.id_empresa;
     const service = new EquipmentAnalyticsService(AppDataSource);
     const equipmentId = parseInt(req.params.id);
     const startDate = req.query.startDate
@@ -28,7 +29,12 @@ router.get('/equipment/:id/utilization', authenticate, async (req: Request, res:
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
-    const metrics = await service.getEquipmentUtilization(equipmentId, startDate, endDate);
+    const metrics = await service.getEquipmentUtilization(
+      tenantId,
+      equipmentId,
+      startDate,
+      endDate
+    );
     sendSuccess(res, toUtilizacionDto(metrics as any));
   } catch (error: any) {
     Logger.error('Error fetching equipment utilization', {
@@ -54,6 +60,7 @@ router.get(
   authenticate,
   async (req: Request, res: Response) => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const service = new EquipmentAnalyticsService(AppDataSource);
       const equipmentId = parseInt(req.params.id);
       const startDate = req.query.startDate
@@ -61,7 +68,7 @@ router.get(
         : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
-      const trend = await service.getUtilizationTrend(equipmentId, startDate, endDate);
+      const trend = await service.getUtilizationTrend(tenantId, equipmentId, startDate, endDate);
       sendSuccess(res, (trend as any[]).map(toTendenciaUtilizacionDto));
     } catch (error: any) {
       Logger.error('Error fetching utilization trend', {
@@ -85,6 +92,7 @@ router.get(
  */
 router.get('/fleet/utilization', authenticate, async (req: Request, res: Response) => {
   try {
+    const tenantId = (req as any).user!.id_empresa;
     const service = new EquipmentAnalyticsService(AppDataSource);
     const startDate = req.query.startDate
       ? new Date(req.query.startDate as string)
@@ -92,7 +100,7 @@ router.get('/fleet/utilization', authenticate, async (req: Request, res: Respons
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
     const projectId = req.query.projectId ? parseInt(req.query.projectId as string) : undefined;
 
-    const metrics = await service.getFleetUtilization(startDate, endDate, projectId);
+    const metrics = await service.getFleetUtilization(tenantId, startDate, endDate, projectId);
     sendSuccess(res, toFlotaUtilizacionDto(metrics as any));
   } catch (error: any) {
     Logger.error('Error fetching fleet utilization', {
@@ -114,6 +122,7 @@ router.get('/fleet/utilization', authenticate, async (req: Request, res: Respons
  */
 router.get('/equipment/:id/fuel', authenticate, async (req: Request, res: Response) => {
   try {
+    const tenantId = (req as any).user!.id_empresa;
     const service = new EquipmentAnalyticsService(AppDataSource);
     const equipmentId = parseInt(req.params.id);
     const startDate = req.query.startDate
@@ -121,7 +130,7 @@ router.get('/equipment/:id/fuel', authenticate, async (req: Request, res: Respon
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
-    const metrics = await service.getFuelMetrics(equipmentId, startDate, endDate);
+    const metrics = await service.getFuelMetrics(tenantId, equipmentId, startDate, endDate);
     sendSuccess(res, toCombustibleDto(metrics as any));
   } catch (error: any) {
     Logger.error('Error fetching fuel metrics', {
@@ -144,6 +153,7 @@ router.get('/equipment/:id/fuel', authenticate, async (req: Request, res: Respon
  */
 router.get('/equipment/:id/fuel-trend', authenticate, async (req: Request, res: Response) => {
   try {
+    const tenantId = (req as any).user!.id_empresa;
     const service = new EquipmentAnalyticsService(AppDataSource);
     const equipmentId = parseInt(req.params.id);
     const startDate = req.query.startDate
@@ -151,7 +161,7 @@ router.get('/equipment/:id/fuel-trend', authenticate, async (req: Request, res: 
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
 
-    const trend = await service.getFuelTrend(equipmentId, startDate, endDate);
+    const trend = await service.getFuelTrend(tenantId, equipmentId, startDate, endDate);
     sendSuccess(res, (trend as any[]).map(toTendenciaCombustibleDto));
   } catch (error: any) {
     Logger.error('Error fetching fuel trend', {
@@ -176,6 +186,7 @@ router.get('/equipment/:id/maintenance', authenticate, async (req: Request, res:
   try {
     const service = new EquipmentAnalyticsService(AppDataSource);
     const equipmentId = parseInt(req.params.id);
+    // Note: maintenance is a stub method, no tenantId filtering needed yet
     const startDate = req.query.startDate
       ? new Date(req.query.startDate as string)
       : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // Default: last 90 days

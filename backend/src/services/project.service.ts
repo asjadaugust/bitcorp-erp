@@ -383,22 +383,6 @@ export interface UpdateProjectDto extends Partial<CreateProjectDto> {}
  * await service.delete('123');  // Success
  * ```
  *
- * ## TODO: Tenant Context (Phase 21)
- *
- * When multi-tenancy is implemented:
- * - Add `tenantId` parameter to all methods
- * - Filter all queries by `empresa_id = tenantId`
- * - Validate tenant context in user assignments
- * - Ensure cross-tenant isolation
- *
- * **Example (Future)**:
- * ```typescript
- * // Phase 21 signature
- * async findAll(tenantId: number, filters?: {...}): Promise<...> {
- *   query.andWhere('p.empresa_id = :tenantId', { tenantId })
- * }
- * ```
- *
  * ## Performance Notes
  *
  * - **findAllWithFilters()**: Uses QueryBuilder with whitelisted sort fields (prevents SQL injection)
@@ -478,6 +462,7 @@ export class ProjectService {
    * console.log(result.total);        // 45 total projects
    */
   async findAll(
+    tenantId: number,
     filters?:
       | string
       | { status?: string; search?: string; sort_by?: string; sort_order?: 'ASC' | 'DESC' },
@@ -486,9 +471,9 @@ export class ProjectService {
   ): Promise<ProjectDto[] | { data: ProjectDto[]; total: number }> {
     // Handle both old string userId format and new filter object format
     if (typeof filters === 'string') {
-      return this.findAllByUser(filters);
+      return this.findAllByUser(tenantId, filters);
     }
-    return this.findAllWithFilters(filters, page, limit);
+    return this.findAllWithFilters(tenantId, filters, page, limit);
   }
 
   /**
@@ -514,14 +499,13 @@ export class ProjectService {
    * const projects = await service.findAllByUser('999');
    * console.log(projects.length);  // 0
    *
-   * // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-   * // query.andWhere('p.empresa_id = :tenantId', { tenantId })
    */
-  async findAllByUser(userId?: string): Promise<ProjectDto[]> {
+  async findAllByUser(tenantId: number, userId?: string): Promise<ProjectDto[]> {
     try {
       let query = this.repository
         .createQueryBuilder('p')
         .where('p.isActive = :isActive', { isActive: true })
+        .andWhere('p.companyId = :tenantId', { tenantId })
         .orderBy('p.nombre', 'ASC');
 
       if (userId) {
@@ -588,10 +572,9 @@ export class ProjectService {
    * );
    * console.log(result.data[0].presupuesto);  // 10000000 (highest budget)
    *
-   * // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-   * // query.andWhere('p.empresa_id = :tenantId', { tenantId })
    */
   async findAllWithFilters(
+    tenantId: number,
     filters?: {
       status?: string;
       search?: string;
@@ -604,7 +587,8 @@ export class ProjectService {
     try {
       const query = this.repository
         .createQueryBuilder('p')
-        .where('p.isActive = :isActive', { isActive: true });
+        .where('p.isActive = :isActive', { isActive: true })
+        .andWhere('p.companyId = :tenantId', { tenantId });
 
       if (filters?.status) {
         query.andWhere('p.estado = :status', { status: filters.status });
@@ -699,13 +683,11 @@ export class ProjectService {
    *   console.error(error.message);  // "Project not found"
    * }
    *
-   * // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-   * // where: { id: parseInt(projectId), isActive: true, empresa_id: tenantId }
    */
-  async findById(projectId: string): Promise<ProjectDto | null> {
+  async findById(tenantId: number, projectId: string): Promise<ProjectDto | null> {
     try {
       const project = await this.repository.findOne({
-        where: { id: parseInt(projectId), isActive: true },
+        where: { id: parseInt(projectId), isActive: true, companyId: tenantId },
         relations: ['creator', 'updater'],
       });
 
@@ -763,13 +745,11 @@ export class ProjectService {
    *   console.error(error.message);  // "Project not found"
    * }
    *
-   * // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-   * // where: { codigo: code, isActive: true, empresa_id: tenantId }
    */
-  async findByCode(code: string): Promise<ProjectDto | null> {
+  async findByCode(tenantId: number, code: string): Promise<ProjectDto | null> {
     try {
       const project = await this.repository.findOne({
-        where: { codigo: code, isActive: true },
+        where: { codigo: code, isActive: true, companyId: tenantId },
         relations: ['creator', 'updater'],
       });
 
@@ -854,10 +834,8 @@ export class ProjectService {
    *   console.error(error.message);  // "End date must be >= start date"
    * }
    *
-   * // TODO: [Phase 21 - Tenant Context] Set empresa_id from tenant context
-   * // projectData.empresa_id = tenantId
    */
-  async create(data: CreateProjectDto): Promise<ProjectDto> {
+  async create(tenantId: number, data: CreateProjectDto): Promise<ProjectDto> {
     try {
       // Map frontend camelCase fields to database snake_case Spanish columns
       // Support only Spanish snake_case (from API) replace English camelCase with Spanish snake_case
@@ -871,6 +849,7 @@ export class ProjectService {
         presupuesto: (data as any).presupuesto || data.budget || null,
         cliente: (data as any).cliente || data.client || null,
         estado: (data as any).estado || data.status || 'PLANIFICACION',
+        empresa_id: tenantId,
         is_active: true,
       };
 
@@ -882,9 +861,9 @@ export class ProjectService {
         ]);
       }
 
-      // Check codigo uniqueness
+      // Check codigo uniqueness within tenant
       const existingProject = await this.repository.findOne({
-        where: { codigo: projectData.codigo },
+        where: { codigo: projectData.codigo, companyId: tenantId },
       });
       if (existingProject) {
         throw new ConflictError(`Project with codigo '${projectData.codigo}' already exists`, {
@@ -1020,13 +999,11 @@ export class ProjectService {
    *   // "Project with codigo PRY-002 already exists"
    * }
    *
-   * // TODO: [Phase 21 - Tenant Context] Validate tenant context
-   * // Ensure user can only update projects in their tenant
    */
-  async update(projectId: string, data: UpdateProjectDto): Promise<ProjectDto> {
+  async update(tenantId: number, projectId: string, data: UpdateProjectDto): Promise<ProjectDto> {
     try {
       const project = await this.repository.findOne({
-        where: { id: parseInt(projectId) },
+        where: { id: parseInt(projectId), companyId: tenantId },
       });
 
       if (!project) {
@@ -1086,10 +1063,10 @@ export class ProjectService {
         ]);
       }
 
-      // Validate codigo uniqueness if being updated
+      // Validate codigo uniqueness if being updated (within tenant)
       if (updateData.codigo && updateData.codigo !== project.codigo) {
         const existingProject = await this.repository.findOne({
-          where: { codigo: updateData.codigo },
+          where: { codigo: updateData.codigo, companyId: tenantId },
         });
         if (existingProject) {
           throw new ConflictError(`Project with codigo '${updateData.codigo}' already exists`, {
@@ -1221,13 +1198,11 @@ export class ProjectService {
    *   // "Complete or cancel contracts first"
    * }
    *
-   * // TODO: [Phase 21 - Tenant Context] Validate tenant context
-   * // Ensure user can only delete projects in their tenant
    */
-  async delete(projectId: string): Promise<void> {
+  async delete(tenantId: number, projectId: string): Promise<void> {
     try {
       const project = await this.repository.findOne({
-        where: { id: parseInt(projectId) },
+        where: { id: parseInt(projectId), companyId: tenantId },
       });
 
       if (!project) {
@@ -1238,9 +1213,9 @@ export class ProjectService {
       const activeContracts = await AppDataSource.query(
         `
         SELECT COUNT(*) as count FROM contratos_alquiler
-        WHERE proyecto_id = $1 AND estado_contrato = 'ACTIVO'
+        WHERE proyecto_id = $1 AND estado_contrato = 'ACTIVO' AND tenant_id = $2
       `,
-        [projectId]
+        [projectId, tenantId]
       );
 
       if (parseInt(activeContracts[0].count) > 0) {
@@ -1260,9 +1235,9 @@ export class ProjectService {
       const pendingValuations = await AppDataSource.query(
         `
         SELECT COUNT(*) as count FROM valorizaciones_equipo
-        WHERE proyecto_id = $1 AND estado = 'PENDIENTE'
+        WHERE proyecto_id = $1 AND estado = 'PENDIENTE' AND tenant_id = $2
       `,
-        [projectId]
+        [projectId, tenantId]
       );
 
       if (parseInt(pendingValuations[0].count) > 0) {
@@ -1342,10 +1317,13 @@ export class ProjectService {
    *   console.error(error.message);  // "User already assigned to this project"
    * }
    *
-   * // TODO: [Phase 21 - Tenant Context] Validate tenant context
-   * // Ensure user and project belong to same empresa_id
    */
-  async assignUser(projectId: string, userId: string, _rolEnProyecto?: string): Promise<void> {
+  async assignUser(
+    tenantId: number,
+    projectId: string,
+    userId: string,
+    _rolEnProyecto?: string
+  ): Promise<void> {
     try {
       // Check if table exists first (legacy database support)
       const tableCheck = await AppDataSource.query(`
@@ -1429,10 +1407,8 @@ export class ProjectService {
    * // Not found - succeeds silently (no error)
    * await service.unassignUser('123', '999');  // No assignment exists
    *
-   * // TODO: [Phase 21 - Tenant Context] Validate tenant context
-   * // Ensure user and project belong to same empresa_id
    */
-  async unassignUser(projectId: string, userId: string): Promise<void> {
+  async unassignUser(_tenantId: number, projectId: string, userId: string): Promise<void> {
     try {
       // Check if table exists first (legacy database support)
       const tableCheck = await AppDataSource.query(`
@@ -1502,10 +1478,8 @@ export class ProjectService {
    * const users = await service.getProjectUsers('999');
    * console.log(users.length);  // 0
    *
-   * // TODO: [Phase 21 - Tenant Context] Validate tenant context
-   * // Ensure project belongs to user's tenant
    */
-  async getProjectUsers(projectId: string) {
+  async getProjectUsers(_tenantId: number, projectId: string) {
     try {
       // Check if table exists first (legacy database support)
       const tableCheck = await AppDataSource.query(`
@@ -1559,11 +1533,15 @@ export class ProjectService {
     }
   }
 
-  async getStats(filters?: { startDate?: string; endDate?: string }): Promise<StatsSummaryDto> {
+  async getStats(
+    tenantId: number,
+    filters?: { startDate?: string; endDate?: string }
+  ): Promise<StatsSummaryDto> {
     try {
       const query = this.repository
         .createQueryBuilder('p')
-        .where('p.isActive = :isActive', { isActive: true });
+        .where('p.isActive = :isActive', { isActive: true })
+        .andWhere('p.companyId = :tenantId', { tenantId });
 
       if (filters?.startDate) {
         query.andWhere('p.createdAt >= :startDate', { startDate: new Date(filters.startDate) });

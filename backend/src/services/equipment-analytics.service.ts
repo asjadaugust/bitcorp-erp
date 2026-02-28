@@ -107,7 +107,7 @@ export interface MaintenanceMetrics {
  * ### 6. Maintenance Metrics ⚠️ STUB
  * - **Method**: `getMaintenanceMetrics()`
  * - **Status**: Returns mock data (maintenance tracking not implemented)
- * - **TODO**: Implement when maintenance_records table is created
+ * - Implement when maintenance_records table is created
  *
  * ## Business Rules
  *
@@ -136,37 +136,31 @@ export interface MaintenanceMetrics {
  * - **Usage**: Cost calculation for all equipment (cost = hours * rate)
  * - **Limitation**: Hardcoded, not per-equipment or configurable
  * - **Reason**: Equipment table has no `tarifa` (hourly_rate) field
- * - **TODO**: Add equipment-specific rates or company-wide configuration
  *
  * ### FUEL_PRICE_PER_GALLON = 3.5
  * - **Usage**: Fuel cost calculation (cost = gallons * price)
  * - **Limitation**: Hardcoded, not market-adjusted or time-based
- * - **TODO**: Add fuel price configuration or historical pricing
  *
- * ## Known Limitations & TODOs
+ * ## Known Limitations
  *
  * ### 1. Maintenance is a Stub
  * - `getMaintenanceMetrics()` returns mock data (not real database queries)
  * - Maintenance tracking not yet implemented in database
  * - Method preserved to maintain API contract
- * - **Phase 21**: Implement maintenance_records table and real queries
  *
  * ### 2. Project ID Parameter Ignored
  * - Methods accept `projectId` parameter but it's not used
- * - **Reason**: Equipment table has no `project_id` field
+ * - Equipment table has no `project_id` field
  * - Equipment-project relationship tracked via assignments, not direct FK
- * - **Phase 21**: Implement project-based filtering via assignment joins
  *
  * ### 3. Constants are Hardcoded
  * - Hourly rate and fuel price are static constants
  * - No per-equipment rates or time-based pricing
- * - **Phase 21**: Add configuration system for dynamic rates
  *
  * ### 4. No Caching
  * - Fleet queries call `getEquipmentUtilization()` for each equipment
  * - For 50 equipment = 100+ database queries (2 queries per equipment)
- * - **Performance Impact**: Fleet metrics are expensive for large fleets
- * - **Phase 21**: Implement Redis caching or query optimization
+ * - Performance impact: Fleet metrics are expensive for large fleets
  *
  * ## Data Sources
  *
@@ -326,9 +320,9 @@ export interface MaintenanceMetrics {
  *
  * ## Security & Multi-Tenancy
  *
- * - **Tenant Context**: Inherited from repository (AppDataSource)
+ * - **Tenant Context**: All queries filter by tenantId parameter
  * - **Access Control**: Enforced at controller/route level
- * - **Data Isolation**: TypeORM ensures company-specific queries
+ * - **Data Isolation**: tenantId filter applied to Equipment and DailyReport queries
  *
  * @class EquipmentAnalyticsService
  * @since Phase 3.10 (TypeORM migration)
@@ -464,6 +458,7 @@ export class EquipmentAnalyticsService {
    * @see {@link getFleetUtilization} for fleet-wide metrics
    */
   async getEquipmentUtilization(
+    tenantId: number,
     equipmentId: number,
     startDate: Date,
     endDate: Date
@@ -496,7 +491,7 @@ export class EquipmentAnalyticsService {
     try {
       // Get equipment details
       const equipment = await this.equipmentRepository.findOne({
-        where: { id: equipmentId },
+        where: { id: equipmentId, tenantId },
       });
 
       if (!equipment) {
@@ -507,6 +502,7 @@ export class EquipmentAnalyticsService {
       const reports = await this.dailyReportRepository.find({
         where: {
           equipoId: equipmentId,
+          tenantId,
         },
         select: ['horasTrabajadas', 'fecha'],
       });
@@ -674,6 +670,7 @@ export class EquipmentAnalyticsService {
    * @see {@link getFuelTrend} for fuel consumption trend
    */
   async getUtilizationTrend(
+    tenantId: number,
     equipmentId: number,
     startDate: Date,
     endDate: Date
@@ -705,7 +702,7 @@ export class EquipmentAnalyticsService {
 
     try {
       const equipment = await this.equipmentRepository.findOne({
-        where: { id: equipmentId },
+        where: { id: equipmentId, tenantId },
       });
 
       if (!equipment) {
@@ -718,6 +715,7 @@ export class EquipmentAnalyticsService {
         .select('pd.fecha', 'fecha')
         .addSelect('SUM(pd.horas_trabajadas)', 'horas_trabajadas')
         .where('pd.equipo_id = :equipmentId', { equipmentId })
+        .andWhere('pd.tenantId = :tenantId', { tenantId })
         .andWhere('pd.fecha >= :startDate', { startDate })
         .andWhere('pd.fecha <= :endDate', { endDate })
         .groupBy('pd.fecha')
@@ -836,20 +834,17 @@ export class EquipmentAnalyticsService {
    *
    * ## Known Limitations
    *
-   * ### 1. projectId Parameter Ignored ⚠️
+   * ### 1. projectId Parameter Ignored
    * - Method accepts `projectId` parameter but doesn't use it
-   * - **Reason**: Equipment table has no `project_id` field
-   * - **Workaround**: Equipment-project relationship via assignments (not direct FK)
-   * - **TODO Phase 21**: Implement project filtering via JOIN on assignments table
+   * - Equipment table has no `project_id` field
+   * - Equipment-project relationship via assignments (not direct FK)
    *
    * ### 2. No Caching
    * - Recalculates all metrics on every call
    * - No Redis/in-memory cache
-   * - **TODO Phase 21**: Add caching with 1-hour TTL
    *
    * ### 3. Query Optimization Needed
    * - Current: N+1 query pattern (1 + 2N queries)
-   * - **TODO Phase 21**: Rewrite as single query with JOINs and aggregations
    *
    * ## TypeORM Migration (Phase 3.10)
    * - **Before**: Raw pool.query() for equipment list
@@ -927,6 +922,7 @@ export class EquipmentAnalyticsService {
    * @see {@link DashboardService.getFleetOverview} for dashboard integration
    */
   async getFleetUtilization(
+    tenantId: number,
     startDate: Date,
     endDate: Date,
     _projectId?: number // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -963,7 +959,7 @@ export class EquipmentAnalyticsService {
       // For now, ignoring projectId parameter
 
       const allEquipment = await this.equipmentRepository.find({
-        where: { isActive: true },
+        where: { isActive: true, tenantId },
         select: ['id', 'codigoEquipo'],
       });
 
@@ -971,7 +967,7 @@ export class EquipmentAnalyticsService {
 
       // Get utilization for each equipment
       const utilizationPromises = allEquipment.map((eq) =>
-        this.getEquipmentUtilization(eq.id, startDate, endDate)
+        this.getEquipmentUtilization(tenantId, eq.id, startDate, endDate)
       );
 
       const utilizationMetrics = await Promise.all(utilizationPromises);
@@ -1164,7 +1160,12 @@ export class EquipmentAnalyticsService {
    * @see {@link getFuelTrend} for daily fuel consumption breakdown
    * @see {@link getEquipmentUtilization} for operational hours context
    */
-  async getFuelMetrics(equipmentId: number, startDate: Date, endDate: Date): Promise<FuelMetrics> {
+  async getFuelMetrics(
+    tenantId: number,
+    equipmentId: number,
+    startDate: Date,
+    endDate: Date
+  ): Promise<FuelMetrics> {
     // Validate date range
     if (startDate >= endDate) {
       throw new ValidationError('Invalid date range', [
@@ -1196,6 +1197,7 @@ export class EquipmentAnalyticsService {
         .select('SUM(pd.combustible_consumido)', 'total_fuel')
         .addSelect('SUM(pd.horas_trabajadas)', 'total_hours')
         .where('pd.equipo_id = :equipmentId', { equipmentId })
+        .andWhere('pd.tenantId = :tenantId', { tenantId })
         .andWhere('pd.fecha >= :startDate', { startDate })
         .andWhere('pd.fecha <= :endDate', { endDate })
         .getRawOne();
@@ -1370,7 +1372,12 @@ export class EquipmentAnalyticsService {
    * @see {@link getFuelMetrics} for period-aggregated fuel metrics
    * @see {@link getUtilizationTrend} for utilization comparison
    */
-  async getFuelTrend(equipmentId: number, startDate: Date, endDate: Date): Promise<FuelTrend[]> {
+  async getFuelTrend(
+    tenantId: number,
+    equipmentId: number,
+    startDate: Date,
+    endDate: Date
+  ): Promise<FuelTrend[]> {
     // Validate date range
     if (startDate >= endDate) {
       throw new ValidationError('Invalid date range', [
@@ -1403,6 +1410,7 @@ export class EquipmentAnalyticsService {
         .addSelect('SUM(pd.combustible_consumido)', 'fuel_consumed')
         .addSelect('SUM(pd.horas_trabajadas)', 'hours_worked')
         .where('pd.equipo_id = :equipmentId', { equipmentId })
+        .andWhere('pd.tenantId = :tenantId', { tenantId })
         .andWhere('pd.fecha >= :startDate', { startDate })
         .andWhere('pd.fecha <= :endDate', { endDate })
         .groupBy('pd.fecha')
@@ -1486,7 +1494,7 @@ export class EquipmentAnalyticsService {
    * }
    * ```
    *
-   * ## TODO: Phase 21 Implementation
+   * ## Future Implementation
    *
    * ### Database Schema Required
    * ```sql
@@ -1540,9 +1548,6 @@ export class EquipmentAnalyticsService {
    * - **Next**: Implement with maintenance_records entity when table created
    *
    * @stub This method returns mock data. Real implementation pending maintenance system.
-   * @todo Implement maintenance_records table and entity (Phase 21)
-   * @todo Add maintenance scheduling logic
-   * @todo Integrate with work order system
    *
    * @param equipmentId - Equipment ID to analyze
    * @param _startDate - **IGNORED** - Period start date (not used in stub)
@@ -1598,7 +1603,6 @@ export class EquipmentAnalyticsService {
     _endDate: Date // eslint-disable-line @typescript-eslint/no-unused-vars
   ): Promise<MaintenanceMetrics> {
     // Return mock data - maintenance tracking not yet implemented
-    // TODO: Implement when maintenance_records table/entity is created
 
     logger.info('Maintenance metrics returned (stub)', {
       equipment_id: equipmentId,

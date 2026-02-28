@@ -41,25 +41,25 @@ describe('ProviderFinancialInfoService', () => {
     });
   });
 
-  describe('Method Signatures', () => {
-    it('findByProviderId should accept 1 parameter', () => {
-      expect(service.findByProviderId.length).toBe(1);
+  describe('Method Signatures (all methods require tenantId as first param)', () => {
+    it('findByProviderId should accept tenantId and providerId (2 parameters)', () => {
+      expect(service.findByProviderId.length).toBe(2);
     });
 
-    it('findById should accept 1 parameter', () => {
-      expect(service.findById.length).toBe(1);
+    it('findById should accept tenantId and id (2 parameters)', () => {
+      expect(service.findById.length).toBe(2);
     });
 
-    it('create should accept 1 parameter', () => {
-      expect(service.create.length).toBe(1);
+    it('create should accept tenantId and data (2 parameters)', () => {
+      expect(service.create.length).toBe(2);
     });
 
-    it('update should accept 2 parameters', () => {
-      expect(service.update.length).toBe(2);
+    it('update should accept tenantId, id and data (3 parameters)', () => {
+      expect(service.update.length).toBe(3);
     });
 
-    it('delete should accept 1 parameter', () => {
-      expect(service.delete.length).toBe(1);
+    it('delete should accept tenantId and id (2 parameters)', () => {
+      expect(service.delete.length).toBe(2);
     });
   });
 

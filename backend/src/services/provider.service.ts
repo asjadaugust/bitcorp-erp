@@ -22,10 +22,10 @@ import { NotFoundError, ValidationError, ConflictError, DatabaseError } from '..
  * - Return DTOs (not raw entities)
  * - Comprehensive logging (info + error)
  * - Business rule documentation
- * - Tenant context deferred (Phase 21 - Provider model lacks tenant_id field)
+ * - Multi-tenant isolation via tenantId parameter
  *
  * Business Rules:
- * - RUC must be unique across system (future: unique per tenant)
+ * - RUC must be unique per tenant
  * - RUC must be exactly 11 digits (validated in DTO)
  * - razon_social is required
  * - tipo_proveedor must be: EQUIPOS, MATERIALES, SERVICIOS, or MIXTO
@@ -42,7 +42,7 @@ export class ProviderService {
     }
     return AppDataSource.getRepository(Provider);
   }
-  
+
   private get auditLogRepository(): Repository<ProviderAuditLog> {
     if (!AppDataSource.isInitialized) {
       throw new DatabaseError('Database connection not established');
@@ -59,22 +59,17 @@ export class ProviderService {
    * - Filters by tipo_proveedor if provided
    * - Sortable by: razon_social, ruc, nombre_comercial, tipo_proveedor, created_at, updated_at
    * - Returns paginated results with total count
+   * - Filtered by tenant_id for multi-tenant isolation
    *
-   * TODO: Add tenant_id filter when schema updated (Phase 21)
-   * Current: No tenant isolation (all providers visible)
-   * Should be: WHERE provider.tenant_id = :tenantId
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param filters - Optional filters (search, is_active, tipo_proveedor, sort_by, sort_order)
    * @param page - Page number (1-indexed, default: 1)
    * @param limit - Items per page (default: 10)
    * @returns Paginated provider list with total count
    * @throws DatabaseError if query fails
-   *
-   * @example
-   * const result = await service.findAll({ search: 'ACME', tipo_proveedor: 'EQUIPOS' }, 1, 10);
-   * // Returns: { data: [ProviderDto, ...], total: 45 }
    */
   async findAll(
+    tenantId: number,
     filters?: {
       search?: string;
       is_active?: boolean;
@@ -88,11 +83,11 @@ export class ProviderService {
     try {
       const queryBuilder = this.providerRepository.createQueryBuilder('provider');
 
-      // TODO: Add tenant_id filter when schema updated
-      // queryBuilder.where('provider.tenant_id = :tenantId', { tenantId });
+      // Multi-tenant isolation
+      queryBuilder.where('provider.tenantId = :tenantId', { tenantId });
 
       // Apply is_active filter (default to true)
-      queryBuilder.where('provider.isActive = :isActive', {
+      queryBuilder.andWhere('provider.isActive = :isActive', {
         isActive: filters?.is_active ?? true,
       });
 
@@ -115,7 +110,7 @@ export class ProviderService {
       const sortBy = filters?.sort_by || 'razon_social';
       const sortOrder = filters?.sort_order || 'ASC';
 
-      // Valid sortable fields (snake_case API → entity property)
+      // Valid sortable fields (snake_case API -> entity property)
       const validSortFields: Record<string, string> = {
         razon_social: 'provider.razonSocial',
         ruc: 'provider.ruc',
@@ -145,6 +140,7 @@ export class ProviderService {
         filters,
         page,
         limit,
+        tenantId,
         context: 'ProviderService.findAll',
       });
 
@@ -156,6 +152,7 @@ export class ProviderService {
         filters,
         page,
         limit,
+        tenantId,
         context: 'ProviderService.findAll',
       });
       throw new DatabaseError('Failed to fetch providers');
@@ -168,29 +165,18 @@ export class ProviderService {
    * Business Rules:
    * - Returns provider regardless of is_active status
    * - Maps entity to DTO with Spanish field names
+   * - Filtered by tenant_id for multi-tenant isolation
    *
-   * TODO: Add tenant_id validation when schema updated (Phase 21)
-   * Current: No tenant validation
-   * Should be: WHERE provider.id = :id AND provider.tenant_id = :tenantId
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param id - Provider unique identifier
    * @returns ProviderDto with Spanish snake_case fields
    * @throws NotFoundError if provider doesn't exist
    * @throws DatabaseError if query fails
-   *
-   * @example
-   * const provider = await service.findById(456);
-   * // Returns: { id: 456, ruc: '12345678901', razon_social: 'ACME SAC', ... }
    */
-  async findById(id: number): Promise<ProviderDto> {
+  async findById(tenantId: number, id: number): Promise<ProviderDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated
-      // const provider = await this.providerRepository.findOne({
-      //   where: { id, tenant_id: tenantId },
-      // });
-
       const provider = await this.providerRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!provider) {
@@ -203,6 +189,7 @@ export class ProviderService {
         id,
         ruc: dto.ruc,
         razon_social: dto.razon_social,
+        tenantId,
         context: 'ProviderService.findById',
       });
 
@@ -216,6 +203,7 @@ export class ProviderService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         id,
+        tenantId,
         context: 'ProviderService.findById',
       });
       throw new DatabaseError('Failed to fetch provider');
@@ -229,28 +217,17 @@ export class ProviderService {
    * - RUC is unique identifier (11 digits)
    * - Returns provider regardless of is_active status
    * - Used for duplicate validation during create/update
+   * - Filtered by tenant_id (RUC unique per tenant)
    *
-   * TODO: Add tenant_id filter when schema updated (Phase 21)
-   * Current: No tenant isolation (RUC unique globally)
-   * Should be: WHERE provider.ruc = :ruc AND provider.tenant_id = :tenantId
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param ruc - Provider RUC (11 digits)
    * @returns ProviderDto if found, null otherwise
    * @throws DatabaseError if query fails
-   *
-   * @example
-   * const provider = await service.findByRuc('12345678901');
-   * // Returns: ProviderDto or null
    */
-  async findByRuc(ruc: string): Promise<ProviderDto | null> {
+  async findByRuc(tenantId: number, ruc: string): Promise<ProviderDto | null> {
     try {
-      // TODO: Add tenant_id filter when schema updated
-      // const provider = await this.providerRepository.findOne({
-      //   where: { ruc, tenant_id: tenantId },
-      // });
-
       const provider = await this.providerRepository.findOne({
-        where: { ruc },
+        where: { ruc, tenantId },
       });
 
       if (!provider) {
@@ -263,6 +240,7 @@ export class ProviderService {
         ruc,
         id: dto.id,
         razon_social: dto.razon_social,
+        tenantId,
         context: 'ProviderService.findByRuc',
       });
 
@@ -272,6 +250,7 @@ export class ProviderService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         ruc,
+        tenantId,
         context: 'ProviderService.findByRuc',
       });
       throw new DatabaseError('Failed to fetch provider by RUC');
@@ -284,43 +263,32 @@ export class ProviderService {
    * Business Rules:
    * - RUC must be exactly 11 digits (validated in DTO)
    * - razon_social is required
-   * - RUC must be unique (future: unique per tenant)
+   * - RUC must be unique per tenant
    * - tipo_proveedor must be: EQUIPOS, MATERIALES, SERVICIOS, or MIXTO
    * - New providers default to is_active = true
+   * - tenant_id is set from authenticated user context
    *
    * Validation:
    * - DTO validation runs before this method (class-validator)
-   * - Service validates RUC uniqueness
+   * - Service validates RUC uniqueness per tenant
    * - Service validates required fields (defense in depth)
    *
-   * TODO: Add tenant_id to provider data when schema updated (Phase 21)
-   * Current: No tenant_id assignment
-   * Should be: providerData.tenant_id = tenantId
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param data - Provider creation data (ProviderCreateDto)
    * @returns Created provider as ProviderDto
    * @throws ValidationError if required fields missing
    * @throws ConflictError if RUC already exists
    * @throws DatabaseError if save fails
-   *
-   * @example
-   * const provider = await service.create({
-   *   ruc: '12345678901',
-   *   razon_social: 'ACME SAC',
-   *   tipo_proveedor: 'EQUIPOS',
-   *   correo_electronico: 'contact@acme.com'
-   * });
    */
-  async create(data: ProviderCreateDto): Promise<ProviderDto> {
+  async create(tenantId: number, data: ProviderCreateDto): Promise<ProviderDto> {
     try {
       // Validate required fields (defense in depth - DTO validation should catch this first)
       if (!data.ruc || !data.razon_social) {
         throw new ValidationError('ruc and razon_social are required');
       }
 
-      // Check if RUC already exists
-      // TODO: Add tenant_id to uniqueness check when schema updated
-      const existing = await this.findByRuc(data.ruc);
+      // Check if RUC already exists within this tenant
+      const existing = await this.findByRuc(tenantId, data.ruc);
       if (existing) {
         throw new ConflictError(`Provider with RUC '${data.ruc}' already exists`, {
           field: 'ruc',
@@ -340,10 +308,8 @@ export class ProviderService {
         is_active: data.is_active ?? true,
       };
 
-      // TODO: Add tenant_id when schema updated
-      // providerData.tenant_id = tenantId;
-
       const entity = this.providerRepository.create(fromProviderDto(providerData));
+      entity.tenantId = tenantId;
       const saved = await this.providerRepository.save(entity);
       const dto = toProviderDto(saved);
 
@@ -352,6 +318,7 @@ export class ProviderService {
         ruc: dto.ruc,
         razon_social: dto.razon_social,
         tipo_proveedor: dto.tipo_proveedor,
+        tenantId,
         context: 'ProviderService.create',
       });
 
@@ -361,7 +328,6 @@ export class ProviderService {
           providerId: dto.id,
           action: 'CREATE',
           observations: `Proveedor ${dto.razon_social} creado`,
-          // userId: userId // TODO: Get from context in Phase 2
         });
       } catch (logError) {
         Logger.error('Failed to save provider audit log (CREATE)', { error: String(logError) });
@@ -377,6 +343,7 @@ export class ProviderService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         ruc: data.ruc,
+        tenantId,
         context: 'ProviderService.create',
       });
       throw new DatabaseError('Failed to create provider');
@@ -388,46 +355,32 @@ export class ProviderService {
    *
    * Business Rules:
    * - Can update all fields except id and tenant_id
-   * - If updating RUC, must be unique (future: unique per tenant)
+   * - If updating RUC, must be unique per tenant
    * - Must preserve legacy_id if present
    * - Only fields provided in update data are changed
+   * - Validates provider belongs to tenant before update
    *
-   * TODO: Add tenant_id validation when schema updated (Phase 21)
-   * Current: No tenant validation
-   * Should be: Validate provider belongs to tenant before update
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param id - Provider unique identifier
    * @param data - Partial provider update data
    * @returns Updated provider as ProviderDto
    * @throws NotFoundError if provider doesn't exist
    * @throws ConflictError if updated RUC already exists
    * @throws DatabaseError if update fails
-   *
-   * @example
-   * const updated = await service.update(456, {
-   *   razon_social: 'ACME SAC Updated',
-   *   telefono: '987654321'
-   * });
    */
-  async update(id: number, data: ProviderUpdateDto): Promise<ProviderDto> {
+  async update(tenantId: number, id: number, data: ProviderUpdateDto): Promise<ProviderDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated
-      // const provider = await this.providerRepository.findOne({
-      //   where: { id, tenant_id: tenantId },
-      // });
-
       const provider = await this.providerRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!provider) {
         throw new NotFoundError('Provider', id);
       }
 
-      // If updating RUC, check it doesn't exist for another provider
-      // TODO: Add tenant_id to uniqueness check when schema updated
+      // If updating RUC, check it doesn't exist for another provider in this tenant
       if (data.ruc && data.ruc !== provider.ruc) {
-        const existing = await this.findByRuc(data.ruc);
+        const existing = await this.findByRuc(tenantId, data.ruc);
         if (existing && existing.id !== id) {
           throw new ConflictError(`Provider with RUC '${data.ruc}' already exists`, {
             field: 'ruc',
@@ -460,6 +413,7 @@ export class ProviderService {
         ruc: dto.ruc,
         razon_social: dto.razon_social,
         updated_fields: Object.keys(updateData),
+        tenantId,
         context: 'ProviderService.update',
       });
 
@@ -469,25 +423,25 @@ export class ProviderService {
         for (const [field, newValue] of Object.entries(updateData)) {
           // Simplified audit log for now: one entry for the update
           if (field === 'is_active') {
-             auditLogs.push({
-               providerId: id,
-               action: newValue ? 'ACTIVATE' : 'DEACTIVATE',
-               field: 'is_active',
-               oldValue: (!newValue).toString(),
-               newValue: newValue.toString(),
-               observations: `Estado cambiado a ${newValue ? 'Activo' : 'Inactivo'}`
-             });
+            auditLogs.push({
+              providerId: id,
+              action: newValue ? 'ACTIVATE' : 'DEACTIVATE',
+              field: 'is_active',
+              oldValue: (!newValue).toString(),
+              newValue: newValue.toString(),
+              observations: `Estado cambiado a ${newValue ? 'Activo' : 'Inactivo'}`,
+            });
           }
         }
-        
+
         if (auditLogs.length === 0) {
           auditLogs.push({
             providerId: id,
             action: 'UPDATE',
-            observations: `Datos del proveedor actualizados: ${Object.keys(updateData).join(', ')}`
+            observations: `Datos del proveedor actualizados: ${Object.keys(updateData).join(', ')}`,
           });
         }
-        
+
         await this.auditLogRepository.save(auditLogs);
       } catch (logError) {
         Logger.error('Failed to save provider audit log (UPDATE)', { error: String(logError) });
@@ -503,6 +457,7 @@ export class ProviderService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         id,
+        tenantId,
         context: 'ProviderService.update',
       });
       throw new DatabaseError('Failed to update provider');
@@ -515,52 +470,25 @@ export class ProviderService {
    * Business Rules:
    * - Soft delete only (sets is_active = false)
    * - No hard deletes allowed (preserve audit trail)
+   * - Validates provider belongs to tenant before delete
    * - Should validate no active contracts before deletion (not implemented yet)
    *
-   * TODO: Add tenant_id validation when schema updated (Phase 21)
-   * Current: No tenant validation
-   * Should be: Validate provider belongs to tenant before delete
-   *
-   * TODO: Add active contracts validation (future enhancement)
-   * Should check: No contracts with estado_contrato IN ('ACTIVO', 'LEGALIZADO')
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param id - Provider unique identifier
    * @returns true if deleted successfully
    * @throws NotFoundError if provider doesn't exist
    * @throws DatabaseError if delete fails
-   *
-   * @example
-   * const success = await service.delete(456);
-   * // Returns: true
    */
-  async delete(id: number): Promise<boolean> {
+  async delete(tenantId: number, id: number): Promise<boolean> {
     try {
-      // TODO: Add tenant_id filter when schema updated
-      // const provider = await this.providerRepository.findOne({
-      //   where: { id, tenant_id: tenantId },
-      // });
-
-      // Verify provider exists before soft delete
+      // Verify provider exists and belongs to this tenant before soft delete
       const provider = await this.providerRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!provider) {
         throw new NotFoundError('Provider', id);
       }
-
-      // TODO: Validate no active contracts (future enhancement)
-      // const activeContracts = await contractRepository.count({
-      //   where: {
-      //     id_proveedor: id,
-      //     estado_contrato: In(['ACTIVO', 'LEGALIZADO']),
-      //   },
-      // });
-      // if (activeContracts > 0) {
-      //   throw new BusinessRuleError(
-      //     `Cannot delete provider with ${activeContracts} active contracts`
-      //   );
-      // }
 
       // Soft delete
       await this.providerRepository.update(id, {
@@ -571,6 +499,7 @@ export class ProviderService {
         id,
         ruc: provider.ruc,
         razon_social: provider.razonSocial,
+        tenantId,
         context: 'ProviderService.delete',
       });
 
@@ -582,7 +511,7 @@ export class ProviderService {
           field: 'is_active',
           oldValue: 'true',
           newValue: 'false',
-          observations: 'Proveedor desactivado (soft delete)'
+          observations: 'Proveedor desactivado (soft delete)',
         });
       } catch (logError) {
         Logger.error('Failed to save provider audit log (DELETE)', { error: String(logError) });
@@ -598,6 +527,7 @@ export class ProviderService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         id,
+        tenantId,
         context: 'ProviderService.delete',
       });
       throw new DatabaseError('Failed to delete provider');
@@ -611,31 +541,20 @@ export class ProviderService {
    * - Returns only active providers (is_active = true)
    * - tipo_proveedor must be: EQUIPOS, MATERIALES, SERVICIOS, or MIXTO
    * - Results sorted by razon_social ascending
+   * - Filtered by tenant_id for multi-tenant isolation
    *
-   * TODO: Add tenant_id filter when schema updated (Phase 21)
-   * Current: No tenant isolation
-   * Should be: WHERE tipo_proveedor = :tipo AND tenant_id = :tenantId
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param tipo - Provider type (EQUIPOS, MATERIALES, SERVICIOS, MIXTO)
    * @returns Array of providers matching type
    * @throws DatabaseError if query fails
-   *
-   * @example
-   * const equipmentProviders = await service.findByType('EQUIPOS');
-   * // Returns: [ProviderDto, ...]
    */
-  async findByType(tipo: TipoProveedor): Promise<ProviderDto[]> {
+  async findByType(tenantId: number, tipo: TipoProveedor): Promise<ProviderDto[]> {
     try {
-      // TODO: Add tenant_id filter when schema updated
-      // const providers = await this.providerRepository.find({
-      //   where: { tipo_proveedor: tipo, is_active: true, tenant_id: tenantId },
-      //   order: { razon_social: 'ASC' },
-      // });
-
       const providers = await this.providerRepository.find({
         where: {
           tipoProveedor: tipo,
           isActive: true,
+          tenantId,
         },
         order: { razonSocial: 'ASC' },
       });
@@ -645,6 +564,7 @@ export class ProviderService {
       Logger.info('Providers fetched by type', {
         tipo,
         count: data.length,
+        tenantId,
         context: 'ProviderService.findByType',
       });
 
@@ -654,6 +574,7 @@ export class ProviderService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         tipo,
+        tenantId,
         context: 'ProviderService.findByType',
       });
       throw new DatabaseError('Failed to fetch providers by type');
@@ -666,31 +587,21 @@ export class ProviderService {
    * Business Rules:
    * - Counts only active providers (is_active = true)
    * - Used for dashboard statistics
+   * - Filtered by tenant_id for multi-tenant isolation
    *
-   * TODO: Add tenant_id filter when schema updated (Phase 21)
-   * Current: No tenant isolation
-   * Should be: WHERE is_active = true AND tenant_id = :tenantId
-   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @returns Total count of active providers
    * @throws DatabaseError if query fails
-   *
-   * @example
-   * const count = await service.getActiveCount();
-   * // Returns: 45
    */
-  async getActiveCount(): Promise<number> {
+  async getActiveCount(tenantId: number): Promise<number> {
     try {
-      // TODO: Add tenant_id filter when schema updated
-      // const count = await this.providerRepository.count({
-      //   where: { is_active: true, tenant_id: tenantId },
-      // });
-
       const count = await this.providerRepository.count({
-        where: { isActive: true },
+        where: { isActive: true, tenantId },
       });
 
       Logger.info('Active providers counted', {
         count,
+        tenantId,
         context: 'ProviderService.getActiveCount',
       });
 
@@ -699,6 +610,7 @@ export class ProviderService {
       Logger.error('Error counting providers', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
+        tenantId,
         context: 'ProviderService.getActiveCount',
       });
       throw new DatabaseError('Failed to count active providers');
@@ -707,17 +619,32 @@ export class ProviderService {
 
   /**
    * Get audit logs for a provider
+   *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
+   * @param providerId - Provider ID to get logs for
    */
-  async getLogs(providerId: number): Promise<ProviderAuditLog[]> {
+  async getLogs(tenantId: number, providerId: number): Promise<ProviderAuditLog[]> {
     try {
+      // Verify the provider belongs to this tenant first
+      const provider = await this.providerRepository.findOne({
+        where: { id: providerId, tenantId },
+      });
+      if (!provider) {
+        throw new NotFoundError('Provider', providerId);
+      }
+
       return await this.auditLogRepository.find({
         where: { providerId },
         order: { createdAt: 'DESC' },
         relations: ['user'],
       });
     } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
       Logger.error('Error fetching provider logs', {
         providerId,
+        tenantId,
         error: error instanceof Error ? error.message : String(error),
         context: 'ProviderService.getLogs',
       });

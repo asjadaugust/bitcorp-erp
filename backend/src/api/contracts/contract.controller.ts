@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth.middleware';
 import { ContractService } from '../../services/contract.service';
 import { puppeteerPdfService } from '../../services/puppeteer-pdf.service';
@@ -18,8 +18,9 @@ export class ContractController {
    * GET /api/contracts
    * Get all contracts with optional filters, pagination, and sorting
    */
-  static async getAll(req: Request, res: Response): Promise<void> {
+  static async getAll(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const {
         search,
         estado,
@@ -48,7 +49,7 @@ export class ContractController {
       const pageNum = parseInt(page as string) || 1;
       const limitNum = Math.min(parseInt(limit as string) || 10, 100);
 
-      const { data, total } = await contractService.findAll(filters, pageNum, limitNum);
+      const { data, total } = await contractService.findAll(tenantId, filters, pageNum, limitNum);
 
       sendPaginatedSuccess(res, data, { page: pageNum, limit: limitNum, total });
     } catch (error: any) {
@@ -65,8 +66,9 @@ export class ContractController {
    * GET /api/contracts/:id
    * Get contract by ID
    */
-  static async getById(req: Request, res: Response): Promise<void> {
+  static async getById(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -74,7 +76,7 @@ export class ContractController {
         return;
       }
 
-      const contract = await contractService.findById(id);
+      const contract = await contractService.findById(tenantId, id);
 
       sendSuccess(res, contract);
     } catch (error: any) {
@@ -157,8 +159,9 @@ export class ContractController {
    * PUT /api/contracts/:id
    * Update contract
    */
-  static async update(req: Request, res: Response): Promise<void> {
+  static async update(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -166,7 +169,7 @@ export class ContractController {
         return;
       }
 
-      const contract = await contractService.update(id, req.body);
+      const contract = await contractService.update(tenantId, id, req.body);
 
       sendSuccess(res, contract);
     } catch (error: any) {
@@ -190,8 +193,9 @@ export class ContractController {
    * DELETE /api/contracts/:id
    * Cancel contract (soft delete)
    */
-  static async delete(req: Request, res: Response): Promise<void> {
+  static async delete(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -199,7 +203,7 @@ export class ContractController {
         return;
       }
 
-      await contractService.delete(id);
+      await contractService.delete(tenantId, id);
 
       res.status(204).send();
     } catch (error: any) {
@@ -217,8 +221,9 @@ export class ContractController {
    * GET /api/contracts/:id/addendums
    * Get all addendums for a contract
    */
-  static async getAddendums(req: Request, res: Response): Promise<void> {
+  static async getAddendums(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
 
       if (isNaN(contractId)) {
@@ -226,7 +231,7 @@ export class ContractController {
         return;
       }
 
-      const addendums = await contractService.getAddendums(contractId);
+      const addendums = await contractService.getAddendums(tenantId, contractId);
 
       sendSuccess(res, addendums);
     } catch (error: any) {
@@ -271,8 +276,9 @@ export class ContractController {
   /**
    * GET /api/contracts/:id/annexes
    */
-  static async getAnnexes(req: Request, res: Response): Promise<void> {
+  static async getAnnexes(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       if (isNaN(contractId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
@@ -280,7 +286,7 @@ export class ContractController {
       }
 
       const tipo = req.query.tipo as 'A' | 'B' | undefined;
-      const annexes = await contractService.getAnnexes(contractId, tipo);
+      const annexes = await contractService.getAnnexes(tenantId, contractId, tipo);
       sendSuccess(res, annexes);
     } catch (error: any) {
       Logger.error('Error in getAnnexes', {
@@ -294,8 +300,9 @@ export class ContractController {
   /**
    * PUT /api/contracts/:id/annexes/:tipo
    */
-  static async saveAnnexes(req: Request, res: Response): Promise<void> {
+  static async saveAnnexes(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       const tipo = req.params.tipo as 'A' | 'B';
 
@@ -309,7 +316,7 @@ export class ContractController {
       }
 
       const items = req.body.items || [];
-      const annexes = await contractService.saveAnnexes(contractId, tipo, items);
+      const annexes = await contractService.saveAnnexes(tenantId, contractId, tipo, items);
       sendSuccess(res, annexes);
     } catch (error: any) {
       Logger.error('Error in saveAnnexes', {
@@ -329,15 +336,16 @@ export class ContractController {
   /**
    * GET /api/contracts/:id/required-documents
    */
-  static async getRequiredDocuments(req: Request, res: Response): Promise<void> {
+  static async getRequiredDocuments(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       if (isNaN(contractId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
 
-      const docs = await contractService.getRequiredDocuments(contractId);
+      const docs = await contractService.getRequiredDocuments(tenantId, contractId);
       sendSuccess(res, docs);
     } catch (error: any) {
       Logger.error('Error in getRequiredDocuments', {
@@ -357,15 +365,16 @@ export class ContractController {
   /**
    * POST /api/contracts/:id/required-documents/initialize
    */
-  static async initializeRequiredDocuments(req: Request, res: Response): Promise<void> {
+  static async initializeRequiredDocuments(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       if (isNaN(contractId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
 
-      const docs = await contractService.initializeRequiredDocuments(contractId);
+      const docs = await contractService.initializeRequiredDocuments(tenantId, contractId);
       sendSuccess(res, docs);
     } catch (error: any) {
       Logger.error('Error in initializeRequiredDocuments', {
@@ -389,15 +398,16 @@ export class ContractController {
   /**
    * PUT /api/contracts/required-documents/:docId
    */
-  static async updateRequiredDocument(req: Request, res: Response): Promise<void> {
+  static async updateRequiredDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const docId = parseInt(req.params.docId);
       if (isNaN(docId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid document ID');
         return;
       }
 
-      const doc = await contractService.updateRequiredDocument(docId, req.body);
+      const doc = await contractService.updateRequiredDocument(tenantId, docId, req.body);
       sendSuccess(res, doc);
     } catch (error: any) {
       Logger.error('Error in updateRequiredDocument', {
@@ -422,15 +432,16 @@ export class ContractController {
    * GET /api/contracts/:id/pdf
    * Genera el PDF del contrato CORP-GEM-F-001
    */
-  static async downloadPdf(req: Request, res: Response): Promise<void> {
+  static async downloadPdf(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
 
-      const contrato = await contractService.findById(id);
+      const contrato = await contractService.findById(tenantId, id);
 
       const datos = {
         contrato: {
@@ -514,14 +525,15 @@ export class ContractController {
   /**
    * GET /api/contracts/:id/obligaciones
    */
-  static async getObligaciones(req: Request, res: Response): Promise<void> {
+  static async getObligaciones(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       if (isNaN(contractId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
-      const items = await contractService.getObligaciones(contractId);
+      const items = await contractService.getObligaciones(tenantId, contractId);
       sendSuccess(res, items);
     } catch (error: any) {
       Logger.error('Error in getObligaciones', {
@@ -535,14 +547,15 @@ export class ContractController {
   /**
    * POST /api/contracts/:id/obligaciones/initialize
    */
-  static async initializeObligaciones(req: Request, res: Response): Promise<void> {
+  static async initializeObligaciones(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       if (isNaN(contractId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
-      const items = await contractService.initializeObligaciones(contractId);
+      const items = await contractService.initializeObligaciones(tenantId, contractId);
       sendSuccess(res, items);
     } catch (error: any) {
       Logger.error('Error in initializeObligaciones', {
@@ -566,15 +579,16 @@ export class ContractController {
   /**
    * PUT /api/contracts/obligaciones/:obligacionId
    */
-  static async updateObligacion(req: Request, res: Response): Promise<void> {
+  static async updateObligacion(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const obligacionId = parseInt(req.params.obligacionId);
       if (isNaN(obligacionId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid obligacion ID');
         return;
       }
       const { estado, fecha_compromiso, observaciones } = req.body;
-      const item = await contractService.updateObligacion(obligacionId, {
+      const item = await contractService.updateObligacion(tenantId, obligacionId, {
         estado,
         fechaCompromiso: fecha_compromiso,
         observaciones,
@@ -598,14 +612,15 @@ export class ContractController {
   /**
    * GET /api/contracts/:id/obligaciones-arrendatario
    */
-  static async getObligacionesArrendatario(req: Request, res: Response): Promise<void> {
+  static async getObligacionesArrendatario(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       if (isNaN(contractId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
-      const items = await contractService.getObligacionesArrendatario(contractId);
+      const items = await contractService.getObligacionesArrendatario(tenantId, contractId);
       sendSuccess(res, items);
     } catch (error: any) {
       Logger.error('Error in getObligacionesArrendatario', {
@@ -625,14 +640,15 @@ export class ContractController {
   /**
    * POST /api/contracts/:id/obligaciones-arrendatario/initialize
    */
-  static async initializeObligacionesArrendatario(req: Request, res: Response): Promise<void> {
+  static async initializeObligacionesArrendatario(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const contractId = parseInt(req.params.id);
       if (isNaN(contractId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid contract ID');
         return;
       }
-      const items = await contractService.initializeObligacionesArrendatario(contractId);
+      const items = await contractService.initializeObligacionesArrendatario(tenantId, contractId);
       sendSuccess(res, items);
     } catch (error: any) {
       Logger.error('Error in initializeObligacionesArrendatario', {
@@ -656,15 +672,16 @@ export class ContractController {
   /**
    * PUT /api/contracts/obligaciones-arrendatario/:obligacionId
    */
-  static async updateObligacionArrendatario(req: Request, res: Response): Promise<void> {
+  static async updateObligacionArrendatario(req: AuthRequest, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const obligacionId = parseInt(req.params.obligacionId);
       if (isNaN(obligacionId)) {
         sendError(res, 400, 'INVALID_ID', 'Invalid obligacion ID');
         return;
       }
       const { estado, fecha_compromiso, observaciones } = req.body;
-      const item = await contractService.updateObligacionArrendatario(obligacionId, {
+      const item = await contractService.updateObligacionArrendatario(tenantId, obligacionId, {
         estado,
         fechaCompromiso: fecha_compromiso,
         observaciones,
@@ -693,9 +710,10 @@ export class ContractController {
    * GET /api/contracts/stats/count
    * Get active contract count
    */
-  static async getActiveCount(req: Request, res: Response): Promise<void> {
+  static async getActiveCount(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const count = await contractService.getActiveCount();
+      const tenantId = req.user!.id_empresa;
+      const count = await contractService.getActiveCount(tenantId);
 
       sendSuccess(res, { count });
     } catch (error: any) {

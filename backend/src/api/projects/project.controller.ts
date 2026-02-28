@@ -17,6 +17,7 @@ export class ProjectController {
    */
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const userId = (req as any).user?.id;
       const { user_filter, status, search, page, limit, sort_by, sort_order } = req.query;
 
@@ -25,7 +26,7 @@ export class ProjectController {
 
       if (filterByUser) {
         // Legacy path - return as array without pagination
-        const projects = await this.projectService.findAll(filterByUser);
+        const projects = await this.projectService.findAll(tenantId, filterByUser);
         sendSuccess(res, projects);
         return;
       }
@@ -43,7 +44,7 @@ export class ProjectController {
       const pageNum = parseInt(page as string) || 1;
       const limitNum = Math.min(parseInt(limit as string) || 10, 100);
 
-      const result = await this.projectService.findAll(filters, pageNum, limitNum);
+      const result = await this.projectService.findAll(tenantId, filters, pageNum, limitNum);
 
       // Check if result has pagination (new format)
       if ('data' in result && 'total' in result) {
@@ -78,8 +79,9 @@ export class ProjectController {
    */
   findById = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { id } = req.params;
-      const project = await this.projectService.findById(id);
+      const project = await this.projectService.findById(tenantId, id);
 
       res.json({
         success: true,
@@ -105,8 +107,9 @@ export class ProjectController {
    */
   findByCode = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { code } = req.params;
-      const project = await this.projectService.findByCode(code);
+      const project = await this.projectService.findByCode(tenantId, code);
 
       res.json({
         success: true,
@@ -132,8 +135,9 @@ export class ProjectController {
    */
   create = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const data: CreateProjectDto = req.body;
-      const project = await this.projectService.create(data);
+      const project = await this.projectService.create(tenantId, data);
 
       res.status(201).json({
         success: true,
@@ -158,9 +162,10 @@ export class ProjectController {
    */
   update = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { id } = req.params;
       const data: UpdateProjectDto = req.body;
-      const project = await this.projectService.update(id, data);
+      const project = await this.projectService.update(tenantId, id, data);
 
       res.json({
         success: true,
@@ -186,8 +191,9 @@ export class ProjectController {
    */
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { id } = req.params;
-      await this.projectService.delete(id);
+      await this.projectService.delete(tenantId, id);
 
       res.json({
         success: true,
@@ -213,6 +219,7 @@ export class ProjectController {
    */
   assignUser = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { id } = req.params;
       const { user_id, rol_en_proyecto } = req.body;
 
@@ -224,7 +231,7 @@ export class ProjectController {
         return;
       }
 
-      await this.projectService.assignUser(id, user_id, rol_en_proyecto);
+      await this.projectService.assignUser(tenantId, id, user_id, rol_en_proyecto);
 
       res.json({
         success: true,
@@ -251,8 +258,9 @@ export class ProjectController {
    */
   unassignUser = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { id, userId } = req.params;
-      await this.projectService.unassignUser(id, userId);
+      await this.projectService.unassignUser(tenantId, id, userId);
 
       res.json({
         success: true,
@@ -279,8 +287,9 @@ export class ProjectController {
    */
   getProjectUsers = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { id } = req.params;
-      const users = await this.projectService.getProjectUsers(id);
+      const users = await this.projectService.getProjectUsers(tenantId, id);
 
       res.json({
         success: true,
@@ -302,10 +311,12 @@ export class ProjectController {
 
   exportExcel = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { ExportUtil } = await import('../../utils/export.util');
       const { status, search } = req.query;
 
       const result = await this.projectService.findAll(
+        tenantId,
         {
           status: status as string,
           search: search as string,
@@ -353,10 +364,12 @@ export class ProjectController {
 
   exportCSV = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { ExportUtil } = await import('../../utils/export.util');
       const { status, search } = req.query;
 
       const result = await this.projectService.findAll(
+        tenantId,
         {
           status: status as string,
           search: search as string,
@@ -404,8 +417,9 @@ export class ProjectController {
 
   getStats = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { startDate, endDate } = req.query;
-      const stats = await this.projectService.getStats({
+      const stats = await this.projectService.getStats(tenantId, {
         startDate: startDate as string,
         endDate: endDate as string,
       });

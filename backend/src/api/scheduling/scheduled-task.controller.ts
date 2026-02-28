@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { AppDataSource } from '../../config/database.config';
 import { ScheduledTask } from '../../models/scheduled-task.model';
 import { Not, In } from 'typeorm';
@@ -20,8 +21,10 @@ import {
  * GET /api/scheduling/tasks
  * List all scheduled tasks with filters, pagination, and sorting
  */
-export const listTasks = async (req: Request, res: Response) => {
+export const listTasks = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
+
     // Extract pagination params
     const page = parseInt(req.query.page as string) || 1;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
@@ -55,7 +58,8 @@ export const listTasks = async (req: Request, res: Response) => {
     const queryBuilder = taskRepo
       .createQueryBuilder('task')
       .leftJoinAndSelect('task.equipment', 'equipment')
-      .leftJoinAndSelect('task.project', 'project');
+      .leftJoinAndSelect('task.project', 'project')
+      .andWhere('task.tenantId = :tenantId', { tenantId });
 
     // Apply filters
     if (equipment_id) {
@@ -123,8 +127,9 @@ export const listTasks = async (req: Request, res: Response) => {
  * GET /api/scheduling/tasks/:id
  * Get a single task by ID
  */
-export const getTaskById = async (req: Request, res: Response) => {
+export const getTaskById = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -133,7 +138,7 @@ export const getTaskById = async (req: Request, res: Response) => {
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
     const task = await taskRepo.findOne({
-      where: { id },
+      where: { id, tenantId },
       relations: ['equipment', 'project'],
     });
 
@@ -158,8 +163,9 @@ export const getTaskById = async (req: Request, res: Response) => {
  * POST /api/scheduling/tasks
  * Create a new scheduled task
  */
-export const createTask = async (req: Request, res: Response) => {
+export const createTask = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const {
       schedule_id,
       equipment_id,
@@ -175,10 +181,11 @@ export const createTask = async (req: Request, res: Response) => {
       status,
     } = req.body;
 
-    const userId = (req as any).user?.id;
+    const userId = req.user!.id_usuario;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
     const task = taskRepo.create({
+      tenantId,
       scheduleId: schedule_id || undefined,
       equipmentId: equipment_id || undefined,
       operatorId: operator_id || undefined,
@@ -211,8 +218,9 @@ export const createTask = async (req: Request, res: Response) => {
  * PUT /api/scheduling/tasks/:id
  * Update a scheduled task
  */
-export const updateTask = async (req: Request, res: Response) => {
+export const updateTask = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -222,7 +230,7 @@ export const updateTask = async (req: Request, res: Response) => {
     const updates = req.body;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
-    const task = await taskRepo.findOne({ where: { id } });
+    const task = await taskRepo.findOne({ where: { id, tenantId } });
 
     if (!task) {
       sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
@@ -281,8 +289,9 @@ export const updateTask = async (req: Request, res: Response) => {
  * DELETE /api/scheduling/tasks/:id
  * Delete a scheduled task
  */
-export const deleteTask = async (req: Request, res: Response) => {
+export const deleteTask = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       sendError(res, 400, 'INVALID_ID', 'ID inválido');
@@ -290,6 +299,11 @@ export const deleteTask = async (req: Request, res: Response) => {
     }
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
+    const task = await taskRepo.findOne({ where: { id, tenantId } });
+    if (!task) {
+      sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
+      return;
+    }
     const result = await taskRepo.delete(id);
 
     if (!result.affected || result.affected === 0) {
@@ -313,7 +327,7 @@ export const deleteTask = async (req: Request, res: Response) => {
  * POST /api/scheduling/tasks/:id/assign
  * Assign operator to a task
  */
-export const assignOperator = async (req: Request, res: Response) => {
+export const assignOperator = async (req: AuthRequest, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
@@ -321,26 +335,28 @@ export const assignOperator = async (req: Request, res: Response) => {
       return;
     }
 
+    const tenantId = req.user!.id_empresa;
     const { operator_id } = req.body;
-    const userId = (req as any).user?.id;
+    const userId = req.user!.id_usuario;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
 
     // Get the task first to check its date
-    const task = await taskRepo.findOne({ where: { id } });
+    const task = await taskRepo.findOne({ where: { id, tenantId } });
 
     if (!task) {
       sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
       return;
     }
 
-    // Check for conflicts
+    // Check for conflicts (tenant-scoped)
     const conflicts = await taskRepo.find({
       where: {
         operatorId: operator_id,
         startDate: task.startDate,
         status: Not(In(['completed', 'cancelled'])),
         id: Not(id),
+        tenantId,
       },
     });
 
@@ -379,7 +395,7 @@ export const assignOperator = async (req: Request, res: Response) => {
  * POST /api/scheduling/tasks/:id/complete
  * Mark task as completed
  */
-export const completeTask = async (req: Request, res: Response) => {
+export const completeTask = async (req: AuthRequest, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
@@ -387,10 +403,11 @@ export const completeTask = async (req: Request, res: Response) => {
       return;
     }
 
+    const tenantId = req.user!.id_empresa;
     const { completion_notes, maintenance_record_id } = req.body;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
-    const task = await taskRepo.findOne({ where: { id } });
+    const task = await taskRepo.findOne({ where: { id, tenantId } });
 
     if (!task) {
       sendError(res, 404, 'TASK_NOT_FOUND', 'Tarea no encontrada');
@@ -420,8 +437,9 @@ export const completeTask = async (req: Request, res: Response) => {
  * GET /api/scheduling/tasks/check-conflicts
  * Check for scheduling conflicts for an operator
  */
-export const checkConflicts = async (req: Request, res: Response) => {
+export const checkConflicts = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const { operator_id, date, exclude_task_id } = req.query;
 
     if (!operator_id || !date) {
@@ -434,6 +452,7 @@ export const checkConflicts = async (req: Request, res: Response) => {
       operatorId: parseInt(operator_id as string),
       startDate: new Date(date as string),
       status: Not(In(['completed', 'cancelled'])),
+      tenantId,
     };
 
     if (exclude_task_id) {
@@ -462,14 +481,16 @@ export const checkConflicts = async (req: Request, res: Response) => {
  * GET /api/scheduling/calendar
  * Get tasks formatted for calendar view
  */
-export const getCalendarTasks = async (req: Request, res: Response) => {
+export const getCalendarTasks = async (req: AuthRequest, res: Response) => {
   try {
+    const tenantId = req.user!.id_empresa;
     const { start_date, end_date, project_id } = req.query;
 
     const taskRepo = AppDataSource.getRepository(ScheduledTask);
     const queryBuilder = taskRepo
       .createQueryBuilder('task')
-      .leftJoinAndSelect('task.equipment', 'equipment');
+      .leftJoinAndSelect('task.equipment', 'equipment')
+      .where('task.tenantId = :tenantId', { tenantId });
 
     if (start_date) {
       queryBuilder.andWhere('task.startDate >= :startDate', { startDate: start_date });

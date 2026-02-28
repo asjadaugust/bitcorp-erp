@@ -24,7 +24,7 @@ export class InventoryService {
    * Validates sufficient stock for 'salida' movements
    * Uses database transaction to ensure atomicity
    *
-   * @param tenantId - Tenant identifier (TODO: filter when tenant_id column exists)
+   * @param tenantId - Tenant identifier for data isolation
    * @param data - Movement header data
    * @param details - Array of movement line items
    * @returns Created movement with details
@@ -68,13 +68,11 @@ export class InventoryService {
         context: 'InventoryService.createMovement',
       });
 
-      // Create Movement
-      // TODO: Add tenant_id when column exists in logistica.movimiento table
-      // const movement = this.movementRepository.create({
-      //   ...data,
-      //   tenant_id: tenantId,
-      // });
-      const movement = this.movementRepository.create(data);
+      // Create Movement with tenant isolation
+      const movement = this.movementRepository.create({
+        ...data,
+        tenantId,
+      });
       const savedMovement = await queryRunner.manager.save(movement);
 
       // Process Details
@@ -99,10 +97,8 @@ export class InventoryService {
           );
         }
 
-        // TODO: Add tenant_id filter when column exists in logistica.producto table
-        // where: { id: detailData.product_id, tenant_id: tenantId }
         const product = await queryRunner.manager.findOne(Product, {
-          where: { id: detailData.product_id },
+          where: { id: detailData.product_id, tenantId },
         });
 
         if (!product) {
@@ -179,7 +175,7 @@ export class InventoryService {
 
       // Load relations for DTO transformation
       const movementWithDetails = await this.movementRepository.findOne({
-        where: { id: savedMovement.id },
+        where: { id: savedMovement.id, tenantId },
         relations: ['details', 'details.product', 'project'],
       });
 
@@ -205,7 +201,7 @@ export class InventoryService {
   /**
    * Get current stock for a product
    *
-   * @param tenantId - Tenant identifier (TODO: filter when tenant_id column exists)
+   * @param tenantId - Tenant identifier for data isolation
    * @param productId - Product ID
    * @returns Product stock information
    * @throws NotFoundError if product not found
@@ -218,10 +214,8 @@ export class InventoryService {
         context: 'InventoryService.getStock',
       });
 
-      // TODO: Add tenant_id filter when column exists in logistica.producto table
-      // where: { id: productId, tenant_id: tenantId }
       const product = await this.productRepository.findOne({
-        where: { id: productId },
+        where: { id: productId, tenantId },
       });
 
       if (!product) {
@@ -256,11 +250,15 @@ export class InventoryService {
     }
   }
 
-  async getStats(filters?: { startDate?: string; endDate?: string }): Promise<StatsSummaryDto> {
+  async getStats(
+    tenantId: number,
+    filters?: { startDate?: string; endDate?: string }
+  ): Promise<StatsSummaryDto> {
     try {
       const query = this.movementRepository
         .createQueryBuilder('m')
-        .leftJoinAndSelect('m.details', 'd');
+        .leftJoinAndSelect('m.details', 'd')
+        .andWhere('m.tenantId = :tenantId', { tenantId });
 
       if (filters?.startDate) {
         query.andWhere('m.fecha >= :startDate', { startDate: new Date(filters.startDate) });

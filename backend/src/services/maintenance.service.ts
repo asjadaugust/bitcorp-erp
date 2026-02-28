@@ -190,8 +190,6 @@ export class MaintenanceService {
       const limit = filters?.limit || 10;
       const offset = (page - 1) * limit;
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: queryBuilder.andWhere('m.tenant_id = :tenantId', { tenantId })
       const queryBuilder = this.repository
         .createQueryBuilder('m')
         .where('m.tenantId = :tenantId', { tenantId })
@@ -294,8 +292,6 @@ export class MaintenanceService {
    */
   async getMaintenanceById(tenantId: number, id: number): Promise<MaintenanceDto | null> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id, tenant_id: tenantId }
       const maintenance = await this.repository.findOne({
         where: { id, tenantId },
         relations: ['equipo'],
@@ -387,8 +383,6 @@ export class MaintenanceService {
       });
       const saved = await this.repository.save(maintenance);
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id: saved.id, tenant_id: tenantId }
       // Reload with relations
       const withRelations = await this.repository.findOne({
         where: { id: saved.id, tenantId },
@@ -480,8 +474,6 @@ export class MaintenanceService {
     userId: string
   ): Promise<MaintenanceDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id, tenant_id: tenantId }
       const maintenance = await this.repository.findOne({
         where: { id, tenantId },
         relations: ['equipo'],
@@ -501,8 +493,6 @@ export class MaintenanceService {
       Object.assign(maintenance, fromMaintenanceDto(dtoData));
       const saved = await this.repository.save(maintenance);
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id: saved.id, tenant_id: tenantId }
       // Reload with relations
       const withRelations = await this.repository.findOne({
         where: { id: saved.id, tenantId },
@@ -578,8 +568,6 @@ export class MaintenanceService {
    */
   async deleteMaintenance(tenantId: number, id: number): Promise<boolean> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id, tenant_id: tenantId }
       const maintenance = await this.repository.findOne({
         where: { id, tenantId },
       });

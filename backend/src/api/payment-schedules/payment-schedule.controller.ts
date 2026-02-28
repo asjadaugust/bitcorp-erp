@@ -70,13 +70,14 @@ export class PaymentScheduleController {
 
   findOne = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID debe ser un número');
         return;
       }
 
-      const result = await this.service.findOne(id);
+      const result = await this.service.findOne(tenantId, id);
       sendSuccess(res, toDto(result));
     } catch (error) {
       Logger.error('Error fetching payment schedule', {
@@ -117,13 +118,14 @@ export class PaymentScheduleController {
 
   update = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID debe ser un número');
         return;
       }
 
-      const result = await this.service.update(id, req.body);
+      const result = await this.service.update(tenantId, id, req.body);
       sendSuccess(res, result);
     } catch (error) {
       Logger.error('Error updating payment schedule', {
@@ -143,13 +145,14 @@ export class PaymentScheduleController {
 
   remove = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID debe ser un número');
         return;
       }
 
-      await this.service.delete(id);
+      await this.service.delete(tenantId, id);
       res.status(204).send();
     } catch (error) {
       Logger.error('Error deleting payment schedule', {
@@ -169,13 +172,14 @@ export class PaymentScheduleController {
 
   approve = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID debe ser un número');
         return;
       }
 
-      const result = await this.service.approve(id);
+      const result = await this.service.approve(tenantId, id);
       sendSuccess(res, result);
     } catch (error) {
       Logger.error('Error approving payment schedule', {
@@ -195,13 +199,14 @@ export class PaymentScheduleController {
 
   process = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID debe ser un número');
         return;
       }
 
-      const result = await this.service.process(id);
+      const result = await this.service.process(tenantId, id);
       sendSuccess(res, result);
     } catch (error) {
       Logger.error('Error processing payment schedule', {
@@ -221,13 +226,14 @@ export class PaymentScheduleController {
 
   cancel = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID debe ser un número');
         return;
       }
 
-      const result = await this.service.cancel(id);
+      const result = await this.service.cancel(tenantId, id);
       sendSuccess(res, result);
     } catch (error) {
       Logger.error('Error cancelling payment schedule', {
@@ -247,13 +253,14 @@ export class PaymentScheduleController {
 
   addDetail = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const scheduleId = parseInt(req.params.id);
       if (isNaN(scheduleId)) {
         sendError(res, 400, 'INVALID_ID', 'ID debe ser un número');
         return;
       }
 
-      const result = await this.service.addDetail(scheduleId, req.body);
+      const result = await this.service.addDetail(tenantId, scheduleId, req.body);
       sendCreated(res, result);
     } catch (error) {
       Logger.error('Error adding payment schedule detail', {
@@ -273,6 +280,7 @@ export class PaymentScheduleController {
 
   removeDetail = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const scheduleId = parseInt(req.params.id);
       const detailId = parseInt(req.params.detailId);
       if (isNaN(scheduleId) || isNaN(detailId)) {
@@ -280,7 +288,7 @@ export class PaymentScheduleController {
         return;
       }
 
-      await this.service.removeDetail(scheduleId, detailId);
+      await this.service.removeDetail(tenantId, scheduleId, detailId);
       res.status(204).send();
     } catch (error) {
       Logger.error('Error removing payment schedule detail', {

@@ -293,22 +293,9 @@ export interface TaskFilter {
  * **Deprecation Notice**: These methods will be removed in Phase 22 (API v2 migration).
  * Frontend should migrate to primary methods (findAll, findById, create, update, delete).
  *
- * ## Multi-Tenancy Notes
+ * ## Multi-Tenancy
  *
- * **Current Implementation**: Single-tenant (no tenant filtering)
- *
- * **Phase 21 Changes Required**:
- * - Add `unidad_operativa_id` filtering to all queries
- * - Validate user has access to specified equipment/project/operator
- * - Implement tenant-aware query builder base
- * - Add tenant context to all log entries
- * - Cross-tenant task visibility for shared equipment
- *
- * **Security Considerations**:
- * - Tasks must only be visible to users within the same `unidad_operativa_id`
- * - Equipment/operator assignments must be validated against tenant ownership
- * - Project relations must enforce tenant boundaries
- * - Admin users may have cross-tenant visibility (future enhancement)
+ * All queries are filtered by `tenantId` for data isolation.
  *
  * ## Related Services
  *
@@ -468,15 +455,13 @@ export class SchedulingService {
    * });
    * ```
    */
-  async findAll(filter?: TaskFilter): Promise<ScheduledTaskDto[]> {
+  async findAll(tenantId: number, filter?: TaskFilter): Promise<ScheduledTaskDto[]> {
     try {
       const queryBuilder = this.repository
         .createQueryBuilder('task')
         .leftJoinAndSelect('task.equipment', 'equipment')
-        .leftJoinAndSelect('task.project', 'project');
-
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('task.unidad_operativa_id = :tenantId', { tenantId })
+        .leftJoinAndSelect('task.project', 'project')
+        .andWhere('task.tenantId = :tenantId', { tenantId });
 
       if (filter?.startDate && filter?.endDate) {
         queryBuilder.andWhere('task.startDate BETWEEN :start AND :end', {
@@ -563,11 +548,10 @@ export class SchedulingService {
    * }
    * ```
    */
-  async findById(id: number): Promise<ScheduledTaskDto> {
+  async findById(tenantId: number, id: number): Promise<ScheduledTaskDto> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Validate task belongs to user's tenant
       const task = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['equipment', 'project'],
       });
 
@@ -645,7 +629,7 @@ export class SchedulingService {
    * });
    * ```
    */
-  async create(data: CreateScheduledTaskDto): Promise<ScheduledTaskDto> {
+  async create(tenantId: number, data: CreateScheduledTaskDto): Promise<ScheduledTaskDto> {
     try {
       // Map dual input format to DTO
       const dtoData = mapCreateScheduledTaskDto(data);
@@ -672,10 +656,8 @@ export class SchedulingService {
         }
       }
 
-      // TODO: [Phase 21 - Tenant Context] Add tenant ID from request context
-      // dtoData.unidad_operativa_id = req.tenantContext.unidadOperativaId
-
-      const task = this.repository.create(fromScheduledTaskDto(dtoData));
+      const entityData = fromScheduledTaskDto(dtoData);
+      const task = this.repository.create({ ...entityData, tenantId });
       const saved = await this.repository.save(task);
 
       // Reload with relations
@@ -755,11 +737,14 @@ export class SchedulingService {
    * });
    * ```
    */
-  async update(id: number, data: UpdateScheduledTaskDto): Promise<ScheduledTaskDto> {
+  async update(
+    tenantId: number,
+    id: number,
+    data: UpdateScheduledTaskDto
+  ): Promise<ScheduledTaskDto> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Validate task belongs to user's tenant
       const task = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['equipment', 'project'],
       });
 
@@ -860,10 +845,9 @@ export class SchedulingService {
    * await schedulingService.update(123, { status: 'CANCELLED', notes: 'Project cancelled by client' });
    * ```
    */
-  async delete(id: number): Promise<void> {
+  async delete(tenantId: number, id: number): Promise<void> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Validate task belongs to user's tenant
-      const task = await this.repository.findOne({ where: { id } });
+      const task = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!task) {
         throw new NotFoundError('ScheduledTask', id);
@@ -904,11 +888,12 @@ export class SchedulingService {
   // ============================================================================
 
   /**
-   * @deprecated Use findAll() instead. Maintained for backward compatibility only.
+   * @deprecated Use findAll(tenantId, filters) instead. Maintained for backward compatibility only.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getTasks(filters: any): Promise<ScheduledTaskDto[]> {
-    return this.findAll({
+    const tenantId = filters.tenantId || 1; // Default tenant for backward compatibility
+    return this.findAll(tenantId, {
       startDate: filters.startDate ? new Date(filters.startDate) : undefined,
       endDate: filters.endDate ? new Date(filters.endDate) : undefined,
       status: filters.status,
@@ -918,19 +903,19 @@ export class SchedulingService {
   }
 
   /**
-   * @deprecated Use findById() instead. Maintained for backward compatibility only.
+   * @deprecated Use findById(tenantId, id) instead. Maintained for backward compatibility only.
    */
-  async getTaskById(id: string): Promise<ScheduledTaskDto> {
-    return this.findById(parseInt(id));
+  async getTaskById(id: string, tenantId = 1): Promise<ScheduledTaskDto> {
+    return this.findById(tenantId, parseInt(id));
   }
 
   /**
-   * @deprecated Use create() instead. Maintained for backward compatibility only.
+   * @deprecated Use create(tenantId, data) instead. Maintained for backward compatibility only.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async createTask(data: any): Promise<ScheduledTaskDto> {
-    // Map fields if necessary
-    return this.create({
+    const tenantId = data.tenantId || 1; // Default tenant for backward compatibility
+    return this.create(tenantId, {
       ...data,
       start_date: data.scheduledDate || data.start_date || data.startDate,
       startDate: data.scheduledDate || data.startDate,
@@ -940,11 +925,11 @@ export class SchedulingService {
   }
 
   /**
-   * @deprecated Use update() instead. Maintained for backward compatibility only.
+   * @deprecated Use update(tenantId, id, data) instead. Maintained for backward compatibility only.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async updateTask(id: string, data: any): Promise<ScheduledTaskDto> {
-    return this.update(parseInt(id), {
+  async updateTask(id: string, data: any, tenantId = 1): Promise<ScheduledTaskDto> {
+    return this.update(tenantId, parseInt(id), {
       ...data,
       start_date: data.scheduledDate || data.start_date || data.startDate,
       startDate: data.scheduledDate || data.startDate,
@@ -952,10 +937,10 @@ export class SchedulingService {
   }
 
   /**
-   * @deprecated Use delete() instead. Maintained for backward compatibility only.
+   * @deprecated Use delete(tenantId, id) instead. Maintained for backward compatibility only.
    */
-  async deleteTask(id: string): Promise<void> {
-    return this.delete(parseInt(id));
+  async deleteTask(id: string, tenantId = 1): Promise<void> {
+    return this.delete(tenantId, parseInt(id));
   }
 }
 

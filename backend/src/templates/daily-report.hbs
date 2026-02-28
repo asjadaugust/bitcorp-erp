@@ -165,17 +165,17 @@
         <div class="activities-column">
           <div class="activities-title">ACTIVIDADES DE PRODUCCIÓN (Marcar con un X)</div>
           <div class="checkbox-grid">
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '01')}}☑{{else}}☐{{/if}}</span> (01) Excavación</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '05')}}☑{{else}}☐{{/if}}</span> (05) Producción de Agregados</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '09')}}☑{{else}}☐{{/if}}</span> (09) Otras Actividades de Producción</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '02')}}☑{{else}}☐{{/if}}</span> (02) Sub Base</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '06')}}☑{{else}}☐{{/if}}</span> (06) Ejecución de Cunetas</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '01')}}☑{{else}}☐{{/if}}</span> (01) Corte en Banco</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '05')}}☑{{else}}☐{{/if}}</span> (05) Conformado</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '09')}}☑{{else}}☐{{/if}}</span> (09) {{getDescription actividades_produccion '09'}}</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '02')}}☑{{else}}☐{{/if}}</span> (02) Excavación</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '06')}}☑{{else}}☐{{/if}}</span> (06) Perfilado</div>
             <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '10')}}☑{{else}}☐{{/if}}</span> (10) {{getDescription actividades_produccion '10'}}</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '03')}}☑{{else}}☐{{/if}}</span> (03) Base Estabilizada</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '07')}}☑{{else}}☐{{/if}}</span> (07) Producción de Concreto</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '03')}}☑{{else}}☐{{/if}}</span> (03) Cargado de Material</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '07')}}☑{{else}}☐{{/if}}</span> (07) Nivelado</div>
             <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '11')}}☑{{else}}☐{{/if}}</span> (11) {{getDescription actividades_produccion '11'}}</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '04')}}☑{{else}}☐{{/if}}</span> (04) Tratamiento Superficial Bicapa</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '08')}}☑{{else}}☐{{/if}}</span> (08) Transporte de Material por Volquetes</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '04')}}☑{{else}}☐{{/if}}</span> (04) Relleno</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode actividades_produccion '08')}}☑{{else}}☐{{/if}}</span> (08) Compactado</div>
           </div>
         </div>
       </div>
@@ -185,13 +185,13 @@
         <div class="delays-column">
           <div class="delays-title">DEMORAS OPERATIVAS (Marcar con un X)</div>
           <div class="checkbox-grid-small">
-            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D01')}}☑{{else}}☐{{/if}}</span> (D01) Abastecimiento de combustible</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D02')}}☑{{else}}☐{{/if}}</span> (D02) Toma de alimentos y/o descanso</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D03')}}☑{{else}}☐{{/if}}</span> (D03) Espera de ruta</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D04')}}☑{{else}}☐{{/if}}</span> (D04) Falla de operador</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D05')}}☑{{else}}☐{{/if}}</span> (D05) Traslado de frente</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D06')}}☑{{else}}☐{{/if}}</span> (D06) Cambio de guardia</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D07')}}☑{{else}}☐{{/if}}</span> (D07) Inspección de Equipo</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D01')}}☑{{else}}☐{{/if}}</span> (D01) Falta de Frente</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D02')}}☑{{else}}☐{{/if}}</span> (D02) Falta de Combustible</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D03')}}☑{{else}}☐{{/if}}</span> (D03) Falta de Lubricantes</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D04')}}☑{{else}}☐{{/if}}</span> (D04) Traslado</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D05')}}☑{{else}}☐{{/if}}</span> (D05) Corte de Tráfico</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D06')}}☑{{else}}☐{{/if}}</span> (D06) Derrumbe</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (includes demoras_operativas 'D07')}}☑{{else}}☐{{/if}}</span> (D07) Falta de Agua</div>
           </div>
         </div>
 
@@ -199,11 +199,11 @@
         <div class="delays-column">
           <div class="delays-title">OTROS EVENTOS</div>
           <div class="checkbox-grid-small">
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D08')}}☑{{else}}☐{{/if}}</span> (D08) Limpieza de Tolva</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D09')}}☑{{else}}☐{{/if}}</span> (D09) Limpieza de Tolva</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D10')}}☑{{else}}☐{{/if}}</span> (D10) Stand By</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D11')}}☑{{else}}☐{{/if}}</span> (D11) Condición Climática</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D12')}}☑{{else}}☐{{/if}}</span> (D12) Paros Sociales</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D08')}}☑{{else}}☐{{/if}}</span> (D08) Condiciones Climáticas</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D09')}}☑{{else}}☐{{/if}}</span> (D09) Daños a terceros (Corte de Servicios)</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D10')}}☑{{else}}☐{{/if}}</span> (D10) Coordinación con Entidades</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D11')}}☑{{else}}☐{{/if}}</span> (D11) Falta de Personal</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D12')}}☑{{else}}☐{{/if}}</span> (D12) Esperando Instrucciones</div>
             <div class="checkbox-item"><span class="checkbox">{{#if (hasCode otros_eventos 'D13')}}☑{{else}}☐{{/if}}</span> (D13) Otros: {{getDescription otros_eventos 'D13'}}</div>
           </div>
         </div>
@@ -212,12 +212,12 @@
         <div class="delays-column">
           <div class="delays-title">DEMORAS MECÁNICAS</div>
           <div class="checkbox-grid-small">
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D14')}}☑{{else}}☐{{/if}}</span> (D14) Cambio de Aceite</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D15')}}☑{{else}}☐{{/if}}</span> (D15) Cambio de Llanta</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D16')}}☑{{else}}☐{{/if}}</span> (D16) Lubricación</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D17')}}☑{{else}}☐{{/if}}</span> (D17) Mantenimiento Programado</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D18')}}☑{{else}}☐{{/if}}</span> (D18) Falla Mecánica</div>
-            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D19')}}☑{{else}}☐{{/if}}</span> (D19) Cambio Uñas/Cuchillas</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D14')}}☑{{else}}☐{{/if}}</span> (D14) Falla Mecánica</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D15')}}☑{{else}}☐{{/if}}</span> (D15) Falla Eléctrica</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D16')}}☑{{else}}☐{{/if}}</span> (D16) Falla Hidráulica</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D17')}}☑{{else}}☐{{/if}}</span> (D17) Falla de Neumáticos</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D18')}}☑{{else}}☐{{/if}}</span> (D18) Mantenimiento Programado</div>
+            <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D19')}}☑{{else}}☐{{/if}}</span> (D19) Mantenimiento Preventivo</div>
             <div class="checkbox-item"><span class="checkbox">{{#if (hasCode demoras_mecanicas 'D20')}}☑{{else}}☐{{/if}}</span> (D20) Otros: {{getDescription demoras_mecanicas 'D20'}}</div>
           </div>
         </div>

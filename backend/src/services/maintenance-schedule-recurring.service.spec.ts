@@ -52,32 +52,32 @@ describe('MaintenanceScheduleRecurringService', () => {
   });
 
   describe('Method Signatures', () => {
-    it('findAll should accept filters parameter', () => {
-      expect(service.findAll.length).toBe(1);
+    it('findAll should accept tenantId and filters parameters', () => {
+      expect(service.findAll.length).toBe(2);
     });
 
-    it('findById should accept id parameter', () => {
-      expect(service.findById.length).toBe(1);
+    it('findById should accept tenantId and id parameters', () => {
+      expect(service.findById.length).toBe(2);
     });
 
-    it('create should accept dto parameter', () => {
-      expect(service.create.length).toBe(1);
+    it('create should accept tenantId and dto parameters', () => {
+      expect(service.create.length).toBe(2);
     });
 
-    it('update should accept id and dto parameters', () => {
-      expect(service.update.length).toBe(2);
+    it('update should accept tenantId, id and dto parameters', () => {
+      expect(service.update.length).toBe(3);
     });
 
-    it('delete should accept id parameter', () => {
-      expect(service.delete.length).toBe(1);
+    it('delete should accept tenantId and id parameters', () => {
+      expect(service.delete.length).toBe(2);
     });
 
-    it('findDueSoon should accept optional daysAhead parameter', () => {
-      expect(service.findDueSoon.length).toBe(0);
+    it('findDueSoon should accept tenantId and optional daysAhead parameter', () => {
+      expect(service.findDueSoon.length).toBe(1);
     });
 
-    it('complete should accept id and optional completionHours parameters', () => {
-      expect(service.complete.length).toBe(2);
+    it('complete should accept tenantId, id and optional completionHours parameters', () => {
+      expect(service.complete.length).toBe(3);
     });
   });
 

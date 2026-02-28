@@ -17,7 +17,7 @@ import {
 /**
  * Service for managing provider financial information
  *
- * Handles bank accounts, CCI (Código de Cuenta Interbancaria), and payment information
+ * Handles bank accounts, CCI (Codigo de Cuenta Interbancaria), and payment information
  * for providers. Supports multi-currency accounts and primary account designation.
  *
  * Business Rules:
@@ -28,10 +28,7 @@ import {
  * - CCI is Peru-specific interbank code (20 digits, optional)
  * - Accounts ordered by isPrimary DESC, createdAt DESC
  * - Soft delete preferred (status = 'inactive') over hard delete
- *
- * Multi-Tenancy:
- * - TODO: Add tenant_id filtering when schema updated (Phase 21)
- * - Currently all financial info visible across tenants (security risk)
+ * - All queries filtered by tenant_id for multi-tenant isolation
  */
 export class ProviderFinancialInfoService {
   private get repository(): Repository<ProviderFinancialInfo> {
@@ -47,23 +44,20 @@ export class ProviderFinancialInfoService {
    * - Returns all accounts regardless of status (active/inactive)
    * - Each provider can have multiple bank accounts
    * - One account can be designated as primary (isPrimary = true)
-   * - TODO: Should filter by tenant_id (deferred to Phase 21)
+   * - Filtered by tenant_id for multi-tenant isolation
    *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param providerId - Provider ID to find financial info for
    * @returns Array of provider financial info DTOs (snake_case)
    * @throws {DatabaseError} If database query fails
-   *
-   * @example
-   * const financialInfo = await service.findByProviderId(123);
-   * // Returns: [{ id: 1, provider_id: 123, bank_name: "BCP", account_number: "123456", currency: "PEN", ... }]
    */
-  async findByProviderId(providerId: string | number): Promise<ProviderFinancialInfoDto[]> {
+  async findByProviderId(
+    tenantId: number,
+    providerId: string | number
+  ): Promise<ProviderFinancialInfoDto[]> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Current: No tenant isolation (all financial info visible)
-      // Should be: WHERE financial_info.tenant_id = :tenantId
       const financialInfo = await this.repository.find({
-        where: { providerId: Number(providerId) },
+        where: { providerId: Number(providerId), tenantId },
         order: {
           isPrimary: 'DESC',
           createdAt: 'DESC',
@@ -75,6 +69,7 @@ export class ProviderFinancialInfoService {
         count: financialInfo.length,
         hasPrimary: financialInfo.some((f) => f.isPrimary),
         currencies: [...new Set(financialInfo.map((f) => f.currency))],
+        tenantId,
         context: 'ProviderFinancialInfoService.findByProviderId',
       });
 
@@ -84,6 +79,7 @@ export class ProviderFinancialInfoService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         providerId,
+        tenantId,
         context: 'ProviderFinancialInfoService.findByProviderId',
       });
       throw new DatabaseError('Failed to retrieve provider financial info');
@@ -95,24 +91,18 @@ export class ProviderFinancialInfoService {
    *
    * Business Rules:
    * - Returns single financial info or throws NotFoundError
-   * - TODO: Should verify tenant_id matches current tenant (Phase 21)
+   * - Verifies tenant_id matches for multi-tenant isolation
    *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param id - Financial info ID
    * @returns Provider financial info DTO (snake_case)
    * @throws {NotFoundError} If financial info not found
    * @throws {DatabaseError} If database query fails
-   *
-   * @example
-   * const financialInfo = await service.findById(456);
-   * // Returns: { id: 456, provider_id: 123, bank_name: "BCP", account_number: "123456789", currency: "PEN", ... }
    */
-  async findById(id: number): Promise<ProviderFinancialInfoDto> {
+  async findById(tenantId: number, id: number): Promise<ProviderFinancialInfoDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Current: No tenant isolation
-      // Should be: WHERE financial_info.id = :id AND financial_info.tenant_id = :tenantId
       const financialInfo = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!financialInfo) {
@@ -126,6 +116,7 @@ export class ProviderFinancialInfoService {
         isPrimary: financialInfo.isPrimary,
         currency: financialInfo.currency,
         status: financialInfo.status,
+        tenantId,
         context: 'ProviderFinancialInfoService.findById',
       });
 
@@ -139,6 +130,7 @@ export class ProviderFinancialInfoService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         financialInfoId: id,
+        tenantId,
         context: 'ProviderFinancialInfoService.findById',
       });
       throw new DatabaseError('Failed to retrieve provider financial info');
@@ -154,30 +146,20 @@ export class ProviderFinancialInfoService {
    * - Default status: 'active'
    * - Default isPrimary: false
    * - If multiple primary accounts exist, application should handle logic to unset others
-   * - CCI (Código de Cuenta Interbancaria) is optional but recommended for Peru
-   * - tenant_id defaults to 1 (should come from auth context in Phase 21)
+   * - CCI (Codigo de Cuenta Interbancaria) is optional but recommended for Peru
+   * - tenant_id set from authenticated user context
    *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param data - Financial info creation data (snake_case from API)
    * @returns Created provider financial info DTO
    * @throws {ValidationError} If required fields missing
    * @throws {DatabaseError} If database operation fails
-   *
-   * @example
-   * const financialInfo = await service.create({
-   *   bank_name: "Banco de Crédito del Perú (BCP)",
-   *   account_number: "19312345678901",
-   *   cci: "00219312345678901234",
-   *   account_holder_name: "EMPRESA SAC",
-   *   account_type: "checking",
-   *   currency: "PEN",
-   *   is_primary: true
-   * });
    */
-  async create(data: ProviderFinancialInfoCreateDto): Promise<ProviderFinancialInfoDto> {
+  async create(
+    tenantId: number,
+    data: ProviderFinancialInfoCreateDto
+  ): Promise<ProviderFinancialInfoDto> {
     try {
-      // Validation: bank_name and account_number are required (handled by DTO class-validator)
-      // Additional validation can be added here if needed
-
       const financialInfo = this.repository.create({
         providerId: data.id_proveedor!,
         bankName: data.nombre_banco,
@@ -188,10 +170,7 @@ export class ProviderFinancialInfoService {
         currency: (data.moneda || 'PEN') as Currency,
         isPrimary: data.es_principal ?? false,
         status: (data.estado || 'active') as FinancialStatus,
-        // TODO: tenantId should come from auth context (Phase 21)
-        // Current: Hardcoded to 1
-        // Should be: tenantId: req.user.tenantId
-        tenantId: data.tenant_id || 1,
+        tenantId,
         createdBy: data.created_by,
       });
 
@@ -206,6 +185,7 @@ export class ProviderFinancialInfoService {
         isPrimary: saved.isPrimary,
         hasCci: !!saved.cci,
         status: saved.status,
+        tenantId,
         context: 'ProviderFinancialInfoService.create',
       });
 
@@ -216,6 +196,7 @@ export class ProviderFinancialInfoService {
         stack: error instanceof Error ? error.stack : undefined,
         providerId: data.id_proveedor,
         bankName: data.nombre_banco,
+        tenantId,
         context: 'ProviderFinancialInfoService.create',
       });
       throw new DatabaseError('Failed to create provider financial info');
@@ -230,31 +211,22 @@ export class ProviderFinancialInfoService {
    * - Cannot change providerId (business rule: account belongs to one provider)
    * - Can update isPrimary (caller should handle unsetting other primary accounts)
    * - Can update status (active/inactive for soft delete)
-   * - TODO: Should verify tenant_id matches current tenant (Phase 21)
+   * - Verifies tenant_id matches for multi-tenant isolation
    *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param id - Financial info ID to update
    * @param data - Financial info update data (snake_case from API)
    * @returns Updated provider financial info DTO
    * @throws {NotFoundError} If financial info not found
    * @throws {DatabaseError} If database operation fails
-   *
-   * @example
-   * const updated = await service.update(456, {
-   *   account_number: "19312345678902",
-   *   cci: "00219312345678901235",
-   *   is_primary: true,
-   *   status: "active"
-   * });
    */
   async update(
+    tenantId: number,
     id: number,
     data: ProviderFinancialInfoUpdateDto
   ): Promise<ProviderFinancialInfoDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Current: No tenant isolation
-      // Should be: WHERE financial_info.id = :id AND financial_info.tenant_id = :tenantId
-      const existing = await this.repository.findOne({ where: { id } });
+      const existing = await this.repository.findOne({ where: { id, tenantId } });
       if (!existing) {
         throw new NotFoundError('ProviderFinancialInfo', id);
       }
@@ -275,7 +247,7 @@ export class ProviderFinancialInfoService {
       await this.repository.update(id, updateData);
 
       // Return updated financial info
-      const updated = await this.repository.findOne({ where: { id } });
+      const updated = await this.repository.findOne({ where: { id, tenantId } });
       if (!updated) {
         throw new DatabaseError('Failed to retrieve financial info after update');
       }
@@ -285,6 +257,7 @@ export class ProviderFinancialInfoService {
         providerId: updated.providerId,
         bankName: updated.bankName,
         updatedFields: Object.keys(updateData),
+        tenantId,
         context: 'ProviderFinancialInfoService.update',
       });
 
@@ -298,6 +271,7 @@ export class ProviderFinancialInfoService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         financialInfoId: id,
+        tenantId,
         context: 'ProviderFinancialInfoService.update',
       });
       throw new DatabaseError('Failed to update provider financial info');
@@ -310,34 +284,35 @@ export class ProviderFinancialInfoService {
    * Business Rules:
    * - Permanently deletes financial info record
    * - Prefer soft delete (status = 'inactive') for audit trail
-   * - TODO: Should verify tenant_id matches current tenant (Phase 21)
-   * - TODO: Should prevent deletion of primary account if it's the only one
+   * - Verifies tenant_id matches for multi-tenant isolation
    * - Consider impact on historical payment records
    *
+   * @param tenantId - Tenant identifier for multi-tenant isolation
    * @param id - Financial info ID to delete
    * @returns true if deleted, false if not found
    * @throws {DatabaseError} If database operation fails
-   *
-   * @example
-   * const deleted = await service.delete(456);
-   * // Returns: true
    */
-  async delete(id: number): Promise<boolean> {
+  async delete(tenantId: number, id: number): Promise<boolean> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Current: Can delete any financial info
-      // Should be: DELETE WHERE id = :id AND tenant_id = :tenantId
+      // Verify financial info belongs to this tenant before deleting
+      const financialInfo = await this.repository.findOne({ where: { id, tenantId } });
+      if (!financialInfo) {
+        return false;
+      }
+
       const result = await this.repository.delete(id);
       const deleted = (result.affected ?? 0) > 0;
 
       if (deleted) {
         Logger.info('Provider financial info deleted successfully', {
           financialInfoId: id,
+          tenantId,
           context: 'ProviderFinancialInfoService.delete',
         });
       } else {
         Logger.warn('Attempted to delete non-existent provider financial info', {
           financialInfoId: id,
+          tenantId,
           context: 'ProviderFinancialInfoService.delete',
         });
       }
@@ -348,6 +323,7 @@ export class ProviderFinancialInfoService {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         financialInfoId: id,
+        tenantId,
         context: 'ProviderFinancialInfoService.delete',
       });
       throw new DatabaseError('Failed to delete provider financial info');

@@ -1405,7 +1405,23 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   }
 
   onEquipmentSelect() {
-    // TODO: Load last known values for selected equipment
+    const equipmentId = this.reportForm.get('equipmentId')?.value;
+    if (!equipmentId) return;
+
+    this.dailyReportService.getAll({ equipo_id: equipmentId, limit: 1 }).subscribe({
+      next: (reports) => {
+        if (reports.length > 0) {
+          const last = reports[0];
+          this.reportForm.patchValue({
+            horometerStart: last.horometro_final ?? '',
+            fuelStart: last.gasolina_gln ?? '',
+          });
+        }
+      },
+      error: () => {
+        // Non-critical — user can fill values manually
+      },
+    });
   }
 
   calculateHours(): string {

@@ -100,17 +100,17 @@ export interface ActivityCheckbox {
 }
 
 // Activity code mapping for reference:
-// 01 = Excavación
-// 02 = Sub Base
-// 03 = Base Estabilizada
-// 04 = Tratamiento Superficial Bicapa
-// 05 = Producción de Agregados
-// 06 = Ejecución de Cunetas
-// 07 = Producción de Concreto
-// 08 = Transporte de Material por Volquetes
-// 09 = Otras Actividades de Producción (with free text)
-// 10 = Otras Actividades de Producción (with free text)
-// 11 = Otras Actividades de Producción (with free text)
+// 01 = Corte en Banco
+// 02 = Excavación
+// 03 = Cargado de Material
+// 04 = Relleno
+// 05 = Conformado
+// 06 = Perfilado
+// 07 = Nivelado
+// 08 = Compactado
+// 09 = Otras (with free text)
+// 10 = Otras (with free text)
+// 11 = Otras (with free text)
 
 // =====================================================
 // Other Event Checkboxes DTO
@@ -122,11 +122,11 @@ export interface OtherEventCheckbox {
 }
 
 // Other event code mapping for reference:
-// D08 = Limpieza de Tolva
-// D09 = Limpieza de Tolva (duplicate in template)
-// D10 = Stand By
-// D11 = Condición Climática
-// D12 = Paros Sociales
+// D08 = Condiciones Climáticas
+// D09 = Daños a terceros (Corte de Servicios)
+// D10 = Coordinación con Entidades
+// D11 = Falta de Personal
+// D12 = Esperando Instrucciones
 // D13 = Otros (with free text)
 
 // =====================================================
@@ -139,68 +139,68 @@ export interface MechanicalDelayCheckbox {
 }
 
 // Mechanical delay code mapping for reference:
-// D14 = Cambio de Aceite
-// D15 = Cambio de Llanta
-// D16 = Lubricación
-// D17 = Mantenimiento Programado
-// D18 = Falla Mecánica
-// D19 = Cambio Uñas/Cuchillas
+// D14 = Falla Mecánica
+// D15 = Falla Eléctrica
+// D16 = Falla Hidráulica
+// D17 = Falla de Neumáticos
+// D18 = Mantenimiento Programado
+// D19 = Mantenimiento Preventivo
 // D20 = Otros (with free text)
 
 // =====================================================
 // Operational Delay Codes (for reference)
 // =====================================================
-// D01 = Abastecimiento de combustible
-// D02 = Toma de alimentos y/o descanso
-// D03 = Espera de ruta
-// D04 = Falla de operador
-// D05 = Traslado de frente
-// D06 = Cambio de guardia
-// D07 = Inspección de Equipo
+// D01 = Falta de Frente
+// D02 = Falta de Combustible
+// D03 = Falta de Lubricantes
+// D04 = Traslado
+// D05 = Corte de Tráfico
+// D06 = Derrumbe
+// D07 = Falta de Agua
 
 // =====================================================
 // Constants for dropdown/checkbox options
 // =====================================================
 
 export const ACTIVITY_CODES = {
-  '01': 'Excavación',
-  '02': 'Sub Base',
-  '03': 'Base Estabilizada',
-  '04': 'Tratamiento Superficial Bicapa',
-  '05': 'Producción de Agregados',
-  '06': 'Ejecución de Cunetas',
-  '07': 'Producción de Concreto',
-  '08': 'Transporte de Material por Volquetes',
-  '09': 'Otras Actividades de Producción',
-  '10': 'Otras Actividades de Producción',
-  '11': 'Otras Actividades de Producción',
+  '01': 'Corte en Banco',
+  '02': 'Excavación',
+  '03': 'Cargado de Material',
+  '04': 'Relleno',
+  '05': 'Conformado',
+  '06': 'Perfilado',
+  '07': 'Nivelado',
+  '08': 'Compactado',
+  '09': 'Otras',
+  '10': 'Otras',
+  '11': 'Otras',
 };
 
 export const OPERATIONAL_DELAY_CODES = {
-  D01: 'Abastecimiento de combustible',
-  D02: 'Toma de alimentos y/o descanso',
-  D03: 'Espera de ruta',
-  D04: 'Falla de operador',
-  D05: 'Traslado de frente',
-  D06: 'Cambio de guardia',
-  D07: 'Inspección de Equipo',
+  D01: 'Falta de Frente',
+  D02: 'Falta de Combustible',
+  D03: 'Falta de Lubricantes',
+  D04: 'Traslado',
+  D05: 'Corte de Tráfico',
+  D06: 'Derrumbe',
+  D07: 'Falta de Agua',
 };
 
 export const OTHER_EVENT_CODES = {
-  D08: 'Limpieza de Tolva',
-  D09: 'Limpieza de Tolva',
-  D10: 'Stand By',
-  D11: 'Condición Climática',
-  D12: 'Paros Sociales',
+  D08: 'Condiciones Climáticas',
+  D09: 'Daños a terceros (Corte de Servicios)',
+  D10: 'Coordinación con Entidades',
+  D11: 'Falta de Personal',
+  D12: 'Esperando Instrucciones',
   D13: 'Otros',
 };
 
 export const MECHANICAL_DELAY_CODES = {
-  D14: 'Cambio de Aceite',
-  D15: 'Cambio de Llanta',
-  D16: 'Lubricación',
-  D17: 'Mantenimiento Programado',
-  D18: 'Falla Mecánica',
-  D19: 'Cambio Uñas/Cuchillas',
+  D14: 'Falla Mecánica',
+  D15: 'Falla Eléctrica',
+  D16: 'Falla Hidráulica',
+  D17: 'Falla de Neumáticos',
+  D18: 'Mantenimiento Programado',
+  D19: 'Mantenimiento Preventivo',
   D20: 'Otros',
 };

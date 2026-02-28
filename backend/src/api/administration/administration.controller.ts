@@ -9,8 +9,9 @@ export class AdministrationController {
 
   getCostCenters = async (req: Request, res: Response) => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const { search, project_id } = req.query;
-      const costCenters = await this.costCenterService.findAll({
+      const costCenters = await this.costCenterService.findAll(tenantId, {
         search: search as string,
         projectId: project_id ? parseInt(project_id as string) : undefined,
       });
@@ -27,7 +28,8 @@ export class AdministrationController {
 
   createCostCenter = async (req: Request, res: Response) => {
     try {
-      const costCenter = await this.costCenterService.create(req.body);
+      const tenantId = (req as any).user!.id_empresa;
+      const costCenter = await this.costCenterService.create(tenantId, req.body);
       sendCreated(res, costCenter);
     } catch (error: any) {
       Logger.error('Error creating cost center', {
@@ -41,13 +43,14 @@ export class AdministrationController {
 
   getCostCenterById = async (req: Request, res: Response) => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const costCenter = await this.costCenterService.findById(id);
+      const costCenter = await this.costCenterService.findById(tenantId, id);
       if (!costCenter) {
         sendError(res, 404, 'COST_CENTER_NOT_FOUND', 'Centro de costo no encontrado');
         return;
@@ -67,13 +70,14 @@ export class AdministrationController {
 
   updateCostCenter = async (req: Request, res: Response) => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      const costCenter = await this.costCenterService.update(id, req.body);
+      const costCenter = await this.costCenterService.update(tenantId, id, req.body);
       sendSuccess(res, costCenter);
     } catch (error: any) {
       Logger.error('Error updating cost center', {
@@ -88,13 +92,14 @@ export class AdministrationController {
 
   deleteCostCenter = async (req: Request, res: Response) => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         sendError(res, 400, 'INVALID_ID', 'ID inválido');
         return;
       }
 
-      await this.costCenterService.delete(id);
+      await this.costCenterService.delete(tenantId, id);
       res.status(204).send();
     } catch (error: any) {
       Logger.error('Error deleting cost center', {

@@ -195,24 +195,13 @@ export type AddScheduleDetailDto = PaymentScheduleDetailCreateDto;
  * ### Recommendation
  *
  * - Use `cancel()` instead of `delete()` for approved schedules
- * - Implement soft delete in Phase 21 (add `deleted_at` column)
+ * - Implement soft delete (add `deleted_at` column)
  * - Keep all records for audit trail
  *
- * ## Multi-Tenancy Notes
+ * ## Multi-Tenancy
  *
- * **Status**: Tenant context filtering NOT YET IMPLEMENTED (deferred to Phase 21)
- *
- * **Blocker**: Database schema missing `tenant_id` column in `programacion_pago` table
- *
- * **Required Changes** (Phase 21):
- * 1. Add `tenant_id` column to `programacion_pago` table
- * 2. Add `tenant_id` foreign key to `empresas` table
- * 3. Add `tenant_id` index for performance
- * 4. Update all queries to filter by tenant_id
- * 5. Add tenant_id validation in create/update operations
- * 6. Update repository methods to accept tenant_id
- *
- * **Current TODOs**: Marked with `// TODO: [Phase 21 - Tenant Context]` comments
+ * All queries are filtered by `tenantId` for data isolation.
+ * The `tenantId` is set on entity creation and used as a filter in all read operations.
  *
  * ## Related Services
  *
@@ -304,8 +293,8 @@ export class PaymentScheduleService {
    * @param data.payment_date - Actual payment date
    * @param data.description - Optional description/notes
    * @param data.currency - Currency (PEN or USD), defaults to PEN
-   * @param _userId - User ID creating the schedule (not used yet)
-   * @param _tenantId - Tenant ID (not used yet, deferred to Phase 21)
+   * @param _userId - User ID creating the schedule
+   * @param tenantId - Tenant identifier for data isolation
    *
    * @returns Created payment schedule with status = DRAFT
    *
@@ -322,10 +311,11 @@ export class PaymentScheduleService {
    * // Result: { id: 123, status: 'draft', total_amount: 0 }
    * ```
    */
-  async create(data: PaymentScheduleCreateDto, _userId: number, _tenantId: number) {
+  async create(data: PaymentScheduleCreateDto, _userId: number, tenantId: number) {
     try {
       const schedule = PaymentScheduleRepository.create({
         ...data,
+        tenantId,
         status: PaymentScheduleStatus.DRAFT,
       });
       const saved = await PaymentScheduleRepository.save(schedule);
@@ -357,7 +347,7 @@ export class PaymentScheduleService {
    * - `currency`: Payment currency
    * - `created_at`: Creation timestamp (default)
    *
-   * @param _tenantId - Tenant ID for filtering (not used yet, deferred to Phase 21)
+   * @param tenantId - Tenant identifier for data isolation
    * @param filters - Optional pagination and sorting filters
    * @param filters.page - Page number (1-indexed), default: 1
    * @param filters.limit - Items per page, default: 20
@@ -380,7 +370,7 @@ export class PaymentScheduleService {
    * ```
    */
   async findAll(
-    _tenantId: number,
+    tenantId: number,
     filters?: {
       page?: number;
       limit?: number;
@@ -408,14 +398,10 @@ export class PaymentScheduleService {
           : 'ps.createdAt';
       const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
 
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.where('ps.tenant_id = :tenantId', { tenantId: _tenantId })
-
-      // Use query builder for dynamic sorting
-      const queryBuilder = PaymentScheduleRepository.createQueryBuilder('ps').orderBy(
-        sortBy,
-        sortOrder
-      );
+      // Use query builder with tenant isolation
+      const queryBuilder = PaymentScheduleRepository.createQueryBuilder('ps')
+        .andWhere('ps.tenantId = :tenantId', { tenantId })
+        .orderBy(sortBy, sortOrder);
 
       // Get total count
       const total = await queryBuilder.getCount();
@@ -472,11 +458,12 @@ export class PaymentScheduleService {
    * // }
    * ```
    */
-  async findOne(id: number) {
+  async findOne(tenantId: number, id: number) {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant validation
-      // Verify schedule belongs to tenant before returning
-      const schedule = await PaymentScheduleRepository.findWithDetails(id);
+      const schedule = await PaymentScheduleRepository.findOne({
+        where: { id, tenantId },
+        relations: ['details'],
+      });
 
       if (!schedule) {
         throw new NotFoundError('PaymentSchedule', id);
@@ -532,11 +519,9 @@ export class PaymentScheduleService {
    * // Result: { id: 123, schedule_date: '2026-02-10', ... }
    * ```
    */
-  async update(id: number, data: PaymentScheduleUpdateDto) {
+  async update(tenantId: number, id: number, data: PaymentScheduleUpdateDto) {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant validation
-      // Verify schedule belongs to tenant before updating
-      const schedule = await this.findOne(id);
+      const schedule = await this.findOne(tenantId, id);
 
       const changedFields = Object.keys(data);
       PaymentScheduleRepository.merge(schedule, data);
@@ -592,11 +577,9 @@ export class PaymentScheduleService {
    * // Schedule 123 permanently deleted
    * ```
    */
-  async delete(id: number) {
+  async delete(tenantId: number, id: number) {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant validation
-      // Verify schedule belongs to tenant before deleting
-      const schedule = await this.findOne(id);
+      const schedule = await this.findOne(tenantId, id);
 
       if (schedule.status !== PaymentScheduleStatus.DRAFT) {
         throw new ValidationError('Only draft schedules can be deleted', [
@@ -665,11 +648,11 @@ export class PaymentScheduleService {
    * // Schedule total_amount increased by 5000
    * ```
    */
-  async addDetail(scheduleId: number, data: PaymentScheduleDetailCreateDto) {
+  async addDetail(tenantId: number, scheduleId: number, data: PaymentScheduleDetailCreateDto) {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant validation
-      // Verify schedule belongs to tenant before adding detail
-      const schedule = await PaymentScheduleRepository.findOne({ where: { id: scheduleId } });
+      const schedule = await PaymentScheduleRepository.findOne({
+        where: { id: scheduleId, tenantId },
+      });
 
       if (!schedule) {
         throw new NotFoundError('PaymentSchedule', scheduleId);
@@ -744,11 +727,11 @@ export class PaymentScheduleService {
    * // Detail 456 removed, schedule total_amount decreased
    * ```
    */
-  async removeDetail(scheduleId: number, detailId: number) {
+  async removeDetail(tenantId: number, scheduleId: number, detailId: number) {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant validation
-      // Verify schedule belongs to tenant before removing detail
-      const schedule = await PaymentScheduleRepository.findOne({ where: { id: scheduleId } });
+      const schedule = await PaymentScheduleRepository.findOne({
+        where: { id: scheduleId, tenantId },
+      });
 
       if (!schedule) {
         throw new NotFoundError('PaymentSchedule', scheduleId);
@@ -831,10 +814,9 @@ export class PaymentScheduleService {
    * // Result: { id: 123, status: 'approved', ... }
    * ```
    */
-  async approve(id: number): Promise<PaymentSchedule> {
+  async approve(tenantId: number, id: number): Promise<PaymentSchedule> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Inherited from findOne
-      const schedule = await this.findOne(id);
+      const schedule = await this.findOne(tenantId, id);
 
       if (schedule.status !== PaymentScheduleStatus.DRAFT) {
         throw new ValidationError('Only draft schedules can be approved', [
@@ -858,7 +840,7 @@ export class PaymentScheduleService {
         new_status: PaymentScheduleStatus.APPROVED,
       });
 
-      return await this.findOne(id);
+      return await this.findOne(tenantId, id);
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ValidationError) {
         throw error;
@@ -902,10 +884,9 @@ export class PaymentScheduleService {
    * // Result: { id: 123, status: 'processed', ... }
    * ```
    */
-  async process(id: number): Promise<PaymentSchedule> {
+  async process(tenantId: number, id: number): Promise<PaymentSchedule> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Inherited from findOne
-      const schedule = await this.findOne(id);
+      const schedule = await this.findOne(tenantId, id);
 
       if (schedule.status !== PaymentScheduleStatus.APPROVED) {
         throw new ValidationError('Only approved schedules can be processed', [
@@ -929,7 +910,7 @@ export class PaymentScheduleService {
         new_status: PaymentScheduleStatus.PROCESSED,
       });
 
-      return await this.findOne(id);
+      return await this.findOne(tenantId, id);
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ValidationError) {
         throw error;
@@ -974,10 +955,9 @@ export class PaymentScheduleService {
    * // Result: { id: 123, status: 'cancelled', ... }
    * ```
    */
-  async cancel(id: number): Promise<PaymentSchedule> {
+  async cancel(tenantId: number, id: number): Promise<PaymentSchedule> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Inherited from findOne
-      const schedule = await this.findOne(id);
+      const schedule = await this.findOne(tenantId, id);
 
       if (schedule.status === PaymentScheduleStatus.PROCESSED) {
         throw new ValidationError('Processed schedules cannot be cancelled', [
@@ -1003,7 +983,7 @@ export class PaymentScheduleService {
         new_status: PaymentScheduleStatus.CANCELLED,
       });
 
-      return await this.findOne(id);
+      return await this.findOne(tenantId, id);
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ValidationError) {
         throw error;

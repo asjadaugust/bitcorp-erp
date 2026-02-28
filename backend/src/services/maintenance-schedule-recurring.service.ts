@@ -215,6 +215,7 @@ export class MaintenanceScheduleRecurringService {
    * ```
    */
   async findAll(
+    tenantId: number,
     filters: MaintenanceScheduleRecurringFilterDto
   ): Promise<{ data: MaintenanceScheduleRecurringDto[]; total: number }> {
     try {
@@ -245,10 +246,9 @@ export class MaintenanceScheduleRecurringService {
           : 'ms.createdAt';
       const sortOrder = mappedFilters.sort_order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: queryBuilder.andWhere('ms.tenant_id = :tenantId', { tenantId })
       const queryBuilder = this.repository
         .createQueryBuilder('ms')
+        .where('ms.tenantId = :tenantId', { tenantId })
         .leftJoinAndSelect('ms.equipment', 'e')
         .leftJoinAndSelect('ms.project', 'p');
 
@@ -338,12 +338,10 @@ export class MaintenanceScheduleRecurringService {
    * }
    * ```
    */
-  async findById(id: number): Promise<MaintenanceScheduleRecurringDto | null> {
+  async findById(tenantId: number, id: number): Promise<MaintenanceScheduleRecurringDto | null> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id, tenant_id: tenantId }
       const schedule = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['equipment', 'project'],
       });
 
@@ -431,6 +429,7 @@ export class MaintenanceScheduleRecurringService {
    * ```
    */
   async create(
+    tenantId: number,
     dto: CreateMaintenanceScheduleRecurringDto
   ): Promise<MaintenanceScheduleRecurringDto> {
     try {
@@ -455,14 +454,15 @@ export class MaintenanceScheduleRecurringService {
         status: 'active',
       };
 
-      const schedule = this.repository.create(fromMaintenanceScheduleRecurringDto(entityData));
+      const schedule = this.repository.create({
+        ...fromMaintenanceScheduleRecurringDto(entityData),
+        tenantId,
+      });
       const saved = await this.repository.save(schedule);
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id: saved.id, tenant_id: tenantId }
       // Reload with relations
       const reloaded = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['equipment', 'project'],
       });
 
@@ -545,13 +545,12 @@ export class MaintenanceScheduleRecurringService {
    * ```
    */
   async update(
+    tenantId: number,
     id: number,
     dto: UpdateMaintenanceScheduleRecurringDto
   ): Promise<MaintenanceScheduleRecurringDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id, tenant_id: tenantId }
-      const schedule = await this.repository.findOne({ where: { id } });
+      const schedule = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!schedule) {
         throw new NotFoundError('MaintenanceScheduleRecurring', id);
@@ -569,11 +568,9 @@ export class MaintenanceScheduleRecurringService {
 
       const saved = await this.repository.save(schedule);
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id: saved.id, tenant_id: tenantId }
       // Reload with relations
       const reloaded = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['equipment', 'project'],
       });
 
@@ -639,12 +636,10 @@ export class MaintenanceScheduleRecurringService {
    * // Schedule is now status='inactive' and hidden from normal queries
    * ```
    */
-  async delete(id: number): Promise<boolean> {
+  async delete(tenantId: number, id: number): Promise<boolean> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id, tenant_id: tenantId }
       const schedule = await this.repository.findOne({
-        where: { id },
+        where: { id, tenantId },
       });
 
       if (!schedule) {
@@ -721,18 +716,20 @@ export class MaintenanceScheduleRecurringService {
    * });
    * ```
    */
-  async findDueSoon(daysAhead: number = 30): Promise<MaintenanceScheduleRecurringDto[]> {
+  async findDueSoon(
+    tenantId: number,
+    daysAhead: number = 30
+  ): Promise<MaintenanceScheduleRecurringDto[]> {
     try {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + daysAhead);
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: .andWhere('ms.tenant_id = :tenantId', { tenantId })
       const schedules = await this.repository
         .createQueryBuilder('ms')
         .leftJoinAndSelect('ms.equipment', 'e')
         .leftJoinAndSelect('ms.project', 'p')
-        .where('ms.status = :status', { status: 'active' })
+        .where('ms.tenantId = :tenantId', { tenantId })
+        .andWhere('ms.status = :status', { status: 'active' })
         .andWhere('ms.autoGenerateTasks = :autoGenerate', { autoGenerate: true })
         .andWhere('ms.nextDueDate <= :futureDate', { futureDate })
         .orderBy('ms.nextDueDate', 'ASC')
@@ -799,11 +796,13 @@ export class MaintenanceScheduleRecurringService {
    * console.log(`Next due: ${schedule.next_due_date}`);
    * ```
    */
-  async complete(id: number, completionHours?: number): Promise<MaintenanceScheduleRecurringDto> {
+  async complete(
+    tenantId: number,
+    id: number,
+    completionHours?: number
+  ): Promise<MaintenanceScheduleRecurringDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id, tenant_id: tenantId }
-      const schedule = await this.repository.findOne({ where: { id } });
+      const schedule = await this.repository.findOne({ where: { id, tenantId } });
 
       if (!schedule) {
         throw new NotFoundError('MaintenanceScheduleRecurring', id);
@@ -821,11 +820,9 @@ export class MaintenanceScheduleRecurringService {
 
       const saved = await this.repository.save(schedule);
 
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: where: { id: saved.id, tenant_id: tenantId }
       // Reload with relations
       const reloaded = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['equipment', 'project'],
       });
 

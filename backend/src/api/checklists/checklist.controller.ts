@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { ChecklistService } from '../../services/checklist.service';
 import {
   sendSuccess,
@@ -7,6 +7,7 @@ import {
   sendPaginatedSuccess,
   sendError,
 } from '../../utils/api-response';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import PDFDocument from 'pdfkit';
 
 export class ChecklistController {
@@ -28,8 +29,10 @@ export class ChecklistController {
    * @query sort_by - Sort field (default: 'nombre')
    * @query sort_order - Sort order 'ASC' or 'DESC' (default: 'ASC')
    */
-  getAllTemplates = async (req: Request, res: Response, next: NextFunction) => {
+  getAllTemplates = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
+
       // Parse pagination
       const page = parseInt(req.query.page as string) || 1;
       const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100
@@ -43,8 +46,6 @@ export class ChecklistController {
         tipoEquipo: req.query.tipoEquipo,
         search: req.query.search,
       };
-
-      const tenantId = (req as any).user?.id_empresa || 1;
       // Get all templates from service
       const allTemplates = await this.checklistService.getAllTemplates(tenantId, filters);
 
@@ -91,10 +92,10 @@ export class ChecklistController {
     }
   };
 
-  getTemplateById = async (req: Request, res: Response, next: NextFunction) => {
+  getTemplateById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const template = await this.checklistService.getTemplateById(tenantId, parseInt(id));
 
       if (!template) {
@@ -113,10 +114,10 @@ export class ChecklistController {
     }
   };
 
-  createTemplate = async (req: Request, res: Response, next: NextFunction) => {
+  createTemplate = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).user?.id_empresa || 1;
-      const userId = (req as any).user.id;
+      const tenantId = req.user!.id_empresa;
+      const userId = req.user!.id_usuario;
       const template = await this.checklistService.createTemplate(tenantId, req.body, userId);
       return sendCreated(res, template);
     } catch (error) {
@@ -130,10 +131,10 @@ export class ChecklistController {
     }
   };
 
-  updateTemplate = async (req: Request, res: Response, next: NextFunction) => {
+  updateTemplate = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const template = await this.checklistService.updateTemplate(tenantId, parseInt(id), req.body);
 
       if (!template) {
@@ -152,10 +153,10 @@ export class ChecklistController {
     }
   };
 
-  deleteTemplate = async (req: Request, res: Response, next: NextFunction) => {
+  deleteTemplate = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const success = await this.checklistService.deleteTemplate(tenantId, parseInt(id));
 
       if (!success) {
@@ -175,9 +176,9 @@ export class ChecklistController {
   };
 
   // ===== ITEMS =====
-  createItem = async (req: Request, res: Response, next: NextFunction) => {
+  createItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const item = await this.checklistService.createItem(tenantId, req.body);
       return sendCreated(res, item);
     } catch (error) {
@@ -185,10 +186,10 @@ export class ChecklistController {
     }
   };
 
-  updateItem = async (req: Request, res: Response, next: NextFunction) => {
+  updateItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const item = await this.checklistService.updateItem(tenantId, parseInt(id), req.body);
 
       if (!item) {
@@ -201,10 +202,10 @@ export class ChecklistController {
     }
   };
 
-  deleteItem = async (req: Request, res: Response, next: NextFunction) => {
+  deleteItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const success = await this.checklistService.deleteItem(tenantId, parseInt(id));
 
       if (!success) {
@@ -223,8 +224,9 @@ export class ChecklistController {
    * List all checklist inspections with pagination and filters
    * Service already handles pagination at DB level
    */
-  getAllInspections = async (req: Request, res: Response, next: NextFunction) => {
+  getAllInspections = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const filters = {
         page: req.query.page,
         limit: req.query.limit,
@@ -237,8 +239,6 @@ export class ChecklistController {
         sort_by: req.query.sort_by,
         sort_order: req.query.sort_order,
       };
-
-      const tenantId = (req as any).user?.id_empresa || 1;
       const result = await this.checklistService.getAllInspections(tenantId, filters);
 
       // Use standard pagination helper (converts totalPages to total_pages)
@@ -258,10 +258,10 @@ export class ChecklistController {
     }
   };
 
-  getInspectionById = async (req: Request, res: Response, next: NextFunction) => {
+  getInspectionById = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const inspection = await this.checklistService.getInspectionById(tenantId, parseInt(id));
 
       if (!inspection) {
@@ -274,10 +274,10 @@ export class ChecklistController {
     }
   };
 
-  getInspectionWithResults = async (req: Request, res: Response, next: NextFunction) => {
+  getInspectionWithResults = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const inspection = await this.checklistService.getInspectionWithResults(
         tenantId,
         parseInt(id)
@@ -293,9 +293,9 @@ export class ChecklistController {
     }
   };
 
-  createInspection = async (req: Request, res: Response, next: NextFunction) => {
+  createInspection = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const inspection = await this.checklistService.createInspection(tenantId, req.body);
       res.status(201).json({ success: true, data: inspection });
     } catch (error) {
@@ -303,10 +303,10 @@ export class ChecklistController {
     }
   };
 
-  updateInspection = async (req: Request, res: Response, next: NextFunction) => {
+  updateInspection = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const inspection = await this.checklistService.updateInspection(
         tenantId,
         parseInt(id),
@@ -323,10 +323,10 @@ export class ChecklistController {
     }
   };
 
-  completeInspection = async (req: Request, res: Response, next: NextFunction) => {
+  completeInspection = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const inspection = await this.checklistService.completeInspection(tenantId, parseInt(id));
 
       if (!inspection) {
@@ -339,10 +339,10 @@ export class ChecklistController {
     }
   };
 
-  cancelInspection = async (req: Request, res: Response, next: NextFunction) => {
+  cancelInspection = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const inspection = await this.checklistService.cancelInspection(tenantId, parseInt(id));
 
       if (!inspection) {
@@ -356,9 +356,9 @@ export class ChecklistController {
   };
 
   // ===== RESULTS =====
-  saveResult = async (req: Request, res: Response, next: NextFunction) => {
+  saveResult = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const result = await this.checklistService.saveResult(tenantId, req.body);
       res.json({ success: true, data: result });
     } catch (error) {
@@ -366,10 +366,10 @@ export class ChecklistController {
     }
   };
 
-  getResultsByInspection = async (req: Request, res: Response, next: NextFunction) => {
+  getResultsByInspection = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { inspectionId } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const results = await this.checklistService.getResultsByInspection(
         tenantId,
         parseInt(inspectionId)
@@ -381,14 +381,13 @@ export class ChecklistController {
   };
 
   // ===== STATS =====
-  getInspectionStats = async (req: Request, res: Response, next: NextFunction) => {
+  getInspectionStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const tenantId = req.user!.id_empresa;
       const filters = {
         startDate: req.query.startDate,
         endDate: req.query.endDate,
       };
-
-      const tenantId = (req as any).user?.id_empresa || 1;
       const stats = await this.checklistService.getInspectionStats(tenantId, filters);
       res.json({ success: true, data: stats });
     } catch (error) {
@@ -397,10 +396,10 @@ export class ChecklistController {
   };
 
   // ===== PDF EXPORT =====
-  exportInspectionPDF = async (req: Request, res: Response, next: NextFunction) => {
+  exportInspectionPDF = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const tenantId = (req as any).user?.id_empresa || 1;
+      const tenantId = req.user!.id_empresa;
       const inspection = await this.checklistService.getInspectionWithResults(
         tenantId,
         parseInt(id)
@@ -620,7 +619,7 @@ export class ChecklistController {
    * GET /api/checklists/inspections/overdue
    * Get all overdue inspections based on template frequency rules
    */
-  getOverdueInspections = async (req: Request, res: Response, next: NextFunction) => {
+  getOverdueInspections = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const tenantId = req.user!.id_empresa;
       const data = await this.checklistService.getOverdueInspections(tenantId);

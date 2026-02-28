@@ -29,6 +29,7 @@ import accountsPayableRoutes from './api/accounts-payable/accounts-payable.route
 import paymentScheduleRoutes from './api/payment-schedules/payment-schedule.routes';
 import solicitudesEquipoRoutes from './api/solicitudes-equipo/solicitudes-equipo.routes';
 import actasDevolucionRoutes from './api/actas-devolucion/actas-devolucion.routes';
+import actasEntregaRoutes from './api/actas-entrega/actas-entrega.routes';
 import ordenesAlquilerRoutes from './api/ordenes-alquiler/ordenes-alquiler.routes';
 import periodosInoperatividadRoutes from './api/periodos-inoperatividad/periodos-inoperatividad.routes';
 import tiposEquipoRoutes from './api/tipos-equipo/tipos-equipo.routes';
@@ -146,6 +147,7 @@ app.use('/api/valuations', valuationRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/solicitudes-equipo', solicitudesEquipoRoutes);
 app.use('/api/actas-devolucion', actasDevolucionRoutes);
+app.use('/api/actas-entrega', actasEntregaRoutes);
 app.use('/api/ordenes-alquiler', ordenesAlquilerRoutes);
 app.use('/api/periodos-inoperatividad', periodosInoperatividadRoutes);
 app.use('/api/tipos-equipo', tiposEquipoRoutes);

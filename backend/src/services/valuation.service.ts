@@ -111,7 +111,6 @@ export class ValuationService {
    * pagination with configurable page size. Results include creator and approver
    * relations via LEFT JOIN.
    *
-   * TODO: [Phase 21] Add tenant context - filter by req.tenantContext.tenantId
    *
    * @param tenantId - Tenant context for data isolation
    * @param filters - Optional query filters
@@ -264,7 +263,6 @@ export class ValuationService {
    *
    * Returns null if valuation not found (does not throw error).
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    *
    * @param id - Valuation ID
    *
@@ -321,7 +319,7 @@ export class ValuationService {
    * - fecha_fin >= fecha_inicio (should validate, currently missing)
    * - All required fields present (should validate, currently missing)
    *
-   * TODO: [Phase 21] Add tenant context - set tenant_id on creation
+   *
    * TODO: Add numero_valorizacion uniqueness validation
    * TODO: Add date range validation
    *
@@ -455,7 +453,7 @@ export class ValuationService {
    *
    * TODO: Add terminal state protection
    * TODO: Add estado transition validation if estado changed
-   * TODO: [Phase 21] Add tenant context - verify ownership before update
+   *
    *
    * @param id - Valuation ID
    * @param data - Partial valuation data to update
@@ -600,7 +598,7 @@ export class ValuationService {
    * CHANGED: Previously performed hard delete (data destruction).
    * Now performs soft delete to preserve audit trail.
    *
-   * TODO: [Phase 21] Add tenant context - verify ownership before delete
+   *
    *
    * @param id - Valuation ID to soft delete
    *
@@ -619,8 +617,8 @@ export class ValuationService {
    */
   async delete(tenantId: number, id: number): Promise<boolean> {
     try {
-      // Find valuation first
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      // Find valuation first (tenant-scoped)
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -669,7 +667,7 @@ export class ValuationService {
    * - Only DIRECTOR+ roles can approve (should check, currently missing)
    *
    * TODO: Add role-based access control (DIRECTOR+ only)
-   * TODO: [Phase 21] Add tenant context
+   *
    *
    * @param id - Valuation ID to approve
    * @param userId - ID of user approving (must be DIRECTOR+)
@@ -692,9 +690,9 @@ export class ValuationService {
    * Submit a draft valuation to PENDIENTE state.
    * State transition: BORRADOR → PENDIENTE
    */
-  async submitDraft(id: number, userId: number): Promise<ValuationDto> {
+  async submitDraft(tenantId: number, id: number, userId: number): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -763,9 +761,9 @@ export class ValuationService {
    * Validate a valuation (Control Oficina Central step).
    * State transition: EN_REVISION → VALIDADO
    */
-  async validate(id: number, userId: number): Promise<ValuationDto> {
+  async validate(tenantId: number, id: number, userId: number): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -813,9 +811,9 @@ export class ValuationService {
    * Reopen a rejected valuation for rework.
    * State transition: RECHAZADO → BORRADOR
    */
-  async reopen(id: number, userId: number): Promise<ValuationDto> {
+  async reopen(tenantId: number, id: number, userId: number): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -861,9 +859,9 @@ export class ValuationService {
     }
   }
 
-  async approve(id: number, userId: number): Promise<ValuationDto> {
+  async approve(tenantId: number, id: number, userId: number): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -932,7 +930,7 @@ export class ValuationService {
    * - Current estado must be PENDIENTE
    *
    * TODO: Validate all required data present before submission
-   * TODO: [Phase 21] Add tenant context
+   *
    *
    * @param id - Valuation ID to submit
    * @param userId - ID of user submitting
@@ -951,9 +949,9 @@ export class ValuationService {
    * // Email sent to directors for approval
    * ```
    */
-  async submitForReview(id: number, userId: number): Promise<ValuationDto> {
+  async submitForReview(tenantId: number, id: number, userId: number): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -1038,7 +1036,7 @@ export class ValuationService {
    * Should prevent all transitions from terminal states.
    *
    * TODO: Add terminal state protection (check RECHAZADO too)
-   * TODO: [Phase 21] Add tenant context
+   *
    *
    * @param id - Valuation ID to reject
    * @param userId - ID of user rejecting
@@ -1062,9 +1060,14 @@ export class ValuationService {
    * // Cannot be modified or re-submitted
    * ```
    */
-  async reject(id: number, userId: number, reason: string): Promise<ValuationDto> {
+  async reject(
+    tenantId: number,
+    id: number,
+    userId: number,
+    reason: string
+  ): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -1159,7 +1162,7 @@ export class ValuationService {
    * - PAGADO is terminal (cannot transition out)
    *
    * TODO: Validate fechaPago not in future
-   * TODO: [Phase 21] Add tenant context
+   *
    *
    * @param id - Valuation ID to mark as paid
    * @param userId - ID of user recording payment
@@ -1187,12 +1190,13 @@ export class ValuationService {
    * ```
    */
   async markAsPaid(
+    tenantId: number,
     id: number,
     userId: number,
     paymentData: { fechaPago?: Date; referenciaPago?: string; metodoPago?: string }
   ): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -1287,7 +1291,7 @@ export class ValuationService {
    * 2. Monthly trend - Last 6 months of valuation totals
    *
    * TODO: Implement top_equipment (currently returns empty array)
-   * TODO: [Phase 21] Add tenant context - filter by tenant
+   *
    *
    * @returns Object with status_breakdown, monthly_trend, top_equipment
    *
@@ -1303,13 +1307,14 @@ export class ValuationService {
    * // }
    * ```
    */
-  async getAnalytics() {
+  async getAnalytics(tenantId: number) {
     try {
       const statusStats = await this.repository
         .createQueryBuilder('v')
         .select('v.estado', 'estado')
         .addSelect('COUNT(*)', 'count')
         .addSelect('COALESCE(SUM(v.total_valorizado), 0)', 'total')
+        .where('v.tenantId = :tenantId', { tenantId })
         .groupBy('v.estado')
         .getRawMany();
 
@@ -1317,6 +1322,7 @@ export class ValuationService {
         .createQueryBuilder('v')
         .select('v.periodo', 'periodo')
         .addSelect('COALESCE(SUM(v.total_valorizado), 0)', 'total')
+        .where('v.tenantId = :tenantId', { tenantId })
         .groupBy('v.periodo')
         .orderBy('v.periodo', 'DESC')
         .limit(6)
@@ -1363,12 +1369,13 @@ export class ValuationService {
    * Can be done when valuation is in BORRADOR or PENDIENTE state.
    */
   async registerConformidad(
+    tenantId: number,
     id: number,
     userId: number,
     data: { fecha?: Date; observaciones?: string }
   ): Promise<ValuationDto> {
     try {
-      const valorizacion = await this.repository.findOne({ where: { id } });
+      const valorizacion = await this.repository.findOne({ where: { id, tenantId } });
       if (!valorizacion) {
         throw new NotFoundError('Valuation', id);
       }
@@ -1488,7 +1495,8 @@ export class ValuationService {
         .select('COALESCE(SUM(v.total_valorizado), 0)', 'total_valorizado')
         .addSelect('COALESCE(SUM(v.total_con_igv), 0)', 'total_con_igv')
         .addSelect('COUNT(*)::int', 'total_count')
-        .where('v.estado != :eliminado', { eliminado: 'ELIMINADO' });
+        .where('v.tenantId = :tenantId', { tenantId })
+        .andWhere('v.estado != :eliminado', { eliminado: 'ELIMINADO' });
 
       // Apply same filters
       if (filters?.proyecto_id) {
@@ -1519,7 +1527,8 @@ export class ValuationService {
         .createQueryBuilder('v')
         .select('v.estado', 'estado')
         .addSelect('COUNT(*)::int', 'count')
-        .where('v.estado != :eliminado', { eliminado: 'ELIMINADO' })
+        .where('v.tenantId = :tenantId', { tenantId })
+        .andWhere('v.estado != :eliminado', { eliminado: 'ELIMINADO' })
         .groupBy('v.estado')
         .getRawMany();
 
@@ -2021,7 +2030,7 @@ export class ValuationService {
    * 3. Sets fecha_inicio (first day of month) and fecha_fin (last day)
    * 4. Populates valuation with calculated values
    *
-   * TODO: [Phase 21] Add tenant context
+   *
    * TODO: Wait for calculateValuation() implementation
    *
    * @param contractId - Contract ID (string)
@@ -2125,11 +2134,12 @@ export class ValuationService {
     const fechaFin = new Date(year, month, 0);
     const periodo = `${year}-${String(month).padStart(2, '0')}`;
 
-    // Find all active contracts for this period
+    // Find all active contracts for this period (tenant-scoped)
     const activeContracts = await this.contractRepository
       .createQueryBuilder('c')
       .leftJoinAndSelect('c.equipo', 'equipo')
-      .where('c.estado = :estado', { estado: 'ACTIVO' })
+      .where('c.tenantId = :tenantId', { tenantId })
+      .andWhere('c.estado = :estado', { estado: 'ACTIVO' })
       .andWhere('c.fecha_inicio <= :fechaFin', { fechaFin })
       .andWhere('c.fecha_fin >= :fechaInicio', { fechaInicio })
       .getMany();
@@ -2236,7 +2246,6 @@ export class ValuationService {
    * - contract.equipo (equipos)
    * - equipo.provider (proveedores)
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    *
    * @param id - Valuation ID
    *
@@ -2254,7 +2263,7 @@ export class ValuationService {
    * // Use for PDF header generation
    * ```
    */
-  async getValuationPage1Data(id: number): Promise<ValuationPage1Dto> {
+  async getValuationPage1Data(tenantId: number, id: number): Promise<ValuationPage1Dto> {
     try {
       // Fetch valuation with relations
       const valuation = await this.repository
@@ -2262,6 +2271,7 @@ export class ValuationService {
         .leftJoinAndSelect('v.creator', 'creator')
         .leftJoinAndSelect('v.approver', 'approver')
         .where('v.id = :id', { id })
+        .andWhere('v.tenantId = :tenantId', { tenantId })
         .getOne();
 
       if (!valuation) {
@@ -2346,7 +2356,6 @@ export class ValuationService {
    * 4. All contracts for historical valuations (IN query)
    * 5. Maps contracts to valuations
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    * TODO: Consider caching for equipment with 100+ valuations
    *
    * @param id - Current valuation ID
@@ -2366,12 +2375,13 @@ export class ValuationService {
    * // Use for PDF historical accumulation table
    * ```
    */
-  async getValuationPage2Data(id: number): Promise<ValuationPage2Dto> {
+  async getValuationPage2Data(tenantId: number, id: number): Promise<ValuationPage2Dto> {
     try {
       // Fetch current valuation
       const currentValuation = await this.repository
         .createQueryBuilder('v')
         .where('v.id = :id', { id })
+        .andWhere('v.tenantId = :tenantId', { tenantId })
         .getOne();
 
       if (!currentValuation) {
@@ -2398,6 +2408,7 @@ export class ValuationService {
       const historicalValuations = await this.repository
         .createQueryBuilder('v')
         .where('v.equipo_id = :equipmentId', { equipmentId: contract.equipo.id })
+        .andWhere('v.tenantId = :tenantId', { tenantId })
         .andWhere('v.fecha_fin <= :currentEndDate', { currentEndDate: currentValuation.fechaFin })
         .orderBy('v.fecha_inicio', 'ASC')
         .getMany();
@@ -2475,7 +2486,6 @@ export class ValuationService {
    * - contract.equipo
    * - equipo.provider
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    *
    * @param id - Valuation ID
    *
@@ -2492,10 +2502,10 @@ export class ValuationService {
    * // fuel_records ordered by fecha ASC
    * ```
    */
-  async getValuationPage3Data(id: number): Promise<ValuationPage3Dto> {
+  async getValuationPage3Data(tenantId: number, id: number): Promise<ValuationPage3Dto> {
     try {
       // Fetch valuation
-      const valuation = await this.repository.findOne({ where: { id } });
+      const valuation = await this.repository.findOne({ where: { id, tenantId } });
       if (!valuation) {
         throw new NotFoundError('Valuation', id);
       }
@@ -2567,7 +2577,6 @@ export class ValuationService {
    * - contract.equipo
    * - equipo.provider
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    *
    * @param id - Valuation ID
    *
@@ -2584,10 +2593,10 @@ export class ValuationService {
    * // excess_fuel_record may be null if no excess charges
    * ```
    */
-  async getValuationPage4Data(id: number): Promise<ValuationPage4Dto> {
+  async getValuationPage4Data(tenantId: number, id: number): Promise<ValuationPage4Dto> {
     try {
       // Fetch valuation
-      const valuation = await this.repository.findOne({ where: { id } });
+      const valuation = await this.repository.findOne({ where: { id, tenantId } });
       if (!valuation) {
         throw new NotFoundError('Valuation', id);
       }
@@ -2657,7 +2666,6 @@ export class ValuationService {
    * - contract.equipo
    * - equipo.provider
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    *
    * @param id - Valuation ID
    *
@@ -2674,10 +2682,10 @@ export class ValuationService {
    * // work_expenses ordered by fechaOperacion ASC
    * ```
    */
-  async getValuationPage5Data(id: number): Promise<ValuationPage5Dto> {
+  async getValuationPage5Data(tenantId: number, id: number): Promise<ValuationPage5Dto> {
     try {
       // Fetch valuation
-      const valuation = await this.repository.findOne({ where: { id } });
+      const valuation = await this.repository.findOne({ where: { id, tenantId } });
       if (!valuation) {
         throw new NotFoundError('Valuation', id);
       }
@@ -2750,7 +2758,6 @@ export class ValuationService {
    * - contract.equipo
    * - equipo.provider
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    *
    * @param id - Valuation ID
    *
@@ -2767,10 +2774,10 @@ export class ValuationService {
    * // advances ordered by fechaOperacion ASC
    * ```
    */
-  async getValuationPage6Data(id: number): Promise<ValuationPage6Dto> {
+  async getValuationPage6Data(tenantId: number, id: number): Promise<ValuationPage6Dto> {
     try {
       // Fetch valuation
-      const valuation = await this.repository.findOne({ where: { id } });
+      const valuation = await this.repository.findOne({ where: { id, tenantId } });
       if (!valuation) {
         throw new NotFoundError('Valuation', id);
       }
@@ -2847,7 +2854,6 @@ export class ValuationService {
    * - contract.equipo
    * - equipo.provider
    *
-   * TODO: [Phase 21] Add tenant context - verify valuation belongs to tenant
    *
    * @param id - Valuation ID
    *
@@ -2864,7 +2870,7 @@ export class ValuationService {
    * // Use for PDF final page with totals and signature blocks
    * ```
    */
-  async getValuationPage7Data(id: number): Promise<ValuationPage7Dto> {
+  async getValuationPage7Data(tenantId: number, id: number): Promise<ValuationPage7Dto> {
     try {
       // Fetch valuation with creator and approver
       const valuation = await this.repository
@@ -2872,6 +2878,7 @@ export class ValuationService {
         .leftJoinAndSelect('v.creator', 'creator')
         .leftJoinAndSelect('v.approver', 'approver')
         .where('v.id = :id', { id })
+        .andWhere('v.tenantId = :tenantId', { tenantId })
         .getOne();
 
       if (!valuation) {
@@ -2988,8 +2995,17 @@ export class ValuationService {
     return AppDataSource.getRepository(ValuationPaymentDocument);
   }
 
-  async getPaymentDocuments(valorizacionId: number): Promise<ValuationPaymentDocument[]> {
+  async getPaymentDocuments(
+    tenantId: number,
+    valorizacionId: number
+  ): Promise<ValuationPaymentDocument[]> {
     try {
+      // Verify valuation belongs to tenant
+      const valuation = await this.repository.findOne({ where: { id: valorizacionId, tenantId } });
+      if (!valuation) {
+        throw new NotFoundError('Valuation', valorizacionId);
+      }
+
       const docs = await this.paymentDocRepository.find({
         where: { valorizacionId },
         order: { tipoDocumento: 'ASC' },
@@ -3011,15 +3027,26 @@ export class ValuationService {
     }
   }
 
-  async createPaymentDocument(data: {
-    valorizacion_id: number;
-    tipo_documento: string;
-    numero?: string;
-    fecha_documento?: string;
-    archivo_url?: string;
-    observaciones?: string;
-  }): Promise<ValuationPaymentDocument> {
+  async createPaymentDocument(
+    tenantId: number,
+    data: {
+      valorizacion_id: number;
+      tipo_documento: string;
+      numero?: string;
+      fecha_documento?: string;
+      archivo_url?: string;
+      observaciones?: string;
+    }
+  ): Promise<ValuationPaymentDocument> {
     try {
+      // Verify valuation belongs to tenant
+      const valuation = await this.repository.findOne({
+        where: { id: data.valorizacion_id, tenantId },
+      });
+      if (!valuation) {
+        throw new NotFoundError('Valuation', data.valorizacion_id);
+      }
+
       const doc = this.paymentDocRepository.create({
         valorizacionId: data.valorizacion_id,
         tipoDocumento: data.tipo_documento as any,
@@ -3052,12 +3079,19 @@ export class ValuationService {
   }
 
   async updatePaymentDocument(
+    tenantId: number,
     id: number,
     data: { estado?: string; observaciones?: string }
   ): Promise<ValuationPaymentDocument> {
     try {
       const doc = await this.paymentDocRepository.findOne({ where: { id } });
       if (!doc) throw new NotFoundError('ValuationPaymentDocument', id);
+
+      // Verify valuation belongs to tenant
+      const valuation = await this.repository.findOne({
+        where: { id: doc.valorizacionId, tenantId },
+      });
+      if (!valuation) throw new NotFoundError('Valuation', doc.valorizacionId);
 
       if (data.estado !== undefined) doc.estado = data.estado as any;
       if (data.observaciones !== undefined) doc.observaciones = data.observaciones || undefined;
@@ -3080,9 +3114,9 @@ export class ValuationService {
     }
   }
 
-  async checkPaymentDocumentsComplete(valorizacionId: number): Promise<boolean> {
+  async checkPaymentDocumentsComplete(tenantId: number, valorizacionId: number): Promise<boolean> {
     const requiredTypes = ['FACTURA', 'POLIZA_TREC', 'ESSALUD', 'SCTR'];
-    const docs = await this.getPaymentDocuments(valorizacionId);
+    const docs = await this.getPaymentDocuments(tenantId, valorizacionId);
 
     for (const tipo of requiredTypes) {
       const doc = docs.find((d) => d.tipoDocumento === tipo);
@@ -3095,7 +3129,13 @@ export class ValuationService {
 
   // ─── Discount Events (Anexo B) ───
 
-  async getDiscountEvents(valorizacionId: number): Promise<DiscountEvent[]> {
+  async getDiscountEvents(tenantId: number, valorizacionId: number): Promise<DiscountEvent[]> {
+    // Verify valuation belongs to tenant
+    const valuation = await this.repository.findOne({ where: { id: valorizacionId, tenantId } });
+    if (!valuation) {
+      throw new NotFoundError('Valuation', valorizacionId);
+    }
+
     const repo = AppDataSource.getRepository(DiscountEvent);
     return repo.find({
       where: { valorizacionId },
@@ -3103,18 +3143,23 @@ export class ValuationService {
     });
   }
 
-  async createDiscountEvent(data: {
-    valorizacionId: number;
-    fecha: Date;
-    tipo: string;
-    subtipo?: string;
-    horasDescuento?: number;
-    diasDescuento?: number;
-    horasHorometroMecanica?: number;
-    descripcion?: string;
-  }): Promise<DiscountEvent> {
-    // Verify valuation exists and is in editable state
-    const valuation = await this.repository.findOne({ where: { id: data.valorizacionId } });
+  async createDiscountEvent(
+    tenantId: number,
+    data: {
+      valorizacionId: number;
+      fecha: Date;
+      tipo: string;
+      subtipo?: string;
+      horasDescuento?: number;
+      diasDescuento?: number;
+      horasHorometroMecanica?: number;
+      descripcion?: string;
+    }
+  ): Promise<DiscountEvent> {
+    // Verify valuation exists, belongs to tenant, and is in editable state
+    const valuation = await this.repository.findOne({
+      where: { id: data.valorizacionId, tenantId },
+    });
     if (!valuation) {
       throw new NotFoundError('Valuation', data.valorizacionId);
     }
@@ -3177,16 +3222,21 @@ export class ValuationService {
     return repo.save(event);
   }
 
-  async deleteDiscountEvent(eventId: number): Promise<boolean> {
+  async deleteDiscountEvent(tenantId: number, eventId: number): Promise<boolean> {
     const repo = AppDataSource.getRepository(DiscountEvent);
     const event = await repo.findOne({ where: { id: eventId } });
     if (!event) {
       throw new NotFoundError('DiscountEvent', eventId);
     }
 
-    // Verify valuation is editable
-    const valuation = await this.repository.findOne({ where: { id: event.valorizacionId } });
-    if (valuation && !['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+    // Verify valuation belongs to tenant and is editable
+    const valuation = await this.repository.findOne({
+      where: { id: event.valorizacionId, tenantId },
+    });
+    if (!valuation) {
+      throw new NotFoundError('Valuation', event.valorizacionId);
+    }
+    if (!['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
       throw new BusinessRuleError(
         `Cannot remove discount events from valuation in state ${valuation.estado}`,
         'INVALID_VALUATION_STATE'
@@ -3222,7 +3272,13 @@ export class ValuationService {
   /**
    * Get all manual deduction line items for a valuation.
    */
-  async getManualDeductions(valuationId: number): Promise<DeduccionManual[]> {
+  async getManualDeductions(tenantId: number, valuationId: number): Promise<DeduccionManual[]> {
+    // Verify valuation belongs to tenant
+    const valuation = await this.repository.findOne({ where: { id: valuationId, tenantId } });
+    if (!valuation) {
+      throw new NotFoundError('Valuation', valuationId);
+    }
+
     return this.deduccionManualRepository.find({
       where: { valorizacionId: valuationId },
       order: { createdAt: 'ASC' },
@@ -3233,18 +3289,21 @@ export class ValuationService {
    * Create a manual deduction line item.
    * Only allowed on BORRADOR or PENDIENTE valuations.
    */
-  async createManualDeduction(data: {
-    valorizacionId: number;
-    tipo: string;
-    concepto: string;
-    monto: number;
-    numDocumento?: string;
-    fecha?: string;
-    observaciones?: string;
-    creadoPor?: number;
-  }): Promise<DeduccionManual> {
+  async createManualDeduction(
+    tenantId: number,
+    data: {
+      valorizacionId: number;
+      tipo: string;
+      concepto: string;
+      monto: number;
+      numDocumento?: string;
+      fecha?: string;
+      observaciones?: string;
+      creadoPor?: number;
+    }
+  ): Promise<DeduccionManual> {
     const valuation = await this.repository.findOne({
-      where: { id: data.valorizacionId },
+      where: { id: data.valorizacionId, tenantId },
     });
 
     if (!valuation) {
@@ -3280,6 +3339,7 @@ export class ValuationService {
    * Update a manual deduction line item.
    */
   async updateManualDeduction(
+    tenantId: number,
     deduccionId: number,
     data: {
       tipo?: string;
@@ -3298,11 +3358,14 @@ export class ValuationService {
       throw new NotFoundError('DeduccionManual', deduccionId);
     }
 
-    // Check valuation state
+    // Check valuation belongs to tenant and state
     const valuation = await this.repository.findOne({
-      where: { id: deduccion.valorizacionId },
+      where: { id: deduccion.valorizacionId, tenantId },
     });
-    if (valuation && !['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+    if (!valuation) {
+      throw new NotFoundError('Valuation', deduccion.valorizacionId);
+    }
+    if (!['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
       throw new BusinessRuleError(
         `Cannot edit deductions on valuation in state ${valuation.estado}`,
         'INVALID_VALUATION_STATE'
@@ -3327,7 +3390,7 @@ export class ValuationService {
   /**
    * Delete a manual deduction line item.
    */
-  async deleteManualDeduction(deduccionId: number): Promise<boolean> {
+  async deleteManualDeduction(tenantId: number, deduccionId: number): Promise<boolean> {
     const deduccion = await this.deduccionManualRepository.findOne({
       where: { id: deduccionId },
     });
@@ -3336,10 +3399,14 @@ export class ValuationService {
       throw new NotFoundError('DeduccionManual', deduccionId);
     }
 
+    // Verify valuation belongs to tenant
     const valuation = await this.repository.findOne({
-      where: { id: deduccion.valorizacionId },
+      where: { id: deduccion.valorizacionId, tenantId },
     });
-    if (valuation && !['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
+    if (!valuation) {
+      throw new NotFoundError('Valuation', deduccion.valorizacionId);
+    }
+    if (!['BORRADOR', 'PENDIENTE'].includes(valuation.estado)) {
       throw new BusinessRuleError(
         `Cannot remove deductions from valuation in state ${valuation.estado}`,
         'INVALID_VALUATION_STATE'

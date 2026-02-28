@@ -31,6 +31,7 @@ describe('PaymentScheduleService', () => {
   let mockScheduleRepo: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockDetailRepo: any;
+  const mockTenantId = 1;
 
   beforeEach(() => {
     service = new PaymentScheduleService();
@@ -75,6 +76,7 @@ describe('PaymentScheduleService', () => {
 
       // Mock the query builder chain
       const mockQueryBuilder = {
+        andWhere: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         getCount: jest.fn().mockResolvedValue(2),
         skip: jest.fn().mockReturnThis(),
@@ -84,9 +86,12 @@ describe('PaymentScheduleService', () => {
 
       mockScheduleRepo.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
-      const result = await service.findAll(1, { page: 1, limit: 10 });
+      const result = await service.findAll(mockTenantId, { page: 1, limit: 10 });
 
       expect(mockScheduleRepo.createQueryBuilder).toHaveBeenCalledWith('ps');
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('ps.tenantId = :tenantId', {
+        tenantId: mockTenantId,
+      });
       expect(mockQueryBuilder.orderBy).toHaveBeenCalled();
       expect(result.data).toHaveLength(2);
       expect(result.total).toBe(2);
@@ -111,7 +116,7 @@ describe('PaymentScheduleService', () => {
       mockDetailRepo.save.mockResolvedValue(mockDetail);
       mockScheduleRepo.save.mockResolvedValue({ ...mockSchedule, total_amount: 1000 });
 
-      await service.addDetail(1, { amount_to_pay: 1000 });
+      await service.addDetail(mockTenantId, 1, { amount_to_pay: 1000 });
 
       expect(mockDetailRepo.create).toHaveBeenCalledWith({
         paymentScheduleId: 1,
@@ -128,7 +133,7 @@ describe('PaymentScheduleService', () => {
       };
       mockScheduleRepo.findOne.mockResolvedValue(mockSchedule);
 
-      await expect(service.addDetail(1, { amount_to_pay: 1000 })).rejects.toThrow(
+      await expect(service.addDetail(mockTenantId, 1, { amount_to_pay: 1000 })).rejects.toThrow(
         'Cannot add details to non-draft schedule'
       );
     });
@@ -136,20 +141,22 @@ describe('PaymentScheduleService', () => {
 
   describe('delete', () => {
     it('should delete a draft schedule', async () => {
-      const mockSchedule = { id: 1, status: PaymentScheduleStatus.DRAFT };
-      mockScheduleRepo.findWithDetails.mockResolvedValue(mockSchedule);
+      const mockSchedule = { id: 1, status: PaymentScheduleStatus.DRAFT, details: [] };
+      mockScheduleRepo.findOne.mockResolvedValue(mockSchedule);
       mockScheduleRepo.remove.mockResolvedValue(mockSchedule);
 
-      await service.delete(1);
+      await service.delete(mockTenantId, 1);
 
       expect(mockScheduleRepo.remove).toHaveBeenCalledWith(mockSchedule);
     });
 
     it('should throw error if schedule is not draft', async () => {
-      const mockSchedule = { id: 1, status: PaymentScheduleStatus.PROCESSED };
-      mockScheduleRepo.findWithDetails.mockResolvedValue(mockSchedule);
+      const mockSchedule = { id: 1, status: PaymentScheduleStatus.PROCESSED, details: [] };
+      mockScheduleRepo.findOne.mockResolvedValue(mockSchedule);
 
-      await expect(service.delete(1)).rejects.toThrow('Only draft schedules can be deleted');
+      await expect(service.delete(mockTenantId, 1)).rejects.toThrow(
+        'Only draft schedules can be deleted'
+      );
     });
   });
 });

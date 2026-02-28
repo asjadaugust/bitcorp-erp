@@ -44,7 +44,7 @@ export interface TimesheetFilters {
  * Implements a state machine workflow for timesheet approval.
  *
  * **State Machine**:
- * - BORRADOR (Draft) → ENVIADO (Submitted) → APROBADO (Approved) | RECHAZADO (Rejected)
+ * - BORRADOR (Draft) -> ENVIADO (Submitted) -> APROBADO (Approved) | RECHAZADO (Rejected)
  * - Only BORRADOR can be updated/deleted
  * - Only ENVIADO can be approved/rejected
  * - APROBADO is final state (immutable)
@@ -65,13 +65,13 @@ export interface TimesheetFilters {
  * - TimesheetDetail belongs to Proyecto (optional)
  *
  * **Standards Compliance**:
- * - ✅ Custom error classes (NotFoundError, ConflictError, BusinessRuleError, DatabaseError)
- * - ✅ Return DTOs (snake_case) via imported transformers
- * - ✅ Comprehensive logging (info + error)
- * - ✅ Business rule documentation
- * - ⏳ Tenant context deferred (Phase 21)
+ * - Custom error classes (NotFoundError, ConflictError, BusinessRuleError, DatabaseError)
+ * - Return DTOs (snake_case) via imported transformers
+ * - Comprehensive logging (info + error)
+ * - Business rule documentation
+ * - Multi-tenant isolation via tenantId
  *
- * ✅ FULLY MIGRATED TO TYPEORM (Phase 3.7)
+ * FULLY MIGRATED TO TYPEORM (Phase 3.7)
  */
 export class TimesheetService {
   private get timesheetRepository(): Repository<Timesheet> {
@@ -100,44 +100,33 @@ export class TimesheetService {
    *
    * **State Machine**: Creates timesheet in BORRADOR state
    *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param dto - Timesheet generation data (trabajadorId, periodo, optional fields)
    * @returns TimesheetDetailDto with trabajador and creador relations
    * @throws NotFoundError if trabajador not found
    * @throws ConflictError if timesheet already exists for periodo
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheet = await service.generateTimesheet({
-   *   trabajadorId: 123,
-   *   periodo: '2026-01',
-   *   totalDiasTrabajados: 0,
-   *   totalHoras: 0,
-   *   creadoPor: 456
-   * });
-   * // Returns: { id: 789, estado: 'BORRADOR', ... }
-   * ```
    */
-  async generateTimesheet(dto: TimesheetGenerationDto): Promise<TimesheetDetailDto> {
+  async generateTimesheet(
+    tenantId: number,
+    dto: TimesheetGenerationDto
+  ): Promise<TimesheetDetailDto> {
     try {
-      // Verify trabajador exists
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE id = $1 AND tenant_id = $2
+      // Verify trabajador exists within tenant
       const trabajador = await this.trabajadorRepository.findOne({
-        where: { id: dto.trabajadorId },
+        where: { id: dto.trabajadorId, tenantId },
       });
 
       if (!trabajador) {
         throw new NotFoundError('Trabajador', dto.trabajadorId);
       }
 
-      // Check if timesheet already exists for this period
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE trabajadorId = $1 AND periodo = $2 AND tenant_id = $3
+      // Check if timesheet already exists for this period within tenant
       const existing = await this.timesheetRepository.findOne({
         where: {
           trabajadorId: dto.trabajadorId,
           periodo: dto.periodo,
+          tenantId,
         },
       });
 
@@ -161,26 +150,27 @@ export class TimesheetService {
           trabajadorId: dto.trabajadorId,
           fecha: Between(startDate, endDate),
         },
-        order: { fecha: 'ASC' }
+        order: { fecha: 'ASC' },
       });
 
       // Calculate totals
       let totalHours = 0;
       const uniqueDays = new Set<string>();
-      
-      dailyReports.forEach(report => {
+
+      dailyReports.forEach((report) => {
         if (report.horasTrabajadas) {
           totalHours += Number(report.horasTrabajadas);
         }
         if (report.fecha) {
-          const dateStr = report.fecha instanceof Date 
-            ? report.fecha.toISOString().split('T')[0] 
-            : String(report.fecha).split('T')[0];
+          const dateStr =
+            report.fecha instanceof Date
+              ? report.fecha.toISOString().split('T')[0]
+              : String(report.fecha).split('T')[0];
           uniqueDays.add(dateStr);
         }
       });
 
-      // Create new timesheet header
+      // Create new timesheet header with tenant isolation
       const timesheet = this.timesheetRepository.create({
         trabajadorId: dto.trabajadorId,
         periodo: dto.periodo,
@@ -189,28 +179,30 @@ export class TimesheetService {
         estado: 'BORRADOR',
         observaciones: dto.observaciones,
         creadoPor: dto.creadoPor,
+        tenantId,
       });
 
       const saved = await this.timesheetRepository.save(timesheet);
 
       // Create timesheet details from reports
       if (dailyReports.length > 0) {
-        const details = dailyReports.map(report => {
+        const details = dailyReports.map((report) => {
           return this.timesheetDetailRepository.create({
             tareoId: saved.id,
             proyectoId: report.proyectoId,
             fecha: report.fecha,
             horasTrabajadas: report.horasTrabajadas || 0,
             observaciones: report.observaciones,
+            tenantId,
           });
         });
-        
+
         await this.timesheetDetailRepository.save(details);
       }
 
       // Load relations for DTO
       const timesheetWithRelations = await this.timesheetRepository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['trabajador', 'creador'],
       });
 
@@ -222,6 +214,7 @@ export class TimesheetService {
         totalDiasTrabajados: saved.totalDiasTrabajados,
         totalHoras: saved.totalHoras,
         creadoPor: dto.creadoPor,
+        tenantId,
         context: 'TimesheetService.generateTimesheet',
       });
 
@@ -235,6 +228,7 @@ export class TimesheetService {
         error: error instanceof Error ? error.message : String(error),
         trabajadorId: dto.trabajadorId,
         periodo: dto.periodo,
+        tenantId,
         context: 'TimesheetService.generateTimesheet',
       });
 
@@ -252,29 +246,16 @@ export class TimesheetService {
    * Retrieves complete timesheet information including all related entities
    * and daily timesheet entries (detalles).
    *
-   * **Relations Loaded**:
-   * - Trabajador (employee)
-   * - Creador (creator usuario)
-   * - Aprobador (approver usuario, if approved)
-   * - Detalles (daily entries with proyecto relation)
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param id - Timesheet ID
    * @returns TimesheetWithDetailsDto with all relations and daily entries
    * @throws NotFoundError if timesheet not found
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheet = await service.getTimesheetWithDetails(123);
-   * // Returns: { id: 123, detalles: [...daily entries...], ... }
-   * ```
    */
-  async getTimesheetWithDetails(id: number): Promise<TimesheetWithDetailsDto> {
+  async getTimesheetWithDetails(tenantId: number, id: number): Promise<TimesheetWithDetailsDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE id = $1 AND tenant_id = $2
       const timesheet = await this.timesheetRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['trabajador', 'creador', 'aprobador'],
       });
 
@@ -282,11 +263,9 @@ export class TimesheetService {
         throw new NotFoundError('Timesheet', id);
       }
 
-      // Get timesheet details
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE tareoId = $1 AND tenant_id = $2
+      // Get timesheet details within tenant
       const detalles = await this.timesheetDetailRepository.find({
-        where: { tareoId: id },
+        where: { tareoId: id, tenantId },
         relations: ['proyecto'],
         order: { fecha: 'ASC' },
       });
@@ -303,6 +282,7 @@ export class TimesheetService {
         periodo: timesheet.periodo,
         estado: timesheet.estado,
         detallesCount: detalles.length,
+        tenantId,
         context: 'TimesheetService.getTimesheetWithDetails',
       });
 
@@ -315,6 +295,7 @@ export class TimesheetService {
       Logger.error('Failed to retrieve timesheet with details', {
         error: error instanceof Error ? error.message : String(error),
         id,
+        tenantId,
         context: 'TimesheetService.getTimesheetWithDetails',
       });
 
@@ -332,32 +313,23 @@ export class TimesheetService {
    * Changes timesheet state from BORRADOR to ENVIADO.
    * Only timesheets in BORRADOR state can be submitted.
    *
-   * **State Machine**: BORRADOR → ENVIADO
+   * **State Machine**: BORRADOR -> ENVIADO
    *
-   * **Business Rules**:
-   * - Current estado must be BORRADOR
-   * - Changes estado to ENVIADO
-   * - Tracks who submitted (submittedBy)
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param id - Timesheet ID
    * @param submittedBy - Usuario ID who submitted
    * @returns TimesheetDetailDto with updated estado
-   * @throws NotFoundError if timesheet not found
    * @throws BusinessRuleError if timesheet not in BORRADOR state
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheet = await service.submitTimesheet(123, 456);
-   * // Returns: { id: 123, estado: 'ENVIADO', ... }
-   * ```
    */
-  async submitTimesheet(id: number, submittedBy: number): Promise<TimesheetDetailDto> {
+  async submitTimesheet(
+    tenantId: number,
+    id: number,
+    submittedBy: number
+  ): Promise<TimesheetDetailDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE id = $1 AND estado = 'BORRADOR' AND tenant_id = $2
       const timesheet = await this.timesheetRepository.findOne({
-        where: { id, estado: 'BORRADOR' },
+        where: { id, estado: 'BORRADOR', tenantId },
       });
 
       if (!timesheet) {
@@ -380,7 +352,7 @@ export class TimesheetService {
 
       // Load relations for DTO
       const timesheetWithRelations = await this.timesheetRepository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['trabajador', 'creador'],
       });
 
@@ -391,6 +363,7 @@ export class TimesheetService {
         estadoAnterior: 'BORRADOR',
         estadoNuevo: 'ENVIADO',
         submittedBy,
+        tenantId,
         context: 'TimesheetService.submitTimesheet',
       });
 
@@ -404,6 +377,7 @@ export class TimesheetService {
         error: error instanceof Error ? error.message : String(error),
         id,
         submittedBy,
+        tenantId,
         context: 'TimesheetService.submitTimesheet',
       });
 
@@ -422,33 +396,23 @@ export class TimesheetService {
    * Only timesheets in ENVIADO state can be approved.
    * APROBADO is a final state (cannot be modified after).
    *
-   * **State Machine**: ENVIADO → APROBADO (final state)
+   * **State Machine**: ENVIADO -> APROBADO (final state)
    *
-   * **Business Rules**:
-   * - Current estado must be ENVIADO
-   * - Changes estado to APROBADO
-   * - Records approver (aprobadoPor) and approval timestamp (aprobadoEn)
-   * - APROBADO timesheets cannot be modified
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param id - Timesheet ID
    * @param approvedBy - Usuario ID who approved
    * @returns TimesheetDetailDto with updated estado
-   * @throws NotFoundError if timesheet not found
    * @throws BusinessRuleError if timesheet not in ENVIADO state
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheet = await service.approveTimesheet(123, 789);
-   * // Returns: { id: 123, estado: 'APROBADO', aprobado_por: 789, ... }
-   * ```
    */
-  async approveTimesheet(id: number, approvedBy: number): Promise<TimesheetDetailDto> {
+  async approveTimesheet(
+    tenantId: number,
+    id: number,
+    approvedBy: number
+  ): Promise<TimesheetDetailDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE id = $1 AND estado = 'ENVIADO' AND tenant_id = $2
       const timesheet = await this.timesheetRepository.findOne({
-        where: { id, estado: 'ENVIADO' },
+        where: { id, estado: 'ENVIADO', tenantId },
       });
 
       if (!timesheet) {
@@ -472,7 +436,7 @@ export class TimesheetService {
 
       // Load relations for DTO
       const timesheetWithRelations = await this.timesheetRepository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['trabajador', 'creador', 'aprobador'],
       });
 
@@ -484,6 +448,7 @@ export class TimesheetService {
         estadoNuevo: 'APROBADO',
         aprobadoPor: approvedBy,
         aprobadoEn: saved.aprobadoEn?.toISOString(),
+        tenantId,
         context: 'TimesheetService.approveTimesheet',
       });
 
@@ -497,6 +462,7 @@ export class TimesheetService {
         error: error instanceof Error ? error.message : String(error),
         id,
         approvedBy,
+        tenantId,
         context: 'TimesheetService.approveTimesheet',
       });
 
@@ -515,39 +481,25 @@ export class TimesheetService {
    * Only timesheets in ENVIADO state can be rejected.
    * RECHAZADO timesheets can be edited and resubmitted (back to BORRADOR).
    *
-   * **State Machine**: ENVIADO → RECHAZADO
+   * **State Machine**: ENVIADO -> RECHAZADO
    *
-   * **Business Rules**:
-   * - Current estado must be ENVIADO
-   * - Changes estado to RECHAZADO
-   * - Records rejection reason in observaciones
-   * - Records who rejected (aprobadoPor field reused)
-   * - RECHAZADO timesheets can be edited (back to BORRADOR)
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param id - Timesheet ID
    * @param rejectedBy - Usuario ID who rejected
    * @param reason - Rejection reason (stored in observaciones)
    * @returns TimesheetDetailDto with updated estado and reason
-   * @throws NotFoundError if timesheet not found
    * @throws BusinessRuleError if timesheet not in ENVIADO state
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheet = await service.rejectTimesheet(123, 789, 'Horas incorrectas');
-   * // Returns: { id: 123, estado: 'RECHAZADO', observaciones: 'Horas incorrectas', ... }
-   * ```
    */
   async rejectTimesheet(
+    tenantId: number,
     id: number,
     rejectedBy: number,
     reason: string
   ): Promise<TimesheetDetailDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE id = $1 AND estado = 'ENVIADO' AND tenant_id = $2
       const timesheet = await this.timesheetRepository.findOne({
-        where: { id, estado: 'ENVIADO' },
+        where: { id, estado: 'ENVIADO', tenantId },
       });
 
       if (!timesheet) {
@@ -571,7 +523,7 @@ export class TimesheetService {
 
       // Load relations for DTO
       const timesheetWithRelations = await this.timesheetRepository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['trabajador', 'creador', 'aprobador'],
       });
 
@@ -583,6 +535,7 @@ export class TimesheetService {
         estadoNuevo: 'RECHAZADO',
         rechazadoPor: rejectedBy,
         razon: reason,
+        tenantId,
         context: 'TimesheetService.rejectTimesheet',
       });
 
@@ -597,6 +550,7 @@ export class TimesheetService {
         id,
         rejectedBy,
         reason,
+        tenantId,
         context: 'TimesheetService.rejectTimesheet',
       });
 
@@ -611,41 +565,22 @@ export class TimesheetService {
   /**
    * List timesheets with filters
    *
-   * Returns paginated list of timesheets with optional filtering.
+   * Returns list of timesheets with optional filtering.
    * Results include trabajador, creador, and aprobador relations.
    *
-   * **Filters Available**:
-   * - trabajadorId: Filter by employee
-   * - periodo: Filter by month (YYYY-MM)
-   * - estado: Filter by state (BORRADOR, ENVIADO, APROBADO, RECHAZADO)
-   * - creadoPor: Filter by creator
-   *
-   * **Ordering**: Most recent first (created_at DESC)
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param filters - Optional filters (trabajadorId, periodo, estado, creadoPor)
    * @returns TimesheetListDto[] array with trabajador relation
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheets = await service.listTimesheets({
-   *   trabajadorId: 123,
-   *   periodo: '2026-01',
-   *   estado: 'APROBADO'
-   * });
-   * // Returns: [{ id: 1, ... }, { id: 2, ... }]
-   * ```
    */
-  async listTimesheets(filters: TimesheetFilters): Promise<TimesheetListDto[]> {
+  async listTimesheets(tenantId: number, filters: TimesheetFilters): Promise<TimesheetListDto[]> {
     try {
       const queryBuilder = this.timesheetRepository
         .createQueryBuilder('ts')
         .leftJoinAndSelect('ts.trabajador', 't')
         .leftJoinAndSelect('ts.creador', 'c')
-        .leftJoinAndSelect('ts.aprobador', 'a');
-
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE tenant_id = $1 AND (other filters...)
+        .leftJoinAndSelect('ts.aprobador', 'a')
+        .where('ts.tenantId = :tenantId', { tenantId });
 
       // Apply filters
       if (filters.trabajadorId) {
@@ -678,6 +613,7 @@ export class TimesheetService {
 
       Logger.info('Retrieved timesheets list', {
         count: timesheets.length,
+        tenantId,
         filters: {
           trabajadorId: filters.trabajadorId || null,
           periodo: filters.periodo || null,
@@ -693,6 +629,7 @@ export class TimesheetService {
       Logger.error('Failed to retrieve timesheets list', {
         error: error instanceof Error ? error.message : String(error),
         filters,
+        tenantId,
         context: 'TimesheetService.listTimesheets',
       });
 
@@ -710,30 +647,20 @@ export class TimesheetService {
    * Retrieves a specific timesheet for an employee in a given month.
    * Returns null if timesheet doesn't exist (no error thrown).
    *
-   * **Use Case**: Check if timesheet exists before creating new one
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param trabajadorId - Trabajador ID
    * @param periodo - Period in YYYY-MM format (e.g., "2026-01")
    * @returns TimesheetDetailDto if found, null if not found
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheet = await service.getByTrabajadorAndPeriodo(123, '2026-01');
-   * if (!timesheet) {
-   *   // Create new timesheet
-   * }
-   * ```
    */
   async getByTrabajadorAndPeriodo(
+    tenantId: number,
     trabajadorId: number,
     periodo: string
   ): Promise<TimesheetDetailDto | null> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE trabajadorId = $1 AND periodo = $2 AND tenant_id = $3
       const timesheet = await this.timesheetRepository.findOne({
-        where: { trabajadorId, periodo },
+        where: { trabajadorId, periodo, tenantId },
         relations: ['trabajador', 'creador'],
       });
 
@@ -743,6 +670,7 @@ export class TimesheetService {
           trabajadorId,
           periodo,
           estado: timesheet.estado,
+          tenantId,
           context: 'TimesheetService.getByTrabajadorAndPeriodo',
         });
       }
@@ -753,6 +681,7 @@ export class TimesheetService {
         error: error instanceof Error ? error.message : String(error),
         trabajadorId,
         periodo,
+        tenantId,
         context: 'TimesheetService.getByTrabajadorAndPeriodo',
       });
 
@@ -771,29 +700,16 @@ export class TimesheetService {
    * Only timesheets in BORRADOR state can be deleted.
    * Preserves data for audit trail.
    *
-   * **Business Rules**:
-   * - Current estado must be BORRADOR
-   * - Soft delete (estado='ELIMINADO') instead of hard delete
-   * - Preserves record for audit trail
-   * - Only BORRADOR can be deleted (not ENVIADO, APROBADO, RECHAZADO)
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param id - Timesheet ID
    * @returns true if deleted successfully
    * @throws BusinessRuleError if timesheet not in BORRADOR state
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const deleted = await service.deleteTimesheet(123);
-   * // Returns: true (estado changed to 'ELIMINADO')
-   * ```
    */
-  async deleteTimesheet(id: number): Promise<boolean> {
+  async deleteTimesheet(tenantId: number, id: number): Promise<boolean> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE id = $1 AND estado = 'BORRADOR' AND tenant_id = $2
       const timesheet = await this.timesheetRepository.findOne({
-        where: { id, estado: 'BORRADOR' },
+        where: { id, estado: 'BORRADOR', tenantId },
       });
 
       if (!timesheet) {
@@ -819,6 +735,7 @@ export class TimesheetService {
         periodo: timesheet.periodo,
         estadoAnterior: 'BORRADOR',
         estadoNuevo: 'ELIMINADO',
+        tenantId,
         context: 'TimesheetService.deleteTimesheet',
       });
 
@@ -831,6 +748,7 @@ export class TimesheetService {
       Logger.error('Failed to delete timesheet', {
         error: error instanceof Error ? error.message : String(error),
         id,
+        tenantId,
         context: 'TimesheetService.deleteTimesheet',
       });
 
@@ -848,33 +766,21 @@ export class TimesheetService {
    * Updates timesheet fields. Only timesheets in BORRADOR state can be updated.
    * Applies partial updates (only provided fields are changed).
    *
-   * **Business Rules**:
-   * - Current estado must be BORRADOR
-   * - Partial updates supported (only provided fields changed)
-   * - Common fields: totalDiasTrabajados, totalHoras, observaciones
-   * - Cannot update estado (use submit/approve/reject methods)
-   *
+   * @param tenantId - Company ID for multi-tenant isolation
    * @param id - Timesheet ID
    * @param updates - Partial timesheet data to update
    * @returns TimesheetDetailDto with updated data
    * @throws BusinessRuleError if timesheet not in BORRADOR state
    * @throws DatabaseError if database operation fails
-   *
-   * @example
-   * ```typescript
-   * const timesheet = await service.updateTimesheet(123, {
-   *   totalDiasTrabajados: 22,
-   *   totalHoras: 176,
-   *   observaciones: 'Mes completo'
-   * });
-   * ```
    */
-  async updateTimesheet(id: number, updates: Partial<Timesheet>): Promise<TimesheetDetailDto> {
+  async updateTimesheet(
+    tenantId: number,
+    id: number,
+    updates: Partial<Timesheet>
+  ): Promise<TimesheetDetailDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Expected: WHERE id = $1 AND estado = 'BORRADOR' AND tenant_id = $2
       const timesheet = await this.timesheetRepository.findOne({
-        where: { id, estado: 'BORRADOR' },
+        where: { id, estado: 'BORRADOR', tenantId },
       });
 
       if (!timesheet) {
@@ -897,7 +803,7 @@ export class TimesheetService {
 
       // Load relations for DTO
       const timesheetWithRelations = await this.timesheetRepository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['trabajador', 'creador'],
       });
 
@@ -908,6 +814,7 @@ export class TimesheetService {
         trabajadorId: saved.trabajadorId,
         periodo: saved.periodo,
         updatedFields,
+        tenantId,
         context: 'TimesheetService.updateTimesheet',
       });
 
@@ -921,6 +828,7 @@ export class TimesheetService {
         error: error instanceof Error ? error.message : String(error),
         id,
         updates,
+        tenantId,
         context: 'TimesheetService.updateTimesheet',
       });
 

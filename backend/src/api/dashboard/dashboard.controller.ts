@@ -39,6 +39,7 @@ export class DashboardController {
    */
   getUserInfo = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const userId = (req as any).user?.id || (req as any).user?.userId;
 
       if (!userId) {
@@ -46,7 +47,7 @@ export class DashboardController {
         return;
       }
 
-      const userInfo = await this.dashboardService.getUserInfo(userId.toString());
+      const userInfo = await this.dashboardService.getUserInfo(tenantId, userId.toString());
 
       sendSuccess(res, userInfo);
     } catch (error) {
@@ -65,6 +66,7 @@ export class DashboardController {
    */
   switchProject = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const userId = (req as any).user?.id || (req as any).user?.userId;
       const { project_id } = req.body;
 
@@ -86,7 +88,11 @@ export class DashboardController {
         return;
       }
 
-      const project = await this.dashboardService.switchProject(userId.toString(), projectIdStr);
+      const project = await this.dashboardService.switchProject(
+        tenantId,
+        userId.toString(),
+        projectIdStr
+      );
 
       sendSuccess(res, {
         active_project: project,
@@ -111,7 +117,8 @@ export class DashboardController {
    */
   getDocumentAlerts = async (req: Request, res: Response): Promise<void> => {
     try {
-      const alerts = await this.dashboardService.getDocumentAlerts();
+      const tenantId = (req as any).user!.id_empresa;
+      const alerts = await this.dashboardService.getDocumentAlerts(tenantId);
       sendSuccess(res, alerts);
     } catch (error) {
       Logger.error('Error in getDocumentAlerts', {
@@ -129,6 +136,7 @@ export class DashboardController {
    */
   getStats = async (req: Request, res: Response): Promise<void> => {
     try {
+      const tenantId = (req as any).user!.id_empresa;
       const userId = (req as any).user?.id || (req as any).user?.userId;
       const projectId = req.query.project_id as string | undefined;
 
@@ -137,7 +145,11 @@ export class DashboardController {
         return;
       }
 
-      const stats = await this.dashboardService.getDashboardStats(userId.toString(), projectId);
+      const stats = await this.dashboardService.getDashboardStats(
+        tenantId,
+        userId.toString(),
+        projectId
+      );
 
       sendSuccess(res, stats);
     } catch (error) {

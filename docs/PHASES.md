@@ -1,157 +1,122 @@
-Feature Gap Analysis — BitCorp ERP
+# BitCorp ERP — Workstream Tracker
 
-Here's a prioritized inventory of what can be implemented next, based on codebase exploration cross-referenced against the architecture:
-
----
-
-✅ Already Complete (WS-1 through WS-23)
-
-Equipment CRUD, Daily Reports + PDF, Maintenance, Contracts + lifecycle, Valuations, Solicitudes, Órdenes Alquiler, Actas Devolución, Vales Combustible, Inoperatividad, Tipos Equipo, Precalentamiento Config,
-Document Expiry Alerts, Valuation Deadline Alerts, Payment Mora, Reception Tracking, Contract PDF, Resident Signature, es_propio flag, Equipment Dashboard, Email Notifications, Equipment Inspection, Discount
-Rules Engine, Obligaciones Arrendador/Arrendatario.
+**Last updated:** 2026-02-28
+**Backend tests:** 709 passing (37 suites)
 
 ---
 
-🔴 P1 — Backend complete, no frontend at all
+## Completed Workstreams (WS-1 through WS-38 + Session Work)
 
-WS-24: Notifications Bell + Centro de Alertas
+### Core Equipment & Operations (WS-1 to WS-10)
 
-- Backend /api/notifications/ is fully implemented: getUserNotifications, markAsRead, markAllAsRead, deleteNotification
-- There is zero frontend UI — no bell icon, no count badge, no panel
-- Low effort, high UX value
-- Deliverable: Bell icon in app header with unread badge → dropdown with recent alerts → link to full /notificaciones page
+| WS | Feature | Scope |
+|----|---------|-------|
+| 1 | Document Expiry Alerts (#32) | Auto-notification when operator/equipment docs near expiration |
+| 2 | Valuation Deadline Alerts (#14) | Notifications for upcoming valuation deadlines |
+| 3 | Payment Mora Tracking (#23) | Late payment tracking with penalty calculations |
+| 4 | Daily Report Reception (#10) | Track reception state of daily operator reports |
+| 5 | Contract PDF (#19) | PDF generation for contracts via Puppeteer |
+| 6 | Resident Signature (#34) | Digital signature capture for field engineers |
+| 7 | es_propio Flag (#35) | Own vs. rented equipment distinction |
+| 8 | Equipment Dashboard (#41) | Fleet overview with KPIs and status cards |
+| 9 | Email Notifications (#38) | SMTP-based email dispatch for critical alerts |
+| 10 | Equipment Inspection (#11) | Pre-use inspection forms and tracking |
 
-WS-25: Analytics Dashboard
+### Equipment Lifecycle (WS-11 to WS-13)
 
-- Backend /api/analytics/\* is fully wired to equipmentAnalyticsService
-- Covers: equipment utilization by date range, utilization trend over time, fleet-wide utilization, fuel consumption metrics + trends, maintenance metrics
-- There is no frontend page at all
-- Deliverable: New "Analítica" section (or tab in Equipment Dashboard) with utilization charts, fuel trends, maintenance stats
+| WS | Feature | Entity / Route | Code |
+|----|---------|---------------|------|
+| 11 | Solicitud de Equipo (#1) | `equipo.solicitud_equipo` / `/api/solicitudes-equipo` | SEQ-NNNN |
+| 12 | Acta de Devolución (#12, #45) | `equipo.acta_devolucion` / `/api/actas-devolucion` | ADV-NNNN |
+| 13 | Orden de Alquiler (#4) | `equipo.orden_alquiler` / `/api/ordenes-alquiler` | OAL-NNNN |
 
----
+### Business Logic & Rules (WS-15 to WS-23)
 
-🟡 P2 — Stub/partial backend + no UI
+| WS | Feature | Key Details |
+|----|---------|-------------|
+| 15 | Discount Rules Engine (#28-31) | STAND_BY, AVERIA, CLIMATICO subtypes with proportional/daily calc |
+| 16 | Contract Lifecycle (#20, #42) | ACTIVO/VENCIDO → RESUELTO → LIQUIDADO state machine |
+| 17 | Inoperability Penalty (#40) | `equipo.periodo_inoperatividad`, 5-day threshold |
+| 18 | Equipment Categorization (#44) | `equipo.tipo_equipo`, 4 PRD categories, 28 types seeded |
+| 19 | Precalentamiento Config (#27) | Per-tipo_equipo warm-up hours, auto-apply in reports |
+| 20 | PDF Parte Diario (#33) | Handlebars template, 5 signature fields |
+| 21 | Obligaciones del Arrendador (#21) | 9 obligation types, PENDIENTE/CUMPLIDA/INCUMPLIDA |
+| 22 | Obligaciones del Arrendatario (#22) | 4 obligation types per Cláusula 8 |
+| 23 | Vale de Combustible (#9) | `equipo.vale_combustible`, code VCB-NNNN, 5 fuel types |
 
-WS-26: Operator Performance & Availability
+### UI & Analytics (WS-24 to WS-26)
 
-- OperatorController has 3 methods that return 501 Method not yet implemented:
-  - searchBySkill() — TODO in OperatorService
-  - getAvailability() — TODO in OperatorService
-  - getPerformance() — TODO in OperatorService
-- The availability matrix UI exists (/scheduling/operator-availability) but the save operation has a TODO and never calls the API
-- Deliverable: Implement the 3 OperatorService methods + wire up the availability matrix save
+| WS | Feature | Key Details |
+|----|---------|-------------|
+| 24 | Notifications Bell | Bell icon, dropdown, `/notificaciones` page, 60s polling |
+| 25 | Analytics Dashboard | 3 tabs: Fleet, Utilization, Fuel; 5 backend endpoints |
+| 26 | Operator Performance & Availability | `rrhh.disponibilidad_operador`, monthly calendar, performance metrics |
 
-WS-27: Fuel Records (legacy fuel/ module) cleanup or integration
+### Infrastructure & Cleanup (WS-27 to WS-30)
 
-- The old fuel/ module (FuelRecord entity, /api/fuel) is separate from the new vales-combustible (WS-23)
-- The frontend fuel-list.component.ts, fuel-form.component.ts, fuel-detail.component.ts exist but are not in any route or navigation
-- Decision needed: either wire it up alongside vales-combustible or retire it (it likely represents actual diesel dispensing records from the tank, vs. vales which are voucher documents)
+| WS | Feature | Key Details |
+|----|---------|-------------|
+| 27 | Fuel Records Retired + Manipuleo Config | Deleted orphaned FuelRecord; added `equipo.configuracion_combustible` |
+| 28 | Photo Gallery UI | Lightbox viewer for daily report photos |
+| 29 | Payment Record Excel Export | ExcelExportService wiring, fixed DTO fields |
+| 30 | Operator Profile API Integration | Certifications, skills, availability, performance endpoints |
 
----
+### Advanced Features (WS-31 to WS-38)
 
-🟠 P3 — Partial implementations to complete
+| WS | Feature | Key Details |
+|----|---------|-------------|
+| 31b | Checklist Frequency Enforcement | Daily/weekly rules, overdue inspections endpoint |
+| 32b | Contract Notarial Legalization | 4-step flow: PENDIENTE_FIRMA → EN_ENVIO → PENDIENTE_LEGAL → LEGALIZADO |
+| 33 | Offline Recovery UI | Dead-letter queue, exponential backoff, IndexedDB sync |
+| 34 | Provider Comparison Matrix | `equipo.cotizacion_proveedor`, code COT-NNNN, min 2 quotes rule |
+| 35 | Flexible Approval Engine | Template-based + ad-hoc approval workflows |
+| 38 | Manual Deduction Line Items | Valuations: custom deduction rows |
 
-WS-28: Photo / Attachment Management UI
+### Session 2026-02-28 Completions
 
-- Backend routes exist: /api/reports/photo/ and /api/reports/photo-gallery
-- No frontend component for photo upload, gallery viewing, or attachment browsing
-- Daily report checklist form has a TODO: "Integrate with photo upload service"
-- Deliverable: Photo upload in checklist form + gallery viewer in daily report detail
-
-WS-29: Payment Excel Export
-
-- Payment list has an Excel export button that shows TODO: Implement Excel export
-- ExcelExportService already exists in the frontend
-- Deliverable: Wire export button to the existing ExcelExportService
-
-WS-30: Operator Profile API Integration
-
-- The operator module (/features/operator/) has 4+ TODO comments:
-  - profile.component.ts: "TODO: Load from API"
-  - history.component.ts: "TODO: Filter by period", "TODO: Call API to delete"
-- The component renders with hardcoded mock data
-- Deliverable: Complete the API integration for operator profile and history
-
----
-
-🔵 P4 — New modules not yet started
-
-WS-31: Checklist Frequency Rules by Equipment Type
-
-- PRD specifies: Vehículo liviano / equipo menor → daily checklist; Maquinaria pesada / vehículo pesado → weekly (Mondays)
-- The TipoEquipo model (WS-18) provides the categoria_prd field needed to drive this
-- Currently all checklists are manual — no frequency enforcement
-- Deliverable: Add frecuencia rule per tipo_equipo category, auto-flag missing checklists
-
-WS-32: Contract Notarial Legalization Flow
-
-- PRD describes: send to provider → provider signs → send to central office → legal rep signs → return to project
-- No tracking of this document flow exists
-- Deliverable: Add legalizacion_notarial state tracking to contract (steps + timestamps + responsible users)
-
-WS-33: Operator Daily Report (Mobile form)
-
-- The /features/operator/daily-report/ component exists but has IndexedDB offline sync TODOs
-- Currently the daily report is entered by the equipment manager
-- PRD requires the operator to register it themselves (fuel, pre-warming, delays)
-- Deliverable: Complete the operator-facing daily report form with offline capability
+| Story | Feature | Key Details |
+|-------|---------|-------------|
+| #25 | Modalidades Servida Enum | `ModalidadContrato` type: alquiler_seco, alquiler_con_operador, alquiler_todo_costo, servicio. `@IsIn()` validation. |
+| #33 | PDF Parte Diario Format Alignment | All 4 checkbox sections in `daily-report.hbs` corrected to match frontend form labels |
+| #45 | Acta Entrega Equipo | Full CRUD: `equipo.acta_entrega`, code AEN-NNNN, PDF generation, state machine BORRADOR→PENDIENTE→FIRMADO |
+| Phase 21 | Multi-Tenant Filtering | 230+ TODOs resolved across 26 services + controllers. All queries now filter by `tenantId`. |
 
 ---
 
-Summary Table
+## Remaining Stories
 
-┌─────┬──────────────────────────────────────┬──────────┬────────┬─────────────────────┬──────────────────┐
-│ WS │ Feature │ Effort │ Value │ Backend status │ Frontend status │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 24 │ Notifications Bell + Center │ Low │ High │ ✅ Complete │ ❌ None │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 25 │ Analytics Dashboard │ Medium │ High │ ✅ Complete │ ❌ None │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 26 │ Operator Availability/Performance │ Medium │ Medium │ ❌ Stub (3 methods) │ ⚠️ Partial │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 27 │ Fuel Records module (wire or retire) │ Low │ Low │ ✅ Complete │ ⚠️ Unlinked │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 28 │ Photo/Attachment UI │ Medium │ Medium │ ✅ Routes exist │ ❌ None │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 29 │ Payment Excel Export │ Very Low │ Low │ ✅ │ ⚠️ TODO button │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 30 │ Operator Profile API wiring │ Low │ Medium │ ✅ │ ⚠️ Mock data │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 31 │ Checklist Frequency by Type │ Medium │ Low │ ❌ │ ❌ │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 32 │ Contract Notarial Legalization │ Medium │ Medium │ ❌ │ ❌ │
-├─────┼──────────────────────────────────────┼──────────┼────────┼─────────────────────┼──────────────────┤
-│ 33 │ Operator Mobile Daily Report │ High │ Medium │ ✅ │ ⚠️ Offline TODOs │
-└─────┴──────────────────────────────────────┴──────────┴────────┴─────────────────────┴──────────────────┘
+### Tier 1: Production-Ready Cleanup
+
+| Story | Feature | Effort | Notes |
+|-------|---------|--------|-------|
+| Frontend TODOs | 3 items remaining | < 1 day | `main.ts` service worker, `daily-report` load last values, `periodo-inoperatividad-form` error handling |
+
+### Tier 2: P2 Features (High Business Value)
+
+| Story | Feature | Effort | Notes |
+|-------|---------|--------|-------|
+| #1 | Requerimiento de Equipo (CORP-LA-F-001) | 5-8 days | Full CRUD module — formal approval flow for equipment requests |
+| #5 | Checklist Pre-Uso / Incorporación Gate | 3-5 days | Block equipment deployment until pre-use checklist completed |
+
+### Tier 3: P3 Features
+
+| Story | Feature | Effort | Notes |
+|-------|---------|--------|-------|
+| #43 | Reportes Cumplimiento Normativo | 3-5 days | Compliance dashboard over existing docs/checklists |
+| #15 | Flujo Informe Gastos de Obra | 3-5 days | WorkExpense entity exists, needs service/controller/routes |
+| #16 | Flujo Informe Adelantos | 3-5 days | AdvanceAmortization entity exists, needs service/controller/routes |
+| #36 | Tipo de Cambio Automático (USD) | 3-5 days | Daily exchange rate for USD-denominated valuations |
+| WS-33b | Operator Mobile Report (Full PWA) | 5-8 days | Complete offline-first PWA with service worker sync |
 
 ---
 
-My recommendation for next workstreams (in order):
-You are a Product Owner who cares a lot about the consistency and User-Experience of the product, test the following:
-```
-1. WS-24 — Notifications (backend is done, just needs frontend bell + panel — quick win)
-2. WS-25 — Analytics Dashboard (backend done, high management value)
-3. WS-29 — Payment Excel Export (trivial, unblocks existing UI)
-4. WS-30 — Operator Profile wiring (completes an existing feature)
-5. WS-26 — Operator Availability/Performance (needs real OperatorService implementation)
-```
-Identify what works and what does not work, make a list of things that don't work and suggestions for improvements.
+## Summary
 
-Navigate to the application, click around thoroughly and not down every details, make use of WebMCP and note down the console messages and docker-compose logs.
-
-Focus on just making the list of things that dont work and suggestions for improvement only.
-
-
-  4 stories remain implementable:
-
-  ┌───────┬───────────────────────────────┬────────────────────────────────────┬─────────────────────────────────────────────┐
-  │   #   │             Story             │               Status               │                   Effort                    │
-  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
-  │ WS-28 │ Photo/Attachment Backend      │ Frontend 90%, backend 20%          │ 2–3 days                                    │
-  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
-  │ WS-33 │ Operator Daily Report Offline │ Online works, offline not wired    │ 1–2 days (quick win) to 5–8 days (full PWA) │
-  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
-  │ WS-31 │ Checklist Frequency Rules     │ 30% — schema exists, no automation │ 5–7 days                                    │
-  ├───────┼───────────────────────────────┼────────────────────────────────────┼─────────────────────────────────────────────┤
-  │ WS-32 │ Contract Legalization Flow    │ 0% — nothing exists                │ 8–10 days                                   │
-  └───────┴───────────────────────────────┴────────────────────────────────────┴─────────────────────────────────────────────┘
+| Category | Count | Status |
+|----------|-------|--------|
+| Completed workstreams | 38+ | All passing (709 tests) |
+| Session completions (2026-02-28) | 4 | #25, #33, #45, Phase 21 |
+| Remaining cleanup | 1 | Frontend TODOs |
+| Remaining P2 features | 2 | #1, #5 |
+| Remaining P3 features | 5 | #43, #15, #16, #36, WS-33b |
+| **Total remaining** | **8** | **~20-30 days estimated** |

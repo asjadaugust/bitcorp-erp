@@ -33,6 +33,9 @@ export class OperatorAvailability {
   @Column({ name: 'motivo', type: 'varchar', length: 255, nullable: true })
   motivo?: string;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

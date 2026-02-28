@@ -56,7 +56,8 @@ export class ValuationController {
         return;
       }
 
-      const data = await this.valuationService.getValuationPage1Data(id);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const data = await this.valuationService.getValuationPage1Data(tenantId, id);
       sendSuccess(res, data);
     } catch (error) {
       next(error);
@@ -108,7 +109,8 @@ export class ValuationController {
 
   getAnalytics = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await this.valuationService.getAnalytics();
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const data = await this.valuationService.getAnalytics(tenantId);
       sendSuccess(res, data);
     } catch (error) {
       next(error);
@@ -253,18 +255,20 @@ export class ValuationController {
         return res.status(400).json({ success: false, message: 'Invalid valuation ID' });
       }
 
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+
       if (useNewTemplate) {
         // If no page parameter provided, generate complete PDF with all 7 pages
         if (pageNumber === undefined) {
           const [page1Data, page2Data, page3Data, page4Data, page5Data, page6Data, page7Data] =
             await Promise.all([
-              this.valuationService.getValuationPage1Data(valuationId),
-              this.valuationService.getValuationPage2Data(valuationId),
-              this.valuationService.getValuationPage3Data(valuationId),
-              this.valuationService.getValuationPage4Data(valuationId),
-              this.valuationService.getValuationPage5Data(valuationId),
-              this.valuationService.getValuationPage6Data(valuationId),
-              this.valuationService.getValuationPage7Data(valuationId),
+              this.valuationService.getValuationPage1Data(tenantId, valuationId),
+              this.valuationService.getValuationPage2Data(tenantId, valuationId),
+              this.valuationService.getValuationPage3Data(tenantId, valuationId),
+              this.valuationService.getValuationPage4Data(tenantId, valuationId),
+              this.valuationService.getValuationPage5Data(tenantId, valuationId),
+              this.valuationService.getValuationPage6Data(tenantId, valuationId),
+              this.valuationService.getValuationPage7Data(tenantId, valuationId),
             ]);
 
           const pdf = await puppeteerPdfService.generateCompleteValuationPdf(
@@ -292,31 +296,31 @@ export class ValuationController {
 
         switch (pageNumber) {
           case 1:
-            pageData = await this.valuationService.getValuationPage1Data(valuationId);
+            pageData = await this.valuationService.getValuationPage1Data(tenantId, valuationId);
             filename = `valorizacion-${pageData.valorizacion.numero_valorizacion}-p1.pdf`;
             break;
           case 2:
-            pageData = await this.valuationService.getValuationPage2Data(valuationId);
+            pageData = await this.valuationService.getValuationPage2Data(tenantId, valuationId);
             filename = `valorizacion-${pageData.valorizacion.numero_valorizacion}-p2.pdf`;
             break;
           case 3:
-            pageData = await this.valuationService.getValuationPage3Data(valuationId);
+            pageData = await this.valuationService.getValuationPage3Data(tenantId, valuationId);
             filename = `valorizacion-${pageData.valorizacion.numero_valorizacion}-p3.pdf`;
             break;
           case 4:
-            pageData = await this.valuationService.getValuationPage4Data(valuationId);
+            pageData = await this.valuationService.getValuationPage4Data(tenantId, valuationId);
             filename = `valorizacion-${pageData.valorizacion.numero_valorizacion}-p4.pdf`;
             break;
           case 5:
-            pageData = await this.valuationService.getValuationPage5Data(valuationId);
+            pageData = await this.valuationService.getValuationPage5Data(tenantId, valuationId);
             filename = `valorizacion-${pageData.valorizacion.numero_valorizacion}-p5.pdf`;
             break;
           case 6:
-            pageData = await this.valuationService.getValuationPage6Data(valuationId);
+            pageData = await this.valuationService.getValuationPage6Data(tenantId, valuationId);
             filename = `valorizacion-${pageData.valorizacion.numero_valorizacion}-p6.pdf`;
             break;
           case 7:
-            pageData = await this.valuationService.getValuationPage7Data(valuationId);
+            pageData = await this.valuationService.getValuationPage7Data(tenantId, valuationId);
             filename = `valorizacion-${pageData.valorizacion.numero_valorizacion}-p7.pdf`;
             break;
           default:
@@ -355,7 +359,6 @@ export class ValuationController {
         res.send(pdf);
       } else {
         // Use legacy PDFKit-based generation
-        const tenantId = (req as AuthRequest).user!.id_empresa;
         const record = await this.valuationService.getValuationDetailsForPdf(
           tenantId,
           id.toString()
@@ -417,8 +420,9 @@ export class ValuationController {
         return;
       }
 
-      const userId = (req as any).user.id;
-      const record = await this.valuationService.submitDraft(id, userId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
+      const record = await this.valuationService.submitDraft(tenantId, id, userId);
       sendSuccess(res, record);
     } catch (error) {
       next(error);
@@ -437,8 +441,9 @@ export class ValuationController {
         return;
       }
 
-      const userId = (req as any).user.id;
-      const record = await this.valuationService.submitForReview(id, userId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
+      const record = await this.valuationService.submitForReview(tenantId, id, userId);
 
       sendSuccess(res, record);
     } catch (error) {
@@ -463,8 +468,9 @@ export class ValuationController {
         return;
       }
 
-      const userId = (req as any).user.id;
-      const record = await this.valuationService.validate(id, userId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
+      const record = await this.valuationService.validate(tenantId, id, userId);
       sendSuccess(res, record);
     } catch (error) {
       next(error);
@@ -484,8 +490,9 @@ export class ValuationController {
         return;
       }
 
-      const user = (req as any).user;
-      const userRoles = user.roles || [user.rol];
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const user = (req as AuthRequest).user!;
+      const userRoles = (user as any).roles || [(user as any).rol];
       const allowedRoles = ['ADMIN', 'DIRECTOR'];
 
       const hasPermission = userRoles.some((role: string) => allowedRoles.includes(role));
@@ -495,7 +502,7 @@ export class ValuationController {
         return;
       }
 
-      const record = await this.valuationService.approve(id, user.id);
+      const record = await this.valuationService.approve(tenantId, id, user.id_usuario);
       sendSuccess(res, record);
     } catch (error) {
       if (error instanceof Error && error.message.includes('Cannot approve')) {
@@ -525,8 +532,9 @@ export class ValuationController {
         return;
       }
 
-      const user = (req as any).user;
-      const record = await this.valuationService.reject(id, user.id, reason);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
+      const record = await this.valuationService.reject(tenantId, id, userId, reason);
       sendSuccess(res, record);
     } catch (error) {
       if (error instanceof Error && error.message.includes('Cannot reject')) {
@@ -549,8 +557,9 @@ export class ValuationController {
         return;
       }
 
-      const userId = (req as any).user.id;
-      const record = await this.valuationService.reopen(id, userId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
+      const record = await this.valuationService.reopen(tenantId, id, userId);
       sendSuccess(res, record);
     } catch (error) {
       next(error);
@@ -569,13 +578,14 @@ export class ValuationController {
         return;
       }
 
-      const userId = (req as any).user.id;
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const userId = (req as AuthRequest).user!.id_usuario;
       const data = {
         fecha: req.body.fecha ? new Date(req.body.fecha) : undefined,
         observaciones: req.body.observaciones,
       };
 
-      const record = await this.valuationService.registerConformidad(id, userId, data);
+      const record = await this.valuationService.registerConformidad(tenantId, id, userId, data);
       sendSuccess(res, record);
     } catch (error) {
       next(error);
@@ -595,8 +605,9 @@ export class ValuationController {
         return;
       }
 
-      const user = (req as any).user;
-      const userRoles = user.roles || [user.rol];
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const user = (req as AuthRequest).user!;
+      const userRoles = (user as any).roles || [(user as any).rol];
 
       if (!userRoles.includes('ADMIN')) {
         sendError(
@@ -614,7 +625,12 @@ export class ValuationController {
         metodoPago: req.body.metodo_pago,
       };
 
-      const record = await this.valuationService.markAsPaid(id, user.id, paymentData);
+      const record = await this.valuationService.markAsPaid(
+        tenantId,
+        id,
+        user.id_usuario,
+        paymentData
+      );
       sendSuccess(res, record);
     } catch (error) {
       if (error instanceof Error && error.message.includes('Cannot mark as paid')) {
@@ -634,7 +650,8 @@ export class ValuationController {
         sendError(res, 400, 'INVALID_ID', 'Invalid valuation ID');
         return;
       }
-      const docs = await this.valuationService.getPaymentDocuments(id);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const docs = await this.valuationService.getPaymentDocuments(tenantId, id);
       sendSuccess(res, docs);
     } catch (error) {
       next(error);
@@ -652,7 +669,8 @@ export class ValuationController {
         sendError(res, 400, 'INVALID_ID', 'Invalid valuation ID');
         return;
       }
-      const doc = await this.valuationService.createPaymentDocument({
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const doc = await this.valuationService.createPaymentDocument(tenantId, {
         valorizacion_id: id,
         ...req.body,
       });
@@ -673,7 +691,8 @@ export class ValuationController {
         sendError(res, 400, 'INVALID_ID', 'Invalid document ID');
         return;
       }
-      const doc = await this.valuationService.updatePaymentDocument(docId, req.body);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const doc = await this.valuationService.updatePaymentDocument(tenantId, docId, req.body);
       sendSuccess(res, doc);
     } catch (error) {
       next(error);
@@ -691,7 +710,8 @@ export class ValuationController {
         sendError(res, 400, 'INVALID_ID', 'Invalid valuation ID');
         return;
       }
-      const complete = await this.valuationService.checkPaymentDocumentsComplete(id);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const complete = await this.valuationService.checkPaymentDocumentsComplete(tenantId, id);
       sendSuccess(res, { complete });
     } catch (error) {
       next(error);
@@ -726,7 +746,8 @@ export class ValuationController {
         return;
       }
 
-      const events = await this.valuationService.getDiscountEvents(id);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const events = await this.valuationService.getDiscountEvents(tenantId, id);
       sendSuccess(res, events);
     } catch (error) {
       next(error);
@@ -755,7 +776,8 @@ export class ValuationController {
         return;
       }
 
-      const event = await this.valuationService.createDiscountEvent({
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const event = await this.valuationService.createDiscountEvent(tenantId, {
         valorizacionId: id,
         fecha,
         tipo,
@@ -779,7 +801,8 @@ export class ValuationController {
         return;
       }
 
-      await this.valuationService.deleteDiscountEvent(eventId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      await this.valuationService.deleteDiscountEvent(tenantId, eventId);
       res.status(204).send();
     } catch (error) {
       next(error);
@@ -812,7 +835,8 @@ export class ValuationController {
         return;
       }
 
-      const deductions = await this.valuationService.getManualDeductions(id);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      const deductions = await this.valuationService.getManualDeductions(tenantId, id);
       sendSuccess(
         res,
         deductions.map((d) => this.toDeduccionDto(d))
@@ -840,8 +864,9 @@ export class ValuationController {
         return;
       }
 
+      const tenantId = (req as AuthRequest).user!.id_empresa;
       const userId = (req as AuthRequest).user?.id_usuario;
-      const deduction = await this.valuationService.createManualDeduction({
+      const deduction = await this.valuationService.createManualDeduction(tenantId, {
         valorizacionId: id,
         tipo,
         concepto,
@@ -869,8 +894,9 @@ export class ValuationController {
         return;
       }
 
+      const tenantId = (req as AuthRequest).user!.id_empresa;
       const { tipo, concepto, monto, num_documento, fecha, observaciones } = req.body;
-      const updated = await this.valuationService.updateManualDeduction(deduccionId, {
+      const updated = await this.valuationService.updateManualDeduction(tenantId, deduccionId, {
         tipo,
         concepto,
         monto: monto !== undefined ? parseFloat(monto) : undefined,
@@ -896,7 +922,8 @@ export class ValuationController {
         return;
       }
 
-      await this.valuationService.deleteManualDeduction(deduccionId);
+      const tenantId = (req as AuthRequest).user!.id_empresa;
+      await this.valuationService.deleteManualDeduction(tenantId, deduccionId);
       res.status(204).send();
     } catch (error) {
       next(error);

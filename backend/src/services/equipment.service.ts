@@ -182,9 +182,11 @@ export interface EquipmentFilter {
  *
  * ## Multi-Tenancy
  *
- * **CRITICAL**: All queries MUST filter by tenant_id when schema updated:
- * - Currently deferred to Phase 21 (schema blocker: tenant_id column missing)
- * - TODO markers indicate where tenant filtering is required
+ * **CRITICAL**: All queries MUST filter by tenantId:
+ * - Every service method receives `tenantId` as the first parameter
+ * - QueryBuilder queries use `.andWhere('e.tenantId = :tenantId', { tenantId })`
+ * - find/findOne queries include `tenantId` in the where clause
+ * - Creates set `tenantId` on the entity before saving
  * - Each company's equipment is completely isolated
  *
  * ## Related Services
@@ -283,9 +285,6 @@ export class EquipmentService {
     limit = 10
   ): Promise<{ data: EquipmentListDto[]; total: number }> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // where: { tenant_id: tenantId }
-
       // For search, use QueryBuilder (ILIKE not supported by findAndCount)
       if (filter?.search) {
         const queryBuilder = this.repository
@@ -502,8 +501,6 @@ export class EquipmentService {
    */
   async findById(tenantId: number, id: number): Promise<EquipmentDetailDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // where: { id, tenant_id: tenantId }
       const equipment = await this.repository.findOne({
         where: { id, tenantId },
         relations: ['provider', 'tipoEquipo'],
@@ -561,8 +558,6 @@ export class EquipmentService {
    */
   async findByCode(tenantId: number, codigo: string): Promise<Equipment | null> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // where: { codigo_equipo: codigo, tenant_id: tenantId }
       const equipment = await this.repository.findOne({
         where: { codigoEquipo: codigo, tenantId },
       });
@@ -660,9 +655,8 @@ export class EquipmentService {
       const saved = await this.repository.save(equipment);
 
       // Load relations before transforming
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const withRelations = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['provider'],
       });
 
@@ -736,7 +730,6 @@ export class EquipmentService {
     data: UpdateEquipmentDto
   ): Promise<EquipmentDetailDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const equipment = await this.repository.findOne({
         where: { id, tenantId },
         relations: ['provider'],
@@ -821,7 +814,6 @@ export class EquipmentService {
       const saved = await this.repository.save(equipment);
 
       // Reload to get updated relations
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const withRelations = await this.repository.findOne({
         where: { id: saved.id, tenantId },
         relations: ['provider'],
@@ -940,7 +932,6 @@ export class EquipmentService {
    */
   async updateStatus(tenantId: number, id: number, estado: string): Promise<EquipmentDetailDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const equipment = await this.repository.findOne({
         where: { id, tenantId },
         relations: ['provider'],
@@ -1007,7 +998,6 @@ export class EquipmentService {
     id: number,
     reading: number
   ): Promise<EquipmentDetailDto> {
-    // TODO: Add tenant_id filter when schema updated (Phase 21)
     const equipment = await this.repository.findOne({
       where: { id, tenantId },
       relations: ['provider'],
@@ -1045,7 +1035,6 @@ export class EquipmentService {
    * @throws {NotFoundError} If equipment with given ID does not exist
    */
   async updateOdometer(tenantId: number, id: number, reading: number): Promise<EquipmentDetailDto> {
-    // TODO: Add tenant_id filter when schema updated (Phase 21)
     const equipment = await this.repository.findOne({
       where: { id, tenantId },
       relations: ['provider'],
@@ -1094,7 +1083,6 @@ export class EquipmentService {
    */
   async getStatistics(tenantId: number): Promise<EquipmentStatsDto> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const stats = await this.repository
         .createQueryBuilder('e')
         .select('e.estado', 'estado')
@@ -1176,7 +1164,6 @@ export class EquipmentService {
    */
   async getEquipmentTypes(tenantId: number): Promise<string[]> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
       const result = await this.repository
         .createQueryBuilder('e')
         .select('DISTINCT e.categoria', 'categoria')
@@ -1218,8 +1205,9 @@ export class EquipmentService {
    * @param data - Assignment data (project, dates, operator)
    * @returns Assignment confirmation object (stub)
    */
-  async assignToProject(id: number, data: any) {
+  async assignToProject(tenantId: number, id: number, data: any) {
     Logger.debug('Equipment assignment to project requested', {
+      tenantId,
       equipmentId: id,
       projectData: data,
       context: 'EquipmentService.assignToProject',
@@ -1237,8 +1225,9 @@ export class EquipmentService {
    * @param data - Transfer data (from, to, reason)
    * @returns Transfer confirmation object (stub)
    */
-  async transferEquipment(id: number, data: any) {
+  async transferEquipment(tenantId: number, id: number, data: any) {
     Logger.debug('Equipment transfer requested', {
+      tenantId,
       equipmentId: id,
       transferData: data,
       context: 'EquipmentService.transferEquipment',
@@ -1257,7 +1246,7 @@ export class EquipmentService {
    * @param endDate - End date of availability window
    * @returns Currently returns true (stub)
    */
-  async getAvailability(_idOrFilters: any, _startDate?: Date, _endDate?: Date) {
+  async getAvailability(_tenantId: number, _idOrFilters: any, _startDate?: Date, _endDate?: Date) {
     return true;
   }
 
@@ -1296,9 +1285,9 @@ export class EquipmentService {
    * @param equipmentId - Equipment ID
    * @returns Currently returns empty array (stub)
    */
-  async getAssignmentHistory(equipmentId: number): Promise<any[]> {
-    // TODO: Implement with equipo_edt table
+  async getAssignmentHistory(tenantId: number, equipmentId: number): Promise<any[]> {
     Logger.info('Equipment assignment history requested (stub)', {
+      tenantId,
       equipmentId,
       count: 0,
       context: 'EquipmentService.getAssignmentHistory',

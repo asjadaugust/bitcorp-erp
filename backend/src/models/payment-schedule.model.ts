@@ -44,6 +44,9 @@ export class PaymentSchedule {
   @Column({ name: 'observaciones', type: 'text', nullable: true })
   description?: string;
 
+  @Column({ name: 'tenant_id', type: 'integer', nullable: true })
+  tenantId?: number;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 

@@ -58,9 +58,8 @@ export class OperatorAvailabilityService {
 
       const query = this.repository
         .createQueryBuilder('avail')
-        .leftJoinAndSelect('avail.trabajador', 'trabajador');
-      // TODO: Add tenant_id filter when column exists in rrhh.disponibilidad_trabajador table
-      // .where('avail.tenant_id = :tenantId', { tenantId })
+        .leftJoinAndSelect('avail.trabajador', 'trabajador')
+        .where('avail.tenantId = :tenantId', { tenantId });
 
       if (filters?.trabajadorId) {
         query.andWhere('avail.trabajadorId = :trabajadorId', {
@@ -123,11 +122,7 @@ export class OperatorAvailabilityService {
       });
 
       const entity = await this.repository.findOne({
-        where: {
-          id,
-          // TODO: Add tenant_id filter when column exists
-          // tenant_id: tenantId,
-        },
+        where: { id, tenantId },
         relations: ['trabajador'],
       });
 
@@ -181,8 +176,8 @@ export class OperatorAvailabilityService {
       const query = this.repository
         .createQueryBuilder('avail')
         .leftJoinAndSelect('avail.trabajador', 'trabajador')
-        .where('avail.trabajadorId = :trabajadorId', { trabajadorId: operatorId });
-      // TODO: Add tenant_id filter when column exists
+        .where('avail.trabajadorId = :trabajadorId', { trabajadorId: operatorId })
+        .andWhere('avail.tenantId = :tenantId', { tenantId });
 
       if (startDate && endDate) {
         query.andWhere('(avail.fechaInicio <= :endDate AND avail.fechaFin >= :startDate)', {
@@ -248,12 +243,12 @@ export class OperatorAvailabilityService {
       const [entities, total] = await this.repository
         .createQueryBuilder('avail')
         .leftJoinAndSelect('avail.trabajador', 'trabajador')
-        .where('avail.disponible = :disponible', { disponible: true })
+        .where('avail.tenantId = :tenantId', { tenantId })
+        .andWhere('avail.disponible = :disponible', { disponible: true })
         .andWhere('(avail.fechaInicio <= :endDate AND avail.fechaFin >= :startDate)', {
           startDate,
           endDate,
         })
-        // TODO: Add tenant_id filter when column exists
         .skip(skip)
         .take(limit)
         .getManyAndCount();
@@ -310,13 +305,13 @@ export class OperatorAvailabilityService {
         }
       }
 
-      // Business validation: Check for overlapping availability
+      // Business validation: Check for overlapping availability within tenant
       const overlaps = await this.repository
         .createQueryBuilder('avail')
         .where('avail.trabajadorId = :trabajadorId', { trabajadorId: data.trabajadorId })
+        .andWhere('avail.tenantId = :tenantId', { tenantId })
         .andWhere('avail.fechaInicio <= :fechaFin', { fechaFin: data.fechaFin })
         .andWhere('avail.fechaFin >= :fechaInicio', { fechaInicio: data.fechaInicio })
-        // TODO: Add tenant_id filter when column exists
         .getCount();
 
       if (overlaps > 0) {
@@ -329,15 +324,16 @@ export class OperatorAvailabilityService {
         });
       }
 
-      const availability = this.repository.create(data);
-      // TODO: Set tenant_id when creating
-      // availability.tenant_id = tenantId;
+      const availability = this.repository.create({
+        ...data,
+        tenantId,
+      });
 
       const saved = await this.repository.save(availability);
 
       // Reload with relations
       const entity = await this.repository.findOne({
-        where: { id: saved.id },
+        where: { id: saved.id, tenantId },
         relations: ['trabajador'],
       });
 
@@ -394,7 +390,7 @@ export class OperatorAvailabilityService {
         }
       }
 
-      // Business validation: Check for overlapping availability (exclude current record)
+      // Business validation: Check for overlapping availability (exclude current record) within tenant
       if (data.fechaInicio || data.fechaFin || data.trabajadorId) {
         const trabajadorId = data.trabajadorId || existing.trabajador_id;
         const fechaInicio = data.fechaInicio || existing.fecha_inicio;
@@ -403,10 +399,10 @@ export class OperatorAvailabilityService {
         const overlaps = await this.repository
           .createQueryBuilder('avail')
           .where('avail.trabajadorId = :trabajadorId', { trabajadorId })
+          .andWhere('avail.tenantId = :tenantId', { tenantId })
           .andWhere('avail.id != :currentId', { currentId: id })
           .andWhere('avail.fechaInicio <= :fechaFin', { fechaFin })
           .andWhere('avail.fechaFin >= :fechaInicio', { fechaInicio })
-          // TODO: Add tenant_id filter when column exists
           .getCount();
 
         if (overlaps > 0) {
@@ -420,7 +416,7 @@ export class OperatorAvailabilityService {
         }
       }
 
-      await this.repository.update(id, data);
+      await this.repository.update({ id, tenantId }, data);
 
       const updated = await this.findById(tenantId, id);
 
@@ -458,7 +454,7 @@ export class OperatorAvailabilityService {
       // Verify existence (throws NotFoundError if not found)
       await this.findById(tenantId, id);
 
-      await this.repository.delete(id);
+      await this.repository.delete({ id, tenantId });
 
       Logger.info('Operator availability deleted', {
         tenantId,
@@ -511,13 +507,13 @@ export class OperatorAvailabilityService {
           }
         }
 
-        // Check for overlaps (this could be optimized with a single query)
+        // Check for overlaps within tenant
         const overlaps = await this.repository
           .createQueryBuilder('avail')
           .where('avail.trabajadorId = :trabajadorId', { trabajadorId: data.trabajadorId })
+          .andWhere('avail.tenantId = :tenantId', { tenantId })
           .andWhere('avail.fechaInicio <= :fechaFin', { fechaFin: data.fechaFin })
           .andWhere('avail.fechaFin >= :fechaInicio', { fechaInicio: data.fechaInicio })
-          // TODO: Add tenant_id filter when column exists
           .getCount();
 
         if (overlaps > 0) {
@@ -534,13 +530,18 @@ export class OperatorAvailabilityService {
         }
       }
 
-      const entities = availabilities.map((data) => this.repository.create(data));
+      const entities = availabilities.map((data) =>
+        this.repository.create({
+          ...data,
+          tenantId,
+        })
+      );
       const saved = await this.repository.save(entities);
 
       // Reload with relations
       const ids = saved.map((e) => e.id);
       const reloaded = await this.repository.find({
-        where: ids.map((id) => ({ id })),
+        where: ids.map((id) => ({ id, tenantId })),
         relations: ['trabajador'],
       });
 

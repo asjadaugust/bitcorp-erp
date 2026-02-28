@@ -220,19 +220,10 @@ export interface UpdateAccountsPayableDto extends Partial<CreateAccountsPayableD
  * - Use ANULADO status instead of delete
  * - Implement proper audit trail
  *
- * ## Multi-Tenancy Notes
+ * ## Multi-Tenancy
  *
- * **Current Status**: Multi-tenancy NOT implemented (deferred to Phase 21)
- *
- * **Schema Blocker**: `cuenta_por_pagar` table lacks `tenant_id` column
- *
- * **When Implemented (Phase 21)**:
- * - Add `tenant_id` column to `cuenta_por_pagar` table
- * - Add tenant_id filter to all queries (5 locations marked with TODO)
- * - Ensure company A cannot see/modify company B's accounts payable
- * - Tenant context automatically injected via middleware
- *
- * **Security**: Without tenant filtering, cross-company data leakage is possible!
+ * All methods accept `tenantId` as a parameter and filter queries accordingly.
+ * Tenant isolation is enforced via `tenantId` in WHERE clauses.
  *
  * ## Related Services
  *
@@ -478,9 +469,6 @@ export class AccountsPayableService {
     const sortOrder = filters?.sort_order === 'ASC' ? 'ASC' : 'DESC';
 
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // queryBuilder.andWhere('ap.tenant_id = :tenantId', { tenantId })
-
       // Use query builder for dynamic sorting
       const queryBuilder = AccountsPayableRepository.createQueryBuilder('ap')
         .where('ap.tenantId = :tenantId', { tenantId })
@@ -533,9 +521,6 @@ export class AccountsPayableService {
    */
   async findOne(tenantId: number, id: number): Promise<AccountsPayableDto | null> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // where: { id, tenant_id: tenantId }
-
       const account = await AccountsPayableRepository.findOne({
         where: { id, tenantId },
         relations: ['provider'],
@@ -610,9 +595,6 @@ export class AccountsPayableService {
     data: UpdateAccountsPayableDto
   ): Promise<AccountsPayableDto | null> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // where: { id, tenant_id: tenantId }
-
       const accountPayable = await AccountsPayableRepository.findOne({
         where: { id, tenantId },
         relations: ['provider'],
@@ -723,9 +705,6 @@ export class AccountsPayableService {
    */
   async delete(tenantId: number, id: number): Promise<boolean> {
     try {
-      // TODO: Add tenant_id validation when schema updated (Phase 21)
-      // Verify record belongs to current tenant before deleting
-
       // Check if record exists
       const existing = await AccountsPayableRepository.findOne({
         where: { id, tenantId },
@@ -778,9 +757,6 @@ export class AccountsPayableService {
    */
   async findPending(tenantId: number): Promise<AccountsPayableDto[]> {
     try {
-      // TODO: Add tenant_id filter when schema updated (Phase 21)
-      // Repository method needs tenant_id parameter
-
       const accounts = await AccountsPayableRepository.findPending(tenantId);
 
       const totalSaldo = accounts.reduce(

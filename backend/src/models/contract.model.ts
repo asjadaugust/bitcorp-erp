@@ -12,6 +12,19 @@ import { Equipment } from './equipment.model';
 import { User } from './user.model';
 import { Provider } from './provider.model';
 
+export type ModalidadContrato =
+  | 'alquiler_seco'
+  | 'alquiler_con_operador'
+  | 'alquiler_todo_costo'
+  | 'servicio';
+
+export const MODALIDADES_CONTRATO: ModalidadContrato[] = [
+  'alquiler_seco',
+  'alquiler_con_operador',
+  'alquiler_todo_costo',
+  'servicio',
+];
+
 export type TipoContrato = 'CONTRATO' | 'ADENDA';
 export type EstadoContrato =
   | 'ACTIVO'
@@ -86,7 +99,7 @@ export class Contract {
   moneda!: string;
 
   @Column({ name: 'modalidad', type: 'varchar', length: 50, nullable: true })
-  modalidad?: string;
+  modalidad?: ModalidadContrato;
 
   @Column({ name: 'tipo_tarifa', type: 'varchar', length: 50, nullable: true })
   tipoTarifa?: string;

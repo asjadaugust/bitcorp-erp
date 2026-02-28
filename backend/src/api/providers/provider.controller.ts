@@ -21,6 +21,7 @@ export class ProviderController {
    */
   static async getAll(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const { search, is_active, tipo_proveedor, page, limit, sort_by, sort_order } = req.query;
 
       const filters: any = {};
@@ -37,7 +38,7 @@ export class ProviderController {
       const pageNum = parseInt(page as string) || 1;
       const limitNum = Math.min(parseInt(limit as string) || 10, 100);
 
-      const { data, total } = await providerService.findAll(filters, pageNum, limitNum);
+      const { data, total } = await providerService.findAll(tenantId, filters, pageNum, limitNum);
 
       sendPaginatedSuccess(res, data, { page: pageNum, limit: limitNum, total });
     } catch (error: any) {
@@ -56,6 +57,7 @@ export class ProviderController {
    */
   static async getById(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -63,7 +65,7 @@ export class ProviderController {
         return;
       }
 
-      const provider = await providerService.findById(id);
+      const provider = await providerService.findById(tenantId, id);
 
       sendSuccess(res, provider);
     } catch (error: any) {
@@ -89,9 +91,10 @@ export class ProviderController {
    */
   static async getByRuc(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const { ruc } = req.params;
 
-      const provider = await providerService.findByRuc(ruc);
+      const provider = await providerService.findByRuc(tenantId, ruc);
 
       if (!provider) {
         sendError(res, 404, 'PROVIDER_NOT_FOUND', 'Provider not found');
@@ -116,7 +119,8 @@ export class ProviderController {
    */
   static async create(req: Request, res: Response): Promise<void> {
     try {
-      const provider = await providerService.create(req.body);
+      const tenantId = req.user!.id_empresa;
+      const provider = await providerService.create(tenantId, req.body);
 
       sendCreated(res, provider);
     } catch (error: any) {
@@ -146,6 +150,7 @@ export class ProviderController {
    */
   static async update(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -153,7 +158,7 @@ export class ProviderController {
         return;
       }
 
-      const provider = await providerService.update(id, req.body);
+      const provider = await providerService.update(tenantId, id, req.body);
 
       sendSuccess(res, provider);
     } catch (error: any) {
@@ -184,6 +189,7 @@ export class ProviderController {
    */
   static async delete(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -191,7 +197,7 @@ export class ProviderController {
         return;
       }
 
-      await providerService.delete(id);
+      await providerService.delete(tenantId, id);
 
       res.status(204).send();
     } catch (error: any) {
@@ -211,9 +217,10 @@ export class ProviderController {
    */
   static async getByType(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const { type } = req.params;
 
-      const providers = await providerService.findByType(type as TipoProveedor);
+      const providers = await providerService.findByType(tenantId, type as TipoProveedor);
 
       sendSuccess(res, providers);
     } catch (error: any) {
@@ -239,7 +246,8 @@ export class ProviderController {
    */
   static async getActiveCount(req: Request, res: Response): Promise<void> {
     try {
-      const count = await providerService.getActiveCount();
+      const tenantId = req.user!.id_empresa;
+      const count = await providerService.getActiveCount(tenantId);
 
       sendSuccess(res, { count });
     } catch (error: any) {
@@ -258,6 +266,7 @@ export class ProviderController {
    */
   static async getLogs(req: Request, res: Response): Promise<void> {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
 
       if (isNaN(id)) {
@@ -265,7 +274,7 @@ export class ProviderController {
         return;
       }
 
-      const logs = await providerService.getLogs(id);
+      const logs = await providerService.getLogs(tenantId, id);
 
       sendSuccess(res, logs);
     } catch (error: any) {
@@ -294,13 +303,7 @@ export class ProviderController {
       const data = await rucFetcherService.fetchRuc(ruc);
       sendSuccess(res, data);
     } catch (error: any) {
-      sendError(
-        res,
-        500,
-        'RUC_LOOKUP_FAILED',
-        'Error al buscar los datos del RUC',
-        error.message
-      );
+      sendError(res, 500, 'RUC_LOOKUP_FAILED', 'Error al buscar los datos del RUC', error.message);
     }
   }
 }

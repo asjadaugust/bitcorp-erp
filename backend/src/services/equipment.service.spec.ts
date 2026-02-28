@@ -147,24 +147,24 @@ describe('EquipmentService', () => {
       expect(service.getEquipmentTypes.length).toBe(1);
     });
 
-    it('assignToProject should accept id and data parameters', () => {
-      expect(service.assignToProject.length).toBe(2);
+    it('assignToProject should accept tenantId, id, and data parameters', () => {
+      expect(service.assignToProject.length).toBe(3);
     });
 
-    it('transferEquipment should accept id and data parameters', () => {
-      expect(service.transferEquipment.length).toBe(2);
+    it('transferEquipment should accept tenantId, id, and data parameters', () => {
+      expect(service.transferEquipment.length).toBe(3);
     });
 
-    it('getAvailability should accept idOrFilters, startDate, and endDate parameters', () => {
-      expect(service.getAvailability.length).toBe(3);
+    it('getAvailability should accept tenantId, idOrFilters, startDate, and endDate parameters', () => {
+      expect(service.getAvailability.length).toBe(4);
     });
 
     it('getAvailableEquipment should accept tenantId parameter', () => {
       expect(service.getAvailableEquipment.length).toBe(1);
     });
 
-    it('getAssignmentHistory should accept equipmentId parameter', () => {
-      expect(service.getAssignmentHistory.length).toBe(1);
+    it('getAssignmentHistory should accept tenantId and equipmentId parameters', () => {
+      expect(service.getAssignmentHistory.length).toBe(2);
     });
   });
 

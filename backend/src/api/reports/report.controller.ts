@@ -151,7 +151,7 @@ export class ReportController {
       const usuarioId = req.user!.id_usuario;
       const tenantId = req.user!.id_empresa;
       if (isNaN(id)) return sendError(res, 400, 'INVALID_ID', 'ID de reporte inválido');
-      const data = await reportService.enviarReporte(id, usuarioId, tenantId);
+      const data = await reportService.enviarReporte(tenantId, id, usuarioId);
       sendSuccess(res, data);
     } catch (error: any) {
       if (error instanceof NotFoundError) return sendError(res, 404, 'NOT_FOUND', error.message);
@@ -385,9 +385,11 @@ export class ReportController {
 
   async getInspectionTracking(req: AuthRequest, res: Response) {
     try {
+      const tenantId = req.user!.id_empresa;
       const { fecha_desde, fecha_hasta, solo_abiertas } = req.query;
       const soloAbiertas = solo_abiertas === 'true';
       const resultado = await reportService.getInspectionTracking(
+        tenantId,
         fecha_desde as string | undefined,
         fecha_hasta as string | undefined,
         soloAbiertas
@@ -404,10 +406,11 @@ export class ReportController {
 
   async resolverObservacion(req: AuthRequest, res: Response) {
     try {
+      const tenantId = req.user!.id_empresa;
       const id = parseInt(req.params.id);
       if (isNaN(id)) return sendError(res, 400, 'INVALID_ID', 'Invalid observation ID');
       const { observacion_resolucion } = req.body;
-      await reportService.resolverObservacion(id, observacion_resolucion);
+      await reportService.resolverObservacion(tenantId, id, observacion_resolucion);
       return sendSuccess(res, { id, resuelta: true });
     } catch (error: any) {
       Logger.error('Error resolving observation', {

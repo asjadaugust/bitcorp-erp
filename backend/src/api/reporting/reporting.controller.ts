@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { ReportingService } from '../../services/reporting.service';
 import { ExportService } from '../../services/export.service';
 import { sendSuccess, sendError } from '../../utils/api-response';
@@ -13,8 +14,9 @@ export class ReportingController {
     this.exportService = new ExportService();
   }
 
-  getEquipmentUtilization = async (req: Request, res: Response): Promise<void> => {
+  getEquipmentUtilization = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { startDate, endDate, format } = req.query;
 
       // Fallback validation (DTO should handle this)
@@ -24,6 +26,7 @@ export class ReportingController {
       }
 
       const data = await this.reportingService.getEquipmentUtilization(
+        tenantId,
         startDate as string,
         endDate as string
       );
@@ -59,8 +62,9 @@ export class ReportingController {
     }
   };
 
-  getMaintenanceHistory = async (req: Request, res: Response): Promise<void> => {
+  getMaintenanceHistory = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { startDate, endDate, format } = req.query;
 
       // Fallback validation (DTO should handle this)
@@ -70,6 +74,7 @@ export class ReportingController {
       }
 
       const data = await this.reportingService.getMaintenanceHistory(
+        tenantId,
         startDate as string,
         endDate as string
       );
@@ -106,8 +111,9 @@ export class ReportingController {
     }
   };
 
-  getInventoryMovements = async (req: Request, res: Response): Promise<void> => {
+  getInventoryMovements = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { startDate, endDate, format } = req.query;
 
       // Fallback validation (DTO should handle this)
@@ -117,6 +123,7 @@ export class ReportingController {
       }
 
       const data = await this.reportingService.getInventoryMovements(
+        tenantId,
         startDate as string,
         endDate as string
       );
@@ -153,8 +160,9 @@ export class ReportingController {
     }
   };
 
-  getOperatorTimesheet = async (req: Request, res: Response): Promise<void> => {
+  getOperatorTimesheet = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const tenantId = req.user!.id_empresa;
       const { startDate, endDate, format } = req.query;
 
       // Fallback validation (DTO should handle this)
@@ -164,6 +172,7 @@ export class ReportingController {
       }
 
       const data = await this.reportingService.getOperatorTimesheet(
+        tenantId,
         startDate as string,
         endDate as string
       );

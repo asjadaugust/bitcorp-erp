@@ -385,17 +385,6 @@ import logger from '../config/logger.config';
  *
  * ---
  *
- * ## Tenant Context (Phase 21 - TODO)
- *
- * All methods will be updated in Phase 21 to filter by tenant context:
- * ```typescript
- * // TODO: [Phase 21 - Tenant Context] Add tenant filtering
- * queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
- * ```
- *
- * Current implementation assumes single-tenant (all contracts visible).
- *
- * ---
  *
  * ## Usage Examples
  *
@@ -568,6 +557,7 @@ export class ContractService {
    * );
    */
   async findAll(
+    tenantId: number,
     filters?: {
       search?: string;
       estado?: string;
@@ -580,15 +570,13 @@ export class ContractService {
     limit: number = 10
   ): Promise<{ data: ContractDto[]; total: number }> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
-
       const query = this.contractRepository
         .createQueryBuilder('contract')
         .leftJoinAndSelect('contract.equipo', 'equipo')
         .leftJoinAndSelect('equipo.provider', 'equipo_provider')
         .leftJoinAndSelect('contract.provider', 'provider')
-        .where('contract.tipo = :tipo', { tipo: 'CONTRATO' });
+        .where('contract.tipo = :tipo', { tipo: 'CONTRATO' })
+        .andWhere('contract.tenantId = :tenantId', { tenantId });
 
       if (filters?.estado) {
         query.andWhere('contract.estado = :estado', { estado: filters.estado });
@@ -693,13 +681,10 @@ export class ContractService {
    * const contract = await contractService.findById(123);
    * console.log(`Contract ${contract.numero_contrato} for ${contract.equipo?.modelo}`);
    */
-  async findById(id: number): Promise<ContractDto> {
+  async findById(tenantId: number, id: number): Promise<ContractDto> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
-
       const contract = await this.contractRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['adendas', 'equipo', 'equipo.provider', 'provider'],
       });
 
@@ -753,13 +738,10 @@ export class ContractService {
    * const contract = await contractService.findByNumero('CNT-2026-001');
    * if (contract) console.log(`Found contract ID: ${contract.id}`);
    */
-  async findByNumero(_tenantId: number, numeroContrato: string): Promise<Contract | null> {
+  async findByNumero(tenantId: number, numeroContrato: string): Promise<Contract | null> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
-
       return await this.contractRepository.findOne({
-        where: { numeroContrato },
+        where: { numeroContrato, tenantId },
       });
     } catch (error) {
       logger.error('Error finding contract by numero', {
@@ -823,9 +805,6 @@ export class ContractService {
    */
   async create(tenantId: number, data: Partial<ContractDto>): Promise<ContractDto> {
     try {
-      const entityDataInput = fromContractDto(data);
-      entityDataInput.tenantId = tenantId;
-
       // Validate required fields
       if (!data.numero_contrato || !data.fecha_inicio || !data.fecha_fin) {
         throw new ValidationError('Missing required fields for contract creation', [
@@ -887,6 +866,7 @@ export class ContractService {
 
       const contract = this.contractRepository.create({
         ...entityData,
+        tenantId,
         tipo: 'CONTRATO',
         estado: 'ACTIVO',
       });
@@ -949,12 +929,9 @@ export class ContractService {
    *   tarifa: 5500.00,         // Update rate
    * });
    */
-  async update(id: number, data: Partial<ContractDto>): Promise<ContractDto> {
+  async update(tenantId: number, id: number, data: Partial<ContractDto>): Promise<ContractDto> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // Verify contract belongs to current tenant before update
-
-      const contractDto = await this.findById(id);
+      const contractDto = await this.findById(tenantId, id);
 
       // Validate dates if being updated
       if (data.fecha_inicio && data.fecha_fin) {
@@ -972,7 +949,7 @@ export class ContractService {
 
       // If updating numeroContrato, check it doesn't exist
       if (data.numero_contrato && data.numero_contrato !== contractDto.numero_contrato) {
-        const existing = await this.findByNumero(0, data.numero_contrato);
+        const existing = await this.findByNumero(tenantId, data.numero_contrato);
         if (existing && existing.id !== id) {
           throw new ConflictError(`Contract with number ${data.numero_contrato} already exists`, {
             field: 'numero_contrato',
@@ -990,7 +967,7 @@ export class ContractService {
 
       // Fetch updated entity and return as DTO
       const updated = await this.contractRepository.findOne({
-        where: { id },
+        where: { id, tenantId },
         relations: ['adendas', 'equipo', 'equipo.provider'],
       });
 
@@ -1047,13 +1024,10 @@ export class ContractService {
    * await contractService.delete(123);
    * // Contract now has estado = CANCELADO
    */
-  async delete(id: number): Promise<void> {
+  async delete(tenantId: number, id: number): Promise<void> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // Verify contract belongs to current tenant before deletion
-
-      // Check if contract exists
-      const contract = await this.contractRepository.findOne({ where: { id } });
+      // Check if contract exists and belongs to tenant
+      const contract = await this.contractRepository.findOne({ where: { id, tenantId } });
       if (!contract) {
         throw new NotFoundError('Contract', id);
       }
@@ -1125,7 +1099,7 @@ export class ContractService {
       resueltoPor: dto.usuarioId,
     });
 
-    const updated = await this.contractRepository.findOne({ where: { id } });
+    const updated = await this.contractRepository.findOne({ where: { id, tenantId } });
     logger.info('Contract resolved', {
       id,
       causal: dto.causal_resolucion,
@@ -1236,7 +1210,7 @@ export class ContractService {
       }),
     });
 
-    const contract = await this.contractRepository.findOne({ where: { id } });
+    const contract = await this.contractRepository.findOne({ where: { id, tenantId } });
     logger.info('Contract liquidated', { id, numero: contract?.numeroContrato });
     return toContractDto(contract);
   }
@@ -1263,17 +1237,15 @@ export class ContractService {
    * const expiring = await contractService.findExpiring(30);
    * expiring.forEach(c => console.log(`${c.numero_contrato} expires on ${c.fecha_fin}`));
    */
-  async findExpiring(days: number = 30): Promise<ContractDto[]> {
+  async findExpiring(tenantId: number, days: number = 30): Promise<ContractDto[]> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
-
       const today = new Date();
       const futureDate = new Date();
       futureDate.setDate(today.getDate() + days);
 
       const contracts = await this.contractRepository.find({
         where: {
+          tenantId,
           estado: 'ACTIVO',
           fechaFin: Between(today, futureDate),
         },
@@ -1334,19 +1306,17 @@ export class ContractService {
    * @private
    */
   private async checkOverlappingContracts(
-    _tenantId: number,
+    tenantId: number,
     equipoId: number,
     fechaInicio: Date,
     fechaFin: Date,
     excludeContractId?: number
   ): Promise<boolean> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
-
       const query = this.contractRepository
         .createQueryBuilder('contract')
         .where('contract.equipoId = :equipoId', { equipoId })
+        .andWhere('contract.tenantId = :tenantId', { tenantId })
         .andWhere('contract.estado = :estado', { estado: 'ACTIVO' })
         .andWhere('contract.tipo = :tipo', { tipo: 'CONTRATO' })
         .andWhere('(contract.fechaInicio <= :fechaFin AND contract.fechaFin >= :fechaInicio)', {
@@ -1400,13 +1370,11 @@ export class ContractService {
    * const addendums = await contractService.getAddendums(123);
    * console.log(`Contract has ${addendums.length} addendum(s)`);
    */
-  async getAddendums(contractId: number): Promise<ContractDto[]> {
+  async getAddendums(tenantId: number, contractId: number): Promise<ContractDto[]> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
-
       const addendums = await this.contractRepository.find({
         where: {
+          tenantId,
           contratoPadreId: contractId,
           tipo: 'ADENDA',
         },
@@ -1494,7 +1462,7 @@ export class ContractService {
     }
 
     // Get parent contract BEFORE starting transaction
-    const contractDto = await this.findById(data.contrato_padre_id);
+    const contractDto = await this.findById(tenantId, data.contrato_padre_id);
 
     // Validate new end date is after current end date
     if (new Date(data.fecha_fin) <= new Date(contractDto.fecha_fin)) {
@@ -1514,9 +1482,6 @@ export class ContractService {
     await queryRunner.startTransaction();
 
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant context to new record
-      // entityData.unidad_operativa_id = tenantId
-
       // Transform DTO to entity
       const entityData = fromContractDto(data);
 
@@ -1600,8 +1565,18 @@ export class ContractService {
     return AppDataSource.getRepository(ContractAnnex);
   }
 
-  async getAnnexes(contractId: number, tipoAnexo?: 'A' | 'B'): Promise<ContractAnnex[]> {
+  async getAnnexes(
+    tenantId: number,
+    contractId: number,
+    tipoAnexo?: 'A' | 'B'
+  ): Promise<ContractAnnex[]> {
     try {
+      // Verify contract belongs to tenant
+      const contract = await this.contractRepository.findOne({
+        where: { id: contractId, tenantId },
+      });
+      if (!contract) throw new NotFoundError('Contract', contractId);
+
       const where: any = { contratoId: contractId };
       if (tipoAnexo) where.tipoAnexo = tipoAnexo;
 
@@ -1627,13 +1602,14 @@ export class ContractService {
   }
 
   async saveAnnexes(
+    tenantId: number,
     contractId: number,
     tipoAnexo: 'A' | 'B',
     items: Array<{ concepto: string; incluido: boolean; observaciones?: string }>
   ): Promise<ContractAnnex[]> {
     try {
-      // Verify contract exists
-      await this.findById(contractId);
+      // Verify contract exists and belongs to tenant
+      await this.findById(tenantId, contractId);
 
       // Delete existing annexes of this type
       await this.annexRepository.delete({ contratoId: contractId, tipoAnexo });
@@ -1677,8 +1653,17 @@ export class ContractService {
     return AppDataSource.getRepository(ContractRequiredDocument);
   }
 
-  async getRequiredDocuments(contractId: number): Promise<ContractRequiredDocument[]> {
+  async getRequiredDocuments(
+    tenantId: number,
+    contractId: number
+  ): Promise<ContractRequiredDocument[]> {
     try {
+      // Verify contract belongs to tenant
+      const contract = await this.contractRepository.findOne({
+        where: { id: contractId, tenantId },
+      });
+      if (!contract) throw new NotFoundError('Contract', contractId);
+
       const docs = await this.requiredDocRepository.find({
         where: { contratoId: contractId },
         relations: ['providerDocument'],
@@ -1701,9 +1686,12 @@ export class ContractService {
     }
   }
 
-  async initializeRequiredDocuments(contractId: number): Promise<ContractRequiredDocument[]> {
+  async initializeRequiredDocuments(
+    tenantId: number,
+    contractId: number
+  ): Promise<ContractRequiredDocument[]> {
     try {
-      await this.findById(contractId);
+      await this.findById(tenantId, contractId);
 
       const existingDocs = await this.requiredDocRepository.find({
         where: { contratoId: contractId },
@@ -1749,6 +1737,7 @@ export class ContractService {
   }
 
   async updateRequiredDocument(
+    tenantId: number,
     id: number,
     data: {
       providerDocumentId?: number | null;
@@ -1761,6 +1750,14 @@ export class ContractService {
       const doc = await this.requiredDocRepository.findOne({ where: { id } });
       if (!doc) {
         throw new NotFoundError('ContractRequiredDocument', id);
+      }
+
+      // Verify the parent contract belongs to tenant
+      const contract = await this.contractRepository.findOne({
+        where: { id: doc.contratoId, tenantId },
+      });
+      if (!contract) {
+        throw new NotFoundError('Contract', doc.contratoId);
       }
 
       if (data.providerDocumentId !== undefined) doc.providerDocumentId = data.providerDocumentId;
@@ -1788,13 +1785,11 @@ export class ContractService {
     }
   }
 
-  async getActiveCount(): Promise<number> {
+  async getActiveCount(tenantId: number): Promise<number> {
     try {
-      // TODO: [Phase 21 - Tenant Context] Add tenant filtering
-      // queryBuilder.andWhere('contract.unidad_operativa_id = :tenantId', { tenantId })
-
       const count = await this.contractRepository.count({
         where: {
+          tenantId,
           estado: 'ACTIVO',
           tipo: 'CONTRATO',
         },
@@ -1823,8 +1818,14 @@ export class ContractService {
     return AppDataSource.getRepository(ContractObligacion);
   }
 
-  async getObligaciones(contratoId: number): Promise<ContractObligacionDto[]> {
+  async getObligaciones(tenantId: number, contratoId: number): Promise<ContractObligacionDto[]> {
     try {
+      // Verify contract belongs to tenant
+      const contract = await this.contractRepository.findOne({
+        where: { id: contratoId, tenantId },
+      });
+      if (!contract) throw new NotFoundError('Contract', contratoId);
+
       const items = await this.obligacionRepository.find({
         where: { contratoId },
         order: { tipoObligacion: 'ASC' },
@@ -1845,9 +1846,12 @@ export class ContractService {
     }
   }
 
-  async initializeObligaciones(contratoId: number): Promise<ContractObligacionDto[]> {
+  async initializeObligaciones(
+    tenantId: number,
+    contratoId: number
+  ): Promise<ContractObligacionDto[]> {
     try {
-      await this.findById(contratoId);
+      await this.findById(tenantId, contratoId);
 
       const existing = await this.obligacionRepository.find({ where: { contratoId } });
       if (existing.length > 0) {
@@ -1883,6 +1887,7 @@ export class ContractService {
   }
 
   async updateObligacion(
+    tenantId: number,
     id: number,
     data: {
       estado?: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA';
@@ -1895,6 +1900,12 @@ export class ContractService {
       if (!item) {
         throw new NotFoundError('ContractObligacion', id);
       }
+
+      // Verify the parent contract belongs to tenant
+      const contract = await this.contractRepository.findOne({
+        where: { id: item.contratoId, tenantId },
+      });
+      if (!contract) throw new NotFoundError('Contract', item.contratoId);
 
       if (data.estado !== undefined) item.estado = data.estado;
       if (data.fechaCompromiso !== undefined)
@@ -1926,9 +1937,16 @@ export class ContractService {
   }
 
   async getObligacionesArrendatario(
+    tenantId: number,
     contratoId: number
   ): Promise<ContractObligacionArrendatarioDto[]> {
     try {
+      // Verify contract belongs to tenant
+      const contract = await this.contractRepository.findOne({
+        where: { id: contratoId, tenantId },
+      });
+      if (!contract) throw new NotFoundError('Contract', contratoId);
+
       const items = await this.obligacionArrendatarioRepository.find({
         where: { contratoId },
         order: { tipoObligacion: 'ASC' },
@@ -1950,10 +1968,11 @@ export class ContractService {
   }
 
   async initializeObligacionesArrendatario(
+    tenantId: number,
     contratoId: number
   ): Promise<ContractObligacionArrendatarioDto[]> {
     try {
-      await this.findById(contratoId);
+      await this.findById(tenantId, contratoId);
 
       const existing = await this.obligacionArrendatarioRepository.find({
         where: { contratoId },
@@ -1993,6 +2012,7 @@ export class ContractService {
   }
 
   async updateObligacionArrendatario(
+    tenantId: number,
     id: number,
     data: {
       estado?: 'PENDIENTE' | 'CUMPLIDA' | 'INCUMPLIDA';
@@ -2005,6 +2025,12 @@ export class ContractService {
       if (!item) {
         throw new NotFoundError('ContractObligacionArrendatario', id);
       }
+
+      // Verify the parent contract belongs to tenant
+      const contract = await this.contractRepository.findOne({
+        where: { id: item.contratoId, tenantId },
+      });
+      if (!contract) throw new NotFoundError('Contract', item.contratoId);
 
       if (data.estado !== undefined) item.estado = data.estado;
       if (data.fechaCompromiso !== undefined)

@@ -141,6 +141,7 @@ export class PuppeteerPdfService {
       const item = items.find((i) => i.codigo === code);
       return item?.descripcion || '';
     });
+    Handlebars.registerHelper('lowercase', (str: string) => (str || '').toLowerCase());
   }
 
   /**
@@ -569,6 +570,35 @@ export class PuppeteerPdfService {
         context: 'PuppeteerPdfService.sendPdfResponse',
       });
       res.status(500).json({ error: 'Failed to generate PDF' });
+    }
+  }
+
+  /**
+   * Generate Acta de Entrega PDF
+   */
+  async generateActaEntregaPdf(data: any): Promise<Buffer> {
+    try {
+      const template = await this.loadTemplate('acta-entrega');
+      const html = template(data);
+      const browser = await this.initBrowser();
+      const page = await browser.newPage();
+
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      const pdfBytes = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
+      });
+
+      await page.close();
+      return Buffer.from(pdfBytes);
+    } catch (error) {
+      Logger.error('Error generating acta entrega PDF', {
+        error: error instanceof Error ? error.message : String(error),
+        context: 'PuppeteerPdfService.generateActaEntregaPdf',
+      });
+      throw new Error('Failed to generate acta entrega PDF');
     }
   }
 }

@@ -62,40 +62,40 @@ describe('TimesheetService', () => {
   });
 
   describe('Method Signatures', () => {
-    it('generateTimesheet should accept 1 parameter', () => {
-      expect(service.generateTimesheet.length).toBe(1);
+    it('generateTimesheet should accept 2 parameters (tenantId, dto)', () => {
+      expect(service.generateTimesheet.length).toBe(2);
     });
 
-    it('getTimesheetWithDetails should accept 1 parameter', () => {
-      expect(service.getTimesheetWithDetails.length).toBe(1);
+    it('getTimesheetWithDetails should accept 2 parameters (tenantId, id)', () => {
+      expect(service.getTimesheetWithDetails.length).toBe(2);
     });
 
-    it('submitTimesheet should accept 2 parameters', () => {
-      expect(service.submitTimesheet.length).toBe(2);
+    it('submitTimesheet should accept 3 parameters (tenantId, id, submittedBy)', () => {
+      expect(service.submitTimesheet.length).toBe(3);
     });
 
-    it('approveTimesheet should accept 2 parameters', () => {
-      expect(service.approveTimesheet.length).toBe(2);
+    it('approveTimesheet should accept 3 parameters (tenantId, id, approvedBy)', () => {
+      expect(service.approveTimesheet.length).toBe(3);
     });
 
-    it('rejectTimesheet should accept 3 parameters', () => {
-      expect(service.rejectTimesheet.length).toBe(3);
+    it('rejectTimesheet should accept 4 parameters (tenantId, id, rejectedBy, reason)', () => {
+      expect(service.rejectTimesheet.length).toBe(4);
     });
 
-    it('listTimesheets should accept 1 parameter', () => {
-      expect(service.listTimesheets.length).toBe(1);
+    it('listTimesheets should accept 2 parameters (tenantId, filters)', () => {
+      expect(service.listTimesheets.length).toBe(2);
     });
 
-    it('getByTrabajadorAndPeriodo should accept 2 parameters', () => {
-      expect(service.getByTrabajadorAndPeriodo.length).toBe(2);
+    it('getByTrabajadorAndPeriodo should accept 3 parameters (tenantId, trabajadorId, periodo)', () => {
+      expect(service.getByTrabajadorAndPeriodo.length).toBe(3);
     });
 
-    it('deleteTimesheet should accept 1 parameter', () => {
-      expect(service.deleteTimesheet.length).toBe(1);
+    it('deleteTimesheet should accept 2 parameters (tenantId, id)', () => {
+      expect(service.deleteTimesheet.length).toBe(2);
     });
 
-    it('updateTimesheet should accept 2 parameters', () => {
-      expect(service.updateTimesheet.length).toBe(2);
+    it('updateTimesheet should accept 3 parameters (tenantId, id, updates)', () => {
+      expect(service.updateTimesheet.length).toBe(3);
     });
   });
 

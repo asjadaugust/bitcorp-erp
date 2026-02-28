@@ -57,10 +57,6 @@ export interface EquipmentReceptionStatus {
  *
  * Database: partes_diarios table
  * Note: Uses DailyReportModel as data access layer (TypeORM wrapper)
- *
- * TODO: Update DailyReportModel to accept tenantId parameter
- * TODO: Add tenant_id column to partes_diarios table
- * TODO: Remove tenant_id TODO comments once schema updated
  */
 export class ReportService {
   private dashboardService: DashboardService;
@@ -106,9 +102,6 @@ export class ReportService {
         filters,
         context: 'ReportService.getAllReports',
       });
-
-      // TODO: Add tenant_id filter when column exists in partes_diarios table
-      // filters = { ...filters, tenant_id: tenantId };
 
       // Fetch all matching reports (model layer doesn't support pagination yet)
       const entities: DailyReportRawRow[] = await DailyReportModel.findAll(tenantId, filters);
@@ -343,9 +336,6 @@ export class ReportService {
       // Transform to Entity (for raw SQL/TypeORM)
       const entity = fromDailyReportDto(sanitizedDto);
 
-      // TODO: Add tenant_id to entity when column exists
-      // entity.tenant_id = tenantId;
-
       // Auto-apply precalentamiento config when not explicitly provided
       if (entity.horas_precalentamiento === undefined || entity.horas_precalentamiento === null) {
         const equipoId = entity.equipo_id || dtoData.equipo_id;
@@ -444,8 +434,6 @@ export class ReportService {
 
       // Transform to Entity
       const entity = fromDailyReportDto(sanitizedDto);
-
-      // TODO: Add tenant_id verification when column exists
 
       // Persist
       const updated: DailyReportRawRow | null = await DailyReportModel.update(tenantId, id, entity);
@@ -914,6 +902,7 @@ export class ReportService {
    * Get inspection tracking: list of equipment with pending/resolved mechanical observations.
    */
   async getInspectionTracking(
+    tenantId: number,
     fechaDesde?: string,
     fechaHasta?: string,
     soloAbiertas?: boolean
@@ -925,6 +914,7 @@ export class ReportService {
         .createQueryBuilder('dm')
         .innerJoinAndSelect('dm.parteDiario', 'pd')
         .innerJoinAndSelect('pd.equipo', 'eq')
+        .andWhere('pd.tenantId = :tenantId', { tenantId })
         .orderBy('pd.fecha', 'DESC')
         .addOrderBy('dm.resuelta', 'ASC')
         .addOrderBy('dm.createdAt', 'DESC');
@@ -998,9 +988,18 @@ export class ReportService {
   /**
    * Mark a mechanical delay observation as resolved.
    */
-  async resolverObservacion(id: number, observacionResolucion?: string): Promise<void> {
+  async resolverObservacion(
+    tenantId: number,
+    id: number,
+    observacionResolucion?: string
+  ): Promise<void> {
     const delayRepo = AppDataSource.getRepository(DailyReportMechanicalDelay);
-    const obs = await delayRepo.findOneBy({ id });
+    const obs = await delayRepo
+      .createQueryBuilder('dm')
+      .innerJoin('dm.parteDiario', 'pd')
+      .where('dm.id = :id', { id })
+      .andWhere('pd.tenantId = :tenantId', { tenantId })
+      .getOne();
     if (!obs) throw new NotFoundError('Observación', String(id));
 
     obs.resuelta = true;
@@ -1018,9 +1017,9 @@ export class ReportService {
    * Submit a daily report for approval (BORRADOR → ENVIADO).
    * Integrates with the flexible approval engine if a template is configured.
    */
-  async enviarReporte(id: number, usuarioId: number, tenantId?: number): Promise<DailyReportDto> {
+  async enviarReporte(tenantId: number, id: number, usuarioId: number): Promise<DailyReportDto> {
     const repo = AppDataSource.getRepository(DailyReport);
-    const report = await repo.findOne({ where: { id } });
+    const report = await repo.findOne({ where: { id, tenantId } });
     if (!report) throw new NotFoundError('Daily report', String(id));
 
     if (report.estado !== 'BORRADOR') {
@@ -1053,7 +1052,7 @@ export class ReportService {
       });
     }
 
-    const updated = await this.getReportById(tenantId ?? 0, String(id));
+    const updated = await this.getReportById(tenantId, String(id));
     return updated;
   }
 }
