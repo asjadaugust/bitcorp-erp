@@ -98,7 +98,7 @@ export class SolicitudesEquipoController {
       if (isNaN(id)) {
         throw new ValidationError('ID de solicitud inválido');
       }
-      const data = await service.enviar(id);
+      const data = await service.enviar(id, req.user!.id_usuario);
       sendSuccess(res, data);
     } catch (error: any) {
       if (error instanceof NotFoundError) return sendError(res, 404, 'NOT_FOUND', error.message);

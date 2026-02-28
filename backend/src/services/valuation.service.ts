@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+import { ApprovalRequestService } from './approval-request.service';
 import { AppDataSource } from '../config/database.config';
 import { Valorizacion } from '../models/valuation.model';
 import { Contract } from '../models/contract.model';
@@ -712,6 +713,28 @@ export class ValuationService {
       valorizacion.updatedAt = new Date();
 
       const updated = await this.repository.save(valorizacion);
+
+      // Integrate with flexible approval engine (non-breaking — template optional)
+      try {
+        const approvalSvc = new ApprovalRequestService();
+        const solicitud = await approvalSvc.instanciar(
+          'valorizacion',
+          updated.id,
+          updated.proyectoId ?? undefined,
+          `Valorización #${updated.id}`,
+          undefined,
+          userId,
+          undefined
+        );
+        await this.repository.update(updated.id, { solicitudAprobacionId: solicitud.id } as any);
+        updated.solicitudAprobacionId = solicitud.id;
+      } catch (approvalError: any) {
+        // Log but don't fail — template might not exist for this module
+        logger.warn('Approval engine not triggered for valorizacion', {
+          valuation_id: id,
+          reason: approvalError.message,
+        });
+      }
 
       logger.info('Valuation draft submitted', {
         valuation_id: id,

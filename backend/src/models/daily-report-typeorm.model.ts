@@ -190,6 +190,9 @@ export class DailyReport {
   @Column({ name: 'tenant_id', type: 'integer', nullable: true })
   tenantId?: number;
 
+  @Column({ name: 'solicitud_aprobacion_id', type: 'integer', nullable: true })
+  solicitudAprobacionId?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

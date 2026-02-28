@@ -12,6 +12,7 @@ import { HrSeeder } from './007-hr-seeder';
 import { ChecklistsSeeder } from './008-checklists-seeder';
 import { AdministrationSeeder } from './009-administration-seeder';
 import { SstSeeder } from './010-sst-seeder';
+import { ApprovalsSeeder } from './011-approvals-seeder';
 
 /**
  * Main seeder runner
@@ -46,6 +47,7 @@ export async function runSeeders(dataSource?: DataSource): Promise<void> {
       ChecklistsSeeder,
       AdministrationSeeder,
       SstSeeder,
+      ApprovalsSeeder,
     ];
 
     // Execute each seeder

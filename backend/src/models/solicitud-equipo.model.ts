@@ -59,6 +59,9 @@ export class SolicitudEquipo {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
+  @Column({ name: 'solicitud_aprobacion_id', type: 'integer', nullable: true })
+  solicitudAprobacionId?: number;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt!: Date;
 

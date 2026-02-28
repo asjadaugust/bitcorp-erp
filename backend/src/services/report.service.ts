@@ -1013,6 +1013,49 @@ export class ReportService {
       context: 'ReportService.resolverObservacion',
     });
   }
+
+  /**
+   * Submit a daily report for approval (BORRADOR → ENVIADO).
+   * Integrates with the flexible approval engine if a template is configured.
+   */
+  async enviarReporte(id: number, usuarioId: number, tenantId?: number): Promise<DailyReportDto> {
+    const repo = AppDataSource.getRepository(DailyReport);
+    const report = await repo.findOne({ where: { id } });
+    if (!report) throw new NotFoundError('Daily report', String(id));
+
+    if (report.estado !== 'BORRADOR') {
+      throw new Error(`El reporte está en estado '${report.estado}' y no puede enviarse`);
+    }
+
+    report.estado = 'ENVIADO';
+    await repo.save(report);
+
+    // Integrate with flexible approval engine (non-breaking — template optional)
+    try {
+      const { ApprovalRequestService } = await import('./approval-request.service');
+      const approvalSvc = new ApprovalRequestService();
+      const solicitud = await approvalSvc.instanciar(
+        'daily_report',
+        report.id,
+        undefined,
+        `Parte Diario #${report.id}`,
+        undefined,
+        usuarioId,
+        tenantId
+      );
+      await repo.update(report.id, { solicitudAprobacionId: solicitud.id });
+    } catch (approvalError: unknown) {
+      const msg = approvalError instanceof Error ? approvalError.message : 'unknown error';
+      Logger.warn('Approval engine not triggered for daily_report', {
+        report_id: id,
+        reason: msg,
+        context: 'ReportService.enviarReporte',
+      });
+    }
+
+    const updated = await this.getReportById(tenantId ?? 0, String(id));
+    return updated;
+  }
 }
 
 export interface EquipmentInspectionTracking {

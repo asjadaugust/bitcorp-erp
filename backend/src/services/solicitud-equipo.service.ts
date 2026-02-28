@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ApprovalRequestService } from './approval-request.service';
 import { AppDataSource } from '../config/database.config';
 import { SolicitudEquipo, EstadoSolicitud } from '../models/solicitud-equipo.model';
 import { NotFoundError, ConflictError, ValidationError } from '../errors';
@@ -153,7 +154,7 @@ export class SolicitudEquipoService {
     return toDto(saved);
   }
 
-  async enviar(id: number): Promise<SolicitudEquipoDto> {
+  async enviar(id: number, usuarioId?: number): Promise<SolicitudEquipoDto> {
     const s = await this.repo.findOne({ where: { id, isActive: true } });
     if (!s) throw new NotFoundError(`Solicitud de equipo #${id} no encontrada`);
     if (s.estado !== 'BORRADOR') {
@@ -161,6 +162,29 @@ export class SolicitudEquipoService {
     }
     s.estado = 'ENVIADO';
     const saved = await this.repo.save(s);
+
+    // Integrate with flexible approval engine (non-breaking — template optional)
+    if (usuarioId) {
+      try {
+        const approvalSvc = new ApprovalRequestService();
+        const solicitud = await approvalSvc.instanciar(
+          'solicitud_equipo',
+          saved.id,
+          saved.proyectoId ?? undefined,
+          `Solicitud de Equipo ${saved.codigo}`,
+          saved.descripcion ?? undefined,
+          usuarioId
+        );
+        await this.repo.update(saved.id, { solicitudAprobacionId: solicitud.id } as any);
+        saved.solicitudAprobacionId = solicitud.id;
+      } catch (approvalError: any) {
+        logger.warn('Approval engine not triggered for solicitud_equipo', {
+          solicitud_id: id,
+          reason: approvalError.message,
+        });
+      }
+    }
+
     logger.info(`Solicitud ${s.codigo} enviada para aprobación`);
     return toDto(saved);
   }

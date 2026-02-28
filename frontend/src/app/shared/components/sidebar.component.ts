@@ -105,7 +105,14 @@ interface NavItem {
         </button>
       </div>
     </aside>
-    <div class="sidebar-overlay" *ngIf="!collapsed" (click)="toggleCollapse()" (keydown.enter)="toggleCollapse()" tabindex="0" role="button"></div>
+    <div
+      class="sidebar-overlay"
+      *ngIf="!collapsed"
+      (click)="toggleCollapse()"
+      (keydown.enter)="toggleCollapse()"
+      tabindex="0"
+      role="button"
+    ></div>
   `,
   styles: [
     `
@@ -402,6 +409,11 @@ export class SidebarComponent {
 
   // Settings items (bottom of sidebar)
   settingsNavItems: NavItem[] = [
+    {
+      label: 'Aprobaciones',
+      route: '/approvals/dashboard',
+      icon: 'fa-solid fa-check-double',
+    },
     {
       label: 'Notificaciones',
       route: '/notificaciones',

@@ -180,6 +180,9 @@ export class Valorizacion {
   @ManyToOne(() => Equipment, { nullable: true })
   @JoinColumn({ name: 'equipo_id' })
   equipo?: Equipment;
+
+  @Column({ name: 'solicitud_aprobacion_id', type: 'integer', nullable: true })
+  solicitudAprobacionId?: number;
 }
 
 // Keep the old class for backward compatibility during migration

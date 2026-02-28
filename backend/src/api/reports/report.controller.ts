@@ -145,6 +145,20 @@ export class ReportController {
     }
   }
 
+  async enviarReporte(req: AuthRequest, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      const usuarioId = req.user!.id_usuario;
+      const tenantId = req.user!.id_empresa;
+      if (isNaN(id)) return sendError(res, 400, 'INVALID_ID', 'ID de reporte inválido');
+      const data = await reportService.enviarReporte(id, usuarioId, tenantId);
+      sendSuccess(res, data);
+    } catch (error: any) {
+      if (error instanceof NotFoundError) return sendError(res, 404, 'NOT_FOUND', error.message);
+      sendError(res, 500, 'REPORT_ENVIAR_FAILED', 'Error al enviar reporte', error.message);
+    }
+  }
+
   async approveReport(req: AuthRequest, res: Response) {
     try {
       // Get tenantId from JWT token (multi-tenant context)

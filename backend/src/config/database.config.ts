@@ -82,6 +82,13 @@ import { DailyReportPhoto } from '../models/daily-report-photo.model';
 import { DeduccionManual } from '../models/deduccion-manual.model';
 import { ContratoLegalizacionPaso } from '../models/contrato-legalizacion-paso.model';
 import { CotizacionProveedor } from '../models/cotizacion-proveedor.model';
+import { PlantillaAprobacion } from '../models/plantilla-aprobacion.model';
+import { PlantillaPaso } from '../models/plantilla-paso.model';
+import { SolicitudAprobacion } from '../models/solicitud-aprobacion.model';
+import { PasoSolicitud } from '../models/paso-solicitud.model';
+import { SolicitudAdhoc } from '../models/solicitud-adhoc.model';
+import { RespuestaAdhoc } from '../models/respuesta-adhoc.model';
+import { AuditoriaAprobacion } from '../models/auditoria-aprobacion.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -173,6 +180,13 @@ export const AppDataSource = new DataSource({
     DeduccionManual,
     ContratoLegalizacionPaso,
     CotizacionProveedor,
+    PlantillaAprobacion,
+    PlantillaPaso,
+    SolicitudAprobacion,
+    PasoSolicitud,
+    SolicitudAdhoc,
+    RespuestaAdhoc,
+    AuditoriaAprobacion,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],

@@ -27,6 +27,7 @@ router.put('/:id', validateDto(DailyReportUpdateDto), controller.updateReport.bi
 router.delete('/:id', controller.deleteReport.bind(controller));
 
 // Approval workflow
+router.post('/:id/enviar', controller.enviarReporte.bind(controller));
 router.post('/:id/approve', controller.approveReport.bind(controller));
 router.post('/:id/reject', controller.rejectReport.bind(controller));
 router.post('/:id/firmar-residente', controller.firmarResidente.bind(controller));

@@ -264,6 +264,12 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/analytics/analytics.routes').then((m) => m.ANALYTICS_ROUTES),
       },
+      // Approvals
+      {
+        path: 'approvals',
+        loadChildren: () =>
+          import('./features/approvals/approvals.routes').then((m) => m.APPROVALS_ROUTES),
+      },
     ],
   },
 
