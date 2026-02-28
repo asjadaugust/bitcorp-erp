@@ -1,0 +1,44 @@
+@use 'form-layout';
+@use 'detail-layout' as *;
+
+// Theme selector (custom — no aero-radio component exists)
+.theme-selector {
+  display: flex;
+  gap: var(--s-16);
+}
+
+.theme-option {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-8);
+
+  input { display: none; }
+}
+
+.theme-preview {
+  width: 80px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--grey-200);
+  transition: all 0.2s;
+
+  &.light { background: var(--neutral-0); }
+  &.dark { background: var(--grey-900); }
+  &.system { background: linear-gradient(135deg, var(--neutral-0) 50%, var(--grey-900) 50%); }
+}
+
+.theme-option input:checked + .theme-preview {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+// Form actions (bottom border + right-align)
+.form-actions {
+  margin-top: var(--s-24);
+  padding-top: var(--s-16);
+  border-top: 1px solid var(--grey-200);
+  display: flex;
+  justify-content: flex-end;
+}

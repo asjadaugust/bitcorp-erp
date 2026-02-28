@@ -236,13 +236,6 @@ export const EQUIPMENT_ROUTES: Routes = [
           ),
       },
 
-      // Inspection Tracking
-      {
-        path: 'inspection-tracking',
-        loadComponent: () =>
-          import('./inspection-tracking.component').then((m) => m.InspectionTrackingComponent),
-      },
-
       // Maintenance Module — accessible via direct URL, not in tabs
       {
         path: 'maintenance',
