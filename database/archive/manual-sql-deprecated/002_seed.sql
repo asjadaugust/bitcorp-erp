@@ -318,6 +318,14 @@ INSERT INTO equipo.tarea_programada (equipo_id, tipo_tarea, titulo, descripcion,
 (10, 'mantenimiento', 'Cambio de neumáticos cargador - CARG-002', 'Reemplazo completo de llantas', '2024-04-20', '2024-04-21', 'alta', 'pendiente', 2, 3);
 
 -- ============================================================================
+-- SCHEMA: EQUIPO - Configuración Combustible
+-- ============================================================================
+
+-- Configuración de combustible (default PRD rate)
+INSERT INTO equipo.configuracion_combustible (precio_manipuleo, activo)
+VALUES (0.80, TRUE);
+
+-- ============================================================================
 -- SCHEMA: ADMINISTRACION - Cost Centers
 -- ============================================================================
 

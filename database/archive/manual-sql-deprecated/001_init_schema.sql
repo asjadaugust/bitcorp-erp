@@ -721,6 +721,15 @@ CREATE INDEX idx_tarea_programada_proyecto ON equipo.tarea_programada(proyecto_i
 CREATE INDEX idx_tarea_programada_start_date ON equipo.tarea_programada(start_date);
 CREATE INDEX idx_tarea_programada_status ON equipo.tarea_programada(status);
 
+-- Configuración de manipuleo de combustible (PRD Anexo B)
+CREATE TABLE equipo.configuracion_combustible (
+  id SERIAL PRIMARY KEY,
+  precio_manipuleo DECIMAL(10,2) NOT NULL DEFAULT 0.80,
+  activo BOOLEAN NOT NULL DEFAULT TRUE,
+  updated_by INTEGER REFERENCES sistema.usuarios(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ============================================================================
 -- SCHEMA: SST (Safety & Health)
 -- ============================================================================

@@ -88,6 +88,7 @@ import { PasoSolicitud } from '../models/paso-solicitud.model';
 import { SolicitudAdhoc } from '../models/solicitud-adhoc.model';
 import { RespuestaAdhoc } from '../models/respuesta-adhoc.model';
 import { AuditoriaAprobacion } from '../models/auditoria-aprobacion.model';
+import { ConfiguracionCombustible } from '../models/combustible-config.model';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -185,6 +186,7 @@ export const AppDataSource = new DataSource({
     SolicitudAdhoc,
     RespuestaAdhoc,
     AuditoriaAprobacion,
+    ConfiguracionCombustible,
   ],
   migrations: [path.join(__dirname, '../database/migrations/*{.ts,.js}')],
   subscribers: [],
