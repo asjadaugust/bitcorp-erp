@@ -33,6 +33,7 @@ import ordenesAlquilerRoutes from './api/ordenes-alquiler/ordenes-alquiler.route
 import periodosInoperatividadRoutes from './api/periodos-inoperatividad/periodos-inoperatividad.routes';
 import tiposEquipoRoutes from './api/tipos-equipo/tipos-equipo.routes';
 import precalentamientoConfigRoutes from './api/precalentamiento-config/precalentamiento-config.routes';
+import combustibleConfigRoutes from './api/combustible-config/combustible-config.routes';
 import valesCombustibleRoutes from './api/vales-combustible/vales-combustible.routes';
 import cotizacionesRoutes from './api/cotizaciones/cotizaciones.routes';
 import approvalsRoutes from './api/approvals/approvals.routes';
@@ -149,6 +150,7 @@ app.use('/api/ordenes-alquiler', ordenesAlquilerRoutes);
 app.use('/api/periodos-inoperatividad', periodosInoperatividadRoutes);
 app.use('/api/tipos-equipo', tiposEquipoRoutes);
 app.use('/api/precalentamiento-config', precalentamientoConfigRoutes);
+app.use('/api/combustible-config', combustibleConfigRoutes);
 app.use('/api/vales-combustible', valesCombustibleRoutes);
 app.use('/api/logistics/movements', movementRoutes);
 app.use('/api/logistics/products', productRoutes);
