@@ -2,11 +2,24 @@
 
 Fase 1: TipoEquipo, PrecalentamientoConfig, ConfiguracionCombustible.
 Fase 2: Equipo, ContratoAdenda, ValorizacionEquipo, RegistroPago, etc.
+Fase 3: SolicitudEquipo, OrdenAlquiler, ActaDevolucion, CotizacionProveedor,
+        ProgramaMantenimiento, ValeCombustible, PeriodoInoperatividad.
 """
 
 from datetime import date, datetime, time
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, Time, func
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    Time,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.modelos.base import Base
@@ -649,3 +662,301 @@ class ParteDiarioFoto(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Fase 3 — Operational Modules
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+# ─── Equipment Request (Solicitud Equipo) ─────────────────────────────────
+
+
+class SolicitudEquipo(Base):
+    """Modelo para equipo.solicitud_equipo — auto-code SEQ-NNNN."""
+
+    __tablename__ = "solicitud_equipo"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    codigo: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    proyecto_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tipo_equipo: Mapped[str] = mapped_column(String(150), nullable=False)
+    descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    cantidad: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    fecha_requerida: Mapped[date] = mapped_column(Date, nullable=False)
+    justificacion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    prioridad: Mapped[str] = mapped_column(String(10), default="MEDIA", nullable=False)
+    estado: Mapped[str] = mapped_column(String(20), default="BORRADOR", nullable=False)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    aprobado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fecha_aprobacion: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    solicitud_aprobacion_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+# ─── Rental Order (Orden de Alquiler) ────────────────────────────────────
+
+
+class OrdenAlquiler(Base):
+    """Modelo para equipo.orden_alquiler — auto-code OAL-NNNN."""
+
+    __tablename__ = "orden_alquiler"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    codigo: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    solicitud_equipo_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.solicitud_equipo.id"), nullable=True
+    )
+    proveedor_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("proveedores.proveedor.id"), nullable=False
+    )
+    equipo_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.equipo.id"), nullable=True
+    )
+    proyecto_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    descripcion_equipo: Mapped[str] = mapped_column(String(255), nullable=False)
+    fecha_orden: Mapped[date] = mapped_column(Date, nullable=False)
+    fecha_inicio_estimada: Mapped[date | None] = mapped_column(Date, nullable=True)
+    fecha_fin_estimada: Mapped[date | None] = mapped_column(Date, nullable=True)
+    tarifa_acordada: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    tipo_tarifa: Mapped[str] = mapped_column(String(10), default="HORA", nullable=False)
+    moneda: Mapped[str] = mapped_column(String(5), default="PEN", nullable=False)
+    tipo_cambio: Mapped[float | None] = mapped_column(Numeric(8, 4), nullable=True)
+    horas_incluidas: Mapped[float | None] = mapped_column(Numeric(8, 2), nullable=True)
+    penalidad_exceso: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    condiciones_especiales: Mapped[str | None] = mapped_column(Text, nullable=True)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    estado: Mapped[str] = mapped_column(String(20), default="BORRADOR", nullable=False)
+    enviado_a: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    fecha_envio: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    confirmado_por: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    fecha_confirmacion: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    motivo_cancelacion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    proveedor: Mapped[Proveedor | None] = relationship("Proveedor", lazy="joined")
+    equipo_rel: Mapped[Equipo | None] = relationship("Equipo", lazy="joined")
+
+
+# ─── Return Certificate (Acta de Devolución) ─────────────────────────────
+
+
+class ActaDevolucion(Base):
+    """Modelo para equipo.acta_devolucion — auto-code ADV-NNNN."""
+
+    __tablename__ = "acta_devolucion"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    codigo: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    equipo_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.equipo.id"), nullable=False
+    )
+    contrato_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.contrato_adenda.id"), nullable=True
+    )
+    proyecto_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fecha_devolucion: Mapped[date] = mapped_column(Date, nullable=False)
+    tipo: Mapped[str] = mapped_column(String(30), default="DEVOLUCION", nullable=False)
+    estado: Mapped[str] = mapped_column(String(20), default="BORRADOR", nullable=False)
+    condicion_equipo: Mapped[str] = mapped_column(String(20), default="BUENO", nullable=False)
+    horometro_devolucion: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    kilometraje_devolucion: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    observaciones_fisicas: Mapped[str | None] = mapped_column(Text, nullable=True)
+    recibido_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    entregado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    firma_recibido: Mapped[str | None] = mapped_column(Text, nullable=True)
+    firma_entregado: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fecha_firma: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")
+
+
+# ─── Provider Quote (Cotización Proveedor) ────────────────────────────────
+
+
+class CotizacionProveedor(Base):
+    """Modelo para equipo.cotizacion_proveedor — auto-code COT-NNNN."""
+
+    __tablename__ = "cotizacion_proveedor"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    codigo: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    solicitud_equipo_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.solicitud_equipo.id"), nullable=False
+    )
+    proveedor_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("proveedores.proveedor.id"), nullable=False
+    )
+    descripcion_equipo: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    tarifa_propuesta: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    tipo_tarifa: Mapped[str] = mapped_column(String(10), default="HORA", nullable=False)
+    moneda: Mapped[str] = mapped_column(String(5), default="PEN", nullable=False)
+    horas_incluidas: Mapped[float | None] = mapped_column(Numeric(8, 2), nullable=True)
+    penalidad_exceso: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    plazo_entrega_dias: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    condiciones_pago: Mapped[str | None] = mapped_column(Text, nullable=True)
+    condiciones_especiales: Mapped[str | None] = mapped_column(Text, nullable=True)
+    garantia: Mapped[str | None] = mapped_column(Text, nullable=True)
+    disponibilidad: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    puntaje: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    motivo_seleccion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    estado: Mapped[str] = mapped_column(String(20), default="REGISTRADA", nullable=False)
+    evaluado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fecha_evaluacion: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    orden_alquiler_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.orden_alquiler.id"), nullable=True
+    )
+    creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    proveedor: Mapped[Proveedor | None] = relationship("Proveedor", lazy="joined")
+
+
+# ─── Maintenance Schedule (Programa Mantenimiento) ───────────────────────
+
+
+class ProgramaMantenimiento(Base):
+    """Modelo para equipo.programa_mantenimiento."""
+
+    __tablename__ = "programa_mantenimiento"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    equipo_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.equipo.id"), nullable=False
+    )
+    tipo_mantenimiento: Mapped[str] = mapped_column(String(50), nullable=False)
+    descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fecha_programada: Mapped[date | None] = mapped_column(Date, nullable=True)
+    fecha_realizada: Mapped[date | None] = mapped_column(Date, nullable=True)
+    costo_estimado: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    costo_real: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    tecnico_responsable: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    estado: Mapped[str] = mapped_column(String(50), default="PROGRAMADO", nullable=False)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")
+
+
+# ─── Fuel Voucher (Vale de Combustible) ──────────────────────────────────
+
+
+class ValeCombustible(Base):
+    """Modelo para equipo.vale_combustible — auto-code VCB-NNNN."""
+
+    __tablename__ = "vale_combustible"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    codigo: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    parte_diario_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.parte_diario.id"), nullable=True
+    )
+    equipo_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.equipo.id"), nullable=False
+    )
+    proyecto_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fecha: Mapped[date] = mapped_column(Date, nullable=False)
+    numero_vale: Mapped[str] = mapped_column(String(50), nullable=False)
+    tipo_combustible: Mapped[str] = mapped_column(String(20), default="DIESEL", nullable=False)
+    cantidad_galones: Mapped[float] = mapped_column(Numeric(8, 2), nullable=False)
+    precio_unitario: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    monto_total: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    proveedor: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    estado: Mapped[str] = mapped_column(String(20), default="PENDIENTE", nullable=False)
+    creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    equipo_rel: Mapped[Equipo] = relationship("Equipo", lazy="joined")
+
+
+# ─── Inoperability Period (Periodo Inoperatividad) ───────────────────────
+
+
+class PeriodoInoperatividad(Base):
+    """Modelo para equipo.periodo_inoperatividad."""
+
+    __tablename__ = "periodo_inoperatividad"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    equipo_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.equipo.id"), nullable=False
+    )
+    contrato_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.contrato_adenda.id"), nullable=True
+    )
+    fecha_inicio: Mapped[date] = mapped_column(Date, nullable=False)
+    fecha_fin: Mapped[date | None] = mapped_column(Date, nullable=True)
+    dias_inoperativo: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    motivo: Mapped[str] = mapped_column(Text, nullable=False)
+    estado: Mapped[str] = mapped_column(String(20), default="ACTIVO", nullable=False)
+    excede_plazo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    dias_plazo: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
+    penalidad_aplicada: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    monto_penalidad: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    observaciones_penalidad: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resuelto_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")

@@ -272,6 +272,29 @@ Before marking any feature done:
 - Dual field names in API responses (pick one canonical name)
 - Pushing to remote without explicit user instruction
 
+## Tech Debt Workflow
+
+When working on implementation tasks, if you encounter **unrelated issues** (bugs, missing validations, inconsistencies, UI glitches) that are NOT part of the current task, log them to `tech_debts.json` instead of fixing them inline. This prevents scope creep and wasted tokens.
+
+Format:
+
+```json
+{
+  "features": [
+    {
+      "category": "functional|ui|performance|security|testing",
+      "description": "Short description of the issue",
+      "steps": ["Step 1", "Step 2"],
+      "passes": false
+    }
+  ]
+}
+```
+
+These will be addressed in a separate session with a different model.
+
+---
+
 ## Code Exploration with dora
 
 This codebase uses dora for fast code intelligence and architectural analysis.
