@@ -110,11 +110,11 @@
     &.status-PENDIENTE,
     &.status-pending {
       background: var(--semantic-yellow-50);
-      color: var(--semantic-yellow-700);
+      color: var(--grey-900);
       border: 1px solid var(--semantic-yellow-200);
 
       &::before {
-        background: var(--semantic-yellow-500);
+        background: var(--accent-500);
       }
     }
 
@@ -122,11 +122,11 @@
     &.status-approved,
     &.status-active {
       background: var(--semantic-green-50);
-      color: var(--semantic-green-700);
+      color: var(--primary-900);
       border: 1px solid var(--semantic-green-200);
 
       &::before {
-        background: var(--semantic-green-500);
+        background: var(--semantic-blue-500);
       }
     }
 
@@ -135,11 +135,11 @@
     &.status-inactive,
     &.status-RECHAZADO {
       background: var(--semantic-red-50);
-      color: var(--semantic-red-700);
+      color: var(--grey-900);
       border: 1px solid var(--semantic-red-200);
 
       &::before {
-        background: var(--semantic-red-500);
+        background: var(--accent-500);
       }
     }
   }
@@ -210,7 +210,7 @@
 .sidebar-card-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--grey-800);
+  color: var(--grey-900);
   margin: 0 0 var(--s-16) 0;
   display: flex;
   justify-content: space-between;
@@ -282,7 +282,7 @@
   .timeline-content {
     font-size: 14px;
     font-weight: 500;
-    color: var(--grey-800);
+    color: var(--grey-900);
   }
 }
 
@@ -356,7 +356,7 @@
   }
 
   .text-danger {
-    color: var(--semantic-red-700);
+    color: var(--grey-900);
   }
 
   .row-header td {
@@ -419,15 +419,15 @@
     }
 
     &.text-success {
-      color: var(--semantic-green-600);
+      color: var(--primary-900);
     }
 
     &.text-warning {
-      color: var(--semantic-yellow-600);
+      color: var(--grey-900);
     }
 
     &.text-danger {
-      color: var(--semantic-red-600);
+      color: var(--grey-900);
     }
 
     &.text-info {

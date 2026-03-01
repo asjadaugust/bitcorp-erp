@@ -115,7 +115,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
 
       .action-create {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .action-update {
         background: var(--primary-50);
@@ -123,15 +123,15 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
       }
       .action-delete {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
       .action-activate {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .action-deactivate {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
 
       .value-cell {

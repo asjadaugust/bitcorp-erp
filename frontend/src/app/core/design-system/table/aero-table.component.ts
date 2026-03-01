@@ -526,7 +526,7 @@ export interface TableSortEvent {
         width: 100%;
         border-radius: var(--radius-md);
         border: 1px solid var(--grey-200);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         position: relative;
         min-height: 200px;
       }
@@ -796,12 +796,12 @@ export interface TableSortEvent {
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        border: 2px solid var(--neutral-0);
+        border: 2px solid var(--grey-100);
         background-color: var(--grey-400);
       }
 
       .aero-table__avatar-status--online {
-        background-color: var(--semantic-green-500);
+        background-color: var(--semantic-blue-500);
       }
 
       .aero-table__avatar-status--offline {
@@ -809,7 +809,7 @@ export interface TableSortEvent {
       }
 
       .aero-table__avatar-status--away {
-        background-color: var(--semantic-yellow-500);
+        background-color: var(--accent-500);
       }
 
       /* ─── Checkbox / Radio ─── */
@@ -835,7 +835,7 @@ export interface TableSortEvent {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         transition: all 0.15s ease;
         flex-shrink: 0;
       }
@@ -889,7 +889,7 @@ export interface TableSortEvent {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         transition: all 0.15s ease;
         flex-shrink: 0;
       }
@@ -944,13 +944,13 @@ export interface TableSortEvent {
         display: inline-flex;
         align-items: center;
         gap: var(--s-4);
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
         font-weight: 500;
         font-size: 14px;
       }
 
       .aero-table__trend--down {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* ─── Progress ─── */
@@ -984,7 +984,7 @@ export interface TableSortEvent {
       }
 
       .aero-table__progress-fill--secondary {
-        background-color: var(--semantic-red-500);
+        background-color: var(--accent-500);
       }
 
       .aero-table__progress-bar--secondary {
@@ -1149,7 +1149,7 @@ export interface TableSortEvent {
       .aero-table__page-btn {
         padding: 6px 10px;
         border: 1px solid var(--grey-300);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-sm);
         cursor: pointer;
         transition: all 0.15s ease;

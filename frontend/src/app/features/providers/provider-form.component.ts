@@ -317,11 +317,11 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       .tab-link.active {
         color: var(--primary-600);
         border-bottom-color: var(--primary-600);
-        background: var(--neutral-0);
+        background: var(--grey-100);
       }
       .tab-pane {
         padding: 1.5rem;
-        background: var(--neutral-0);
+        background: var(--grey-100);
       }
 
       @media (max-width: 768px) {

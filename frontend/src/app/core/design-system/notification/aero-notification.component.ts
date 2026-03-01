@@ -93,22 +93,22 @@ export type NotificationPriority =
 
       .aero-notify--info {
         background-color: var(--semantic-blue-100, #e6f3fc);
-        color: var(--semantic-blue-900, #0a3d6b);
+        color: var(--primary-900, #0a3d6b);
       }
 
       .aero-notify--success {
-        background-color: var(--semantic-green-100, #e6f7ef);
-        color: var(--semantic-green-900, #0a4d2e);
+        background-color: var(--semantic-blue-100, #e6f7ef);
+        color: var(--primary-900, #0a4d2e);
       }
 
       .aero-notify--warning {
-        background-color: var(--semantic-yellow-100, #fef8e6);
-        color: var(--semantic-yellow-900, #6b4d0a);
+        background-color: var(--grey-100, #fef8e6);
+        color: var(--grey-900, #6b4d0a);
       }
 
       .aero-notify--error {
-        background-color: var(--semantic-red-100, #fde6eb);
-        color: var(--semantic-red-900, #6b0a1d);
+        background-color: var(--grey-100, #fde6eb);
+        color: var(--grey-900, #6b0a1d);
       }
 
       /* Icon */

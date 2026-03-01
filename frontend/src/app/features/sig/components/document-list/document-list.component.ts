@@ -53,7 +53,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
   styles: [
     `
       .document-list-container {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: 8px;
         padding: var(--s-24);
         box-shadow: var(--shadow-sm);

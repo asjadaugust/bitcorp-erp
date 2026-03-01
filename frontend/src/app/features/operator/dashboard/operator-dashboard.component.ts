@@ -125,7 +125,7 @@ interface RecentReport {
         display: flex;
         align-items: center;
         padding: 24px;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md, 12px);
         box-shadow: var(--shadow-sm);
         text-decoration: none;
@@ -140,7 +140,7 @@ interface RecentReport {
 
       .action-card.primary {
         background: linear-gradient(135deg, var(--primary-500) 0%, var(--klm-blue) 100%);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .action-card.primary:hover {
@@ -179,24 +179,24 @@ interface RecentReport {
       }
 
       .action-card.warning {
-        border-color: var(--semantic-yellow-500, #f59e0b);
+        border-color: var(--accent-500, #f59e0b);
         background: linear-gradient(135deg, #fffbeb, #fef3c7);
       }
 
       .action-card.warning .action-icon {
-        color: var(--semantic-yellow-600, #d97706);
+        color: var(--grey-900, #d97706);
       }
 
       .action-card.warning .content h3 {
-        color: var(--semantic-yellow-800, #92400e);
+        color: var(--grey-900, #92400e);
       }
 
       .action-card.warning .content p {
-        color: var(--semantic-yellow-700, #a16207);
+        color: var(--grey-900, #a16207);
       }
 
       .recent-section {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md, 12px);
         padding: 24px;
         box-shadow: var(--shadow-sm);
@@ -240,8 +240,8 @@ interface RecentReport {
       }
 
       .report-icon.status-BORRADOR {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
 
       .report-icon.status-ENVIADO {
@@ -250,8 +250,8 @@ interface RecentReport {
       }
 
       .report-icon.status-APROBADO {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
 
       .report-info {

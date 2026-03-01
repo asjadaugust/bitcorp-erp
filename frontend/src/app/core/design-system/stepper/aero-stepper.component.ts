@@ -141,7 +141,7 @@ export interface StepItem {
       }
 
       .aero-stepper__step--todo .aero-stepper__circle {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         color: var(--grey-600);
         border: 2px solid var(--grey-400);
       }

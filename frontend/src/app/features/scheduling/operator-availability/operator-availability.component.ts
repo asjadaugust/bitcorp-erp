@@ -147,7 +147,7 @@ import {
       .calendar-nav h2 {
         margin: 0;
         font-size: 1.4rem;
-        color: var(--grey-800);
+        color: var(--grey-900);
         min-width: 200px;
         text-align: center;
       }
@@ -155,7 +155,7 @@ import {
       .loading-state {
         text-align: center;
         padding: 3rem;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: 12px;
         color: var(--grey-500);
       }
@@ -173,17 +173,17 @@ import {
         gap: 6px;
       }
       .legend-item.available {
-        color: var(--semantic-green-600);
+        color: var(--primary-900);
       }
       .legend-item.unavailable {
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
       }
       .legend-item.saving {
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
 
       .card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: 12px;
         padding: 1.5rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -212,11 +212,11 @@ import {
       }
 
       .operator-name {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: 0.5rem 0.75rem;
         font-size: 13px;
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
         border-right: 1px solid var(--grey-200);
         white-space: nowrap;
         overflow: hidden;
@@ -224,7 +224,7 @@ import {
       }
 
       .day-cell {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         height: 36px;
         cursor: pointer;
         transition: background 0.15s;
@@ -233,10 +233,10 @@ import {
         filter: brightness(0.95);
       }
       .day-cell.available {
-        background: var(--semantic-green-100);
+        background: var(--semantic-blue-100);
       }
       .day-cell.unavailable {
-        background: var(--semantic-red-100);
+        background: var(--grey-100);
       }
       .day-cell.saving {
         opacity: 0.5;

@@ -292,7 +292,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       .amount-card {
         background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
-        color: var(--neutral-0);
+        color: var(--grey-100);
         padding: var(--s-24);
         border-radius: var(--s-8);
         text-align: center;
@@ -363,7 +363,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       .detail-section h2 {
         font-size: var(--type-h3-size);
-        color: var(--grey-800);
+        color: var(--grey-900);
         margin-bottom: var(--s-16);
         padding-bottom: var(--s-8);
         border-bottom: 1px solid var(--grey-300);
@@ -387,7 +387,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       .info-item p {
         margin: 0;
-        color: var(--grey-800);
+        color: var(--grey-900);
         font-size: 1rem;
       }
 
@@ -421,20 +421,20 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .badge-success {
-        background-color: var(--semantic-green-100);
-        color: var(--semantic-green-900);
+        background-color: var(--semantic-blue-100);
+        color: var(--primary-900);
       }
       .badge-warning {
-        background-color: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
+        background-color: var(--grey-100);
+        color: var(--grey-900);
       }
       .badge-danger {
-        background-color: var(--semantic-red-100);
-        color: var(--semantic-red-900);
+        background-color: var(--grey-100);
+        color: var(--grey-900);
       }
       .badge-secondary {
         background-color: var(--grey-200);
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
     `,
   ],

@@ -829,7 +829,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
       .alert-warning {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
         border: 1px solid var(--semantic-yellow-200);
       }
 
@@ -852,11 +852,11 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       }
 
       .text-danger {
-        color: var(--semantic-red-500) !important;
+        color: var(--accent-500) !important;
       }
 
       .text-success {
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       /* Sidebar extras */
@@ -892,12 +892,12 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
       .badge-success {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       .badge-warning {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
 
       /* Lifecycle modals */
@@ -975,7 +975,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         }
 
         .required {
-          color: var(--semantic-red-500);
+          color: var(--accent-500);
           margin-left: 2px;
         }
         .optional {
@@ -1012,7 +1012,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
         &.prereq-ok {
           background: var(--semantic-green-50);
-          border: 1px solid var(--semantic-green-300);
+          border: 1px solid var(--semantic-blue-300);
         }
         &.prereq-fail {
           background: var(--semantic-red-50);
@@ -1036,21 +1036,21 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           color: var(--grey-600);
 
           &.ok {
-            color: var(--semantic-green-700);
+            color: var(--primary-900);
           }
 
           i.fa-check {
-            color: var(--semantic-green-500);
+            color: var(--semantic-blue-500);
           }
           i.fa-xmark {
-            color: var(--semantic-red-500);
+            color: var(--accent-500);
           }
         }
       }
 
       .prereq-warning {
         font-size: 12px;
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         margin: 8px 0 0;
         font-style: italic;
       }
@@ -1113,7 +1113,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       .obligacion-label {
         font-size: 13px;
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .obligacion-obs {
@@ -1146,14 +1146,14 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
         .badge-danger {
           background: var(--semantic-red-50);
-          color: var(--semantic-red-700);
+          color: var(--grey-900);
           border-color: var(--semantic-red-200);
         }
       }
 
       .alert-success {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
         border: 1px solid var(--semantic-green-200);
       }
 
@@ -1184,7 +1184,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         flex-shrink: 0;
 
         i.fa-circle-check {
-          color: var(--semantic-green-500);
+          color: var(--semantic-blue-500);
           font-size: 18px;
         }
 
@@ -1229,11 +1229,11 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       .leg-step-label {
         font-size: 13px;
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .leg-step-done .leg-step-label {
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       .leg-step-active .leg-step-label {

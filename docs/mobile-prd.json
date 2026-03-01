@@ -1,0 +1,195 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "User authentication with role-based access for field operators",
+      "steps": [
+        "Open app and view login screen",
+        "Enter valid operator credentials",
+        "Verify successful login and redirection to Operator Dashboard",
+        "Verify JWT token contains id_empresa, rol (OPERADOR), id_usuario"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Daily Equipment Report (Parte Diario) creation and submission",
+      "steps": [
+        "Navigate to 'New Daily Report' from Dashboard",
+        "Select assigned equipment from dropdown",
+        "Enter start and end hours/odometer readings",
+        "Enter work activities performed",
+        "Attach Fuel Voucher (if applicable)",
+        "Sign the report digitally",
+        "Submit the report",
+        "Verify submission success and report appears in history"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Daily Report triggers Structured Approval Template",
+      "steps": [
+        "Submit a Daily Report",
+        "Verify backend API is called to instantiate the approval workflow (e.g., Operator -> Supervisor -> Resident Engineer)",
+        "Verify the report status changes to 'Pending Approval'",
+        "Verify the report appears in the 'Enviados' (Sent) tab of the Approvals Hub"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Fuel Voucher (Vale de Combustible) registration",
+      "steps": [
+        "Navigate to 'Fuel Vouchers' module",
+        "Enter voucher number and fuel quantity",
+        "Take a photo of the physical voucher",
+        "Save the voucher record",
+        "Verify the voucher can be selected when creating a Daily Report"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Daily/Weekly Equipment Checklist (Pre-Uso)",
+      "steps": [
+        "Navigate to 'Checklists'",
+        "Select equipment and checklist type (Daily/Weekly)",
+        "Go through inspection items and pass/fail each",
+        "Add comments or photos for failed items",
+        "Submit checklist",
+        "Verify checklist is saved and failed items trigger a notification to Maintenance"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Approvals Hub central dashboard",
+      "steps": [
+        "Navigate to 'Approvals' from the main menu",
+        "View the 'Recibidos' (Received) tab",
+        "Verify received items list pending requests requiring the user's approval",
+        "View the 'Enviados' (Sent) tab",
+        "Verify sent items list requests initiated by the user with their current status (Pending at Step X, Approved, Rejected)"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Create Ad-Hoc (Free-form) Approval Requests",
+      "steps": [
+        "Navigate to Approvals Hub and click 'New Ad-Hoc Request'",
+        "Enter Title and Description",
+        "Attach supporting documents or images",
+        "Manually select specific users as Approvers",
+        "Manually select specific users as CC/Informed",
+        "Submit the request",
+        "Verify the request appears in the 'Enviados' tab and triggers the backend API"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Execute Approval Actions (Approve/Reject)",
+      "steps": [
+        "Open a pending request from the 'Recibidos' tab",
+        "Review request details, attachments, and current step",
+        "Add an optional comment",
+        "Click 'Approve' or 'Reject'",
+        "Verify request disappears from 'Recibidos' and backend API is updated"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Offline mode for Daily Reports and Checklists",
+      "steps": [
+        "Turn off device network connection",
+        "Create and save a Daily Report",
+        "Create and save a Checklist",
+        "Verify records are saved locally with 'Pending Sync' status",
+        "Turn on network connection",
+        "Verify records sync to backend and status updates to 'Submitted'"
+      ],
+      "passes": false
+    },
+    {
+      "category": "architecture",
+      "description": "Mobile App is an isolated project within the Monorepo",
+      "steps": [
+        "Verify the Flutter app is created in a dedicated directory (e.g., /mobile or /apps/mobile)",
+        "Verify the mobile app only interacts with the backend via REST API",
+        "Verify no direct cross-dependencies or modifications infect the existing Angular frontend or Node.js backend codebases to support the mobile app, except for necessary API endpoints"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Mobile forms follow Aero Design System layout rules",
+      "steps": [
+        "Open any form (e.g., Daily Report, Checklist)",
+        "Verify single-column layout is used",
+        "Verify vertical gap between fields is 24px (var(--s-24))",
+        "Verify primary action button is placed at the top of vertical stacks or bottom right for dialogs"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Consistent UI components matching Aero design widgets",
+      "steps": [
+        "Navigate through app screens",
+        "Verify buttons match <aero-button> styling (primary-500 for interactive)",
+        "Verify inputs match <aero-input> and <aero-dropdown> aesthetics",
+        "Verify cards match <aero-card> aesthetics",
+        "Verify text uses Universal Sans equivalent or system sans-serif with correct hierarchy"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Color palette strictly follows Bitcorp Aero tokens",
+      "steps": [
+        "Inspect app visual elements",
+        "Verify primary text is #072b45 (primary-900)",
+        "Verify interactive elements are #0077cd (primary-500)",
+        "Verify app background is #ebf3f8 (primary-100)",
+        "Verify error states use #d10031 (semantic-red-500)"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Modals and Dialogs adhere to Aero guidelines",
+      "steps": [
+        "Trigger a destructive action or confirmation",
+        "Verify app uses a custom styled Aero modal/dialog instead of native OS alerts",
+        "Verify primary action in modal is at the bottom right"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Responsive layout adapts to standard Android cellphones and tablets",
+      "steps": [
+        "Open app on a standard Android cellphone (e.g., 360px - 412px width)",
+        "Verify UI elements, forms, and lists fit comfortably without horizontal scrolling",
+        "Open app on an Android tablet (e.g., 768px - 800px width)",
+        "Verify UI takes advantage of larger screen real estate (e.g., multi-column forms where appropriate or wider modal dialogs)",
+        "Rotate device between portrait and landscape",
+        "Verify UI responds dynamically using Flutter's LayoutBuilder and MediaQuery"
+      ],
+      "passes": false
+    },
+    {
+      "category": "architecture",
+      "description": "Application targets mobile/field users on Android devices primarily",
+      "steps": [
+        "Verify the Flutter project is configured to target Android (targetSdkVersion, compileSdkVersion)",
+        "Verify UI elements are sized for touch accessibility (minimum touch targets mapping to Android Material Design/Aero standards)",
+        "Verify core mobile features (camera, offline storage) are prioritized in the plugin configurations"
+      ],
+      "passes": false
+    }
+  ]
+}

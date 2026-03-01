@@ -99,7 +99,7 @@ export type ButtonSize = 'large' | 'regular' | 'small';
       /* Primary */
       .aero-btn--primary {
         background-color: var(--primary-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .aero-btn--primary:hover:not(:disabled) {

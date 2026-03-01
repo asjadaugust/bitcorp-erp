@@ -138,7 +138,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
       }
 
       .calendar-header-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: var(--s-16) var(--s-24);
         border-radius: var(--radius-lg);
         display: flex;
@@ -170,7 +170,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
       }
 
       .calendar-container {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-lg);
         border: 1px solid var(--grey-200);
         box-shadow: var(--shadow-md);
@@ -197,7 +197,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
       .calendar-day {
         min-height: 140px;
         padding: var(--s-12);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-right: 1px solid var(--grey-100);
         border-bottom: 1px solid var(--grey-100);
         display: flex;
@@ -224,7 +224,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
           background: var(--primary-100);
           .day-num {
             background: var(--klm-blue);
-            color: var(--neutral-0);
+            color: var(--grey-100);
             width: 28px;
             height: 28px;
             display: flex;
@@ -325,18 +325,18 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
           }
         }
         &.priority-high {
-          background: var(--semantic-red-100);
-          color: var(--semantic-red-900);
-          border-color: var(--semantic-red-300);
+          background: var(--grey-100);
+          color: var(--grey-900);
+          border-color: var(--grey-300);
           .task-pill-dot {
-            background: var(--semantic-red-500);
+            background: var(--accent-500);
           }
         }
         &.priority-urgent {
-          background: var(--neutral-900);
-          color: var(--neutral-0);
+          background: var(--grey-900);
+          color: var(--grey-100);
           .task-pill-dot {
-            background: var(--semantic-red-500);
+            background: var(--accent-500);
           }
         }
       }

@@ -210,7 +210,7 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
         h3 {
           font-size: 0.9rem;
           font-weight: 600;
-          color: var(--grey-800);
+          color: var(--grey-900);
           margin: 0 0 var(--s-16) 0;
           padding-bottom: var(--s-8);
           border-bottom: 1px solid var(--grey-200);
@@ -256,7 +256,7 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
       }
 
       .error-msg {
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
         font-size: var(--type-label-size);
         margin-top: 4px;
       }

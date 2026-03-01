@@ -257,7 +257,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           padding: 8px 16px;
           border-radius: 20px;
           border: 1px solid var(--grey-200);
-          background: var(--neutral-0);
+          background: var(--grey-100);
           color: var(--grey-600);
           font-weight: 500;
           cursor: pointer;
@@ -312,13 +312,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         }
         &.strip-confirmado {
           background: var(--semantic-green-50);
-          color: var(--semantic-green-700);
-          border: 1px solid var(--semantic-green-100);
+          color: var(--primary-900);
+          border: 1px solid var(--semantic-blue-100);
         }
         &.strip-cancelado {
           background: var(--semantic-red-50);
-          color: var(--semantic-red-700);
-          border: 1px solid var(--semantic-red-100);
+          color: var(--grey-900);
+          border: 1px solid var(--grey-100);
         }
       }
       .strip-meta {

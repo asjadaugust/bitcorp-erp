@@ -125,7 +125,7 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
       .current-state-card__icon {
         width: 40px;
         height: 40px;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         color: var(--primary-500);
         border-radius: 50%;
         display: flex;
@@ -241,17 +241,17 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
           }
 
           &.positive {
-            color: var(--semantic-green-600);
+            color: var(--primary-900);
           }
           &.negative {
-            color: var(--semantic-red-600);
+            color: var(--grey-900);
           }
         }
       }
 
       .error-msg {
         font-size: 12px;
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         font-weight: 500;
       }
     `,

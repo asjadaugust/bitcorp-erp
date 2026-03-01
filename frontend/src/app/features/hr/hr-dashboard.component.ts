@@ -63,7 +63,7 @@ import { PageLayoutComponent } from '../../shared/components/page-layout/page-la
       }
 
       .module-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--s-12);
         padding: var(--s-24);
         display: flex;

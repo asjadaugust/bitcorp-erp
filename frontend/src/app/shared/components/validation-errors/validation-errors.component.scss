@@ -6,8 +6,8 @@
 }
 
 .notification--error {
-  background-color: var(--aero-notify-bg-danger);
-  border: 1px solid var(--aero-notify-border-danger);
+  background-color: var(--grey-100);
+  border: 1px solid var(--accent-500);
 }
 
 .notification__header {
@@ -23,7 +23,7 @@
 
   i {
     font-size: 24px;
-    color: var(--aero-notify-icon-danger);
+    color: var(--accent-500);
   }
 }
 

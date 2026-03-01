@@ -139,13 +139,13 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
       }
 
       .field-hint.hint-danger {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         font-weight: 600;
       }
 
       .alert-exceeded {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         border: 1px solid var(--semantic-red-200);
         border-radius: 8px;
         padding: 12px 16px;

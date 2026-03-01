@@ -234,7 +234,7 @@ import {
       }
 
       .error-msg {
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
         font-size: 12px;
         margin-top: 0.25rem;
       }
@@ -251,13 +251,13 @@ import {
 
       .alert-success {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
         border: 1px solid var(--semantic-green-200);
       }
 
       .alert-error {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         border: 1px solid var(--semantic-red-200);
       }
 

@@ -179,7 +179,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       /* Report Card */
       .report-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--grey-300);
@@ -199,7 +199,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       /* Card Header */
       .report-card__header {
         padding: 1rem 1.25rem;
-        background: linear-gradient(135deg, var(--grey-100) 0%, var(--neutral-0) 100%);
+        background: linear-gradient(135deg, var(--grey-100) 0%, var(--grey-100) 100%);
         border-bottom: 1px solid var(--grey-200);
       }
 
@@ -234,25 +234,25 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       .report-card__status--approved,
       .report-card__status--finance_approved {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
 
       .report-card__status--rejected {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
 
       .report-card__status--pending_supervisor,
       .report-card__status--pending_cost_engineer,
       .report-card__status--pending_finance {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
 
       .report-card__status--supervisor_approved {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
 
       .report-card__status--cost_reviewed {
@@ -313,7 +313,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       .report-card__info-value {
         font-size: 0.875rem;
-        color: var(--grey-800);
+        color: var(--grey-900);
         font-weight: 500;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -375,23 +375,23 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .report-card__btn--approve {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
 
       .report-card__btn--approve:hover {
-        background: var(--semantic-green-500);
-        color: var(--neutral-0);
+        background: var(--semantic-blue-500);
+        color: var(--grey-100);
       }
 
       .report-card__btn--reject {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
 
       .report-card__btn--reject:hover {
-        background: var(--semantic-red-500);
-        color: var(--neutral-0);
+        background: var(--accent-500);
+        color: var(--grey-100);
       }
 
       .report-card__btn--edit {
@@ -401,7 +401,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       .report-card__btn--edit:hover {
         background: var(--primary-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .report-card__btn--view {
@@ -411,27 +411,27 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       .report-card__btn--view:hover {
         background: var(--grey-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .report-card__btn--sign {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
 
       .report-card__btn--sign:hover {
-        background: var(--semantic-green-500);
-        color: var(--neutral-0);
+        background: var(--semantic-blue-500);
+        color: var(--grey-100);
       }
 
       .report-card__btn--pdf {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
 
       .report-card__btn--pdf:hover {
-        background: var(--semantic-yellow-900);
-        color: var(--neutral-0);
+        background: var(--grey-900);
+        color: var(--grey-100);
       }
 
       .report-card__btn--pdf:disabled {
@@ -443,7 +443,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-lg);
         border: 2px dashed var(--grey-300);
       }
@@ -468,7 +468,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         margin: 0 0 0.5rem;
         font-size: 1.25rem;
         font-weight: 600;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .empty-state__description {

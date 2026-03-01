@@ -134,11 +134,11 @@ export type DropdownState = 'default' | 'error';
       }
 
       .aero-dropdown__required {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       .aero-dropdown--error .aero-dropdown__label {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* Field */
@@ -147,7 +147,7 @@ export type DropdownState = 'default' | 'error';
         align-items: center;
         border: 1px solid var(--grey-600);
         border-radius: var(--radius-sm);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         padding: 0 var(--s-12);
         gap: var(--s-8);
         cursor: pointer;
@@ -179,7 +179,7 @@ export type DropdownState = 'default' | 'error';
       }
 
       .aero-dropdown__field--error {
-        border-color: var(--semantic-red-500);
+        border-color: var(--accent-500);
       }
 
       .aero-dropdown--disabled .aero-dropdown__field {
@@ -227,7 +227,7 @@ export type DropdownState = 'default' | 'error';
         font-family: var(--font-text);
         font-size: var(--type-bodySmall-size);
         line-height: var(--type-bodySmall-line-height);
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* Panel */
@@ -238,7 +238,7 @@ export type DropdownState = 'default' | 'error';
         right: 0;
         z-index: 1000;
         margin-top: var(--s-4);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         border: 1px solid var(--grey-300);
         border-radius: var(--radius-sm);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);

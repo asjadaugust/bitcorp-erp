@@ -361,22 +361,22 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         flex-shrink: 0;
       }
       .rank-badge.rank-1 {
-        background: var(--semantic-yellow-300);
-        color: var(--semantic-yellow-900);
+        background: var(--grey-300);
+        color: var(--grey-900);
       }
       .rank-badge.rank-2 {
         background: var(--grey-300);
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
       .rank-badge.rank-3 {
         background: var(--accent-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
       .warn-dot {
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: var(--semantic-yellow-500);
+        background: var(--accent-500);
         flex-shrink: 0;
       }
       .rank-code {
@@ -401,7 +401,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         background: var(--primary-500);
       }
       .rank-bar-warning {
-        background: var(--semantic-yellow-500);
+        background: var(--accent-500);
       }
       .rank-value {
         font-size: 0.8rem;
@@ -411,7 +411,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         text-align: right;
       }
       .rank-value.warn {
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
 
       /* Bar charts */
@@ -454,7 +454,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         background: var(--primary-500);
       }
       .bar-fuel {
-        background: var(--semantic-yellow-500);
+        background: var(--accent-500);
       }
       .bar-tooltip {
         display: none;
@@ -463,7 +463,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         left: 50%;
         transform: translateX(-50%);
         background: color-mix(in srgb, var(--grey-900) 80%, transparent);
-        color: var(--neutral-0);
+        color: var(--grey-100);
         font-size: 0.7rem;
         padding: 4px 6px;
         border-radius: 4px;
@@ -498,19 +498,19 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         }
       }
       .eficiencia-buena {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
-        border: 1px solid var(--semantic-green-300);
+        background: var(--semantic-blue-100);
+        color: var(--primary-900);
+        border: 1px solid var(--semantic-blue-300);
       }
       .eficiencia-promedio {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
-        border: 1px solid var(--semantic-yellow-300);
+        background: var(--grey-100);
+        color: var(--grey-900);
+        border: 1px solid var(--grey-300);
       }
       .eficiencia-deficiente {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-900);
-        border: 1px solid var(--semantic-red-300);
+        background: var(--grey-100);
+        color: var(--grey-900);
+        border: 1px solid var(--grey-300);
       }
 
       /* States */
@@ -531,7 +531,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
         }
       }
       .error-state {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
       .empty-list {
         display: flex;

@@ -87,7 +87,7 @@ export interface ButtonGroupItem {
 
       /* Type: primary */
       .aero-btn-group--primary .aero-btn-group__btn {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         color: var(--primary-900);
         border-color: var(--grey-500);
       }
@@ -108,7 +108,7 @@ export interface ButtonGroupItem {
 
       /* Type: secondary */
       .aero-btn-group--secondary .aero-btn-group__btn {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         color: var(--primary-900);
         border-color: var(--grey-300);
       }

@@ -24,9 +24,9 @@
   border: 2px solid var(--grey-200);
   transition: all 0.2s;
 
-  &.light { background: var(--neutral-0); }
+  &.light { background: var(--grey-100); }
   &.dark { background: var(--grey-900); }
-  &.system { background: linear-gradient(135deg, var(--neutral-0) 50%, var(--grey-900) 50%); }
+  &.system { background: linear-gradient(135deg, var(--grey-100) 50%, var(--grey-900) 50%); }
 }
 
 .theme-option input:checked + .theme-preview {

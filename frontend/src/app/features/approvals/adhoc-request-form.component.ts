@@ -118,7 +118,7 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs
 
       .result-name {
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .result-meta {

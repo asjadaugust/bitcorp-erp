@@ -89,7 +89,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         width: 20px;
         height: 20px;
         border-radius: var(--radius-full);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         box-shadow:
           0px 1px 3px rgba(0, 0, 0, 0.2),
           0px 1px 1px rgba(0, 0, 0, 0.14),

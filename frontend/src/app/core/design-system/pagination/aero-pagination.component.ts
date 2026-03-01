@@ -55,7 +55,7 @@ import { CommonModule } from '@angular/common';
         height: 36px;
         border: 1px solid var(--grey-300);
         border-radius: var(--radius-sm);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         color: var(--primary-900);
         cursor: pointer;
         font-size: 12px;

@@ -80,7 +80,7 @@ import { MatDialogModule } from '@angular/material/dialog';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         position: sticky;
         top: 0;
         z-index: 10;

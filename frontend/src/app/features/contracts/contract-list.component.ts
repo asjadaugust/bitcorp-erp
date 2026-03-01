@@ -155,7 +155,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .text-warning {
-        color: var(--semantic-yellow-500);
+        color: var(--accent-500);
       }
     `,
   ],

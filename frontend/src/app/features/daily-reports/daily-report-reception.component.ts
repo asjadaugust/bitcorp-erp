@@ -270,7 +270,7 @@ interface MatrixDate {
         border-radius: var(--radius-md, 6px);
         font-size: 13px;
         color: var(--grey-900);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         transition: border-color 0.15s;
       }
       .aero-date-input:focus {
@@ -286,7 +286,7 @@ interface MatrixDate {
         margin-bottom: 16px;
       }
       .summary-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-200);
         border-radius: var(--radius-md, 6px);
         padding: 16px 24px;
@@ -294,11 +294,11 @@ interface MatrixDate {
         min-width: 120px;
       }
       .summary-card.alert {
-        border-color: var(--semantic-red-300);
+        border-color: var(--grey-300);
         background: var(--semantic-red-50, #fef2f2);
       }
       .summary-card.complete {
-        border-color: var(--semantic-green-300);
+        border-color: var(--semantic-blue-300);
         background: var(--semantic-green-50, #f0fdf4);
       }
       .summary-value {
@@ -307,10 +307,10 @@ interface MatrixDate {
         color: var(--grey-900);
       }
       .summary-card.alert .summary-value {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
       .summary-card.complete .summary-value {
-        color: var(--semantic-green-600);
+        color: var(--primary-900);
       }
       .summary-label {
         font-size: 12px;
@@ -343,12 +343,12 @@ interface MatrixDate {
         transition: all 0.15s;
       }
       .toggle-btn.active {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         color: var(--primary-700);
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
       }
       .toggle-btn:hover:not(.active) {
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       /* Summary View */
@@ -371,13 +371,13 @@ interface MatrixDate {
         transition: width 0.3s ease;
       }
       .progress-fill.red {
-        background: var(--semantic-red-500);
+        background: var(--accent-500);
       }
       .progress-fill.yellow {
-        background: var(--semantic-yellow-500);
+        background: var(--accent-500);
       }
       .progress-fill.green {
-        background: var(--semantic-green-500);
+        background: var(--semantic-blue-500);
       }
       .progress-text {
         font-size: 12px;
@@ -406,14 +406,14 @@ interface MatrixDate {
         margin-top: 4px;
       }
       .fecha-chip {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
         font-size: 11px;
         padding: 2px 6px;
         border-radius: 4px;
       }
       .all-ok {
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
         font-size: 12px;
         font-weight: 600;
       }
@@ -460,7 +460,7 @@ interface MatrixDate {
       .sticky-col {
         position: sticky;
         z-index: 3;
-        background: var(--neutral-0);
+        background: var(--grey-100);
       }
       thead .sticky-col {
         z-index: 4;
@@ -517,7 +517,7 @@ interface MatrixDate {
         font-size: 13px;
       }
       .cell-ok {
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
       }
       .cell-ok i {
         font-size: 11px;
@@ -538,13 +538,13 @@ interface MatrixDate {
         border-left: 2px solid var(--grey-200);
       }
       .pct-good {
-        color: var(--semantic-green-600);
+        color: var(--primary-900);
       }
       .pct-warn {
-        color: var(--semantic-yellow-600);
+        color: var(--grey-900);
       }
       .pct-bad {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* Legend */
@@ -567,7 +567,7 @@ interface MatrixDate {
         border-radius: 2px;
       }
       .legend-dot.ok {
-        background: var(--semantic-green-500);
+        background: var(--semantic-blue-500);
       }
       .legend-dot.missing {
         background: var(--semantic-red-400);

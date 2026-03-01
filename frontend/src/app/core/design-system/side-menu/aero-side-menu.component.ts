@@ -63,7 +63,7 @@ export interface SideMenuItem {
         display: flex;
         flex-direction: column;
         width: 100%;
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
       }
 
       .aero-side-menu__item {

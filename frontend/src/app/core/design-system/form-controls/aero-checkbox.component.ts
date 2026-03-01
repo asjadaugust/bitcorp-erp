@@ -93,7 +93,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       .aero-checkbox--indeterminate .aero-checkbox__box {
         background-color: var(--primary-900);
         border-color: var(--primary-900);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .aero-checkbox:hover:not(.aero-checkbox--disabled) .aero-checkbox__box {
@@ -115,7 +115,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         display: block;
         width: 10px;
         height: 2px;
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
       }
 
       .aero-checkbox__label {

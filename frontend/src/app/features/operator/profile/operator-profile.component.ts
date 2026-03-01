@@ -305,8 +305,8 @@ interface ProfileData {
       .error-icon-circle {
         width: 64px;
         height: 64px;
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -335,7 +335,7 @@ interface ProfileData {
 
       .profile-card {
         background: linear-gradient(135deg, var(--primary-500) 0%, var(--klm-blue) 100%);
-        color: var(--neutral-0);
+        color: var(--grey-100);
         border-radius: 16px;
         padding: 40px;
         text-align: center;
@@ -402,7 +402,7 @@ interface ProfileData {
 
       /* Info Sections */
       .info-section {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md, 12px);
         padding: 24px;
         box-shadow: var(--shadow-sm);
@@ -475,13 +475,13 @@ interface ProfileData {
       }
 
       .perf-stat.success {
-        background: var(--semantic-green-100);
+        background: var(--semantic-blue-100);
       }
       .perf-stat.warning {
-        background: var(--semantic-yellow-100);
+        background: var(--grey-100);
       }
       .perf-stat.danger {
-        background: var(--semantic-red-100);
+        background: var(--grey-100);
       }
 
       .perf-value {
@@ -536,13 +536,13 @@ interface ProfileData {
       }
 
       .performance-bar.bar-high {
-        background: var(--semantic-green-500);
+        background: var(--semantic-blue-500);
       }
       .performance-bar.bar-mid {
-        background: var(--semantic-yellow-500);
+        background: var(--accent-500);
       }
       .performance-bar.bar-low {
-        background: var(--semantic-red-500);
+        background: var(--accent-500);
       }
 
       /* Skills */
@@ -575,19 +575,19 @@ interface ProfileData {
       }
 
       .level-principiante {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
+        background: var(--semantic-blue-100);
+        color: var(--primary-900);
       }
       .level-intermedio {
         background: var(--semantic-blue-100);
-        color: var(--semantic-blue-900);
+        color: var(--primary-900);
       }
       .level-avanzado {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
       .level-experto {
-        background: color-mix(in srgb, var(--semantic-purple-500) 15%, var(--neutral-0));
+        background: color-mix(in srgb, var(--semantic-purple-500) 15%, var(--grey-100));
         color: var(--semantic-purple-700);
       }
 
@@ -636,12 +636,12 @@ interface ProfileData {
       }
 
       .cert-expiry.expired {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         font-weight: 600;
       }
 
       .cert-expiry.por-vencer {
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
         font-weight: 600;
       }
 

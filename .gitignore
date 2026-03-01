@@ -91,7 +91,6 @@ logs.txt
 .dora/
 
 # AI Tool specific directories
-.claude/
 !.serena/
 .serena/*
 !.serena/project.yml
@@ -102,8 +101,11 @@ logs.txt
 backend/swagger-api.json
 
 # Documentation
-docs/
-docs/logs/
+docs/*
+!docs/PRD-Markdown/
+!docs/flexible-approval-design/
+!docs/design-tokens.json
+!docs/mobile-prd.json
 
 # Repomix LLM context snapshot
 repomix-output.txt

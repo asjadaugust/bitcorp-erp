@@ -481,7 +481,7 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
         &.status-APROBADO {
           .value,
           .value-with-icon {
-            color: var(--semantic-green-600);
+            color: var(--primary-900);
           }
         }
         &.status-PENDIENTE {
@@ -523,7 +523,7 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
       }
       .badge-propio {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .badge-tercero {
         background: var(--primary-50);
@@ -541,11 +541,11 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
       }
       .badge-cat-maquinaria {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .badge-cat-pesado {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
       .badge-cat-liviano {
         background: var(--primary-50);
@@ -553,7 +553,7 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
       }
       .badge-cat-menor {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       .status-badge {

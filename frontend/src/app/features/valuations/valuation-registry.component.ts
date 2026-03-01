@@ -248,19 +248,19 @@ import {
         background: var(--grey-400);
       }
       .status-pendiente {
-        background: var(--semantic-yellow-500);
+        background: var(--accent-500);
       }
       .status-en_revision {
         background: var(--semantic-blue-500);
       }
       .status-validado {
-        background: var(--semantic-green-700);
+        background: var(--primary-900);
       }
       .status-aprobado {
-        background: var(--semantic-green-500);
+        background: var(--semantic-blue-500);
       }
       .status-rechazado {
-        background: var(--semantic-red-500);
+        background: var(--accent-500);
       }
       .status-pagado {
         background: var(--grey-700);
@@ -284,7 +284,7 @@ import {
       }
       .status-PENDIENTE {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .status-EN_REVISION {
         background: var(--semantic-blue-50);
@@ -292,15 +292,15 @@ import {
       }
       .status-VALIDADO {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .status-APROBADO {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .status-RECHAZADO {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
       .status-PAGADO {
         background: var(--grey-100);

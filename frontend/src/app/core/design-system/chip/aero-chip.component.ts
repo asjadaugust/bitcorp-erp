@@ -93,7 +93,7 @@ export type ChipSize = 'small' | 'medium' | 'large' | 'xl';
 
       /* Inactive state */
       .aero-chip--inactive {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         color: var(--primary-900);
         border: 1px solid var(--grey-500);
       }

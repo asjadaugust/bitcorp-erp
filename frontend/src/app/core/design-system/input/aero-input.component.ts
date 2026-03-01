@@ -206,7 +206,7 @@ export type InputState = 'default' | 'error' | 'service';
       }
 
       .aero-form-field__required {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       .aero-form-field__hint {
@@ -223,7 +223,7 @@ export type InputState = 'default' | 'error' | 'service';
         align-items: center;
         border: 1px solid var(--grey-600);
         border-radius: var(--radius-sm);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         padding: 0 var(--s-12);
         gap: var(--s-8);
         transition:
@@ -259,7 +259,7 @@ export type InputState = 'default' | 'error' | 'service';
 
       /* Error state */
       .aero-form-field--error .aero-form-field__field {
-        border-color: var(--semantic-red-500);
+        border-color: var(--accent-500);
       }
 
       .aero-form-field--error .aero-form-field__field--focused {
@@ -267,7 +267,7 @@ export type InputState = 'default' | 'error' | 'service';
       }
 
       .aero-form-field--error .aero-form-field__label {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* Service state */
@@ -383,7 +383,7 @@ export type InputState = 'default' | 'error' | 'service';
       }
 
       .aero-form-field__feedback--error {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       .aero-form-field__feedback--service {

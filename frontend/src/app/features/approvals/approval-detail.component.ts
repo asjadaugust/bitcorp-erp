@@ -367,7 +367,7 @@ import { forkJoin } from 'rxjs';
       .chain-step-num {
         font-weight: 600;
         font-size: 0.9rem;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
       .chain-step-role {
         font-size: 0.78rem;
@@ -445,7 +445,7 @@ import { forkJoin } from 'rxjs';
       }
       .info-value {
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .module-chip {

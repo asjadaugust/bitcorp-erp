@@ -384,7 +384,7 @@ import {
       }
 
       .dashboard-panel {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-100);
         border-radius: var(--radius-lg);
         padding: var(--s-24);
@@ -403,7 +403,7 @@ import {
         h3 {
           font-size: 16px;
           font-weight: 700;
-          color: var(--grey-800);
+          color: var(--grey-900);
           display: flex;
           align-items: center;
           gap: var(--s-12);
@@ -458,7 +458,7 @@ import {
 
         &:hover {
           border-color: var(--grey-200);
-          background: var(--neutral-0);
+          background: var(--grey-100);
           box-shadow: var(--shadow-sm);
         }
 
@@ -499,7 +499,7 @@ import {
 
       .pill-red {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       .pill-orange {
@@ -509,12 +509,12 @@ import {
 
       .pill-yellow {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
 
       .pill-green {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       .pill-grey {
@@ -536,7 +536,7 @@ import {
         align-items: center;
         gap: 16px;
         padding: 8px 16px;
-        border-bottom: 1px solid var(--semantic-red-100, #fecaca);
+        border-bottom: 1px solid var(--grey-100, #fecaca);
         font-size: 13px;
       }
       .overdue-row:last-child {
@@ -569,7 +569,7 @@ import {
       .panel-footer {
         padding: 8px 16px;
         text-align: center;
-        border-top: 1px solid var(--semantic-red-100, #fecaca);
+        border-top: 1px solid var(--grey-100, #fecaca);
       }
       .text-muted {
         color: var(--grey-500);
@@ -582,7 +582,7 @@ import {
         padding: 6px 12px;
         font-size: 13px;
         color: var(--grey-700);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         font-weight: 500;
         outline: none;
         transition: border-color 0.2s;
@@ -616,7 +616,7 @@ import {
 
         td {
           padding: 12px;
-          background: var(--neutral-0);
+          background: var(--grey-100);
           border-top: 1px solid var(--grey-50);
           border-bottom: 1px solid var(--grey-50);
 
@@ -645,12 +645,12 @@ import {
 
       .row-soft-danger td {
         background: var(--semantic-red-50) !important;
-        border-color: var(--semantic-red-100) !important;
+        border-color: var(--grey-100) !important;
       }
 
       .row-soft-warning td {
         background: var(--semantic-yellow-50) !important;
-        border-color: var(--semantic-yellow-100) !important;
+        border-color: var(--grey-100) !important;
       }
 
       .equipo-cell {
@@ -675,11 +675,11 @@ import {
       }
 
       .text-success {
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       .text-danger {
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       .progress-cell-premium {
@@ -738,12 +738,12 @@ import {
 
       .count-red {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       .count-green {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
       }
 
       .obs-summary {
@@ -802,7 +802,7 @@ import {
             width: 14px;
             left: 2px;
             bottom: 2px;
-            background-color: var(--neutral-0);
+            background-color: var(--grey-100);
             transition: 0.4s;
             border-radius: 50%;
           }
@@ -856,7 +856,7 @@ import {
       .section-title {
         font-size: 16px;
         font-weight: 700;
-        color: var(--grey-800);
+        color: var(--grey-900);
         display: flex;
         align-items: center;
         gap: var(--s-12);
@@ -886,7 +886,7 @@ import {
         align-items: center;
         gap: var(--s-16);
         padding: var(--s-16) var(--s-24);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-100);
         border-radius: var(--radius-lg);
         text-decoration: none;
@@ -919,7 +919,7 @@ import {
 
       .ql-icon-config {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-600);
+        color: var(--grey-900);
       }
 
       .ql-info {
@@ -931,7 +931,7 @@ import {
         display: block;
         font-weight: 700;
         font-size: 14px;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .ql-desc {

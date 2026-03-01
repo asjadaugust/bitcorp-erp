@@ -251,7 +251,7 @@ import { NotificationService, Notificacion } from '../../core/services/notificat
         opacity: 1;
       }
       .btn-eliminar:hover {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         background: var(--grey-100);
       }
 

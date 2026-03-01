@@ -130,8 +130,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .success-message {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
+        background: var(--semantic-blue-100);
+        color: var(--primary-900);
         padding: var(--s-16);
         border-radius: var(--s-8);
         margin-top: var(--s-16);
@@ -142,8 +142,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .error-message {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
         padding: var(--s-16);
         border-radius: var(--s-8);
         margin-top: var(--s-16);

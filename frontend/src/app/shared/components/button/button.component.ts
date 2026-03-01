@@ -66,23 +66,23 @@ import { CommonModule } from '@angular/common';
       }
 
       .btn-danger {
-        background: var(--semantic-red-500, #ef4444);
+        background: var(--accent-500, #ef4444);
         color: white;
-        border-color: var(--semantic-red-500, #ef4444);
+        border-color: var(--accent-500, #ef4444);
       }
       .btn-danger:hover:not(:disabled) {
-        background: var(--semantic-red-600, #dc2626);
-        border-color: var(--semantic-red-600, #dc2626);
+        background: var(--grey-900, #dc2626);
+        border-color: var(--grey-900, #dc2626);
       }
 
       .btn-success {
-        background: var(--semantic-green-500, #10b981);
+        background: var(--semantic-blue-500, #10b981);
         color: white;
-        border-color: var(--semantic-green-500, #10b981);
+        border-color: var(--semantic-blue-500, #10b981);
       }
       .btn-success:hover:not(:disabled) {
-        background: var(--semantic-green-600, #059669);
-        border-color: var(--semantic-green-600, #059669);
+        background: var(--primary-900, #059669);
+        border-color: var(--primary-900, #059669);
       }
 
       .btn-outline-primary {
@@ -96,8 +96,8 @@ import { CommonModule } from '@angular/common';
 
       .btn-outline-danger {
         background: transparent;
-        border-color: var(--semantic-red-500, #ef4444);
-        color: var(--semantic-red-500, #ef4444);
+        border-color: var(--accent-500, #ef4444);
+        color: var(--accent-500, #ef4444);
       }
       .btn-outline-danger:hover:not(:disabled) {
         background: var(--semantic-red-50, #fef2f2);

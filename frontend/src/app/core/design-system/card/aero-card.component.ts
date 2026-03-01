@@ -43,7 +43,7 @@ export type CardLevel = '1' | '2' | '3';
   styles: [
     `
       .aero-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md);
         display: flex;
         flex-direction: column;

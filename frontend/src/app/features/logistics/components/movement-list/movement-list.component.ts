@@ -152,11 +152,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         color: var(--grey-900);
       }
       .badge-status-in {
-        background: var(--semantic-green-100);
+        background: var(--semantic-blue-100);
         color: var(--semantic-success);
       }
       .badge-status-out {
-        background: var(--semantic-red-100);
+        background: var(--grey-100);
         color: var(--semantic-error);
       }
 

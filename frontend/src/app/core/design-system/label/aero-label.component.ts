@@ -27,7 +27,7 @@ export type LabelPriority =
         align-items: center;
         border: 1px solid;
         border-radius: var(--radius-full);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         font-family: var(--font-text);
         font-weight: 500;
         white-space: nowrap;
@@ -82,13 +82,13 @@ export type LabelPriority =
       }
 
       .aero-label--positive {
-        border-color: var(--semantic-green-500);
-        color: var(--semantic-green-500);
+        border-color: var(--semantic-blue-500);
+        color: var(--semantic-blue-500);
       }
 
       .aero-label--warning {
-        border-color: var(--semantic-yellow-500);
-        color: var(--semantic-yellow-700);
+        border-color: var(--accent-500);
+        color: var(--grey-900);
       }
 
       .aero-label--service {
@@ -97,8 +97,8 @@ export type LabelPriority =
       }
 
       .aero-label--negative {
-        border-color: var(--semantic-red-500);
-        color: var(--semantic-red-500);
+        border-color: var(--accent-500);
+        color: var(--accent-500);
       }
 
       .aero-label__icon {

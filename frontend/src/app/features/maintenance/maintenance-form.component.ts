@@ -178,7 +178,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 
       .alert-error {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         border: 1px solid var(--semantic-red-200);
       }
     `,

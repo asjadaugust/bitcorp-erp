@@ -194,7 +194,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       .empty-state {
         text-align: center;
         padding: var(--s-64) var(--s-24);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-lg);
         border: 2px dashed var(--grey-200);
         display: flex;
@@ -228,17 +228,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .error-content {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: var(--s-32);
         border-radius: var(--radius-lg);
         text-align: center;
         max-width: 400px;
         box-shadow: var(--shadow-md);
-        border: 1px solid var(--semantic-red-100);
+        border: 1px solid var(--grey-100);
 
         .error-icon {
           font-size: 40px;
-          color: var(--semantic-red-500);
+          color: var(--accent-500);
           margin-bottom: var(--s-16);
         }
         h3 {

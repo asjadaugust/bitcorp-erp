@@ -34,7 +34,7 @@ export interface NavItem {
         align-items: stretch;
         height: 48px;
         border-bottom: 1px solid var(--grey-200);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         gap: 0;
       }
 

@@ -219,13 +219,13 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       }
 
       .btn-icon-danger:hover {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
 
       .btn-icon-success:hover {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
 
       /* Modal styles */
@@ -240,7 +240,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       }
 
       .modal-content {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: 12px;
         width: 100%;
         max-width: 440px;
@@ -313,11 +313,11 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       }
 
       .success {
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
       }
 
       .error {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
     `,
   ],

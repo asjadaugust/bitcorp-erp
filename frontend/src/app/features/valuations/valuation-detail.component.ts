@@ -1357,7 +1357,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: var(--neutral-0);
+          background: var(--grey-100);
           border: 2px solid var(--grey-300);
           z-index: 1;
           transition: all 0.3s ease;
@@ -1378,12 +1378,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
         &.done {
           .tracker-dot {
-            background: var(--semantic-green-500);
-            border-color: var(--semantic-green-600);
+            background: var(--semantic-blue-500);
+            border-color: var(--primary-900);
             box-shadow: 0 0 0 4px var(--semantic-green-50);
           }
           .tracker-label {
-            color: var(--semantic-green-700);
+            color: var(--primary-900);
           }
         }
 
@@ -1399,12 +1399,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
         &.overdue {
           .tracker-dot {
-            background: var(--semantic-red-500);
-            border-color: var(--semantic-red-600);
+            background: var(--accent-500);
+            border-color: var(--grey-900);
             box-shadow: 0 0 0 4px var(--semantic-red-50);
           }
           .tracker-label {
-            color: var(--semantic-red-700);
+            color: var(--grey-900);
           }
         }
       }
@@ -1420,7 +1420,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         margin-top: 12px;
         padding: 6px 12px;
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
@@ -1466,7 +1466,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .payment-summary-widget {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-200);
         padding: var(--s-24);
         border-radius: var(--radius-md);
@@ -1494,10 +1494,10 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         color: var(--grey-900);
       }
       .text-success {
-        color: var(--semantic-green-700) !important;
+        color: var(--primary-900) !important;
       }
       .text-warning {
-        color: var(--semantic-yellow-700) !important;
+        color: var(--grey-900) !important;
       }
 
       .progress-bar-container {
@@ -1556,7 +1556,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       .payments-table {
         width: 100%;
         border-collapse: collapse;
-        background: var(--neutral-0);
+        background: var(--grey-100);
 
         th {
           background: var(--grey-50);
@@ -1616,15 +1616,15 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
       .badge-success {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .badge-warning {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .badge-danger {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       .conciliado-badge {
@@ -1692,11 +1692,11 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       .conformidad-ok {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .conformidad-pending {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .conformidad-obs {
         font-style: italic;
@@ -1734,7 +1734,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         font-size: 13px;
         font-weight: 500;
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
         padding: 2px 6px;
         border-radius: 4px;
       }
@@ -1814,7 +1814,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         font-size: 11px;
         font-weight: 600;
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         padding: 2px 6px;
         border-radius: 4px;
       }
@@ -1822,13 +1822,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       .deduction-amount {
         font-size: 13px;
         font-weight: 600;
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         font-family: monospace;
       }
 
       .deduction-concepto {
         font-size: 13px;
-        color: var(--grey-800);
+        color: var(--grey-900);
         margin: 2px 0;
       }
 
@@ -1851,7 +1851,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         border-top: 2px solid var(--grey-200);
         margin-top: 4px;
         font-size: 13px;
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       /* Payment docs */
@@ -1887,7 +1887,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       .pay-doc-pendiente {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .pay-doc-presentado {
         background: var(--semantic-blue-50);
@@ -1895,11 +1895,11 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
       .pay-doc-aprobado {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .pay-doc-rechazado {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       .pay-doc-meta {
@@ -1923,7 +1923,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .modal-content {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: 0;
         border-radius: var(--radius-md);
         width: 90%;
@@ -1994,7 +1994,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .required {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       .form-control {
@@ -2014,7 +2014,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       .alert-warning {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
         border: 1px solid var(--semantic-yellow-200);
       }
 

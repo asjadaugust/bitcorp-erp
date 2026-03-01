@@ -231,7 +231,7 @@ import {
 
       /* Form Card */
       .form-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: 2rem;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -292,7 +292,7 @@ import {
       }
 
       .error-msg {
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
         font-size: 12px;
       }
 
@@ -311,7 +311,7 @@ import {
 
       .btn-primary {
         background: var(--primary-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
       .btn-primary:hover {
         background: var(--primary-800);
@@ -322,7 +322,7 @@ import {
       }
 
       .btn-secondary {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-300);
         color: var(--grey-700);
       }

@@ -638,16 +638,16 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
       }
 
       .detail-value.good-accuracy {
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
       }
 
       .location-error {
         margin-top: 8px;
         padding: 8px 12px;
-        background: var(--semantic-red-100);
-        border: 1px solid var(--semantic-red-300);
+        background: var(--grey-100);
+        border: 1px solid var(--grey-300);
         border-radius: 6px;
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -708,7 +708,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
       .checkbox-section h3 {
         font-size: 16px;
         font-weight: 600;
-        color: var(--grey-800);
+        color: var(--grey-900);
         margin-bottom: 12px;
       }
 
@@ -741,7 +741,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
 
       .checkbox-item span {
         font-size: 14px;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       /* Signatures */
@@ -759,7 +759,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
       .sig-label {
         font-size: 14px;
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
         margin-bottom: 8px;
       }
 
@@ -791,8 +791,8 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         right: 4px;
         width: 24px;
         height: 24px;
-        background: var(--semantic-red-500);
-        color: var(--neutral-0);
+        background: var(--accent-500);
+        color: var(--grey-100);
         border: none;
         border-radius: 50%;
         cursor: pointer;
@@ -873,7 +873,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
 
       .progress-text {
         font-size: 12px;
-        color: var(--neutral-0);
+        color: var(--grey-100);
         text-align: center;
         display: block;
       }
@@ -883,7 +883,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         top: 8px;
         left: 8px;
         background: color-mix(in srgb, black 70%, transparent);
-        color: var(--neutral-0);
+        color: var(--grey-100);
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 11px;
@@ -894,8 +894,8 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         bottom: 0;
         left: 0;
         right: 0;
-        background: var(--semantic-red-500);
-        color: var(--neutral-0);
+        background: var(--accent-500);
+        color: var(--grey-100);
         padding: 8px;
         text-align: center;
         font-size: 11px;

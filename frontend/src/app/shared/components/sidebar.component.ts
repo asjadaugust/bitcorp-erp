@@ -118,7 +118,7 @@ interface NavItem {
     `
       .sidebar {
         width: 260px;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-right: 1px solid var(--grey-200);
         height: calc(100vh - 72px); /* Subtract header height */
         position: fixed;

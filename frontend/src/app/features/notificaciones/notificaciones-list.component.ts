@@ -150,7 +150,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         display: flex;
         align-items: flex-start;
         gap: 16px;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-200);
         border-radius: var(--radius-md);
         padding: 16px;
@@ -175,16 +175,16 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         font-size: 16px;
       }
       .icono-warning {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
       .icono-error {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
       .icono-success {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
       .icono-info {
         background: var(--semantic-blue-100);
@@ -195,16 +195,16 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         color: var(--semantic-blue-500);
       }
       .icono-approval_completed {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
       .icono-contract_expiry {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
       .icono-maintenance_due {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
       .icono-schedule_assignment {
         background: var(--semantic-blue-100);
@@ -239,28 +239,28 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         text-transform: uppercase;
       }
       .badge-tipo-warning {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
       .badge-tipo-error {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
       .badge-tipo-success {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
+        background: var(--semantic-blue-100);
+        color: var(--primary-900);
       }
       .badge-tipo-info {
         background: var(--semantic-blue-100);
-        color: var(--semantic-blue-900);
+        color: var(--primary-900);
       }
       .badge-tipo-approval_required {
         background: var(--semantic-blue-100);
-        color: var(--semantic-blue-900);
+        color: var(--primary-900);
       }
       .badge-tipo-approval_completed {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
+        background: var(--semantic-blue-100);
+        color: var(--primary-900);
       }
       .badge-tipo-contract_expiry,
       .badge-tipo-maintenance_due,

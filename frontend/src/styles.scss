@@ -150,7 +150,7 @@ body {
     }
 
     &.error {
-      border-color: var(--semantic-red-500);
+      border-color: var(--accent-500);
     }
   }
 
@@ -169,7 +169,7 @@ body {
   }
 
   .error-message {
-    color: var(--semantic-red-500);
+    color: var(--accent-500);
     font-size: 12px;
     margin-top: var(--spacing-xs);
   }
@@ -219,7 +219,7 @@ body {
   width: 100%;
   height: 42px;
   padding: 0 var(--s-12);
-  background-color: var(--neutral-0);
+  background-color: var(--grey-100);
   border: 1px solid var(--grey-300);
   border-radius: var(--radius-sm);
   color: var(--primary-900);
@@ -245,7 +245,7 @@ body {
 
 // Filters Card Utility
 .filters-card {
-  background: var(--neutral-0);
+  background: var(--grey-100);
   padding: var(--s-20);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -305,19 +305,19 @@ body {
 
   &-success {
     background: #d4edda;
-    border: 1px solid var(--semantic-green-500);
+    border: 1px solid var(--semantic-blue-500);
     color: #155724;
   }
 
   &-error {
     background: #f8d7da;
-    border: 1px solid var(--semantic-red-500);
+    border: 1px solid var(--accent-500);
     color: #721c24;
   }
 
   &-warning {
     background: #fff3cd;
-    border: 1px solid var(--semantic-yellow-500);
+    border: 1px solid var(--accent-500);
     color: #856404;
   }
 
@@ -418,7 +418,7 @@ body {
   }
 
   &.status-active {
-    background: var(--semantic-green-500);
+    background: var(--semantic-blue-500);
     color: white;
   }
 
@@ -676,15 +676,15 @@ body {
 
   &.delete-btn:hover {
     background: var(--semantic-red-50);
-    color: var(--semantic-red-600);
+    color: var(--grey-900);
   }
 }
 
 // Show invalid fields when form explicitly requests validation display
 .show-validation aero-input.ng-invalid .aero-input {
-  border-color: var(--semantic-red-500);
+  border-color: var(--accent-500);
 }
 
 .show-validation app-dropdown.ng-invalid .dropdown-trigger {
-  border-color: var(--semantic-red-500);
+  border-color: var(--accent-500);
 }

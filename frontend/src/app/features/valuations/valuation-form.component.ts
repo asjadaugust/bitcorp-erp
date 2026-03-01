@@ -307,7 +307,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
       }
 
       .error-msg {
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
         font-size: 12px;
         margin-top: 0.25rem;
       }

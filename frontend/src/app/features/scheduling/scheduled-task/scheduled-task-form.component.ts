@@ -209,7 +209,7 @@ import {
 
       /* Form Card */
       .form-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: 2rem;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -264,7 +264,7 @@ import {
       }
 
       .error-msg {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         font-size: 12px;
         font-weight: 500;
         margin-top: 2px;

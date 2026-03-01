@@ -180,7 +180,7 @@ interface InfoFinanciera {
       .financial-form {
         margin-bottom: var(--s-24);
         padding: var(--s-24);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--s-8);
       }
       .form-grid {
@@ -210,7 +210,7 @@ interface InfoFinanciera {
         gap: var(--s-16);
       }
       .financial-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-200);
         border-radius: var(--s-12);
         transition: all 0.2s ease-in-out;

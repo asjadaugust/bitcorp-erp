@@ -98,13 +98,13 @@
 
 /* Success Variants */
 .btn-success {
-  background: var(--semantic-green-500);
+  background: var(--semantic-blue-500);
   color: white;
-  border-color: var(--semantic-green-500);
+  border-color: var(--semantic-blue-500);
 
   &:hover:not(:disabled) {
-    background: var(--semantic-green-900);
-    border-color: var(--semantic-green-900);
+    background: var(--primary-900);
+    border-color: var(--primary-900);
   }
 
   &:active:not(:disabled) {
@@ -114,27 +114,27 @@
 
 .btn-outline-success {
   background: transparent;
-  color: var(--semantic-green-500);
-  border-color: var(--semantic-green-500);
+  color: var(--semantic-blue-500);
+  border-color: var(--semantic-blue-500);
 
   &:hover:not(:disabled) {
-    background: var(--semantic-green-100);
+    background: var(--semantic-blue-100);
   }
 }
 
 /* Danger Variants */
 .btn-danger {
-  background: var(--semantic-red-100);
-  color: var(--semantic-red-900);
-  border-color: var(--semantic-red-300);
+  background: var(--grey-100);
+  color: var(--grey-900);
+  border-color: var(--grey-300);
 
   &:hover:not(:disabled) {
-    background: var(--semantic-red-300);
+    background: var(--grey-300);
     color: white;
   }
 
   &:active:not(:disabled) {
-    background: var(--semantic-red-500);
+    background: var(--accent-500);
   }
 }
 

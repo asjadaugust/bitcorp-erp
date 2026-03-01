@@ -260,15 +260,15 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       .priority-alta {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
       .priority-media {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-500);
+        color: var(--accent-500);
       }
       .priority-baja {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
       }
 
       .status-info-card {
@@ -298,11 +298,11 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
       .status-aprobado {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .status-rechazado {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       .approval-meta p {

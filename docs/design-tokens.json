@@ -1,0 +1,126 @@
+{
+  "color_palette": {
+    "brand": [
+      {
+        "name": "KLM Blue",
+        "shade": "main",
+        "hex": "#00a1de",
+        "description": "Our main brand colour and very recognisable as KLM. Used for logo and other branding assets such as illustrations.",
+        "use_case": "Only use for branding purposes, the KLM logo and visuals."
+      }
+    ],
+    "primary": [
+      {
+        "name": "Primary 100",
+        "shade": "100",
+        "hex": "#ebf3f8",
+        "description": "Lighter shades are mostly used for background elements.",
+        "use_case": "Used for backgrounds"
+      },
+      {
+        "name": "Primary 300",
+        "shade": "300",
+        "hex": "#c2dbea",
+        "description": "Lighter shades are mostly used for background elements.",
+        "use_case": "Used for backgrounds"
+      },
+      {
+        "name": "Primary 500",
+        "shade": "500",
+        "hex": "#0077cd",
+        "description": "Starts at the Primary 500 shade for foreground purposes with sufficient contrast.",
+        "use_case": "Main interactive color / Actionable elements"
+      },
+      {
+        "name": "Primary 800",
+        "shade": "800",
+        "hex": "#0e578c",
+        "description": "Darker blue for specific UI elements.",
+        "use_case": "Used for subtitles and non-primary actions"
+      },
+      {
+        "name": "Primary 900",
+        "shade": "900",
+        "hex": "#072b45",
+        "description": "Primary text color.",
+        "use_case": "Used for primary text"
+      }
+    ],
+    "accent": [
+      {
+        "name": "Accent 500",
+        "shade": "500",
+        "hex": "#e37222",
+        "description": "Used only for accents and extra indications. Should be used with care as it doesn't provide enough contrast for text backgrounds.",
+        "use_case": "Use for accents and visuals"
+      }
+    ],
+    "grey": [
+      {
+        "name": "Grey 100",
+        "shade": "100",
+        "hex": "#f6f7f8",
+        "description": "Neutral backgrounds.",
+        "use_case": "Use only as background colour"
+      },
+      {
+        "name": "Grey 200",
+        "shade": "200",
+        "hex": "#eaebec",
+        "description": "Neutral backgrounds.",
+        "use_case": "Use only as background colour"
+      },
+      {
+        "name": "Grey 300",
+        "shade": "300",
+        "hex": "#d4d8da",
+        "description": "Neutral backgrounds/borders.",
+        "use_case": "Use only as background colour"
+      },
+      {
+        "name": "Grey 500",
+        "shade": "500",
+        "hex": "#aab0b5",
+        "description": "Neutral backgrounds/borders.",
+        "use_case": "Use only as background colour"
+      },
+      {
+        "name": "Grey 700",
+        "shade": "700",
+        "hex": "#6a757d",
+        "description": "Tertiary text color.",
+        "use_case": "Used for tertiary text and caption"
+      },
+      {
+        "name": "Grey 900",
+        "shade": "900",
+        "hex": "#3f4e58",
+        "description": "Secondary text color.",
+        "use_case": "Used for secondary text"
+      }
+    ],
+    "blue": [
+      {
+        "name": "Blue 100",
+        "shade": "100",
+        "hex": "#e0f2ff",
+        "description": "Used across information states.",
+        "use_case": "Generally used across informative states, as a background color. NOT similar to our Primary colors."
+      },
+      {
+        "name": "Blue 300",
+        "shade": "300",
+        "hex": "#7cbcf7",
+        "description": "Used across information states.",
+        "use_case": "Generally used across informative states, as a border color. NOT similar to our Primary colors."
+      },
+      {
+        "name": "Blue 500",
+        "shade": "500",
+        "hex": "#006fc9",
+        "description": "Used across information states.",
+        "use_case": "Generally used across informative states, as a fill color for icons. NOT similar to our Primary colors."
+      }
+    ]
+  }
+}

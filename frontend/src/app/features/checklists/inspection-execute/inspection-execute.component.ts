@@ -426,7 +426,7 @@ interface InspectionFormData {
         justify-content: center;
         margin-bottom: var(--s-24);
         padding: var(--s-16);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--s-8);
       }
 
@@ -452,12 +452,12 @@ interface InspectionFormData {
 
       .step.active .step-number {
         background: var(--primary-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .step.completed .step-number {
         background: var(--success-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .step-label {
@@ -636,7 +636,7 @@ interface InspectionFormData {
       .radio-option.na.selected {
         border-color: var(--grey-500);
         background: var(--grey-100);
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       /* Summary */

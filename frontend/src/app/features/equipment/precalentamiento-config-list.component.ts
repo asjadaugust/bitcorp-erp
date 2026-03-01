@@ -196,13 +196,13 @@ interface EditState {
       .alert-success {
         background: var(--semantic-green-50);
         border: 1px solid var(--semantic-green-200);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       .alert-danger {
         background: var(--semantic-red-50);
         border: 1px solid var(--semantic-red-200);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       .config-table-wrapper {
@@ -280,11 +280,11 @@ interface EditState {
 
       .badge-cat-maquinaria {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .badge-cat-pesado {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
       .badge-cat-liviano {
         background: var(--semantic-blue-50);
@@ -292,7 +292,7 @@ interface EditState {
       }
       .badge-cat-menor {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
 
       .horas-value {

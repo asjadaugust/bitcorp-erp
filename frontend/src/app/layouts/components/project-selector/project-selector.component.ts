@@ -16,7 +16,13 @@ import { Router } from '@angular/router';
           <span>Entorno de Proyecto</span>
         </span>
 
-        <div class="dropdown-wrapper" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
+        <div
+          class="dropdown-wrapper"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="toolbar"
+        >
           <button
             type="button"
             class="toggle-btn"
@@ -403,11 +409,11 @@ import { Router } from '@angular/router';
       }
 
       .status-ACTIVE {
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
         background: var(--semantic-green-50);
       }
       .status-INACTIVE {
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         background: var(--semantic-red-50);
       }
       .status-COMPLETED {
@@ -415,7 +421,7 @@ import { Router } from '@angular/router';
         background: var(--semantic-blue-50);
       }
       .status-ON_HOLD {
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
         background: var(--semantic-yellow-50);
       }
 

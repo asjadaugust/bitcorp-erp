@@ -174,7 +174,7 @@ export interface DateRange {
       }
 
       .aero-date-picker__required {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* Field */
@@ -183,7 +183,7 @@ export interface DateRange {
         align-items: center;
         border: 1px solid var(--grey-600);
         border-radius: var(--radius-sm);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         padding: 0 var(--s-12);
         gap: var(--s-8);
         cursor: pointer;
@@ -209,7 +209,7 @@ export interface DateRange {
       }
 
       .aero-date-picker__field--error {
-        border-color: var(--semantic-red-500);
+        border-color: var(--accent-500);
       }
 
       .aero-date-picker--disabled .aero-date-picker__field {
@@ -219,7 +219,7 @@ export interface DateRange {
       }
 
       .aero-date-picker--error .aero-date-picker__label {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       .aero-date-picker__icon {
@@ -261,7 +261,7 @@ export interface DateRange {
         font-family: var(--font-text);
         font-size: var(--type-bodySmall-size);
         line-height: var(--type-bodySmall-line-height);
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* Popup */
@@ -271,7 +271,7 @@ export interface DateRange {
         left: 0;
         z-index: 1000;
         margin-top: var(--s-4);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         border: 1px solid var(--grey-300);
         border-radius: var(--radius-md);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);

@@ -53,17 +53,17 @@ export type TooltipTheme = 'dark' | 'light';
 
       /* Theme: Dark */
       .aero-tooltip--dark .aero-tooltip__content {
-        background-color: var(--neutral-900);
-        color: var(--neutral-0);
+        background-color: var(--grey-900);
+        color: var(--grey-100);
       }
 
       .aero-tooltip--dark .aero-tooltip__arrow {
-        border-color: var(--neutral-900);
+        border-color: var(--grey-900);
       }
 
       /* Theme: Light */
       .aero-tooltip--light .aero-tooltip__content {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         color: var(--primary-900);
         box-shadow:
           0px 1px 2px rgba(0, 0, 0, 0.1),
@@ -71,7 +71,7 @@ export type TooltipTheme = 'dark' | 'light';
       }
 
       .aero-tooltip--light .aero-tooltip__arrow {
-        border-color: var(--neutral-0);
+        border-color: var(--grey-100);
       }
 
       .aero-tooltip__content {
@@ -115,11 +115,11 @@ export type TooltipTheme = 'dark' | 'light';
 
       .aero-tooltip--top .aero-tooltip--dark .aero-tooltip__arrow,
       .aero-tooltip--top.aero-tooltip--dark .aero-tooltip__arrow {
-        background-color: var(--neutral-900);
+        background-color: var(--grey-900);
       }
 
       .aero-tooltip--top.aero-tooltip--light .aero-tooltip__arrow {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
       }
 
@@ -137,11 +137,11 @@ export type TooltipTheme = 'dark' | 'light';
       }
 
       .aero-tooltip--bottom.aero-tooltip--dark .aero-tooltip__arrow {
-        background-color: var(--neutral-900);
+        background-color: var(--grey-900);
       }
 
       .aero-tooltip--bottom.aero-tooltip--light .aero-tooltip__arrow {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         box-shadow: -1px -1px 2px rgba(0, 0, 0, 0.1);
       }
 
@@ -159,11 +159,11 @@ export type TooltipTheme = 'dark' | 'light';
       }
 
       .aero-tooltip--left.aero-tooltip--dark .aero-tooltip__arrow {
-        background-color: var(--neutral-900);
+        background-color: var(--grey-900);
       }
 
       .aero-tooltip--left.aero-tooltip--light .aero-tooltip__arrow {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         box-shadow: 1px -1px 2px rgba(0, 0, 0, 0.1);
       }
 
@@ -181,11 +181,11 @@ export type TooltipTheme = 'dark' | 'light';
       }
 
       .aero-tooltip--right.aero-tooltip--dark .aero-tooltip__arrow {
-        background-color: var(--neutral-900);
+        background-color: var(--grey-900);
       }
 
       .aero-tooltip--right.aero-tooltip--light .aero-tooltip__arrow {
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         box-shadow: -1px 1px 2px rgba(0, 0, 0, 0.1);
       }
     `,

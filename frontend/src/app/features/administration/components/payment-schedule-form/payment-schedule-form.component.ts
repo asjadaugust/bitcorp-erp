@@ -211,7 +211,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       .details-table {
         width: 100%;
         border-collapse: collapse;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: 8px;
         overflow: hidden;
         border: 1px solid var(--grey-200);
@@ -296,7 +296,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       }
 
       .modal-content {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--s-12);
         max-width: 800px;
         width: 90%;

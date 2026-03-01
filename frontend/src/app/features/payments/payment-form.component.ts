@@ -337,11 +337,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .text-success {
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
       }
 
       .text-warning {
-        color: var(--semantic-yellow-500);
+        color: var(--accent-500);
       }
 
       .badge {
@@ -352,13 +352,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .badge-success {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
+        background: var(--semantic-blue-100);
+        color: var(--primary-900);
       }
 
       .badge-warning {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
 
       .badge-secondary {
@@ -367,7 +367,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .warning-message {
-        color: var(--semantic-yellow-500);
+        color: var(--accent-500);
         font-size: 0.875rem;
         margin-top: 4px;
         font-weight: 500;

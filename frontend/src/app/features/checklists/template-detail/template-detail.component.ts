@@ -233,7 +233,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         padding: var(--s-12);
         border: 1px solid var(--grey-200);
         border-radius: var(--s-8);
-        background: var(--neutral-0);
+        background: var(--grey-100);
       }
 
       .item-header {

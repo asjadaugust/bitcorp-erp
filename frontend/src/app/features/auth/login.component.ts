@@ -77,7 +77,7 @@ import { AuthService } from '../../core/services/auth.service';
         width: 100%;
         max-width: 450px;
         padding: var(--s-48);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--s-16);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
       }
@@ -159,7 +159,7 @@ import { AuthService } from '../../core/services/auth.service';
 
       .btn-primary {
         background-color: var(--primary-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
       }
 
       .btn-primary:hover {
@@ -185,7 +185,7 @@ import { AuthService } from '../../core/services/auth.service';
       }
 
       .error {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         font-size: var(--type-label-size);
         margin-top: var(--s-4);
       }
@@ -198,9 +198,9 @@ import { AuthService } from '../../core/services/auth.service';
       }
 
       .alert-error {
-        background-color: var(--semantic-red-100);
-        color: var(--semantic-red-900);
-        border: 1px solid var(--semantic-red-300);
+        background-color: var(--grey-100);
+        color: var(--grey-900);
+        border: 1px solid var(--grey-300);
       }
 
       @media (max-width: 768px) {

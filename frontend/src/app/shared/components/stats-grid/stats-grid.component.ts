@@ -96,13 +96,13 @@ export interface StatItem {
 
       /* Color Overrides (Subtle) */
       .success .stat-icon {
-        color: var(--semantic-green-600);
+        color: var(--primary-900);
       }
       .warning .stat-icon {
-        color: var(--semantic-yellow-600);
+        color: var(--grey-900);
       }
       .danger .stat-icon {
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
       }
       .info .stat-icon {
         color: var(--klm-blue);

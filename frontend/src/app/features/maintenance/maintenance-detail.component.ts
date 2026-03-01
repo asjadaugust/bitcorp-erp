@@ -145,7 +145,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         background: var(--grey-50);
         padding: var(--s-16);
         border-radius: var(--radius-md);
-        color: var(--grey-800);
+        color: var(--grey-900);
         font-size: 14px;
         white-space: pre-wrap;
         line-height: 1.6;

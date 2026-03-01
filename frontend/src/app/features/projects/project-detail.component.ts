@@ -301,9 +301,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .alert-warning {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
-        border: 1px solid var(--semantic-yellow-300);
+        background: var(--grey-100);
+        color: var(--grey-900);
+        border: 1px solid var(--grey-300);
       }
     `,
   ],

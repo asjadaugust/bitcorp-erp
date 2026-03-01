@@ -92,7 +92,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .schedule-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--s-12);
         padding: 1.5rem;
         box-shadow: var(--shadow-sm);
@@ -117,7 +117,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       .card-header h3 {
         font-size: 1.125rem;
         font-weight: 600;
-        color: var(--grey-800);
+        color: var(--grey-900);
         margin: 0;
       }
 
@@ -142,7 +142,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         grid-column: 1 / -1;
         text-align: center;
         padding: 4rem;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--s-12);
       }
       .empty-icon {

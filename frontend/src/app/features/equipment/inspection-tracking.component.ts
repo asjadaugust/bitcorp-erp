@@ -243,7 +243,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         border-radius: var(--radius-md, 6px);
         font-size: 13px;
         color: var(--grey-900);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         transition: border-color 0.15s;
       }
       .aero-date-input:focus {
@@ -277,7 +277,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         margin-bottom: 16px;
       }
       .summary-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 1px solid var(--grey-200);
         border-radius: var(--radius-md, 6px);
         padding: 16px 24px;
@@ -286,11 +286,11 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         flex: 1;
       }
       .summary-card.alert {
-        border-color: var(--semantic-red-300);
+        border-color: var(--grey-300);
         background: var(--semantic-red-50, #fef2f2);
       }
       .summary-card.complete {
-        border-color: var(--semantic-green-300);
+        border-color: var(--semantic-blue-300);
         background: var(--semantic-green-50, #f0fdf4);
       }
       .summary-value {
@@ -299,10 +299,10 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         color: var(--grey-900);
       }
       .summary-card.alert .summary-value {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
       .summary-card.complete .summary-value {
-        color: var(--semantic-green-600);
+        color: var(--primary-900);
       }
       .summary-label {
         font-size: 12px;
@@ -379,11 +379,11 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         padding-top: 2px;
       }
       .icon-open {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         font-size: 16px;
       }
       .icon-resolved {
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
         font-size: 16px;
       }
 
@@ -426,7 +426,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
       .obs-resolution {
         font-size: 12px;
-        color: var(--semantic-green-600);
+        color: var(--primary-900);
         margin-top: 6px;
         display: flex;
         align-items: center;
@@ -443,7 +443,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       .btn-resolve {
         padding: 6px 12px;
         border: 1px solid var(--primary-500);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         color: var(--primary-600);
         border-radius: var(--radius-md, 6px);
         font-size: 12px;
@@ -485,7 +485,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         z-index: 1000;
       }
       .dialog-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md, 6px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         width: 480px;
@@ -557,7 +557,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
       .btn-cancel {
         padding: 8px 16px;
         border: 1px solid var(--grey-300);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         color: var(--grey-700);
         border-radius: var(--radius-md, 6px);
         font-size: 13px;

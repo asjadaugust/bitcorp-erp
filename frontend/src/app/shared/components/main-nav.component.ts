@@ -61,7 +61,7 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
   styles: [
     `
       .main-nav {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         padding: var(--s-16) var(--s-32);
         display: flex;
@@ -147,7 +147,7 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
         font-size: var(--type-bodySmall-size);
         font-weight: 500;
         color: var(--primary-900);
-        background: var(--neutral-0);
+        background: var(--grey-100);
         cursor: pointer;
         min-width: 250px;
         transition: all 0.2s ease;
@@ -187,8 +187,8 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
 
         &:hover {
           background: var(--grey-100);
-          color: var(--semantic-red-500);
-          border-color: var(--semantic-red-300);
+          color: var(--accent-500);
+          border-color: var(--grey-300);
         }
       }
 
@@ -217,7 +217,7 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
         position: absolute;
         top: 0;
         right: 0;
-        background: var(--semantic-red-500);
+        background: var(--accent-500);
         color: white;
         font-size: 10px;
         font-weight: 700;

@@ -11,31 +11,31 @@
 }
 
 .notification--error {
-  background: var(--aero-notify-bg-danger);
-  border: 1px solid var(--aero-notify-border-danger);
+  background: var(--grey-100);
+  border: 1px solid var(--accent-500);
 
-  .notification__icon i { color: var(--aero-notify-icon-danger); }
+  .notification__icon i { color: var(--accent-500); }
 }
 
 .notification--warning {
-  background: var(--aero-notify-bg-warning);
-  border: 1px solid var(--aero-notify-border-warning);
+  background: var(--grey-100);
+  border: 1px solid var(--accent-500);
 
-  .notification__icon i { color: var(--aero-notify-icon-warning); }
+  .notification__icon i { color: var(--accent-500); }
 }
 
 .notification--success {
-  background: var(--aero-notify-bg-success);
-  border: 1px solid var(--aero-notify-border-success);
+  background: var(--semantic-blue-100);
+  border: 1px solid var(--semantic-blue-500);
 
-  .notification__icon i { color: var(--aero-notify-icon-success); }
+  .notification__icon i { color: var(--semantic-blue-500); }
 }
 
 .notification--info {
-  background: var(--aero-notify-bg-info);
-  border: 1px solid var(--aero-notify-border-info);
+  background: var(--semantic-blue-100);
+  border: 1px solid var(--semantic-blue-500);
 
-  .notification__icon i { color: var(--aero-notify-icon-info); }
+  .notification__icon i { color: var(--semantic-blue-500); }
 }
 
 .notification__header {

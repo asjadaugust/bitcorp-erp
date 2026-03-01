@@ -143,7 +143,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         align-items: center;
         gap: var(--s-8);
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .worker-info i {

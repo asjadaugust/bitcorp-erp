@@ -117,7 +117,7 @@ export interface UploadedFile {
       }
 
       .aero-uploader__required {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* Drop Zone */
@@ -130,7 +130,7 @@ export interface UploadedFile {
         padding: var(--s-32);
         border: 2px dashed var(--grey-500);
         border-radius: var(--radius-md);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         cursor: pointer;
         transition: all 0.2s ease;
         text-align: center;
@@ -154,7 +154,7 @@ export interface UploadedFile {
       }
 
       .aero-uploader__zone--error {
-        border-color: var(--semantic-red-500);
+        border-color: var(--accent-500);
       }
 
       .aero-uploader--disabled .aero-uploader__zone {
@@ -205,7 +205,7 @@ export interface UploadedFile {
         font-family: var(--font-text);
         font-size: var(--type-bodySmall-size);
         line-height: var(--type-bodySmall-line-height);
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
 
       /* File List */
@@ -222,11 +222,11 @@ export interface UploadedFile {
         padding: var(--s-8) var(--s-12);
         border: 1px solid var(--grey-300);
         border-radius: var(--radius-sm);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
       }
 
       .aero-uploader__file--error {
-        border-color: var(--semantic-red-500);
+        border-color: var(--accent-500);
       }
 
       .aero-uploader__file-info {
@@ -278,7 +278,7 @@ export interface UploadedFile {
       }
 
       .aero-uploader__file-remove:hover {
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
         background-color: var(--grey-100);
       }
 
@@ -300,7 +300,7 @@ export interface UploadedFile {
       .aero-uploader__file-error {
         font-family: var(--font-text);
         font-size: var(--type-caption-size);
-        color: var(--semantic-red-500);
+        color: var(--accent-500);
       }
     `,
   ],

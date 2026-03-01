@@ -146,15 +146,15 @@ import { ConfirmService } from '../../core/services/confirm.service';
       }
       .badge-pendiente {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .badge-firmado {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .badge-anulado {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
       .badge-devolucion {
         background: var(--semantic-blue-50);
@@ -165,20 +165,20 @@ import { ConfirmService } from '../../core/services/confirm.service';
         color: var(--primary-700);
       }
       .badge-transfer {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
       .badge-bueno {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .badge-regular {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .badge-malo {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
       .badge-obs {
         background: var(--semantic-blue-50);
@@ -195,7 +195,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
         gap: 8px;
       }
       .text-success {
-        color: var(--semantic-green-500);
+        color: var(--semantic-blue-500);
       }
     `,
   ],

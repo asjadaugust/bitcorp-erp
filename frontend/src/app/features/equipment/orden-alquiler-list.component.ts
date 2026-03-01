@@ -344,22 +344,22 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
       .status-confirmado {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-700);
+        color: var(--primary-900);
       }
       .status-cancelado {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
       }
 
       .proveedor-cell {
         font-size: 13px;
-        color: var(--grey-800);
+        color: var(--grey-900);
         font-weight: 500;
       }
 
       .tarifa-cell {
         font-weight: 600;
-        color: var(--grey-800);
+        color: var(--grey-900);
         font-size: 13px;
       }
 
@@ -379,7 +379,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         z-index: 1000;
       }
       .modal-panel {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md);
         width: 100%;
         max-width: 480px;

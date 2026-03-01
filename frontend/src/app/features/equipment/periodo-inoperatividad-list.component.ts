@@ -325,15 +325,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
       .badge-danger {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
       }
       .badge-warning {
         background: var(--semantic-yellow-50);
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
       }
       .badge-success {
         background: var(--semantic-green-50);
-        color: var(--semantic-green-600);
+        color: var(--primary-900);
       }
       .badge-secondary {
         background: var(--grey-100);
@@ -341,11 +341,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
 
       .dias-danger {
-        color: var(--semantic-red-600);
+        color: var(--grey-900);
         font-weight: 700;
       }
       .dias-warning {
-        color: var(--semantic-yellow-700);
+        color: var(--grey-900);
         font-weight: 600;
       }
       .dias-ok {
@@ -387,7 +387,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         z-index: 1000;
       }
       .modal-panel {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md);
         width: 100%;
         max-width: 480px;
@@ -451,7 +451,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       }
       .alert-danger {
         background: var(--semantic-red-50);
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         border: 1px solid var(--semantic-red-200);
       }
 

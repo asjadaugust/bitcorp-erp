@@ -74,7 +74,7 @@ export type CounterHeight = '44' | '56';
         align-items: center;
         justify-content: center;
         border: 1px solid var(--grey-500);
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         color: var(--primary-900);
         cursor: pointer;
         transition: all 0.15s ease;
@@ -157,7 +157,7 @@ export type CounterHeight = '44' | '56';
         line-height: var(--type-body-line-height);
         color: var(--primary-900);
         text-align: center;
-        background-color: var(--neutral-0);
+        background-color: var(--grey-100);
         outline: none;
         -moz-appearance: textfield;
       }
@@ -173,11 +173,11 @@ export type CounterHeight = '44' | '56';
       }
 
       .aero-counter--error .aero-counter__input {
-        border-color: var(--semantic-red-500);
+        border-color: var(--accent-500);
       }
 
       .aero-counter--error .aero-counter__btn {
-        border-color: var(--semantic-red-500);
+        border-color: var(--accent-500);
       }
 
       .aero-counter--disabled {

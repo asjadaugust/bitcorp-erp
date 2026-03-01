@@ -219,7 +219,7 @@ interface PendingReport {
       }
 
       .report-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md);
         border: 1px solid var(--grey-200);
         padding: 16px;
@@ -231,11 +231,11 @@ interface PendingReport {
       }
 
       .report-card.pending {
-        border-left: 4px solid var(--semantic-yellow-500, #f59e0b);
+        border-left: 4px solid var(--accent-500, #f59e0b);
       }
 
       .report-card.dead-letter {
-        border-left: 4px solid var(--semantic-red-500, #ef4444);
+        border-left: 4px solid var(--accent-500, #ef4444);
       }
 
       .card-header {
@@ -294,7 +294,7 @@ interface PendingReport {
 
       .empty-icon {
         font-size: 48px;
-        color: var(--semantic-green-500, #22c55e);
+        color: var(--semantic-blue-500, #22c55e);
         margin-bottom: 16px;
       }
 

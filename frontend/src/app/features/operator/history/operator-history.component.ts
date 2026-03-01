@@ -177,7 +177,7 @@ interface HistoryReport {
         gap: 16px;
         margin-bottom: 24px;
         padding: 16px;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: 8px;
         box-shadow: var(--shadow-sm);
       }
@@ -191,7 +191,7 @@ interface HistoryReport {
       .filter-group .label {
         font-size: 14px;
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .summary-stats {
@@ -199,7 +199,7 @@ interface HistoryReport {
         gap: 16px;
         margin-bottom: 24px;
         padding: 16px;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: 8px;
         box-shadow: var(--shadow-sm);
       }
@@ -244,7 +244,7 @@ interface HistoryReport {
       }
 
       .report-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md, 12px);
         padding: 20px;
         box-shadow: var(--shadow-sm);
@@ -273,8 +273,8 @@ interface HistoryReport {
       }
 
       .report-icon.status-BORRADOR {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
 
       .report-icon.status-ENVIADO {
@@ -283,13 +283,13 @@ interface HistoryReport {
       }
 
       .report-icon.status-APROBADO {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-500);
+        background: var(--semantic-blue-100);
+        color: var(--semantic-blue-500);
       }
 
       .report-icon.status-RECHAZADO {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-500);
+        background: var(--grey-100);
+        color: var(--accent-500);
       }
 
       .report-info {
@@ -330,7 +330,7 @@ interface HistoryReport {
       .empty-state {
         text-align: center;
         padding: 64px 24px;
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border-radius: var(--radius-md, 12px);
       }
 

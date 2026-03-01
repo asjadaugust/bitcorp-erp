@@ -172,7 +172,7 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
       .tipo-nombre {
         font-size: 13px;
         font-weight: 500;
-        color: var(--grey-800);
+        color: var(--grey-900);
       }
 
       .action-buttons {

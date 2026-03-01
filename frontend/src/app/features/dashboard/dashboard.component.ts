@@ -166,18 +166,18 @@ interface ModuleCategory {
 
       /* Alerts Panel */
       .alerts-panel {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: var(--s-24);
         border-radius: var(--s-8);
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         margin-bottom: var(--s-24);
-        border-left: 4px solid var(--semantic-red-500);
+        border-left: 4px solid var(--accent-500);
       }
 
       .alerts-title {
         font-size: var(--type-bodyLarge-size);
         font-weight: 600;
-        color: var(--semantic-red-900);
+        color: var(--grey-900);
         margin-bottom: var(--s-16);
         display: flex;
         align-items: center;
@@ -185,8 +185,8 @@ interface ModuleCategory {
       }
 
       .alert-count {
-        background: var(--semantic-red-500);
-        color: var(--neutral-0);
+        background: var(--accent-500);
+        color: var(--grey-100);
         border-radius: 999px;
         padding: 2px 10px;
         font-size: var(--type-label-size);
@@ -227,7 +227,7 @@ interface ModuleCategory {
       .alert-label {
         font-weight: 600;
         font-size: var(--type-body-size);
-        color: var(--grey-800);
+        color: var(--grey-900);
         display: block;
         margin-bottom: var(--s-8);
       }
@@ -246,23 +246,23 @@ interface ModuleCategory {
       }
 
       .badge-red {
-        background: var(--semantic-red-100);
-        color: var(--semantic-red-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
 
       .badge-orange {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
 
       .badge-yellow {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-700);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
 
       /* Control Panel */
       .control-panel {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: var(--s-48);
         border-radius: var(--s-8);
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -296,7 +296,7 @@ interface ModuleCategory {
 
       .level-badge {
         background: var(--primary-500);
-        color: var(--neutral-0);
+        color: var(--grey-100);
         padding: 4px 12px;
         border-radius: 999px;
         font-size: var(--type-label-size);
@@ -325,7 +325,7 @@ interface ModuleCategory {
 
       /* Module Cards */
       .module-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         border: 2px solid var(--grey-200);
         border-radius: var(--s-8);
         padding: var(--s-24);

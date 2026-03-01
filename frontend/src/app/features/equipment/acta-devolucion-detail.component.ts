@@ -286,7 +286,7 @@ import {
           padding: 8px 16px;
           border-radius: 20px;
           border: 1px solid var(--grey-200);
-          background: var(--neutral-0);
+          background: var(--grey-100);
           color: var(--grey-600);
           font-weight: 500;
           cursor: pointer;
@@ -411,15 +411,15 @@ import {
 
         &.badge-bueno {
           background: var(--semantic-green-50);
-          color: var(--semantic-green-700);
+          color: var(--primary-900);
         }
         &.badge-regular {
           background: var(--semantic-yellow-50);
-          color: var(--semantic-yellow-700);
+          color: var(--grey-900);
         }
         &.badge-malo {
           background: var(--semantic-red-50);
-          color: var(--semantic-red-700);
+          color: var(--grey-900);
         }
         &.badge-obs {
           background: var(--semantic-blue-50);
@@ -453,12 +453,12 @@ import {
         }
 
         &.signed {
-          color: var(--semantic-green-600);
+          color: var(--primary-900);
           i {
-            color: var(--semantic-green-600);
+            color: var(--primary-900);
           }
           p {
-            color: var(--semantic-green-700);
+            color: var(--primary-900);
           }
         }
       }
@@ -499,7 +499,7 @@ import {
         color: var(--grey-600);
       }
       .text-danger-soft {
-        color: var(--semantic-red-700);
+        color: var(--grey-900);
         font-style: italic;
       }
       .mt-24 {

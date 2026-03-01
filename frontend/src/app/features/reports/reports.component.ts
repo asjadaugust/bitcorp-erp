@@ -148,7 +148,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .filter-card {
-        background: var(--neutral-0);
+        background: var(--grey-100);
         padding: 24px;
         border-radius: 12px;
         box-shadow: var(--shadow-sm);
@@ -215,12 +215,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         font-weight: 600;
       }
       .badge-success {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-900);
+        background: var(--semantic-blue-100);
+        color: var(--primary-900);
       }
       .badge-warning {
-        background: var(--semantic-yellow-100);
-        color: var(--semantic-yellow-900);
+        background: var(--grey-100);
+        color: var(--grey-900);
       }
     `,
   ],
