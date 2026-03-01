@@ -526,7 +526,7 @@ export interface TableSortEvent {
         width: 100%;
         border-radius: var(--radius-md);
         border: 1px solid var(--grey-200);
-        background: var(--grey-100);
+        background: var(--neutral-0);
         position: relative;
         min-height: 200px;
       }

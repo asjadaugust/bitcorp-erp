@@ -99,7 +99,8 @@
   /* Legacy Yellow Dark */
 
   /* Neutral */
-
+  --neutral-0: #ffffff;
+  --neutral-900: #000000;
   /* States - Opacity Primary */
   --state-primary-hover: rgba(14, 87, 140, 0.08);
   --state-primary-active: rgba(14, 87, 140, 0.16);

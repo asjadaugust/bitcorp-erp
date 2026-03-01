@@ -262,7 +262,7 @@ interface ModuleCategory {
 
       /* Control Panel */
       .control-panel {
-        background: var(--grey-100);
+        background: var(--neutral-0);
         padding: var(--s-48);
         border-radius: var(--s-8);
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -325,7 +325,7 @@ interface ModuleCategory {
 
       /* Module Cards */
       .module-card {
-        background: var(--grey-100);
+        background: var(--neutral-0);
         border: 2px solid var(--grey-200);
         border-radius: var(--s-8);
         padding: var(--s-24);

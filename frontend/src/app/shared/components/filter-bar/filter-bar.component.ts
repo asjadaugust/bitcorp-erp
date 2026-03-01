@@ -113,7 +113,7 @@ import { ButtonComponent } from '../button/button.component';
   styles: [
     `
       .filter-bar {
-        background: var(--grey-100);
+        background: var(--neutral-0);
         border-radius: var(--s-12);
         box-shadow: var(--shadow-sm);
         margin-bottom: var(--s-24);

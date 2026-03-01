@@ -224,7 +224,6 @@ export type InputState = 'default' | 'error' | 'service';
         border: 1px solid var(--grey-600);
         border-radius: var(--radius-sm);
         background-color: var(--grey-100);
-        padding: 0 var(--s-12);
         gap: var(--s-8);
         transition:
           border-color 0.15s ease,
@@ -292,12 +291,13 @@ export type InputState = 'default' | 'error' | 'service';
         min-width: 0;
         border: none;
         outline: none;
-        background: transparent;
+        background: var(--neutral-0);
+        border: 1px solid var(--grey-300);
+        padding: 10px 12px;
         font-family: var(--font-text);
         font-size: var(--type-body-size);
         line-height: var(--type-body-line-height);
         color: var(--primary-900);
-        padding: 0;
         height: 100%;
       }
 

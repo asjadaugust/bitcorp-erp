@@ -182,7 +182,7 @@ export interface DropdownOption {
 
       .selected-value {
         flex: 1;
-        font-size: 14px;
+        font-size: var(--type-body-size);
         color: var(--primary-900);
         white-space: nowrap;
         overflow: hidden;
