@@ -53,6 +53,7 @@ dependencies:
   shimmer: ^3.0.0
   uuid: ^4.5.3
   intl: ^0.20.2
+  connectivity_plus: ^7.0.0
 
 dev_dependencies:
   flutter_test:

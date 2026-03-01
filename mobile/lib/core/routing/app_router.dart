@@ -7,6 +7,9 @@ import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:mobile/features/daily_report/presentation/screens/daily_report_list_screen.dart';
 import 'package:mobile/features/daily_report/presentation/screens/daily_report_form_screen.dart';
 import 'package:mobile/features/dashboard/presentation/screens/operator_dashboard_screen.dart';
+import 'package:mobile/features/checklists/presentation/screens/checklist_list_screen.dart';
+import 'package:mobile/features/checklists/presentation/screens/checklist_form_screen.dart';
+import 'package:mobile/features/checklists/presentation/screens/incidente_form_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -85,8 +88,17 @@ GoRouter goRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/checklists',
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'Checklists'),
+                builder: (context, state) => const ChecklistListScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => const ChecklistFormScreen(),
+                  ),
+                  GoRoute(
+                    path: 'incidente',
+                    builder: (context, state) => const IncidenteFormScreen(),
+                  ),
+                ],
               ),
             ],
           ),

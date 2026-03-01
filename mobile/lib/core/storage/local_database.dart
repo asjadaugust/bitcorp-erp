@@ -17,7 +17,51 @@ class LocalDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('DROP TABLE IF EXISTS checklists');
+      await db.execute('''
+        CREATE TABLE checklists (
+          id TEXT PRIMARY KEY,
+          fecha TEXT,
+          id_equipo TEXT,
+          tipo TEXT,
+          estado TEXT,
+          estado_sincronizacion TEXT
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE checklist_items (
+          id TEXT PRIMARY KEY,
+          id_checklist TEXT,
+          nombre_item TEXT,
+          categoria TEXT,
+          aprobado INTEGER,
+          comentario TEXT,
+          ruta_foto TEXT
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE incidentes (
+          id TEXT PRIMARY KEY,
+          id_equipo TEXT,
+          id_checklist TEXT,
+          descripcion TEXT,
+          severidad TEXT,
+          horas_estimadas REAL,
+          rutas_fotos TEXT,
+          estado_sincronizacion TEXT
+        )
+      ''');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -56,11 +100,38 @@ class LocalDatabase {
     await db.execute('''
       CREATE TABLE checklists (
         id TEXT PRIMARY KEY,
-        equipment_code TEXT NOT NULL,
-        type TEXT NOT NULL,
-        date TEXT NOT NULL,
-        data TEXT NOT NULL,
-        is_synced INTEGER NOT NULL DEFAULT 0
+        fecha TEXT,
+        id_equipo TEXT,
+        tipo TEXT,
+        estado TEXT,
+        estado_sincronizacion TEXT
+      )
+    ''');
+
+    // Checklist Items Table
+    await db.execute('''
+      CREATE TABLE checklist_items (
+        id TEXT PRIMARY KEY,
+        id_checklist TEXT,
+        nombre_item TEXT,
+        categoria TEXT,
+        aprobado INTEGER,
+        comentario TEXT,
+        ruta_foto TEXT
+      )
+    ''');
+
+    // Incidentes Table
+    await db.execute('''
+      CREATE TABLE incidentes (
+        id TEXT PRIMARY KEY,
+        id_equipo TEXT,
+        id_checklist TEXT,
+        descripcion TEXT,
+        severidad TEXT,
+        horas_estimadas REAL,
+        rutas_fotos TEXT,
+        estado_sincronizacion TEXT
       )
     ''');
 
