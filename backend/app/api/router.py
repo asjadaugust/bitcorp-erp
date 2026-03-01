@@ -3,21 +3,39 @@
 from fastapi import APIRouter
 
 from app.api.actas_devolucion import router as router_actas_devolucion
+from app.api.analitica import router as router_analitica
+from app.api.aprobaciones import router as router_aprobaciones
 from app.api.auth import router as router_auth
 from app.api.centros_costo import router as router_centros_costo
+from app.api.checklists import router as router_checklists
 from app.api.combustible import router as router_combustible
 from app.api.contratos import router as router_contratos
 from app.api.cotizaciones import router as router_cotizaciones
+from app.api.cuentas_por_pagar import router as router_cuentas_por_pagar
+from app.api.dashboard import router as router_dashboard
+from app.api.empleados import router as router_empleados
 from app.api.equipos import router as router_equipos
 from app.api.inoperatividad import router as router_inoperatividad
+from app.api.licitaciones import router as router_licitaciones
+from app.api.logistica import router as router_logistica
 from app.api.mantenimiento import router as router_mantenimiento
+from app.api.notificaciones import router as router_notificaciones
 from app.api.operadores import router as router_operadores
 from app.api.ordenes_alquiler import router as router_ordenes_alquiler
 from app.api.pagos import router as router_pagos
 from app.api.precalentamiento import router as router_precalentamiento
+from app.api.programacion_pago import router as router_programacion_pago
 from app.api.proveedores import router as router_proveedores
+
+# Fase 5 — Secondary Modules
+from app.api.proyectos import router as router_proyectos
 from app.api.reportes import router as router_reportes
+from app.api.reportes_analiticos import router as router_reportes_analiticos
+from app.api.sig import router as router_sig
 from app.api.solicitudes_equipo import router as router_solicitudes_equipo
+from app.api.sst import router as router_sst
+from app.api.tareas_programadas import router as router_tareas_programadas
+from app.api.tareos import router as router_tareos
 from app.api.tipos_equipo import router as router_tipos_equipo
 from app.api.usuarios import router as router_usuarios
 from app.api.vales_combustible import router as router_vales_combustible
@@ -67,4 +85,34 @@ router_api.include_router(
 )
 router_api.include_router(
     router_inoperatividad, prefix="/periodos-inoperatividad", tags=["Inoperatividad"]
+)
+
+# Fase 4 — Support Modules
+router_api.include_router(
+    router_notificaciones, prefix="/notifications", tags=["Notificaciones"]
+)
+router_api.include_router(router_dashboard, prefix="/dashboard", tags=["Dashboard"])
+router_api.include_router(router_analitica, prefix="/analytics", tags=["Analitica"])
+router_api.include_router(
+    router_cuentas_por_pagar, prefix="/accounts-payable", tags=["Cuentas por Pagar"]
+)
+router_api.include_router(
+    router_programacion_pago, prefix="/payment-schedules", tags=["Programacion Pago"]
+)
+router_api.include_router(router_aprobaciones, prefix="/approvals", tags=["Aprobaciones"])
+router_api.include_router(
+    router_reportes_analiticos, prefix="/reporting", tags=["Reportes Analiticos"]
+)
+
+# Fase 5 — Secondary Modules
+router_api.include_router(router_proyectos, prefix="/projects", tags=["Proyectos"])
+router_api.include_router(router_empleados, prefix="/employees", tags=["Empleados"])
+router_api.include_router(router_tareos, prefix="/timesheets", tags=["Tareos"])
+router_api.include_router(router_logistica, prefix="/logistics", tags=["Logistica"])
+router_api.include_router(router_sst, prefix="/sst", tags=["SST"])
+router_api.include_router(router_sig, prefix="/sig", tags=["SIG"])
+router_api.include_router(router_licitaciones, prefix="/tenders", tags=["Licitaciones"])
+router_api.include_router(router_checklists, prefix="/checklists", tags=["Checklists"])
+router_api.include_router(
+    router_tareas_programadas, prefix="/scheduling", tags=["Tareas Programadas"]
 )

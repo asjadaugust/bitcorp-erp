@@ -2,6 +2,7 @@
 
 Fase 2d: Stub model — FK target only, no service/router yet.
 Fase 3: CertificacionOperador, HabilidadOperador, DisponibilidadOperador.
+Fase 5: Tareo, DetalleTareo.
 Columns match the actual live DB schema.
 """
 
@@ -141,3 +142,62 @@ class DisponibilidadOperador(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+
+# ─── Timesheets ─────────────────────────────────────────────────────────
+
+
+class Tareo(Base):
+    """Modelo para rrhh.tareo."""
+
+    __tablename__ = "tareo"
+    __table_args__ = {"schema": "rrhh"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    trabajador_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("rrhh.trabajador.id"), nullable=False, index=True
+    )
+    periodo: Mapped[str] = mapped_column(String(7), nullable=False, index=True)
+    total_dias_trabajados: Mapped[int] = mapped_column(Integer, default=0, nullable=True)
+    total_horas: Mapped[float] = mapped_column(Numeric(8, 2), default=0, nullable=True)
+    monto_calculado: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    estado: Mapped[str] = mapped_column(
+        String(50), default="BORRADOR", nullable=False, index=True
+    )
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+    creado_por: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sistema.usuario.id"), nullable=True
+    )
+    aprobado_por: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sistema.usuario.id"), nullable=True
+    )
+    aprobado_en: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    trabajador: Mapped[Trabajador] = relationship("Trabajador", lazy="joined")
+
+
+class DetalleTareo(Base):
+    """Modelo para rrhh.detalle_tareo."""
+
+    __tablename__ = "detalle_tareo"
+    __table_args__ = {"schema": "rrhh"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tareo_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("rrhh.tareo.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    proyecto_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("proyectos.edt.id"), nullable=True, index=True
+    )
+    fecha: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    horas_trabajadas: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
+    tarifa_hora: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    monto: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
