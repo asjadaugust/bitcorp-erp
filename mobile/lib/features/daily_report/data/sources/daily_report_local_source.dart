@@ -48,6 +48,7 @@ class DailyReportLocalSource {
         'observations': map['observations'],
         'signaturePath': map['signature_path'],
         'syncStatus': map['sync_status'],
+        'idValeCombustible': map['id_vale_combustible'],
       };
 
       jsonMap['events'] = eventMaps
@@ -89,6 +90,7 @@ class DailyReportLocalSource {
         'observations': report.observations,
         'signature_path': report.signaturePath,
         'sync_status': report.syncStatus,
+        'id_vale_combustible': report.idValeCombustible,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
 
       // Clear existing events/photos for update

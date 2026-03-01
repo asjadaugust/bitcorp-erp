@@ -19,7 +19,7 @@ class LocalDatabase {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -62,6 +62,26 @@ class LocalDatabase {
         )
       ''');
     }
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE daily_reports ADD COLUMN id_vale_combustible TEXT;',
+      );
+      await db.execute('''
+        CREATE TABLE combustibles (
+          id TEXT PRIMARY KEY,
+          numero_vale TEXT,
+          fecha TEXT,
+          tipo_combustible TEXT,
+          cantidad_galones REAL,
+          precio_unitario REAL,
+          id_equipo TEXT,
+          foto_path TEXT,
+          notas TEXT,
+          estado TEXT,
+          sync_status TEXT
+        )
+      ''');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -92,7 +112,8 @@ class LocalDatabase {
         activity_description TEXT,
         observations TEXT,
         signature_path TEXT,
-        sync_status TEXT
+        sync_status TEXT,
+        id_vale_combustible TEXT
       )
     ''');
 

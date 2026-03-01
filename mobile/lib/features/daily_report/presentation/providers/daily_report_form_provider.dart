@@ -5,6 +5,7 @@ import '../../domain/models/report_photo_model.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/daily_report_list_provider.dart';
 import '../../data/repositories/daily_report_repository.dart';
+import '../../../vouchers/data/repositories/vale_combustible_repository.dart';
 
 part 'daily_report_form_provider.g.dart';
 
@@ -27,6 +28,7 @@ class DailyReportForm extends _$DailyReportForm {
       observations: null,
       signaturePath: null,
       syncStatus: 'DRAFT',
+      idValeCombustible: null,
       events: [],
       photos: [],
     );
@@ -57,6 +59,10 @@ class DailyReportForm extends _$DailyReportForm {
 
   void updateDescription(String text) {
     state = state.copyWith(activityDescription: text);
+  }
+
+  void updateValeCombustible(String? idVale) {
+    state = state.copyWith(idValeCombustible: idVale);
   }
 
   void updateObservations(String text) {
@@ -95,6 +101,12 @@ class DailyReportForm extends _$DailyReportForm {
     // Attempt saving to repository offline
     final repo = ref.read(dailyReportRepositoryProvider);
     await repo.saveReport(reportToSave);
+
+    // If a vale is linked, update its status to VINCULADO
+    if (reportToSave.idValeCombustible != null &&
+        reportToSave.idValeCombustible!.isNotEmpty) {
+      // NOTE: We'll read the vale repo to update it here
+    }
 
     // Invalidate list provider to reflect changes when going back
     ref.invalidate(dailyReportListProvider);

@@ -10,6 +10,15 @@ import 'package:mobile/features/dashboard/presentation/screens/operator_dashboar
 import 'package:mobile/features/checklists/presentation/screens/checklist_list_screen.dart';
 import 'package:mobile/features/checklists/presentation/screens/checklist_form_screen.dart';
 import 'package:mobile/features/checklists/presentation/screens/incidente_form_screen.dart';
+import 'package:mobile/features/checklists/presentation/screens/incidente_form_screen.dart';
+import 'package:mobile/features/vouchers/presentation/screens/vale_list_screen.dart';
+import 'package:mobile/features/vouchers/presentation/screens/vale_form_screen.dart';
+import 'package:mobile/features/approvals/presentation/screens/approvals_hub_screen.dart';
+import 'package:mobile/features/approvals/presentation/screens/approval_detail_screen.dart';
+import 'package:mobile/features/approvals/presentation/screens/ad_hoc_approval_form_screen.dart';
+import 'package:mobile/features/approvals/domain/models/approval_request_model.dart';
+import 'package:mobile/features/equipment/presentation/screens/equipment_detail_screen.dart';
+import 'package:mobile/features/valorizations/presentation/screens/valorizations_list_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -79,8 +88,13 @@ GoRouter goRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/vouchers',
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'Vales de Combustible'),
+                builder: (context, state) => const ValeListScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => const ValeFormScreen(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -106,12 +120,36 @@ GoRouter goRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: '/approvals',
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'Aprobaciones'),
+                builder: (context, state) => const ApprovalsHubScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) =>
+                        const AdHocApprovalFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) {
+                      final item = state.extra as ApprovalRequestModel;
+                      return ApprovalDetailScreen(request: item);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/equipment/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return EquipmentDetailScreen(id: id);
+        },
+      ),
+      GoRoute(
+        path: '/valorizations',
+        builder: (context, state) => const ValorizationsListScreen(),
       ),
     ],
   );

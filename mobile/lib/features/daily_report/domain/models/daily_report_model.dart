@@ -14,6 +14,7 @@ class DailyReportModel {
   final String? observations;
   final String? signaturePath;
   final String syncStatus;
+  final String? idValeCombustible;
 
   final List<ReportEventModel> events;
   final List<ReportPhotoModel> photos;
@@ -31,6 +32,7 @@ class DailyReportModel {
     this.observations,
     this.signaturePath,
     required this.syncStatus,
+    this.idValeCombustible,
     this.events = const [],
     this.photos = const [],
   });
@@ -56,6 +58,7 @@ class DailyReportModel {
       observations: json['observations'] as String?,
       signaturePath: json['signaturePath'] as String?,
       syncStatus: json['syncStatus'] as String? ?? 'DRAFT',
+      idValeCombustible: json['idValeCombustible'] as String?,
       events: eventsList
           .map((e) => ReportEventModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -79,6 +82,7 @@ class DailyReportModel {
       'observations': observations,
       'signaturePath': signaturePath,
       'syncStatus': syncStatus,
+      'idValeCombustible': idValeCombustible,
       'events': events.map((e) => e.toJson()).toList(),
       'photos': photos.map((e) => e.toJson()).toList(),
     };
@@ -97,6 +101,7 @@ class DailyReportModel {
     String? observations,
     String? signaturePath,
     String? syncStatus,
+    String? idValeCombustible,
     List<ReportEventModel>? events,
     List<ReportPhotoModel>? photos,
   }) {
@@ -113,6 +118,7 @@ class DailyReportModel {
       observations: observations ?? this.observations,
       signaturePath: signaturePath ?? this.signaturePath,
       syncStatus: syncStatus ?? this.syncStatus,
+      idValeCombustible: idValeCombustible ?? this.idValeCombustible,
       events: events ?? this.events,
       photos: photos ?? this.photos,
     );

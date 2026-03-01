@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:mobile/core/providers/global_project_provider.dart';
+import 'package:mobile/features/notifications/presentation/widgets/notification_bell_button.dart';
+import 'package:go_router/go_router.dart';
 
 class OperatorDashboardScreen extends ConsumerWidget {
   const OperatorDashboardScreen({super.key});
@@ -11,13 +14,42 @@ class OperatorDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardState = ref.watch(dashboardProvider);
 
+    final selectedProject = ref.watch(globalProjectProvider);
+
     return Scaffold(
       backgroundColor: AeroTheme.primary100,
       appBar: AppBar(
-        title: const Text('Inicio'),
+        title: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: selectedProject,
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: AeroTheme.primary900,
+            ),
+            style: const TextStyle(
+              fontFamily: AeroTheme.headingFont,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AeroTheme.primary900,
+            ),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                ref.read(globalProjectProvider.notifier).state = newValue;
+                // In a real app we'd refresh providers that depend on it
+              }
+            },
+            items: availableProjects.map<DropdownMenuItem<String>>((project) {
+              return DropdownMenuItem<String>(
+                value: project['id'],
+                child: Text(project['nombre']!),
+              );
+            }).toList(),
+          ),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: AeroTheme.primary900,
         elevation: 1,
+        actions: const [NotificationBellButton(), SizedBox(width: 8)],
       ),
       body: RefreshIndicator(
         color: AeroTheme.primary500,
@@ -84,14 +116,15 @@ class OperatorDashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildStatusCard(
-                context,
-                icon: Icons.verified,
-                title: 'Aprobaciones',
-                value: '\${data.pendingApprovalCount} Solicitudes',
-                color: data.pendingApprovalCount > 0
-                    ? AeroTheme.primary500
-                    : AeroTheme.grey500,
+              child: GestureDetector(
+                onTap: () => context.push('/valorizations'),
+                child: _buildStatusCard(
+                  context,
+                  icon: Icons.request_quote_outlined,
+                  title: 'Valorizaciones',
+                  value: 'Ver Detalles',
+                  color: AeroTheme.primary500,
+                ),
               ),
             ),
           ],
@@ -106,7 +139,6 @@ class OperatorDashboardScreen extends ConsumerWidget {
     String description,
   ) {
     return Container(
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -118,32 +150,54 @@ class OperatorDashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Equipo Asignado',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AeroTheme.grey500,
-              fontWeight: FontWeight.w600,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            context.push('/equipment/eq-001'); // Using mock equipment ID
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Equipo Asignado',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AeroTheme.grey500,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12,
+                      color: AeroTheme.grey500,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  code,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: AeroTheme.primary500,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: AeroTheme.primary900),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            code,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AeroTheme.primary500,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            description,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AeroTheme.primary900),
-          ),
-        ],
+        ),
       ),
     );
   }

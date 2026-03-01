@@ -12,6 +12,8 @@ import '../providers/daily_report_form_provider.dart';
 import '../../domain/models/daily_report_model.dart';
 import '../../domain/models/report_event_model.dart';
 import '../../domain/models/report_photo_model.dart';
+import '../../../vouchers/data/repositories/vale_combustible_repository.dart';
+import '../../../vouchers/domain/models/vale_combustible_model.dart';
 
 class DailyReportFormScreen extends ConsumerStatefulWidget {
   const DailyReportFormScreen({super.key});
@@ -556,6 +558,9 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
               },
               validator: (v) => v == null ? 'Seleccione un equipo' : null,
             ),
+            const SizedBox(height: AeroTheme.spacing24),
+            if (draft.equipmentId.isNotEmpty)
+              _UnlinkedVouchersDropdown(draft: draft),
           ],
         ),
       ),
@@ -993,6 +998,121 @@ class _AddEventFormState extends ConsumerState<_AddEventForm> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _UnlinkedVouchersDropdown extends ConsumerStatefulWidget {
+  final DailyReportModel draft;
+
+  const _UnlinkedVouchersDropdown({required this.draft});
+
+  @override
+  ConsumerState<_UnlinkedVouchersDropdown> createState() =>
+      _UnlinkedVouchersDropdownState();
+}
+
+class _UnlinkedVouchersDropdownState
+    extends ConsumerState<_UnlinkedVouchersDropdown> {
+  List<ValeCombustibleModel> _vales = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVales();
+  }
+
+  @override
+  void didUpdateWidget(covariant _UnlinkedVouchersDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.draft.equipmentId != widget.draft.equipmentId) {
+      _fetchVales();
+    }
+  }
+
+  Future<void> _fetchVales() async {
+    setState(() => _isLoading = true);
+    final repo = ref.read(valeCombustibleRepositoryProvider);
+    final vales = await repo.getUnlinkedValesByEquipment(
+      widget.draft.equipmentId,
+    );
+    if (mounted) {
+      setState(() {
+        _vales = vales;
+        _isLoading = false;
+
+        // Ensure that if the current selected voucher is no longer valid, we clear it
+        if (widget.draft.idValeCombustible != null &&
+            !_vales.any((v) => v.id == widget.draft.idValeCombustible)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref
+                .read(dailyReportFormProvider.notifier)
+                .updateValeCombustible(null);
+          });
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_vales.isEmpty && widget.draft.idValeCombustible == null) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AeroTheme.grey100,
+          borderRadius: BorderRadius.circular(AeroTheme.radiusSm),
+          border: Border.all(color: AeroTheme.grey300),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, color: AeroTheme.grey500),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'No hay vales de combustible pendientes de vinculación para ${widget.draft.equipmentId}.',
+                style: const TextStyle(color: AeroTheme.grey700),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: 'Vincular Vale de Combustible (Opcional)',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
+        ),
+        helperText: 'Vales reportados en modo offline para este equipo.',
+      ),
+      value: widget.draft.idValeCombustible,
+      items: [
+        const DropdownMenuItem<String>(
+          value: null,
+          child: Text('Ninguno', style: TextStyle(color: AeroTheme.grey500)),
+        ),
+        ..._vales.map((vale) {
+          return DropdownMenuItem<String>(
+            value: vale.id,
+            child: Text(
+              'Vale #${vale.numeroVale} - ${vale.cantidadGalones} Galones',
+            ),
+          );
+        }),
+      ],
+      onChanged: (val) {
+        ref.read(dailyReportFormProvider.notifier).updateValeCombustible(val);
+      },
     );
   }
 }

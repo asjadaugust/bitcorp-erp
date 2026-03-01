@@ -3,6 +3,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'models/sync_conflict.dart';
 
+import 'package:mobile/features/vouchers/data/repositories/vale_combustible_repository.dart';
+
 part 'sync_service.g.dart';
 
 enum SyncStatus { idle, syncing, error, conflict }
@@ -74,13 +76,21 @@ class SyncService extends _$SyncService {
       // 1. Fetch pending reports
       // 2. Fetch pending checklists
       // 3. Fetch pending incidents
+      // 4. Fetch pending fuel vouchers
+      final valeConfigRepo = ref.read(valeCombustibleRepositoryProvider);
+      final pendingVales = await valeConfigRepo.getValesCombustible();
+      final pendingSyncVales = pendingVales
+          .where((v) => v.syncStatus == 'PENDING_SYNC')
+          .toList();
+
+      final totalPending = pendingSyncVales.length;
 
       // MOCK: Simulate network latency and finding items
       await Future.delayed(const Duration(seconds: 2));
 
       // MOCK: Suppose we hit a hardcoded conflict for testing
       // Remove this mock once verified, but keep it for Walkthrough step
-      const mockConflict = true;
+      const mockConflict = false;
 
       if (mockConflict) {
         state = state.copyWith(
@@ -97,11 +107,21 @@ class SyncService extends _$SyncService {
         return;
       }
 
-      state = state.copyWith(status: SyncStatus.idle, pendingCount: 0);
+      // MOCK: Auto-approve pending vales
+      for (final vale in pendingSyncVales) {
+        await valeConfigRepo.updateValeStatus(vale.id, vale.estado);
+        // We would technically update sync_status to SUBMITTED here,
+        // but for now we'll just mock the iteration
+      }
+
+      state = state.copyWith(
+        status: SyncStatus.idle,
+        pendingCount: totalPending,
+      );
     } catch (e) {
       state = state.copyWith(
         status: SyncStatus.error,
-        errorMessage: 'Error de sincronización: \$e',
+        errorMessage: 'Error de sincronización: $e',
       );
     }
   }
