@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+/** @deprecated Use `<aero-button>` from `@app/core/design-system` instead. */
 @Component({
   selector: 'app-button',
   standalone: true,

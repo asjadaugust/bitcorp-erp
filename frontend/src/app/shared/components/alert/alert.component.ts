@@ -4,7 +4,8 @@ import {
   Output,
   EventEmitter,
   ChangeDetectionStrategy,
-  OnDestroy, OnChanges,
+  OnDestroy,
+  OnChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -27,6 +28,8 @@ export type AlertType = 'success' | 'error' | 'warning' | 'info';
  *   [dismissible]="true"
  *   (dismissed)="onAlertDismissed()">
  * </app-alert>
+ *
+ * @deprecated Use `<aero-notification>` from `@app/core/design-system` instead.
  */
 @Component({
   selector: 'app-alert',

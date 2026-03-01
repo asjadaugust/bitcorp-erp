@@ -20,6 +20,7 @@ export interface DropdownOption {
   disabled?: boolean;
 }
 
+/** @deprecated Use `<aero-dropdown>` from `@app/core/design-system` instead. */
 @Component({
   selector: 'app-dropdown',
   standalone: true,
