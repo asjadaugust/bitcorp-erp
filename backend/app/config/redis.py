@@ -11,7 +11,11 @@ async def inicializar_redis() -> redis.Redis:
     cliente_redis = redis.from_url(
         configuracion.redis_url,
         decode_responses=True,
+        socket_connect_timeout=3,
     )
+    ping_result = cliente_redis.ping()
+    if hasattr(ping_result, "__await__"):
+        await ping_result
     return cliente_redis
 
 

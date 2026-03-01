@@ -1,5 +1,15 @@
 """Fixtures de pytest para tests del backend BitCorp ERP."""
 
+import os
+
+os.environ.setdefault(
+    "DATABASE_URL",
+    "postgresql+asyncpg://bitcorp:dev_password_change_me@localhost:3440/bitcorp_dev",
+)
+os.environ.setdefault("REDIS_URL", "redis://localhost:3460")
+os.environ.setdefault("DB_HOST", "localhost")
+os.environ.setdefault("DB_PORT", "3440")
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 

@@ -38,8 +38,11 @@ async def ciclo_vida(app: FastAPI) -> AsyncIterator[None]:
         "iniciando_aplicacion", entorno=configuracion.environment, puerto=configuracion.port
     )
 
-    await inicializar_redis()
-    logger.info("redis_conectado")
+    try:
+        await inicializar_redis()
+        logger.info("redis_conectado")
+    except Exception as e:
+        logger.warning("redis_no_disponible", error=str(e))
 
     yield
 
