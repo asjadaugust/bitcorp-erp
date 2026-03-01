@@ -1,6 +1,4 @@
 """Esquemas Pydantic para valorizaciones y pagos.
-
-Replica los DTOs de valuation.dto.ts y payment-record.dto.ts del BFF.
 """
 
 from datetime import date, datetime

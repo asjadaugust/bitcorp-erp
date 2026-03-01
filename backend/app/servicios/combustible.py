@@ -1,6 +1,4 @@
 """Servicio para configuración de combustible.
-
-Replica CombustibleConfigService del BFF Node.js.
 """
 
 from sqlalchemy import select

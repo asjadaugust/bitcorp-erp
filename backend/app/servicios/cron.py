@@ -1,6 +1,4 @@
 """Servicio de tareas programadas (cron jobs).
-
-Replica CronService del BFF Node.js.
 """
 
 from datetime import date, timedelta

@@ -1,6 +1,4 @@
 """Router de SIG / documentos.
-
-Replica /api/sig del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

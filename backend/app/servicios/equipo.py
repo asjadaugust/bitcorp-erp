@@ -1,6 +1,4 @@
 """Servicio para equipos.
-
-Replica EquipmentService del BFF Node.js.
 """
 
 from typing import Any

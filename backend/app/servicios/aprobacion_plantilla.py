@@ -1,6 +1,4 @@
 """Servicio para plantillas de aprobación.
-
-Replica ApprovalTemplateService del BFF Node.js.
 """
 
 from sqlalchemy import func, select

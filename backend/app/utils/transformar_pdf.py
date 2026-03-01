@@ -1,6 +1,4 @@
 """Transformadores de entidades a DTOs para generacion de PDFs.
-
-Equivale a daily-report-pdf-transformer.ts y acta-entrega-pdf-transformer.ts del BFF.
 """
 
 from __future__ import annotations

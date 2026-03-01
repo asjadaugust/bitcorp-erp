@@ -1,6 +1,4 @@
 """Rutas para valorizaciones de equipo.
-
-Replica valuation.routes.ts del BFF Node.js.
 """
 
 from typing import Any

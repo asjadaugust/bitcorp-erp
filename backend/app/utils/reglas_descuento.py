@@ -4,8 +4,6 @@ Calcula si aplica descuento y cuántas horas/días corresponden según el tipo,
 subtipo y parámetros del evento.
 
 Conversión estándar: 1 día = 8 horas (jornada ordinaria).
-
-Replica bff/src/utils/discount-rules.ts.
 """
 
 from decimal import ROUND_HALF_UP, Decimal

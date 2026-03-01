@@ -1,6 +1,4 @@
 """Router de tareas programadas.
-
-Replica /api/scheduling del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

@@ -1,6 +1,4 @@
 """Servicio para dashboard.
-
-Replica DashboardService del BFF Node.js — aggregation queries only.
 """
 
 from datetime import date, timedelta

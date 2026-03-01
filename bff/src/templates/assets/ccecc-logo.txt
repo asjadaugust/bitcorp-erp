@@ -1,3 +1,0 @@
-# CCECC Logo
-# The logo will be embedded as base64 in the PDF template
-# Original file provided by user - pending conversion to base64

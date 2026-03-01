@@ -1,6 +1,4 @@
 """Router de configuración de precalentamiento.
-
-Replica /api/precalentamiento-config del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends

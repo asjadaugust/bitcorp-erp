@@ -1,6 +1,4 @@
 """Router de autenticación.
-
-Replica /api/auth/login y /api/auth/me del BFF Node.js.
 """
 
 from fastapi import APIRouter

@@ -1,6 +1,4 @@
 """Router de equipos.
-
-Replica /api/equipment del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends, Query

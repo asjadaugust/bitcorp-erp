@@ -1,6 +1,5 @@
 """Servicio de generacion de PDFs con Playwright y Jinja2.
 
-Reemplaza puppeteer-pdf.service.ts del BFF Node.js (608 lineas).
 Usa Playwright para renderizar HTML→PDF y pypdf para merge multi-pagina.
 """
 

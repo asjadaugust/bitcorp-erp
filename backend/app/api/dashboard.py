@@ -1,6 +1,4 @@
 """Router de dashboard.
-
-Replica /api/dashboard del BFF Node.js.
 """
 
 from fastapi import APIRouter

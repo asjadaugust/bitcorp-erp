@@ -1,6 +1,4 @@
 """Router de tareos (timesheets).
-
-Replica /api/timesheets del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

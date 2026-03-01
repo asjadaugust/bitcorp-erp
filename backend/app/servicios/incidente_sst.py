@@ -1,6 +1,4 @@
 """Servicio para incidentes SST (seguridad).
-
-Replica SSTService del BFF Node.js.
 """
 
 from datetime import datetime

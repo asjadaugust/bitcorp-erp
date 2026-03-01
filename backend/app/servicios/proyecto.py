@@ -1,6 +1,4 @@
 """Servicio para proyectos (EDT).
-
-Replica ProjectService del BFF Node.js.
 """
 
 from datetime import date

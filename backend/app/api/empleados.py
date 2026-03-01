@@ -1,6 +1,4 @@
 """Router de empleados (trabajadores).
-
-Replica /api/employees del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

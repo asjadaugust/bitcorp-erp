@@ -1,6 +1,4 @@
 """Servicio para centros de costo.
-
-Replica CostCenterService del BFF Node.js.
 """
 
 from typing import Any

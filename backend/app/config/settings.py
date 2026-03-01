@@ -19,7 +19,7 @@ class Configuracion(BaseSettings):
     # Redis
     redis_url: str = "redis://redis:6379"
 
-    # JWT (debe coincidir con el BFF Node.js)
+    # JWT
     jwt_secret: str = "dev_jwt_secret_change_in_production"
     jwt_refresh_secret: str = "dev_refresh_secret_change_in_production"
     jwt_expires_minutes: int = 15

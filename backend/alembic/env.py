@@ -1,7 +1,5 @@
 """Configuración de Alembic para migraciones.
 
-NOTA: Las migraciones existentes fueron hechas con TypeORM en el BFF Node.js.
-Este archivo es para migraciones futuras solamente.
 La base de datos ya existe y no necesita ser creada desde cero.
 """
 

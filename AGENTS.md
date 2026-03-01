@@ -5,7 +5,7 @@
 The application runs via **Docker Compose**.
 
 - **Frontend URL**: [http://localhost:3420](http://localhost:3420)
-- **Backend URL**: [http://localhost:3400](http://localhost:3400)
+- **Backend URL**: [http://localhost:3410](http://localhost:3410)
 - **Login URL**: [http://localhost:3420/login](http://localhost:3420/login)
 
 ### 🔑 Credentials
@@ -33,18 +33,18 @@ docker-compose restart backend
 ### Stack
 
 - **Frontend**: Angular 19 (Standalone Components, Signals)
-- **Backend**: Node.js v20, Express, TypeScript
+- **Backend**: Python 3.12, FastAPI
 - **Database**: PostgreSQL 16
-- **ORM**: TypeORM
+- **ORM**: SQLAlchemy 2.0 Async
 - **Cache**: Redis 7
 
 ### Key Directories
 
 - `frontend/src/app/features`: Feature modules (Projects, Equipment, Providers, etc.)
 - `frontend/src/app/core`: Singleton services, guards, interceptors.
-- `backend/src/api`: Controller layer.
-- `backend/src/services`: Business logic layer.
-- `backend/src/models`: TypeORM entities.
+- `backend/app/api`: Router layer.
+- `backend/app/services`: Business logic layer.
+- `backend/app/models`: SQLAlchemy models.
 
 ## 🤖 Agent Workflow
 

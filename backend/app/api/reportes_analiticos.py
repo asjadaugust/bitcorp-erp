@@ -1,6 +1,4 @@
 """Router de reportes analíticos.
-
-Replica /api/reporting del BFF Node.js.
 """
 
 from datetime import date

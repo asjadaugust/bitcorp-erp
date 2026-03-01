@@ -1,6 +1,4 @@
 """Router de reportes diarios (partes diarios).
-
-Replica /api/reports del BFF Node.js (16 routes).
 """
 
 from datetime import date

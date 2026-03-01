@@ -1,6 +1,4 @@
 """Excepciones personalizadas del sistema BitCorp ERP.
-
-Replica la jerarquía de errores de backend/src/errors/ del BFF Node.js.
 """
 
 from typing import Any

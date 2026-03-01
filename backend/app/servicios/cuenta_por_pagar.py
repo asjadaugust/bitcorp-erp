@@ -1,6 +1,4 @@
 """Servicio para cuentas por pagar.
-
-Replica AccountsPayableService del BFF Node.js.
 """
 
 from datetime import date

@@ -1,6 +1,4 @@
 """Servicio para contratos.
-
-Replica ContractService del BFF Node.js (core CRUD + lifecycle).
 """
 
 from typing import Any

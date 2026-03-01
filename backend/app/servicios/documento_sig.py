@@ -1,6 +1,4 @@
 """Servicio para documentos SIG.
-
-Replica SIGService del BFF Node.js.
 """
 
 from datetime import date

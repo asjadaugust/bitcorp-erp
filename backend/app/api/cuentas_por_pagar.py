@@ -1,6 +1,4 @@
 """Router de cuentas por pagar.
-
-Replica /api/accounts-payable del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends, Query

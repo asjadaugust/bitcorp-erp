@@ -1,6 +1,4 @@
 """Router de SST / incidentes de seguridad.
-
-Replica /api/sst del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

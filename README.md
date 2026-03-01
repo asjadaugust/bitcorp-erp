@@ -1,6 +1,6 @@
 # Bitcorp ERP System
 
-Modern ERP system for civil engineering equipment management built with Angular 19, Node.js, PostgreSQL, and Redis.
+Modern ERP system for civil engineering equipment management built with Angular 19, Python/FastAPI, PostgreSQL, and Redis.
 
 ## 📚 Documentation
 
@@ -36,7 +36,7 @@ docker-compose up -d --build
 
 # Access application
 # Frontend: http://localhost:3420
-# Backend API: http://localhost:3400
+# Backend API: http://localhost:3410
 ```
 
 ### 🪟 **Windows with WSL2**
@@ -52,7 +52,7 @@ docker-compose up -d --build
 
 # Access via localhost (WSL2 automatically forwards ports)
 # Frontend: http://localhost:3420
-# Backend:  http://localhost:3400
+# Backend:  http://localhost:3410
 
 # Check container status
 docker-compose ps
@@ -99,7 +99,7 @@ docker-compose -f deploy/docker-compose.prod.yml up -d
 | Component            | Technology              | Version |
 | -------------------- | ----------------------- | ------- |
 | **Frontend**         | Angular                 | 19      |
-| **Backend**          | Node.js + TypeScript    | 20 LTS  |
+| **Backend**          | Python + FastAPI        | 3.12    |
 | **Database**         | PostgreSQL              | 16      |
 | **Cache**            | Redis                   | 7       |
 | **Containerization** | Docker + Docker Compose | Latest  |
@@ -117,14 +117,14 @@ bitcorp-erp/
 │   │   └── features/             # Feature modules
 │   └── package.json
 │
-├── backend/                       # Node.js TypeScript API
-│   ├── src/
-│   │   ├── api/                  # REST API routes
+├── backend/                       # Python FastAPI backend
+│   ├── app/
+│   │   ├── api/                  # FastAPI routers
 │   │   ├── services/             # Business logic
-│   │   ├── repositories/         # Data access
-│   │   ├── models/               # TypeORM entities
-│   │   └── middleware/           # Express middleware
-│   └── package.json
+│   │   ├── models/               # SQLAlchemy models
+│   │   ├── schemas/              # Pydantic schemas
+│   │   └── core/                 # Config, security, database
+│   └── requirements.txt
 │
 ├── database/                      # Database scripts
 │   ├── init/                     # Init SQL (schema)
@@ -180,11 +180,11 @@ npm run dev                     # Start all services with Docker
 docker-compose up -d --build
 
 # Or run individually:
-cd backend && npm run dev       # Backend only (localhost:3400)
+cd backend && uvicorn app.main:app --reload --port 3410  # Backend only (localhost:3410)
 cd frontend && npm start        # Frontend only (localhost:3420)
 
 # Database operations
-npm run db:migrate              # Run TypeORM migrations
+npm run db:migrate              # Run Alembic migrations
 npm run db:seed                 # Seed test data
 npm run db:reset                # Reset database
 # OR manually (SQL files):
@@ -324,7 +324,7 @@ sudo docker-compose restart frontend
 - ✅ Password hashing with bcrypt
 - ✅ Role-based access control (RBAC)
 - ✅ CORS protection
-- ✅ SQL injection prevention (TypeORM)
+- ✅ SQL injection prevention (SQLAlchemy)
 - ✅ Environment-based secrets
 - ✅ Rate limiting on auth endpoints
 
@@ -337,7 +337,7 @@ sudo docker-compose restart frontend
 | Service  | Status     | URL                      |
 | -------- | ---------- | ------------------------ |
 | Frontend | ✅ Running | http://192.168.0.13:3420 |
-| Backend  | ✅ Running | http://192.168.0.13:3400 |
+| Backend  | ✅ Running | http://192.168.0.13:3410 |
 | Database | ✅ Running | Internal (3440)          |
 | Redis    | ✅ Running | Internal (3460)          |
 

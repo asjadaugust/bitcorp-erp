@@ -1,6 +1,4 @@
 """Esquemas Pydantic para partes diarios (daily reports).
-
-Replica los DTOs de report.dto.ts del BFF Node.js.
 """
 
 from datetime import date, datetime, time

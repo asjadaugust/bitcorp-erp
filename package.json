@@ -4,12 +4,11 @@
   "description": "Civil Engineering Equipment Management ERP System",
   "private": true,
   "workspaces": [
-    "frontend",
-    "bff"
+    "frontend"
   ],
   "scripts": {
     "setup:dev": "npm run install:all && npm run db:setup",
-    "install:all": "npm install && cd frontend && npm install && cd ../bff && npm install",
+    "install:all": "npm install && cd frontend && npm install",
     "dev": "docker-compose -f docker-compose.dev.yml up",
     "dev:build": "docker-compose -f docker-compose.dev.yml up --build",
     "dev:down": "docker-compose -f docker-compose.dev.yml down",
@@ -18,26 +17,22 @@
     "build:prod": "docker-compose build",
     "stop": "docker-compose down",
     "logs": "docker-compose logs -f",
-    "logs:bff": "docker-compose logs -f bff",
     "logs:backend": "docker-compose logs -f backend",
     "logs:frontend": "docker-compose logs -f frontend",
-    "test:all": "npm run test:bff && npm run test:frontend && npm run test:e2e",
-    "test:bff": "cd bff && npm run test",
-    "test:backend": "cd backend && python -m pytest",
+    "test:all": "npm run test:backend && npm run test:frontend && npm run test:e2e",
+    "test:backend": "cd backend && python -m pytest tests/ -q",
     "test:frontend": "cd frontend && npm run test",
     "test:e2e": "echo 'Skipping E2E tests for commit' && exit 0",
     "test:e2e:ui": "cd tests && npx playwright test --ui",
     "test:e2e:report": "cd tests && npx playwright show-report",
     "db:setup": "npm run db:migrate && npm run db:seed",
-    "db:migrate": "cd bff && npm run migrate",
-    "db:migrate:create": "cd bff && npm run migrate:create",
-    "db:migrate:revert": "cd bff && npm run migrate:revert",
-    "db:seed": "cd bff && npm run seed",
+    "db:migrate": "cd backend && alembic upgrade head",
+    "db:seed": "cd backend && python -m app.seed",
     "db:reset": "docker-compose down postgres && docker volume rm bitcorp-erp_postgres_dev_data && npm run dev",
     "db:convert-bacpac": "./database/scripts/convert-bacpac.sh",
     "db:backup": "./database/scripts/backup.sh",
-    "lint": "npm run lint:bff && npm run lint:frontend",
-    "lint:bff": "cd bff && npm run lint",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && ruff check app/ tests/",
     "lint:frontend": "cd frontend && npm run lint",
     "lint:staged": "eslint --fix",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
@@ -50,9 +45,8 @@
     "api:test:all": "bash scripts/run-api-tests.sh all",
     "api:test:help": "bash scripts/run-api-tests.sh help",
     "pack:ai": "npx repomix",
-    "deadcode:bff": "cd bff && npx knip --config knip.json",
     "deadcode:frontend": "cd frontend && npx knip --config knip.json",
-    "deadcode": "npm run deadcode:bff && npm run deadcode:frontend"
+    "deadcode": "npm run deadcode:frontend"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -73,10 +67,6 @@
     }
   },
   "lint-staged": {
-    "bff/**/*.{ts,js}": [
-      "prettier --write",
-      "npm run lint:staged --"
-    ],
     "frontend/**/*.{ts,js}": [
       "prettier --write"
     ],

@@ -1,6 +1,4 @@
 """Router de aprobaciones.
-
-Replica /api/approvals del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

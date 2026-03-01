@@ -1,6 +1,4 @@
 """Servicio para tareas programadas.
-
-Replica SchedulingService del BFF Node.js.
 """
 
 from datetime import date, datetime

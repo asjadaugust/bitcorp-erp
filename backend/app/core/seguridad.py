@@ -1,6 +1,5 @@
 """Utilidades de seguridad: JWT y hashing de contraseñas.
 
-Replica SecurityUtil de backend/src/utils/security.util.ts del BFF Node.js.
 Usa el mismo JWT_SECRET para que tokens sean interoperables entre backends.
 """
 
@@ -17,7 +16,7 @@ contexto_password: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="a
 
 
 class PayloadJwt(BaseModel):
-    """Estructura del payload JWT — idéntica al BFF Node.js."""
+    """Estructura del payload JWT."""
 
     id_usuario: int
     id_empresa: int
@@ -43,7 +42,7 @@ def verificar_password(password: str, hash_almacenado: str) -> bool:
 
 
 def generar_token_acceso(payload: PayloadJwt) -> str:
-    """Generar JWT de acceso compatible con el BFF Node.js."""
+    """Generar JWT de acceso."""
     datos: dict[str, Any] = payload.model_dump(exclude={"iat", "exp"})
     ahora = datetime.now(UTC)
     datos["iat"] = int(ahora.timestamp())
@@ -55,7 +54,7 @@ def generar_token_acceso(payload: PayloadJwt) -> str:
 
 
 def generar_token_refresco(payload: PayloadJwt) -> str:
-    """Generar JWT de refresco compatible con el BFF Node.js."""
+    """Generar JWT de refresco."""
     datos: dict[str, Any] = payload.model_dump(exclude={"iat", "exp"})
     ahora = datetime.now(UTC)
     datos["iat"] = int(ahora.timestamp())

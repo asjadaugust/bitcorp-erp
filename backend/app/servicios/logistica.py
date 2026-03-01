@@ -1,6 +1,4 @@
 """Servicio para logística / inventario.
-
-Replica InventoryService del BFF Node.js.
 """
 
 from datetime import date

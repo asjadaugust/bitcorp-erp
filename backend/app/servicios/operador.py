@@ -1,6 +1,4 @@
 """Servicio para operadores (trabajadores/RRHH).
-
-Replica OperatorService del BFF Node.js.
 """
 
 from datetime import date

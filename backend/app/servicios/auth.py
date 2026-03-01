@@ -1,7 +1,4 @@
-"""Servicio de autenticación.
-
-Replica la lógica de bff/src/api/auth/auth.simple.ts.
-"""
+"""Servicio de autenticación."""
 
 from typing import Any
 
@@ -31,7 +28,7 @@ class ServicioAuth:
         """Autenticar usuario y generar tokens JWT."""
         logger.debug("intento_login", username=username)
 
-        # Query raw SQL igual que el BFF Node.js
+        # Query raw SQL
         resultado = await self.db.execute(
             text("""
                 SELECT

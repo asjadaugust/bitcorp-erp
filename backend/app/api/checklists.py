@@ -1,6 +1,4 @@
 """Router de checklists de inspección.
-
-Replica /api/checklists del BFF Node.js.
 """
 
 from typing import Any

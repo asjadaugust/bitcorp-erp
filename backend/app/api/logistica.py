@@ -1,6 +1,4 @@
 """Router de logística / inventario.
-
-Replica /api/logistics del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

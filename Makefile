@@ -48,7 +48,7 @@ run-docker:
 	@echo ""
 	@echo "✅ Containers are running!"
 	@echo "📊 Frontend: http://localhost:3420"
-	@echo "🔧 Backend:  http://localhost:3400"
+	@echo "🔧 Backend:  http://localhost:3410"
 	@echo "🗄️  Database: localhost:3440"
 	@echo ""
 

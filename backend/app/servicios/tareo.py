@@ -1,6 +1,4 @@
 """Servicio para tareos (timesheets).
-
-Replica TimesheetService del BFF Node.js.
 """
 
 from datetime import date, datetime

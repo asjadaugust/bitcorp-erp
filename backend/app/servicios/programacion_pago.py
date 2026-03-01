@@ -1,6 +1,4 @@
 """Servicio para programación de pagos.
-
-Replica PaymentScheduleService del BFF Node.js.
 """
 
 from datetime import date

@@ -1,6 +1,4 @@
 """Esquemas Pydantic para equipos.
-
-Replica los DTOs de equipment.dto.ts del BFF Node.js.
 """
 
 from datetime import date, datetime

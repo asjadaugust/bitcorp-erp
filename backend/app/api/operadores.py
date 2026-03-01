@@ -1,6 +1,4 @@
 """Router de operadores.
-
-Replica /api/operators del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends, Query

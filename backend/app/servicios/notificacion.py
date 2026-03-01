@@ -1,6 +1,4 @@
 """Servicio para notificaciones.
-
-Replica NotificationService del BFF Node.js.
 """
 
 from datetime import datetime

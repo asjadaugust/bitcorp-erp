@@ -1,6 +1,4 @@
 """Router de configuración de combustible.
-
-Replica /api/combustible-config del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends

@@ -1,6 +1,4 @@
 """Servicio para solicitudes de aprobación.
-
-Replica ApprovalRequestService del BFF Node.js.
 """
 
 from datetime import datetime

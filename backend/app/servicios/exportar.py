@@ -1,6 +1,4 @@
 """Servicio de exportación Excel.
-
-Replica ExportService del BFF Node.js.
 """
 
 from io import BytesIO

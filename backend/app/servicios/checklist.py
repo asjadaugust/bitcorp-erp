@@ -1,6 +1,4 @@
 """Servicio para checklists de inspección.
-
-Replica ChecklistService del BFF Node.js.
 """
 
 from datetime import date, datetime

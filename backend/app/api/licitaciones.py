@@ -1,6 +1,4 @@
 """Router de licitaciones.
-
-Replica /api/tenders del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

@@ -50,7 +50,7 @@ See [DATABASE_SCRIPTS.md](./DATABASE_SCRIPTS.md) for database management command
 
 ## Monitoring
 
-- Backend API: http://localhost:3400
+- Backend API: http://localhost:3410
 - Frontend: http://localhost:3420
 - PostgreSQL: localhost:3440
 - Logs: `docker-compose logs -f`

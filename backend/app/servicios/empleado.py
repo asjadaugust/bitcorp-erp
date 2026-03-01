@@ -1,6 +1,4 @@
 """Servicio para empleados (trabajadores).
-
-Replica EmployeeService del BFF Node.js.
 """
 
 from datetime import date

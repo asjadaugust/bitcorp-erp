@@ -1,6 +1,5 @@
 """Esquemas comunes de respuesta API.
 
-Replica exactamente el contrato de API del BFF Node.js:
   - { success: true, data: T }
   - { success: true, data: T[], pagination: {...} }
   - { success: false, error: { code, message, details? } }

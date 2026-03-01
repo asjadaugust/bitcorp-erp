@@ -42,7 +42,7 @@ docker-compose exec backend npm run seed:typeorm
 
 # 6. Access the application
 # Frontend: http://localhost:3420
-# Backend API: http://localhost:3400
+# Backend API: http://localhost:3410
 # pgAdmin: http://localhost:3450 (optional)
 # Redis Commander: http://localhost:3460 (optional)
 
@@ -67,11 +67,11 @@ docker-compose exec postgres psql -U bitcorp -d bitcorp_dev \
   -c "SELECT nombre_usuario, correo_electronico FROM sistema.usuario WHERE nombre_usuario = 'admin';"
 
 # Test API health
-curl http://localhost:3400/health
+curl http://localhost:3410/health
 # Expected: {"status":"OK","timestamp":"..."}
 
 # Test login endpoint
-curl -X POST http://localhost:3400/api/auth/login \
+curl -X POST http://localhost:3410/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}' \
   | jq .
@@ -137,12 +137,12 @@ docker-compose up -d --build
 ```bash
 # Find process using port (example: 3400)
 # Linux/WSL2:
-lsof -i :3400
+lsof -i :3410
 # Kill process:
 kill -9 <PID>
 
 # Or change ports in docker-compose.yml:
-# Change: "3400:3400" to "3401:3400"
+# Change: "3400:3410" to "3401:3410"
 # Then access at http://localhost:3401
 
 # Or use .env to override ports (if supported)
@@ -181,7 +181,7 @@ docker-compose exec backend npm run migrate
 docker-compose exec frontend cat /app/src/environments/environment.ts | grep apiUrl
 
 # 2. Verify backend is running
-curl http://localhost:3400/health
+curl http://localhost:3410/health
 
 # 3. Check frontend logs
 docker-compose logs frontend --tail=50

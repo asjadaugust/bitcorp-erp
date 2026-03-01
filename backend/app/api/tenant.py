@@ -1,6 +1,5 @@
 """Router de tenant (proyectos del usuario).
 
-Replica /api/tenant del BFF Node.js.
 Nota: /my-projects retorna array plano (sin wrapper {success, data}).
 """
 
@@ -50,7 +49,7 @@ async def mis_proyectos(usuario: UsuarioActual, db: SesionDb) -> JSONResponse:
             for r in rows
         ]
     except Exception:
-        # Return empty array to prevent login failures (matches BFF behavior)
+        # Return empty array to prevent login failures
         projects = []
     return JSONResponse(content=projects)
 

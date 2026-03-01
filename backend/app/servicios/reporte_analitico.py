@@ -1,6 +1,4 @@
 """Servicio para reportes analíticos.
-
-Replica ReportingService del BFF Node.js — complex SQL aggregation queries.
 """
 
 from datetime import date

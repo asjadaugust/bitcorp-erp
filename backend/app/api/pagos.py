@@ -1,6 +1,4 @@
 """Rutas para registros de pago.
-
-Replica payment-record.routes.ts del BFF Node.js.
 """
 
 from datetime import date

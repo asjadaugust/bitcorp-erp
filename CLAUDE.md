@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Environment & Ports
 
 - **Frontend**: http://localhost:3420 (Angular 19)
-- **Backend API**: http://localhost:3400 (Node.js + Express + TypeScript)
-- **Swagger UI**: http://localhost:3400/api-docs
+- **Backend API**: http://localhost:3410 (Python + FastAPI)
+- **Swagger UI**: http://localhost:3410/docs
 - **PostgreSQL**: port 3440 (internal)
 - **Redis**: port 3460 (internal)
 - **Default credentials**: `admin` / `admin123`
@@ -49,29 +49,22 @@ npm run logs:frontend   # shorthand
 
 ```bash
 npm run test:all        # backend + frontend + e2e
-npm run test:backend    # cd backend && jest
+npm run test:backend    # cd backend && python -m pytest tests/ -q
 npm run test:frontend   # (currently no-op — no unit tests implemented)
-
-# Backend only
-cd backend && npm run test
-cd backend && npm run test:watch
-cd backend && npm run test:coverage
 ```
 
 ### Linting
 
 ```bash
 npm run lint            # both backend and frontend
-npm run lint:backend    # cd backend && eslint src/**/*.ts
+npm run lint:backend    # cd backend && ruff check app/ tests/
 npm run lint:frontend   # eslint src/**/*.ts *.html
 ```
 
 ### Database migrations
 
 ```bash
-npm run db:migrate          # run TypeORM migrations
-npm run db:migrate:create   # create new migration
-npm run db:migrate:revert   # revert last migration
+npm run db:migrate          # run Alembic migrations
 npm run db:seed             # run seeders
 ```
 
@@ -94,13 +87,13 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `perf`, `chore`
 
 ### Tech Stack
 
-| Layer    | Technology                           |
-| -------- | ------------------------------------ |
-| Frontend | Angular 19, standalone components    |
-| Backend  | Node.js 20 + Express + TypeScript    |
-| Database | PostgreSQL 16 (multi-tenant)         |
-| Cache    | Redis 7                              |
-| ORM      | TypeORM (manual SQL migrations only) |
+| Layer    | Technology                        |
+| -------- | --------------------------------- |
+| Frontend | Angular 19, standalone components |
+| Backend  | Python 3.12 + FastAPI             |
+| Database | PostgreSQL 16 (multi-tenant)      |
+| Cache    | Redis 7                           |
+| ORM      | SQLAlchemy 2.0 Async              |
 
 ---
 
@@ -109,9 +102,9 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `perf`, `chore`
 Each company tenant has its **own PostgreSQL database** (`bitcorp_empresa_{code}`). A central `bitcorp_sistema` database stores the company registry and platform admins.
 
 - Every authenticated request carries `id_empresa` in the JWT payload
-- `TenantContextMiddleware` resolves the JWT → looks up `sistema.empresas` → sets `req.tenantContext.dataSource`
-- All services **must** be `@Injectable({ scope: Scope.REQUEST })` and pull the DataSource from `req.tenantContext.dataSource`
-- Never use a global/singleton DataSource for business queries
+- Tenant middleware resolves the JWT → looks up `sistema.empresas` → sets tenant context
+- All services receive tenant-scoped async database sessions
+- Never use a global/singleton session for business queries
 
 See `.opencode/MULTITENANCY.md` for full architecture.
 
@@ -120,22 +113,18 @@ See `.opencode/MULTITENANCY.md` for full architecture.
 ### Backend Code Layers
 
 ```
-backend/src/
-├── api/           # Route handlers (controllers)
-├── services/      # Business logic (request-scoped)
-├── repositories/  # Data access helpers
-├── models/        # TypeORM entities
-├── types/dto/     # DTO interfaces (snake_case, output contracts)
-├── utils/
-│   ├── dto-transformer.ts   # Entity → DTO transformation functions
-│   └── response-helper.ts   # sendSuccess / sendError / sendCreated helpers
-├── middleware/    # Auth, tenant context, etc.
-├── config/        # Database config
-└── index.ts
+backend/app/
+├── api/           # FastAPI route handlers (routers)
+├── services/      # Business logic
+├── models/        # SQLAlchemy models
+├── schemas/       # Pydantic schemas (request/response)
+├── core/          # Config, security, database
+├── middleware/     # Auth, tenant context, etc.
+└── main.py
 ```
 
-**Controller responsibilities**: parse input, check permissions, call service, apply DTO, return standardized response.
-**Service responsibilities**: business logic, database queries via `req.tenantContext.dataSource`, throw typed error objects.
+**Router responsibilities**: parse input, check permissions, call service, return Pydantic schema.
+**Service responsibilities**: business logic, database queries via async SQLAlchemy sessions.
 
 ---
 
@@ -157,8 +146,8 @@ All responses must use one of:
 { success: false, error: { code: string, message: string, details?: any } }
 ```
 
-Use `sendSuccess`, `sendPaginatedSuccess`, `sendError`, `sendCreated` from `backend/src/utils/response-helper.ts`.
-**Never return raw TypeORM entities.** Always transform to DTOs in `backend/src/types/dto/`.
+Use standardized response helpers in the backend.
+**Never return raw SQLAlchemy models.** Always transform to Pydantic schemas.
 
 ---
 
@@ -167,10 +156,9 @@ Use `sendSuccess`, `sendPaginatedSuccess`, `sendError`, `sendCreated` from `back
 | Context                  | Format              | Example          |
 | ------------------------ | ------------------- | ---------------- |
 | Database columns         | Spanish, snake_case | `fecha_inicio`   |
-| TypeORM entity props     | Spanish, camelCase  | `fechaInicio`    |
-| API responses (DTOs)     | Spanish, snake_case | `fecha_inicio`   |
+| SQLAlchemy model props   | Spanish, snake_case | `fecha_inicio`   |
+| API responses (Pydantic) | Spanish, snake_case | `fecha_inicio`   |
 | Frontend TypeScript      | Spanish, snake_case | `fecha_inicio`   |
-| Query builder conditions | camelCase (entity)  | `e.fechaInicio`  |
 | Raw SQL                  | snake_case (DB col) | `e.fecha_inicio` |
 
 Never mix camelCase and snake_case in API responses.
@@ -195,7 +183,7 @@ bitcorp_dev (or bitcorp_empresa_*)
 
 - `database/001_init_schema.sql` — single source of truth for schema
 - `database/002_seed.sql` — seed data (kept in sync with 001)
-- **Never** use `synchronize: true` in TypeORM config; all schema changes go in SQL files
+- **Never** use auto-migration; all schema changes go in SQL files
 - Any schema change in `001_init_schema.sql` **requires** a corresponding update to `002_seed.sql`
 
 ---
@@ -262,12 +250,12 @@ Before marking any feature done:
 
 ## Forbidden Practices
 
-- Returning raw TypeORM entities from controllers
+- Returning raw SQLAlchemy models from routers
 - Mixing camelCase and snake_case in API responses
-- Skipping DTOs
-- Using `synchronize: true` in TypeORM
+- Skipping Pydantic schemas
+- Using auto-migration in SQLAlchemy
 - Adding schema changes without updating seed data
-- Using singleton services for multi-tenant queries
+- Using singleton sessions for multi-tenant queries
 - String-concatenating SQL (always use parameterized queries `$1, $2, …`)
 - Dual field names in API responses (pick one canonical name)
 - Pushing to remote without explicit user instruction

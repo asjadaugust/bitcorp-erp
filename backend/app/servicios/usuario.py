@@ -1,6 +1,4 @@
 """Servicio para gestión de usuarios.
-
-Replica UserService del BFF Node.js.
 """
 
 from sqlalchemy import func, or_, select

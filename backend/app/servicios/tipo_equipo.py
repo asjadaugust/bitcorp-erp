@@ -1,6 +1,4 @@
 """Servicio para tipos de equipo.
-
-Replica TipoEquipoService del BFF Node.js.
 """
 
 from sqlalchemy import select

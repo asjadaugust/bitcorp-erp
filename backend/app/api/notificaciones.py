@@ -1,6 +1,4 @@
 """Router de notificaciones.
-
-Replica /api/notifications del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

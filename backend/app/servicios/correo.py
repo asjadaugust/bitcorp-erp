@@ -1,6 +1,5 @@
 """Servicio de correo electrónico.
 
-Replica EmailService del BFF Node.js.
 Internal service — no router, used by cron and other services.
 """
 

@@ -1,6 +1,4 @@
 """Router de tipos de equipo.
-
-Replica /api/tipos-equipo del BFF Node.js.
 """
 
 from fastapi import APIRouter

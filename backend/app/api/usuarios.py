@@ -1,6 +1,4 @@
 """Router de gestión de usuarios.
-
-Replica /api/users del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends, Query

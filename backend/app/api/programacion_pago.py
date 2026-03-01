@@ -1,6 +1,4 @@
 """Router de programación de pagos.
-
-Replica /api/payment-schedules del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends, Query

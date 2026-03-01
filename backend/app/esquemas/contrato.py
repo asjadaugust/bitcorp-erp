@@ -1,6 +1,4 @@
 """Esquemas Pydantic para contratos.
-
-Replica los DTOs de contract.dto.ts del BFF Node.js.
 """
 
 from datetime import date, datetime

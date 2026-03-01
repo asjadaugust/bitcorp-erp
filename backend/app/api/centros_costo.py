@@ -1,6 +1,4 @@
 """Router de centros de costo.
-
-Replica /api/admin/cost-centers del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends, Query

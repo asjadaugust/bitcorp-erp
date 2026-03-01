@@ -1,6 +1,4 @@
 """Router de analítica de equipos.
-
-Replica /api/analytics del BFF Node.js.
 """
 
 from fastapi import APIRouter, Depends, Query

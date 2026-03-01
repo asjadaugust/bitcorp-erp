@@ -1,6 +1,4 @@
 """Definiciones de roles del sistema BitCorp ERP.
-
-Replica exactamente backend/src/types/roles.ts del BFF Node.js.
 """
 
 ROLES = {

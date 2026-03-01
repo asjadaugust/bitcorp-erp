@@ -1,6 +1,4 @@
 """Servicio para aprobaciones ad-hoc.
-
-Replica ApprovalAdhocService del BFF Node.js.
 """
 
 from datetime import datetime

@@ -1,6 +1,4 @@
 """Router de contratos.
-
-Replica /api/contracts del BFF Node.js (27 routes).
 """
 
 from fastapi import APIRouter, Depends, Query

@@ -1,6 +1,4 @@
 """Helpers de respuesta API.
-
-Replica las funciones sendSuccess/sendError/etc. del BFF Node.js.
 """
 
 import math

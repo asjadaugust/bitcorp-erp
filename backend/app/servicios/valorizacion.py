@@ -1,6 +1,4 @@
 """Servicio para valorizaciones de equipo.
-
-Replica ValuationService del BFF Node.js (CRUD + workflow + conformidad).
 """
 
 from datetime import date, datetime

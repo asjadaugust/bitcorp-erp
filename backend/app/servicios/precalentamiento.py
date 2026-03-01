@@ -1,6 +1,4 @@
 """Servicio para configuración de precalentamiento.
-
-Replica PrecalentamientoConfigService del BFF Node.js.
 """
 
 from sqlalchemy import select

@@ -1,6 +1,4 @@
 """Router de proyectos (EDT).
-
-Replica /api/projects del BFF Node.js.
 """
 
 from fastapi import APIRouter, Query

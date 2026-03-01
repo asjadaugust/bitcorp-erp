@@ -1,6 +1,4 @@
 """Esquemas Pydantic para operadores (trabajadores/RRHH).
-
-Replica los DTOs del módulo de operadores del BFF Node.js.
 """
 
 from datetime import date, datetime

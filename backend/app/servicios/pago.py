@@ -1,6 +1,4 @@
 """Servicio para registros de pago.
-
-Replica PaymentRecordService del BFF Node.js.
 """
 
 from datetime import date, datetime

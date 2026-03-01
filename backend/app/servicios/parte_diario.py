@@ -1,6 +1,4 @@
 """Servicio para partes diarios (daily reports).
-
-Replica ReportService del BFF Node.js (CRUD + workflow + analytics).
 """
 
 from datetime import date, datetime, timedelta

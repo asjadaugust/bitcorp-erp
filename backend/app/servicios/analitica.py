@@ -1,6 +1,4 @@
 """Servicio para analítica de equipos.
-
-Replica EquipmentAnalyticsService del BFF Node.js — aggregation queries.
 """
 
 from datetime import date, timedelta

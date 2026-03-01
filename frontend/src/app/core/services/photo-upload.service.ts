@@ -23,7 +23,7 @@ export interface UploadProgress {
   providedIn: 'root',
 })
 export class PhotoUploadService {
-  private readonly API_URL = environment.apiUrl || 'http://localhost:3400/api';
+  private readonly API_URL = environment.apiUrl || 'http://localhost:3410/api';
   private http = inject(HttpClient);
 
   /**
