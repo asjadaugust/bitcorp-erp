@@ -1,10 +1,25 @@
 const PROXY_CONFIG = {
   '/api/**': {
-    target: 'http://backend:3400', // Reverted to backend container name for Docker support
+    target: 'http://backend:3410', // Python FastAPI backend
     secure: false,
     changeOrigin: true,
     logLevel: 'debug',
+    followRedirects: true,
     onProxyReq: function (proxyReq, req, res) {
+      // Ensure trailing slash for FastAPI compatibility
+      if (
+        proxyReq.path.startsWith('/api') &&
+        !proxyReq.path.includes('.') &&
+        !proxyReq.path.endsWith('/')
+      ) {
+        const hasQuery = proxyReq.path.includes('?');
+        if (hasQuery) {
+          const [path, query] = proxyReq.path.split('?');
+          proxyReq.path = path + '/?' + query;
+        } else {
+          proxyReq.path = proxyReq.path + '/';
+        }
+      }
       console.log('[PROXY] Request:', req.method, req.url);
       console.log('[PROXY] Target:', proxyReq.path);
     },
@@ -20,7 +35,7 @@ const PROXY_CONFIG = {
     },
   },
   '/uploads/**': {
-    target: 'http://backend:3400',
+    target: 'http://backend:3410',
     secure: false,
     changeOrigin: true,
   },

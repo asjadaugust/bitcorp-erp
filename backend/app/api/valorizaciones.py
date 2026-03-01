@@ -6,7 +6,7 @@ Replica valuation.routes.ts del BFF Node.js.
 from typing import Any
 
 from fastapi import APIRouter, Query
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, Response
 
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.valorizacion import (
@@ -271,3 +271,42 @@ async def verificar_documentos_completos(
         usuario.id_empresa, val_id
     )
     return _ok(result)
+
+
+# --- PDF generation ---------------------------------------------------------
+
+
+@router.get("/{val_id}/pdf")
+async def generar_pdf_valorizacion(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> Response:
+    """Generar PDF de valorizacion (stub — full 7-page merge deferred)."""
+    svc = ServicioValorizacion(db)
+    dto = await svc.obtener_por_id(usuario.id_empresa, val_id)
+    # Stub: return a simple HTML-rendered single-page PDF
+    from app.servicios.pdf import servicio_pdf
+
+    datos = dto.model_dump() if hasattr(dto, "model_dump") else dto
+    html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Valorizacion {val_id}</title>
+    <style>body{{font-family:Arial;font-size:10pt;padding:20mm;}}</style>
+    </head><body>
+    <h1>Valorizacion #{val_id}</h1>
+    <p>Numero: {datos.get('numero_valorizacion','')}</p>
+    <p>Estado: {datos.get('estado','')}</p>
+    <p>Periodo: {datos.get('fecha_inicio','')} - {datos.get('fecha_fin','')}</p>
+    <p><em>PDF completo de 7 paginas en desarrollo.</em></p>
+    </body></html>"""
+    browser = await servicio_pdf.inicializar_navegador()
+    page = await browser.new_page()
+    try:
+        await page.set_content(html, wait_until="networkidle")
+        pdf_bytes = await page.pdf(format="A4", print_background=True)
+    finally:
+        await page.close()
+    filename = f"valorizacion-{val_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

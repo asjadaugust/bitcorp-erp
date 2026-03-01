@@ -1,6 +1,6 @@
 {
   "/api/**": {
-    "target": "http://backend:3400",
+    "target": "http://backend:3410",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug",
@@ -9,7 +9,7 @@
     }
   },
   "/uploads/**": {
-    "target": "http://backend:3400",
+    "target": "http://backend:3410",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"

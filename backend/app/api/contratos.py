@@ -4,7 +4,7 @@ Replica /api/contracts del BFF Node.js (27 routes).
 """
 
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, Response
 
 from app.core.dependencias import SesionDb, UsuarioActual, requerir_roles
 from app.esquemas.contrato import (
@@ -441,3 +441,37 @@ async def revertir_paso_legalizacion(
         usuario.id_empresa, contrato_id, numero_paso, usuario.id_usuario
     )
     return enviar_exito([p.model_dump() for p in pasos])
+
+
+# --- PDF generation ---------------------------------------------------------
+
+
+@router.get("/{contrato_id}/pdf")
+async def generar_pdf_contrato(
+    contrato_id: int, usuario: UsuarioActual, db: SesionDb
+) -> Response:
+    """Generar PDF del contrato."""
+    from app.servicios.pdf import servicio_pdf
+
+    servicio = ServicioContrato(db)
+    contrato = await servicio.obtener_por_id(usuario.id_empresa, contrato_id)
+    datos = contrato.model_dump()
+    datos_pdf = {
+        "contrato": datos,
+        "proveedor": datos.get("proveedor", {}),
+        "equipo": datos.get("equipo", {}),
+        "arrendatario": {
+            "razon_social": "Consorcio La Union",
+            "ruc": "",
+            "representante": "",
+            "domicilio": "",
+        },
+        "fecha_generacion": __import__("datetime").datetime.now().strftime("%d/%m/%Y"),
+    }
+    pdf_bytes = await servicio_pdf.generar_pdf_contrato(datos_pdf)
+    filename = f"contrato-{contrato_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

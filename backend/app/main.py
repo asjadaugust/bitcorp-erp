@@ -47,6 +47,13 @@ async def ciclo_vida(app: FastAPI) -> AsyncIterator[None]:
     yield
 
     logger.info("cerrando_aplicacion")
+    # Cerrar navegador PDF si fue inicializado
+    try:
+        from app.servicios.pdf import servicio_pdf
+
+        await servicio_pdf.cerrar()
+    except Exception:
+        pass
     await cerrar_redis()
     await motor.dispose()
 

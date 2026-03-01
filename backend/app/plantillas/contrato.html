@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Alquiler N&deg;{{ contrato.numero_contrato }}</title>
+    <style>{{ styles | safe }}</style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-logo">
+            {% if logo %}
+            <img src="data:image/png;base64,{{ logo }}" alt="Logo" />
+            {% endif %}
+        </div>
+        <div class="header-title">
+            <h1>Contrato de Alquiler de Equipo Mecanico</h1>
+            <h2>CORP-GEM-F-001</h2>
+        </div>
+        <div class="header-meta">
+            <table>
+                <tr>
+                    <td class="meta-label">N&deg; Contrato</td>
+                    <td>{{ contrato.numero_contrato }}</td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Tipo</td>
+                    <td>{{ contrato.tipo }}</td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Estado</td>
+                    <td>{{ contrato.estado }}</td>
+                </tr>
+                <tr>
+                    <td class="meta-label">Fecha</td>
+                    <td>{{ contrato.fecha_contrato | formato_fecha }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- PARTES DEL CONTRATO -->
+    <div class="parties-section">
+        <h3>Partes del Contrato</h3>
+        <div class="parties-grid">
+            <div class="party-block">
+                <div class="party-label">EL ARRENDATARIO</div>
+                <div class="party-field">
+                    <span class="label">Razon Social:</span>
+                    <span class="value">{{ arrendatario.razon_social }}</span>
+                </div>
+                <div class="party-field">
+                    <span class="label">RUC:</span>
+                    <span class="value">{{ arrendatario.ruc }}</span>
+                </div>
+                <div class="party-field">
+                    <span class="label">Representante:</span>
+                    <span class="value">{{ arrendatario.representante }}</span>
+                </div>
+                <div class="party-field">
+                    <span class="label">Domicilio:</span>
+                    <span class="value">{{ arrendatario.domicilio }}</span>
+                </div>
+            </div>
+            <div class="party-block">
+                <div class="party-label">EL ARRENDADOR</div>
+                <div class="party-field">
+                    <span class="label">Razon Social:</span>
+                    <span class="value">{{ proveedor.razon_social }}</span>
+                </div>
+                <div class="party-field">
+                    <span class="label">RUC:</span>
+                    <span class="value">{{ proveedor.ruc }}</span>
+                </div>
+                <div class="party-field">
+                    <span class="label">Representante:</span>
+                    <span class="value">{{ proveedor.representante }}</span>
+                </div>
+                <div class="party-field">
+                    <span class="label">Domicilio:</span>
+                    <span class="value">{{ proveedor.direccion }}</span>
+                </div>
+                <div class="party-field">
+                    <span class="label">Telefono:</span>
+                    <span class="value">{{ proveedor.telefono }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESCRIPCION DEL EQUIPO -->
+    <div class="equipment-section">
+        <h3>Clausula 1 — Descripcion del Equipo</h3>
+        <div class="equipment-grid">
+            <div class="eq-field"><span class="label">Codigo:</span><span class="value">{{ equipo.codigo }}</span></div>
+            <div class="eq-field"><span class="label">Marca:</span><span class="value">{{ equipo.marca }}</span></div>
+            <div class="eq-field"><span class="label">Modelo:</span><span class="value">{{ equipo.modelo }}</span></div>
+            <div class="eq-field"><span class="label">Placa:</span><span class="value">{{ equipo.placa }}</span></div>
+            <div class="eq-field"><span class="label">N&deg; Serie:</span><span class="value">{{ equipo.numero_serie }}</span></div>
+            <div class="eq-field"><span class="label">N&deg; Chasis:</span><span class="value">{{ equipo.numero_chasis }}</span></div>
+            <div class="eq-field"><span class="label">N&deg; Motor:</span><span class="value">{{ equipo.numero_motor }}</span></div>
+            <div class="eq-field"><span class="label">Ano Fab.:</span><span class="value">{{ equipo.anio_fabricacion }}</span></div>
+            <div class="eq-field"><span class="label">Doc. Acredita:</span><span class="value">{{ contrato.documento_acredita }}</span></div>
+        </div>
+    </div>
+
+    <!-- TERMINOS FINANCIEROS -->
+    <div class="terms-section">
+        <h3>Clausula 5 — Condiciones Economicas</h3>
+        <div class="terms-grid">
+            <div class="term-row"><span class="label">Modalidad:</span><span class="value">{{ contrato.modalidad }}</span></div>
+            <div class="term-row"><span class="label">Moneda:</span><span class="value">{{ contrato.moneda }}</span></div>
+            <div class="term-row"><span class="label">Tipo de Tarifa:</span><span class="value">{{ contrato.tipo_tarifa }}</span></div>
+            <div class="term-row"><span class="label">Tarifa:</span><span class="value">{{ contrato.moneda }} {{ contrato.tarifa | formato_moneda }}</span></div>
+            <div class="term-row"><span class="label">Horas Incluidas:</span><span class="value">{{ contrato.horas_incluidas }}</span></div>
+            <div class="term-row"><span class="label">Penalidad x Exceso:</span><span class="value">{{ contrato.moneda }} {{ contrato.penalidad_exceso | formato_moneda }}</span></div>
+            <div class="term-row"><span class="label">Minimo por:</span><span class="value">{{ contrato.minimo_por }}</span></div>
+            <div class="term-row"><span class="label">Cantidad Minima:</span><span class="value">{{ contrato.cantidad_minima }}</span></div>
+        </div>
+        <div style="margin-top:3mm;">
+            <strong style="font-size:8pt;">Servicios Incluidos:</strong>
+            <div class="included-services">
+                <div class="service-item">
+                    <span class="checkbox {% if contrato.incluye_operador %}checked{% endif %}">{% if contrato.incluye_operador %}&check;{% endif %}</span>
+                    Operador
+                </div>
+                <div class="service-item">
+                    <span class="checkbox {% if contrato.incluye_motor %}checked{% endif %}">{% if contrato.incluye_motor %}&check;{% endif %}</span>
+                    Motor / Combustible
+                </div>
+                {% if contrato.costo_adicional_motor %}
+                <div class="service-item" style="margin-left:4mm; font-size:7.5pt; color:#555;">
+                    Costo adicional motor: {{ contrato.moneda }} {{ contrato.costo_adicional_motor | formato_moneda }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- CLAUSULAS PRINCIPALES -->
+    <div class="clauses-section">
+        <div class="clause">
+            <div class="clause-title">Clausula 2 — Vigencia y Plazo</div>
+            <div class="clause-body">
+                El presente contrato tiene vigencia a partir del
+                <span class="highlight">{{ contrato.fecha_inicio | formato_fecha }}</span>
+                hasta el <span class="highlight">{{ contrato.fecha_fin | formato_fecha }}</span>.
+                {% if contrato.plazo_texto %}<br/>{{ contrato.plazo_texto }}{% endif %}
+            </div>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">Clausula 4 — Lugar de Ejecucion y Jurisdiccion</div>
+            <div class="clause-body">
+                {% if contrato.jurisdiccion %}
+                {{ contrato.jurisdiccion }}
+                {% else %}
+                Las partes se someten a la jurisdiccion de los tribunales correspondientes al domicilio del Arrendatario.
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">Clausula 6 — Condiciones de Pago</div>
+            <div class="clause-body">
+                El Arrendatario debera realizar el pago de las valorizaciones aprobadas en un plazo maximo de
+                <span class="highlight">30 dias calendario</span> desde la presentacion de la factura correspondiente.
+                Los pagos se realizaran en <span class="highlight">{{ contrato.moneda }}</span>.
+            </div>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">Clausula 7 — Obligaciones del Arrendador</div>
+            <div class="clause-body">
+                El Arrendador se obliga a: (1) Mantener el equipo operativo durante todo el periodo de contrato;
+                (2) Contar con poliza TREC vigente durante toda la vigencia del contrato;
+                (3) Mantener la documentacion del operador y equipo vigente (SOAT, CITV, licencia);
+                (4) Suministrar operador calificado si el contrato es modalidad Operada;
+                (5) Reparar o reemplazar el equipo en caso de falla en un plazo maximo de 5 dias calendario;
+                (6) Proveer extintor, kit antiderrames y dispositivos de seguridad requeridos.
+            </div>
+        </div>
+
+        <div class="clause">
+            <div class="clause-title">Clausula 8 — Obligaciones del Arrendatario</div>
+            <div class="clause-body">
+                El Arrendatario se obliga a: (1) Pagar oportunamente las valorizaciones aprobadas;
+                (2) Brindar guardiania y condiciones adecuadas de trabajo;
+                (3) Proveer el combustible necesario para la operacion (si aplica segun modalidad);
+                (4) Emitir y aprobar los partes diarios dentro del plazo establecido.
+            </div>
+        </div>
+
+        {% if contrato.motivo_resolucion %}
+        <div class="clause">
+            <div class="clause-title">Clausula 12 — Resolucion del Contrato</div>
+            <div class="clause-body">
+                Contrato rescindido el <span class="highlight">{{ contrato.fecha_resolucion | formato_fecha }}</span>.
+                Motivo: {{ contrato.motivo_resolucion }}.
+                {% if contrato.monto_liquidacion %}
+                Monto de liquidacion: <span class="highlight">{{ contrato.moneda }} {{ contrato.monto_liquidacion | formato_moneda }}</span>.
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- CONDICIONES ESPECIALES -->
+    {% if contrato.condiciones_especiales %}
+    <div class="clause">
+        <div class="clause-title">Condiciones Especiales</div>
+        <div class="conditions-box">{{ contrato.condiciones_especiales }}</div>
+    </div>
+    {% endif %}
+
+    <!-- FIRMAS -->
+    <div class="signatures-section">
+        <div class="signature-block">
+            <div class="signature-line">
+                <div class="sig-name">{{ arrendatario.razon_social }}</div>
+                <div class="sig-role">EL ARRENDATARIO</div>
+                <div class="sig-ruc">RUC: {{ arrendatario.ruc }}</div>
+            </div>
+        </div>
+        <div class="signature-block">
+            <div class="signature-line">
+                <div class="sig-name">{{ proveedor.razon_social }}</div>
+                <div class="sig-role">EL ARRENDADOR</div>
+                <div class="sig-ruc">RUC: {{ proveedor.ruc }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="doc-footer">
+        CORP-GEM-F-001 | Contrato N&deg;{{ contrato.numero_contrato }} | Generado: {{ fecha_generacion }}
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+/**
+ * Valuation Report PDF Styles (placeholder for full template conversion)
+ * Based on SSRS Report: Reporte_Valorizacion_V01.rdl
+ */
+
+@page { size: A4 portrait; margin: 10mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Verdana, Geneva, sans-serif; font-size: 8pt; line-height: 1.2; color: #000000; }
+
+.report-header { background-color: #b8cce4; padding: 8mm 5mm; margin-bottom: 5mm; position: relative; min-height: 30mm; }
+.report-title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 2mm; }
+.valuation-id { font-size: 10pt; font-weight: bold; text-align: center; margin-bottom: 1mm; }
+
+.info-table { width: 100%; border-collapse: collapse; margin-bottom: 5mm; font-size: 8pt; }
+.info-table td { border: 1px solid #d3d3d3; padding: 1.5mm 2mm; vertical-align: middle; }
+.info-table .label-cell { font-weight: bold; width: 28mm; }
+.info-table .value-cell { width: 57mm; }
+
+.financial-table { width: 100%; border-collapse: collapse; margin-bottom: 3mm; font-size: 8pt; }
+.financial-table th { background-color: #b8cce4; font-weight: bold; padding: 2mm; text-align: center; border: 1px solid #d3d3d3; }
+.financial-table td { padding: 1.5mm 2mm; border: 1px solid #d3d3d3; }
+.financial-table .total-row { font-weight: bold; background-color: #e6e6e6; }
+
+.page-break { page-break-after: always; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.bold { font-weight: bold; }

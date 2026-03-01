@@ -6,7 +6,7 @@ Replica /api/reports del BFF Node.js (16 routes).
 from datetime import date
 
 from fastapi import APIRouter, Query
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, Response
 
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.parte_diario import (
@@ -238,3 +238,26 @@ async def firmar_residente(
         usuario.id_empresa, reporte_id, datos.firma_residente
     )
     return enviar_exito(reporte.model_dump())
+
+
+# --- PDF generation ---------------------------------------------------------
+
+
+@router.get("/{reporte_id}/pdf")
+async def generar_pdf_reporte(
+    reporte_id: int, usuario: UsuarioActual, db: SesionDb
+) -> Response:
+    """Generar PDF del parte diario."""
+    from app.servicios.pdf import servicio_pdf
+    from app.utils.transformar_pdf import transformar_parte_diario
+
+    servicio = ServicioParteDiario(db)
+    reporte = await servicio.obtener_por_id(usuario.id_empresa, reporte_id)
+    datos_pdf = transformar_parte_diario(reporte.model_dump())
+    pdf_bytes = await servicio_pdf.generar_pdf_parte_diario(datos_pdf)
+    filename = f"parte-diario-{reporte_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

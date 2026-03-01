@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Parte Diario de Equipos - {{ numero_parte }}</title>
+  <style>{{ estilos_css }}</style>
+</head>
+<body>
+  <div class="daily-report-container">
+
+    <!-- Header Section -->
+    <div class="report-header">
+      <div class="header-left">
+        <div class="logo-box">
+          <div class="company-name">Consorcio La Union</div>
+          <div class="company-subtitle">ARAMSA SEGUROS CUMPLIENDO</div>
+        </div>
+      </div>
+      <div class="header-center">
+        <h1 class="report-title">PARTE DIARIO DE EQUIPOS</h1>
+      </div>
+      <div class="header-right">
+        <table class="metadata-table">
+          <tr>
+            <td class="meta-label">Razon Social:</td>
+            <td class="meta-value">{{ razon_social }}</td>
+          </tr>
+          <tr>
+            <td class="meta-label">Codigo:</td>
+            <td class="meta-value">{{ codigo_forma }}</td>
+          </tr>
+          <tr>
+            <td class="meta-label">Version:</td>
+            <td class="meta-value">{{ version }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Basic Information Section -->
+    <div class="info-section">
+      <table class="info-table">
+        <tr>
+          <td class="info-label">PROYECTO:</td>
+          <td class="info-value" colspan="3">"{{ proyecto }}"</td>
+          <td class="info-label">TURNO:</td>
+          <td class="info-value-inline">
+            <span class="checkbox">{% if turno == 'DIA' %}&#9745;{% else %}&#9744;{% endif %}</span> Dia
+            <span class="checkbox">{% if turno == 'NOCHE' %}&#9745;{% else %}&#9744;{% endif %}</span> Noche
+          </td>
+          <td class="numero-box">
+            <div class="numero-label">N&deg;</div>
+            <div class="numero-value">{{ numero_parte }}</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="info-label">FECHA:</td>
+          <td class="info-value">{{ fecha }}</td>
+          <td class="info-label">CODIGO:</td>
+          <td class="info-value" colspan="4">{{ codigo_equipo }}</td>
+        </tr>
+        <tr>
+          <td class="info-label">EMPRESA:</td>
+          <td class="info-value" colspan="6">{{ empresa }}</td>
+        </tr>
+        <tr>
+          <td class="info-label">EQUIPO:</td>
+          <td class="info-value" colspan="3">{{ equipo }}</td>
+          <td class="info-label">OPERADOR:</td>
+          <td class="info-value" colspan="2">{{ operador }}</td>
+        </tr>
+        <tr>
+          <td class="info-label">PLACA:</td>
+          <td class="info-value" colspan="3">{{ placa }}</td>
+          <td class="info-label">RESPONSABLE DE FRENTE:</td>
+          <td class="info-value" colspan="2">{{ responsable_frente }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Meters, Fuel, and Location Section -->
+    <div class="meters-section">
+      <table class="meters-table">
+        <tr>
+          <td class="meter-block">
+            <table class="inner-table">
+              <tr><th colspan="2">Horometro:</th></tr>
+              <tr><td class="inner-label">Inicial:</td><td class="inner-value">{{ horometro_inicial }}</td></tr>
+              <tr><td class="inner-label">Final:</td><td class="inner-value">{{ horometro_final }}</td></tr>
+              <tr><td class="inner-label">Total:</td><td class="inner-value">{{ horometro_total }}</td></tr>
+            </table>
+            <table class="inner-table">
+              <tr><th colspan="2">Kilometraje:</th></tr>
+              <tr><td class="inner-label">Inicial:</td><td class="inner-value">{{ kilometraje_inicial }}</td></tr>
+              <tr><td class="inner-label">Final:</td><td class="inner-value">{{ kilometraje_final }}</td></tr>
+              <tr><td class="inner-label">Total:</td><td class="inner-value">{{ kilometraje_total }}</td></tr>
+            </table>
+          </td>
+          <td class="fuel-block">
+            <table class="inner-table">
+              <tr><td class="inner-label">Petroleo D-2 (Gln)</td><td class="inner-value">{{ petroleo_gln }}</td></tr>
+              <tr><td class="inner-label">Gasolina (Gln)</td><td class="inner-value">{{ gasolina_gln }}</td></tr>
+              <tr><td class="inner-label">Hora de Abastecimiento</td><td class="inner-value">{{ hora_abastecimiento }}</td></tr>
+              <tr><td class="inner-label">N&deg; Vale Combustible</td><td class="inner-value">{{ num_vale_combustible }}</td></tr>
+              <tr><td class="inner-label">Horometro / Kilometraje</td><td class="inner-value">{{ horometro_kilometraje }}</td></tr>
+              <tr><td class="inner-label">Hrs. Precalentamiento</td><td class="inner-value">{% if horas_precalentamiento %}{{ horas_precalentamiento | formato_decimal(2) }}{% else %}0.00{% endif %}</td></tr>
+            </table>
+          </td>
+          <td class="location-block">
+            <div class="location-box">
+              <div class="location-label">Lugar de Salida</div>
+              <div class="location-value">{{ lugar_salida }}</div>
+            </div>
+            <div class="location-box">
+              <div class="location-label">Lugar de Llegada</div>
+              <div class="location-value">{{ lugar_llegada }}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Production Control Table -->
+    <div class="production-section">
+      <h3 class="section-title">CONTROL DE LA PRODUCCION</h3>
+      <table class="production-table">
+        <thead>
+          <tr>
+            <th class="col-numero">N&deg;</th>
+            <th class="col-ubicacion" colspan="2">Ubicacion Labores<br>Prog. Ini. | Prog. Fin.</th>
+            <th class="col-hora">Hora Ini.</th>
+            <th class="col-hora">Hora Fin.</th>
+            <th class="col-material">Material Trabajado o Descripcion Actividad</th>
+            <th class="col-metrado">METRADO</th>
+            <th class="col-edt">EDT</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in produccion %}
+          <tr>
+            <td class="cell-numero">{{ row.numero | formato_numero(2) }}</td>
+            <td class="cell-ubicacion">{{ row.ubicacion_prog_ini }}</td>
+            <td class="cell-ubicacion">{{ row.ubicacion_prog_fin }}</td>
+            <td class="cell-hora">{{ row.hora_ini }}</td>
+            <td class="cell-hora">{{ row.hora_fin }}</td>
+            <td class="cell-material">{{ row.material_descripcion }}</td>
+            <td class="cell-metrado">{{ row.metrado }}</td>
+            <td class="cell-edt">{{ row.edt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Observations Section -->
+    <div class="observations-section">
+      <div class="observations-title">OBSERVACIONES / CORRECCIONES (Operativas y Mecanicas)</div>
+      <div class="observations-content">{{ observaciones_correcciones }}</div>
+    </div>
+
+    <!-- Activities and Delays Section -->
+    <div class="activities-section">
+      <div class="activities-row">
+        <div class="activities-column">
+          <div class="activities-title">ACTIVIDADES DE PRODUCCION (Marcar con un X)</div>
+          <div class="checkbox-grid">
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '01') %}&#9745;{% else %}&#9744;{% endif %}</span> (01) Corte en Banco</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '05') %}&#9745;{% else %}&#9744;{% endif %}</span> (05) Conformado</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '09') %}&#9745;{% else %}&#9744;{% endif %}</span> (09) {{ get_description(actividades_produccion, '09') }}</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '02') %}&#9745;{% else %}&#9744;{% endif %}</span> (02) Excavacion</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '06') %}&#9745;{% else %}&#9744;{% endif %}</span> (06) Perfilado</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '10') %}&#9745;{% else %}&#9744;{% endif %}</span> (10) {{ get_description(actividades_produccion, '10') }}</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '03') %}&#9745;{% else %}&#9744;{% endif %}</span> (03) Cargado de Material</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '07') %}&#9745;{% else %}&#9744;{% endif %}</span> (07) Nivelado</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '11') %}&#9745;{% else %}&#9744;{% endif %}</span> (11) {{ get_description(actividades_produccion, '11') }}</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '04') %}&#9745;{% else %}&#9744;{% endif %}</span> (04) Relleno</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(actividades_produccion, '08') %}&#9745;{% else %}&#9744;{% endif %}</span> (08) Compactado</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="delays-row">
+        <div class="delays-column">
+          <div class="delays-title">DEMORAS OPERATIVAS (Marcar con un X)</div>
+          <div class="checkbox-grid-small">
+            <div class="checkbox-item"><span class="checkbox">{% if includes(demoras_operativas, 'D01') %}&#9745;{% else %}&#9744;{% endif %}</span> (D01) Falta de Frente</div>
+            <div class="checkbox-item"><span class="checkbox">{% if includes(demoras_operativas, 'D02') %}&#9745;{% else %}&#9744;{% endif %}</span> (D02) Falta de Combustible</div>
+            <div class="checkbox-item"><span class="checkbox">{% if includes(demoras_operativas, 'D03') %}&#9745;{% else %}&#9744;{% endif %}</span> (D03) Falta de Lubricantes</div>
+            <div class="checkbox-item"><span class="checkbox">{% if includes(demoras_operativas, 'D04') %}&#9745;{% else %}&#9744;{% endif %}</span> (D04) Traslado</div>
+            <div class="checkbox-item"><span class="checkbox">{% if includes(demoras_operativas, 'D05') %}&#9745;{% else %}&#9744;{% endif %}</span> (D05) Corte de Trafico</div>
+            <div class="checkbox-item"><span class="checkbox">{% if includes(demoras_operativas, 'D06') %}&#9745;{% else %}&#9744;{% endif %}</span> (D06) Derrumbe</div>
+            <div class="checkbox-item"><span class="checkbox">{% if includes(demoras_operativas, 'D07') %}&#9745;{% else %}&#9744;{% endif %}</span> (D07) Falta de Agua</div>
+          </div>
+        </div>
+
+        <div class="delays-column">
+          <div class="delays-title">OTROS EVENTOS</div>
+          <div class="checkbox-grid-small">
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(otros_eventos, 'D08') %}&#9745;{% else %}&#9744;{% endif %}</span> (D08) Condiciones Climaticas</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(otros_eventos, 'D09') %}&#9745;{% else %}&#9744;{% endif %}</span> (D09) Danos a terceros (Corte de Servicios)</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(otros_eventos, 'D10') %}&#9745;{% else %}&#9744;{% endif %}</span> (D10) Coordinacion con Entidades</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(otros_eventos, 'D11') %}&#9745;{% else %}&#9744;{% endif %}</span> (D11) Falta de Personal</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(otros_eventos, 'D12') %}&#9745;{% else %}&#9744;{% endif %}</span> (D12) Esperando Instrucciones</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(otros_eventos, 'D13') %}&#9745;{% else %}&#9744;{% endif %}</span> (D13) Otros: {{ get_description(otros_eventos, 'D13') }}</div>
+          </div>
+        </div>
+
+        <div class="delays-column">
+          <div class="delays-title">DEMORAS MECANICAS</div>
+          <div class="checkbox-grid-small">
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(demoras_mecanicas, 'D14') %}&#9745;{% else %}&#9744;{% endif %}</span> (D14) Falla Mecanica</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(demoras_mecanicas, 'D15') %}&#9745;{% else %}&#9744;{% endif %}</span> (D15) Falla Electrica</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(demoras_mecanicas, 'D16') %}&#9745;{% else %}&#9744;{% endif %}</span> (D16) Falla Hidraulica</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(demoras_mecanicas, 'D17') %}&#9745;{% else %}&#9744;{% endif %}</span> (D17) Falla de Neumaticos</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(demoras_mecanicas, 'D18') %}&#9745;{% else %}&#9744;{% endif %}</span> (D18) Mantenimiento Programado</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(demoras_mecanicas, 'D19') %}&#9745;{% else %}&#9744;{% endif %}</span> (D19) Mantenimiento Preventivo</div>
+            <div class="checkbox-item"><span class="checkbox">{% if has_code(demoras_mecanicas, 'D20') %}&#9745;{% else %}&#9744;{% endif %}</span> (D20) Otros: {{ get_description(demoras_mecanicas, 'D20') }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signatures Section -->
+    <div class="signatures-section">
+      <table class="signatures-table">
+        <tr>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {% if firma_operador %}<img src="{{ firma_operador }}" class="signature-img" />{% endif %}
+            </div>
+            <div class="signature-label">OPERADOR</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {% if firma_supervisor %}<img src="{{ firma_supervisor }}" class="signature-img" />{% endif %}
+            </div>
+            <div class="signature-label">SUPERVISOR</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {% if firma_jefe_equipos %}<img src="{{ firma_jefe_equipos }}" class="signature-img" />{% endif %}
+            </div>
+            <div class="signature-label">JEFE EQUIPOS</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {% if firma_residente %}<img src="{{ firma_residente }}" class="signature-img" />{% endif %}
+            </div>
+            <div class="signature-label">RESIDENTE</div>
+          </td>
+          <td class="signature-cell">
+            <div class="signature-box">
+              {% if firma_planeamiento_control %}<img src="{{ firma_planeamiento_control }}" class="signature-img" />{% endif %}
+            </div>
+            <div class="signature-label">PLANEAMIENTO Y CONTROL</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-section">
+      <div class="footer-text">
+        NOTA: ESTE DOCUMENTO SE DISTRIBUIRA ASI:<br>
+        ORIGINAL-Residente 1ERA COPIA-Responsable Equipo 2DA COPIA-Operador
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
