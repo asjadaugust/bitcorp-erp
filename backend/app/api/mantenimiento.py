@@ -1,17 +1,67 @@
 """Router de mantenimiento de equipos."""
 
+from datetime import date
+
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import ORJSONResponse
+from sqlalchemy import text
 
 from app.core.dependencias import SesionDb, UsuarioActual, requerir_roles
 from app.esquemas.mantenimiento import MantenimientoActualizar, MantenimientoCrear
 from app.servicios.mantenimiento import ServicioMantenimiento
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado
+from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
 
 router = APIRouter()
 
 
 # ─── Fixed routes before /{id} ───────────────────────────────────────────
+
+
+@router.get("/stats")
+async def estadisticas_mantenimiento(
+    usuario: UsuarioActual,
+    db: SesionDb,
+    start_date: date | None = Query(None, alias="startDate"),
+    end_date: date | None = Query(None, alias="endDate"),
+) -> ORJSONResponse:
+    """Estadísticas de mantenimiento."""
+    conditions = ["tenant_id = :tid"]
+    params: dict = {"tid": usuario.id_empresa}
+    if start_date:
+        conditions.append("fecha_programada >= :sd")
+        params["sd"] = start_date
+    if end_date:
+        conditions.append("fecha_programada <= :ed")
+        params["ed"] = end_date
+    where = " AND ".join(conditions)
+    result = await db.execute(
+        text(
+            f"""
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE estado IN ('PROGRAMADO', 'PENDIENTE')) AS pendientes,
+                COUNT(*) FILTER (WHERE estado = 'EN_PROCESO') AS en_progreso,
+                COUNT(*) FILTER (WHERE estado = 'COMPLETADO') AS completados,
+                COUNT(*) FILTER (WHERE estado = 'CANCELADO') AS cancelados,
+                COUNT(*) FILTER (WHERE estado IN ('PROGRAMADO', 'PENDIENTE')
+                    AND fecha_programada < CURRENT_DATE) AS vencidos
+            FROM equipo.programa_mantenimiento
+            WHERE {where}
+            """
+        ),
+        params,
+    )
+    row = result.mappings().first()
+    return enviar_exito(
+        {
+            "total": row["total"] if row else 0,
+            "pendientes": row["pendientes"] if row else 0,
+            "en_progreso": row["en_progreso"] if row else 0,
+            "completados": row["completados"] if row else 0,
+            "cancelados": row["cancelados"] if row else 0,
+            "vencidos": row["vencidos"] if row else 0,
+        }
+    )
 
 
 @router.get("/overdue")
@@ -98,3 +148,21 @@ async def cancelar_mantenimiento(
     servicio = ServicioMantenimiento(db)
     m = await servicio.cancelar(usuario.id_empresa, mant_id)
     return enviar_exito(m.model_dump())
+
+
+@router.delete(
+    "/{mant_id}",
+    dependencies=[Depends(requerir_roles("ADMIN", "DIRECTOR", "JEFE_EQUIPO"))],
+)
+async def eliminar_mantenimiento(
+    mant_id: int, usuario: UsuarioActual, db: SesionDb
+) -> ORJSONResponse:
+    """Eliminar un registro de mantenimiento."""
+    await db.execute(
+        text(
+            "DELETE FROM equipo.programa_mantenimiento WHERE id = :mid AND tenant_id = :tid"
+        ),
+        {"mid": mant_id, "tid": usuario.id_empresa},
+    )
+    await db.commit()
+    return enviar_sin_contenido()

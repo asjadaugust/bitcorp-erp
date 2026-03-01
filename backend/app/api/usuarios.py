@@ -112,7 +112,7 @@ async def actualizar_usuario(
     return enviar_exito(actualizado.model_dump())
 
 
-@router.put(
+@router.patch(
     "/{usuario_id}/password",
     dependencies=[Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA"))],
 )

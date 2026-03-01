@@ -7,6 +7,8 @@ from typing import Any
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse, Response
+from pydantic import BaseModel
+from sqlalchemy import text
 
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.valorizacion import (
@@ -47,6 +49,68 @@ def _ok_list(data: list[Any]) -> dict[str, Any]:
         "success": True,
         "data": [d.model_dump() if hasattr(d, "model_dump") else d for d in data],
     }
+
+
+# ─── Static routes (before /{id}) ────────────────────────────────────────
+
+
+@router.get("/analytics", response_class=ORJSONResponse)
+async def analiticas_valorizaciones(
+    db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Estadísticas de valorizaciones."""
+    try:
+        result = await db.execute(
+            text(
+                """
+                SELECT
+                    COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE estado = 'PENDIENTE') AS pendientes,
+                    COUNT(*) FILTER (WHERE estado = 'EN_REVISION') AS en_revision,
+                    COUNT(*) FILTER (WHERE estado = 'APROBADO') AS aprobados,
+                    COUNT(*) FILTER (WHERE estado = 'PAGADO') AS pagados,
+                    COUNT(*) FILTER (WHERE estado = 'RECHAZADO') AS rechazados,
+                    COALESCE(SUM(monto_total), 0) AS monto_total,
+                    COALESCE(SUM(monto_total) FILTER (WHERE estado = 'PAGADO'), 0) AS monto_pagado
+                FROM equipo.valorizacion
+                WHERE tenant_id = :tid
+                """
+            ),
+            {"tid": usuario.id_empresa},
+        )
+        row = result.mappings().first()
+        stats = {
+            "total": row["total"] if row else 0,
+            "pendientes": row["pendientes"] if row else 0,
+            "en_revision": row["en_revision"] if row else 0,
+            "aprobados": row["aprobados"] if row else 0,
+            "pagados": row["pagados"] if row else 0,
+            "rechazados": row["rechazados"] if row else 0,
+            "monto_total": float(row["monto_total"]) if row else 0,
+            "monto_pagado": float(row["monto_pagado"]) if row else 0,
+        }
+    except Exception:
+        stats = {
+            "total": 0, "pendientes": 0, "en_revision": 0, "aprobados": 0,
+            "pagados": 0, "rechazados": 0, "monto_total": 0, "monto_pagado": 0,
+        }
+    return _ok(stats)
+
+
+@router.get("/registry", response_class=ORJSONResponse)
+async def registro_valorizaciones(
+    db: SesionDb,
+    usuario: UsuarioActual,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+) -> dict[str, Any]:
+    """Registro consolidado de valorizaciones (misma data que list)."""
+    svc = ServicioValorizacion(db)
+    items, total = await svc.listar(
+        usuario.id_empresa, sort_by="created_at", sort_order="DESC",
+        page=page, limit=limit,
+    )
+    return _paginated(items, total, page, limit)
 
 
 # ─── CRUD ────────────────────────────────────────────────────────────────
@@ -310,3 +374,253 @@ async def generar_pdf_valorizacion(
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ─── Summary ────────────────────────────────────────────────────────────
+
+
+@router.get("/{val_id}/summary", response_class=ORJSONResponse)
+async def resumen_valorizacion(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Resumen de valorizacion (derivado del detalle)."""
+    svc = ServicioValorizacion(db)
+    dto = await svc.obtener_por_id(usuario.id_empresa, val_id)
+    d = dto.model_dump() if hasattr(dto, "model_dump") else dto
+    summary = {
+        "id": d.get("id"),
+        "numero_valorizacion": d.get("numero_valorizacion"),
+        "estado": d.get("estado"),
+        "fecha_inicio": d.get("fecha_inicio"),
+        "fecha_fin": d.get("fecha_fin"),
+        "monto_total": d.get("monto_total"),
+        "equipo_id": d.get("equipo_id"),
+        "contrato_id": d.get("contrato_id"),
+    }
+    return _ok(summary)
+
+
+# ─── Discount events ────────────────────────────────────────────────────
+
+
+class EventoDescuentoCrear(BaseModel):
+    tipo_evento: str
+    subtipo: str | None = None
+    fecha: str
+    horas: float | None = None
+    descripcion: str | None = None
+
+
+@router.get("/{val_id}/discount-events", response_class=ORJSONResponse)
+async def listar_eventos_descuento(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Listar eventos de descuento de una valorización."""
+    try:
+        result = await db.execute(
+            text(
+                """
+                SELECT id, valorizacion_id, tipo_evento, subtipo, fecha,
+                       horas, descripcion, monto_descuento, created_at
+                FROM equipo.evento_descuento
+                WHERE valorizacion_id = :vid AND tenant_id = :tid
+                ORDER BY fecha
+                """
+            ),
+            {"vid": val_id, "tid": usuario.id_empresa},
+        )
+        rows = result.mappings().all()
+        events = [
+            {
+                "id": r["id"],
+                "valorizacion_id": r["valorizacion_id"],
+                "tipo_evento": r["tipo_evento"],
+                "subtipo": r["subtipo"],
+                "fecha": r["fecha"].isoformat() if r["fecha"] else None,
+                "horas": float(r["horas"]) if r["horas"] else None,
+                "descripcion": r["descripcion"],
+                "monto_descuento": float(r["monto_descuento"]) if r["monto_descuento"] else 0,
+                "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+            }
+            for r in rows
+        ]
+    except Exception:
+        await db.rollback()
+        events = []
+    return _ok_list(events)
+
+
+@router.post(
+    "/{val_id}/discount-events", response_class=ORJSONResponse, status_code=201
+)
+async def crear_evento_descuento(
+    val_id: int,
+    datos: EventoDescuentoCrear,
+    db: SesionDb,
+    usuario: UsuarioActual,
+) -> dict[str, Any]:
+    """Crear un evento de descuento."""
+    result = await db.execute(
+        text(
+            """
+            INSERT INTO equipo.evento_descuento
+                (valorizacion_id, tipo_evento, subtipo, fecha, horas, descripcion, tenant_id)
+            VALUES (:vid, :tipo, :sub, :fecha, :horas, :desc, :tid)
+            RETURNING id
+            """
+        ),
+        {
+            "vid": val_id,
+            "tipo": datos.tipo_evento,
+            "sub": datos.subtipo,
+            "fecha": datos.fecha,
+            "horas": datos.horas,
+            "desc": datos.descripcion,
+            "tid": usuario.id_empresa,
+        },
+    )
+    await db.commit()
+    row = result.mappings().first()
+    return {"success": True, "data": {"id": row["id"], "message": "Evento creado"}}
+
+
+@router.delete("/discount-events/{event_id}", status_code=204)
+async def eliminar_evento_descuento(
+    event_id: int, db: SesionDb, usuario: UsuarioActual
+) -> None:
+    """Eliminar un evento de descuento."""
+    await db.execute(
+        text(
+            "DELETE FROM equipo.evento_descuento WHERE id = :eid AND tenant_id = :tid"
+        ),
+        {"eid": event_id, "tid": usuario.id_empresa},
+    )
+    await db.commit()
+
+
+# ─── Deducciones manuales ───────────────────────────────────────────────
+
+
+class DeduccionCrear(BaseModel):
+    concepto: str
+    monto: float
+    observaciones: str | None = None
+
+
+class DeduccionActualizar(BaseModel):
+    concepto: str | None = None
+    monto: float | None = None
+    observaciones: str | None = None
+
+
+@router.get("/{val_id}/deducciones", response_class=ORJSONResponse)
+async def listar_deducciones(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Listar deducciones de una valorización."""
+    try:
+        result = await db.execute(
+            text(
+                """
+                SELECT id, valorizacion_id, concepto, monto, observaciones, created_at
+                FROM equipo.deduccion_valorizacion
+                WHERE valorizacion_id = :vid AND tenant_id = :tid
+                ORDER BY created_at
+                """
+            ),
+            {"vid": val_id, "tid": usuario.id_empresa},
+        )
+        rows = result.mappings().all()
+        deducciones = [
+            {
+                "id": r["id"],
+                "valorizacion_id": r["valorizacion_id"],
+                "concepto": r["concepto"],
+                "monto": float(r["monto"]) if r["monto"] else 0,
+                "observaciones": r["observaciones"],
+                "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+            }
+            for r in rows
+        ]
+    except Exception:
+        await db.rollback()
+        deducciones = []
+    return _ok_list(deducciones)
+
+
+@router.post(
+    "/{val_id}/deducciones", response_class=ORJSONResponse, status_code=201
+)
+async def crear_deduccion(
+    val_id: int,
+    datos: DeduccionCrear,
+    db: SesionDb,
+    usuario: UsuarioActual,
+) -> dict[str, Any]:
+    """Crear una deducción manual."""
+    result = await db.execute(
+        text(
+            """
+            INSERT INTO equipo.deduccion_valorizacion
+                (valorizacion_id, concepto, monto, observaciones, tenant_id)
+            VALUES (:vid, :concepto, :monto, :obs, :tid)
+            RETURNING id
+            """
+        ),
+        {
+            "vid": val_id,
+            "concepto": datos.concepto,
+            "monto": datos.monto,
+            "obs": datos.observaciones,
+            "tid": usuario.id_empresa,
+        },
+    )
+    await db.commit()
+    row = result.mappings().first()
+    return {"success": True, "data": {"id": row["id"], "message": "Deducción creada"}}
+
+
+@router.put("/deducciones/{deduccion_id}", response_class=ORJSONResponse)
+async def actualizar_deduccion(
+    deduccion_id: int,
+    datos: DeduccionActualizar,
+    db: SesionDb,
+    usuario: UsuarioActual,
+) -> dict[str, Any]:
+    """Actualizar una deducción manual."""
+    sets: list[str] = []
+    params: dict[str, Any] = {"did": deduccion_id, "tid": usuario.id_empresa}
+    if datos.concepto is not None:
+        sets.append("concepto = :concepto")
+        params["concepto"] = datos.concepto
+    if datos.monto is not None:
+        sets.append("monto = :monto")
+        params["monto"] = datos.monto
+    if datos.observaciones is not None:
+        sets.append("observaciones = :obs")
+        params["obs"] = datos.observaciones
+    if not sets:
+        return _ok({"id": deduccion_id, "message": "Sin cambios"})
+    query = f"UPDATE equipo.deduccion_valorizacion SET {', '.join(sets)} WHERE id = :did AND tenant_id = :tid RETURNING id, concepto, monto, observaciones"  # noqa: E501
+    result = await db.execute(text(query), params)
+    await db.commit()
+    row = result.mappings().first()
+    if not row:
+        from app.core.excepciones import NoEncontradoError
+
+        raise NoEncontradoError("Deducción no encontrada")
+    return _ok(dict(row))
+
+
+@router.delete("/deducciones/{deduccion_id}", status_code=204)
+async def eliminar_deduccion(
+    deduccion_id: int, db: SesionDb, usuario: UsuarioActual
+) -> None:
+    """Eliminar una deducción manual."""
+    await db.execute(
+        text(
+            "DELETE FROM equipo.deduccion_valorizacion WHERE id = :did AND tenant_id = :tid"
+        ),
+        {"did": deduccion_id, "tid": usuario.id_empresa},
+    )
+    await db.commit()

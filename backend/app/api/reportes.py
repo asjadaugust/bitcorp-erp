@@ -57,6 +57,30 @@ async def seguimiento_inspeccion(
     return enviar_exito([r.model_dump() for r in resultado])
 
 
+@router.get("/operator/{operador_id}")
+async def listar_reportes_por_operador(
+    operador_id: int,
+    usuario: UsuarioActual,
+    db: SesionDb,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+) -> ORJSONResponse:
+    """Listar reportes filtrados por operador."""
+    servicio = ServicioParteDiario(db)
+    reportes, total = await servicio.listar(
+        usuario.id_empresa,
+        trabajador_id=operador_id,
+        page=page,
+        limit=limit,
+    )
+    return enviar_paginado(
+        [r.model_dump() for r in reportes],
+        pagina=page,
+        limite=limit,
+        total=total,
+    )
+
+
 @router.patch("/observaciones/{observacion_id}/resolver")
 async def resolver_observacion(
     observacion_id: int,
@@ -139,6 +163,16 @@ async def listar_fotos(
     servicio = ServicioParteDiario(db)
     fotos = await servicio.listar_fotos(usuario.id_empresa, reporte_id)
     return enviar_exito([f.model_dump() for f in fotos])
+
+
+@router.post("/{reporte_id}/photos")
+async def subir_fotos(
+    reporte_id: int, usuario: UsuarioActual, db: SesionDb
+) -> ORJSONResponse:
+    """Subir fotos a un reporte (stub — file upload no implementado)."""
+    return enviar_exito(
+        {"message": "Upload endpoint disponible (implementación de storage pendiente)"}
+    )
 
 
 @router.delete("/{reporte_id}/photos/{foto_id}")

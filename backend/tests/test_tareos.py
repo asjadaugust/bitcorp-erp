@@ -24,7 +24,7 @@ async def _crear_tareo(c: AsyncClient) -> int:
         trabajador_id = emp_data["data"][0]["id"]
 
     resp = await c.post(
-        "/api/timesheets/",
+        "/api/scheduling/timesheets/",
         json={
             "trabajador_id": trabajador_id,
             "periodo": "2026-03",
@@ -38,7 +38,7 @@ async def _crear_tareo(c: AsyncClient) -> int:
 async def test_tareos_listar() -> None:
     """Debe retornar lista paginada de tareos."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/timesheets/")
+        resp = await c.get("/api/scheduling/timesheets/")
     assert resp.status_code == 200
     datos = resp.json()
     assert datos["success"] is True
@@ -49,7 +49,7 @@ async def test_tareos_listar() -> None:
 async def test_tareos_listar_filtro_periodo() -> None:
     """Debe filtrar tareos por periodo."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/timesheets/?periodo=2026-03")
+        resp = await c.get("/api/scheduling/timesheets/?periodo=2026-03")
     assert resp.status_code == 200
     assert resp.json()["success"] is True
 
@@ -58,7 +58,7 @@ async def test_tareos_listar_filtro_periodo() -> None:
 async def test_tareos_listar_filtro_estado() -> None:
     """Debe filtrar tareos por estado."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/timesheets/?estado=BORRADOR")
+        resp = await c.get("/api/scheduling/timesheets/?estado=BORRADOR")
     assert resp.status_code == 200
     assert resp.json()["success"] is True
 
@@ -75,7 +75,7 @@ async def test_tareos_crear() -> None:
 async def test_tareos_obtener_inexistente() -> None:
     """Debe retornar 404 para tareo inexistente."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/timesheets/99999")
+        resp = await c.get("/api/scheduling/timesheets/99999")
     assert resp.status_code == 404
 
 
@@ -84,7 +84,7 @@ async def test_tareos_enviar() -> None:
     """Debe enviar tareo (BORRADOR -> ENVIADO)."""
     async with await _cliente_auth() as c:
         tareo_id = await _crear_tareo(c)
-        resp = await c.post(f"/api/timesheets/{tareo_id}/submit")
+        resp = await c.post(f"/api/scheduling/timesheets/{tareo_id}/submit")
     assert resp.status_code == 200
     assert resp.json()["data"]["estado"] == "ENVIADO"
 
@@ -94,8 +94,8 @@ async def test_tareos_aprobar() -> None:
     """Debe aprobar tareo (ENVIADO -> APROBADO)."""
     async with await _cliente_auth() as c:
         tareo_id = await _crear_tareo(c)
-        await c.post(f"/api/timesheets/{tareo_id}/submit")
-        resp = await c.post(f"/api/timesheets/{tareo_id}/approve")
+        await c.post(f"/api/scheduling/timesheets/{tareo_id}/submit")
+        resp = await c.post(f"/api/scheduling/timesheets/{tareo_id}/approve")
     assert resp.status_code == 200
     assert resp.json()["data"]["estado"] == "APROBADO"
 
@@ -105,10 +105,10 @@ async def test_tareos_rechazar_y_reabrir() -> None:
     """Debe rechazar y reabrir tareo."""
     async with await _cliente_auth() as c:
         tareo_id = await _crear_tareo(c)
-        await c.post(f"/api/timesheets/{tareo_id}/submit")
-        resp_rej = await c.post(f"/api/timesheets/{tareo_id}/reject")
+        await c.post(f"/api/scheduling/timesheets/{tareo_id}/submit")
+        resp_rej = await c.post(f"/api/scheduling/timesheets/{tareo_id}/reject")
         assert resp_rej.json()["data"]["estado"] == "RECHAZADO"
-        resp_reopen = await c.post(f"/api/timesheets/{tareo_id}/reopen")
+        resp_reopen = await c.post(f"/api/scheduling/timesheets/{tareo_id}/reopen")
     assert resp_reopen.status_code == 200
     assert resp_reopen.json()["data"]["estado"] == "BORRADOR"
 
@@ -119,7 +119,7 @@ async def test_tareos_transicion_invalida() -> None:
     async with await _cliente_auth() as c:
         tareo_id = await _crear_tareo(c)
         # Can't approve a BORRADOR directly
-        resp = await c.post(f"/api/timesheets/{tareo_id}/approve")
+        resp = await c.post(f"/api/scheduling/timesheets/{tareo_id}/approve")
     assert resp.status_code == 422
 
 
@@ -127,5 +127,5 @@ async def test_tareos_transicion_invalida() -> None:
 async def test_tareos_sin_auth() -> None:
     """Debe retornar 401 sin autenticación."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-        resp = await c.get("/api/timesheets/")
+        resp = await c.get("/api/scheduling/timesheets/")
     assert resp.status_code == 401

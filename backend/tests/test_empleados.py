@@ -20,7 +20,7 @@ async def _cliente_auth() -> AsyncClient:
 async def test_empleados_listar() -> None:
     """Debe retornar lista paginada de empleados."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/employees/")
+        resp = await c.get("/api/hr/employees/")
     assert resp.status_code == 200
     datos = resp.json()
     assert datos["success"] is True
@@ -31,7 +31,7 @@ async def test_empleados_listar() -> None:
 async def test_empleados_listar_busqueda() -> None:
     """Debe buscar empleados por nombre o DNI."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/employees/?search=test")
+        resp = await c.get("/api/hr/employees/?search=test")
     assert resp.status_code == 200
     assert resp.json()["success"] is True
 
@@ -41,7 +41,7 @@ async def test_empleados_crear() -> None:
     """Debe crear un nuevo empleado."""
     async with await _cliente_auth() as c:
         resp = await c.post(
-            "/api/employees/",
+            "/api/hr/employees/",
             json={
                 "dni": uuid4().hex[:8],
                 "nombres": "Juan Carlos",
@@ -64,8 +64,8 @@ async def test_empleados_crear_dni_duplicado() -> None:
             "nombres": "Maria",
             "apellido_paterno": "Dup",
         }
-        await c.post("/api/employees/", json=payload)
-        resp = await c.post("/api/employees/", json=payload)
+        await c.post("/api/hr/employees/", json=payload)
+        resp = await c.post("/api/hr/employees/", json=payload)
     assert resp.status_code == 409
 
 
@@ -73,7 +73,7 @@ async def test_empleados_crear_dni_duplicado() -> None:
 async def test_empleados_obtener_inexistente() -> None:
     """Debe retornar 404 para empleado inexistente."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/employees/99999")
+        resp = await c.get("/api/hr/employees/99999")
     assert resp.status_code == 404
 
 
@@ -81,7 +81,7 @@ async def test_empleados_obtener_inexistente() -> None:
 async def test_empleados_eliminar_inexistente() -> None:
     """Debe retornar 404 al eliminar empleado inexistente."""
     async with await _cliente_auth() as c:
-        resp = await c.delete("/api/employees/99999")
+        resp = await c.delete("/api/hr/employees/99999")
     assert resp.status_code == 404
 
 
@@ -90,7 +90,7 @@ async def test_empleados_actualizar_inexistente() -> None:
     """Debe retornar 404 al actualizar empleado inexistente."""
     async with await _cliente_auth() as c:
         resp = await c.put(
-            "/api/employees/99999",
+            "/api/hr/employees/99999",
             json={"nombres": "Updated"},
         )
     assert resp.status_code == 404
@@ -100,5 +100,5 @@ async def test_empleados_actualizar_inexistente() -> None:
 async def test_empleados_sin_auth() -> None:
     """Debe retornar 401 sin autenticación."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-        resp = await c.get("/api/employees/")
+        resp = await c.get("/api/hr/employees/")
     assert resp.status_code == 401

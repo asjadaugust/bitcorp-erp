@@ -36,6 +36,7 @@ from app.api.solicitudes_equipo import router as router_solicitudes_equipo
 from app.api.sst import router as router_sst
 from app.api.tareas_programadas import router as router_tareas_programadas
 from app.api.tareos import router as router_tareos
+from app.api.tenant import router as router_tenant
 from app.api.tipos_equipo import router as router_tipos_equipo
 from app.api.usuarios import router as router_usuarios
 from app.api.vales_combustible import router as router_vales_combustible
@@ -56,6 +57,7 @@ router_api.include_router(
     router_centros_costo, prefix="/admin/cost-centers", tags=["Centros de Costo"]
 )
 router_api.include_router(router_usuarios, prefix="/users", tags=["Usuarios"])
+router_api.include_router(router_tenant, prefix="/tenant", tags=["Tenant"])
 
 # Fase 2 — Core Equipment Domain
 router_api.include_router(router_equipos, prefix="/equipment", tags=["Equipos"])
@@ -106,8 +108,8 @@ router_api.include_router(
 
 # Fase 5 — Secondary Modules
 router_api.include_router(router_proyectos, prefix="/projects", tags=["Proyectos"])
-router_api.include_router(router_empleados, prefix="/employees", tags=["Empleados"])
-router_api.include_router(router_tareos, prefix="/timesheets", tags=["Tareos"])
+router_api.include_router(router_empleados, prefix="/hr/employees", tags=["Empleados"])
+router_api.include_router(router_tareos, prefix="/scheduling/timesheets", tags=["Tareos"])
 router_api.include_router(router_logistica, prefix="/logistics", tags=["Logistica"])
 router_api.include_router(router_sst, prefix="/sst", tags=["SST"])
 router_api.include_router(router_sig, prefix="/sig", tags=["SIG"])
