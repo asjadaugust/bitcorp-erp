@@ -64,7 +64,7 @@ async def test_listar_contratos() -> None:
 async def test_listar_contratos_con_filtro_estado() -> None:
     """Debe filtrar contratos por estado."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/contracts/?estado=ACTIVO")
+        resp = await c.get("/api/contracts/?estado=VIGENTE")
     assert resp.status_code == 200
     assert resp.json()["success"] is True
 
@@ -111,7 +111,7 @@ async def test_crear_contrato() -> None:
                 "fecha_fin": "2027-01-01",
                 "moneda": "PEN",
                 "tarifa": 5000,
-                "modalidad": "ALQUILER_PURO",
+                "modalidad": "MAQUINA_SECA_NO_OPERADA",
             },
         )
     assert resp.status_code == 201
@@ -202,12 +202,12 @@ async def test_actualizar_contrato() -> None:
         contrato_id = data["data"]["id"]
         resp = await c.put(
             f"/api/contracts/{contrato_id}",
-            json={"tarifa": 6000, "modalidad": "TANTO_ALZADO"},
+            json={"tarifa": 6000, "modalidad": "MAQUINA_SERVIDA_OPERADA"},
         )
     assert resp.status_code == 200
     datos = resp.json()
     assert datos["data"]["tarifa"] == 6000.0
-    assert datos["data"]["modalidad"] == "TANTO_ALZADO"
+    assert datos["data"]["modalidad"] == "MAQUINA_SERVIDA_OPERADA"
 
 
 @pytest.mark.asyncio
@@ -219,6 +219,95 @@ async def test_eliminar_contrato() -> None:
         contrato_id = data["data"]["id"]
         resp = await c.delete(f"/api/contracts/{contrato_id}")
     assert resp.status_code == 204
+
+
+# ─── Derivación de modalidad ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_modalidad_servida_operada_deriva_ambos_true() -> None:
+    """MAQUINA_SERVIDA_OPERADA debe auto-derivar incluye_motor=True, incluye_operador=True."""
+    async with await _cliente_auth() as c:
+        eq_id = await _crear_equipo(c, f"T-CMOD1-{_TS}")
+        data = await _crear_contrato(
+            c, f"CNT-MOD1-{_TS}", eq_id,
+            modalidad="MAQUINA_SERVIDA_OPERADA",
+        )
+        contrato_id = data["data"]["id"]
+        resp = await c.get(f"/api/contracts/{contrato_id}")
+    assert resp.status_code == 200
+    datos = resp.json()["data"]
+    assert datos["incluye_operador"] is True
+    assert datos["incluye_motor"] is True
+
+
+@pytest.mark.asyncio
+async def test_modalidad_seca_no_operada_deriva_ambos_false() -> None:
+    """MAQUINA_SECA_NO_OPERADA debe auto-derivar incluye_motor=False, incluye_operador=False."""
+    async with await _cliente_auth() as c:
+        eq_id = await _crear_equipo(c, f"T-CMOD2-{_TS}")
+        data = await _crear_contrato(
+            c, f"CNT-MOD2-{_TS}", eq_id,
+            modalidad="MAQUINA_SECA_NO_OPERADA",
+        )
+        contrato_id = data["data"]["id"]
+        resp = await c.get(f"/api/contracts/{contrato_id}")
+    assert resp.status_code == 200
+    datos = resp.json()["data"]
+    assert datos["incluye_operador"] is False
+    assert datos["incluye_motor"] is False
+
+
+@pytest.mark.asyncio
+async def test_modalidad_seca_operada_deriva_correctamente() -> None:
+    """MAQUINA_SECA_OPERADA: operador=True, motor=False."""
+    async with await _cliente_auth() as c:
+        eq_id = await _crear_equipo(c, f"T-CMOD3-{_TS}")
+        data = await _crear_contrato(
+            c, f"CNT-MOD3-{_TS}", eq_id,
+            modalidad="MAQUINA_SECA_OPERADA",
+        )
+        contrato_id = data["data"]["id"]
+        resp = await c.get(f"/api/contracts/{contrato_id}")
+    assert resp.status_code == 200
+    datos = resp.json()["data"]
+    assert datos["incluye_operador"] is True
+    assert datos["incluye_motor"] is False
+
+
+@pytest.mark.asyncio
+async def test_modalidad_servida_no_operada_deriva_correctamente() -> None:
+    """MAQUINA_SERVIDA_NO_OPERADA: operador=False, motor=True."""
+    async with await _cliente_auth() as c:
+        eq_id = await _crear_equipo(c, f"T-CMOD4-{_TS}")
+        data = await _crear_contrato(
+            c, f"CNT-MOD4-{_TS}", eq_id,
+            modalidad="MAQUINA_SERVIDA_NO_OPERADA",
+        )
+        contrato_id = data["data"]["id"]
+        resp = await c.get(f"/api/contracts/{contrato_id}")
+    assert resp.status_code == 200
+    datos = resp.json()["data"]
+    assert datos["incluye_operador"] is False
+    assert datos["incluye_motor"] is True
+
+
+@pytest.mark.asyncio
+async def test_plazo_texto_auto_calculado() -> None:
+    """plazo_texto debe auto-calcularse desde fecha_inicio/fecha_fin."""
+    async with await _cliente_auth() as c:
+        eq_id = await _crear_equipo(c, f"T-CPLZ-{_TS}")
+        data = await _crear_contrato(
+            c, f"CNT-PLZ-{_TS}", eq_id,
+            fecha_inicio="2026-01-01", fecha_fin="2026-07-15",
+            modalidad="MAQUINA_SECA_NO_OPERADA",
+        )
+        contrato_id = data["data"]["id"]
+        resp = await c.get(f"/api/contracts/{contrato_id}")
+    assert resp.status_code == 200
+    datos = resp.json()["data"]
+    assert datos["plazo_texto"] is not None
+    assert "mes" in datos["plazo_texto"]
 
 
 # ─── Adendas ─────────────────────────────────────────────────────────────

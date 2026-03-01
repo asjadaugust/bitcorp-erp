@@ -123,6 +123,22 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               [placeholder]="'Seleccionar...'"
             ></app-dropdown>
             <div class="error-msg" *ngIf="hasError('modalidad')">Modalidad es requerida</div>
+            <div class="modalidad-badges" *ngIf="contractForm.get('modalidad')?.value">
+              <span
+                class="badge"
+                [class.badge--success]="isOperadorIncluido()"
+                [class.badge--neutral]="!isOperadorIncluido()"
+              >
+                {{ isOperadorIncluido() ? 'Incluye Operador' : 'Sin Operador' }}
+              </span>
+              <span
+                class="badge"
+                [class.badge--success]="isMotorIncluido()"
+                [class.badge--neutral]="!isMotorIncluido()"
+              >
+                {{ isMotorIncluido() ? 'Incluye Combustible' : 'Sin Combustible' }}
+              </span>
+            </div>
           </div>
 
           <div class="form-group">
@@ -132,52 +148,6 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               [options]="estadoOptions"
               [placeholder]="'Seleccionar Estado'"
             ></app-dropdown>
-          </div>
-        </app-form-section>
-
-        <!-- Section: Ownership Proof & Jurisdiction -->
-        <app-form-section title="Propiedad del Equipo y Jurisdicción" icon="fa-shield-halved">
-          <div class="form-group">
-            <label for="documento_acredita">Documento que Acredita Propiedad</label>
-            <input
-              id="documento_acredita"
-              type="text"
-              formControlName="documento_acredita"
-              class="form-control"
-              placeholder="ej. Tarjeta de Propiedad, Factura"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="fecha_acreditada">Fecha del Documento</label>
-            <input
-              id="fecha_acreditada"
-              type="date"
-              formControlName="fecha_acreditada"
-              class="form-control"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="jurisdiccion">Jurisdicción</label>
-            <input
-              id="jurisdiccion"
-              type="text"
-              formControlName="jurisdiccion"
-              class="form-control"
-              placeholder="ej. Lima, Cusco"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="plazo_texto">Plazo (texto)</label>
-            <input
-              id="plazo_texto"
-              type="text"
-              formControlName="plazo_texto"
-              class="form-control"
-              placeholder="ej. 6 meses"
-            />
           </div>
         </app-form-section>
 
@@ -206,6 +176,18 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             >
               La fecha de fin debe ser posterior a la fecha de inicio
             </div>
+          </div>
+
+          <div
+            class="form-group"
+            *ngIf="
+              contractForm.get('fecha_inicio')?.value &&
+              contractForm.get('fecha_fin')?.value &&
+              !contractForm.hasError('dateRangeInvalid')
+            "
+          >
+            <label>Plazo</label>
+            <span class="plazo-calculated">{{ calcularPlazo() }}</span>
           </div>
 
           <div class="form-group">
@@ -260,19 +242,33 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             />
           </div>
 
-          <!-- New Fields: Service Inclusions -->
-          <div class="form-group checkbox-group full-width">
-            <label>
-              <input type="checkbox" formControlName="incluye_motor" />
-              Incluye Motor
-            </label>
-            <label>
-              <input type="checkbox" formControlName="incluye_operador" />
-              Incluye Operador
-            </label>
+          <div class="form-group">
+            <label for="minimo_por">Mínimo Por</label>
+            <app-dropdown
+              formControlName="minimo_por"
+              [options]="minimoPorOptions"
+              [placeholder]="'Seleccionar...'"
+            ></app-dropdown>
           </div>
 
-          <div class="form-group" *ngIf="contractForm.get('incluye_motor')?.value === false">
+          <div
+            class="form-group"
+            *ngIf="
+              contractForm.get('minimo_por')?.value &&
+              contractForm.get('minimo_por')?.value !== 'NINGUNO'
+            "
+          >
+            <label for="cantidad_minima">Cantidad Mínima</label>
+            <input
+              id="cantidad_minima"
+              type="number"
+              formControlName="cantidad_minima"
+              class="form-control"
+              placeholder="0"
+            />
+          </div>
+
+          <div class="form-group" *ngIf="isCostoMotorVisible()">
             <label for="costo_adicional_motor">Costo Adicional Motor</label>
             <input
               id="costo_adicional_motor"
@@ -481,6 +477,41 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         gap: var(--s-8);
         margin-top: var(--s-8);
       }
+
+      .modalidad-badges {
+        display: flex;
+        gap: var(--s-8);
+        margin-top: var(--s-4);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .badge--success {
+        background: var(--semantic-green-100);
+        color: var(--semantic-green-700);
+      }
+
+      .badge--neutral {
+        background: var(--grey-100);
+        color: var(--grey-600);
+      }
+
+      .plazo-calculated {
+        display: block;
+        padding: var(--s-8);
+        background: var(--grey-50);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        color: var(--primary-900);
+      }
     `,
   ],
 })
@@ -515,15 +546,16 @@ export class ContractFormComponent implements OnInit {
   providerOptions: { label: string; value: string | number | null }[] = [];
 
   modalidadOptions = [
-    { label: 'Alquiler Seco', value: 'alquiler_seco' },
-    { label: 'Alquiler con Operador', value: 'alquiler_con_operador' },
-    { label: 'Alquiler Todo Costo', value: 'alquiler_todo_costo' },
-    { label: 'Servicio', value: 'servicio' },
+    { label: 'Máquina Seca Operada', value: 'MAQUINA_SECA_OPERADA' },
+    { label: 'Máquina Seca No Operada', value: 'MAQUINA_SECA_NO_OPERADA' },
+    { label: 'Máquina Servida Operada', value: 'MAQUINA_SERVIDA_OPERADA' },
+    { label: 'Máquina Servida No Operada', value: 'MAQUINA_SERVIDA_NO_OPERADA' },
   ];
 
   estadoOptions = [
-    { label: 'Borrador', value: 'BORRADOR' },
-    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Sin Contrato', value: 'SIN_CONTRATO' },
+    { label: 'En Proceso', value: 'EN_PROCESO' },
+    { label: 'Vigente', value: 'VIGENTE' },
     { label: 'Vencido', value: 'VENCIDO' },
     { label: 'Cancelado', value: 'CANCELADO' },
   ];
@@ -534,9 +566,16 @@ export class ContractFormComponent implements OnInit {
   ];
 
   tipoTarifaOptions = [
-    { label: 'Por Hora', value: 'POR_HORA' },
-    { label: 'Por Día', value: 'POR_DIA' },
-    { label: 'Fijo', value: 'FIJO' },
+    { label: 'Hora-Máquina (H-M)', value: 'HORA' },
+    { label: 'Día', value: 'DIA' },
+    { label: 'Mes', value: 'MES' },
+  ];
+
+  minimoPorOptions = [
+    { label: 'Ninguno', value: 'NINGUNO' },
+    { label: 'Día', value: 'DIA' },
+    { label: 'Semana', value: 'SEMANA' },
+    { label: 'Mes', value: 'MES' },
   ];
 
   fieldLabels: Record<string, string> = {
@@ -552,11 +591,11 @@ export class ContractFormComponent implements OnInit {
     tarifa: 'Tarifa',
     horas_incluidas: 'Horas Incluidas',
     penalidad_exceso: 'Penalidad por Exceso',
-    incluye_motor: 'Incluye Motor',
-    incluye_operador: 'Incluye Operador',
     costo_adicional_motor: 'Costo Adicional Motor',
     condiciones_especiales: 'Condiciones Especiales',
     estado: 'Estado',
+    minimo_por: 'Mínimo Por',
+    cantidad_minima: 'Cantidad Mínima',
   };
 
   constructor() {
@@ -570,19 +609,15 @@ export class ContractFormComponent implements OnInit {
         fecha_inicio: ['', Validators.required],
         fecha_fin: ['', Validators.required],
         moneda: ['PEN', Validators.required],
-        tipo_tarifa: ['POR_HORA', Validators.required],
+        tipo_tarifa: ['HORA', Validators.required],
         tarifa: [null, [Validators.required, Validators.min(0)]],
         horas_incluidas: [0, Validators.min(0)],
         penalidad_exceso: [null, Validators.min(0)],
-        incluye_motor: [false],
-        incluye_operador: [false],
         costo_adicional_motor: [0, Validators.min(0)],
         condiciones_especiales: [''],
-        documento_acredita: [''],
-        fecha_acreditada: [''],
-        jurisdiccion: [''],
-        plazo_texto: [''],
-        estado: ['BORRADOR', Validators.required],
+        estado: ['EN_PROCESO', Validators.required],
+        minimo_por: ['NINGUNO'],
+        cantidad_minima: [null, Validators.min(0)],
         tipo: ['CONTRATO'], // Default to CONTRATO
       },
       { validators: this.dateRangeValidator }
@@ -649,7 +684,6 @@ export class ContractFormComponent implements OnInit {
           fecha_contrato: formatDate(contract.fecha_contrato),
           fecha_inicio: formatDate(contract.fecha_inicio),
           fecha_fin: formatDate(contract.fecha_fin),
-          fecha_acreditada: formatDate(contract.fecha_acreditada || ''),
           proveedor_id: contract.proveedor_id ? contract.proveedor_id.toString() : '',
           equipo_id: contract.equipo_id ? contract.equipo_id.toString() : '',
           tarifa: contract.tarifa,
@@ -708,6 +742,51 @@ export class ContractFormComponent implements OnInit {
       return { dateRangeInvalid: true };
     }
     return null;
+  }
+
+  // ─── Modalidad Derivation ───
+
+  isOperadorIncluido(): boolean {
+    const m = this.contractForm.get('modalidad')?.value;
+    return m?.includes('OPERADA') && !m?.includes('NO_OPERADA');
+  }
+
+  isMotorIncluido(): boolean {
+    return this.contractForm.get('modalidad')?.value?.includes('SERVIDA') ?? false;
+  }
+
+  isCostoMotorVisible(): boolean {
+    const m = this.contractForm.get('modalidad')?.value;
+    return m?.includes('SECA') ?? false;
+  }
+
+  calcularPlazo(): string {
+    const inicio = this.contractForm.get('fecha_inicio')?.value;
+    const fin = this.contractForm.get('fecha_fin')?.value;
+    if (!inicio || !fin) return '';
+    const d1 = new Date(inicio);
+    const d2 = new Date(fin);
+    if (d2 <= d1) return '';
+
+    let years = d2.getFullYear() - d1.getFullYear();
+    let months = d2.getMonth() - d1.getMonth();
+    let days = d2.getDate() - d1.getDate();
+
+    if (days < 0) {
+      months--;
+      const lastMonth = new Date(d2.getFullYear(), d2.getMonth(), 0);
+      days += lastMonth.getDate();
+    }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    const parts: string[] = [];
+    if (years) parts.push(`${years} año${years > 1 ? 's' : ''}`);
+    if (months) parts.push(`${months} mes${months > 1 ? 'es' : ''}`);
+    if (days) parts.push(`${days} día${days > 1 ? 's' : ''}`);
+    return parts.join(', ') || '0 días';
   }
 
   // ─── Annex Methods ───

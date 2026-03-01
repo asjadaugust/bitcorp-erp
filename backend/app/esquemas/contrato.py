@@ -2,10 +2,32 @@
 """
 
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 # ─── Enums / Constants ──────────────────────────────────────────────────────
+
+MODALIDADES = Literal[
+    "MAQUINA_SECA_OPERADA",
+    "MAQUINA_SECA_NO_OPERADA",
+    "MAQUINA_SERVIDA_OPERADA",
+    "MAQUINA_SERVIDA_NO_OPERADA",
+]
+
+TIPOS_TARIFA = Literal["HORA", "DIA", "MES"]
+
+ESTADOS_CONTRATO = Literal[
+    "SIN_CONTRATO",
+    "EN_PROCESO",
+    "VIGENTE",
+    "VENCIDO",
+    "RESUELTO",
+    "LIQUIDADO",
+    "CANCELADO",
+]
+
+MINIMO_POR = Literal["NINGUNO", "DIA", "SEMANA", "MES"]
 
 TIPOS_OBLIGACION_ARRENDADOR = [
     "CONDICIONES_OPERATIVAS",
@@ -157,23 +179,17 @@ class ContratoCrear(BaseModel):
     fecha_inicio: date
     fecha_fin: date
     moneda: str = "PEN"
-    tipo_tarifa: str | None = None
+    tipo_tarifa: TIPOS_TARIFA | None = None
     tarifa: float | None = None
-    modalidad: str | None = None
-    incluye_motor: bool = False
-    incluye_operador: bool = False
+    modalidad: MODALIDADES | None = None
     costo_adicional_motor: float | None = None
     horas_incluidas: int | None = None
     penalidad_exceso: float | None = None
     condiciones_especiales: str | None = None
     documento_url: str | None = None
     proveedor_id: int | None = None
-    minimo_por: str | None = None
+    minimo_por: MINIMO_POR | None = None
     cantidad_minima: float | None = None
-    documento_acredita: str | None = None
-    fecha_acreditada: date | None = None
-    jurisdiccion: str | None = None
-    plazo_texto: str | None = None
 
 
 class ContratoActualizar(BaseModel):
@@ -182,9 +198,9 @@ class ContratoActualizar(BaseModel):
     fecha_inicio: date | None = None
     fecha_fin: date | None = None
     moneda: str | None = None
-    tipo_tarifa: str | None = None
+    tipo_tarifa: TIPOS_TARIFA | None = None
     tarifa: float | None = None
-    modalidad: str | None = None
+    modalidad: MODALIDADES | None = None
     incluye_motor: bool | None = None
     incluye_operador: bool | None = None
     costo_adicional_motor: float | None = None
@@ -192,14 +208,10 @@ class ContratoActualizar(BaseModel):
     penalidad_exceso: float | None = None
     condiciones_especiales: str | None = None
     documento_url: str | None = None
-    estado: str | None = None
+    estado: ESTADOS_CONTRATO | None = None
     proveedor_id: int | None = None
-    minimo_por: str | None = None
+    minimo_por: MINIMO_POR | None = None
     cantidad_minima: float | None = None
-    documento_acredita: str | None = None
-    fecha_acreditada: date | None = None
-    jurisdiccion: str | None = None
-    plazo_texto: str | None = None
 
 
 class AdendaCrear(BaseModel):

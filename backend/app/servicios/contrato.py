@@ -1,6 +1,7 @@
 """Servicio para contratos.
 """
 
+from datetime import date
 from typing import Any
 
 from sqlalchemy import and_, func, or_, select
@@ -40,6 +41,51 @@ _CAMPOS_ORDENAMIENTO: dict[str, str] = {
     "created_at": "created_at",
     "updated_at": "updated_at",
 }
+
+
+def _derivar_inclusion_modalidad(modalidad: str | None) -> dict[str, bool]:
+    """Derive incluye_operador and incluye_motor from modalidad."""
+    if not modalidad:
+        return {}
+    return {
+        "incluye_operador": "OPERADA" in modalidad and "NO_OPERADA" not in modalidad,
+        "incluye_motor": "SERVIDA" in modalidad,
+    }
+
+
+def _calcular_plazo(fecha_inicio: Any, fecha_fin: Any) -> str | None:
+    """Calculate plazo text from date range."""
+    import calendar
+
+    if not fecha_inicio or not fecha_fin:
+        return None
+    # Ensure date objects
+    if isinstance(fecha_inicio, str):
+        fecha_inicio = date.fromisoformat(fecha_inicio)
+    if isinstance(fecha_fin, str):
+        fecha_fin = date.fromisoformat(fecha_fin)
+
+    years = fecha_fin.year - fecha_inicio.year
+    months = fecha_fin.month - fecha_inicio.month
+    days = fecha_fin.day - fecha_inicio.day
+
+    if days < 0:
+        months -= 1
+        prev_month = fecha_fin.month - 1 if fecha_fin.month > 1 else 12
+        prev_year = fecha_fin.year if fecha_fin.month > 1 else fecha_fin.year - 1
+        days += calendar.monthrange(prev_year, prev_month)[1]
+    if months < 0:
+        years -= 1
+        months += 12
+
+    parts: list[str] = []
+    if years:
+        parts.append(f"{years} año{'s' if years > 1 else ''}")
+    if months:
+        parts.append(f"{months} mes{'es' if months > 1 else ''}")
+    if days:
+        parts.append(f"{days} día{'s' if days > 1 else ''}")
+    return ", ".join(parts) or "0 días"
 
 
 def _a_lista_dto(c: ContratoAdenda) -> ContratoListaDto:
@@ -291,11 +337,17 @@ class ServicioContrato:
                     "El equipo ya tiene un contrato activo para este período"
                 )
 
+        # Auto-derive inclusion flags from modalidad
+        inclusion = _derivar_inclusion_modalidad(datos.modalidad)
+
+        # Auto-calculate plazo text from dates
+        plazo = _calcular_plazo(datos.fecha_inicio, datos.fecha_fin)
+
         contrato = ContratoAdenda(
             numero_contrato=datos.numero_contrato,
             equipo_id=datos.equipo_id,
             tipo="CONTRATO",
-            estado="ACTIVO",
+            estado="VIGENTE",
             fecha_contrato=datos.fecha_contrato,
             fecha_inicio=datos.fecha_inicio,
             fecha_fin=datos.fecha_fin,
@@ -303,8 +355,8 @@ class ServicioContrato:
             tipo_tarifa=datos.tipo_tarifa,
             tarifa=datos.tarifa,
             modalidad=datos.modalidad,
-            incluye_motor=datos.incluye_motor,
-            incluye_operador=datos.incluye_operador,
+            incluye_motor=inclusion.get("incluye_motor", False),
+            incluye_operador=inclusion.get("incluye_operador", False),
             costo_adicional_motor=datos.costo_adicional_motor,
             horas_incluidas=datos.horas_incluidas,
             penalidad_exceso=datos.penalidad_exceso,
@@ -313,10 +365,7 @@ class ServicioContrato:
             proveedor_id=datos.proveedor_id,
             minimo_por=datos.minimo_por,
             cantidad_minima=datos.cantidad_minima,
-            documento_acredita=datos.documento_acredita,
-            fecha_acreditada=datos.fecha_acreditada,
-            jurisdiccion=datos.jurisdiccion,
-            plazo_texto=datos.plazo_texto,
+            plazo_texto=plazo,
             creado_por=creado_por,
             tenant_id=tenant_id,
         )
@@ -369,6 +418,16 @@ class ServicioContrato:
                 raise ConflictoError(
                     f"El número de contrato '{campos['numero_contrato']}' ya existe"
                 )
+
+        # Auto-derive inclusion flags if modalidad is changing
+        modalidad_nueva = campos.get("modalidad", contrato.modalidad)
+        if "modalidad" in campos:
+            inclusion = _derivar_inclusion_modalidad(modalidad_nueva)
+            campos.update(inclusion)
+
+        # Auto-calculate plazo if dates are changing
+        if "fecha_inicio" in campos or "fecha_fin" in campos:
+            campos["plazo_texto"] = _calcular_plazo(fecha_inicio, fecha_fin)
 
         for campo, valor in campos.items():
             setattr(contrato, campo, valor)
@@ -461,12 +520,15 @@ class ServicioContrato:
                 f"El número de contrato '{datos.numero_contrato}' ya existe"
             )
 
+        # Auto-derive inclusion flags from parent modalidad
+        inclusion = _derivar_inclusion_modalidad(parent.modalidad)
+
         # Atomic: create adenda + update parent fecha_fin
         adenda = ContratoAdenda(
             numero_contrato=datos.numero_contrato,
             equipo_id=parent.equipo_id,
             tipo="ADENDA",
-            estado="ACTIVO",
+            estado="VIGENTE",
             contrato_padre_id=parent.id,
             fecha_contrato=datos.fecha_contrato or parent.fecha_contrato,
             fecha_inicio=parent.fecha_inicio,
@@ -475,12 +537,13 @@ class ServicioContrato:
             tipo_tarifa=parent.tipo_tarifa,
             tarifa=parent.tarifa,
             modalidad=parent.modalidad,
-            incluye_motor=parent.incluye_motor,
-            incluye_operador=parent.incluye_operador,
+            incluye_motor=inclusion.get("incluye_motor", parent.incluye_motor),
+            incluye_operador=inclusion.get("incluye_operador", parent.incluye_operador),
             costo_adicional_motor=parent.costo_adicional_motor,
             horas_incluidas=parent.horas_incluidas,
             penalidad_exceso=parent.penalidad_exceso,
             proveedor_id=parent.proveedor_id,
+            plazo_texto=_calcular_plazo(parent.fecha_inicio, datos.fecha_fin),
             creado_por=creado_por,
             tenant_id=tenant_id,
         )
@@ -503,12 +566,12 @@ class ServicioContrato:
     # ─── Contar activos ─────────────────────────────────────────────────
 
     async def contar_activos(self, tenant_id: int) -> int:
-        """Contar contratos activos (tipo=CONTRATO, estado=ACTIVO)."""
+        """Contar contratos vigentes (tipo=CONTRATO, estado=VIGENTE)."""
         result = await self.db.execute(
             select(func.count()).where(
                 ContratoAdenda.tenant_id == tenant_id,
                 ContratoAdenda.tipo == "CONTRATO",
-                ContratoAdenda.estado == "ACTIVO",
+                ContratoAdenda.estado == "VIGENTE",
             )
         )
         return result.scalar_one()
@@ -526,7 +589,7 @@ class ServicioContrato:
         monto_liquidacion: float | None = None,
         usuario_id: int,
     ) -> ContratoDetalleDto:
-        """Resolver contrato: ACTIVO/VENCIDO → RESUELTO."""
+        """Resolver contrato: VIGENTE/VENCIDO → RESUELTO."""
         result = await self.db.execute(
             select(ContratoAdenda).where(
                 ContratoAdenda.id == contrato_id,
@@ -537,10 +600,10 @@ class ServicioContrato:
         if not contrato:
             raise NoEncontradoError("Contrato", contrato_id)
 
-        if contrato.estado not in ("ACTIVO", "VENCIDO"):
+        if contrato.estado not in ("VIGENTE", "VENCIDO"):
             raise ConflictoError(
                 f"No se puede resolver un contrato en estado {contrato.estado}. "
-                "Solo contratos ACTIVO o VENCIDO."
+                "Solo contratos VIGENTE o VENCIDO."
             )
 
         if not causal_resolucion:
@@ -657,13 +720,13 @@ class ServicioContrato:
         fecha_fin: Any,
         excluir_id: int | None = None,
     ) -> bool:
-        """Check if equipment has overlapping ACTIVO contracts."""
+        """Check if equipment has overlapping VIGENTE contracts."""
         stmt = (
             select(func.count())
             .where(
                 ContratoAdenda.equipo_id == equipo_id,
                 ContratoAdenda.tenant_id == tenant_id,
-                ContratoAdenda.estado == "ACTIVO",
+                ContratoAdenda.estado == "VIGENTE",
                 ContratoAdenda.tipo == "CONTRATO",
                 and_(
                     ContratoAdenda.fecha_inicio <= fecha_fin,
