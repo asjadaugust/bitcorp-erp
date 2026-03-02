@@ -14,8 +14,9 @@ import {
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { EQUIPMENT_TABS } from './equipment-tabs';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-acta-devolucion-list',
@@ -29,22 +30,20 @@ import { ConfirmService } from '../../core/services/confirm.service';
     AeroTableComponent,
     FilterBarComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
       title="Actas de Devolución / Desmovilización"
       icon="fa-file-signature"
+      [tabs]="tabs"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
     >
       <app-actions-container actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Acta"
-          (clicked)="navigateToCreate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToCreate()"
+          >Nueva Acta</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -111,22 +110,22 @@ import { ConfirmService } from '../../core/services/confirm.service';
           tabindex="0"
           role="toolbar"
         >
-          <app-button
+          <aero-button
             *ngIf="['BORRADOR', 'PENDIENTE'].includes(row.estado)"
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             title="Editar"
             [routerLink]="[row.id, 'edit']"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'BORRADOR'"
-            variant="icon"
-            size="sm"
-            icon="fa-paper-plane"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-paper-plane"
             title="Enviar para firma"
             (clicked)="enviarParaFirma(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -201,6 +200,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
   ],
 })
 export class ActaDevolucionListComponent implements OnInit {
+  tabs = EQUIPMENT_TABS;
   private svc = inject(ActaDevolucionService);
   private router = inject(Router);
   private confirmSvc = inject(ConfirmService);

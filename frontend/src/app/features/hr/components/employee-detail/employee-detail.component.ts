@@ -10,12 +10,12 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../../../shared/components/entity-detail';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-employee-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
+  imports: [AeroButtonComponent, CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -114,20 +114,20 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 
       <!-- SIDEBAR ACTIONS -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-pen"
-          label="Editar"
+          iconLeft="fa-pen"
           [fullWidth]="true"
           (clicked)="editEmployee()"
-        ></app-button>
-        <app-button
+          >Editar</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left-long"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left-long"
           [fullWidth]="true"
           (clicked)="navigateToList()"
-        ></app-button>
+          >Volver a Lista</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

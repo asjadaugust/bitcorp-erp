@@ -2,12 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-operator-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, ButtonComponent],
+  imports: [CommonModule, RouterModule, AeroButtonComponent],
   template: `
     <div class="operator-layout">
       <!-- Sidebar Navigation -->
@@ -41,13 +41,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         </nav>
 
         <div class="sidebar-footer">
-          <app-button
+          <aero-button
             variant="danger"
-            icon="fa-right-from-bracket"
-            label="Cerrar Sesión"
+            iconLeft="fa-right-from-bracket"
             [fullWidth]="true"
             (clicked)="logout()"
-          ></app-button>
+            >Cerrar Sesión</aero-button
+          >
         </div>
       </aside>
 

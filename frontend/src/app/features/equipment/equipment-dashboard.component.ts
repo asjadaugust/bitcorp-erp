@@ -13,19 +13,35 @@ import { EquipmentService } from '../../core/services/equipment.service';
 import { ChecklistService, OverdueInspection } from '../../core/services/checklist.service';
 
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
+import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
+import { AeroToggleComponent } from '../../core/design-system/form-controls/aero-toggle.component';
+import { AeroButtonComponent } from '../../core/design-system/button/aero-button.component';
+import { EQUIPMENT_TABS } from './equipment-tabs';
 
 @Component({
   selector: 'app-equipment-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, PageLayoutComponent, StatsGridComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    PageLayoutComponent,
+    PageCardComponent,
+    StatsGridComponent,
+    AeroBadgeComponent,
+    AeroToggleComponent,
+    AeroButtonComponent,
+  ],
   template: `
     <app-page-layout
       title="Dashboard de Equipos"
       icon="fa-chart-line"
+      [tabs]="tabs"
       [breadcrumbs]="[
         { label: 'Inicio', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
@@ -33,33 +49,35 @@ import {
       ]"
       [loading]="loading"
     >
-      <!-- Stats summary (Moved from actions to top of content) -->
+      <!-- Stats summary -->
       <div class="stats-section">
         <app-stats-grid [items]="summaryStats"></app-stats-grid>
       </div>
 
       <!-- Document Alerts Panel -->
       @if (documentAlerts) {
-        <div class="panel dashboard-panel">
-          <div class="panel-header">
-            <h3><i class="fa-solid fa-triangle-exclamation"></i> Alertas de Documentos</h3>
-            <a routerLink="/equipment" class="link-action">Ver equipos</a>
-          </div>
+        <app-page-card title="Alertas de Documentos">
+          <aero-button header-actions variant="text" size="small" routerLink="/equipment"
+            >Ver equipos</aero-button
+          >
+
           <div class="alerts-row">
             <div class="alert-group" [class.has-alerts]="documentAlerts.equipment.expired > 0">
               <div class="alert-group-title"><i class="fa-solid fa-tractor"></i> Equipos</div>
               <div class="badges-row">
                 @if (documentAlerts.equipment.expired > 0) {
-                  <span class="pill pill-red">{{ documentAlerts.equipment.expired }} vencidos</span>
+                  <aero-badge variant="error"
+                    >{{ documentAlerts.equipment.expired }} vencidos</aero-badge
+                  >
                 }
                 @if (documentAlerts.equipment.critical > 0) {
-                  <span class="pill pill-orange"
-                    >{{ documentAlerts.equipment.critical }} críticos</span
+                  <aero-badge variant="warning"
+                    >{{ documentAlerts.equipment.critical }} críticos</aero-badge
                   >
                 }
                 @if (documentAlerts.equipment.warning > 0) {
-                  <span class="pill pill-yellow"
-                    >{{ documentAlerts.equipment.warning }} por vencer</span
+                  <aero-badge variant="info"
+                    >{{ documentAlerts.equipment.warning }} por vencer</aero-badge
                   >
                 }
                 @if (
@@ -67,7 +85,7 @@ import {
                   documentAlerts.equipment.critical === 0 &&
                   documentAlerts.equipment.warning === 0
                 ) {
-                  <span class="pill pill-green">Todo vigente</span>
+                  <aero-badge variant="success">Todo vigente</aero-badge>
                 }
               </div>
             </div>
@@ -76,16 +94,18 @@ import {
               <div class="alert-group-title"><i class="fa-solid fa-id-card"></i> Operadores</div>
               <div class="badges-row">
                 @if (documentAlerts.operators.expired > 0) {
-                  <span class="pill pill-red">{{ documentAlerts.operators.expired }} vencidos</span>
+                  <aero-badge variant="error"
+                    >{{ documentAlerts.operators.expired }} vencidos</aero-badge
+                  >
                 }
                 @if (documentAlerts.operators.critical > 0) {
-                  <span class="pill pill-orange"
-                    >{{ documentAlerts.operators.critical }} críticos</span
+                  <aero-badge variant="warning"
+                    >{{ documentAlerts.operators.critical }} críticos</aero-badge
                   >
                 }
                 @if (documentAlerts.operators.warning > 0) {
-                  <span class="pill pill-yellow"
-                    >{{ documentAlerts.operators.warning }} por vencer</span
+                  <aero-badge variant="info"
+                    >{{ documentAlerts.operators.warning }} por vencer</aero-badge
                   >
                 }
                 @if (
@@ -93,7 +113,7 @@ import {
                   documentAlerts.operators.critical === 0 &&
                   documentAlerts.operators.warning === 0
                 ) {
-                  <span class="pill pill-green">Todo vigente</span>
+                  <aero-badge variant="success">Todo vigente</aero-badge>
                 }
               </div>
             </div>
@@ -104,16 +124,18 @@ import {
               </div>
               <div class="badges-row">
                 @if (documentAlerts.contracts.expired > 0) {
-                  <span class="pill pill-red">{{ documentAlerts.contracts.expired }} vencidos</span>
+                  <aero-badge variant="error"
+                    >{{ documentAlerts.contracts.expired }} vencidos</aero-badge
+                  >
                 }
                 @if (documentAlerts.contracts.critical > 0) {
-                  <span class="pill pill-orange"
-                    >{{ documentAlerts.contracts.critical }} críticos</span
+                  <aero-badge variant="warning"
+                    >{{ documentAlerts.contracts.critical }} críticos</aero-badge
                   >
                 }
                 @if (documentAlerts.contracts.warning > 0) {
-                  <span class="pill pill-yellow"
-                    >{{ documentAlerts.contracts.warning }} por vencer</span
+                  <aero-badge variant="info"
+                    >{{ documentAlerts.contracts.warning }} por vencer</aero-badge
                   >
                 }
                 @if (
@@ -121,21 +143,25 @@ import {
                   documentAlerts.contracts.critical === 0 &&
                   documentAlerts.contracts.warning === 0
                 ) {
-                  <span class="pill pill-green">Todo vigente</span>
+                  <aero-badge variant="success">Todo vigente</aero-badge>
                 }
               </div>
             </div>
           </div>
-        </div>
+        </app-page-card>
       }
 
       <!-- Overdue Inspections Alert -->
       @if (overdueInspections.length > 0) {
-        <div class="panel dashboard-panel overdue-panel">
-          <div class="panel-header">
-            <h3><i class="fa-solid fa-clock-rotate-left"></i> Inspecciones Vencidas</h3>
-            <a routerLink="/checklists/inspections" class="link-action">Ir a inspecciones</a>
-          </div>
+        <app-page-card title="Inspecciones Vencidas" class="overdue-card">
+          <aero-button
+            header-actions
+            variant="text"
+            size="small"
+            routerLink="/checklists/inspections"
+            >Ir a inspecciones</aero-button
+          >
+
           <div class="overdue-list">
             @for (
               item of overdueInspections.slice(0, 8);
@@ -148,15 +174,13 @@ import {
                 </div>
                 <div class="overdue-template">{{ item.plantilla_nombre }}</div>
                 <div class="overdue-meta">
-                  <span class="pill pill-red" *ngIf="item.dias_vencido >= 999"
-                    >Nunca inspeccionado</span
-                  >
-                  <span
-                    class="pill pill-red"
-                    *ngIf="item.dias_vencido > 0 && item.dias_vencido < 999"
-                    >{{ item.dias_vencido }}d vencido</span
-                  >
-                  <span class="pill pill-grey">{{ item.frecuencia }}</span>
+                  @if (item.dias_vencido >= 999) {
+                    <aero-badge variant="error">Nunca inspeccionado</aero-badge>
+                  }
+                  @if (item.dias_vencido > 0 && item.dias_vencido < 999) {
+                    <aero-badge variant="error">{{ item.dias_vencido }}d vencido</aero-badge>
+                  }
+                  <aero-badge variant="neutral">{{ item.frecuencia }}</aero-badge>
                 </div>
               </div>
             }
@@ -166,32 +190,34 @@ import {
               <span class="text-muted">y {{ overdueInspections.length - 8 }} más...</span>
             </div>
           }
-        </div>
+        </app-page-card>
       }
 
       <div class="dashboard-grid">
         <!-- Daily Report Reception -->
-        <div class="panel dashboard-panel">
-          <div class="panel-header">
-            <h3><i class="fa-solid fa-clipboard-check"></i> Recepción de Partes Diarios</h3>
-            <div class="panel-controls">
-              <input
-                type="month"
-                [(ngModel)]="selectedMonth"
-                (change)="loadReceptionStatus()"
-                class="month-input-premium"
-              />
-              <a routerLink="/equipment/daily-reports/reception" class="link-action">Ver todo</a>
-            </div>
+        <app-page-card title="Recepción de Partes Diarios" [noPadding]="true">
+          <div header-actions class="panel-controls">
+            <input
+              type="month"
+              [(ngModel)]="selectedMonth"
+              (change)="loadReceptionStatus()"
+              class="month-input"
+            />
+            <aero-button variant="text" size="small" routerLink="/equipment/daily-reports/reception"
+              >Ver todo</aero-button
+            >
           </div>
 
           @if (receptionStatus.length === 0 && !loadingReception) {
-            <p class="empty-text">Sin datos para el período seleccionado.</p>
+            <div class="empty-state">
+              <i class="fa-solid fa-clipboard"></i>
+              <p>Sin datos para el período seleccionado.</p>
+            </div>
           } @else if (loadingReception) {
             <div class="loading-inline"><div class="dots-loader"></div></div>
           } @else {
-            <div class="reception-table-premium">
-              <table>
+            <div class="mini-table-wrap">
+              <table class="mini-table">
                 <thead>
                   <tr>
                     <th>Equipo</th>
@@ -204,8 +230,8 @@ import {
                 <tbody>
                   @for (item of receptionStatus.slice(0, 8); track item.equipo_id) {
                     <tr
-                      [class.row-soft-danger]="(item?.porcentaje_recepcion || 0) < 50"
-                      [class.row-soft-warning]="
+                      [class.row-danger]="(item?.porcentaje_recepcion || 0) < 50"
+                      [class.row-warning]="
                         (item?.porcentaje_recepcion || 0) >= 50 &&
                         (item?.porcentaje_recepcion || 0) < 80
                       "
@@ -217,13 +243,13 @@ import {
                         >
                       </td>
                       <td class="text-center">{{ item.total_dias }}</td>
-                      <td class="text-center text-success">{{ item.reportes_recibidos }}</td>
-                      <td class="text-center text-danger">{{ item.reportes_pendientes }}</td>
+                      <td class="text-center font-semibold">{{ item.reportes_recibidos }}</td>
+                      <td class="text-center font-semibold">{{ item.reportes_pendientes }}</td>
                       <td>
-                        <div class="progress-cell-premium">
-                          <div class="progress-bar-wrap-slim">
+                        <div class="progress-cell">
+                          <div class="progress-bar-track">
                             <div
-                              class="progress-fill"
+                              class="progress-bar-fill"
                               [ngClass]="getPercentClass(item?.porcentaje_recepcion || 0)"
                               [style.width.%]="item?.porcentaje_recepcion || 0"
                             ></div>
@@ -238,44 +264,42 @@ import {
                 </tbody>
               </table>
               @if (receptionStatus.length > 8) {
-                <div class="footer-actions">
-                  <a routerLink="/equipment/daily-reports/reception" class="link-action"
-                    >Ver los {{ receptionStatus.length }} equipos</a
+                <div class="table-footer">
+                  <aero-button
+                    variant="text"
+                    size="small"
+                    routerLink="/equipment/daily-reports/reception"
+                    >Ver los {{ receptionStatus.length }} equipos</aero-button
                   >
                 </div>
               }
             </div>
           }
-        </div>
+        </app-page-card>
 
         <!-- Inspection Tracking Panel -->
-        <div class="panel dashboard-panel">
-          <div class="panel-header">
-            <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Seguimiento de Inspecciones</h3>
-            <a routerLink="/equipment/inspection-tracking" class="link-action">Ver todo</a>
-            <div class="panel-controls">
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="soloAbiertas"
-                  (change)="loadInspectionTracking()"
-                />
-                <span class="slider"></span>
-                <span class="toggle-text">Solo abiertas</span>
-              </label>
-            </div>
+        <app-page-card title="Seguimiento de Inspecciones" [noPadding]="true">
+          <div header-actions class="panel-controls">
+            <aero-toggle
+              [(ngModel)]="soloAbiertas"
+              (ngModelChange)="loadInspectionTracking()"
+              label="Solo abiertas"
+            ></aero-toggle>
+            <aero-button variant="text" size="small" routerLink="/equipment/inspection-tracking"
+              >Ver todo</aero-button
+            >
           </div>
 
           @if (loadingInspection) {
             <div class="loading-inline"><div class="dots-loader"></div></div>
           } @else if (inspectionTracking.length === 0) {
-            <div class="empty-state-dashboard">
+            <div class="empty-state">
               <i class="fa-solid fa-circle-check"></i>
               <p>Sin observaciones {{ soloAbiertas ? 'abiertas' : '' }} registradas.</p>
             </div>
           } @else {
-            <div class="reception-table-premium">
-              <table>
+            <div class="mini-table-wrap">
+              <table class="mini-table">
                 <thead>
                   <tr>
                     <th>Equipo</th>
@@ -287,8 +311,8 @@ import {
                 <tbody>
                   @for (item of inspectionTracking.slice(0, 8); track item.equipo_id) {
                     <tr
-                      [class.row-soft-danger]="item.observaciones_abiertas > 3"
-                      [class.row-soft-warning]="
+                      [class.row-danger]="item.observaciones_abiertas > 3"
+                      [class.row-warning]="
                         item.observaciones_abiertas > 0 && item.observaciones_abiertas <= 3
                       "
                     >
@@ -298,11 +322,9 @@ import {
                       </td>
                       <td class="text-center">
                         @if (item.observaciones_abiertas > 0) {
-                          <span class="pill-count count-red">{{
-                            item.observaciones_abiertas
-                          }}</span>
+                          <aero-badge variant="error">{{ item.observaciones_abiertas }}</aero-badge>
                         } @else {
-                          <span class="pill-count count-green">0</span>
+                          <aero-badge variant="success">0</aero-badge>
                         }
                       </td>
                       <td>
@@ -328,10 +350,10 @@ import {
               </table>
             </div>
           }
-        </div>
+        </app-page-card>
       </div>
 
-      <!-- Quick Access: Removed tab modules -->
+      <!-- Quick Access -->
       <div class="quick-access-section">
         <h3 class="section-title"><i class="fa-solid fa-bolt"></i> Acceso rápido</h3>
         <div class="quick-links-row">
@@ -367,8 +389,6 @@ import {
   `,
   styles: [
     `
-      @use 'detail-layout' as *;
-
       .stats-section {
         margin-bottom: var(--s-24);
       }
@@ -377,72 +397,18 @@ import {
         display: grid;
         grid-template-columns: 1.5fr 1fr;
         gap: var(--s-24);
+        margin-top: var(--s-24);
 
         @media (max-width: 1200px) {
           grid-template-columns: 1fr;
         }
       }
 
-      .dashboard-panel {
-        background: var(--grey-100);
-        border: 1px solid var(--grey-100);
-        border-radius: var(--radius-lg);
-        padding: var(--s-24);
-        box-shadow: var(--shadow-sm);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: var(--s-24);
-
-        h3 {
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--grey-900);
-          display: flex;
-          align-items: center;
-          gap: var(--s-12);
-          margin: 0;
-
-          i {
-            color: var(--primary-500);
-            background: var(--primary-50);
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 14px;
-          }
-        }
-      }
-
-      .panel-controls {
-        display: flex;
-        align-items: center;
-        gap: var(--s-16);
-      }
-
-      .link-action {
-        font-size: 13px;
-        color: var(--primary-600);
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.2s;
-
-        &:hover {
-          color: var(--primary-800);
-          text-decoration: underline;
-        }
-      }
-
+      /* ─── Alert Groups ────────────────────────────── */
       .alerts-row {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: var(--s-16);
-        margin-bottom: var(--s-8);
 
         @media (max-width: 768px) {
           grid-template-columns: 1fr;
@@ -459,7 +425,6 @@ import {
         &:hover {
           border-color: var(--grey-200);
           background: var(--grey-100);
-          box-shadow: var(--shadow-sm);
         }
 
         &.has-alerts {
@@ -485,104 +450,86 @@ import {
       .badges-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: var(--s-4);
       }
 
-      .pill {
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
+      /* ─── Overdue Card ────────────────────────────── */
+      :host ::ng-deep .overdue-card .page-card {
+        border-left: 3px solid var(--semantic-red-500);
       }
 
-      .pill-red {
-        background: var(--semantic-red-50);
-        color: var(--grey-900);
-      }
-
-      .pill-orange {
-        background: var(--semantic-orange-50);
-        color: var(--semantic-orange-700);
-      }
-
-      .pill-yellow {
-        background: var(--semantic-yellow-50);
-        color: var(--grey-900);
-      }
-
-      .pill-green {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-
-      .pill-grey {
-        background: var(--grey-100);
-        color: var(--grey-600);
-      }
-
-      /* Overdue Panel */
-      .overdue-panel {
-        border-color: var(--semantic-red-200);
-        background: var(--semantic-red-50, #fef2f2);
-      }
       .overdue-list {
         display: flex;
         flex-direction: column;
       }
+
       .overdue-row {
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 8px 16px;
-        border-bottom: 1px solid var(--grey-100, #fecaca);
+        gap: var(--s-16);
+        padding: var(--s-8) var(--s-16);
+        border-bottom: 1px solid var(--grey-100);
         font-size: 13px;
+
+        &:last-child {
+          border-bottom: none;
+        }
       }
-      .overdue-row:last-child {
-        border-bottom: none;
-      }
+
       .overdue-equipo {
         flex: 0 0 200px;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--s-8);
       }
+
       .overdue-codigo {
         font-weight: 700;
         color: var(--primary-700);
       }
+
       .overdue-desc {
         color: var(--grey-600);
         font-size: 12px;
       }
+
       .overdue-template {
         flex: 1;
         color: var(--grey-700);
         font-size: 12px;
       }
+
       .overdue-meta {
         display: flex;
-        gap: 6px;
+        gap: var(--s-4);
         align-items: center;
       }
+
       .panel-footer {
-        padding: 8px 16px;
+        padding: var(--s-8) var(--s-16);
         text-align: center;
-        border-top: 1px solid var(--grey-100, #fecaca);
+        border-top: 1px solid var(--grey-100);
       }
+
       .text-muted {
         color: var(--grey-500);
         font-size: 12px;
       }
 
-      .month-input-premium {
+      /* ─── Panel Controls ──────────────────────────── */
+      .panel-controls {
+        display: flex;
+        align-items: center;
+        gap: var(--s-16);
+      }
+
+      .month-input {
         border: 1px solid var(--grey-200);
-        border-radius: 8px;
-        padding: 6px 12px;
+        border-radius: var(--radius-md);
+        padding: var(--s-4) var(--s-12);
         font-size: 13px;
         color: var(--grey-700);
-        background: var(--grey-100);
+        background: var(--grey-50);
         font-weight: 500;
         outline: none;
         transition: border-color 0.2s;
@@ -593,64 +540,47 @@ import {
         }
       }
 
-      .reception-table-premium {
+      /* ─── Mini-Table (dashboard widget tables) ───── */
+      .mini-table-wrap {
         overflow-x: auto;
-        flex: 1;
+      }
 
-        table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0 4px;
-          font-size: 13px;
-        }
+      .mini-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
 
         th {
           text-align: left;
-          padding: 8px 12px;
+          padding: var(--s-8) var(--s-16);
           color: var(--grey-500);
           font-weight: 600;
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          border-bottom: 1px solid var(--grey-100);
         }
 
         td {
-          padding: 12px;
-          background: var(--grey-100);
-          border-top: 1px solid var(--grey-50);
+          padding: var(--s-12) var(--s-16);
           border-bottom: 1px solid var(--grey-50);
-
-          &:first-child {
-            border-left: 1px solid var(--grey-50);
-            border-top-left-radius: 8px;
-            border-bottom-left-radius: 8px;
-          }
-
-          &:last-child {
-            border-right: 1px solid var(--grey-50);
-            border-top-right-radius: 8px;
-            border-bottom-right-radius: 8px;
-          }
         }
 
-        tr {
-          transition: transform 0.2s;
-        }
+        tbody tr {
+          transition: background 0.15s;
 
-        tr:hover td {
-          background: var(--grey-50);
-          cursor: pointer;
+          &:hover {
+            background: var(--grey-50);
+          }
         }
       }
 
-      .row-soft-danger td {
-        background: var(--semantic-red-50) !important;
-        border-color: var(--grey-100) !important;
+      .row-danger td {
+        background: var(--semantic-red-50);
       }
 
-      .row-soft-warning td {
-        background: var(--semantic-yellow-50) !important;
-        border-color: var(--grey-100) !important;
+      .row-warning td {
+        background: var(--semantic-yellow-50);
       }
 
       .equipo-cell {
@@ -674,22 +604,19 @@ import {
         text-align: center;
       }
 
-      .text-success {
-        color: var(--primary-900);
+      .font-semibold {
+        font-weight: 600;
       }
 
-      .text-danger {
-        color: var(--grey-900);
-      }
-
-      .progress-cell-premium {
+      /* ─── Progress Bar ────────────────────────────── */
+      .progress-cell {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--s-12);
         min-width: 120px;
       }
 
-      .progress-bar-wrap-slim {
+      .progress-bar-track {
         flex: 1;
         height: 6px;
         background: var(--grey-100);
@@ -697,55 +624,39 @@ import {
         overflow: hidden;
       }
 
-      .footer-actions {
-        margin-top: var(--s-16);
+      .progress-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.3s ease;
+      }
+
+      .fill-green {
+        background: var(--semantic-green-500);
+      }
+
+      .fill-yellow {
+        background: var(--semantic-yellow-500);
+      }
+
+      .fill-red {
+        background: var(--semantic-red-500);
+      }
+
+      .pct {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--grey-600);
+        min-width: 32px;
+        text-align: right;
+      }
+
+      .table-footer {
         text-align: center;
-        padding-top: var(--s-16);
+        padding: var(--s-12);
         border-top: 1px solid var(--grey-50);
       }
 
-      .empty-state-dashboard {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: var(--s-48) 0;
-        color: var(--grey-400);
-
-        i {
-          font-size: 32px;
-          color: var(--grey-200);
-          margin-bottom: var(--s-12);
-        }
-
-        p {
-          font-size: 14px;
-          margin: 0;
-        }
-      }
-
-      .pill-count {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 24px;
-        height: 24px;
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 0 6px;
-      }
-
-      .count-red {
-        background: var(--semantic-red-50);
-        color: var(--accent-500);
-      }
-
-      .count-green {
-        background: var(--semantic-green-50);
-        color: var(--semantic-blue-500);
-      }
-
+      /* ─── Observation Summary ─────────────────────── */
       .obs-summary {
         display: flex;
         flex-direction: column;
@@ -773,53 +684,24 @@ import {
         }
       }
 
-      /* Toggle Switch */
-      .toggle-switch {
-        position: relative;
+      /* ─── Empty & Loading States ──────────────────── */
+      .empty-state {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 8px;
-        cursor: pointer;
+        justify-content: center;
+        padding: var(--s-32) 0;
+        color: var(--grey-400);
 
-        input {
-          opacity: 0;
-          width: 0;
-          height: 0;
+        i {
+          font-size: 32px;
+          color: var(--grey-200);
+          margin-bottom: var(--s-12);
         }
 
-        .slider {
-          width: 34px;
-          height: 18px;
-          background-color: var(--grey-300);
-          transition: 0.4s;
-          border-radius: 34px;
-          position: relative;
-
-          &:before {
-            position: absolute;
-            content: '';
-            height: 14px;
-            width: 14px;
-            left: 2px;
-            bottom: 2px;
-            background-color: var(--grey-100);
-            transition: 0.4s;
-            border-radius: 50%;
-          }
-        }
-
-        input:checked + .slider {
-          background-color: var(--primary-500);
-        }
-
-        input:checked + .slider:before {
-          transform: translateX(16px);
-        }
-
-        .toggle-text {
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--grey-600);
+        p {
+          font-size: 14px;
+          margin: 0;
         }
       }
 
@@ -834,10 +716,10 @@ import {
         height: 10px;
         background: radial-gradient(circle closest-side, var(--primary-300) 90%, transparent) 0
           0/33% 100% space;
-        animation: d 0.75s infinite linear;
+        animation: dots 0.75s infinite linear;
       }
 
-      @keyframes d {
+      @keyframes dots {
         20% {
           background-position: 0% 0%;
         }
@@ -849,6 +731,7 @@ import {
         }
       }
 
+      /* ─── Quick Access ────────────────────────────── */
       .quick-access-section {
         margin-top: var(--s-24);
       }
@@ -865,8 +748,8 @@ import {
         i {
           color: var(--primary-500);
           background: var(--primary-50);
-          padding: 8px;
-          border-radius: 8px;
+          padding: var(--s-8);
+          border-radius: var(--radius-md);
           font-size: 14px;
         }
       }
@@ -886,9 +769,9 @@ import {
         align-items: center;
         gap: var(--s-16);
         padding: var(--s-16) var(--s-24);
-        background: var(--grey-100);
+        background: white;
         border: 1px solid var(--grey-100);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-md);
         text-decoration: none;
         transition: all 0.2s;
 
@@ -902,7 +785,7 @@ import {
       .ql-icon {
         width: 40px;
         height: 40px;
-        border-radius: 10px;
+        border-radius: var(--radius-md);
         background: var(--primary-50);
         color: var(--primary-600);
         display: flex;
@@ -950,6 +833,7 @@ import {
   ],
 })
 export class EquipmentDashboardComponent implements OnInit {
+  tabs = EQUIPMENT_TABS;
   private dailyReportService = inject(DailyReportService);
   private dashboardService = inject(DashboardApiService);
   private equipmentService = inject(EquipmentService);
@@ -1038,39 +922,32 @@ export class EquipmentDashboardComponent implements OnInit {
   }
 
   loadEquipmentStats(): void {
-    this.equipmentService.getAll({ limit: '200' }).subscribe({
-      next: (response) => {
-        const equipos = Array.isArray(response) ? response : (response as any).data || [];
-        const total = equipos.length;
-        const disponibles = equipos.filter((e: any) => e.estado === 'DISPONIBLE').length;
-        const enUso = equipos.filter((e: any) => e.estado === 'EN_USO').length;
-        const propios = equipos.filter(
-          (e: any) => e.es_propio || e.tipo_proveedor === 'PROPIO'
-        ).length;
-
+    this.equipmentService.getStatistics().subscribe({
+      next: (response: any) => {
+        const stats = response || {};
         this.summaryStats = [
           {
             label: 'Total Equipos',
-            value: total,
+            value: stats.total ?? 0,
             icon: 'fa-tractor',
             color: 'primary',
           },
           {
             label: 'Disponibles',
-            value: disponibles,
+            value: stats.disponible ?? 0,
             icon: 'fa-circle-check',
             color: 'success',
           },
           {
             label: 'En Uso',
-            value: enUso,
+            value: stats.en_uso ?? 0,
             icon: 'fa-gears',
             color: 'warning',
           },
           {
-            label: 'Propios',
-            value: propios,
-            icon: 'fa-building',
+            label: 'Mantenimiento',
+            value: stats.mantenimiento ?? 0,
+            icon: 'fa-wrench',
             color: 'info',
           },
         ];

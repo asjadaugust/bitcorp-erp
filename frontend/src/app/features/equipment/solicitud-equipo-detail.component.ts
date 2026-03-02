@@ -13,7 +13,7 @@ import {
   AuditInfo,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-solicitud-equipo-detail',
@@ -24,7 +24,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     RouterModule,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -93,58 +93,58 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <ng-container entity-sidebar-actions>
         @if (solicitud) {
           @if (solicitud.estado === 'BORRADOR') {
-            <app-button
+            <aero-button
               variant="primary"
-              icon="fa-paper-plane"
-              label="Enviar para Aprobación"
+              iconLeft="fa-paper-plane"
               [fullWidth]="true"
               (clicked)="enviar()"
-            ></app-button>
-            <app-button
+              >Enviar para Aprobación</aero-button
+            >
+            <aero-button
               variant="secondary"
-              icon="fa-pen"
-              label="Editar Solicitud"
+              iconLeft="fa-pen"
               [fullWidth]="true"
               [routerLink]="['edit']"
-            ></app-button>
+              >Editar Solicitud</aero-button
+            >
           }
 
           @if (solicitud.estado === 'APROBADO') {
-            <app-button
+            <aero-button
               variant="primary"
-              icon="fa-balance-scale"
-              label="Cuadro Comparativo"
+              iconLeft="fa-balance-scale"
               [fullWidth]="true"
               [routerLink]="['comparacion']"
-            ></app-button>
+              >Cuadro Comparativo</aero-button
+            >
           }
 
           @if (solicitud.estado === 'ENVIADO') {
-            <app-button
-              variant="success"
-              icon="fa-check"
-              label="Aprobar Solicitud"
+            <aero-button
+              variant="primary"
+              iconLeft="fa-check"
               [fullWidth]="true"
               (clicked)="aprobar()"
-            ></app-button>
-            <app-button
+              >Aprobar Solicitud</aero-button
+            >
+            <aero-button
               variant="danger"
-              icon="fa-times"
-              label="Rechazar Solicitud"
+              iconLeft="fa-times"
               [fullWidth]="true"
               (clicked)="rechazar()"
-            ></app-button>
+              >Rechazar Solicitud</aero-button
+            >
           }
 
           <hr class="sidebar-divider" />
 
-          <app-button
+          <aero-button
             variant="ghost"
-            icon="fa-arrow-left"
-            label="Volver a Lista"
+            iconLeft="fa-arrow-left"
             [fullWidth]="true"
             routerLink="/equipment/solicitudes"
-          ></app-button>
+            >Volver a Lista</aero-button
+          >
         }
       </ng-container>
 

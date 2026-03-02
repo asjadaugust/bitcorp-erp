@@ -56,6 +56,23 @@ export interface Breadcrumb {
         <app-aero-tabs [tabs]="tabs"></app-aero-tabs>
       </div>
 
+      <!-- Sub-Tab Navigation (Optional — pill button group) -->
+      <div class="subtab-container" *ngIf="subtabs && subtabs.length > 0">
+        <nav class="subtab-bar">
+          <ng-container *ngFor="let tab of subtabs">
+            <a
+              *ngIf="tab.route"
+              [routerLink]="tab.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="tab.exact ? { exact: true } : { exact: false }"
+              class="subtab-item"
+            >
+              {{ tab.label }}
+            </a>
+          </ng-container>
+        </nav>
+      </div>
+
       <!-- Content Area with Loading Overlay -->
       <div class="content-wrapper">
         <div class="loading-overlay" *ngIf="loading">
@@ -79,6 +96,40 @@ export interface Breadcrumb {
       .nav-container {
         padding: 0 54px;
         background: transparent;
+      }
+
+      .subtab-container {
+        padding: 0 54px;
+      }
+
+      .subtab-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid var(--grey-200);
+      }
+
+      .subtab-item {
+        padding: var(--s-8) var(--s-16);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--grey-700);
+        text-decoration: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.15s;
+        white-space: nowrap;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      }
+
+      .subtab-item:hover {
+        color: var(--primary-800);
+        background: var(--primary-100);
+      }
+
+      .subtab-item.active {
+        color: var(--primary-800);
+        border-bottom-color: var(--primary-500);
+        font-weight: 600;
       }
 
       /* Header */
@@ -282,6 +333,19 @@ export interface Breadcrumb {
           padding: 0 var(--s-16);
         }
 
+        .subtab-container {
+          padding: 0 var(--s-16);
+        }
+
+        .subtab-bar {
+          overflow-x: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .subtab-bar::-webkit-scrollbar {
+          display: none;
+        }
+
         .tab-navigation {
           gap: var(--s-2);
           margin-top: var(--s-4);
@@ -301,5 +365,6 @@ export class PageLayoutComponent {
   @Input() breadcrumbs: Breadcrumb[] = [];
   @Input() loading = false;
   @Input() tabs?: TabItem[];
+  @Input() subtabs?: TabItem[];
   @Input() backUrl?: string;
 }

@@ -8,6 +8,7 @@ import {
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
+import { LOGISTICS_TABS } from '../../logistics-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -23,8 +24,8 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../../../shared/components/stats-grid/stats-grid.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-movement-list',
@@ -39,7 +40,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ExportDropdownComponent,
     ActionsContainerComponent,
     StatsGridComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -47,20 +48,21 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       icon="fa-right-left"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
-        <app-button
+        <aero-button
           variant="primary"
-          label="Registrar Ingreso"
-          icon="fa-arrow-right-to-bracket"
+          iconLeft="fa-arrow-right-to-bracket"
           (clicked)="registerMovement('entrada')"
-        ></app-button>
-        <app-button
+          >Registrar Ingreso</aero-button
+        >
+        <aero-button
           variant="danger"
-          label="Registrar Salida"
-          icon="fa-arrow-right-from-bracket"
+          iconLeft="fa-arrow-right-from-bracket"
           (clicked)="registerMovement('salida')"
-        ></app-button>
+          >Registrar Salida</aero-button
+        >
         <app-export-dropdown
           (export)="handleExport($event)"
           [disabled]="loading || movements.length === 0"
@@ -120,13 +122,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             title="Ver Detalles"
             (clicked)="viewDetails(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -172,6 +174,7 @@ export class MovementListComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private router = inject(Router);
 
+  tabs = LOGISTICS_TABS;
   movements: Movement[] = [];
   filteredMovements: Movement[] = [];
   loading = false;

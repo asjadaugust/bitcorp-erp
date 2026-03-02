@@ -14,7 +14,7 @@ import {
   FilterConfig,
 } from '../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -29,7 +29,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     FilterBarComponent,
     ActionsContainerComponent,
     MaintenanceCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -44,12 +44,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       [loading]="loading"
     >
       <app-actions-container actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Programación"
-          (clicked)="createSchedule()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createSchedule()"
+          >Nueva Programación</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -74,11 +71,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           <div class="empty-icon">📅</div>
           <h3>No hay programaciones</h3>
           <p>Crea una nueva programación de mantenimiento para tus equipos.</p>
-          <app-button
-            variant="primary"
-            label="Nueva Programación"
-            (clicked)="createSchedule()"
-          ></app-button>
+          <aero-button variant="primary" (clicked)="createSchedule()"
+            >Nueva Programación</aero-button
+          >
         </div>
       </div>
     </app-page-layout>

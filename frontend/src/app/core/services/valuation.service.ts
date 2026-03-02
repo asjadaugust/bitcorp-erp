@@ -306,44 +306,17 @@ export class ValuationService {
     if (filters?.['page']) params = params.set('page', filters['page'].toString());
     if (filters?.['limit']) params = params.set('limit', filters['limit'].toString());
 
-    console.log('[DEBUG] ValuationService.getRegistry calling API...');
+    // Backend returns { success, data: [...], pagination: { total, page, limit, total_pages } }
+    // The apiResponseInterceptor does NOT unwrap paginated responses (pagination key present)
     return this.http.get<Record<string, unknown>>(`${this.apiUrl}/registry`, { params }).pipe(
       map((response) => {
-        console.log('[DEBUG] getRegistry raw response:', response);
-
-        // 1. Unwrap the outer "data" envelope if it exists (standard API wrapper)
-        // The API returns { success: true, data: { data: [], total: N, summary: ... } }
-        let payload = response;
-        if (
-          response &&
-          response['data'] &&
-          !Array.isArray(response['data']) &&
-          (response['data'] as any)['data']
-        ) {
-          payload = response['data'] as Record<string, unknown>;
-        }
-
-        console.log('[DEBUG] getRegistry payload keys:', payload ? Object.keys(payload) : 'null');
-
-        // 2. Handle pagination/summary structure { data: [], total: N, summary: ... }
-        if (payload && payload['summary'] && Array.isArray(payload['data'])) {
-          console.log('[DEBUG] Mapping paginated data, count:', payload['data'].length);
-          return {
-            ...payload,
-            data: payload['data'].map((item: Record<string, unknown>) => this.toCamelCase(item)),
-          };
-        }
-
-        // 3. Fallback for simple array or standard list response
-        const list = Array.isArray(payload) ? payload : payload['data'] || [];
-        console.log(
-          '[DEBUG] Fallback mapping list, length:',
-          Array.isArray(list) ? list.length : 'not-array'
-        );
-
-        return Array.isArray(list)
-          ? list.map((item: Record<string, unknown>) => this.toCamelCase(item))
-          : list;
+        const items = (response['data'] as Record<string, unknown>[]) || [];
+        const pagination = response['pagination'] as Record<string, number> | undefined;
+        return {
+          data: items.map((item) => this.toCamelCase(item)),
+          total: pagination?.['total'] || items.length,
+          summary: null,
+        };
       }),
       catchError((error) => {
         return throwError(() => error);
@@ -380,6 +353,124 @@ export class ValuationService {
     return this.http
       .get<Record<string, unknown>>(`${this.apiUrl}/${valuationId}/payment-documents/check`)
       .pipe(map((response) => (response?.['data'] || response) as { complete: boolean }));
+  }
+
+  // ─── Valorizar (calculation engine) ───
+
+  valorizar(id: number | string): Observable<Valuation> {
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${id}/valorizar`, {})
+      .pipe(
+        map((response) =>
+          this.toCamelCase((response?.['data'] || response) as Record<string, unknown>)
+        )
+      );
+  }
+
+  getResumen(id: number | string): Observable<Record<string, unknown>> {
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/${id}/resumen`)
+      .pipe(map((response) => (response?.['data'] || response) as Record<string, unknown>));
+  }
+
+  getResumenAcumulado(id: number | string): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/resumen-acumulado`).pipe(
+      map((response) => {
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  getPartesDetalle(id: number | string): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/partes-detalle`).pipe(
+      map((response) => {
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  getCombustibleDetalle(id: number | string): Observable<Record<string, unknown>> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/combustible-detalle`).pipe(
+      map((response) => {
+        // Interceptor unwraps {success, data} → data automatically for non-paginated
+        // Backend returns { items, total_galones, precio_promedio, total_importe, ratio }
+        // Frontend template expects { vales, resumen: { total_galones, ... } }
+        const d = (response?.['data'] || response) as Record<string, unknown>;
+        return {
+          vales: (d['items'] as unknown[]) || [],
+          resumen: {
+            total_galones: d['total_galones'],
+            precio_promedio: d['precio_promedio'],
+            total_importe: d['total_importe'],
+            ratio: d['ratio'],
+          },
+        };
+      })
+    );
+  }
+
+  getGastosObra(id: number | string): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/gastos-obra`).pipe(
+      map((response) => {
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  createGastoObra(valId: number, data: Record<string, unknown>): Observable<unknown> {
+    return this.http
+      .post<Record<string, unknown>>(`${this.apiUrl}/${valId}/gastos-obra`, data)
+      .pipe(map((response) => response?.['data'] || response));
+  }
+
+  updateGastoObra(gastoId: number, data: Record<string, unknown>): Observable<unknown> {
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/gastos-obra/${gastoId}`, data)
+      .pipe(map((response) => response?.['data'] || response));
+  }
+
+  deleteGastoObra(gastoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/gastos-obra/${gastoId}`);
+  }
+
+  getAdelantos(id: number | string): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/adelantos`).pipe(
+      map((response) => {
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  createAdelanto(contractId: number, data: Record<string, unknown>): Observable<unknown> {
+    return this.http
+      .post<Record<string, unknown>>(`/api/contracts/${contractId}/adelantos`, data)
+      .pipe(map((response) => response?.['data'] || response));
+  }
+
+  deleteAdelanto(adelantoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/adelantos/${adelantoId}`);
+  }
+
+  getAnalisisCombustible(id: number | string): Observable<Record<string, unknown>[]> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${id}/analisis-combustible`).pipe(
+      map((response) => {
+        const data = response?.['data'] || response;
+        return Array.isArray(data) ? data : [];
+      })
+    );
+  }
+
+  updateAnalisisCombustible(
+    analisisId: number,
+    data: { ratio_control?: number; precio_unitario?: number }
+  ): Observable<unknown> {
+    return this.http
+      .put<Record<string, unknown>>(`${this.apiUrl}/analisis-combustible/${analisisId}`, data)
+      .pipe(map((response) => response?.['data'] || response));
   }
 
   // ─── Recalculate & Discount Events (Anexo B) ───

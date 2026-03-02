@@ -25,9 +25,9 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { forkJoin } from 'rxjs';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-maintenance-list',
@@ -42,7 +42,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     ExportDropdownComponent,
     ActionsContainerComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -54,12 +54,9 @@ import { ConfirmService } from '../../core/services/confirm.service';
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
 
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nuevo Mantenimiento"
-          (clicked)="navigateToCreate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToCreate()"
+          >Nuevo Mantenimiento</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -100,27 +97,27 @@ import { ConfirmService } from '../../core/services/confirm.service';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             title="Ver Detalles"
             (clicked)="viewRecord(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             title="Editar"
             (clicked)="editRecord(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-trash"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-trash"
             title="Eliminar"
             (clicked)="deleteRecord(row); $event.stopPropagation()"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>

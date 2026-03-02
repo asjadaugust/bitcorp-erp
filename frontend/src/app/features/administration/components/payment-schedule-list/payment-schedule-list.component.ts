@@ -12,6 +12,7 @@ import {
   PageLayoutComponent,
   Breadcrumb,
 } from '../../../../shared/components/page-layout/page-layout.component';
+import { ADMINISTRACION_TABS } from '../../administracion-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -23,7 +24,7 @@ import {
 } from '../../../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-payment-schedule-list',
@@ -36,7 +37,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
     ExportDropdownComponent,
     ActionsContainerComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -44,17 +45,15 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       icon="fa-calendar-check"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <app-export-dropdown [disabled]="schedules.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Programación"
-          (clicked)="createSchedule()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createSchedule()"
+          >Nueva Programación</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -74,54 +73,54 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
+          <aero-button
             variant="ghost"
-            icon="fa-eye"
-            size="sm"
+            iconCenter="fa-eye"
+            size="small"
             (clicked)="viewSchedule(row)"
-          ></app-button>
+          ></aero-button>
 
           <!-- Draft status actions -->
           <ng-container *ngIf="row.estado === 'BORRADOR' || row.estado === 'PROGRAMADO'">
-            <app-button
+            <aero-button
               variant="ghost"
-              icon="fa-check"
-              size="sm"
+              iconCenter="fa-check"
+              size="small"
               (clicked)="approveSchedule(row)"
-            ></app-button>
-            <app-button
+            ></aero-button>
+            <aero-button
               variant="ghost"
-              icon="fa-pen"
-              size="sm"
+              iconCenter="fa-pen"
+              size="small"
               (clicked)="editSchedule(row)"
-            ></app-button>
-            <app-button
+            ></aero-button>
+            <aero-button
               variant="ghost"
-              icon="fa-trash"
-              size="sm"
+              iconCenter="fa-trash"
+              size="small"
               (clicked)="deleteSchedule(row)"
-            ></app-button>
+            ></aero-button>
           </ng-container>
 
           <!-- Approved status actions -->
-          <app-button
+          <aero-button
             *ngIf="row.estado === 'APROBADO'"
             variant="ghost"
-            icon="fa-play"
-            size="sm"
+            iconCenter="fa-play"
+            size="small"
             (clicked)="processSchedule(row)"
-          ></app-button>
+          ></aero-button>
 
           <!-- Cancel button (for draft/programado and approved) -->
-          <app-button
+          <aero-button
             *ngIf="
               row.estado === 'BORRADOR' || row.estado === 'PROGRAMADO' || row.estado === 'APROBADO'
             "
             variant="ghost"
-            icon="fa-ban"
-            size="sm"
+            iconCenter="fa-ban"
+            size="small"
             (clicked)="cancelSchedule(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -142,6 +141,7 @@ export class PaymentScheduleListComponent implements OnInit {
   private excelService = inject(ExcelExportService);
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
+  tabs = ADMINISTRACION_TABS;
   loading = false;
   schedules: PaymentSchedule[] = [];
   filteredSchedules: PaymentSchedule[] = [];

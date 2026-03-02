@@ -19,7 +19,7 @@ import {
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-user-list',
@@ -32,7 +32,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -42,12 +42,9 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       [loading]="loading"
     >
       <app-actions-container actions>
-        <app-button
-          variant="primary"
-          label="Nuevo Usuario"
-          icon="fa-plus"
-          (clicked)="createUser()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createUser()"
+          >Nuevo Usuario</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -92,27 +89,27 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             title="Editar"
             (clicked)="editUser(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-key"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-key"
             title="Resetear Contraseña"
             (clicked)="openPasswordReset(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            [icon]="row.is_active ? 'fa-ban' : 'fa-check'"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            [iconCenter]="row.is_active ? 'fa-ban' : 'fa-check'"
             [title]="row.is_active ? 'Desactivar' : 'Activar'"
             (clicked)="toggleActive(row); $event.stopPropagation()"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -133,12 +130,12 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       >
         <div class="modal-header">
           <h3><i class="fa-solid fa-key"></i> Resetear Contraseña</h3>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-xmark"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-xmark"
             (clicked)="closePasswordReset()"
-          ></app-button>
+          ></aero-button>
         </div>
         <div class="modal-body">
           <p>
@@ -162,18 +159,14 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
           </div>
         </div>
         <div class="modal-footer">
-          <app-button
-            variant="secondary"
-            label="Cancelar"
-            (clicked)="closePasswordReset()"
-          ></app-button>
-          <app-button
+          <aero-button variant="secondary" (clicked)="closePasswordReset()">Cancelar</aero-button>
+          <aero-button
             variant="primary"
-            label="Cambiar Contraseña"
             [loading]="passwordResetLoading"
             [disabled]="!newPassword || newPassword.length < 8 || passwordResetLoading"
             (clicked)="confirmPasswordReset()"
-          ></app-button>
+            >Cambiar Contraseña</aero-button
+          >
         </div>
       </div>
     </div>

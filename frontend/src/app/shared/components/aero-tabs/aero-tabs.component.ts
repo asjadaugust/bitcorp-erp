@@ -97,6 +97,13 @@ import { TabItem } from '../page-layout/page-layout.component';
         min-height: 48px;
         height: fit-content;
         position: relative;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .tab-navigation::-webkit-scrollbar {
+        display: none;
       }
 
       .tab-item {
@@ -241,26 +248,9 @@ export class AeroTabsComponent implements AfterViewInit {
   }
 
   calculateLayout() {
-    if (!this.nav) return;
-
-    // For now, let's implement a simple threshold-based disclosure
-    // or we could do actual width measurement.
-    // Let's try 5 tabs as a reasonable threshold for desktop.
-
-    const containerWidth = this.container.nativeElement.offsetWidth;
-    // Typical tab width is ~150px
-    const maxTabs = Math.floor(containerWidth / 150);
-
-    // Always show at least 2 tabs + More if needed
-    const showCount = Math.max(2, maxTabs - 1);
-
-    if (this.tabs.length > showCount) {
-      this.visibleTabs = this.tabs.slice(0, showCount);
-      this.hiddenTabs = this.tabs.slice(showCount);
-    } else {
-      this.visibleTabs = this.tabs;
-      this.hiddenTabs = [];
-    }
+    // Always show all tabs — the nav scrolls horizontally if needed
+    this.visibleTabs = this.tabs;
+    this.hiddenTabs = [];
   }
 
   toggleDropdown(event: Event) {

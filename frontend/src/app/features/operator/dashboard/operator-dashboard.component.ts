@@ -7,8 +7,7 @@ import {
   StatItem,
 } from '../../../shared/components/stats-grid/stats-grid.component';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
 
 interface DashboardStats {
   todayReports: number;
@@ -33,7 +32,7 @@ interface RecentReport {
     RouterModule,
     StatsGridComponent,
     PageLayoutComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     AeroBadgeComponent,
   ],
   template: `
@@ -95,12 +94,9 @@ interface RecentReport {
           <div *ngIf="recentReports.length === 0" class="empty-state">
             <i class="fa-solid fa-file-pen empty-icon"></i>
             <p>No hay partes diarios registrados</p>
-            <app-button
-              label="Crear primer parte"
-              icon="fa-plus"
-              variant="primary"
-              routerLink="/operator/daily-report"
-            ></app-button>
+            <aero-button iconLeft="fa-plus" variant="primary" routerLink="/operator/daily-report"
+              >Crear primer parte</aero-button
+            >
           </div>
         </div>
       </div>

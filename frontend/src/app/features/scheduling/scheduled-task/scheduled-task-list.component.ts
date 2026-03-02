@@ -23,7 +23,7 @@ import {
   AeroCardComponent,
   CardInfoItem,
 } from '../../../shared/components/aero-card/aero-card.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -39,7 +39,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ExportDropdownComponent,
     DropdownComponent,
     AeroCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -56,18 +56,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
 
-        <app-button
-          variant="secondary"
-          icon="fa-calendar"
-          label="Ver Calendario"
-          (clicked)="viewCalendar()"
-        ></app-button>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Tarea"
-          (clicked)="createTask()"
-        ></app-button>
+        <aero-button variant="secondary" iconLeft="fa-calendar" (clicked)="viewCalendar()"
+          >Ver Calendario</aero-button
+        >
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createTask()"
+          >Nueva Tarea</aero-button
+        >
       </app-actions-container>
 
       <div class="filters-card">
@@ -108,12 +102,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           <i class="fa-solid fa-circle-exclamation error-icon"></i>
           <h3>Error de Conexión</h3>
           <p>{{ error }}</p>
-          <app-button
-            variant="secondary"
-            icon="fa-sync"
-            label="Reintentar"
-            (clicked)="loadTasks()"
-          ></app-button>
+          <aero-button variant="secondary" iconLeft="fa-sync" (clicked)="loadTasks()"
+            >Reintentar</aero-button
+          >
         </div>
       </div>
 
@@ -135,29 +126,29 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             (cardClick)="viewTask(task.id)"
           >
             <div actions>
-              <app-button
+              <aero-button
                 *ngIf="task.estado === 'pending'"
-                variant="icon"
-                size="sm"
-                icon="fa-user-plus"
+                variant="ghost"
+                size="small"
+                iconCenter="fa-user-plus"
                 title="Asignar Operador"
                 (clicked)="assignTask(task, $event)"
-              ></app-button>
-              <app-button
+              ></aero-button>
+              <aero-button
                 *ngIf="task.estado !== 'completed' && task.estado !== 'cancelled'"
-                variant="icon"
-                size="sm"
-                icon="fa-check"
+                variant="ghost"
+                size="small"
+                iconCenter="fa-check"
                 title="Completar Tarea"
                 (clicked)="completeTask(task, $event)"
-              ></app-button>
-              <app-button
-                variant="icon"
-                size="sm"
-                icon="fa-pen"
+              ></aero-button>
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-pen"
                 title="Editar"
                 (clicked)="editTask(task.id, $event)"
-              ></app-button>
+              ></aero-button>
             </div>
           </app-aero-card>
         </div>
@@ -169,12 +160,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           </div>
           <h3>No hay tareas</h3>
           <p>No se encontraron tareas programadas para los filtros seleccionados.</p>
-          <app-button
-            variant="primary"
-            icon="fa-plus"
-            label="Crear Primera Tarea"
-            (clicked)="createTask()"
-          ></app-button>
+          <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createTask()"
+            >Crear Primera Tarea</aero-button
+          >
         </div>
       </div>
     </app-page-layout>

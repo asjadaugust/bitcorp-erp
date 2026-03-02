@@ -16,7 +16,7 @@ import {
 } from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-incident-list',
@@ -28,7 +28,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
     FilterBarComponent,
     ActionsContainerComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -38,12 +38,9 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       [loading]="loading"
     >
       <app-actions-container actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Reportar Incidente"
-          (clicked)="reportIncident()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="reportIncident()"
+          >Reportar Incidente</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar

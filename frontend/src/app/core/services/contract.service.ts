@@ -54,8 +54,6 @@ export class ContractService {
       incluye_motor: backendData['incluye_motor'],
       incluye_operador: backendData['incluye_operador'],
       costo_adicional_motor: backendData['costo_adicional_motor'],
-      horas_incluidas: backendData['horas_incluidas'],
-      penalidad_exceso: backendData['penalidad_exceso'],
       documento_acredita: backendData['documento_acredita'],
       fecha_acreditada: backendData['fecha_acreditada'],
       jurisdiccion: backendData['jurisdiccion'],
@@ -93,12 +91,6 @@ export class ContractService {
       tarifa: frontendData['tarifa'] ? Number(frontendData['tarifa']) : 0,
       costo_adicional_motor: frontendData['costo_adicional_motor']
         ? Number(frontendData['costo_adicional_motor'])
-        : 0,
-      horas_incluidas: frontendData['horas_incluidas']
-        ? Number(frontendData['horas_incluidas'])
-        : 0,
-      penalidad_exceso: frontendData['penalidad_exceso']
-        ? Number(frontendData['penalidad_exceso'])
         : 0,
 
       // Default required fields if missing

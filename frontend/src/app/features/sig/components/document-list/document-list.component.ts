@@ -11,21 +11,18 @@ import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-document-list',
   standalone: true,
-  imports: [CommonModule, AeroTableComponent, FilterBarComponent, ButtonComponent],
+  imports: [CommonModule, AeroTableComponent, FilterBarComponent, AeroButtonComponent],
   template: `
     <div class="document-list-container">
       <div class="actions-bar">
-        <app-button
-          variant="primary"
-          label="Subir Documento"
-          icon="fa-upload"
-          (clicked)="uploadDocument()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-upload" (clicked)="uploadDocument()"
+          >Subir Documento</aero-button
+        >
       </div>
 
       <app-filter-bar

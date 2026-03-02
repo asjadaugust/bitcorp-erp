@@ -68,7 +68,7 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
         position: fixed;
         display: flex;
         flex-direction: column;
-        background-color: var(--grey-100);
+        background-color: var(--neutral-0);
         box-shadow: 0 12px 48px rgba(0, 0, 0, 0.16);
         z-index: 1001;
       }

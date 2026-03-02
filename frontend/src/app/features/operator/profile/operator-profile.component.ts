@@ -14,8 +14,7 @@ import {
   OperatorRendimiento,
 } from '../../../core/models/operator.model';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
 
 interface ProfileData {
   operator: Operator;
@@ -28,7 +27,13 @@ interface ProfileData {
 @Component({
   selector: 'app-operator-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageLayoutComponent, ButtonComponent, AeroBadgeComponent],
+  imports: [
+    AeroButtonComponent,
+    CommonModule,
+    FormsModule,
+    PageLayoutComponent,
+    AeroBadgeComponent,
+  ],
   template: `
     <app-page-layout title="Mi Perfil" icon="fa-user">
       <p class="subtitle">Información personal y profesional</p>
@@ -46,12 +51,9 @@ interface ProfileData {
         </div>
         <h3>No se pudo cargar el perfil</h3>
         <p>{{ error }}</p>
-        <app-button
-          label="Reintentar"
-          icon="fa-rotate-right"
-          variant="primary"
-          (clicked)="retry()"
-        ></app-button>
+        <aero-button iconLeft="fa-rotate-right" variant="primary" (clicked)="retry()"
+          >Reintentar</aero-button
+        >
       </div>
 
       <!-- Profile Content -->
@@ -258,12 +260,8 @@ interface ProfileData {
 
         <!-- Actions -->
         <div class="profile-actions">
-          <app-button
-            label="Editar Perfil"
-            icon="fa-pen-to-square"
-            variant="secondary"
-          ></app-button>
-          <app-button label="Cambiar Contraseña" icon="fa-lock" variant="secondary"></app-button>
+          <aero-button iconLeft="fa-pen-to-square" variant="secondary">Editar Perfil</aero-button>
+          <aero-button iconLeft="fa-lock" variant="secondary">Cambiar Contraseña</aero-button>
         </div>
       </div>
     </app-page-layout>

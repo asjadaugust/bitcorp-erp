@@ -16,8 +16,8 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-periodo-inoperatividad-list',
@@ -30,7 +30,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ActionsContainerComponent,
     AeroTableComponent,
     FilterBarComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <!-- Standalone page (when accessed via /equipment/inoperatividad) -->
@@ -42,12 +42,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         [loading]="loading"
       >
         <app-actions-container actions>
-          <app-button
-            variant="primary"
-            icon="fa-plus"
-            label="Registrar Inoperatividad"
-            (clicked)="irANuevo()"
-          ></app-button>
+          <aero-button variant="primary" iconLeft="fa-plus" (clicked)="irANuevo()"
+            >Registrar Inoperatividad</aero-button
+          >
         </app-actions-container>
 
         <app-filter-bar
@@ -77,13 +74,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     @if (equipoId) {
       <div class="embedded-header">
         <h4><i class="fa-solid fa-triangle-exclamation"></i> Períodos de Inoperatividad</h4>
-        <app-button
-          variant="primary"
-          size="sm"
-          icon="fa-plus"
-          label="Registrar"
-          (clicked)="irANuevo()"
-        ></app-button>
+        <aero-button variant="primary" size="small" iconLeft="fa-plus" (clicked)="irANuevo()"
+          >Registrar</aero-button
+        >
       </div>
 
       <app-filter-bar
@@ -153,22 +146,22 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         role="toolbar"
       >
         @if (row.estado === 'ACTIVO') {
-          <app-button
-            variant="success"
-            size="sm"
-            icon="fa-check"
-            label="Resolver"
+          <aero-button
+            variant="primary"
+            size="small"
+            iconLeft="fa-check"
             (clicked)="abrirResolver(row)"
-          ></app-button>
+            >Resolver</aero-button
+          >
         }
         @if (row.excede_plazo && !row.penalidad_aplicada) {
-          <app-button
+          <aero-button
             variant="danger"
-            size="sm"
-            icon="fa-gavel"
-            label="Penalizar"
+            size="small"
+            iconLeft="fa-gavel"
             (clicked)="abrirPenalidad(row)"
-          ></app-button>
+            >Penalizar</aero-button
+          >
         }
       </div>
     </ng-template>
@@ -191,7 +184,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         >
           <div class="modal-header">
             <h3>Resolver Período de Inoperatividad</h3>
-            <app-button variant="icon" icon="fa-xmark" (clicked)="cerrarModales()"></app-button>
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
+              (clicked)="cerrarModales()"
+            ></aero-button>
           </div>
           <div class="modal-body">
             <p class="info-text">
@@ -213,18 +211,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="cerrarModales()"
-            ></app-button>
-            <app-button
-              variant="success"
-              icon="fa-check"
-              [label]="saving ? 'Guardando...' : 'Confirmar Resolución'"
+            <aero-button variant="secondary" (clicked)="cerrarModales()">Cancelar</aero-button>
+            <aero-button
+              variant="primary"
+              iconLeft="fa-check"
               [disabled]="saving || !resolverForm.fecha_fin"
               (clicked)="confirmarResolver()"
-            ></app-button>
+              >{{ saving ? 'Guardando...' : 'Confirmar Resolución' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -248,7 +242,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         >
           <div class="modal-header">
             <h3>Aplicar Penalidad — Cláusula 7.6</h3>
-            <app-button variant="icon" icon="fa-xmark" (clicked)="cerrarModales()"></app-button>
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
+              (clicked)="cerrarModales()"
+            ></aero-button>
           </div>
           <div class="modal-body">
             <div class="alert alert-danger">
@@ -278,18 +277,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="cerrarModales()"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="cerrarModales()">Cancelar</aero-button>
+            <aero-button
               variant="danger"
-              icon="fa-gavel"
-              [label]="saving ? 'Guardando...' : 'Aplicar Penalidad'"
+              iconLeft="fa-gavel"
               [disabled]="saving || !penalidadForm.monto_penalidad"
               (clicked)="confirmarPenalidad()"
-            ></app-button>
+              >{{ saving ? 'Guardando...' : 'Aplicar Penalidad' }}</aero-button
+            >
           </div>
         </div>
       </div>

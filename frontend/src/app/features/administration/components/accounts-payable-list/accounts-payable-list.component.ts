@@ -12,6 +12,7 @@ import {
   PageLayoutComponent,
   Breadcrumb,
 } from '../../../../shared/components/page-layout/page-layout.component';
+import { ADMINISTRACION_TABS } from '../../administracion-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -23,7 +24,7 @@ import {
 } from '../../../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-accounts-payable-list',
@@ -36,7 +37,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
     ExportDropdownComponent,
     ActionsContainerComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -44,17 +45,15 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       icon="fa-file-invoice-dollar"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <app-export-dropdown [disabled]="records.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Cuenta por Pagar"
-          (clicked)="createRecord()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createRecord()"
+          >Nueva Cuenta por Pagar</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -91,18 +90,18 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
+          <aero-button
             variant="ghost"
-            icon="fa-pen"
-            size="sm"
+            iconCenter="fa-pen"
+            size="small"
             (clicked)="editRecord(row)"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             variant="ghost"
-            icon="fa-trash"
-            size="sm"
+            iconCenter="fa-trash"
+            size="small"
             (clicked)="deleteRecord(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -147,6 +146,7 @@ export class AccountsPayableListComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
 
+  tabs = ADMINISTRACION_TABS;
   records: AccountsPayable[] = [];
   filteredRecords: AccountsPayable[] = [];
   loading = false;

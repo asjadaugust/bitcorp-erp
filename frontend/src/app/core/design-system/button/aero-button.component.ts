@@ -1,7 +1,14 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type ButtonType = 'primary' | 'secondary' | 'tertiary' | 'text';
+export type ButtonType =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'text'
+  | 'danger'
+  | 'outline-danger'
+  | 'ghost';
 export type ButtonSize = 'large' | 'regular' | 'small';
 
 @Component({
@@ -55,14 +62,14 @@ export type ButtonSize = 'large' | 'regular' | 'small';
 
       /* Sizes */
       .aero-btn--large {
-        height: 48px;
+        height: 44px;
         padding: 0 var(--s-24);
         font-size: var(--type-body-size);
         line-height: var(--type-body-line-height);
       }
 
       .aero-btn--regular {
-        height: 44px;
+        height: 40px;
         padding: 0 var(--s-20);
         font-size: var(--type-body-size);
         line-height: var(--type-body-line-height);
@@ -159,6 +166,49 @@ export type ButtonSize = 'large' | 'regular' | 'small';
 
       .aero-btn--text:active:not(:disabled) {
         color: var(--primary-800);
+      }
+
+      /* Danger */
+      .aero-btn--danger {
+        background-color: var(--semantic-red-500);
+        color: white;
+      }
+
+      .aero-btn--danger:hover:not(:disabled) {
+        background-color: var(--semantic-red-700);
+      }
+
+      .aero-btn--danger:active:not(:disabled) {
+        background-color: var(--semantic-red-800);
+      }
+
+      /* Outline Danger */
+      .aero-btn--outline-danger {
+        background-color: transparent;
+        color: var(--semantic-red-500);
+        border: 1px solid var(--semantic-red-500);
+      }
+
+      .aero-btn--outline-danger:hover:not(:disabled) {
+        background-color: var(--semantic-red-50, rgba(239, 68, 68, 0.05));
+      }
+
+      .aero-btn--outline-danger:active:not(:disabled) {
+        background-color: var(--semantic-red-100, rgba(239, 68, 68, 0.1));
+      }
+
+      /* Ghost */
+      .aero-btn--ghost {
+        background-color: transparent;
+        color: var(--grey-700);
+      }
+
+      .aero-btn--ghost:hover:not(:disabled) {
+        background-color: var(--grey-100);
+      }
+
+      .aero-btn--ghost:active:not(:disabled) {
+        background-color: var(--grey-200);
       }
 
       /* Disabled */

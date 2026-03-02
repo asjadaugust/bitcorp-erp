@@ -1,6 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   DailyReportService,
   EquipmentReceptionStatus,
@@ -8,6 +7,7 @@ import {
 import {
   PageLayoutComponent,
   Breadcrumb,
+  TabItem,
 } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import {
@@ -17,9 +17,14 @@ import {
 import { ProjectService } from '../../core/services/project.service';
 import { Project } from '../../core/models/project.model';
 import {
-  DropdownComponent,
-  DropdownOption,
-} from '../../shared/components/dropdown/dropdown.component';
+  FilterBarComponent,
+  FilterConfig,
+} from '../../shared/components/filter-bar/filter-bar.component';
+import {
+  StatsGridComponent,
+  StatItem,
+} from '../../shared/components/stats-grid/stats-grid.component';
+import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
 
 interface MatrixDate {
   iso: string;
@@ -32,76 +37,29 @@ interface MatrixDate {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     PageLayoutComponent,
     PageCardComponent,
     AeroTableComponent,
-    DropdownComponent,
+    FilterBarComponent,
+    StatsGridComponent,
   ],
   template: `
     <app-page-layout
       title="Recepción de Partes Diarios"
       icon="fa-clipboard-check"
+      [tabs]="tabs"
+      [subtabs]="subtabs"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
     >
       <!-- Filters -->
-      <div class="filters-row" actions>
-        <div class="filter-group">
-          <label class="filter-label">Desde</label>
-          <input
-            type="date"
-            class="aero-date-input"
-            [(ngModel)]="fechaDesde"
-            (change)="loadData()"
-            data-testid="filter-fecha-desde"
-          />
-        </div>
-        <div class="filter-group">
-          <label class="filter-label">Hasta</label>
-          <input
-            type="date"
-            class="aero-date-input"
-            [(ngModel)]="fechaHasta"
-            (change)="loadData()"
-            data-testid="filter-fecha-hasta"
-          />
-        </div>
-        <div class="filter-group filter-project">
-          <label class="filter-label">Proyecto</label>
-          <app-dropdown
-            [options]="projectOptions"
-            [(ngModel)]="selectedProjectId"
-            (ngModelChange)="loadData()"
-            placeholder="Todos los proyectos"
-            data-testid="filter-proyecto"
-          ></app-dropdown>
-        </div>
-      </div>
+      <app-filter-bar
+        [config]="filterConfig"
+        (filterChange)="onFilterChange($event)"
+      ></app-filter-bar>
 
-      <!-- Summary Cards -->
-      <div class="summary-cards" *ngIf="data.length > 0">
-        <div class="summary-card" data-testid="card-equipos">
-          <div class="summary-value">{{ data.length }}</div>
-          <div class="summary-label">Equipos</div>
-        </div>
-        <div class="summary-card" data-testid="card-recepcion">
-          <div class="summary-value">{{ getAverageReception() }}%</div>
-          <div class="summary-label">Recepción Promedio</div>
-        </div>
-        <div
-          class="summary-card complete"
-          *ngIf="getCompleteCount() > 0"
-          data-testid="card-completos"
-        >
-          <div class="summary-value">{{ getCompleteCount() }}</div>
-          <div class="summary-label">Equipos al día</div>
-        </div>
-        <div class="summary-card alert" *ngIf="getMissingCount() > 0" data-testid="card-faltantes">
-          <div class="summary-value">{{ getMissingCount() }}</div>
-          <div class="summary-label">Con partes faltantes</div>
-        </div>
-      </div>
+      <!-- Stats Grid -->
+      <app-stats-grid *ngIf="statItems.length > 0" [items]="statItems"></app-stats-grid>
 
       <!-- View Toggle -->
       <div class="view-toggle" *ngIf="data.length > 0">
@@ -245,94 +203,20 @@ interface MatrixDate {
   `,
   styles: [
     `
-      /* Filters */
-      .filters-row {
-        display: flex;
-        gap: 16px;
-        align-items: flex-end;
-      }
-      .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .filter-project {
-        min-width: 200px;
-      }
-      .filter-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--grey-600);
-      }
-      .aero-date-input {
-        padding: 8px 12px;
-        border: 1px solid var(--grey-300);
-        border-radius: var(--radius-md, 6px);
-        font-size: 13px;
-        color: var(--grey-900);
-        background: var(--grey-100);
-        transition: border-color 0.15s;
-      }
-      .aero-date-input:focus {
-        outline: none;
-        border-color: var(--primary-500);
-        box-shadow: 0 0 0 3px rgba(0, 97, 170, 0.1);
-      }
-
-      /* Summary Cards */
-      .summary-cards {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 16px;
-      }
-      .summary-card {
-        background: var(--grey-100);
-        border: 1px solid var(--grey-200);
-        border-radius: var(--radius-md, 6px);
-        padding: 16px 24px;
-        text-align: center;
-        min-width: 120px;
-      }
-      .summary-card.alert {
-        border-color: var(--grey-300);
-        background: var(--semantic-red-50, #fef2f2);
-      }
-      .summary-card.complete {
-        border-color: var(--semantic-blue-300);
-        background: var(--semantic-green-50, #f0fdf4);
-      }
-      .summary-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--grey-900);
-      }
-      .summary-card.alert .summary-value {
-        color: var(--accent-500);
-      }
-      .summary-card.complete .summary-value {
-        color: var(--primary-900);
-      }
-      .summary-label {
-        font-size: 12px;
-        color: var(--grey-500);
-        margin-top: 4px;
-      }
-
-      /* View Toggle */
+      /* View Toggle — Segment Control */
       .view-toggle {
-        display: flex;
-        gap: 0;
-        margin-bottom: 16px;
+        display: inline-flex;
         background: var(--grey-100);
-        border-radius: var(--radius-md, 6px);
-        padding: 3px;
+        border-radius: var(--radius-sm);
+        padding: 2px;
         width: fit-content;
+        margin-bottom: 16px;
       }
       .toggle-btn {
-        padding: 6px 16px;
-        border: none;
+        padding: var(--s-8) var(--s-16);
+        border: 1px solid transparent;
         background: transparent;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         font-size: 13px;
         font-weight: 500;
         color: var(--grey-600);
@@ -342,13 +226,15 @@ interface MatrixDate {
         gap: 6px;
         transition: all 0.15s;
       }
-      .toggle-btn.active {
-        background: var(--grey-100);
-        color: var(--primary-700);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-      }
       .toggle-btn:hover:not(.active) {
+        background: var(--grey-50);
         color: var(--grey-900);
+      }
+      .toggle-btn.active {
+        background: white;
+        border-color: var(--primary-500);
+        color: var(--primary-700);
+        font-weight: 600;
       }
 
       /* Summary View */
@@ -592,6 +478,11 @@ interface MatrixDate {
   ],
 })
 export class DailyReportReceptionComponent implements OnInit {
+  tabs = EQUIPMENT_TABS;
+  subtabs: TabItem[] = [
+    { label: 'Lista', route: '/equipment/daily-reports', exact: true },
+    { label: 'Recepción', route: '/equipment/daily-reports/reception', exact: true },
+  ];
   private reportService = inject(DailyReportService);
   private projectService = inject(ProjectService);
 
@@ -603,7 +494,18 @@ export class DailyReportReceptionComponent implements OnInit {
   fechaDesde = '';
   fechaHasta = '';
   selectedProjectId: number | null = null;
-  projectOptions: DropdownOption[] = [];
+
+  filterConfig: FilterConfig[] = [
+    { key: 'fechaDesde', label: 'Desde', type: 'date' },
+    { key: 'fechaHasta', label: 'Hasta', type: 'date' },
+    {
+      key: 'proyecto',
+      label: 'Proyecto',
+      type: 'select',
+      placeholder: 'Todos los proyectos',
+      options: [],
+    },
+  ];
 
   // Matrix data
   matrixDates: MatrixDate[] = [];
@@ -632,6 +534,8 @@ export class DailyReportReceptionComponent implements OnInit {
     this.fechaDesde = `${year}-${String(month + 1).padStart(2, '0')}-01`;
     const lastDay = new Date(year, month + 1, 0).getDate();
     this.fechaHasta = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    this.filterConfig[0].value = this.fechaDesde;
+    this.filterConfig[1].value = this.fechaHasta;
 
     this.loadProjects();
     this.loadData();
@@ -640,12 +544,49 @@ export class DailyReportReceptionComponent implements OnInit {
   loadProjects() {
     this.projectService.getAll({ estado: 'ACTIVO' }).subscribe({
       next: (projects: Project[]) => {
-        this.projectOptions = projects.map((p) => ({
-          label: `${p.codigo} — ${p.nombre}`,
-          value: p.id,
-        }));
+        const f = this.filterConfig.find((f) => f.key === 'proyecto');
+        if (f)
+          f.options = projects.map((p) => ({ label: `${p.codigo} — ${p.nombre}`, value: p.id }));
       },
     });
+  }
+
+  onFilterChange(filters: Record<string, unknown>) {
+    if (filters['fechaDesde'] !== undefined)
+      this.fechaDesde = (filters['fechaDesde'] as string) || '';
+    if (filters['fechaHasta'] !== undefined)
+      this.fechaHasta = (filters['fechaHasta'] as string) || '';
+    if (filters['proyecto'] !== undefined)
+      this.selectedProjectId = (filters['proyecto'] as number) || null;
+    this.loadData();
+  }
+
+  get statItems(): StatItem[] {
+    if (this.data.length === 0) return [];
+    const items: StatItem[] = [
+      { label: 'Equipos', value: this.data.length, icon: 'fa-solid fa-truck', color: 'primary' },
+      {
+        label: 'Recepción Promedio',
+        value: this.getAverageReception() + '%',
+        icon: 'fa-solid fa-chart-line',
+        color: 'info',
+      },
+    ];
+    if (this.getCompleteCount() > 0)
+      items.push({
+        label: 'Equipos al día',
+        value: this.getCompleteCount(),
+        icon: 'fa-solid fa-check-circle',
+        color: 'success',
+      });
+    if (this.getMissingCount() > 0)
+      items.push({
+        label: 'Con partes faltantes',
+        value: this.getMissingCount(),
+        icon: 'fa-solid fa-exclamation-circle',
+        color: 'danger',
+      });
+    return items;
   }
 
   loadData() {

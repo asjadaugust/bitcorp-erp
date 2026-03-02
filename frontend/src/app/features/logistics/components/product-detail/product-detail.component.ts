@@ -15,9 +15,9 @@ import {
 import { AeroCardComponent } from '../../../../core/design-system/card/aero-card.component';
 import { AeroTabsComponent } from '../../../../shared/components/aero-tabs/aero-tabs.component';
 import { TabItem } from '../../../../shared/components/page-layout/page-layout.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-product-detail',
@@ -30,7 +30,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     AeroBadgeComponent,
     AeroCardComponent,
     AeroTabsComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -156,34 +156,34 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-pen-to-square"
-          label="Editar Detalles"
+          iconLeft="fa-pen-to-square"
           [fullWidth]="true"
           (clicked)="editProduct()"
-        ></app-button>
-        <app-button
+          >Editar Detalles</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-right-left"
-          label="Ver Movimientos"
+          iconLeft="fa-right-left"
           [fullWidth]="true"
           (clicked)="activeTab = 'movements'"
-        ></app-button>
-        <app-button
+          >Ver Movimientos</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left-long"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left-long"
           [fullWidth]="true"
           (clicked)="navigateToList()"
-        ></app-button>
-        <app-button
+          >Volver a Lista</aero-button
+        >
+        <aero-button
           variant="danger"
-          icon="fa-trash-can"
-          label="Eliminar Producto"
+          iconLeft="fa-trash-can"
           [fullWidth]="true"
           (clicked)="deleteProduct()"
-        ></app-button>
+          >Eliminar Producto</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

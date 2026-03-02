@@ -7,25 +7,25 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-provider-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DropdownComponent, ButtonComponent],
+  imports: [AeroButtonComponent, CommonModule, ReactiveFormsModule, DropdownComponent],
   template: `
     <div class="documents-section">
       <div class="section-header">
         <h3><i class="fa-solid fa-file-invoice"></i> Documentos</h3>
-        <app-button
+        <aero-button
           *ngIf="!showForm"
           variant="primary"
-          size="sm"
-          icon="fa-plus"
-          label="Agregar Documento"
+          size="small"
+          iconLeft="fa-plus"
           (clicked)="showForm = !showForm"
-        ></app-button>
+          >Agregar Documento</aero-button
+        >
       </div>
 
       <!-- Form -->
@@ -95,13 +95,13 @@ import { ConfirmService } from '../../../core/services/confirm.service';
                     >Ver archivo actual</a
                   >
                 </div>
-                <app-button
+                <aero-button
                   variant="secondary"
-                  size="sm"
-                  icon="fa-xmark"
-                  label="Cambiar"
+                  size="small"
+                  iconLeft="fa-xmark"
                   (clicked)="removeFile()"
-                ></app-button>
+                  >Cambiar</aero-button
+                >
               </div>
 
               <!-- Hidden input to store URL but keep validation working -->
@@ -120,13 +120,13 @@ import { ConfirmService } from '../../../core/services/confirm.service';
           </div>
 
           <div class="form-actions">
-            <app-button variant="secondary" label="Cancelar" (clicked)="cancelForm()"></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="cancelForm()">Cancelar</aero-button>
+            <aero-button
               variant="primary"
-              [label]="editingId ? 'Actualizar' : 'Guardar'"
               [disabled]="documentForm.invalid || uploading"
               (clicked)="onSubmit()"
-            ></app-button>
+              >{{ editingId ? 'Actualizar' : 'Guardar' }}</aero-button
+            >
           </div>
         </form>
       </div>
@@ -170,20 +170,20 @@ import { ConfirmService } from '../../../core/services/confirm.service';
             >
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-pen"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-pen"
               title="Editar"
               (clicked)="editDocument(doc)"
-            ></app-button>
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-trash"
+            ></aero-button>
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-trash"
               title="Eliminar"
               (clicked)="deleteDocument(doc.id)"
-            ></app-button>
+            ></aero-button>
           </div>
         </div>
       </div>

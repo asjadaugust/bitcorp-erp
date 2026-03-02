@@ -5,7 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ActaDevolucionService, ActaDevolucion } from '../../core/services/acta-devolucion.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { Breadcrumb } from '../../shared/components/page-layout/page-layout.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import {
   EntityDetailShellComponent,
   EntityDetailHeader,
@@ -17,7 +17,13 @@ import {
 @Component({
   selector: 'app-acta-devolucion-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
+  imports: [
+    AeroButtonComponent,
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    EntityDetailShellComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -152,17 +158,12 @@ import {
                 <input type="number" class="form-control" [(ngModel)]="firmaDto.recibido_por" />
               </div>
               <div class="firma-actions">
-                <app-button
-                  variant="secondary"
-                  label="Cancelar"
-                  (clicked)="mostrarFirma = false"
-                ></app-button>
-                <app-button
-                  variant="success"
-                  icon="fa-check"
-                  label="Confirmar Firmas"
-                  (clicked)="firmar()"
-                ></app-button>
+                <aero-button variant="secondary" (clicked)="mostrarFirma = false"
+                  >Cancelar</aero-button
+                >
+                <aero-button variant="primary" iconLeft="fa-check" (clicked)="firmar()"
+                  >Confirmar Firmas</aero-button
+                >
               </div>
             </div>
           </div>
@@ -221,51 +222,51 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ───────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           *ngIf="acta && ['BORRADOR', 'PENDIENTE'].includes(acta.estado)"
           variant="secondary"
-          icon="fa-pen-to-square"
-          label="Editar Acta"
+          iconLeft="fa-pen-to-square"
           [fullWidth]="true"
           [routerLink]="['edit']"
-        ></app-button>
+          >Editar Acta</aero-button
+        >
 
-        <app-button
+        <aero-button
           *ngIf="acta?.estado === 'BORRADOR'"
           variant="primary"
-          icon="fa-paper-plane"
-          label="Enviar para Firma"
+          iconLeft="fa-paper-plane"
           [fullWidth]="true"
           (clicked)="enviarParaFirma()"
-        ></app-button>
+          >Enviar para Firma</aero-button
+        >
 
-        <app-button
+        <aero-button
           *ngIf="acta?.estado === 'PENDIENTE'"
-          variant="success"
-          icon="fa-pen-nib"
-          label="Registrar Firma"
+          variant="primary"
+          iconLeft="fa-pen-nib"
           [fullWidth]="true"
           (clicked)="mostrarFirma = true; activeTab = 'signatures'"
-        ></app-button>
+          >Registrar Firma</aero-button
+        >
 
-        <app-button
+        <aero-button
           *ngIf="acta && !['ANULADO', 'FIRMADO'].includes(acta.estado)"
           variant="danger"
-          icon="fa-ban"
-          label="Anular Acta"
+          iconLeft="fa-ban"
           [fullWidth]="true"
           (clicked)="anular()"
-        ></app-button>
+          >Anular Acta</aero-button
+        >
 
         <hr class="sidebar-divider" />
 
-        <app-button
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a la Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           routerLink="/equipment/actas-devolucion"
-        ></app-button>
+          >Volver a la Lista</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

@@ -42,12 +42,12 @@
   --type-bodyLarge-size: 18px;
   --type-bodyLarge-line-height: 26px;
   --type-bodyLarge-rem: 1.125rem;
-  --type-body-size: 16px;
-  --type-body-line-height: 24px;
+  --type-body-size: 14px;
+  --type-body-line-height: 22px;
   --type-body-rem: 1rem;
-  --type-bodySmall-size: 14px;
-  --type-bodySmall-line-height: 22px;
-  --type-bodySmall-rem: 0.875rem;
+  --type-bodySmall-size: 12px;
+  --type-bodySmall-line-height: 20px;
+  --type-bodySmall-rem: 0.75rem;
   --type-label-size: 12px;
   --type-label-line-height: 18px;
   --type-label-rem: 0.75rem;
@@ -91,6 +91,8 @@
 
   /* Semantic - Red */
   /* Legacy Red Light */
+  --semantic-red-500: #ef4444;
+  --semantic-red-700: #dc2626;
   /* Legacy Red Main */
   /* Legacy Red Dark */
 

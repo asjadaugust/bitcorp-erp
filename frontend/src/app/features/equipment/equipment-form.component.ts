@@ -27,7 +27,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-equipment-form',
@@ -42,7 +42,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     FormContainerComponent,
     FormSectionComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-form-container
@@ -321,13 +321,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             <h3 class="section-title">
               <i class="fa-solid fa-folder-open"></i> Documentación Adicional
             </h3>
-            <app-button
+            <aero-button
               variant="secondary"
-              size="sm"
-              icon="fa-plus"
-              label="Agregar Documento"
+              size="small"
+              iconLeft="fa-plus"
               (clicked)="addDocument()"
-            ></app-button>
+              >Agregar Documento</aero-button
+            >
           </div>
           <div class="table-container">
             <table class="data-table">
@@ -377,13 +377,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                     </div>
                   </td>
                   <td>
-                    <app-button
-                      variant="icon"
-                      size="sm"
-                      icon="fa-trash"
+                    <aero-button
+                      variant="ghost"
+                      size="small"
+                      iconCenter="fa-trash"
                       title="Eliminar"
                       (clicked)="removeDocument(i)"
-                    ></app-button>
+                    ></aero-button>
                   </td>
                 </tr>
                 <tr *ngIf="equipmentDocuments.length === 0">

@@ -1,23 +1,19 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProviderService } from '../../../core/services/provider.service';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-provider-log',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, AeroButtonComponent],
   template: `
     <div class="log-container">
       <div class="section-header">
         <h3>Historial de Cambios</h3>
-        <app-button
-          variant="secondary"
-          size="sm"
-          icon="fa-sync"
-          label="Refrescar"
-          (clicked)="loadLogs()"
-        ></app-button>
+        <aero-button variant="secondary" size="small" iconLeft="fa-sync" (clicked)="loadLogs()"
+          >Refrescar</aero-button
+        >
       </div>
 
       <div class="table-container">

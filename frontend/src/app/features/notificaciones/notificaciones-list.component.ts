@@ -16,7 +16,7 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-notificaciones-list',
@@ -29,7 +29,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     ActionsContainerComponent,
     FilterBarComponent,
     StatsGridComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -40,14 +40,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     >
       <!-- Acciones -->
       <app-actions-container actions>
-        <app-button
-          variant="outline"
-          label="Marcar todo como leído"
-          icon="fa-check-double"
+        <aero-button
+          variant="secondary"
+          iconLeft="fa-check-double"
           [disabled]="svc.totalNoLeidas() === 0"
           data-testid="btn-marcar-todas-leidas"
           (clicked)="marcarTodasLeidas()"
-        ></app-button>
+          >Marcar todo como leído</aero-button
+        >
       </app-actions-container>
 
       <!-- Estadísticas -->
@@ -115,23 +115,23 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
           <!-- Acciones -->
           <div class="notif-acciones">
-            <app-button
+            <aero-button
               *ngIf="!n.leido"
-              variant="icon"
-              size="sm"
-              icon="fa-check"
+              variant="ghost"
+              size="small"
+              iconCenter="fa-check"
               title="Marcar como leída"
               [attr.data-testid]="'btn-marcar-leida-' + n.id"
               (clicked)="marcarLeida(n)"
-            ></app-button>
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-trash"
+            ></aero-button>
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-trash"
               title="Eliminar"
               [attr.data-testid]="'btn-eliminar-' + n.id"
               (clicked)="eliminar(n.id)"
-            ></app-button>
+            ></aero-button>
           </div>
         </div>
       </div>

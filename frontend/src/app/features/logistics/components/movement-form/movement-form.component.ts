@@ -19,7 +19,7 @@ import {
 import { ValidationErrorsComponent } from '../../../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 import {
   DropdownComponent,
   DropdownOption,
@@ -37,7 +37,7 @@ import {
     AlertComponent,
     FormContainerComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-form-container
@@ -160,14 +160,14 @@ import {
         <div class="form-section">
           <div class="section-header">
             <h2 class="section-title">Items del Movimiento</h2>
-            <app-button
+            <aero-button
               *ngIf="!isEditMode"
               variant="secondary"
-              size="sm"
-              icon="fa-plus"
-              label="Agregar Item"
+              size="small"
+              iconLeft="fa-plus"
               (clicked)="addItem()"
-            ></app-button>
+              >Agregar Item</aero-button
+            >
           </div>
 
           <div class="table-wrapper">
@@ -228,13 +228,13 @@ import {
                     />
                   </td>
                   <td *ngIf="!isEditMode">
-                    <app-button
-                      variant="icon"
-                      size="sm"
-                      icon="fa-trash"
+                    <aero-button
+                      variant="ghost"
+                      size="small"
+                      iconCenter="fa-trash"
                       title="Eliminar"
                       (clicked)="removeItem(i)"
-                    ></app-button>
+                    ></aero-button>
                   </td>
                 </tr>
                 <tr *ngIf="items.length === 0">

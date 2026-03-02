@@ -8,14 +8,14 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-payment-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
+  imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroButtonComponent],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -238,45 +238,45 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           *ngIf="payment?.estado !== 'ANULADO'"
           variant="primary"
-          icon="fa-pen"
-          label="Editar Pago"
+          iconLeft="fa-pen"
           [fullWidth]="true"
           (clicked)="editPayment()"
-        ></app-button>
-        <app-button
+          >Editar Pago</aero-button
+        >
+        <aero-button
           *ngIf="payment?.estado === 'CONFIRMADO' && !payment?.conciliado"
-          variant="success"
-          icon="fa-check-double"
-          label="Conciliar Pago"
+          variant="primary"
+          iconLeft="fa-check-double"
           [fullWidth]="true"
           (clicked)="reconcilePayment()"
-        ></app-button>
-        <app-button
+          >Conciliar Pago</aero-button
+        >
+        <aero-button
           *ngIf="payment?.estado !== 'ANULADO'"
           variant="danger"
-          icon="fa-ban"
-          label="Anular Pago"
+          iconLeft="fa-ban"
           [fullWidth]="true"
           (clicked)="cancelPayment()"
-        ></app-button>
-        <app-button
+          >Anular Pago</aero-button
+        >
+        <aero-button
           *ngIf="payment?.valorizacion_id"
           variant="ghost"
-          icon="fa-file-invoice"
-          label="Ver Valorización"
+          iconLeft="fa-file-invoice"
           [fullWidth]="true"
           (clicked)="viewValuation()"
-        ></app-button>
-        <app-button
+          >Ver Valorización</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           routerLink="/payments"
-        ></app-button>
+          >Volver a Lista</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

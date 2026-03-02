@@ -8,6 +8,7 @@ import {
   TableColumn,
 } from '../../../core/design-system/table/aero-table.component';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import { CHECKLISTS_TABS } from '../checklists-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -16,10 +17,10 @@ import {
   ExportDropdownComponent,
   ExportFormat,
 } from '../../../shared/components/export-dropdown/export-dropdown.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-inspection-list',
@@ -31,7 +32,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
   ],
   template: `
@@ -40,15 +41,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       icon="fa-clipboard-check"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <div actions class="action-buttons-header">
         <app-export-dropdown (export)="handleExport($event)"></app-export-dropdown>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Inspección"
-          (clicked)="createInspection()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createInspection()"
+          >Nueva Inspección</aero-button
+        >
       </div>
 
       <app-filter-bar
@@ -106,33 +105,33 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-play"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-play"
             (clicked)="continueInspection(row); $event.stopPropagation()"
             *ngIf="row.estado === 'EN_PROGRESO'"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             (clicked)="viewInspection(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-file-pdf"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-file-pdf"
             (clicked)="exportPDF(row); $event.stopPropagation()"
             *ngIf="row.estado === 'COMPLETADO'"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-ban"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-ban"
             (clicked)="cancelInspection(row); $event.stopPropagation()"
             *ngIf="row.estado === 'EN_PROGRESO'"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -205,6 +204,7 @@ export class InspectionListComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   inspections: ChecklistInspection[] = [];
+  tabs = CHECKLISTS_TABS;
   loading = false;
   pagination = {
     page: 1,

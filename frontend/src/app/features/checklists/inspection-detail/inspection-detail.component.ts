@@ -8,13 +8,13 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../../shared/components/stats-grid/stats-grid.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import {
   AeroBadgeComponent,
   BadgeVariant,
 } from '../../../core/design-system/badge/aero-badge.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-inspection-detail',
@@ -24,7 +24,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     RouterModule,
     PageLayoutComponent,
     StatsGridComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
     AeroBadgeComponent,
   ],
@@ -37,20 +37,20 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       backUrl="/checklists/inspections"
     >
       <div actions class="action-buttons-header" *ngIf="inspection">
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-file-pdf"
-          label="Exportar PDF"
+          iconLeft="fa-file-pdf"
           (clicked)="exportPDF()"
           *ngIf="inspection.estado === 'COMPLETADO'"
-        ></app-button>
-        <app-button
+          >Exportar PDF</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-wrench"
-          label="Enviar a Mantenimiento"
+          iconLeft="fa-wrench"
           (clicked)="sendToMaintenance()"
           *ngIf="inspection.requiereMantenimiento && inspection.estado === 'COMPLETADO'"
-        ></app-button>
+          >Enviar a Mantenimiento</aero-button
+        >
       </div>
 
       <div class="inspection-content" *ngIf="inspection">

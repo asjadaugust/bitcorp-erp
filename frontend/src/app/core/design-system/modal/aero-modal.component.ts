@@ -68,7 +68,7 @@ import { CommonModule } from '@angular/common';
       .aero-modal__dialog {
         display: flex;
         flex-direction: column;
-        background-color: var(--grey-100);
+        background-color: var(--neutral-0);
         border-radius: var(--radius-md);
         box-shadow: 0 12px 48px rgba(0, 0, 0, 0.16);
         width: 100%;

@@ -20,7 +20,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import {
   AeroBadgeComponent,
   BadgeVariant,
@@ -34,7 +34,7 @@ import {
     RouterModule,
     FormsModule,
     EntityDetailShellComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     AeroBadgeComponent,
   ],
   template: `
@@ -175,34 +175,34 @@ import {
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-pen"
-          label="Editar"
+          iconLeft="fa-pen"
           [fullWidth]="true"
           (clicked)="editOperator()"
-        ></app-button>
-        <app-button
+          >Editar</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-bell"
-          label="Notificar"
+          iconLeft="fa-bell"
           [fullWidth]="true"
           (clicked)="sendNotification()"
-        ></app-button>
-        <app-button
+          >Notificar</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-clipboard-list"
-          label="Ver Reportes"
+          iconLeft="fa-clipboard-list"
           [fullWidth]="true"
           (clicked)="viewReports()"
-        ></app-button>
-        <app-button
+          >Ver Reportes</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left-long"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left-long"
           [fullWidth]="true"
           (clicked)="navigateToList()"
-        ></app-button>
+          >Volver a Lista</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

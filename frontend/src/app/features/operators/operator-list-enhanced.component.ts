@@ -16,8 +16,8 @@ import {
   FilterBarComponent,
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-operator-list-enhanced',
@@ -29,7 +29,7 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
   ],
   template: `
@@ -40,12 +40,9 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
       [loading]="loading"
     >
       <div actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nuevo Operador"
-          (clicked)="addOperator()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="addOperator()"
+          >Nuevo Operador</aero-button
+        >
       </div>
 
       <app-filter-bar
@@ -101,24 +98,24 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             (clicked)="editOperator(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             (clicked)="viewOperator(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-user-slash"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-user-slash"
             (clicked)="deleteOperator(row); $event.stopPropagation()"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>

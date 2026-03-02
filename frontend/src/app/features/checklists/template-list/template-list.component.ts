@@ -8,11 +8,11 @@ import {
   TableColumn,
 } from '../../../core/design-system/table/aero-table.component';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
+import { CHECKLISTS_TABS } from '../checklists-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../shared/components/filter-bar/filter-bar.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import {
   AeroBadgeComponent,
@@ -20,6 +20,7 @@ import {
 } from '../../../core/design-system/badge/aero-badge.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-template-list',
@@ -30,7 +31,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
     AeroBadgeComponent,
   ],
@@ -40,14 +41,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       icon="fa-clipboard-check"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <div actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Plantilla"
-          (clicked)="createTemplate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createTemplate()"
+          >Nueva Plantilla</aero-button
+        >
       </div>
 
       <app-filter-bar
@@ -87,31 +86,31 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             (clicked)="viewTemplate(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             (clicked)="editTemplate(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-copy"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-copy"
             (clicked)="duplicateTemplate(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-trash"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-trash"
             (clicked)="deleteTemplate(row); $event.stopPropagation()"
             *ngIf="!row.activo"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -142,6 +141,7 @@ export class TemplateListComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   templates: ChecklistTemplate[] = [];
+  tabs = CHECKLISTS_TABS;
   loading = false;
   filters = { activo: undefined as boolean | undefined, tipoEquipo: '', search: '' };
 

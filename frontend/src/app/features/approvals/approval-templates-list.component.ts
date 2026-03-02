@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ApprovalService, PlantillaAprobacionDto } from '../../core/services/approval.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import {
   ConfirmDialogComponent,
@@ -20,7 +20,7 @@ import {
     RouterModule,
     PageLayoutComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     ActionsContainerComponent,
   ],
   template: `
@@ -34,12 +34,12 @@ import {
       [loading]="loading()"
     >
       <app-actions-container actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-plus"
-          label="Nueva Plantilla"
+          iconLeft="fa-plus"
           (clicked)="router.navigate(['/approvals/templates/new'])"
-        ></app-button>
+          >Nueva Plantilla</aero-button
+        >
       </app-actions-container>
 
       <app-page-card [noPadding]="true">
@@ -47,12 +47,12 @@ import {
           <i class="fa-regular fa-folder-open empty-icon"></i>
           <p class="empty-title">Sin plantillas configuradas</p>
           <p class="empty-desc">Crea tu primera plantilla de aprobación</p>
-          <app-button
+          <aero-button
             variant="primary"
-            icon="fa-plus"
-            label="Crear Plantilla"
+            iconLeft="fa-plus"
             (clicked)="router.navigate(['/approvals/templates/new'])"
-          ></app-button>
+            >Crear Plantilla</aero-button
+          >
         </div>
 
         <table class="templates-table" *ngIf="templates().length > 0">
@@ -87,26 +87,26 @@ import {
               </td>
               <td>
                 <div class="row-actions">
-                  <app-button
+                  <aero-button
                     variant="ghost"
-                    icon="fa-edit"
-                    label="Editar"
+                    iconLeft="fa-edit"
                     (clicked)="router.navigate(['/approvals/templates', t.id, 'edit'])"
-                  ></app-button>
-                  <app-button
+                    >Editar</aero-button
+                  >
+                  <aero-button
                     *ngIf="t.estado !== 'ACTIVO'"
                     variant="ghost"
-                    icon="fa-play"
-                    label="Activar"
+                    iconLeft="fa-play"
                     (clicked)="confirmActivate(t)"
-                  ></app-button>
-                  <app-button
+                    >Activar</aero-button
+                  >
+                  <aero-button
                     *ngIf="t.estado !== 'ARCHIVADO'"
                     variant="ghost"
-                    icon="fa-archive"
-                    label="Archivar"
+                    iconLeft="fa-archive"
                     (clicked)="confirmArchive(t)"
-                  ></app-button>
+                    >Archivar</aero-button
+                  >
                 </div>
               </td>
             </tr>

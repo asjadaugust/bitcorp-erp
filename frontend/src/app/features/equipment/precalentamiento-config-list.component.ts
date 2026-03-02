@@ -8,7 +8,7 @@ import {
 } from '../../core/services/precalentamiento-config.service';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 interface EditState {
   tipoEquipoId: number;
@@ -24,7 +24,7 @@ interface EditState {
     RouterModule,
     PageLayoutComponent,
     AeroCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -115,32 +115,32 @@ interface EditState {
                   </td>
                   <td class="col-actions">
                     @if (editState?.tipoEquipoId === cfg.tipo_equipo_id) {
-                      <app-button
+                      <aero-button
                         variant="primary"
-                        size="sm"
-                        icon="fa-check"
-                        [label]="saving ? 'Guardando…' : 'Guardar'"
+                        size="small"
+                        iconLeft="fa-check"
                         [disabled]="saving"
                         (clicked)="guardar()"
                         [attr.data-testid]="'save-btn-' + cfg.tipo_equipo_id"
-                      ></app-button>
-                      <app-button
+                        >{{ saving ? 'Guardando…' : 'Guardar' }}</aero-button
+                      >
+                      <aero-button
                         variant="ghost"
-                        size="sm"
-                        icon="fa-xmark"
-                        label="Cancelar"
+                        size="small"
+                        iconLeft="fa-xmark"
                         (clicked)="cancelar()"
                         [attr.data-testid]="'cancel-btn-' + cfg.tipo_equipo_id"
-                      ></app-button>
+                        >Cancelar</aero-button
+                      >
                     } @else {
-                      <app-button
-                        variant="icon"
-                        size="sm"
-                        icon="fa-pencil"
+                      <aero-button
+                        variant="ghost"
+                        size="small"
+                        iconCenter="fa-pencil"
                         title="Editar"
                         (clicked)="editar(cfg)"
                         [attr.data-testid]="'edit-btn-' + cfg.tipo_equipo_id"
-                      ></app-button>
+                      ></aero-button>
                     }
                   </td>
                 </tr>

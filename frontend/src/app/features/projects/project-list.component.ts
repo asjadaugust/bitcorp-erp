@@ -24,7 +24,7 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-project-list',
@@ -38,7 +38,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -52,12 +52,9 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         <app-export-dropdown [disabled]="projects.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <app-button
-          variant="primary"
-          label="Nuevo Proyecto"
-          icon="fa-plus"
-          (clicked)="createProject()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createProject()"
+          >Nuevo Proyecto</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -103,27 +100,27 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             title="Ver Detalles"
             (clicked)="viewProject(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             title="Editar"
             (clicked)="editProject(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-trash"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-trash"
             title="Eliminar"
             (clicked)="deleteProject(row); $event.stopPropagation()"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>

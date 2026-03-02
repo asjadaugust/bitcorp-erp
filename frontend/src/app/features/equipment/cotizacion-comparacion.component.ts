@@ -12,7 +12,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
 import { firstValueFrom } from 'rxjs';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-cotizacion-comparacion',
@@ -23,24 +23,24 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     RouterModule,
     PageLayoutComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout>
       <app-page-card [title]="pageTitle" [subtitle]="pageSubtitle">
         <ng-container header-actions>
-          <app-button variant="outline" size="sm" icon="arrow_back" (click)="goBack()">
+          <aero-button variant="secondary" size="small" iconLeft="arrow_back" (click)="goBack()">
             Volver a Solicitud
-          </app-button>
-          <app-button
+          </aero-button>
+          <aero-button
             variant="primary"
-            size="sm"
-            icon="add"
+            size="small"
+            iconLeft="add"
             (click)="showAddForm = true"
             *ngIf="canAddCotizacion()"
           >
             Agregar Cotización
-          </app-button>
+          </aero-button>
         </ng-container>
 
         <!-- Loading State -->
@@ -57,14 +57,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           <span class="material-icons empty-icon">compare_arrows</span>
           <h3>Sin cotizaciones registradas</h3>
           <p>Agregue cotizaciones de proveedores para esta solicitud de equipo.</p>
-          <app-button
+          <aero-button
             variant="primary"
-            icon="add"
+            iconLeft="add"
             (click)="showAddForm = true"
             *ngIf="canAddCotizacion()"
           >
             Agregar Primera Cotización
-          </app-button>
+          </aero-button>
         </div>
 
         <!-- Summary Stats -->
@@ -233,33 +233,33 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                   <td class="criteria-label">Acciones</td>
                   <td *ngFor="let cot of comparacion.cotizaciones">
                     <div class="action-buttons">
-                      <app-button
+                      <aero-button
                         *ngIf="cot.estado === 'REGISTRADA' || cot.estado === 'EVALUADA'"
-                        variant="outline"
-                        size="xs"
-                        icon="star"
+                        variant="secondary"
+                        size="small"
+                        iconLeft="star"
                         (click)="openEvaluar(cot)"
                       >
                         Evaluar
-                      </app-button>
-                      <app-button
+                      </aero-button>
+                      <aero-button
                         *ngIf="cot.estado === 'REGISTRADA' || cot.estado === 'EVALUADA'"
                         variant="primary"
-                        size="xs"
-                        icon="check_circle"
+                        size="small"
+                        iconLeft="check_circle"
                         (click)="seleccionarCotizacion(cot)"
                       >
                         Seleccionar
-                      </app-button>
-                      <app-button
+                      </aero-button>
+                      <aero-button
                         *ngIf="cot.estado === 'REGISTRADA' || cot.estado === 'EVALUADA'"
                         variant="danger"
-                        size="xs"
-                        icon="cancel"
+                        size="small"
+                        iconLeft="cancel"
                         (click)="rechazarCotizacion(cot)"
                       >
                         Rechazar
-                      </app-button>
+                      </aero-button>
                       <span
                         *ngIf="cot.estado === 'SELECCIONADA' && cot.orden_alquiler_id"
                         class="oal-link"
@@ -402,18 +402,18 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               </div>
             </div>
             <div class="form-actions">
-              <app-button variant="outline" size="sm" (click)="showAddForm = false">
+              <aero-button variant="secondary" size="small" (click)="showAddForm = false">
                 Cancelar
-              </app-button>
-              <app-button
+              </aero-button>
+              <aero-button
                 variant="primary"
-                size="sm"
-                icon="save"
+                size="small"
+                iconLeft="save"
                 [disabled]="saving"
                 (click)="crearCotizacion()"
               >
                 {{ saving ? 'Guardando...' : 'Guardar Cotización' }}
-              </app-button>
+              </aero-button>
             </div>
           </div>
         </div>
@@ -447,18 +447,18 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               </div>
             </div>
             <div class="form-actions">
-              <app-button variant="outline" size="sm" (click)="evaluatingCotizacion = null">
+              <aero-button variant="secondary" size="small" (click)="evaluatingCotizacion = null">
                 Cancelar
-              </app-button>
-              <app-button
+              </aero-button>
+              <aero-button
                 variant="primary"
-                size="sm"
-                icon="check"
+                size="small"
+                iconLeft="check"
                 [disabled]="saving"
                 (click)="evaluarCotizacion()"
               >
                 Confirmar Evaluación
-              </app-button>
+              </aero-button>
             </div>
           </div>
         </div>

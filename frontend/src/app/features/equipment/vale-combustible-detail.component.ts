@@ -12,12 +12,18 @@ import {
   AuditInfo,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-vale-combustible-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
+  imports: [
+    AeroButtonComponent,
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    EntityDetailShellComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -28,35 +34,35 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     >
       <!-- ── ACTIONS ─────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           *ngIf="vale?.estado === 'PENDIENTE'"
           variant="secondary"
-          icon="fa-pen-to-square"
-          label="Editar"
+          iconLeft="fa-pen-to-square"
           [fullWidth]="true"
           [routerLink]="['edit']"
           data-testid="btn-edit"
-        ></app-button>
-        <app-button
+          >Editar</aero-button
+        >
+        <aero-button
           *ngIf="vale?.estado === 'PENDIENTE'"
-          variant="success"
-          icon="fa-check"
-          label="Registrar"
+          variant="primary"
+          iconLeft="fa-check"
           [fullWidth]="true"
           [disabled]="actioning"
           (clicked)="registrar()"
           data-testid="btn-registrar"
-        ></app-button>
-        <app-button
+          >Registrar</aero-button
+        >
+        <aero-button
           *ngIf="vale?.estado !== 'ANULADO'"
           variant="danger"
-          icon="fa-ban"
-          label="Anular"
+          iconLeft="fa-ban"
           [fullWidth]="true"
           [disabled]="actioning"
           (clicked)="anular()"
           data-testid="btn-anular"
-        ></app-button>
+          >Anular</aero-button
+        >
       </ng-container>
 
       <!-- ── MAIN CONTENT ──────────────────────────── -->

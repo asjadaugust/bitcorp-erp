@@ -107,6 +107,13 @@ export type {
   TableSortEvent,
 } from './table/aero-table.component';
 
+export { AeroDataGridComponent } from './data-grid/aero-data-grid.component';
+export type {
+  DataGridColumn,
+  DataGridColumnGroup,
+  DataGridSortEvent,
+} from './data-grid/aero-data-grid.component';
+
 // Tier 5: Navigation
 export { AeroNavBarComponent } from './nav-bar/aero-nav-bar.component';
 export type { NavItem } from './nav-bar/aero-nav-bar.component';

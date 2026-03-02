@@ -14,12 +14,12 @@ export interface FilterConfig {
 }
 
 import { DropdownComponent } from '../dropdown/dropdown.component';
-import { ButtonComponent } from '../button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-filter-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, DropdownComponent],
   template: `
     <div class="filter-bar">
       <div class="filter-main">
@@ -99,13 +99,9 @@ import { ButtonComponent } from '../button/button.component';
         </div>
 
         <div class="filter-actions">
-          <app-button
-            variant="ghost"
-            size="sm"
-            label="Limpiar filtros"
-            icon="fa-times"
-            (clicked)="clearFilters()"
-          ></app-button>
+          <aero-button variant="ghost" size="small" iconLeft="fa-times" (clicked)="clearFilters()"
+            >Limpiar filtros</aero-button
+          >
         </div>
       </div>
     </div>

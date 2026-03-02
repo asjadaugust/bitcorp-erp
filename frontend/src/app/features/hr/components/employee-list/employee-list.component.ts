@@ -12,14 +12,15 @@ import {
   PageLayoutComponent,
   Breadcrumb,
 } from '../../../../shared/components/page-layout/page-layout.component';
+import { HR_TABS } from '../../hr-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-employee-list',
@@ -31,7 +32,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
   ],
   template: `
@@ -40,14 +41,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       icon="fa-users"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <div actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nuevo Personal"
-          (clicked)="navigateToCreate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToCreate()"
+          >Nuevo Personal</aero-button
+        >
       </div>
 
       <app-filter-bar
@@ -83,24 +82,24 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             (clicked)="viewEmployee(row)"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             (clicked)="editEmployee(row)"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-trash"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-trash"
             (clicked)="deleteEmployee(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -155,6 +154,7 @@ export class EmployeeListComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
 
+  tabs = HR_TABS;
   employees: Employee[] = [];
   loading = false;
   searchTerm = '';

@@ -21,6 +21,7 @@ import {
   PageLayoutComponent,
   Breadcrumb,
 } from '../../shared/components/page-layout/page-layout.component';
+import { ANALYTICS_TABS } from './analytics-tabs';
 import {
   DropdownComponent,
   DropdownOption,
@@ -49,6 +50,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       icon="fa-chart-line"
       [breadcrumbs]="breadcrumbs"
       [loading]="false"
+      [tabs]="tabs"
     >
       <!-- Standardized Period Selector -->
       <div actions class="period-controls-wrapper">
@@ -560,6 +562,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private routeSub?: Subscription;
 
+  tabs = ANALYTICS_TABS;
   breadcrumbs: Breadcrumb[] = [{ label: 'Analítica' }];
 
   // ── Period ──────────────────────────────────────────────────────────────────

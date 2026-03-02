@@ -25,9 +25,11 @@ import {
 } from '../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { AeroInputComponent } from '../../../core/design-system/input/aero-input.component';
-import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
+import {
+  AeroButtonComponent,
+  AeroInputComponent,
+  AeroBadgeComponent,
+} from '../../../core/design-system';
 
 @Component({
   selector: 'app-operator-daily-report',
@@ -39,7 +41,7 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
     DropdownComponent,
     FormContainerComponent,
     FormSectionComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     AeroInputComponent,
     AeroBadgeComponent,
   ],
@@ -215,16 +217,15 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
                 placeholder="Capturar ubicación GPS"
                 readonly
               />
-              <app-button
+              <aero-button
                 *ngIf="!isViewMode"
-                variant="success"
-                icon="fa-location-crosshairs"
-                label="Capturar"
+                variant="primary"
+                iconLeft="fa-location-crosshairs"
                 [loading]="capturingGPS"
-                loadingText="Capturando..."
                 [disabled]="isViewMode"
                 (clicked)="captureGPS()"
-              ></app-button>
+                >Capturar</aero-button
+              >
             </div>
 
             <!-- Location details -->
@@ -293,14 +294,14 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
         >
           <div class="production-table">
             <div class="table-controls">
-              <app-button
-                variant="outline-primary"
-                icon="fa-plus"
-                label="Agregar Fila"
-                size="sm"
+              <aero-button
+                variant="secondary"
+                iconLeft="fa-plus"
+                size="small"
                 [disabled]="productionRows.length >= 16"
                 (clicked)="addProductionRow()"
-              ></app-button>
+                >Agregar Fila</aero-button
+              >
               <span class="help-text">{{ productionRows.length }}/16 filas</span>
             </div>
 
@@ -348,13 +349,13 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
                     </td>
                     <td><input type="text" formControlName="edtCodigo" class="form-input-sm" /></td>
                     <td>
-                      <app-button
+                      <aero-button
                         variant="danger"
-                        icon="fa-xmark"
-                        size="sm"
+                        iconLeft="fa-xmark"
+                        size="small"
                         [disabled]="productionRows.length <= 1"
                         (clicked)="removeProductionRow(i)"
-                      ></app-button>
+                      ></aero-button>
                     </td>
                   </tr>
                 </tbody>
@@ -561,32 +562,28 @@ import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge
 
         <!-- Save Draft (inline, create mode only) -->
         <div class="draft-actions" *ngIf="!isViewMode && !isEditMode">
-          <app-button
+          <aero-button
             variant="ghost"
-            icon="fa-floppy-disk"
-            label="Guardar Borrador"
+            iconLeft="fa-floppy-disk"
             [loading]="saving"
             (clicked)="saveDraft()"
-          ></app-button>
+            >Guardar Borrador</aero-button
+          >
         </div>
 
         <!-- View Mode Actions -->
         <div class="view-actions" *ngIf="isViewMode">
-          <app-button
-            variant="secondary"
-            icon="fa-arrow-left"
-            label="Volver"
-            (clicked)="goBack()"
-          ></app-button>
-          <app-button
+          <aero-button variant="secondary" iconLeft="fa-arrow-left" (clicked)="goBack()"
+            >Volver</aero-button
+          >
+          <aero-button
             *ngIf="reportId"
             variant="primary"
-            icon="fa-file-pdf"
-            label="Descargar PDF"
+            iconLeft="fa-file-pdf"
             [loading]="downloadingPdf"
-            loadingText="Descargando..."
             (clicked)="downloadPdf()"
-          ></app-button>
+            >Descargar PDF</aero-button
+          >
         </div>
       </form>
     </app-form-container>

@@ -13,7 +13,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-approval-template-form',
@@ -27,7 +27,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     FormSectionComponent,
     AeroInputComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   styles: [
     `
@@ -125,13 +125,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           <div *ngFor="let paso of pasosArray.controls; let i = index" class="paso-row">
             <div class="paso-header">
               <span>Paso {{ i + 1 }}</span>
-              <app-button
+              <aero-button
                 *ngIf="pasosArray.length > 1"
                 variant="ghost"
-                icon="fa-trash"
-                label=""
+                iconLeft="fa-trash"
                 (clicked)="removePaso(i)"
-              ></app-button>
+              ></aero-button>
             </div>
 
             <div class="paso-grid" [formGroup]="getPasoGroup(i)">
@@ -178,12 +177,9 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         </div>
 
         <div class="add-step-btn">
-          <app-button
-            variant="secondary"
-            icon="fa-plus"
-            label="Agregar Paso"
-            (clicked)="addPaso()"
-          ></app-button>
+          <aero-button variant="secondary" iconLeft="fa-plus" (clicked)="addPaso()"
+            >Agregar Paso</aero-button
+          >
         </div>
       </app-form-section>
     </app-form-container>

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ValuationService, DeduccionManual } from '../../core/services/valuation.service';
+import { AeroDataGridComponent, DataGridColumn } from '../../core/design-system';
 import { Valuation, PaymentData, ValuationSummary } from '../../core/models/valuation.model';
 import { AuthService } from '../../core/services/auth.service';
 import { PaymentService } from '../../core/services/payment.service';
@@ -20,7 +21,9 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
+import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
+import { TabItem } from '../../shared/components/page-layout/page-layout.component';
 
 @Component({
   selector: 'app-valuation-detail',
@@ -32,7 +35,9 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     DropdownComponent,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
+    AeroTabsComponent,
+    AeroDataGridComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -103,317 +108,593 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
       <div entity-main-content class="detail-sections">
-        <!-- INFORMACIÓN GENERAL -->
-        <section class="detail-section">
-          <h2>Información General</h2>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="label">Período</span>
-              <p>{{ valuation?.periodo }}</p>
-            </div>
-            <div class="info-item">
-              <span class="label">Equipo</span>
-              <p>
-                <a [routerLink]="['/equipment', valuation?.equipmentId]" class="link-primary">
-                  {{ valuation?.codigo_equipo }}
-                </a>
-              </p>
-            </div>
-            <div class="info-item">
-              <span class="label">Contrato</span>
-              <p>
-                @if (valuation?.contractId) {
-                  <a
-                    [routerLink]="['/equipment/operaciones/contratos', valuation?.contractId]"
-                    class="link-primary"
-                  >
-                    {{ valuation?.contrato_numero || 'Ver Contrato' }}
+        <app-aero-tabs
+          [tabs]="tabs"
+          [activeTabId]="activeTab"
+          (tabChange)="onTabChange($event)"
+        ></app-aero-tabs>
+
+        <!-- ═══ TAB 1: RESUMEN ═══ -->
+        @if (activeTab === 'resumen') {
+          <section class="detail-section">
+            <h2>Información General</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Período</span>
+                <p>{{ valuation?.periodo }}</p>
+              </div>
+              <div class="info-item">
+                <span class="label">Equipo</span>
+                <p>
+                  <a [routerLink]="['/equipment', valuation?.equipmentId]" class="link-primary">
+                    {{ valuation?.codigo_equipo }}
                   </a>
-                } @else {
-                  <span>Sin contrato</span>
-                }
-              </p>
+                </p>
+              </div>
+              <div class="info-item">
+                <span class="label">Contrato</span>
+                <p>
+                  @if (valuation?.contractId) {
+                    <a
+                      [routerLink]="['/equipment/operaciones/contratos', valuation?.contractId]"
+                      class="link-primary"
+                    >
+                      {{ valuation?.contrato_numero || 'Ver Contrato' }}
+                    </a>
+                  } @else {
+                    <span>Sin contrato</span>
+                  }
+                </p>
+              </div>
+              <div class="info-item">
+                <span class="label">Cliente</span>
+                <p>{{ valuation?.cliente_nombre || '-' }}</p>
+              </div>
+              <div class="info-item">
+                <span class="label">Proveedor</span>
+                <p>{{ valuation?.proveedor_nombre || '-' }}</p>
+              </div>
+              <div class="info-item">
+                <span class="label">Tipo de Tarifa</span>
+                <p>{{ valuation?.tipoTarifa || '-' }}</p>
+              </div>
             </div>
-            <div class="info-item">
-              <span class="label">Cliente</span>
-              <p>{{ valuation?.cliente_nombre || '-' }}</p>
-            </div>
-            <div class="info-item">
-              <span class="label">Proveedor</span>
-              <p>{{ valuation?.proveedor_nombre || '-' }}</p>
-            </div>
-            <div class="info-item">
-              <span class="label">Tipo de Tarifa</span>
-              <p>{{ valuation?.tipoTarifa || '-' }}</p>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        <!-- RESUMEN FINANCIERO -->
-        <section class="detail-section">
-          <h2>Resumen Financiero</h2>
-          <div class="financial-table-container">
-            <table class="financial-table">
-              <thead>
-                <tr>
-                  <th>Concepto</th>
-                  <th class="text-right">Cantidad</th>
-                  <th class="text-right">Tarifa</th>
-                  <th class="text-right">Monto</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Hours worked -->
-                @if (valuationSummary?.horas_trabajadas !== null) {
-                  <tr class="row-header">
-                    <td colspan="4"><strong>Horas Trabajadas</strong></td>
-                  </tr>
-                  <tr>
-                    <td>Horas en operación</td>
-                    <td class="text-right">{{ valuationSummary?.horas_trabajadas }}</td>
-                    <td class="text-right">{{ valuation?.tarifa | currency: 'USD' }}</td>
-                    <td class="text-right">
-                      {{ valuationSummary?.monto_horas | currency: 'USD' }}
-                    </td>
-                  </tr>
-                }
-                <!-- Stand-by / included hours -->
-                @if (
-                  valuationSummary?.horas_stand_by !== null && valuationSummary!.horas_stand_by! > 0
-                ) {
-                  <tr>
-                    <td>Horas Stand By</td>
-                    <td class="text-right">{{ valuationSummary?.horas_stand_by }}</td>
-                    <td class="text-right">
-                      {{ valuationSummary?.tarifa_stand_by | currency: 'USD' }}
-                    </td>
-                    <td class="text-right">
-                      {{ valuationSummary?.monto_stand_by | currency: 'USD' }}
-                    </td>
-                  </tr>
-                }
-                <!-- Penalty -->
-                @if (
-                  valuationSummary?.penalidad_exceso !== null &&
-                  valuationSummary!.penalidad_exceso! > 0
-                ) {
-                  <tr>
-                    <td>Penalidad por exceso</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right text-danger">
-                      -{{ valuationSummary?.penalidad_exceso | currency: 'USD' }}
-                    </td>
-                  </tr>
-                }
-                <!-- Discounts -->
-                @if (valuationSummary?.descuentos !== null && valuationSummary!.descuentos! > 0) {
-                  <tr>
-                    <td>Descuentos (Anexo B)</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right text-danger">
-                      -{{ valuationSummary?.descuentos | currency: 'USD' }}
-                    </td>
-                  </tr>
-                }
-                <!-- Subtotal -->
-                <tr class="row-total">
-                  <td colspan="3"><strong>Subtotal</strong></td>
-                  <td class="text-right">
-                    <strong>{{ valuationSummary?.subtotal | currency: 'USD' }}</strong>
-                  </td>
-                </tr>
-                <!-- IGV -->
-                @if (valuationSummary?.igv !== null) {
-                  <tr>
-                    <td colspan="3">IGV (18%)</td>
-                    <td class="text-right">{{ valuationSummary?.igv | currency: 'USD' }}</td>
-                  </tr>
-                }
-                <!-- Total -->
-                <tr class="row-grand-total">
-                  <td colspan="3"><strong>Total</strong></td>
-                  <td class="text-right">
-                    <strong>{{ valuationSummary?.total | currency: 'USD' }}</strong>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- DETALLES DEL PERÍODO -->
-        <section class="detail-section">
-          <h2>Detalles del Período</h2>
-          <div class="info-grid-2col">
-            <div class="info-column">
-              <div class="info-item">
-                <span class="label">Fecha Inicio</span>
-                <p>{{ valuation?.fechaInicio | date: 'dd/MM/yyyy' }}</p>
-              </div>
-              <div class="info-item">
-                <span class="label">Fecha Fin</span>
-                <p>{{ valuation?.fechaFin | date: 'dd/MM/yyyy' }}</p>
-              </div>
-              <div class="info-item">
-                <span class="label">Días Trabajados</span>
-                <p>{{ valuation?.diasTrabajados || '-' }}</p>
-              </div>
-              <div class="info-item">
-                <span class="label">Horas Totales</span>
-                <p>{{ valuation?.horasTotales || '-' }}</p>
-              </div>
-            </div>
-            <div class="info-column">
-              <div class="info-item">
-                <span class="label">Tarifa Base</span>
-                <p class="highlight">{{ valuation?.tarifa | currency: 'USD' }}</p>
-              </div>
-              <div class="info-item">
-                <span class="label">Monto Bruto</span>
-                <p>{{ valuation?.montoBruto | currency: 'USD' }}</p>
-              </div>
-              <div class="info-item">
-                <span class="label">Monto Neto</span>
-                <p class="highlight">{{ valuation?.montoNeto | currency: 'USD' }}</p>
-              </div>
-            </div>
-          </div>
-          @if (valuation?.observaciones) {
-            <div class="observaciones-block">
-              <span class="label">Observaciones</span>
-              <div class="observaciones-text">{{ valuation?.observaciones }}</div>
-            </div>
-          }
-        </section>
-
-        <!-- PAGOS -->
-        <section class="detail-section payments-section">
-          <div class="section-header">
-            <h2>Pagos Registrados</h2>
-            @if (valuation?.estado === 'APROBADO' || valuation?.estado === 'PAGADO') {
-              <app-button
-                variant="primary"
-                size="sm"
-                icon="fa-plus"
-                label="Registrar Pago"
-                (clicked)="navigateToCreatePayment()"
-              ></app-button>
-            }
-          </div>
-
-          <!-- Payment summary widget -->
-          @if (paymentSummary) {
-            <div class="payment-summary-widget">
-              <div class="summary-row">
-                <span class="summary-label">Total Valorización</span>
-                <span class="summary-value">{{
-                  paymentSummary.totalValorizacion | currency: 'USD'
-                }}</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">Total Pagado</span>
-                <span class="summary-value text-success">
-                  {{ paymentSummary.totalPagado | currency: 'USD' }}
-                </span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">Saldo Pendiente</span>
-                <span
-                  class="summary-value"
-                  [class.text-warning]="paymentSummary.saldoPendiente > 0"
-                >
-                  {{ paymentSummary.saldoPendiente | currency: 'USD' }}
-                </span>
-              </div>
-              <div class="progress-bar-container">
-                <div
-                  class="progress-bar-fill"
-                  [style.width.%]="paymentSummary.porcentajePagado"
-                ></div>
-              </div>
-              <p class="progress-label">
-                {{ paymentSummary.porcentajePagado | number: '1.0-0' }}% pagado
-              </p>
-            </div>
-          }
-
-          @if (loadingPayments) {
-            <div class="loading-payments">
-              <div class="spinner-small"></div>
-              <span>Cargando pagos...</span>
-            </div>
-          } @else if (payments.length > 0) {
-            <div class="payments-table-container">
-              <table class="payments-table">
+          <section class="detail-section">
+            <h2>Resumen Financiero</h2>
+            <div class="financial-table-container">
+              <table class="financial-table">
                 <thead>
                   <tr>
-                    <th>N° Pago</th>
-                    <th>Fecha</th>
-                    <th>Método</th>
-                    <th>Referencia</th>
+                    <th>Concepto</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-right">Tarifa</th>
                     <th class="text-right">Monto</th>
-                    <th>Estado</th>
-                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (payment of payments; track payment.id) {
+                  @if (valuationSummary?.horas_trabajadas !== null) {
+                    <tr class="row-header">
+                      <td colspan="4"><strong>Horas Trabajadas</strong></td>
+                    </tr>
                     <tr>
-                      <td>
-                        <a
-                          class="payment-link"
-                          (click)="viewPayment(payment.id)"
-                          (keydown.enter)="viewPayment(payment.id)"
-                          tabindex="0"
-                          style="cursor:pointer"
-                        >
-                          {{ payment.numero_pago || '#' + payment.id }}
-                        </a>
-                      </td>
-                      <td>{{ payment.fecha_pago | date: 'dd/MM/yyyy' }}</td>
-                      <td>{{ payment.metodo_pago }}</td>
-                      <td>{{ payment.referencia_pago }}</td>
-                      <td class="text-right amount-cell">{{ payment.monto | currency: 'USD' }}</td>
-                      <td>
-                        <span
-                          class="badge"
-                          [class.badge-success]="payment.estado === 'APROBADO'"
-                          [class.badge-warning]="payment.estado === 'PENDIENTE'"
-                          [class.badge-danger]="payment.estado === 'RECHAZADO'"
-                          [class.badge-secondary]="payment.estado === 'PAGADO'"
-                          >{{ payment.estado }}</span
-                        >
-                      </td>
-                      <td>
-                        @if (payment.conciliado) {
-                          <span class="conciliado-badge badge badge-success">
-                            <i class="fa-solid fa-check"></i> Conciliado
-                          </span>
-                        }
+                      <td>Horas en operación</td>
+                      <td class="text-right">{{ valuationSummary?.horas_trabajadas }}</td>
+                      <td class="text-right">{{ valuation?.tarifa | currency: 'USD' }}</td>
+                      <td class="text-right">
+                        {{ valuationSummary?.monto_horas | currency: 'USD' }}
                       </td>
                     </tr>
                   }
+                  @if (
+                    valuationSummary?.horas_stand_by !== null &&
+                    valuationSummary!.horas_stand_by! > 0
+                  ) {
+                    <tr>
+                      <td>Horas Stand By</td>
+                      <td class="text-right">{{ valuationSummary?.horas_stand_by }}</td>
+                      <td class="text-right">
+                        {{ valuationSummary?.tarifa_stand_by | currency: 'USD' }}
+                      </td>
+                      <td class="text-right">
+                        {{ valuationSummary?.monto_stand_by | currency: 'USD' }}
+                      </td>
+                    </tr>
+                  }
+                  @if (
+                    valuationSummary?.penalidad_exceso !== null &&
+                    valuationSummary!.penalidad_exceso! > 0
+                  ) {
+                    <tr>
+                      <td>Penalidad por exceso</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right text-danger">
+                        -{{ valuationSummary?.penalidad_exceso | currency: 'USD' }}
+                      </td>
+                    </tr>
+                  }
+                  @if (valuationSummary?.descuentos !== null && valuationSummary!.descuentos! > 0) {
+                    <tr>
+                      <td>Descuentos (Anexo B)</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right text-danger">
+                        -{{ valuationSummary?.descuentos | currency: 'USD' }}
+                      </td>
+                    </tr>
+                  }
+                  <tr class="row-total">
+                    <td colspan="3"><strong>Subtotal</strong></td>
+                    <td class="text-right">
+                      <strong>{{ valuationSummary?.subtotal | currency: 'USD' }}</strong>
+                    </td>
+                  </tr>
+                  @if (valuationSummary?.igv !== null) {
+                    <tr>
+                      <td colspan="3">IGV (18%)</td>
+                      <td class="text-right">{{ valuationSummary?.igv | currency: 'USD' }}</td>
+                    </tr>
+                  }
+                  <tr class="row-grand-total">
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td class="text-right">
+                      <strong>{{ valuationSummary?.total | currency: 'USD' }}</strong>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
-          } @else {
-            <div class="empty-state-payments">
-              <i class="fa-solid fa-money-bill-wave empty-icon"></i>
-              <p class="empty-text">No hay pagos registrados para esta valorización.</p>
-              @if (valuation?.estado === 'APROBADO') {
-                <app-button
+          </section>
+
+          <section class="detail-section">
+            <h2>Detalles del Período</h2>
+            <div class="info-grid-2col">
+              <div class="info-column">
+                <div class="info-item">
+                  <span class="label">Fecha Inicio</span>
+                  <p>{{ valuation?.fechaInicio | date: 'dd/MM/yyyy' }}</p>
+                </div>
+                <div class="info-item">
+                  <span class="label">Fecha Fin</span>
+                  <p>{{ valuation?.fechaFin | date: 'dd/MM/yyyy' }}</p>
+                </div>
+                <div class="info-item">
+                  <span class="label">Días Trabajados</span>
+                  <p>{{ valuation?.diasTrabajados || '-' }}</p>
+                </div>
+                <div class="info-item">
+                  <span class="label">Horas Totales</span>
+                  <p>{{ valuation?.horasTotales || '-' }}</p>
+                </div>
+              </div>
+              <div class="info-column">
+                <div class="info-item">
+                  <span class="label">Tarifa Base</span>
+                  <p class="highlight">{{ valuation?.tarifa | currency: 'USD' }}</p>
+                </div>
+                <div class="info-item">
+                  <span class="label">Monto Bruto</span>
+                  <p>{{ valuation?.montoBruto | currency: 'USD' }}</p>
+                </div>
+                <div class="info-item">
+                  <span class="label">Monto Neto</span>
+                  <p class="highlight">{{ valuation?.montoNeto | currency: 'USD' }}</p>
+                </div>
+              </div>
+            </div>
+            @if (valuation?.observaciones) {
+              <div class="observaciones-block">
+                <span class="label">Observaciones</span>
+                <div class="observaciones-text">{{ valuation?.observaciones }}</div>
+              </div>
+            }
+          </section>
+
+          <section class="detail-section payments-section">
+            <div class="section-header">
+              <h2>Pagos Registrados</h2>
+              @if (valuation?.estado === 'APROBADO' || valuation?.estado === 'PAGADO') {
+                <aero-button
                   variant="primary"
-                  size="sm"
-                  icon="fa-plus"
-                  label="Registrar Primer Pago"
+                  size="small"
+                  iconLeft="fa-plus"
                   (clicked)="navigateToCreatePayment()"
-                ></app-button>
+                  >Registrar Pago</aero-button
+                >
               }
             </div>
-          }
-        </section>
+
+            @if (paymentSummary) {
+              <div class="payment-summary-widget">
+                <div class="summary-row">
+                  <span class="summary-label">Total Valorización</span>
+                  <span class="summary-value">{{
+                    paymentSummary.totalValorizacion | currency: 'USD'
+                  }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Total Pagado</span>
+                  <span class="summary-value text-success">
+                    {{ paymentSummary.totalPagado | currency: 'USD' }}
+                  </span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Saldo Pendiente</span>
+                  <span
+                    class="summary-value"
+                    [class.text-warning]="paymentSummary.saldoPendiente > 0"
+                  >
+                    {{ paymentSummary.saldoPendiente | currency: 'USD' }}
+                  </span>
+                </div>
+                <div class="progress-bar-container">
+                  <div
+                    class="progress-bar-fill"
+                    [style.width.%]="paymentSummary.porcentajePagado"
+                  ></div>
+                </div>
+                <p class="progress-label">
+                  {{ paymentSummary.porcentajePagado | number: '1.0-0' }}% pagado
+                </p>
+              </div>
+            }
+
+            @if (loadingPayments) {
+              <div class="loading-payments">
+                <div class="spinner-small"></div>
+                <span>Cargando pagos...</span>
+              </div>
+            } @else if (payments.length > 0) {
+              <div class="payments-table-container">
+                <table class="payments-table">
+                  <thead>
+                    <tr>
+                      <th>N° Pago</th>
+                      <th>Fecha</th>
+                      <th>Método</th>
+                      <th>Referencia</th>
+                      <th class="text-right">Monto</th>
+                      <th>Estado</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (payment of payments; track payment.id) {
+                      <tr>
+                        <td>
+                          <a
+                            class="payment-link"
+                            (click)="viewPayment(payment.id)"
+                            (keydown.enter)="viewPayment(payment.id)"
+                            tabindex="0"
+                            style="cursor:pointer"
+                          >
+                            {{ payment.numero_pago || '#' + payment.id }}
+                          </a>
+                        </td>
+                        <td>{{ payment.fecha_pago | date: 'dd/MM/yyyy' }}</td>
+                        <td>{{ payment.metodo_pago }}</td>
+                        <td>{{ payment.referencia_pago }}</td>
+                        <td class="text-right amount-cell">
+                          {{ payment.monto | currency: 'USD' }}
+                        </td>
+                        <td>
+                          <span
+                            class="badge"
+                            [class.badge-success]="payment.estado === 'APROBADO'"
+                            [class.badge-warning]="payment.estado === 'PENDIENTE'"
+                            [class.badge-danger]="payment.estado === 'RECHAZADO'"
+                            [class.badge-secondary]="payment.estado === 'PAGADO'"
+                            >{{ payment.estado }}</span
+                          >
+                        </td>
+                        <td>
+                          @if (payment.conciliado) {
+                            <span class="conciliado-badge badge badge-success">
+                              <i class="fa-solid fa-check"></i> Conciliado
+                            </span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="empty-state-payments">
+                <i class="fa-solid fa-money-bill-wave empty-icon"></i>
+                <p class="empty-text">No hay pagos registrados para esta valorización.</p>
+                @if (valuation?.estado === 'APROBADO') {
+                  <aero-button
+                    variant="primary"
+                    size="small"
+                    iconLeft="fa-plus"
+                    (clicked)="navigateToCreatePayment()"
+                    >Registrar Primer Pago</aero-button
+                  >
+                }
+              </div>
+            }
+          </section>
+        }
+
+        <!-- ═══ TAB 2: RESUMEN ACUMULADO ═══ -->
+        @if (activeTab === 'acumulado') {
+          <section class="detail-section">
+            <h2>Resumen Acumulado del Contrato</h2>
+            <aero-data-grid
+              [columns]="acumuladoColumns"
+              [data]="acumuladoData"
+              [loading]="loadingTab"
+              [dense]="true"
+              [footerRow]="acumuladoFooter"
+              [highlightRow]="isCurrentValuation"
+              [templates]="{ estado: estadoBadgeTpl }"
+              [showColumnChooser]="true"
+              emptyMessage="No hay valorizaciones previas para este contrato."
+              emptyIcon="fa-layer-group"
+            ></aero-data-grid>
+            <ng-template #estadoBadgeTpl let-row>
+              <span class="badge" [ngClass]="'badge-' + getStatusBadgeClass(row['estado'] + '')">{{
+                row['estado']
+              }}</span>
+            </ng-template>
+          </section>
+        }
+
+        <!-- ═══ TAB 3: PARTE DIARIO ═══ -->
+        @if (activeTab === 'partes') {
+          <section class="detail-section">
+            <h2>Partes Diarios del Período</h2>
+            <aero-data-grid
+              [columns]="partesColumns"
+              [data]="partesData"
+              [loading]="loadingTab"
+              [dense]="true"
+              [footerRow]="partesFooter"
+              [showColumnChooser]="true"
+              emptyMessage="No hay partes diarios vinculados a esta valorización."
+              emptyIcon="fa-clipboard-list"
+            ></aero-data-grid>
+          </section>
+        }
+
+        <!-- ═══ TAB 4: COMBUSTIBLE ═══ -->
+        @if (activeTab === 'combustible') {
+          <section class="detail-section">
+            <h2>Vales de Combustible</h2>
+            @if (!loadingTab && combustibleData && combustibleData['resumen']) {
+              <div class="combustible-summary">
+                <div class="summary-row">
+                  <span class="summary-label">Total Galones</span>
+                  <span class="summary-value">{{
+                    combustibleData['resumen']['total_galones'] | number: '1.2-2'
+                  }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Precio Promedio</span>
+                  <span class="summary-value">{{
+                    combustibleData['resumen']['precio_promedio'] | currency: 'USD'
+                  }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Total Importe</span>
+                  <span class="summary-value">{{
+                    combustibleData['resumen']['total_importe'] | currency: 'USD'
+                  }}</span>
+                </div>
+                @if (combustibleData['resumen']['ratio']) {
+                  <div class="summary-row">
+                    <span class="summary-label">Ratio (gal/H-M)</span>
+                    <span class="summary-value">{{
+                      combustibleData['resumen']['ratio'] | number: '1.2-2'
+                    }}</span>
+                  </div>
+                }
+              </div>
+            }
+            <aero-data-grid
+              [columns]="combustibleColumns"
+              [data]="combustibleVales"
+              [loading]="loadingTab"
+              [dense]="true"
+              [showColumnChooser]="true"
+              emptyMessage="No hay vales de combustible vinculados a esta valorización."
+              emptyIcon="fa-gas-pump"
+            ></aero-data-grid>
+          </section>
+        }
+
+        <!-- ═══ TAB 5: GASTO EN OBRA ═══ -->
+        @if (activeTab === 'gastos') {
+          <section class="detail-section">
+            <div class="section-header">
+              <h2>Gastos en Obra</h2>
+              @if (valuation?.estado === 'BORRADOR') {
+                <aero-button
+                  variant="primary"
+                  size="small"
+                  iconLeft="fa-plus"
+                  (clicked)="showAddGastoModal = true"
+                  >Agregar Gasto</aero-button
+                >
+              }
+            </div>
+            <aero-data-grid
+              [columns]="gastosColumns"
+              [data]="gastosData"
+              [loading]="loadingTab"
+              [dense]="true"
+              [footerRow]="gastosFooter"
+              [actionsTemplate]="valuation?.estado === 'BORRADOR' ? gastoActionsTpl : undefined"
+              [templates]="{ incluye_igv: igvTpl }"
+              [showColumnChooser]="true"
+              emptyMessage="No hay gastos en obra registrados."
+              emptyIcon="fa-receipt"
+            ></aero-data-grid>
+            <ng-template #gastoActionsTpl let-row>
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-trash-can"
+                title="Eliminar"
+                (clicked)="removeGasto(row['id'])"
+              ></aero-button>
+            </ng-template>
+            <ng-template #igvTpl let-row>
+              {{ row['incluye_igv'] ? 'Sí' : 'No' }}
+            </ng-template>
+          </section>
+        }
+
+        <!-- ═══ TAB 6: ADELANTOS ═══ -->
+        @if (activeTab === 'adelantos') {
+          <section class="detail-section">
+            <div class="section-header">
+              <h2>Adelantos y Amortizaciones</h2>
+              @if (valuation?.estado === 'BORRADOR') {
+                <aero-button
+                  variant="primary"
+                  size="small"
+                  iconLeft="fa-plus"
+                  (clicked)="showAddAdelantoModal = true"
+                  >Agregar Adelanto</aero-button
+                >
+              }
+            </div>
+            <aero-data-grid
+              [columns]="adelantosColumns"
+              [data]="adelantosData"
+              [loading]="loadingTab"
+              [dense]="true"
+              [footerRow]="adelantosFooter"
+              [actionsTemplate]="valuation?.estado === 'BORRADOR' ? adelantoActionsTpl : undefined"
+              [templates]="{ tipo_operacion: tipoOpTpl }"
+              [showColumnChooser]="true"
+              emptyMessage="No hay adelantos ni amortizaciones registrados."
+              emptyIcon="fa-hand-holding-dollar"
+            ></aero-data-grid>
+            <ng-template #adelantoActionsTpl let-row>
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-trash-can"
+                title="Eliminar"
+                (clicked)="removeAdelanto(row['id'])"
+              ></aero-button>
+            </ng-template>
+            <ng-template #tipoOpTpl let-row>
+              <span
+                class="badge"
+                [class.badge-warning]="row['tipo_operacion'] === 'ADELANTO'"
+                [class.badge-success]="row['tipo_operacion'] === 'AMORTIZACION'"
+              >
+                {{ row['tipo_operacion'] }}
+              </span>
+            </ng-template>
+          </section>
+        }
+
+        <!-- ═══ TAB 7: ANÁLISIS DE COMBUSTIBLE ═══ -->
+        @if (activeTab === 'analisis') {
+          <section class="detail-section">
+            <h2>Análisis de Combustible</h2>
+            @if (loadingTab) {
+              <div class="loading-payments">
+                <div class="spinner-small"></div>
+                <span>Cargando...</span>
+              </div>
+            } @else if (analisisData.length > 0) {
+              @for (a of analisisData; track a['id']) {
+                <div class="analisis-card">
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="label">Consumo Combustible (gal)</span>
+                      <p>{{ a['consumo_combustible'] | number: '1.2-2' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <span class="label">Tipo Medidor</span>
+                      <p>{{ a['tipo_horometro_odometro'] || '-' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <span class="label">Lectura Inicio</span>
+                      <p>{{ a['lectura_inicio'] | number: '1.2-4' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <span class="label">Lectura Final</span>
+                      <p>{{ a['lectura_final'] | number: '1.2-4' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <span class="label">Total Uso</span>
+                      <p>{{ a['total_uso'] | number: '1.2-4' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <span class="label">Rendimiento</span>
+                      <p class="highlight">{{ a['rendimiento'] | number: '1.2-4' }}</p>
+                    </div>
+                  </div>
+
+                  <div class="analisis-editable">
+                    <div class="form-group">
+                      <span class="label">Ratio Control</span>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [ngModel]="a['ratio_control']"
+                        (ngModelChange)="a['ratio_control'] = $event; recalcAnalisis(a)"
+                        step="0.01"
+                        min="0"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <span class="label">Precio Unitario</span>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [ngModel]="a['precio_unitario']"
+                        (ngModelChange)="a['precio_unitario'] = $event; recalcAnalisis(a)"
+                        step="0.01"
+                        min="0"
+                      />
+                    </div>
+                    <aero-button
+                      variant="secondary"
+                      size="small"
+                      iconLeft="fa-floppy-disk"
+                      (clicked)="saveAnalisis(a)"
+                      >Guardar</aero-button
+                    >
+                  </div>
+
+                  <div class="analisis-results">
+                    <div class="info-item">
+                      <span class="label">Diferencia</span>
+                      <p>{{ a['diferencia'] | number: '1.2-4' }}</p>
+                    </div>
+                    <div class="info-item">
+                      <span class="label">Exceso Combustible (gal)</span>
+                      <p [class.text-danger]="(a['exceso_combustible'] || 0) > 0">
+                        {{ a['exceso_combustible'] | number: '1.2-4' }}
+                      </p>
+                    </div>
+                    <div class="info-item">
+                      <span class="label">Importe Exceso</span>
+                      <p class="highlight" [class.text-danger]="(a['importe_exceso'] || 0) > 0">
+                        {{ a['importe_exceso'] | currency: 'USD' }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              }
+            } @else {
+              <p class="empty-docs">
+                No hay análisis de combustible. Ejecute "Valorizar" para generar el análisis.
+              </p>
+            }
+          </section>
+        }
       </div>
 
       <!-- ── SIDEBAR: WORKFLOW ACTIONS ─────────────────────────── -->
@@ -421,101 +702,109 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         @if (valuation) {
           <!-- BORRADOR -->
           @if (valuation.estado === 'BORRADOR') {
-            <app-button
+            <aero-button
               variant="primary"
               [fullWidth]="true"
-              icon="fa-paper-plane"
-              [label]="processingWorkflow ? 'Procesando...' : 'Marcar como Pendiente'"
+              iconLeft="fa-paper-plane"
               [disabled]="processingWorkflow"
               (clicked)="submitDraft()"
-            ></app-button>
-            <app-button
+              >{{ processingWorkflow ? 'Procesando...' : 'Marcar como Pendiente' }}</aero-button
+            >
+            <aero-button
               variant="secondary"
               [fullWidth]="true"
-              icon="fa-pen"
-              label="Editar Valorización"
+              iconLeft="fa-pen"
               (clicked)="editValuation()"
-            ></app-button>
-            <app-button
-              variant="outline-primary"
+              >Editar Valorización</aero-button
+            >
+            <aero-button
+              variant="secondary"
               [fullWidth]="true"
-              icon="fa-calculator"
-              [label]="recalculating ? 'Recalculando...' : 'Recalcular'"
+              iconLeft="fa-calculator"
+              [disabled]="valorizando"
+              (clicked)="runValorizar()"
+              >{{ valorizando ? 'Valorizando...' : 'Valorizar' }}</aero-button
+            >
+            <aero-button
+              variant="secondary"
+              [fullWidth]="true"
+              iconLeft="fa-calculator"
               [disabled]="recalculating"
               (clicked)="recalculate()"
-            ></app-button>
+              >{{ recalculating ? 'Recalculando...' : 'Recalcular' }}</aero-button
+            >
           }
 
           <!-- PENDIENTE -->
           @if (valuation.estado === 'PENDIENTE') {
-            <app-button
+            <aero-button
               variant="primary"
               [fullWidth]="true"
-              icon="fa-paper-plane"
-              [label]="processingWorkflow ? 'Procesando...' : 'Enviar a Revisión'"
+              iconLeft="fa-paper-plane"
               [disabled]="processingWorkflow || !valuation.conformidadProveedor"
               (clicked)="submitForReview()"
-            ></app-button>
+              >{{ processingWorkflow ? 'Procesando...' : 'Enviar a Revisión' }}</aero-button
+            >
           }
 
           <!-- EN_REVISION -->
           @if (valuation.estado === 'EN_REVISION' && canValidate()) {
-            <app-button
-              variant="success"
+            <aero-button
+              variant="primary"
               [fullWidth]="true"
-              icon="fa-check-double"
-              [label]="processingWorkflow ? 'Procesando...' : 'Validar'"
+              iconLeft="fa-check-double"
               [disabled]="processingWorkflow"
               (clicked)="confirmValidate()"
-            ></app-button>
+              >{{ processingWorkflow ? 'Procesando...' : 'Validar' }}</aero-button
+            >
           }
 
           <!-- VALIDADO -->
           @if (valuation.estado === 'VALIDADO' && canApprove()) {
-            <app-button
-              variant="success"
+            <aero-button
+              variant="primary"
               [fullWidth]="true"
-              icon="fa-circle-check"
-              label="Aprobar Valorización"
+              iconLeft="fa-circle-check"
               [disabled]="processingWorkflow"
               (clicked)="showApproveModal = true"
-            ></app-button>
+              >Aprobar Valorización</aero-button
+            >
           }
 
           <!-- APROBADO + canMarkAsPaid -->
           @if (valuation.estado === 'APROBADO' && canMarkAsPaid()) {
-            <app-button
-              variant="success"
+            <aero-button
+              variant="primary"
               [fullWidth]="true"
-              icon="fa-money-check-dollar"
-              label="Marcar como Pagada"
+              iconLeft="fa-money-check-dollar"
               [disabled]="processingWorkflow"
               (clicked)="showMarkPaidModal = true"
-            ></app-button>
+              >Marcar como Pagada</aero-button
+            >
           }
 
           <!-- RECHAZADO -->
           @if (valuation.estado === 'RECHAZADO') {
-            <app-button
+            <aero-button
               variant="secondary"
               [fullWidth]="true"
-              icon="fa-rotate-left"
-              [label]="processingWorkflow ? 'Procesando...' : 'Reabrir Valorización'"
+              iconLeft="fa-rotate-left"
               [disabled]="processingWorkflow"
               (clicked)="confirmReopen()"
-            ></app-button>
+              >{{ processingWorkflow ? 'Procesando...' : 'Reabrir Valorización' }}</aero-button
+            >
           }
 
           <!-- Reject (multi-state) -->
           @if (canRejectCurrentState() && canReject()) {
-            <app-button
+            <aero-button
               variant="danger"
               [fullWidth]="true"
-              icon="fa-ban"
-              label="Rechazar"
+              iconLeft="fa-ban"
               [disabled]="processingWorkflow"
               (clicked)="showRejectModal = true"
-            ></app-button>
+              >Rechazar</aero-button
+            >
           }
 
           <!-- Workflow hint -->
@@ -526,34 +815,34 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           <hr style="border:none;border-top:1px solid var(--grey-100);margin:var(--s-8) 0" />
 
           <!-- Common actions -->
-          <app-button
+          <aero-button
             variant="secondary"
             [fullWidth]="true"
-            icon="fa-file-pdf"
-            label="Descargar PDF"
+            iconLeft="fa-file-pdf"
             (clicked)="downloadPDF()"
-          ></app-button>
-          <app-button
+            >Descargar PDF</aero-button
+          >
+          <aero-button
             variant="ghost"
             [fullWidth]="true"
-            icon="fa-pen-to-square"
-            label="Editar Detalles"
+            iconLeft="fa-pen-to-square"
             (clicked)="editValuation()"
-          ></app-button>
-          <app-button
+            >Editar Detalles</aero-button
+          >
+          <aero-button
             variant="ghost"
             [fullWidth]="true"
-            icon="fa-arrow-left-long"
-            label="Volver a Lista"
+            iconLeft="fa-arrow-left-long"
             routerLink="/equipment/valuations"
-          ></app-button>
-          <app-button
+            >Volver a Lista</aero-button
+          >
+          <aero-button
             variant="danger"
             [fullWidth]="true"
-            icon="fa-trash-can"
-            label="Eliminar"
+            iconLeft="fa-trash-can"
             (clicked)="deleteValuation()"
-          ></app-button>
+            >Eliminar</aero-button
+          >
         }
       </ng-container>
 
@@ -582,14 +871,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
               </div>
             </div>
             @if (valuation.estado === 'PENDIENTE') {
-              <app-button
+              <aero-button
                 variant="secondary"
                 [fullWidth]="true"
-                icon="fa-signature"
-                label="Registrar Conformidad"
+                iconLeft="fa-signature"
                 class="mt-8"
                 (clicked)="showConformidadModal = true"
-              ></app-button>
+                >Registrar Conformidad</aero-button
+              >
             }
           }
         </app-entity-detail-sidebar-card>
@@ -639,13 +928,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                     <p class="discount-event-desc">{{ event.descripcion }}</p>
                   }
                   @if (valuation.estado === 'BORRADOR') {
-                    <app-button
-                      variant="icon"
-                      size="sm"
-                      icon="fa-trash-can"
+                    <aero-button
+                      variant="ghost"
+                      size="small"
+                      iconCenter="fa-trash-can"
                       title="Eliminar evento"
                       (clicked)="removeDiscountEvent(event.id)"
-                    ></app-button>
+                    ></aero-button>
                   }
                 </div>
               }
@@ -654,14 +943,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             <p class="empty-docs">Sin descuentos registrados.</p>
           }
           @if (valuation.estado === 'BORRADOR') {
-            <app-button
+            <aero-button
               variant="secondary"
               [fullWidth]="true"
-              icon="fa-plus"
-              label="Agregar Descuento"
+              iconLeft="fa-plus"
               class="mt-8"
               (clicked)="showAddDiscountModal = true"
-            ></app-button>
+              >Agregar Descuento</aero-button
+            >
           }
         </app-entity-detail-sidebar-card>
       }
@@ -693,13 +982,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                     <p class="deduction-meta">{{ ded.fecha | date: 'dd/MM/yy' }}</p>
                   }
                   @if (valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE') {
-                    <app-button
-                      variant="icon"
-                      size="sm"
-                      icon="fa-trash-can"
+                    <aero-button
+                      variant="ghost"
+                      size="small"
+                      iconCenter="fa-trash-can"
                       title="Eliminar deducción"
                       (clicked)="removeManualDeduction(ded.id)"
-                    ></app-button>
+                    ></aero-button>
                   }
                 </div>
               }
@@ -712,14 +1001,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             <p class="empty-docs">Sin deducciones manuales registradas.</p>
           }
           @if (valuation.estado === 'BORRADOR' || valuation.estado === 'PENDIENTE') {
-            <app-button
+            <aero-button
               variant="secondary"
               [fullWidth]="true"
-              icon="fa-plus"
-              label="Agregar Deducción"
+              iconLeft="fa-plus"
               class="mt-8"
               (clicked)="showAddDeductionModal = true"
-            ></app-button>
+              >Agregar Deducción</aero-button
+            >
           }
         </app-entity-detail-sidebar-card>
       }
@@ -778,11 +1067,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         >
           <div class="modal-header">
             <h2>Confirmar Aprobación</h2>
-            <app-button
-              variant="icon"
-              icon="fa-xmark"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
               (clicked)="showApproveModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <p>¿Confirmas la aprobación final de esta valorización?</p>
@@ -799,17 +1089,15 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </p>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="showApproveModal = false"
-            ></app-button>
-            <app-button
-              variant="success"
-              [label]="processingWorkflow ? 'Aprobando...' : 'Confirmar Aprobación'"
+            <aero-button variant="secondary" (clicked)="showApproveModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
+              variant="primary"
               [disabled]="processingWorkflow"
               (clicked)="confirmApprove()"
-            ></app-button>
+              >{{ processingWorkflow ? 'Aprobando...' : 'Confirmar Aprobación' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -833,11 +1121,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         >
           <div class="modal-header">
             <h2>Rechazar Valorización</h2>
-            <app-button
-              variant="icon"
-              icon="fa-xmark"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
               (clicked)="showRejectModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -852,17 +1141,15 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="showRejectModal = false"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="showRejectModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
               variant="danger"
-              [label]="processingWorkflow ? 'Rechazando...' : 'Confirmar Rechazo'"
               [disabled]="processingWorkflow || !rejectReason"
               (clicked)="confirmReject()"
-            ></app-button>
+              >{{ processingWorkflow ? 'Rechazando...' : 'Confirmar Rechazo' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -886,11 +1173,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         >
           <div class="modal-header">
             <h2>Registrar Pago</h2>
-            <app-button
-              variant="icon"
-              icon="fa-xmark"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
               (clicked)="showMarkPaidModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -918,17 +1206,15 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="showMarkPaidModal = false"
-            ></app-button>
-            <app-button
-              variant="success"
-              [label]="processingWorkflow ? 'Guardando...' : 'Confirmar Pago'"
+            <aero-button variant="secondary" (clicked)="showMarkPaidModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
+              variant="primary"
               [disabled]="processingWorkflow || !isPaymentDataValid()"
               (clicked)="confirmMarkAsPaid()"
-            ></app-button>
+              >{{ processingWorkflow ? 'Guardando...' : 'Confirmar Pago' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -952,11 +1238,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         >
           <div class="modal-header">
             <h2>Agregar Evento de Descuento</h2>
-            <app-button
-              variant="icon"
-              icon="fa-xmark"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
               (clicked)="showAddDiscountModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -1057,17 +1344,15 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="showAddDiscountModal = false"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="showAddDiscountModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
               variant="primary"
-              label="Agregar Descuento"
               [disabled]="!newDiscountEvent.fecha || !newDiscountEvent.tipo"
               (clicked)="confirmAddDiscountEvent()"
-            ></app-button>
+              >Agregar Descuento</aero-button
+            >
           </div>
         </div>
       </div>
@@ -1091,11 +1376,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         >
           <div class="modal-header">
             <h2>Agregar Deducción Manual</h2>
-            <app-button
-              variant="icon"
-              icon="fa-xmark"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
               (clicked)="showAddDeductionModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -1150,14 +1436,11 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="showAddDeductionModal = false"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="showAddDeductionModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
               variant="primary"
-              label="Agregar Deducción"
               [disabled]="
                 !newDeduction.tipo ||
                 !newDeduction.concepto ||
@@ -1165,7 +1448,169 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                 newDeduction.monto <= 0
               "
               (clicked)="confirmAddDeduction()"
-            ></app-button>
+              >Agregar Deducción</aero-button
+            >
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Add Gasto en Obra Modal -->
+    @if (showAddGastoModal) {
+      <div class="modal" (click)="showAddGastoModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" tabindex="0" role="dialog">
+          <div class="modal-header">
+            <h2>Agregar Gasto en Obra</h2>
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
+              (clicked)="showAddGastoModal = false"
+            ></aero-button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <span class="label">Fecha<span class="required">*</span></span>
+              <input type="date" class="form-control" [(ngModel)]="newGasto.fecha" />
+            </div>
+            <div class="form-group">
+              <span class="label">Proveedor</span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newGasto.proveedor"
+                placeholder="Nombre del proveedor"
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">Concepto<span class="required">*</span></span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newGasto.concepto"
+                placeholder="Descripción del gasto"
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">Tipo Documento</span>
+              <app-dropdown
+                [options]="tipoDocOptions"
+                [placeholder]="'Seleccionar'"
+                [(value)]="newGasto.tipo_documento"
+              ></app-dropdown>
+            </div>
+            <div class="form-group">
+              <span class="label">N° Documento</span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newGasto.numero_documento"
+                placeholder="Ej: F001-00123"
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">Importe<span class="required">*</span></span>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="newGasto.importe"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" [(ngModel)]="newGasto.incluye_igv" />
+                Incluye IGV (18%)
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <aero-button variant="secondary" (clicked)="showAddGastoModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
+              variant="primary"
+              [disabled]="!newGasto.fecha || !newGasto.concepto || !newGasto.importe"
+              (clicked)="confirmAddGasto()"
+              >Agregar Gasto</aero-button
+            >
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Add Adelanto Modal -->
+    @if (showAddAdelantoModal) {
+      <div class="modal" (click)="showAddAdelantoModal = false" tabindex="0" role="button">
+        <div class="modal-content" (click)="$event.stopPropagation()" tabindex="0" role="dialog">
+          <div class="modal-header">
+            <h2>Agregar Adelanto / Amortización</h2>
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
+              (clicked)="showAddAdelantoModal = false"
+            ></aero-button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <span class="label">Tipo<span class="required">*</span></span>
+              <app-dropdown
+                [options]="tipoOperacionOptions"
+                [placeholder]="'Seleccionar'"
+                [(value)]="newAdelanto.tipo_operacion"
+              ></app-dropdown>
+            </div>
+            <div class="form-group">
+              <span class="label">Fecha<span class="required">*</span></span>
+              <input type="date" class="form-control" [(ngModel)]="newAdelanto.fecha" />
+            </div>
+            <div class="form-group">
+              <span class="label">N° Documento</span>
+              <input type="text" class="form-control" [(ngModel)]="newAdelanto.numero_documento" />
+            </div>
+            <div class="form-group">
+              <span class="label">Concepto</span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newAdelanto.concepto"
+                placeholder="Descripción"
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">N° Cuota</span>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="newAdelanto.numero_cuota"
+                placeholder="Ej: 1/12"
+              />
+            </div>
+            <div class="form-group">
+              <span class="label">Monto<span class="required">*</span></span>
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="newAdelanto.monto"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <aero-button variant="secondary" (clicked)="showAddAdelantoModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
+              variant="primary"
+              [disabled]="!newAdelanto.tipo_operacion || !newAdelanto.fecha || !newAdelanto.monto"
+              (clicked)="confirmAddAdelanto()"
+              >Agregar</aero-button
+            >
           </div>
         </div>
       </div>
@@ -1189,11 +1634,12 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         >
           <div class="modal-header">
             <h2>Registrar Conformidad del Proveedor</h2>
-            <app-button
-              variant="icon"
-              icon="fa-xmark"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-xmark"
               (clicked)="showConformidadModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <p class="alert alert-info">
@@ -1215,17 +1661,15 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="showConformidadModal = false"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="showConformidadModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
               variant="primary"
-              [label]="processingWorkflow ? 'Guardando...' : 'Registrar Conformidad'"
               [disabled]="processingWorkflow || !conformidadData.fecha"
               (clicked)="confirmConformidad()"
-            ></app-button>
+              >{{ processingWorkflow ? 'Guardando...' : 'Registrar Conformidad' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -1556,7 +2000,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       .payments-table {
         width: 100%;
         border-collapse: collapse;
-        background: var(--grey-100);
+        background: var(--neutral-0);
 
         th {
           background: var(--grey-50);
@@ -1776,7 +2220,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         font-weight: 600;
       }
 
-      .discount-event-item app-button {
+      .discount-event-item aero-button {
         position: absolute;
         top: 4px;
         right: 4px;
@@ -1838,7 +2282,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         margin: 1px 0;
       }
 
-      .deduction-item app-button {
+      .deduction-item aero-button {
         position: absolute;
         top: 4px;
         right: 4px;
@@ -1908,6 +2352,53 @@ import { ButtonComponent } from '../../shared/components/button/button.component
         margin-top: 4px;
       }
 
+      /* Valorizar bar */
+      /* Combustible summary */
+      .combustible-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: var(--s-16);
+        padding: var(--s-16);
+        background: var(--grey-50);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--s-16);
+      }
+
+      /* Analisis card */
+      .analisis-card {
+        padding: var(--s-24);
+        background: var(--grey-50);
+        border: 1px solid var(--grey-200);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--s-16);
+      }
+
+      .analisis-editable {
+        display: flex;
+        align-items: flex-end;
+        gap: var(--s-16);
+        padding: var(--s-16);
+        margin: var(--s-16) 0;
+        background: var(--grey-100);
+        border-radius: var(--radius-sm);
+        border: 1px dashed var(--grey-300);
+
+        .form-group {
+          flex: 1;
+          margin-bottom: 0;
+        }
+      }
+
+      .analisis-results {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--s-16);
+        margin-top: var(--s-16);
+        padding-top: var(--s-16);
+        border-top: 1px solid var(--grey-200);
+      }
+
       /* Modals */
       .modal {
         position: fixed;
@@ -1923,7 +2414,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       }
 
       .modal-content {
-        background: var(--grey-100);
+        background: var(--neutral-0);
         padding: 0;
         border-radius: var(--radius-md);
         width: 90%;
@@ -2039,6 +2530,29 @@ export class ValuationDetailComponent implements OnInit {
   valuationSummary: ValuationSummary | null = null;
   loading = true;
   processingWorkflow = false;
+
+  // ─── Tabs ───
+  activeTab = 'resumen';
+  tabs: (TabItem & { id?: string })[] = [
+    { id: 'resumen', label: 'Resumen', icon: 'fa-file-invoice-dollar' },
+    { id: 'acumulado', label: 'Acumulado', icon: 'fa-layer-group' },
+    { id: 'partes', label: 'Parte Diario', icon: 'fa-clipboard-list' },
+    { id: 'combustible', label: 'Combustible', icon: 'fa-gas-pump' },
+    { id: 'gastos', label: 'Gasto en Obra', icon: 'fa-receipt' },
+    { id: 'adelantos', label: 'Adelantos', icon: 'fa-hand-holding-dollar' },
+    { id: 'analisis', label: 'Análisis', icon: 'fa-chart-line' },
+  ];
+
+  // Tab data
+  resumenData: Record<string, unknown> | null = null;
+  acumuladoData: Record<string, unknown>[] = [];
+  partesData: Record<string, unknown>[] = [];
+  combustibleData: Record<string, unknown> | null = null;
+  gastosData: Record<string, unknown>[] = [];
+  adelantosData: Record<string, unknown>[] = [];
+  analisisData: Record<string, unknown>[] = [];
+  loadingTab = false;
+  valorizando = false;
 
   // Payment-related properties
   payments: PaymentRecordList[] = [];
@@ -2207,11 +2721,205 @@ export class ValuationDetailComponent implements OnInit {
     return this.manualDeductions.reduce((sum, d) => sum + (parseFloat(String(d.monto)) || 0), 0);
   }
 
+  // ─── Data Grid Column Definitions ───
+
+  acumuladoColumns: DataGridColumn[] = [
+    { key: 'numero_valorizacion', label: 'N° Val.', width: '90px', sortable: true },
+    { key: 'periodo', label: 'Período', width: '100px', sortable: true },
+    { key: 'fecha_inicio', label: 'Fecha Inicio', type: 'date', width: '110px' },
+    { key: 'fecha_fin', label: 'Fecha Fin', type: 'date', width: '110px' },
+    { key: 'cantidad', label: 'Cantidad', type: 'number', width: '100px', sortable: true },
+    { key: 'unidad_medida', label: 'Unidad', width: '70px' },
+    { key: 'precio_unitario', label: 'P.U.', type: 'number', width: '90px', format: '1.2-2' },
+    { key: 'valorizacion_bruta', label: 'Bruta', type: 'currency', width: '120px', format: 'USD' },
+    { key: 'total_descuento', label: 'Descuento', type: 'currency', width: '120px', format: 'USD' },
+    {
+      key: 'valorizacion_neta',
+      label: 'Neta',
+      type: 'currency',
+      width: '120px',
+      format: 'USD',
+      bold: true,
+    },
+    { key: 'estado', label: 'Estado', type: 'template', width: '110px' },
+  ];
+
+  partesColumns: DataGridColumn[] = [
+    { key: 'numero_parte', label: 'N° Parte', width: '85px', sortable: true },
+    { key: 'fecha', label: 'Fecha', type: 'date', width: '100px', sortable: true },
+    { key: 'operador_dni', label: 'DNI', width: '90px', hidden: true },
+    { key: 'operador_nombre', label: 'Operador', width: '160px', hidden: true },
+    { key: 'turno', label: 'Turno', width: '70px' },
+    {
+      key: 'horometro_inicial',
+      label: 'H. Inicio',
+      type: 'number',
+      width: '95px',
+      format: '1.2-2',
+    },
+    { key: 'horometro_final', label: 'H. Final', type: 'number', width: '95px', format: '1.2-2' },
+    {
+      key: 'diferencia',
+      label: 'Diferencia',
+      type: 'number',
+      width: '95px',
+      format: '1.2-2',
+      bold: true,
+    },
+    {
+      key: 'horas_precalentamiento',
+      label: 'Precalent.',
+      type: 'number',
+      width: '95px',
+      format: '1.2-2',
+    },
+    {
+      key: 'cantidad_efectiva',
+      label: 'Cant. Efectiva',
+      type: 'number',
+      width: '110px',
+      format: '1.2-2',
+      bold: true,
+    },
+    {
+      key: 'cantidad_minima',
+      label: 'Cant. Mínima',
+      type: 'number',
+      width: '110px',
+      format: '1.2-2',
+    },
+  ];
+
+  combustibleColumns: DataGridColumn[] = [
+    { key: 'numero_vale', label: 'N° Vale', width: '100px', sortable: true },
+    { key: 'fecha', label: 'Fecha', type: 'date', width: '100px', sortable: true },
+    { key: 'tipo_combustible', label: 'Tipo', width: '90px' },
+    { key: 'cantidad_galones', label: 'Galones', type: 'number', width: '90px', format: '1.2-2' },
+    { key: 'precio_unitario', label: 'P.U.', type: 'number', width: '90px', format: '1.4-4' },
+    {
+      key: 'monto_total',
+      label: 'Importe',
+      type: 'currency',
+      width: '110px',
+      format: 'USD',
+      bold: true,
+    },
+    { key: 'proveedor', label: 'Proveedor', width: '150px' },
+    { key: 'observaciones', label: 'Observaciones', width: '150px', hidden: true },
+  ];
+
+  gastosColumns: DataGridColumn[] = [
+    { key: 'fecha', label: 'Fecha', type: 'date', width: '100px', sortable: true },
+    { key: 'proveedor', label: 'Proveedor', width: '150px' },
+    { key: 'concepto', label: 'Concepto', width: '180px' },
+    { key: 'tipo_documento', label: 'Tipo Doc.', width: '100px' },
+    { key: 'numero_documento', label: 'N° Doc.', width: '110px' },
+    { key: 'importe', label: 'Importe', type: 'currency', width: '110px', format: 'USD' },
+    { key: 'incluye_igv', label: 'IGV', type: 'template', width: '60px', align: 'center' },
+    {
+      key: 'importe_sin_igv',
+      label: 'Sin IGV',
+      type: 'currency',
+      width: '110px',
+      format: 'USD',
+      bold: true,
+    },
+  ];
+
+  adelantosColumns: DataGridColumn[] = [
+    { key: 'tipo_operacion', label: 'Tipo', type: 'template', width: '130px' },
+    { key: 'fecha', label: 'Fecha', type: 'date', width: '100px', sortable: true },
+    { key: 'numero_documento', label: 'N° Documento', width: '130px' },
+    { key: 'concepto', label: 'Concepto', width: '180px' },
+    { key: 'numero_cuota', label: 'N° Cuota', width: '90px' },
+    { key: 'monto', label: 'Monto', type: 'currency', width: '120px', format: 'USD', bold: true },
+  ];
+
+  // Highlight predicate for acumulado tab
+  isCurrentValuation = (row: Record<string, unknown>): boolean => {
+    return row['id'] === this.valuation?.id;
+  };
+
+  // Computed footer rows
+  get acumuladoFooter(): Record<string, unknown> {
+    return {
+      numero_valorizacion: 'Totales',
+      cantidad: this.sumField(this.acumuladoData, 'cantidad'),
+      valorizacion_bruta: this.sumField(this.acumuladoData, 'valorizacion_bruta'),
+      total_descuento: this.sumField(this.acumuladoData, 'total_descuento'),
+      valorizacion_neta: this.sumField(this.acumuladoData, 'valorizacion_neta'),
+    };
+  }
+
+  get partesFooter(): Record<string, unknown> {
+    return {
+      fecha: 'Totales',
+      diferencia: this.sumField(this.partesData, 'diferencia'),
+      horas_precalentamiento: this.sumField(this.partesData, 'horas_precalentamiento'),
+      cantidad_efectiva: this.sumField(this.partesData, 'cantidad_efectiva'),
+      cantidad_minima: this.sumField(this.partesData, 'cantidad_minima'),
+    };
+  }
+
+  get gastosFooter(): Record<string, unknown> {
+    return {
+      concepto: 'Total',
+      importe: this.sumField(this.gastosData, 'importe'),
+      importe_sin_igv: this.sumField(this.gastosData, 'importe_sin_igv'),
+    };
+  }
+
+  get adelantosFooter(): Record<string, unknown> {
+    return {
+      concepto: 'Total Amortización',
+      monto: this.sumFieldFiltered(this.adelantosData, 'monto', 'tipo_operacion', 'AMORTIZACION'),
+    };
+  }
+
+  // Combustible vales getter (extracted from nested data)
+  get combustibleVales(): Record<string, unknown>[] {
+    if (!this.combustibleData || !this.combustibleData['vales']) return [];
+    return this.combustibleData['vales'] as Record<string, unknown>[];
+  }
+
   // Modal states
   showApproveModal = false;
   showRejectModal = false;
   showMarkPaidModal = false;
   showConformidadModal = false;
+  showAddGastoModal = false;
+  showAddAdelantoModal = false;
+
+  // New Gasto form
+  newGasto = {
+    fecha: new Date().toISOString().split('T')[0],
+    proveedor: '',
+    concepto: '',
+    tipo_documento: '',
+    numero_documento: '',
+    importe: 0,
+    incluye_igv: false,
+  };
+  tipoDocOptions: DropdownOption[] = [
+    { label: 'Factura', value: 'FACTURA' },
+    { label: 'Boleta', value: 'BOLETA' },
+    { label: 'Recibo', value: 'RECIBO' },
+    { label: 'Otro', value: 'OTRO' },
+  ];
+
+  // New Adelanto form
+  newAdelanto = {
+    tipo_operacion: '',
+    fecha: new Date().toISOString().split('T')[0],
+    numero_documento: '',
+    concepto: '',
+    numero_cuota: '',
+    monto: 0,
+  };
+  tipoOperacionOptions: DropdownOption[] = [
+    { label: 'Adelanto', value: 'ADELANTO' },
+    { label: 'Amortización', value: 'AMORTIZACION' },
+  ];
 
   // Form data
   rejectReason = '';
@@ -2835,6 +3543,338 @@ export class ValuationDetailComponent implements OnInit {
       fecha: '',
       observaciones: '',
     };
+  }
+
+  // ─── Tab Management ───
+
+  onTabChange(tab: TabItem & { id?: string }): void {
+    this.activeTab = tab.id || 'resumen';
+    if (!this.valuation) return;
+    const id = this.valuation.id;
+    switch (this.activeTab) {
+      case 'acumulado':
+        if (this.acumuladoData.length === 0) this.loadAcumulado(id);
+        break;
+      case 'partes':
+        if (this.partesData.length === 0) this.loadPartes(id);
+        break;
+      case 'combustible':
+        if (!this.combustibleData) this.loadCombustible(id);
+        break;
+      case 'gastos':
+        if (this.gastosData.length === 0) this.loadGastos(id);
+        break;
+      case 'adelantos':
+        if (this.adelantosData.length === 0) this.loadAdelantos(id);
+        break;
+      case 'analisis':
+        if (this.analisisData.length === 0) this.loadAnalisis(id);
+        break;
+    }
+  }
+
+  private loadAcumulado(id: number): void {
+    this.loadingTab = true;
+    this.valuationService.getResumenAcumulado(id).subscribe({
+      next: (data) => {
+        this.acumuladoData = data;
+        this.loadingTab = false;
+      },
+      error: () => {
+        this.loadingTab = false;
+      },
+    });
+  }
+
+  private loadPartes(id: number): void {
+    this.loadingTab = true;
+    this.valuationService.getPartesDetalle(id).subscribe({
+      next: (data) => {
+        this.partesData = data;
+        this.loadingTab = false;
+      },
+      error: () => {
+        this.loadingTab = false;
+      },
+    });
+  }
+
+  private loadCombustible(id: number): void {
+    this.loadingTab = true;
+    this.valuationService.getCombustibleDetalle(id).subscribe({
+      next: (data) => {
+        this.combustibleData = data;
+        this.loadingTab = false;
+      },
+      error: () => {
+        this.loadingTab = false;
+      },
+    });
+  }
+
+  private loadGastos(id: number): void {
+    this.loadingTab = true;
+    this.valuationService.getGastosObra(id).subscribe({
+      next: (data) => {
+        this.gastosData = data;
+        this.loadingTab = false;
+      },
+      error: () => {
+        this.loadingTab = false;
+      },
+    });
+  }
+
+  private loadAdelantos(id: number): void {
+    this.loadingTab = true;
+    this.valuationService.getAdelantos(id).subscribe({
+      next: (data) => {
+        this.adelantosData = data;
+        this.loadingTab = false;
+      },
+      error: () => {
+        this.loadingTab = false;
+      },
+    });
+  }
+
+  private loadAnalisis(id: number): void {
+    this.loadingTab = true;
+    this.valuationService.getAnalisisCombustible(id).subscribe({
+      next: (data) => {
+        this.analisisData = data;
+        this.loadingTab = false;
+      },
+      error: () => {
+        this.loadingTab = false;
+      },
+    });
+  }
+
+  // ─── Valorizar ───
+
+  runValorizar(): void {
+    if (!this.valuation || this.valorizando) return;
+    this.confirmSvc
+      .confirm({
+        title: 'Ejecutar Valorización',
+        message:
+          '¿Deseas calcular automáticamente todos los montos de esta valorización a partir de los partes diarios, vales de combustible, gastos y adelantos?',
+        icon: 'fa-calculator',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.valorizando = true;
+          this.valuationService.valorizar(this.valuation!.id).subscribe({
+            next: (updated) => {
+              this.valuation = updated;
+              this.valorizando = false;
+              this.loadSummary(this.valuation!.id);
+              // Reset cached tab data so they reload with new values
+              this.acumuladoData = [];
+              this.partesData = [];
+              this.combustibleData = null;
+              this.gastosData = [];
+              this.adelantosData = [];
+              this.analisisData = [];
+              this.snackBar.open('Valorización calculada exitosamente', 'Cerrar', {
+                duration: 3000,
+              });
+            },
+            error: (err) => {
+              this.valorizando = false;
+              this.snackBar.open(
+                'Error al valorizar: ' + (err.error?.error?.message || err.message),
+                'Cerrar',
+                { duration: 5000 }
+              );
+            },
+          });
+        }
+      });
+  }
+
+  // ─── Gasto en Obra CRUD ───
+
+  confirmAddGasto(): void {
+    if (
+      !this.valuation ||
+      !this.newGasto.fecha ||
+      !this.newGasto.concepto ||
+      !this.newGasto.importe
+    )
+      return;
+    this.valuationService.createGastoObra(this.valuation.id, this.newGasto).subscribe({
+      next: () => {
+        this.showAddGastoModal = false;
+        this.resetGastoForm();
+        this.loadGastos(this.valuation!.id);
+        this.snackBar.open('Gasto agregado exitosamente', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+          duration: 5000,
+        });
+      },
+    });
+  }
+
+  removeGasto(gastoId: number): void {
+    this.confirmSvc.confirmDelete('este gasto en obra').subscribe((confirmed) => {
+      if (confirmed) {
+        this.valuationService.deleteGastoObra(gastoId).subscribe({
+          next: () => {
+            this.loadGastos(this.valuation!.id);
+            this.snackBar.open('Gasto eliminado', 'Cerrar', { duration: 3000 });
+          },
+          error: (err) => {
+            this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+              duration: 5000,
+            });
+          },
+        });
+      }
+    });
+  }
+
+  private resetGastoForm(): void {
+    this.newGasto = {
+      fecha: new Date().toISOString().split('T')[0],
+      proveedor: '',
+      concepto: '',
+      tipo_documento: '',
+      numero_documento: '',
+      importe: 0,
+      incluye_igv: false,
+    };
+  }
+
+  // ─── Adelanto CRUD ───
+
+  confirmAddAdelanto(): void {
+    if (
+      !this.valuation ||
+      !this.newAdelanto.tipo_operacion ||
+      !this.newAdelanto.fecha ||
+      !this.newAdelanto.monto
+    )
+      return;
+    // Create adelanto scoped to contract
+    const contractId = this.valuation.contractId;
+    if (!contractId) {
+      this.snackBar.open('Error: esta valorización no tiene contrato asociado', 'Cerrar', {
+        duration: 5000,
+      });
+      return;
+    }
+    const payload = {
+      ...this.newAdelanto,
+      equipo_id: this.valuation.equipmentId,
+      valorizacion_id: this.valuation.id,
+    };
+    this.valuationService.createAdelanto(contractId, payload).subscribe({
+      next: () => {
+        this.showAddAdelantoModal = false;
+        this.resetAdelantoForm();
+        this.loadAdelantos(this.valuation!.id);
+        this.snackBar.open('Adelanto agregado exitosamente', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+          duration: 5000,
+        });
+      },
+    });
+  }
+
+  removeAdelanto(adelantoId: number): void {
+    this.confirmSvc.confirmDelete('este adelanto').subscribe((confirmed) => {
+      if (confirmed) {
+        this.valuationService.deleteAdelanto(adelantoId).subscribe({
+          next: () => {
+            this.loadAdelantos(this.valuation!.id);
+            this.snackBar.open('Adelanto eliminado', 'Cerrar', { duration: 3000 });
+          },
+          error: (err) => {
+            this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+              duration: 5000,
+            });
+          },
+        });
+      }
+    });
+  }
+
+  private resetAdelantoForm(): void {
+    this.newAdelanto = {
+      tipo_operacion: '',
+      fecha: new Date().toISOString().split('T')[0],
+      numero_documento: '',
+      concepto: '',
+      numero_cuota: '',
+      monto: 0,
+    };
+  }
+
+  // ─── Análisis Combustible ───
+
+  recalcAnalisis(a: Record<string, unknown>): void {
+    const ratio = Number(a['ratio_control']) || 0;
+    const precio = Number(a['precio_unitario']) || 0;
+    const consumo = Number(a['consumo_combustible']) || 0;
+    const totalUso = Number(a['total_uso']) || 0;
+    const tipo = String(a['tipo_horometro_odometro'] || '');
+
+    let exceso = 0;
+    if (tipo === 'HOROMETRO' && ratio > 0) {
+      exceso = consumo - totalUso * ratio;
+    } else if (tipo === 'ODOMETRO' && ratio > 0) {
+      exceso = consumo - totalUso / ratio;
+    }
+    a['exceso_combustible'] = Math.max(0, exceso);
+    a['importe_exceso'] = Math.max(0, exceso) * precio;
+  }
+
+  saveAnalisis(a: Record<string, unknown>): void {
+    const analisisId = a['id'] as number;
+    this.valuationService
+      .updateAnalisisCombustible(analisisId, {
+        ratio_control: Number(a['ratio_control']) || undefined,
+        precio_unitario: Number(a['precio_unitario']) || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Análisis actualizado', 'Cerrar', { duration: 3000 });
+        },
+        error: (err) => {
+          this.snackBar.open('Error: ' + (err.error?.error?.message || err.message), 'Cerrar', {
+            duration: 5000,
+          });
+        },
+      });
+  }
+
+  // ─── Helpers ───
+
+  sumField(rows: Record<string, unknown>[], field: string): number {
+    return rows.reduce((sum, r) => sum + (Number(r[field]) || 0), 0);
+  }
+
+  sumFieldFiltered(
+    rows: Record<string, unknown>[],
+    field: string,
+    filterField: string,
+    filterValue: string
+  ): number {
+    return rows
+      .filter((r) => r[filterField] === filterValue)
+      .reduce((sum, r) => sum + (Number(r[field]) || 0), 0);
+  }
+
+  getStatusBadgeClass(estado: string): string {
+    if (['APROBADO', 'PAGADO'].includes(estado)) return 'success';
+    if (['PENDIENTE', 'EN_REVISION', 'VALIDADO', 'BORRADOR'].includes(estado)) return 'warning';
+    return 'danger';
   }
 
   editValuation(): void {

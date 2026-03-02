@@ -17,9 +17,9 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail/entity-detail.types';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-timesheet-detail',
@@ -30,7 +30,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     AeroTableComponent,
     StatsGridComponent,
     EntityDetailShellComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -81,37 +81,37 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       <!-- Sidebar Actions -->
       <ng-container entity-sidebar-actions *ngIf="timesheet">
-        <app-button
+        <aero-button
           *ngIf="timesheet.estado === 'BORRADOR'"
           variant="primary"
-          icon="fa-paper-plane"
-          label="Enviar Planilla"
+          iconLeft="fa-paper-plane"
           [fullWidth]="true"
           (clicked)="submitTimesheet()"
-        ></app-button>
-        <app-button
+          >Enviar Planilla</aero-button
+        >
+        <aero-button
           *ngIf="timesheet.estado === 'ENVIADO'"
           variant="primary"
-          icon="fa-check"
-          label="Aprobar Planilla"
+          iconLeft="fa-check"
           [fullWidth]="true"
           (clicked)="approveTimesheet()"
-        ></app-button>
-        <app-button
+          >Aprobar Planilla</aero-button
+        >
+        <aero-button
           *ngIf="timesheet.estado === 'ENVIADO'"
           variant="danger"
-          icon="fa-xmark"
-          label="Rechazar Planilla"
+          iconLeft="fa-xmark"
           [fullWidth]="true"
           (clicked)="rejectTimesheet()"
-        ></app-button>
-        <app-button
+          >Rechazar Planilla</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           routerLink="/operaciones/timesheets"
-        ></app-button>
+          >Volver a Lista</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

@@ -96,6 +96,39 @@ export interface InspectionWithResults extends ChecklistInspection {
   resultados?: ChecklistResult[];
 }
 
+// Observation Tracking
+export interface ObservationItem {
+  id: number;
+  inspeccion_id: number;
+  inspeccion_codigo: string;
+  equipo_id: number;
+  equipo_codigo: string;
+  equipo_marca: string;
+  equipo_modelo: string;
+  fecha_inspeccion: string;
+  item_descripcion: string;
+  categoria: string;
+  es_critico: boolean;
+  observaciones?: string;
+  accion_requerida: string;
+  foto_url?: string;
+  estado_inspeccion: string;
+  resultado_general?: string;
+}
+
+export interface ObservationStats {
+  total: number;
+  criticas: number;
+  a_reparar: number;
+  a_reemplazar: number;
+}
+
+export interface ObservationsResponse {
+  items: ObservationItem[];
+  stats: ObservationStats;
+  pagination: { page: number; limit: number; total: number; total_pages: number };
+}
+
 // Statistics
 export interface ChecklistStats {
   total: number;

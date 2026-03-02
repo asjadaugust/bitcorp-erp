@@ -22,7 +22,7 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-contract-form',
@@ -37,7 +37,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-form-container
@@ -221,28 +221,6 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           </div>
 
           <div class="form-group">
-            <label for="horas_incluidas">Horas Incluidas</label>
-            <input
-              id="horas_incluidas"
-              type="number"
-              formControlName="horas_incluidas"
-              class="form-control"
-              placeholder="0"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="penalidad_exceso">Penalidad por Exceso (%)</label>
-            <input
-              id="penalidad_exceso"
-              type="number"
-              formControlName="penalidad_exceso"
-              class="form-control"
-              placeholder="0.00"
-            />
-          </div>
-
-          <div class="form-group">
             <label for="minimo_por">Mínimo Por</label>
             <app-dropdown
               formControlName="minimo_por"
@@ -312,30 +290,30 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                 [ngModelOptions]="{ standalone: true }"
                 placeholder="Notas..."
               />
-              <app-button
-                variant="icon"
-                size="sm"
-                icon="fa-trash"
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-trash"
                 title="Eliminar"
                 (clicked)="removeAnnexItem('A', i)"
-              ></app-button>
+              ></aero-button>
             </div>
             <div class="annex-actions-row">
-              <app-button
+              <aero-button
                 variant="secondary"
-                size="sm"
-                icon="fa-plus"
-                label="Agregar ítem"
+                size="small"
+                iconLeft="fa-plus"
                 (clicked)="addAnnexItem('A')"
-              ></app-button>
-              <app-button
+                >Agregar ítem</aero-button
+              >
+              <aero-button
                 variant="primary"
-                size="sm"
-                icon="fa-save"
-                label="Guardar Anexo A"
+                size="small"
+                iconLeft="fa-save"
                 [disabled]="savingAnnexA"
                 (clicked)="saveAnnex('A')"
-              ></app-button>
+                >Guardar Anexo A</aero-button
+              >
             </div>
           </div>
         </div>
@@ -372,30 +350,30 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                 [ngModelOptions]="{ standalone: true }"
                 placeholder="Notas..."
               />
-              <app-button
-                variant="icon"
-                size="sm"
-                icon="fa-trash"
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-trash"
                 title="Eliminar"
                 (clicked)="removeAnnexItem('B', i)"
-              ></app-button>
+              ></aero-button>
             </div>
             <div class="annex-actions-row">
-              <app-button
+              <aero-button
                 variant="secondary"
-                size="sm"
-                icon="fa-plus"
-                label="Agregar ítem"
+                size="small"
+                iconLeft="fa-plus"
                 (clicked)="addAnnexItem('B')"
-              ></app-button>
-              <app-button
+                >Agregar ítem</aero-button
+              >
+              <aero-button
                 variant="primary"
-                size="sm"
-                icon="fa-save"
-                label="Guardar Anexo B"
+                size="small"
+                iconLeft="fa-save"
                 [disabled]="savingAnnexB"
                 (clicked)="saveAnnex('B')"
-              ></app-button>
+                >Guardar Anexo B</aero-button
+              >
             </div>
           </div>
         </div>
@@ -589,8 +567,6 @@ export class ContractFormComponent implements OnInit {
     moneda: 'Moneda',
     tipo_tarifa: 'Tipo de Tarifa',
     tarifa: 'Tarifa',
-    horas_incluidas: 'Horas Incluidas',
-    penalidad_exceso: 'Penalidad por Exceso',
     costo_adicional_motor: 'Costo Adicional Motor',
     condiciones_especiales: 'Condiciones Especiales',
     estado: 'Estado',
@@ -611,8 +587,6 @@ export class ContractFormComponent implements OnInit {
         moneda: ['PEN', Validators.required],
         tipo_tarifa: ['HORA', Validators.required],
         tarifa: [null, [Validators.required, Validators.min(0)]],
-        horas_incluidas: [0, Validators.min(0)],
-        penalidad_exceso: [null, Validators.min(0)],
         costo_adicional_motor: [0, Validators.min(0)],
         condiciones_especiales: [''],
         estado: ['EN_PROCESO', Validators.required],
@@ -687,8 +661,6 @@ export class ContractFormComponent implements OnInit {
           proveedor_id: contract.proveedor_id ? contract.proveedor_id.toString() : '',
           equipo_id: contract.equipo_id ? contract.equipo_id.toString() : '',
           tarifa: contract.tarifa,
-          horas_incluidas: contract.horas_incluidas,
-          penalidad_exceso: contract.penalidad_exceso,
           costo_adicional_motor: contract.costo_adicional_motor,
         });
         this.loading = false;

@@ -23,7 +23,8 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { EQUIPMENT_TABS, OPERACIONES_TABS } from '../equipment/equipment-tabs';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-contract-list',
@@ -38,7 +39,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     ExportDropdownComponent,
     ActionsContainerComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -46,17 +47,16 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       icon="fa-file-contract"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="equipmentTabs"
+      [subtabs]="operacionesTabs"
     >
       <app-actions-container actions>
         <app-export-dropdown [disabled]="contracts.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nuevo Contrato"
-          (clicked)="createContract()"
-        ></app-button>
+        <aero-button iconLeft="fa-plus" variant="primary" (clicked)="createContract()"
+          >Nuevo Contrato</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -91,7 +91,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           <span>{{ row.fecha_fin | date: 'dd/MM/yyyy' }}</span>
           <i
             class="fa-solid fa-triangle-exclamation text-warning"
-            *ngIf="row.estado === 'ACTIVO' && isExpiring(row.fecha_fin)"
+            *ngIf="row.estado === 'VIGENTE' && isExpiring(row.fecha_fin)"
             title="Expira pronto"
           ></i>
         </div>
@@ -100,20 +100,20 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             title="Ver Detalles"
             (clicked)="viewContract(row); $event.stopPropagation()"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-trash"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-trash"
             title="Eliminar"
             (clicked)="deleteContract(row); $event.stopPropagation()"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -168,6 +168,8 @@ export class ContractListComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
 
+  equipmentTabs = EQUIPMENT_TABS;
+  operacionesTabs = OPERACIONES_TABS;
   contracts: Contract[] = [];
   loading = false;
   filters = { estado: '', search: '' };
@@ -191,12 +193,12 @@ export class ContractListComponent implements OnInit {
       label: 'Estado',
       type: 'select',
       options: [
-        { label: 'Activo', value: 'ACTIVO' },
+        { label: 'Vigente', value: 'VIGENTE' },
+        { label: 'En Proceso', value: 'EN_PROCESO' },
         { label: 'Vencido', value: 'VENCIDO' },
         { label: 'Resuelto', value: 'RESUELTO' },
         { label: 'Liquidado', value: 'LIQUIDADO' },
         { label: 'Cancelado', value: 'CANCELADO' },
-        { label: 'Borrador', value: 'BORRADOR' },
       ],
     },
   ];
@@ -212,20 +214,25 @@ export class ContractListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       badgeConfig: {
-        ACTIVO: {
-          label: 'Activo',
+        VIGENTE: {
+          label: 'Vigente',
           class: 'status-badge status-active',
           icon: 'fa-solid fa-check',
+        },
+        EN_PROCESO: {
+          label: 'En Proceso',
+          class: 'status-badge status-draft',
+          icon: 'fa-solid fa-pencil',
+        },
+        SIN_CONTRATO: {
+          label: 'Sin Contrato',
+          class: 'status-badge status-draft',
+          icon: 'fa-solid fa-file-circle-xmark',
         },
         VENCIDO: {
           label: 'Vencido',
           class: 'status-badge status-cancelled',
           icon: 'fa-solid fa-clock',
-        },
-        BORRADOR: {
-          label: 'Borrador',
-          class: 'status-badge status-draft',
-          icon: 'fa-solid fa-pencil',
         },
         CANCELADO: {
           label: 'Cancelado',

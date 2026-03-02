@@ -9,6 +9,7 @@ import {
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
+import { LOGISTICS_TABS } from '../../logistics-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -26,9 +27,9 @@ import {
 } from '../../../../shared/components/stats-grid/stats-grid.component';
 import { CurrencyPipe } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
 import { AeroBadgeComponent } from '../../../../core/design-system/badge/aero-badge.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-product-list',
@@ -44,7 +45,7 @@ import { AeroBadgeComponent } from '../../../../core/design-system/badge/aero-ba
     PageCardComponent,
     ExportDropdownComponent,
     FilterBarComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   providers: [CurrencyPipe],
   template: `
@@ -53,6 +54,7 @@ import { AeroBadgeComponent } from '../../../../core/design-system/badge/aero-ba
       icon="fa-boxes-stacked"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <app-export-dropdown
@@ -60,12 +62,9 @@ import { AeroBadgeComponent } from '../../../../core/design-system/badge/aero-ba
           [disabled]="loading || products.length === 0"
         >
         </app-export-dropdown>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nuevo Producto"
-          (clicked)="navigateToCreate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToCreate()"
+          >Nuevo Producto</aero-button
+        >
       </app-actions-container>
 
       <app-stats-grid [items]="statItems" testId="product-stats"></app-stats-grid>
@@ -115,18 +114,18 @@ import { AeroBadgeComponent } from '../../../../core/design-system/badge/aero-ba
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             (clicked)="viewDetails(row)"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             (clicked)="editProduct(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -170,6 +169,7 @@ export class ProductListComponent implements OnInit {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   statItems: StatItem[] = [];
+  tabs = LOGISTICS_TABS;
   loading = false;
 
   filters = {

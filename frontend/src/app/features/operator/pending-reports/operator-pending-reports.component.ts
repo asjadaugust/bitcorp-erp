@@ -4,8 +4,7 @@ import { RouterModule } from '@angular/router';
 import { SyncManager } from '../../../core/services/sync-manager.service';
 import { ServiceWorkerService } from '../../../core/services/service-worker.service';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
 import {
   StatsGridComponent,
   StatItem,
@@ -32,7 +31,7 @@ interface PendingReport {
     CommonModule,
     RouterModule,
     PageLayoutComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     AeroBadgeComponent,
     StatsGridComponent,
   ],
@@ -47,13 +46,13 @@ interface PendingReport {
         <div class="section">
           <div class="section-header">
             <h3><i class="fa-solid fa-clock"></i> En cola de sincronizacion</h3>
-            <app-button
+            <aero-button
               variant="primary"
-              icon="fa-rotate"
-              label="Sincronizar todo"
+              iconLeft="fa-rotate"
               [disabled]="isSyncing() || !isOnline()"
               (clicked)="syncAll()"
-            ></app-button>
+              >Sincronizar todo</aero-button
+            >
           </div>
 
           <div class="report-cards">
@@ -83,13 +82,13 @@ interface PendingReport {
                   </div>
                 </div>
                 <div class="card-actions">
-                  <app-button
+                  <aero-button
                     variant="danger"
-                    size="sm"
-                    icon="fa-trash"
-                    label="Eliminar"
+                    size="small"
+                    iconLeft="fa-trash"
                     (clicked)="deleteReport(report)"
-                  ></app-button>
+                    >Eliminar</aero-button
+                  >
                 </div>
               </div>
             }
@@ -102,13 +101,13 @@ interface PendingReport {
         <div class="section">
           <div class="section-header">
             <h3><i class="fa-solid fa-triangle-exclamation"></i> Fallidos (requieren atencion)</h3>
-            <app-button
+            <aero-button
               variant="secondary"
-              icon="fa-rotate"
-              label="Reintentar todos"
+              iconLeft="fa-rotate"
               [disabled]="isSyncing() || !isOnline()"
               (clicked)="retryAll()"
-            ></app-button>
+              >Reintentar todos</aero-button
+            >
           </div>
 
           <div class="report-cards">
@@ -138,21 +137,21 @@ interface PendingReport {
                   </div>
                 </div>
                 <div class="card-actions">
-                  <app-button
+                  <aero-button
                     variant="primary"
-                    size="sm"
-                    icon="fa-rotate"
-                    label="Reintentar"
+                    size="small"
+                    iconLeft="fa-rotate"
                     [disabled]="isSyncing() || !isOnline()"
                     (clicked)="retryOne(report)"
-                  ></app-button>
-                  <app-button
+                    >Reintentar</aero-button
+                  >
+                  <aero-button
                     variant="danger"
-                    size="sm"
-                    icon="fa-trash"
-                    label="Eliminar"
+                    size="small"
+                    iconLeft="fa-trash"
                     (clicked)="deleteReport(report)"
-                  ></app-button>
+                    >Eliminar</aero-button
+                  >
                 </div>
               </div>
             }
@@ -166,12 +165,9 @@ interface PendingReport {
           <i class="fa-solid fa-circle-check empty-icon"></i>
           <h3>Todo sincronizado</h3>
           <p>No hay reportes pendientes. Todos los datos estan al dia.</p>
-          <app-button
-            variant="primary"
-            icon="fa-plus"
-            label="Nuevo Parte Diario"
-            routerLink="/operator/daily-report"
-          ></app-button>
+          <aero-button variant="primary" iconLeft="fa-plus" routerLink="/operator/daily-report"
+            >Nuevo Parte Diario</aero-button
+          >
         </div>
       }
 

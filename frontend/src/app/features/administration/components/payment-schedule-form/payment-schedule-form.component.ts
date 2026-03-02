@@ -10,7 +10,7 @@ import {
 } from '../../services/administration.service';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-payment-schedule-form',
@@ -20,7 +20,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
     FormsModule,
     FormContainerComponent,
     FormSectionComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-form-container
@@ -85,13 +85,13 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
         [columns]="1"
       >
         <div class="items-header" *ngIf="canEdit">
-          <app-button
+          <aero-button
             variant="secondary"
-            icon="fa-plus"
-            label="Agregar Item"
-            size="sm"
+            iconLeft="fa-plus"
+            size="small"
             (clicked)="showAddItemModal = true"
-          ></app-button>
+            >Agregar Item</aero-button
+          >
         </div>
 
         <table class="details-table" *ngIf="selectedDetails.length > 0">
@@ -109,12 +109,12 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
               <td>{{ detail.accounts_payable?.provider?.razonSocial || 'N/A' }}</td>
               <td class="monto-cell">{{ detail.amount_to_pay | currency: 'PEN' : 'symbol' }}</td>
               <td *ngIf="canEdit">
-                <app-button
+                <aero-button
                   variant="ghost"
-                  icon="fa-trash"
-                  size="sm"
+                  iconCenter="fa-trash"
+                  size="small"
                   (clicked)="removeDetail(detail)"
-                ></app-button>
+                ></aero-button>
               </td>
             </tr>
           </tbody>
@@ -138,12 +138,12 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>Seleccionar Cuentas por Pagar Pendientes</h3>
-          <app-button
+          <aero-button
             variant="ghost"
-            icon="fa-times"
-            size="sm"
+            iconCenter="fa-times"
+            size="small"
             (clicked)="showAddItemModal = false"
-          ></app-button>
+          ></aero-button>
         </div>
         <div class="modal-body">
           <table class="modal-table" *ngIf="availableAP.length > 0">
@@ -183,17 +183,15 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
           </div>
         </div>
         <div class="modal-footer">
-          <app-button
-            variant="secondary"
-            label="Cancelar"
-            (clicked)="showAddItemModal = false"
-          ></app-button>
-          <app-button
+          <aero-button variant="secondary" (clicked)="showAddItemModal = false"
+            >Cancelar</aero-button
+          >
+          <aero-button
             variant="primary"
-            label="Agregar Seleccionados"
             [disabled]="!hasSelectedItems()"
             (clicked)="addSelectedItems()"
-          ></app-button>
+            >Agregar Seleccionados</aero-button
+          >
         </div>
       </div>
     </div>

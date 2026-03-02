@@ -24,8 +24,9 @@ import {
 } from '../../shared/components/stats-grid/stats-grid.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { EQUIPMENT_TABS } from './equipment-tabs';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-vale-combustible-list',
@@ -40,23 +41,24 @@ import { ConfirmService } from '../../core/services/confirm.service';
     FilterBarComponent,
     StatsGridComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
       title="Vales de Combustible"
       icon="fa-gas-pump"
+      [tabs]="tabs"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
     >
       <app-actions-container actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-plus"
-          label="Nuevo Vale"
+          iconLeft="fa-plus"
           (clicked)="navigateToCreate()"
           data-testid="btn-nuevo-vale"
-        ></app-button>
+          >Nuevo Vale</aero-button
+        >
       </app-actions-container>
 
       <div *ngIf="statItems.length > 0">
@@ -122,41 +124,41 @@ import { ConfirmService } from '../../core/services/confirm.service';
           tabindex="0"
           role="toolbar"
         >
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             title="Ver detalle"
             [routerLink]="[row.id]"
             [attr.data-testid]="'btn-ver-' + row.id"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'PENDIENTE'"
-            variant="icon"
-            size="sm"
-            icon="fa-pen-to-square"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen-to-square"
             title="Editar"
             [routerLink]="[row.id, 'edit']"
             [attr.data-testid]="'btn-editar-' + row.id"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'PENDIENTE'"
-            variant="icon"
-            size="sm"
-            icon="fa-check"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-check"
             title="Registrar vale"
             (clicked)="registrar($event, row)"
             [attr.data-testid]="'btn-registrar-' + row.id"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado !== 'ANULADO'"
-            variant="icon"
-            size="sm"
-            icon="fa-ban"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-ban"
             title="Anular"
             (clicked)="anular($event, row)"
             [attr.data-testid]="'btn-anular-' + row.id"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -209,6 +211,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
   ],
 })
 export class ValeCombustibleListComponent implements OnInit {
+  tabs = EQUIPMENT_TABS;
   private svc = inject(ValeCombustibleService);
   private router = inject(Router);
   private confirmSvc = inject(ConfirmService);

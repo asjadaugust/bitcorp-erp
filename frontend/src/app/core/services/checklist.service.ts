@@ -10,6 +10,7 @@ import {
   ChecklistResult,
   InspectionWithResults,
   ChecklistStats,
+  ObservationsResponse,
 } from '../models/checklist.model';
 
 // Response wrapper interfaces
@@ -295,6 +296,30 @@ export class ChecklistService {
     return this.http
       .get<Record<string, unknown>>(`${this.apiUrl}/inspections/overdue`)
       .pipe(map((res) => (res?.['data'] || res) as unknown as OverdueInspection[]));
+  }
+
+  getObservations(
+    filters: {
+      fechaDesde?: string;
+      fechaHasta?: string;
+      equipoId?: number;
+      accionRequerida?: string;
+      esCritico?: boolean;
+      page?: number;
+      limit?: number;
+    } = {}
+  ): Observable<ObservationsResponse> {
+    let params = new HttpParams();
+    if (filters.fechaDesde) params = params.set('fecha_desde', filters.fechaDesde);
+    if (filters.fechaHasta) params = params.set('fecha_hasta', filters.fechaHasta);
+    if (filters.equipoId) params = params.set('equipo_id', String(filters.equipoId));
+    if (filters.accionRequerida) params = params.set('accion_requerida', filters.accionRequerida);
+    if (filters.esCritico !== undefined)
+      params = params.set('es_critico', String(filters.esCritico));
+    if (filters.page) params = params.set('page', String(filters.page));
+    if (filters.limit) params = params.set('limit', String(filters.limit));
+    // apiResponseInterceptor unwraps {success, data} → data
+    return this.http.get<ObservationsResponse>(`${this.apiUrl}/observations`, { params });
   }
 }
 

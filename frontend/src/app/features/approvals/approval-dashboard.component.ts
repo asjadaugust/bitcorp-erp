@@ -13,7 +13,7 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { forkJoin } from 'rxjs';
@@ -30,7 +30,7 @@ type DashboardTab = 'recibidos' | 'enviados';
     PageLayoutComponent,
     PageCardComponent,
     StatsGridComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     ActionsContainerComponent,
     AlertComponent,
   ],
@@ -42,18 +42,18 @@ type DashboardTab = 'recibidos' | 'enviados';
       [loading]="loading()"
     >
       <app-actions-container actions>
-        <app-button
+        <aero-button
           variant="secondary"
-          icon="fa-list-check"
-          label="Plantillas"
+          iconLeft="fa-list-check"
           (clicked)="router.navigate(['/approvals/templates'])"
-        ></app-button>
-        <app-button
+          >Plantillas</aero-button
+        >
+        <aero-button
           variant="primary"
-          icon="fa-plus"
-          label="Solicitud Ad-hoc"
+          iconLeft="fa-plus"
           (clicked)="router.navigate(['/approvals/adhoc/new'])"
-        ></app-button>
+          >Solicitud Ad-hoc</aero-button
+        >
       </app-actions-container>
 
       <!-- Stats Grid -->
@@ -100,12 +100,12 @@ type DashboardTab = 'recibidos' | 'enviados';
             <i class="fa-regular fa-circle-check empty-icon"></i>
             <p class="empty-title">Todo al día</p>
             <p class="empty-desc">No tienes solicitudes pendientes de aprobación</p>
-            <app-button
+            <aero-button
               variant="primary"
-              icon="fa-plus"
-              label="Crear Solicitud Ad-hoc"
+              iconLeft="fa-plus"
               (clicked)="router.navigate(['/approvals/adhoc/new'])"
-            ></app-button>
+              >Crear Solicitud Ad-hoc</aero-button
+            >
           </div>
 
           <div class="approval-cards" *ngIf="recibidos().length > 0">
@@ -139,26 +139,23 @@ type DashboardTab = 'recibidos' | 'enviados';
               </div>
 
               <div class="approval-card__actions">
-                <app-button
-                  variant="ghost"
-                  icon="fa-eye"
-                  label="Ver detalle"
-                  (clicked)="viewDetail(item)"
-                ></app-button>
-                <app-button
+                <aero-button variant="ghost" iconLeft="fa-eye" (clicked)="viewDetail(item)"
+                  >Ver detalle</aero-button
+                >
+                <aero-button
                   *ngIf="item.tipo === 'template'"
                   variant="danger-outline"
-                  icon="fa-xmark"
-                  label="Rechazar"
+                  iconLeft="fa-xmark"
                   (clicked)="promptReject(item)"
-                ></app-button>
-                <app-button
+                  >Rechazar</aero-button
+                >
+                <aero-button
                   *ngIf="item.tipo === 'template'"
-                  variant="success"
-                  icon="fa-check"
-                  label="Aprobar"
+                  variant="primary"
+                  iconLeft="fa-check"
                   (clicked)="promptApprove(item)"
-                ></app-button>
+                  >Aprobar</aero-button
+                >
               </div>
             </div>
           </div>
@@ -170,12 +167,12 @@ type DashboardTab = 'recibidos' | 'enviados';
             <i class="fa-regular fa-paper-plane empty-icon"></i>
             <p class="empty-title">Sin solicitudes enviadas</p>
             <p class="empty-desc">Las solicitudes que envíes aparecerán aquí</p>
-            <app-button
+            <aero-button
               variant="primary"
-              icon="fa-plus"
-              label="Crear Solicitud Ad-hoc"
+              iconLeft="fa-plus"
               (clicked)="router.navigate(['/approvals/adhoc/new'])"
-            ></app-button>
+              >Crear Solicitud Ad-hoc</aero-button
+            >
           </div>
 
           <div class="approval-cards" *ngIf="enviados().length > 0">
@@ -203,12 +200,9 @@ type DashboardTab = 'recibidos' | 'enviados';
               </div>
 
               <div class="approval-card__actions">
-                <app-button
-                  variant="ghost"
-                  icon="fa-eye"
-                  label="Ver detalle"
-                  (clicked)="viewDetail(item)"
-                ></app-button>
+                <aero-button variant="ghost" iconLeft="fa-eye" (clicked)="viewDetail(item)"
+                  >Ver detalle</aero-button
+                >
               </div>
             </div>
           </div>
@@ -248,14 +242,14 @@ type DashboardTab = 'recibidos' | 'enviados';
           rows="3"
         ></textarea>
         <div class="modal-actions">
-          <app-button variant="ghost" label="Cancelar" (clicked)="closeModal()"></app-button>
-          <app-button
-            [variant]="modalAction === 'approve' ? 'success' : 'danger'"
-            [icon]="modalAction === 'approve' ? 'fa-check' : 'fa-xmark'"
-            [label]="modalAction === 'approve' ? 'Aprobar' : 'Rechazar'"
+          <aero-button variant="ghost" (clicked)="closeModal()">Cancelar</aero-button>
+          <aero-button
+            [variant]="modalAction === 'approve' ? 'primary' : 'danger'"
+            [iconLeft]="modalAction === 'approve' ? 'fa-check' : 'fa-xmark'"
             [loading]="actionLoading"
             (clicked)="confirmAction()"
-          ></app-button>
+            >{{ modalAction === 'approve' ? 'Aprobar' : 'Rechazar' }}</aero-button
+          >
         </div>
       </div>
     </div>

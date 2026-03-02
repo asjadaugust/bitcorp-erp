@@ -7,7 +7,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface InfoFinanciera {
@@ -26,19 +26,19 @@ interface InfoFinanciera {
 @Component({
   selector: 'app-provider-financial-info',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DropdownComponent, ButtonComponent],
+  imports: [AeroButtonComponent, CommonModule, ReactiveFormsModule, DropdownComponent],
   template: `
     <div class="financial-info-section">
       <div class="section-header">
         <h3><i class="fa-solid fa-building-columns"></i> Información Financiera</h3>
-        <app-button
+        <aero-button
           *ngIf="!showForm && !readOnly"
           variant="primary"
-          size="sm"
-          icon="fa-plus"
-          label="Agregar Cuenta"
+          size="small"
+          iconLeft="fa-plus"
           (clicked)="showForm = !showForm"
-        ></app-button>
+          >Agregar Cuenta</aero-button
+        >
       </div>
 
       <!-- Form -->
@@ -99,13 +99,13 @@ interface InfoFinanciera {
           </div>
 
           <div class="form-actions">
-            <app-button variant="secondary" label="Cancelar" (clicked)="cancelForm()"></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="cancelForm()">Cancelar</aero-button>
+            <aero-button
               variant="primary"
-              [label]="editingId ? 'Actualizar' : 'Guardar'"
               [disabled]="financialForm.invalid || loading"
               (clicked)="onSubmit()"
-            ></app-button>
+              >{{ editingId ? 'Actualizar' : 'Guardar' }}</aero-button
+            >
           </div>
         </form>
       </div>
@@ -122,18 +122,18 @@ interface InfoFinanciera {
               </div>
             </div>
             <div class="actions" *ngIf="!readOnly">
-              <app-button
-                variant="icon"
-                size="sm"
-                icon="fa-pen"
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-pen"
                 (clicked)="editFinancialInfo(info)"
-              ></app-button>
-              <app-button
-                variant="icon"
-                size="sm"
-                icon="fa-trash"
+              ></aero-button>
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-trash"
                 (clicked)="deleteFinancialInfo(info.id!)"
-              ></app-button>
+              ></aero-button>
             </div>
           </div>
           <div class="card-body">

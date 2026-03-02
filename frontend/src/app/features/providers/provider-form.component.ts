@@ -18,7 +18,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-provider-form',
@@ -35,7 +35,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     ProviderDocumentsComponent,
     FormContainerComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-form-container
@@ -89,13 +89,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
                   placeholder="ej. 20123456789"
                   maxlength="11"
                 />
-                <app-button
+                <aero-button
                   variant="secondary"
-                  icon="fa-magnifying-glass"
+                  iconLeft="fa-magnifying-glass"
                   title="Buscar RUC en SUNAT"
                   [disabled]="loading || providerForm.get('ruc')?.invalid"
                   (clicked)="lookupRuc()"
-                ></app-button>
+                ></aero-button>
               </div>
               <div class="error-msg" *ngIf="hasError('ruc')">
                 <span *ngIf="providerForm.get('ruc')?.hasError('required')">RUC es requerido</span>

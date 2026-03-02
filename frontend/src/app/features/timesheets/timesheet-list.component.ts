@@ -23,9 +23,9 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-timesheet-list',
@@ -39,7 +39,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ExportDropdownComponent,
     ActionsContainerComponent,
     AeroTableComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -52,12 +52,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <app-actions-container actions>
         <app-export-dropdown (export)="handleExport($event)"> </app-export-dropdown>
 
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Generar Planilla"
-          (clicked)="navigateToGenerate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToGenerate()"
+          >Generar Planilla</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -72,11 +69,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       <!-- Error State -->
       <div *ngIf="error" class="error-message">
         <p>❌ Error: {{ error }}</p>
-        <app-button
-          variant="secondary"
-          label="Reintentar"
-          (clicked)="loadTimesheets()"
-        ></app-button>
+        <aero-button variant="secondary" (clicked)="loadTimesheets()">Reintentar</aero-button>
       </div>
 
       <!-- Timesheets Table -->
@@ -117,21 +110,21 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       <ng-template #accionesTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             title="Ver Detalle"
             (clicked)="viewTimesheet(row.id); $event.stopPropagation()"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'BORRADOR'"
-            variant="icon"
-            size="sm"
-            icon="fa-trash"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-trash"
             title="Eliminar"
             (clicked)="deleteTimesheet(row); $event.stopPropagation()"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>

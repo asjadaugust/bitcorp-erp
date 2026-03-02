@@ -11,12 +11,18 @@ import {
   TabConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-orden-alquiler-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
+  imports: [
+    AeroButtonComponent,
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    EntityDetailShellComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [header]="header"
@@ -192,51 +198,51 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           *ngIf="orden && ['BORRADOR', 'ENVIADO'].includes(orden.estado)"
           variant="secondary"
-          icon="fa-pen-to-square"
-          label="Editar Orden"
+          iconLeft="fa-pen-to-square"
           [fullWidth]="true"
           [routerLink]="['/equipment/operaciones/ordenes-alquiler', orden.id, 'edit']"
-        ></app-button>
+          >Editar Orden</aero-button
+        >
 
-        <app-button
+        <aero-button
           *ngIf="orden?.estado === 'BORRADOR'"
           variant="primary"
-          icon="fa-paper-plane"
-          label="Enviar al Proveedor"
+          iconLeft="fa-paper-plane"
           [fullWidth]="true"
           (clicked)="enviar()"
-        ></app-button>
+          >Enviar al Proveedor</aero-button
+        >
 
-        <app-button
+        <aero-button
           *ngIf="orden?.estado === 'ENVIADO'"
-          variant="success"
-          icon="fa-circle-check"
-          label="Confirmar Orden"
+          variant="primary"
+          iconLeft="fa-circle-check"
           [fullWidth]="true"
           (clicked)="confirmar()"
-        ></app-button>
+          >Confirmar Orden</aero-button
+        >
 
-        <app-button
+        <aero-button
           *ngIf="orden && ['BORRADOR', 'ENVIADO'].includes(orden.estado)"
           variant="danger"
-          icon="fa-ban"
-          label="Cancelar Orden"
+          iconLeft="fa-ban"
           [fullWidth]="true"
           (clicked)="cancelar()"
-        ></app-button>
+          >Cancelar Orden</aero-button
+        >
 
         <hr class="sidebar-divider" />
 
-        <app-button
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a la Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           routerLink="/equipment/ordenes-alquiler"
-        ></app-button>
+          >Volver a la Lista</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

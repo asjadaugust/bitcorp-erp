@@ -19,12 +19,13 @@ import {
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import {
   StatsGridComponent,
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
+import { EQUIPMENT_TABS } from './equipment-tabs';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-equipment-list',
@@ -40,29 +41,27 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
     PageLayoutComponent,
     PageCardComponent,
     FilterBarComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
       title="Equipos"
       icon="fa-tractor"
+      [tabs]="tabs"
       [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Equipos' }]"
       [loading]="loading"
     >
       <app-actions-container actions>
-        <app-button
+        <aero-button
           variant="secondary"
-          icon="fa-chart-simple"
-          [label]="showStatistics ? 'Ocultar Estadísticas' : 'Ver Estadísticas'"
+          iconLeft="fa-chart-simple"
           [loading]="loadingStatistics"
           (clicked)="toggleStatistics()"
-        ></app-button>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nuevo Equipo"
-          (clicked)="navigateToCreate()"
-        ></app-button>
+          >{{ showStatistics ? 'Ocultar Estadísticas' : 'Ver Estadísticas' }}</aero-button
+        >
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToCreate()"
+          >Nuevo Equipo</aero-button
+        >
       </app-actions-container>
 
       <app-stats-grid
@@ -119,24 +118,24 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons" (click)="$event.stopPropagation()">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             (clicked)="editEquipment(row)"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             (clicked)="viewDetails(row)"
-          ></app-button>
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-trash"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-trash"
             (clicked)="eliminar(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -199,6 +198,7 @@ import { PageCardComponent } from '../../shared/components/page-card/page-card.c
   ],
 })
 export class EquipmentListComponent implements OnInit {
+  tabs = EQUIPMENT_TABS;
   equipmentService = inject(EquipmentService);
   authService = inject(AuthService);
   private webMcpService = inject(WebMcpService);

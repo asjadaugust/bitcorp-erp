@@ -14,7 +14,6 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroInputComponent } from '../../../core/design-system/input/aero-input.component';
 import {
@@ -23,6 +22,7 @@ import {
 } from '../../../core/design-system/badge/aero-badge.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 interface InspectionFormData {
   plantillaId?: number;
@@ -44,7 +44,7 @@ interface InspectionFormData {
     RouterModule,
     PageLayoutComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
     AeroInputComponent,
     AeroBadgeComponent,
@@ -114,19 +114,16 @@ interface InspectionFormData {
         </div>
 
         <div class="button-group">
-          <app-button
-            variant="secondary"
-            icon="fa-arrow-left"
-            label="Cancelar"
-            (clicked)="cancel()"
-          ></app-button>
-          <app-button
+          <aero-button variant="secondary" iconLeft="fa-arrow-left" (clicked)="cancel()"
+            >Cancelar</aero-button
+          >
+          <aero-button
             variant="primary"
-            icon="fa-arrow-right"
-            label="Siguiente"
+            iconLeft="fa-arrow-right"
             [disabled]="!formData.plantillaId || !formData.equipoId || !formData.trabajadorId"
             (clicked)="nextStep()"
-          ></app-button>
+            >Siguiente</aero-button
+          >
         </div>
       </app-page-card>
 
@@ -179,19 +176,16 @@ interface InspectionFormData {
         </div>
 
         <div class="button-group">
-          <app-button
-            variant="secondary"
-            icon="fa-arrow-left"
-            label="Atrás"
-            (clicked)="previousStep()"
-          ></app-button>
-          <app-button
+          <aero-button variant="secondary" iconLeft="fa-arrow-left" (clicked)="previousStep()"
+            >Atrás</aero-button
+          >
+          <aero-button
             variant="primary"
-            icon="fa-play"
-            label="Iniciar Inspección"
+            iconLeft="fa-play"
             [disabled]="!formData.fechaInspeccion || !formData.horaInicio"
             (clicked)="startInspection()"
-          ></app-button>
+            >Iniciar Inspección</aero-button
+          >
         </div>
       </app-page-card>
 
@@ -310,12 +304,9 @@ interface InspectionFormData {
               <span class="aero-label"
                 >Fotografía {{ currentItem.requiereFoto ? '*' : '(Opcional)' }}</span
               >
-              <app-button
-                variant="secondary"
-                icon="fa-camera"
-                label="Tomar Foto"
-                [fullWidth]="true"
-              ></app-button>
+              <aero-button variant="secondary" iconLeft="fa-camera" [fullWidth]="true"
+                >Tomar Foto</aero-button
+              >
               <span class="photo-note">Función de cámara en desarrollo</span>
             </div>
           </div>
@@ -323,28 +314,25 @@ interface InspectionFormData {
 
         <!-- Navigation Buttons -->
         <div class="button-group navigation-buttons">
-          <app-button
+          <aero-button
             variant="secondary"
-            icon="fa-arrow-left"
-            label="Anterior"
+            iconLeft="fa-arrow-left"
             [disabled]="currentItemIndex === 0"
             (clicked)="previousItem()"
-          ></app-button>
+            >Anterior</aero-button
+          >
 
-          <app-button
-            variant="ghost"
-            icon="fa-floppy-disk"
-            label="Guardar Borrador"
-            (clicked)="saveDraft()"
-          ></app-button>
+          <aero-button variant="ghost" iconLeft="fa-floppy-disk" (clicked)="saveDraft()"
+            >Guardar Borrador</aero-button
+          >
 
-          <app-button
+          <aero-button
             variant="primary"
-            icon="fa-arrow-right"
-            [label]="currentItemIndex < items.length - 1 ? 'Siguiente' : 'Revisar'"
+            iconLeft="fa-arrow-right"
             [disabled]="currentResult.conforme === undefined"
             (clicked)="nextItem()"
-          ></app-button>
+            >{{ currentItemIndex < items.length - 1 ? 'Siguiente' : 'Revisar' }}</aero-button
+          >
         </div>
       </div>
 
@@ -394,24 +382,18 @@ interface InspectionFormData {
           </div>
 
           <div class="button-group">
-            <app-button
-              variant="secondary"
-              icon="fa-arrow-left"
-              label="Volver a Items"
-              (clicked)="backToItems()"
-            ></app-button>
-            <app-button
-              variant="ghost"
-              icon="fa-floppy-disk"
-              label="Guardar Borrador"
-              (clicked)="saveDraft()"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" iconLeft="fa-arrow-left" (clicked)="backToItems()"
+              >Volver a Items</aero-button
+            >
+            <aero-button variant="ghost" iconLeft="fa-floppy-disk" (clicked)="saveDraft()"
+              >Guardar Borrador</aero-button
+            >
+            <aero-button
               variant="primary"
-              icon="fa-check-circle"
-              label="Completar Inspección"
+              iconLeft="fa-check-circle"
               (clicked)="completeInspection()"
-            ></app-button>
+              >Completar Inspección</aero-button
+            >
           </div>
         </app-page-card>
       </div>

@@ -7,7 +7,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface Contacto {
@@ -28,19 +28,19 @@ interface Contacto {
 @Component({
   selector: 'app-provider-contacts',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DropdownComponent, ButtonComponent],
+  imports: [AeroButtonComponent, CommonModule, ReactiveFormsModule, DropdownComponent],
   template: `
     <div class="contacts-section">
       <div class="section-header">
         <h3><i class="fa-solid fa-address-book"></i> Contactos</h3>
-        <app-button
+        <aero-button
           *ngIf="!showForm && !readOnly"
           variant="primary"
-          size="sm"
-          icon="fa-plus"
-          label="Agregar Contacto"
+          size="small"
+          iconLeft="fa-plus"
           (clicked)="showForm = !showForm"
-        ></app-button>
+          >Agregar Contacto</aero-button
+        >
       </div>
 
       <!-- Form -->
@@ -95,13 +95,13 @@ interface Contacto {
           </div>
 
           <div class="form-actions">
-            <app-button variant="secondary" label="Cancelar" (clicked)="cancelForm()"></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="cancelForm()">Cancelar</aero-button>
+            <aero-button
               variant="primary"
-              [label]="editingId ? 'Actualizar' : 'Guardar'"
               [disabled]="contactForm.invalid"
               (clicked)="onSubmit()"
-            ></app-button>
+              >{{ editingId ? 'Actualizar' : 'Guardar' }}</aero-button
+            >
           </div>
         </form>
       </div>
@@ -126,18 +126,18 @@ interface Contacto {
               </div>
             </div>
             <div class="card-actions" *ngIf="!readOnly">
-              <app-button
-                variant="icon"
-                size="sm"
-                icon="fa-pen"
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-pen"
                 (clicked)="editContact(contact)"
-              ></app-button>
-              <app-button
-                variant="icon"
-                size="sm"
-                icon="fa-trash"
+              ></aero-button>
+              <aero-button
+                variant="ghost"
+                size="small"
+                iconCenter="fa-trash"
                 (clicked)="deleteContact(contact.id!)"
-              ></app-button>
+              ></aero-button>
             </div>
           </div>
 

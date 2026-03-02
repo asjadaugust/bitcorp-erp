@@ -11,7 +11,7 @@ import {
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -22,7 +22,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     RouterModule,
     EntityDetailShellComponent,
     AeroTabsComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -86,13 +86,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             <section class="detail-section card">
               <div class="section-header">
                 <h3>Recursos Asignados</h3>
-                <app-button
+                <aero-button
                   variant="primary"
-                  size="sm"
-                  icon="fa-plus"
-                  label="Asignar"
+                  size="small"
+                  iconLeft="fa-plus"
                   (clicked)="assignResources()"
-                ></app-button>
+                  >Asignar</aero-button
+                >
               </div>
               <div class="empty-state-placeholder">
                 <i class="fa-solid fa-users fa-3x"></i>
@@ -129,35 +129,35 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-pen"
-          label="Editar Proyecto"
+          iconLeft="fa-pen"
           [fullWidth]="true"
           (clicked)="editProject()"
-        ></app-button>
-        <app-button
+          >Editar Proyecto</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-users"
-          label="Asignar Recursos"
+          iconLeft="fa-users"
           [fullWidth]="true"
           (clicked)="assignResources()"
-        ></app-button>
-        <app-button
+          >Asignar Recursos</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           (clicked)="navigateTo('/projects')"
-        ></app-button>
+          >Volver a Lista</aero-button
+        >
         <div class="sidebar-divider"></div>
-        <app-button
+        <aero-button
           variant="danger"
-          icon="fa-trash"
-          label="Eliminar Proyecto"
+          iconLeft="fa-trash"
           [fullWidth]="true"
           (clicked)="deleteProject()"
-        ></app-button>
+          >Eliminar Proyecto</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

@@ -17,7 +17,8 @@ import {
 } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { EQUIPMENT_TABS, OPERACIONES_TABS } from './equipment-tabs';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-orden-alquiler-list',
@@ -31,7 +32,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     AeroTableComponent,
     FilterBarComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -39,14 +40,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       icon="fa-file-contract"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="equipmentTabs"
+      [subtabs]="operacionesTabs"
     >
       <app-actions-container actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Orden"
-          (clicked)="navigateToCreate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToCreate()"
+          >Nueva Orden</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -107,38 +107,38 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="toolbar"
         >
-          <app-button
+          <aero-button
             *ngIf="['BORRADOR', 'ENVIADO'].includes(row.estado)"
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             title="Editar"
             [routerLink]="[row.id, 'edit']"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'BORRADOR'"
-            variant="icon"
-            size="sm"
-            icon="fa-paper-plane"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-paper-plane"
             title="Enviar al proveedor"
             (clicked)="abrirModalEnviar(row)"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'ENVIADO'"
-            variant="icon"
-            size="sm"
-            icon="fa-check"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-check"
             title="Confirmar orden"
             (clicked)="abrirModalConfirmar(row)"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="['BORRADOR', 'ENVIADO'].includes(row.estado)"
-            variant="icon"
-            size="sm"
-            icon="fa-ban"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-ban"
             title="Cancelar"
             (clicked)="abrirModalCancelar(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -159,12 +159,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="dialog"
         >
-          <app-button
-            variant="icon"
-            icon="fa-xmark"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-xmark"
             class="modal-close-btn"
             (clicked)="cerrarModales()"
-          ></app-button>
+          ></aero-button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong> →
@@ -183,18 +184,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="cerrarModales()"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="cerrarModales()">Cancelar</aero-button>
+            <aero-button
               variant="primary"
-              icon="fa-paper-plane"
-              [label]="saving ? 'Enviando...' : 'Enviar'"
+              iconLeft="fa-paper-plane"
               [disabled]="saving"
               (clicked)="confirmarEnviar()"
-            ></app-button>
+              >{{ saving ? 'Enviando...' : 'Enviar' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -216,12 +213,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="dialog"
         >
-          <app-button
-            variant="icon"
-            icon="fa-xmark"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-xmark"
             class="modal-close-btn"
             (clicked)="cerrarModales()"
-          ></app-button>
+          ></aero-button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
@@ -240,18 +238,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="cerrarModales()"
-            ></app-button>
-            <app-button
-              variant="success"
-              icon="fa-check"
-              [label]="saving ? 'Procesando...' : 'Confirmar Orden'"
+            <aero-button variant="secondary" (clicked)="cerrarModales()">Cancelar</aero-button>
+            <aero-button
+              variant="primary"
+              iconLeft="fa-check"
               [disabled]="saving"
               (clicked)="confirmarConfirmar()"
-            ></app-button>
+              >{{ saving ? 'Procesando...' : 'Confirmar Orden' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -273,12 +267,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="dialog"
         >
-          <app-button
-            variant="icon"
-            icon="fa-xmark"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-xmark"
             class="modal-close-btn"
             (clicked)="cerrarModales()"
-          ></app-button>
+          ></aero-button>
           <div class="modal-body">
             <p class="modal-desc">
               Orden <strong>{{ modalOrden.codigo }}</strong>
@@ -294,18 +289,14 @@ import { ButtonComponent } from '../../shared/components/button/button.component
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="cerrarModales()"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" (clicked)="cerrarModales()">Cancelar</aero-button>
+            <aero-button
               variant="danger"
-              icon="fa-ban"
-              [label]="saving ? 'Cancelando...' : 'Confirmar Cancelación'"
+              iconLeft="fa-ban"
               [disabled]="saving || !modalMotivo.trim()"
               (clicked)="confirmarCancelar()"
-            ></app-button>
+              >{{ saving ? 'Cancelando...' : 'Confirmar Cancelación' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -441,6 +432,8 @@ export class OrdenAlquilerListComponent implements OnInit {
   private service = inject(OrdenAlquilerService);
   private router = inject(Router);
 
+  equipmentTabs = EQUIPMENT_TABS;
+  operacionesTabs = OPERACIONES_TABS;
   ordenes: OrdenAlquiler[] = [];
   loading = false;
   filtroEstado = '';

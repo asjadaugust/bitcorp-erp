@@ -10,12 +10,12 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, AeroTableComponent, DropdownComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, AeroTableComponent, DropdownComponent, AeroButtonComponent],
   template: `
     <div class="reports-container">
       <div class="header">
@@ -41,20 +41,20 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           </div>
 
           <div class="filter-actions">
-            <app-button
+            <aero-button
               variant="primary"
-              label="Ver Datos"
-              icon="fa-table"
+              iconLeft="fa-table"
               [loading]="loading"
               (clicked)="generateReport()"
-            ></app-button>
-            <app-button
-              variant="success"
-              label="Excel"
-              icon="fa-file-excel"
+              >Ver Datos</aero-button
+            >
+            <aero-button
+              variant="primary"
+              iconLeft="fa-file-excel"
               [loading]="loading"
               (clicked)="exportExcel()"
-            ></app-button>
+              >Excel</aero-button
+            >
           </div>
         </div>
       </div>

@@ -17,11 +17,11 @@ import {
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-settings',
@@ -35,7 +35,7 @@ import {
     AeroTabsComponent,
     AeroInputComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout title="Configuración" icon="fa-gear" [breadcrumbs]="breadcrumbs">
@@ -82,7 +82,7 @@ import {
         </div>
 
         <div class="form-actions">
-          <app-button variant="primary" label="Guardar Preferencias"></app-button>
+          <aero-button variant="primary">Guardar Preferencias</aero-button>
         </div>
       </app-page-card>
 
@@ -152,12 +152,12 @@ import {
           </div>
 
           <div class="form-actions">
-            <app-button
+            <aero-button
               variant="primary"
-              label="Actualizar Contraseña"
               [disabled]="passwordForm.invalid"
               (clicked)="onChangePassword()"
-            ></app-button>
+              >Actualizar Contraseña</aero-button
+            >
           </div>
         </form>
       </app-page-card>

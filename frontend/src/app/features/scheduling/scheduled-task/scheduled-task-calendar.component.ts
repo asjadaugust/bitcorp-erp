@@ -7,7 +7,7 @@ import { ScheduledTask } from '../../../core/models/scheduled-task.model';
 
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-scheduled-task-calendar',
@@ -18,7 +18,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
     FormsModule,
     PageLayoutComponent,
     ActionsContainerComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -32,46 +32,38 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
       ]"
     >
       <app-actions-container actions>
-        <app-button
-          variant="secondary"
-          size="sm"
-          label="Ver Lista"
-          icon="fa-list"
-          (clicked)="viewList()"
-        ></app-button>
-        <app-button
-          variant="primary"
-          size="sm"
-          label="Nueva Tarea"
-          icon="fa-plus"
-          (clicked)="createTask()"
-        ></app-button>
+        <aero-button variant="secondary" size="small" iconLeft="fa-list" (clicked)="viewList()"
+          >Ver Lista</aero-button
+        >
+        <aero-button variant="primary" size="small" iconLeft="fa-plus" (clicked)="createTask()"
+          >Nueva Tarea</aero-button
+        >
       </app-actions-container>
 
       <div class="calendar-wrapper">
         <!-- Calendar Header/Controls -->
         <div class="calendar-header-card">
           <div class="month-navigation">
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-chevron-left"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-chevron-left"
               title="Mes Anterior"
               (clicked)="prevMonth()"
-            ></app-button>
+            ></aero-button>
             <h2 class="current-month">
               {{ currentMonthName }} <span>{{ currentYear }}</span>
             </h2>
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-chevron-right"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-chevron-right"
               title="Mes Siguiente"
               (clicked)="nextMonth()"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="calendar-actions">
-            <app-button variant="ghost" size="sm" label="Hoy" (clicked)="goToToday()"></app-button>
+            <aero-button variant="ghost" size="small" (clicked)="goToToday()">Hoy</aero-button>
           </div>
         </div>
 

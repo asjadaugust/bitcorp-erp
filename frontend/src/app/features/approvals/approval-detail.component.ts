@@ -14,7 +14,7 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { forkJoin } from 'rxjs';
 
@@ -27,7 +27,7 @@ import { forkJoin } from 'rxjs';
     RouterModule,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     AlertComponent,
   ],
   template: `
@@ -138,32 +138,32 @@ import { forkJoin } from 'rxjs';
             rows="3"
           ></textarea>
           <div class="action-buttons">
-            <app-button
+            <aero-button
               variant="danger-outline"
-              icon="fa-xmark"
-              label="Rechazar"
+              iconLeft="fa-xmark"
               [loading]="actionLoading"
               (clicked)="reject()"
-            ></app-button>
-            <app-button
-              variant="success"
-              icon="fa-check"
-              label="Aprobar"
+              >Rechazar</aero-button
+            >
+            <aero-button
+              variant="primary"
+              iconLeft="fa-check"
               [loading]="actionLoading"
               (clicked)="approve()"
-            ></app-button>
+              >Aprobar</aero-button
+            >
           </div>
         </div>
 
         <!-- Cancel Action (U5) -->
         <div class="detail-section" *ngIf="canCancel()">
-          <app-button
+          <aero-button
             variant="ghost"
-            icon="fa-ban"
-            label="Cancelar Solicitud"
+            iconLeft="fa-ban"
             [loading]="cancelLoading"
             (clicked)="cancelRequest()"
-          ></app-button>
+            >Cancelar Solicitud</aero-button
+          >
         </div>
       </div>
 

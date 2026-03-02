@@ -9,11 +9,11 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroInputComponent } from '../../../core/design-system/input/aero-input.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-template-form',
@@ -24,7 +24,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ReactiveFormsModule,
     PageLayoutComponent,
     DropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
     AeroInputComponent,
   ],
@@ -37,13 +37,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       backUrl="/checklists/templates"
     >
       <div actions class="action-buttons-header">
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-save"
-          [label]="saving ? 'Guardando...' : 'Guardar'"
+          iconLeft="fa-save"
           [disabled]="!templateForm.valid || saving"
           (clicked)="onSubmit()"
-        ></app-button>
+          >{{ saving ? 'Guardando...' : 'Guardar' }}</aero-button
+        >
       </div>
 
       <form [formGroup]="templateForm" (ngSubmit)="onSubmit()">
@@ -118,13 +118,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         <!-- Items Card -->
         <app-page-card title="Items del Checklist">
           <div header-actions>
-            <app-button
-              variant="primary"
-              icon="fa-plus"
-              label="Agregar Item"
-              size="sm"
-              (clicked)="addItem()"
-            ></app-button>
+            <aero-button variant="primary" iconLeft="fa-plus" size="small" (clicked)="addItem()"
+              >Agregar Item</aero-button
+            >
           </div>
 
           <div formArrayName="items" class="items-list">
@@ -135,12 +131,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             >
               <div class="item-form-header">
                 <span class="item-number">#{{ i + 1 }}</span>
-                <app-button
-                  variant="icon"
-                  size="sm"
-                  icon="fa-trash"
+                <aero-button
+                  variant="ghost"
+                  size="small"
+                  iconCenter="fa-trash"
                   (clicked)="removeItem(i)"
-                ></app-button>
+                ></aero-button>
               </div>
 
               <div class="item-form-grid">

@@ -11,12 +11,12 @@ import {
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-maintenance-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent, ButtonComponent],
+  imports: [AeroButtonComponent, CommonModule, RouterModule, EntityDetailShellComponent],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -76,29 +76,29 @@ import { ButtonComponent } from '../../shared/components/button/button.component
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-pen"
-          label="Editar"
+          iconLeft="fa-pen"
           [fullWidth]="true"
           (clicked)="editMaintenance()"
-        ></app-button>
+          >Editar</aero-button
+        >
         @if (record?.estado !== 'COMPLETADO' && record?.estado !== 'CANCELADO') {
-          <app-button
-            variant="success"
-            icon="fa-check"
-            label="Marcar Completado"
+          <aero-button
+            variant="primary"
+            iconLeft="fa-check"
             [fullWidth]="true"
             (clicked)="completeMaintenance()"
-          ></app-button>
+            >Marcar Completado</aero-button
+          >
         }
-        <app-button
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a Equipo"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           (clicked)="goBack()"
-        ></app-button>
+          >Volver a Equipo</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

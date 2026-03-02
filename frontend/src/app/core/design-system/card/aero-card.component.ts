@@ -43,7 +43,7 @@ export type CardLevel = '1' | '2' | '3';
   styles: [
     `
       .aero-card {
-        background: var(--grey-100);
+        background: var(--neutral-0);
         border-radius: var(--radius-md);
         display: flex;
         flex-direction: column;
@@ -73,7 +73,7 @@ export type CardLevel = '1' | '2' | '3';
       .aero-card--boxed {
         box-shadow: none;
         border: 1px solid var(--grey-200);
-        background-color: var(--grey-100);
+        background-color: var(--neutral-0);
       }
 
       /* Image */

@@ -15,7 +15,7 @@ import {
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-tender-list',
@@ -26,7 +26,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -36,12 +36,9 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       [loading]="loading"
     >
       <app-actions-container actions>
-        <app-button
-          variant="primary"
-          label="Nueva Licitación"
-          icon="fa-plus"
-          (clicked)="createTender()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createTender()"
+          >Nueva Licitación</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar

@@ -33,8 +33,6 @@ export interface Contract {
   incluye_motor: boolean;
   incluye_operador: boolean;
   costo_adicional_motor?: string; // API returns string
-  horas_incluidas?: number;
-  penalidad_exceso?: string; // API returns string
 
   // Ownership proof (Cláusula 2)
   documento_acredita?: string;

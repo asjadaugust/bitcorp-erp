@@ -18,6 +18,7 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../core/design-system/table/aero-table.component';
+import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
 
 @Component({
   selector: 'app-valuation-registry',
@@ -38,6 +39,7 @@ import {
     <app-page-layout
       title="Registro de Valorizaciones"
       icon="fa-file-invoice-dollar"
+      [tabs]="tabs"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
     >
@@ -310,6 +312,7 @@ import {
   ],
 })
 export class ValuationRegistryComponent implements OnInit {
+  tabs = EQUIPMENT_TABS;
   private valuationService = inject(ValuationService);
   private router = inject(Router);
   private excelService = inject(ExcelExportService);

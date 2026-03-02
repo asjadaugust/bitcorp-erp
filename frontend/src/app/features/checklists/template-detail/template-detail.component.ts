@@ -8,7 +8,6 @@ import {
   StatsGridComponent,
   StatItem,
 } from '../../../shared/components/stats-grid/stats-grid.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import {
   AeroBadgeComponent,
@@ -16,6 +15,7 @@ import {
 } from '../../../core/design-system/badge/aero-badge.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-template-detail',
@@ -25,7 +25,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     RouterModule,
     PageLayoutComponent,
     StatsGridComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
     AeroBadgeComponent,
   ],
@@ -38,25 +38,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       backUrl="/checklists/templates"
     >
       <div actions class="action-buttons-header" *ngIf="template">
-        <app-button
-          variant="primary"
-          icon="fa-pen"
-          label="Editar"
-          (clicked)="editTemplate()"
-        ></app-button>
-        <app-button
+        <aero-button variant="primary" iconLeft="fa-pen" (clicked)="editTemplate()"
+          >Editar</aero-button
+        >
+        <aero-button variant="secondary" iconLeft="fa-copy" (clicked)="duplicateTemplate()"
+          >Duplicar</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-copy"
-          label="Duplicar"
-          (clicked)="duplicateTemplate()"
-        ></app-button>
-        <app-button
-          variant="secondary"
-          icon="fa-trash"
-          label="Eliminar"
+          iconLeft="fa-trash"
           (clicked)="deleteTemplate()"
           *ngIf="!template.activo"
-        ></app-button>
+          >Eliminar</aero-button
+        >
       </div>
 
       <div class="template-content" *ngIf="template">

@@ -14,15 +14,19 @@ import {
   AeroCardComponent,
   CardInfoItem,
 } from '../../shared/components/aero-card/aero-card.component';
-import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
+import {
+  PageLayoutComponent,
+  TabItem,
+} from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
 
 @Component({
   selector: 'app-daily-report-list',
@@ -36,12 +40,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ExportDropdownComponent,
     ActionsContainerComponent,
     AeroCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
       title="Partes Diarios"
       icon="fa-clipboard-list"
+      [tabs]="tabs"
+      [subtabs]="subtabs"
       [breadcrumbs]="[
         { label: 'Inicio', url: '/app' },
         { label: 'Equipos', url: '/equipment' },
@@ -53,13 +59,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         <app-export-dropdown [disabled]="reports.length === 0" (export)="handleExport($event)">
         </app-export-dropdown>
 
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-file-pen"
-          label="Nuevo Informe Diario"
+          iconLeft="fa-file-pen"
           (clicked)="createNewReport()"
           data-testid="btn-new-report"
-        ></app-button>
+          >Nuevo Informe Diario</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -159,12 +165,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         <p class="empty-state__description">
           Comience creando su primer parte diario para registrar el uso de equipos
         </p>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Crear Parte Diario"
-          (clicked)="createNewReport()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createNewReport()"
+          >Crear Parte Diario</aero-button
+        >
       </div>
     </app-page-layout>
   `,
@@ -513,6 +516,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   ],
 })
 export class DailyReportListComponent implements OnInit {
+  tabs = EQUIPMENT_TABS;
+  subtabs: TabItem[] = [
+    { label: 'Lista', route: '/equipment/daily-reports', exact: true },
+    { label: 'Recepción', route: '/equipment/daily-reports/reception', exact: true },
+  ];
   private dailyReportService = inject(DailyReportService);
   private router = inject(Router);
   authService = inject(AuthService);

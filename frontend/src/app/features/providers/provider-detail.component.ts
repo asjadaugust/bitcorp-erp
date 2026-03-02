@@ -13,7 +13,7 @@ import {
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -27,7 +27,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ProviderFinancialInfoComponent,
     ProviderContactsComponent,
     EntityDetailShellComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -177,41 +177,41 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
       <!-- ── SIDEBAR ACTIONS ──────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-pen-to-square"
-          label="Editar Detalles"
+          iconLeft="fa-pen-to-square"
           [fullWidth]="true"
           (clicked)="editProvider()"
-        ></app-button>
-        <app-button
+          >Editar Detalles</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-building-columns"
-          label="Ver Información Financiera"
+          iconLeft="fa-building-columns"
           [fullWidth]="true"
           (clicked)="activeTab = 'financial'"
-        ></app-button>
-        <app-button
+          >Ver Información Financiera</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-truck-front"
-          label="Ver Equipos"
+          iconLeft="fa-truck-front"
           [fullWidth]="true"
           (clicked)="activeTab = 'equipment'"
-        ></app-button>
-        <app-button
+          >Ver Equipos</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           routerLink="/providers"
-        ></app-button>
-        <app-button
+          >Volver a Lista</aero-button
+        >
+        <aero-button
           variant="danger"
-          icon="fa-trash-can"
-          label="Eliminar Proveedor"
+          iconLeft="fa-trash-can"
           [fullWidth]="true"
           (clicked)="deleteProvider()"
-        ></app-button>
+          >Eliminar Proveedor</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

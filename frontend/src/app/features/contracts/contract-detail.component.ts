@@ -32,12 +32,12 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
 import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-contract-detail',
@@ -50,7 +50,7 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
     AeroTableComponent,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     DropdownComponent,
     AeroBadgeComponent,
   ],
@@ -237,15 +237,15 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           <div class="section-header-row">
             <h2>Obligaciones del Arrendador — Cláusula 7</h2>
             @if (obligaciones.length === 0) {
-              <app-button
+              <aero-button
                 variant="secondary"
-                size="sm"
-                icon="fa-list-check"
-                label="Inicializar Lista"
+                size="small"
+                iconLeft="fa-list-check"
                 (clicked)="initObligaciones()"
                 [disabled]="savingObligacion"
                 data-testid="btn-init-obligaciones"
-              />
+                >Inicializar Lista</aero-button
+              >
             }
           </div>
 
@@ -311,15 +311,15 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
           <div class="section-header-row">
             <h2>Obligaciones del Arrendatario — Cláusula 8</h2>
             @if (obligacionesArrendatario.length === 0) {
-              <app-button
+              <aero-button
                 variant="secondary"
-                size="sm"
-                icon="fa-list-check"
-                label="Inicializar Lista"
+                size="small"
+                iconLeft="fa-list-check"
                 (clicked)="initObligacionesArrendatario()"
                 [disabled]="savingObligacionArrendatario"
                 data-testid="btn-init-obligaciones-arrendatario"
-              />
+                >Inicializar Lista</aero-button
+              >
             }
           </div>
 
@@ -383,64 +383,64 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
 
       <!-- ── SIDEBAR ACTIONS ─────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
-          <app-button
+        @if (['VIGENTE', 'EN_PROCESO'].includes(contract?.estado || '')) {
+          <aero-button
             variant="secondary"
-            fullWidth="true"
-            icon="fa-pen"
-            label="Editar"
+            [fullWidth]="true"
+            iconLeft="fa-pen"
             (clicked)="editContract()"
-          />
+            >Editar</aero-button
+          >
         }
-        <app-button
+        <aero-button
           variant="secondary"
-          fullWidth="true"
-          icon="fa-file-signature"
-          label="Ver Adendas"
+          [fullWidth]="true"
+          iconLeft="fa-file-signature"
           (clicked)="viewAddendums()"
-        />
-        <app-button
+          >Ver Adendas</aero-button
+        >
+        <aero-button
           variant="secondary"
-          fullWidth="true"
-          icon="fa-file-pdf"
-          label="Descargar PDF"
+          [fullWidth]="true"
+          iconLeft="fa-file-pdf"
           (clicked)="downloadPDF()"
-        />
-        @if (['ACTIVO', 'VENCIDO'].includes(contract?.estado || '')) {
-          <app-button
+          >Descargar PDF</aero-button
+        >
+        @if (['VIGENTE', 'VENCIDO'].includes(contract?.estado || '')) {
+          <aero-button
             variant="ghost"
-            fullWidth="true"
-            icon="fa-scale-balanced"
-            label="Resolver Contrato"
+            [fullWidth]="true"
+            iconLeft="fa-scale-balanced"
             class="text-warning-important"
             (clicked)="showResolverModal = true"
-          />
+            >Resolver Contrato</aero-button
+          >
         }
         @if (contract?.estado === 'RESUELTO') {
-          <app-button
+          <aero-button
             variant="primary"
-            fullWidth="true"
-            icon="fa-circle-check"
-            label="Liquidar Contrato"
+            [fullWidth]="true"
+            iconLeft="fa-circle-check"
             (clicked)="abrirLiquidacion()"
-          />
+            >Liquidar Contrato</aero-button
+          >
         }
-        @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
-          <app-button
+        @if (['VIGENTE', 'EN_PROCESO'].includes(contract?.estado || '')) {
+          <aero-button
             variant="danger"
-            fullWidth="true"
-            icon="fa-trash"
-            label="Cancelar"
+            [fullWidth]="true"
+            iconLeft="fa-trash"
             (clicked)="deleteContract()"
-          />
+            >Cancelar</aero-button
+          >
         }
-        <app-button
+        <aero-button
           variant="ghost"
-          fullWidth="true"
-          icon="fa-arrow-left"
-          label="Volver a Lista"
+          [fullWidth]="true"
+          iconLeft="fa-arrow-left"
           routerLink="/equipment/contracts"
-        />
+          >Volver a Lista</aero-button
+        >
       </ng-container>
 
       <!-- ── SIDEBAR AFTER (extra cards below audit) ─────────── -->
@@ -493,17 +493,17 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
               <i class="fa-solid fa-stamp"></i>
               Proceso de legalización notarial no iniciado.
             </p>
-            @if (['ACTIVO', 'BORRADOR'].includes(contract?.estado || '')) {
-              <app-button
+            @if (['VIGENTE', 'EN_PROCESO'].includes(contract?.estado || '')) {
+              <aero-button
                 variant="secondary"
-                size="sm"
-                fullWidth="true"
-                icon="fa-play"
-                label="Iniciar Legalización"
+                size="small"
+                [fullWidth]="true"
+                iconLeft="fa-play"
                 (clicked)="initLegalizacion()"
                 [disabled]="savingLegalizacion"
                 data-testid="btn-init-legalizacion"
-              />
+                >Iniciar Legalización</aero-button
+              >
             }
           </div>
         }
@@ -542,27 +542,27 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                     <span class="leg-step-obs">{{ paso.observaciones }}</span>
                   }
                   @if (isNextStep(paso)) {
-                    <app-button
+                    <aero-button
                       variant="primary"
-                      size="sm"
-                      icon="fa-check"
-                      [label]="savingLegalizacion ? 'Guardando...' : 'Completar Paso'"
+                      size="small"
+                      iconLeft="fa-check"
                       (clicked)="completarPaso(paso.numero_paso)"
                       [disabled]="savingLegalizacion"
                       [attr.data-testid]="'btn-completar-paso-' + paso.numero_paso"
-                    />
+                      >{{ savingLegalizacion ? 'Guardando...' : 'Completar Paso' }}</aero-button
+                    >
                   }
                   @if (paso.completado && isLastCompleted(paso)) {
-                    <app-button
+                    <aero-button
                       variant="ghost"
-                      size="sm"
-                      icon="fa-rotate-left"
-                      label="Revertir"
+                      size="small"
+                      iconLeft="fa-rotate-left"
                       (clicked)="revertirPaso(paso.numero_paso)"
                       [disabled]="savingLegalizacion"
                       class="btn-revert"
                       [attr.data-testid]="'btn-revertir-paso-' + paso.numero_paso"
-                    />
+                      >Revertir</aero-button
+                    >
                   }
                 </div>
               </div>
@@ -603,12 +603,12 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         >
           <div class="modal-header">
             <h2><i class="fa-solid fa-scale-balanced"></i> Resolver Contrato</h2>
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-times"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-times"
               (clicked)="showResolverModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <p class="modal-desc">
@@ -650,14 +650,11 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             </div>
           </div>
           <div class="modal-footer">
-            <app-button
+            <aero-button variant="secondary" (clicked)="showResolverModal = false"
+              >Cancelar</aero-button
+            >
+            <aero-button
               variant="secondary"
-              label="Cancelar"
-              (clicked)="showResolverModal = false"
-            />
-            <app-button
-              variant="warning"
-              [label]="savingLifecycle ? 'Guardando...' : 'Registrar Resolución'"
               [disabled]="
                 savingLifecycle ||
                 !resolverForm.causal_resolucion ||
@@ -665,7 +662,8 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
                 !resolverForm.fecha_resolucion
               "
               (clicked)="confirmarResolucion()"
-            />
+              >{{ savingLifecycle ? 'Guardando...' : 'Registrar Resolución' }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -689,12 +687,12 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
         >
           <div class="modal-header">
             <h2><i class="fa-solid fa-circle-check"></i> Liquidar Contrato</h2>
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-times"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-times"
               (clicked)="showLiquidarModal = false"
-            ></app-button>
+            ></aero-button>
           </div>
           <div class="modal-body">
             <!-- Prerequisites check -->
@@ -769,18 +767,16 @@ import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.co
             }
           </div>
           <div class="modal-footer">
-            <app-button
-              variant="secondary"
-              label="Cancelar"
-              (clicked)="showLiquidarModal = false"
-            />
+            <aero-button variant="secondary" (clicked)="showLiquidarModal = false"
+              >Cancelar</aero-button
+            >
             @if (liquidationCheck?.puede_liquidar) {
-              <app-button
+              <aero-button
                 variant="primary"
-                [label]="savingLifecycle ? 'Guardando...' : 'Confirmar Liquidación'"
                 [disabled]="savingLifecycle || !liquidarForm.fecha_liquidacion"
                 (clicked)="confirmarLiquidacion()"
-              />
+                >{{ savingLifecycle ? 'Guardando...' : 'Confirmar Liquidación' }}</aero-button
+              >
             }
           </div>
         </div>
@@ -1360,8 +1356,8 @@ export class ContractDetailComponent implements OnInit {
       title: `Contrato ${this.contract?.numero_contrato ?? ''}`,
       subtitle: this.contract?.proveedor_razon_social || 'Proveedor no especificado',
       codeBadge: this.contract?.numero_contrato,
-      statusLabel: this.getStatusLabel(this.contract?.estado ?? 'BORRADOR'),
-      statusClass: this.getStatusClass(this.contract?.estado ?? 'BORRADOR'),
+      statusLabel: this.getStatusLabel(this.contract?.estado ?? 'EN_PROCESO'),
+      statusClass: this.getStatusClass(this.contract?.estado ?? 'EN_PROCESO'),
     };
   }
 
@@ -1852,8 +1848,9 @@ export class ContractDetailComponent implements OnInit {
 
   getStatusLabel(estado: string): string {
     const labelMap: Record<string, string> = {
-      BORRADOR: 'Borrador',
-      ACTIVO: 'Activo',
+      SIN_CONTRATO: 'Sin Contrato',
+      EN_PROCESO: 'En Proceso',
+      VIGENTE: 'Vigente',
       VENCIDO: 'Vencido',
       CANCELADO: 'Cancelado',
       RESUELTO: 'Resuelto',
@@ -1864,10 +1861,10 @@ export class ContractDetailComponent implements OnInit {
 
   getStatusClass(estado: string): string {
     switch (estado) {
-      case 'ACTIVO':
+      case 'VIGENTE':
         return 'status-APROBADO';
-      case 'PENDIENTE':
-      case 'BORRADOR':
+      case 'EN_PROCESO':
+      case 'SIN_CONTRATO':
         return 'status-PENDIENTE';
       case 'RESUELTO':
         return 'status-EN_REVISION';

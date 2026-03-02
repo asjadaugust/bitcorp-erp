@@ -10,12 +10,13 @@ import {
   PageLayoutComponent,
   Breadcrumb,
 } from '../../../../shared/components/page-layout/page-layout.component';
+import { ADMINISTRACION_TABS } from '../../administracion-tabs';
 import {
   FilterBarComponent,
   FilterConfig,
 } from '../../../../shared/components/filter-bar/filter-bar.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-cost-center-list',
@@ -25,7 +26,7 @@ import { PageCardComponent } from '../../../../shared/components/page-card/page-
     AeroTableComponent,
     PageLayoutComponent,
     FilterBarComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     PageCardComponent,
   ],
   template: `
@@ -34,14 +35,12 @@ import { PageCardComponent } from '../../../../shared/components/page-card/page-
       icon="fa-building"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <div actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nuevo Centro de Costo"
-          (clicked)="createCostCenter()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="createCostCenter()"
+          >Nuevo Centro de Costo</aero-button
+        >
       </div>
 
       <app-filter-bar
@@ -61,12 +60,12 @@ import { PageCardComponent } from '../../../../shared/components/page-card/page-
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             (clicked)="editCostCenter(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -85,6 +84,7 @@ export class CostCenterListComponent implements OnInit {
   private adminService = inject(AdministrationService);
   private router = inject(Router);
 
+  tabs = ADMINISTRACION_TABS;
   costCenters: CostCenter[] = [];
   filteredCostCenters: CostCenter[] = [];
   loading = false;

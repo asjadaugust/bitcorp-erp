@@ -25,7 +25,8 @@ import {
   StatItem,
 } from '../../shared/components/stats-grid/stats-grid.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { EQUIPMENT_TABS, OPERACIONES_TABS } from './equipment-tabs';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-solicitud-equipo-list',
@@ -40,7 +41,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     FilterBarComponent,
     StatsGridComponent,
     PageCardComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -48,14 +49,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       icon="fa-file-invoice"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="equipmentTabs"
+      [subtabs]="operacionesTabs"
     >
       <app-actions-container actions>
-        <app-button
-          variant="primary"
-          icon="fa-plus"
-          label="Nueva Solicitud"
-          (clicked)="navigateToCreate()"
-        ></app-button>
+        <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToCreate()"
+          >Nueva Solicitud</aero-button
+        >
       </app-actions-container>
 
       <div class="stats-container-fade-in" *ngIf="statItems.length > 0">
@@ -114,38 +114,38 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           tabindex="0"
           role="toolbar"
         >
-          <app-button
+          <aero-button
             *ngIf="row.estado === 'BORRADOR'"
-            variant="icon"
-            size="sm"
-            icon="fa-pen"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
             title="Editar"
             [routerLink]="[row.id, 'edit']"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'BORRADOR'"
-            variant="icon"
-            size="sm"
-            icon="fa-paper-plane"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-paper-plane"
             title="Enviar para aprobación"
             (clicked)="enviarAprobacion($event, row)"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'ENVIADO'"
-            variant="icon"
-            size="sm"
-            icon="fa-check"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-check"
             title="Aprobar"
             (clicked)="aprobar(row)"
-          ></app-button>
-          <app-button
+          ></aero-button>
+          <aero-button
             *ngIf="row.estado === 'ENVIADO'"
-            variant="icon"
-            size="sm"
-            icon="fa-times"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-times"
             title="Rechazar"
             (clicked)="rechazar(row)"
-          ></app-button>
+          ></aero-button>
         </div>
       </ng-template>
     </app-page-layout>
@@ -238,6 +238,8 @@ export class SolicitudEquipoListComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
   private router = inject(Router);
 
+  equipmentTabs = EQUIPMENT_TABS;
+  operacionesTabs = OPERACIONES_TABS;
   solicitudes: SolicitudEquipo[] = [];
   loading = false;
   filtroEstado = '';

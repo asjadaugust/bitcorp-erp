@@ -11,8 +11,8 @@ import {
   AeroTableComponent,
   TableColumn,
 } from '../../../../core/design-system/table/aero-table.component';
-import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { AeroButtonComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-movement-detail',
@@ -22,7 +22,7 @@ import { ConfirmService } from '../../../../core/services/confirm.service';
     RouterModule,
     EntityDetailShellComponent,
     AeroTableComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -166,36 +166,36 @@ import { ConfirmService } from '../../../../core/services/confirm.service';
 
       <!-- ── SIDEBAR ACTIONS ───────────────────────────────────── -->
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-pen-to-square"
-          label="Editar Movimiento"
+          iconLeft="fa-pen-to-square"
           [fullWidth]="true"
           [disabled]="movement?.estado === 'ANULADO'"
           (clicked)="editMovement()"
-        ></app-button>
-        <app-button
+          >Editar Movimiento</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-list-ul"
-          label="Ver Detalle Items"
+          iconLeft="fa-list-ul"
           [fullWidth]="true"
           (clicked)="activeTab = 'items'"
-        ></app-button>
-        <app-button
+          >Ver Detalle Items</aero-button
+        >
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           (clicked)="goBack()"
-        ></app-button>
-        <app-button
+          >Volver a Lista</aero-button
+        >
+        <aero-button
           variant="danger"
-          icon="fa-ban"
-          label="Anular Movimiento"
+          iconLeft="fa-ban"
           [fullWidth]="true"
           [disabled]="movement?.estado === 'ANULADO'"
           (clicked)="cancelMovement()"
-        ></app-button>
+          >Anular Movimiento</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

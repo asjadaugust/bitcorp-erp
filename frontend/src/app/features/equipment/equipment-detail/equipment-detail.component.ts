@@ -9,7 +9,6 @@ import { DailyReportService } from '../../../core/services/daily-report.service'
 import { ContractService } from '../../../core/services/contract.service';
 import { MaintenanceScheduleService } from '../../../core/services/maintenance-schedule.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   EntityDetailShellComponent,
@@ -29,6 +28,7 @@ import {
 } from '../../../core/design-system/table/aero-table.component';
 import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-list.component';
 import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tabs.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-equipment-detail',
@@ -40,7 +40,7 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
     AeroTableComponent,
     PeriodoInoperatividadListComponent,
     AeroTabsComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -203,13 +203,13 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
             <div class="detail-section card">
               <div class="section-header">
                 <h3>Historial de Mantenimiento</h3>
-                <app-button
+                <aero-button
                   variant="primary"
-                  size="sm"
-                  icon="fa-plus"
-                  label="Programar"
+                  size="small"
+                  iconLeft="fa-plus"
                   (clicked)="scheduleMaintenance()"
-                ></app-button>
+                  >Programar</aero-button
+                >
               </div>
 
               <aero-table
@@ -296,17 +296,17 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
             <div class="detail-section card">
               <div class="section-header">
                 <h3>Vales de Combustible</h3>
-                <app-button
+                <aero-button
                   variant="primary"
-                  size="sm"
-                  icon="fa-plus"
-                  label="Nuevo Vale"
+                  size="small"
+                  iconLeft="fa-plus"
                   (clicked)="
                     router.navigate(['/equipment/vales-combustible/new'], {
                       queryParams: { equipo_id: equipment.id },
                     })
                   "
-                ></app-button>
+                  >Nuevo Vale</aero-button
+                >
               </div>
               <aero-table
                 [columns]="fuelColumns"
@@ -331,57 +331,57 @@ import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tab
       </div>
 
       <ng-container entity-sidebar-actions>
-        <app-button
+        <aero-button
           variant="secondary"
-          icon="fa-pen-to-square"
-          label="Editar Equipo"
+          iconLeft="fa-pen-to-square"
           [fullWidth]="true"
           (clicked)="editEquipment()"
-        ></app-button>
-        <app-button
+          >Editar Equipo</aero-button
+        >
+        <aero-button
           variant="primary"
-          icon="fa-location-dot"
-          label="Asignar a Proyecto"
+          iconLeft="fa-location-dot"
           [fullWidth]="true"
           (clicked)="assignToProject()"
-        ></app-button>
-        <app-button
+          >Asignar a Proyecto</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-screwdriver-wrench"
-          label="Programar Mantenimiento"
+          iconLeft="fa-screwdriver-wrench"
           [fullWidth]="true"
           (clicked)="scheduleMaintenance()"
-        ></app-button>
-        <app-button
-          variant="outline"
-          icon="fa-triangle-exclamation"
-          label="Registrar Inoperatividad"
+          >Programar Mantenimiento</aero-button
+        >
+        <aero-button
+          variant="secondary"
+          iconLeft="fa-triangle-exclamation"
           [fullWidth]="true"
           (clicked)="registrarInoperatividad()"
-        ></app-button>
-        <app-button
+          >Registrar Inoperatividad</aero-button
+        >
+        <aero-button
           variant="secondary"
-          icon="fa-clock-rotate-left"
-          label="Ver Historial"
+          iconLeft="fa-clock-rotate-left"
           [fullWidth]="true"
           (clicked)="viewHistory()"
-        ></app-button>
+          >Ver Historial</aero-button
+        >
         <hr class="sidebar-divider" />
-        <app-button
+        <aero-button
           variant="danger"
-          icon="fa-trash"
-          label="Eliminar Equipo"
+          iconLeft="fa-trash"
           [fullWidth]="true"
           (clicked)="deleteEquipment()"
-        ></app-button>
+          >Eliminar Equipo</aero-button
+        >
         <hr class="sidebar-divider" />
-        <app-button
+        <aero-button
           variant="ghost"
-          icon="fa-arrow-left"
-          label="Volver a Lista"
+          iconLeft="fa-arrow-left"
           [fullWidth]="true"
           routerLink="/equipment"
-        ></app-button>
+          >Volver a Lista</aero-button
+        >
       </ng-container>
     </app-entity-detail-shell>
   `,

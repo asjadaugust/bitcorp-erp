@@ -24,7 +24,7 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { ExportDropdownComponent } from '../../shared/components/export-dropdown/export-dropdown.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { AeroButtonComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-payment-list',
@@ -37,7 +37,7 @@ import { ButtonComponent } from '../../shared/components/button/button.component
     FilterBarComponent,
     ActionsContainerComponent,
     ExportDropdownComponent,
-    ButtonComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -51,13 +51,13 @@ import { ButtonComponent } from '../../shared/components/button/button.component
           data-testid="btn-export-excel"
           (export)="exportToExcel()"
         ></app-export-dropdown>
-        <app-button
+        <aero-button
           variant="primary"
-          icon="fa-plus"
-          label="Nuevo Pago"
+          iconLeft="fa-plus"
           data-testid="btn-new-payment"
           (clicked)="navigateToCreate()"
-        ></app-button>
+          >Nuevo Pago</aero-button
+        >
       </app-actions-container>
 
       <app-filter-bar
@@ -122,30 +122,30 @@ import { ButtonComponent } from '../../shared/components/button/button.component
       <!-- Actions Template -->
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons" (click)="$event.stopPropagation()">
-          <app-button
-            variant="icon"
-            size="sm"
-            icon="fa-eye"
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
             [attr.data-testid]="'btn-view-' + row.id"
             (clicked)="viewPayment(row)"
-          ></app-button>
+          ></aero-button>
           @if (row.estado !== 'ANULADO') {
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-pen"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-pen"
               [attr.data-testid]="'btn-edit-' + row.id"
               (clicked)="editPayment(row)"
-            ></app-button>
+            ></aero-button>
           }
           @if (row.estado === 'CONFIRMADO' && !row.conciliado) {
-            <app-button
-              variant="icon"
-              size="sm"
-              icon="fa-check-double"
+            <aero-button
+              variant="ghost"
+              size="small"
+              iconCenter="fa-check-double"
               [attr.data-testid]="'btn-reconcile-' + row.id"
               (clicked)="reconcilePayment(row)"
-            ></app-button>
+            ></aero-button>
           }
         </div>
       </ng-template>

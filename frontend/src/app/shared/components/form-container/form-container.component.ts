@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BackButtonComponent } from '../back-button/back-button.component';
-import { ButtonComponent } from '../button/button.component';
+import { AeroButtonComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-form-container',
   standalone: true,
-  imports: [CommonModule, BackButtonComponent, ButtonComponent],
+  imports: [CommonModule, BackButtonComponent],
   template: `
     <div class="form-container">
       <!-- Header -->
@@ -22,20 +22,17 @@ import { ButtonComponent } from '../button/button.component';
           </div>
         </div>
         <div class="header-actions" *ngIf="showActions">
-          <app-button
-            variant="secondary"
-            icon="fa-times"
-            label="Cancelar"
-            (clicked)="handleCancel()"
-          ></app-button>
-          <app-button
+          <aero-button variant="secondary" iconLeft="fa-times" (clicked)="handleCancel()"
+            >Cancelar</aero-button
+          >
+          <aero-button
             variant="primary"
-            [icon]="submitIcon"
-            [label]="loading ? loadingText : submitLabel"
+            [iconLeft]="submitIcon"
             [disabled]="disableSubmit"
             [loading]="loading"
             (clicked)="handleSubmit()"
-          ></app-button>
+            >{{ loading ? loadingText : submitLabel }}</aero-button
+          >
         </div>
       </div>
 
@@ -46,20 +43,17 @@ import { ButtonComponent } from '../button/button.component';
         <!-- Optional Footer Actions -->
         <div class="form-footer" *ngIf="showFooter">
           <div class="footer-actions">
-            <app-button
-              variant="secondary"
-              icon="fa-times"
-              label="Cancelar"
-              (clicked)="handleCancel()"
-            ></app-button>
-            <app-button
+            <aero-button variant="secondary" iconLeft="fa-times" (clicked)="handleCancel()"
+              >Cancelar</aero-button
+            >
+            <aero-button
               variant="primary"
-              [icon]="submitIcon"
-              [label]="loading ? loadingText : submitLabel"
+              [iconLeft]="submitIcon"
               [disabled]="disableSubmit"
               [loading]="loading"
               (clicked)="handleSubmit()"
-            ></app-button>
+              >{{ loading ? loadingText : submitLabel }}</aero-button
+            >
           </div>
         </div>
       </div>
@@ -186,7 +180,7 @@ import { ButtonComponent } from '../button/button.component';
           flex-direction: column-reverse;
         }
 
-        .footer-actions app-button {
+        .footer-actions aero-button {
           width: 100%;
         }
 

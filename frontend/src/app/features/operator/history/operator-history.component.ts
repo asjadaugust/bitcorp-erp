@@ -10,8 +10,7 @@ import {
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { AeroBadgeComponent } from '../../../core/design-system/badge/aero-badge.component';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
@@ -34,7 +33,7 @@ interface HistoryReport {
     FormsModule,
     DropdownComponent,
     PageLayoutComponent,
-    ButtonComponent,
+    AeroButtonComponent,
     AeroBadgeComponent,
   ],
   template: `
@@ -121,51 +120,48 @@ interface HistoryReport {
           </div>
 
           <div class="report-actions">
-            <app-button
+            <aero-button
               *ngIf="report.status === 'BORRADOR'"
-              variant="outline-primary"
-              icon="fa-pen-to-square"
-              label="Editar"
-              size="sm"
+              variant="secondary"
+              iconLeft="fa-pen-to-square"
+              size="small"
               [attr.data-testid]="'btn-edit-' + report.id"
               (clicked)="editReport(report)"
-            ></app-button>
-            <app-button
+              >Editar</aero-button
+            >
+            <aero-button
               variant="ghost"
-              icon="fa-eye"
-              label="Ver"
-              size="sm"
+              iconLeft="fa-eye"
+              size="small"
               [attr.data-testid]="'btn-view-' + report.id"
               (clicked)="viewReport(report)"
-            ></app-button>
-            <app-button
+              >Ver</aero-button
+            >
+            <aero-button
               variant="ghost"
-              icon="fa-file-pdf"
-              label="PDF"
-              size="sm"
+              iconLeft="fa-file-pdf"
+              size="small"
               [attr.data-testid]="'btn-download-' + report.id"
               (clicked)="downloadPdf(report)"
-            ></app-button>
-            <app-button
+              >PDF</aero-button
+            >
+            <aero-button
               *ngIf="report.status === 'BORRADOR'"
               variant="outline-danger"
-              icon="fa-trash"
-              size="sm"
+              iconLeft="fa-trash"
+              size="small"
               [attr.data-testid]="'btn-delete-' + report.id"
               (clicked)="deleteReport(report)"
-            ></app-button>
+            ></aero-button>
           </div>
         </div>
 
         <div *ngIf="filteredReports.length === 0" class="empty-state" data-testid="empty-state">
           <i class="fa-solid fa-clipboard-list empty-icon"></i>
           <p>No se encontraron partes diarios</p>
-          <app-button
-            label="Crear nuevo parte"
-            icon="fa-plus"
-            variant="primary"
-            routerLink="/operator/daily-report"
-          ></app-button>
+          <aero-button iconLeft="fa-plus" variant="primary" routerLink="/operator/daily-report"
+            >Crear nuevo parte</aero-button
+          >
         </div>
       </div>
     </app-page-layout>
