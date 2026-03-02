@@ -63,9 +63,19 @@ npm run lint:frontend   # eslint src/**/*.ts *.html
 
 ### Database migrations
 
+Seeds are embedded in migration files — running `migrate` applies both schema and seed data.
+
 ```bash
-npm run db:migrate          # run Alembic migrations
-npm run db:seed             # run seeders
+# From inside the container:
+alembic upgrade head
+
+# Or via the db.sh helper (run from host):
+docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh migrate    # apply all pending migrations
+docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh fresh      # wipe + re-apply all migrations
+docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh downgrade  # revert all migrations
+docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh current    # show current revision
+docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh history    # show migration history
+docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh revision -m "description"  # new migration
 ```
 
 ### Git commits
@@ -104,122 +114,8 @@ Each company tenant has its **own PostgreSQL database** (`bitcorp_empresa_{code}
 - Every authenticated request carries `id_empresa` in the JWT payload
 - Tenant middleware resolves the JWT → looks up `sistema.empresas` → sets tenant context
 - All services receive tenant-scoped async database sessions
-- Never use a global/singleton session for business queries
 
 See `.opencode/MULTITENANCY.md` for full architecture.
-
----
-
-### Backend Code Layers
-
-```
-backend/app/
-├── api/           # FastAPI route handlers (routers)
-├── services/      # Business logic
-├── models/        # SQLAlchemy models
-├── schemas/       # Pydantic schemas (request/response)
-├── core/          # Config, security, database
-├── middleware/     # Auth, tenant context, etc.
-└── main.py
-```
-
-**Router responsibilities**: parse input, check permissions, call service, return Pydantic schema.
-**Service responsibilities**: business logic, database queries via async SQLAlchemy sessions.
-
----
-
-### API Response Contract (mandatory)
-
-All responses must use one of:
-
-```typescript
-// List
-{ success: true, data: T[], pagination: { page, limit, total, total_pages } }
-
-// Single
-{ success: true, data: T }
-
-// Created
-{ success: true, data: { id: number, message?: string } }
-
-// Error
-{ success: false, error: { code: string, message: string, details?: any } }
-```
-
-Use standardized response helpers in the backend.
-**Never return raw SQLAlchemy models.** Always transform to Pydantic schemas.
-
----
-
-### Field Naming Convention
-
-| Context                  | Format              | Example          |
-| ------------------------ | ------------------- | ---------------- |
-| Database columns         | Spanish, snake_case | `fecha_inicio`   |
-| SQLAlchemy model props   | Spanish, snake_case | `fecha_inicio`   |
-| API responses (Pydantic) | Spanish, snake_case | `fecha_inicio`   |
-| Frontend TypeScript      | Spanish, snake_case | `fecha_inicio`   |
-| Raw SQL                  | snake_case (DB col) | `e.fecha_inicio` |
-
-Never mix camelCase and snake_case in API responses.
-See `docs/SCHEMA_CONVENTIONS.md` for column name mappings.
-
----
-
-### Database Schema Organization
-
-```
-bitcorp_dev (or bitcorp_empresa_*)
-├── sistema      — users, roles, audit
-├── proyectos    — projects (EDT)
-├── equipo       — equipment, daily reports, maintenance, valuations
-├── rrhh         — workers / operators
-├── logistica    — inventory, movements
-├── proveedores  — suppliers
-├── administracion — cost centers, accounts payable
-├── sst          — safety incidents, inspections
-└── public       — attachments, notifications, tenders
-```
-
-- `database/001_init_schema.sql` — single source of truth for schema
-- `database/002_seed.sql` — seed data (kept in sync with 001)
-- **Never** use auto-migration; all schema changes go in SQL files
-- Any schema change in `001_init_schema.sql` **requires** a corresponding update to `002_seed.sql`
-
----
-
-### Frontend Architecture
-
-```
-frontend/src/app/
-├── core/
-│   ├── design-system/   # Aero Design System wrappers
-│   ├── guards/          # Route guards
-│   ├── interceptors/    # HTTP interceptors (auth, error)
-│   ├── services/        # Singleton services (auth, etc.)
-│   └── models/          # TypeScript interfaces
-├── shared/
-│   └── components/      # Reusable components (PageCard, AeroCard, FilterBar, etc.)
-└── features/            # Feature modules (equipment, operators, projects, …)
-```
-
-**Key shared components**:
-
-- `app-page-card` — standard card container with `title`, `subtitle`, `[header-actions]`, `[footer]` slots; use `[noPadding]="true"` for tables
-- `aero-card`, `aero-table`, `filter-bar`, `stats-grid`, `actions-container`, `export-dropdown`
-
-**Angular patterns**:
-
-- Standalone components (no NgModule)
-- Services **unwrap** API responses: `map(res => res.data)` — components never handle `{ success, pagination }` wrapper
-- Signals and OnPush change detection where feasible
-- Lazy-loaded feature routes
-
----
-
-### Design System: Aero (KLM-based)
-
-The UI is modeled on the **AFR-KLM Aero Design System**. Key CSS variables: `--primary-900`, `--grey-200`, `--grey-700`, `--radius-md`, `--s-{8,16,24}`. Use design system component classes consistently — do not invent ad-hoc styles that diverge from the Aero aesthetic.
 
 ---
 
@@ -250,15 +146,14 @@ Before marking any feature done:
 
 ## Forbidden Practices
 
-- Returning raw SQLAlchemy models from routers
 - Mixing camelCase and snake_case in API responses
-- Skipping Pydantic schemas
-- Using auto-migration in SQLAlchemy
 - Adding schema changes without updating seed data
-- Using singleton sessions for multi-tenant queries
-- String-concatenating SQL (always use parameterized queries `$1, $2, …`)
 - Dual field names in API responses (pick one canonical name)
 - Pushing to remote without explicit user instruction
+
+See `backend/CLAUDE.md` for backend-specific forbidden practices.
+
+---
 
 ## Tech Debt Workflow
 
@@ -285,73 +180,7 @@ These will be addressed in a separate session with a different model.
 
 ## Code Exploration with dora
 
-This codebase uses dora for fast code intelligence and architectural analysis.
-
-### IMPORTANT: Use dora for code exploration
-
 **ALWAYS use dora commands for code exploration instead of Grep/Glob/Find.**
-
-### All Commands
-
-**Overview:**
-
-- `dora status` - Check index health, file/symbol counts, last indexed time
-- `dora map` - Show packages, file count, symbol count
-
-**Files & Symbols:**
-
-- `dora ls [directory] [--limit N] [--sort field]` - List files in directory with metadata (symbols, deps, rdeps). Default limit: 100
-- `dora file <path>` - Show file's symbols, dependencies, and dependents
-- `dora symbol <query> [--kind type] [--limit N]` - Find symbols by name across codebase. Default limit: 20
-- `dora refs <symbol> [--kind type] [--limit N]` - Find all references to a symbol
-- `dora exports <path>` - List exported symbols from a file
-- `dora imports <path>` - Show what a file imports
-
-**Dependencies:**
-
-- `dora deps <path> [--depth N]` - Show file dependencies (what this imports). Default depth: 1
-- `dora rdeps <path> [--depth N]` - Show reverse dependencies (what imports this). Default depth: 1
-- `dora adventure <from> <to>` - Find shortest dependency path between two files
-
-**Code Health:**
-
-- `dora leaves [--max-dependents N]` - Find files with few/no dependents. Default: 0
-- `dora lost [--limit N]` - Find unused exported symbols. Default limit: 50
-- `dora treasure [--limit N]` - Find most referenced files and files with most dependencies. Default: 10
-
-**Architecture Analysis:**
-
-- `dora cycles [--limit N]` - Detect circular dependencies. Empty = good. Default: 50
-- `dora coupling [--threshold N]` - Find bidirectionally dependent file pairs. Default threshold: 5
-- `dora complexity [--sort metric]` - Show file complexity metrics (sort by: complexity, symbols, stability). Default: complexity
-
-**Change Impact:**
-
-- `dora changes <ref>` - Show files changed since git ref and their impact
-- `dora graph <path> [--depth N] [--direction type]` - Generate dependency graph. Direction: deps, rdeps, both. Default: both, depth 1
-
-**Documentation:**
-
-- `dora docs [--type TYPE]` - List all documentation files. Use --type to filter by md or txt
-- `dora docs search <query> [--limit N]` - Search through documentation content. Default limit: 20
-- `dora docs show <path> [--content]` - Show document metadata and references. Use --content to include full text
-
-**Note:** To find where a symbol/file is documented, use `dora symbol` or `dora file` which show a `documented_in` field.
-
-**Database:**
-
-- `dora schema` - Show database schema (tables, columns, indexes)
-- `dora cookbook show [recipe]` - Query patterns with real examples (quickstart, methods, references, exports)
-- `dora query "<sql>"` - Execute read-only SQL query against the database
-
-### When to Use Other Tools
-
-- **Read**: For reading file source code
-- **Grep**: Only for non-code files or when dora fails
-- **Edit/Write**: For making changes
-- **Bash**: For running commands/tests
-
-### Quick Workflow
 
 ```bash
 dora status                      # Check index health
@@ -364,90 +193,22 @@ dora docs                        # List all documentation
 dora docs search <query>         # Search documentation content
 ```
 
-For detailed usage and examples, refer to `./dora/docs/SKILL.md`.
+For full command reference, see `./dora/docs/SKILL.md`.
 
-### UI Generation & Consistency Rules
+---
 
-Whenever you are asked to generate, modify, or review Frontend UI code (Angular), you MUST strictly adhere to the following rules. Failure to do so will break the application's design system.
+## Context Loading (Trigger Table)
 
-**1. Context Gathering (MANDATORY FIRST STEP)**
+Scoped `CLAUDE.md` files extend these instructions. Claude Code auto-loads them
+when editing files in those directories. For cross-cutting tasks, read manually.
 
-Before writing any HTML or SCSS for a new module or component, you must first read and analyze a "Gold Standard" reference module to ensure your layout matches.
-
-- If building a List/Data page: Read `frontend/src/app/features/equipment/equipment-list.component.ts`
-- If building a Detail page: Read `frontend/src/app/features/contracts/contract-detail.component.ts`
-- If building a Form: Read `frontend/src/app/features/contracts/contract-form.component.ts`
-
-**2. Layout Wrappers**
-
-NEVER build a raw `<div>` layout for a page. You must use the established layout shells:
-
-- **Standard Pages**: `<app-page-layout>` + `<app-page-card>` for content area
-- **Detail/Entity Pages**: `<app-entity-detail-shell>`
-- **Forms**: `<app-form-container>` + `<app-form-section>`
-
-Note: Layout shells (`app-page-layout`, `app-page-card`, `app-entity-detail-shell`, `app-form-container`, `app-form-section`, `app-filter-bar`, `app-stats-grid`, `app-actions-container`) are NOT part of the AERO design system — they are structural wrappers. Keep using them as-is.
-
-**3. AERO Design System Components**
-
-Do NOT use raw HTML elements for interactive UI. Import from `@app/core/design-system`:
-
-```typescript
-import {
-  AeroButtonComponent,
-  AeroInputComponent,
-  AeroDropdownComponent,
-  AeroBadgeComponent,
-} from '@app/core/design-system';
-```
-
-| Raw HTML               | Deprecated Component   | AERO Replacement                    |
-| ---------------------- | ---------------------- | ----------------------------------- |
-| `<button>`             | `<app-button>`         | `<aero-button>`                     |
-| `<input>`              | —                      | `<aero-input>`                      |
-| `<select>`             | `<app-dropdown>`       | `<aero-dropdown>`                   |
-| `<div class="card">`   | —                      | `<aero-card>` or `<app-page-card>`  |
-| `<span class="badge">` | —                      | `<aero-badge>`                      |
-| `<div class="alert">`  | `<app-alert>`          | `<aero-notification>`               |
-| `<nav>` in features    | —                      | `<aero-tabs>` or `<app-module-nav>` |
-| `window.confirm()`     | `<app-confirm-dialog>` | `<aero-modal>`                      |
-
-**Button variants**: `primary` / `secondary` / `tertiary` / `text` (NOT danger/success/ghost)
-**Button sizes**: `small` / `regular` / `large` (NOT sm/md/lg)
-
-**4. Navigation & Headers**
-
-No local nav bars. All top-level navigation is handled by `<app-main-nav>`. For secondary navigation, use `<aero-tabs>` or `<app-module-nav>`.
-
-**5. Styling & Colors**
-
-- **No hardcoded colors**: Use CSS variables from `frontend/src/styles/tokens.css`
-- **Spacing**: Use design tokens `var(--s-4)`, `var(--s-8)`, `var(--s-16)`, `var(--s-24)`, `var(--s-32)`
-- **Colors**: `var(--primary-500)` for interactive, `var(--primary-900)` for text, `var(--semantic-red-500)` for errors
-
-**6. Verification Step**
-
-Before finalizing your code, ask yourself: Did I use `aero-*` components? Is this page wrapped in a layout shell? Did I accidentally create a new navigation bar?
-
-### Gold Standard References
-
-When building a new page, read the matching reference file FIRST:
-
-| Page Type             | Reference File                                                       | Key Components                                                                                           |
-| --------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| List                  | `features/equipment/equipment-list.component.ts`                     | `<app-page-layout>`, `<app-page-card>`, `<aero-table>`, `<app-filter-bar>`, `<aero-button>`              |
-| Detail                | `features/contracts/contract-detail.component.ts`                    | `<app-entity-detail-shell>`, `@use 'detail-layout'`, `<app-entity-detail-sidebar-card>`, `<aero-button>` |
-| Form                  | `features/contracts/contract-form.component.ts`                      | `<app-form-container>`, `<app-form-section>`, `@use 'form-layout'`, `<aero-dropdown>`                    |
-| Notification (Inline) | `shared/components/validation-errors/validation-errors.component.ts` | AERO Inline Error: `--aero-notify-*` tokens, BEM `.notification__*` classes                              |
-| Notification (Alert)  | `core/design-system/notification/aero-notification.component.ts`     | `<aero-notification>`: 4 types (error/warning/success/info), AERO tokens                                 |
-
-### Form Page Rules
-
-- **Outer wrapper**: Always `<app-form-container>` (provides header, cancel/save buttons, white card)
-- **Sections**: Always `<app-form-section title="..." icon="..." [columns]="2">` — NEVER raw `.form-section` divs
-- **Styles**: `@use 'form-layout'` in component styles — NEVER duplicate `.form-grid`, `.section-grid`, `.form-group` CSS inline
-- **Inputs**: `<aero-input>` for text/number/date, `<aero-dropdown>` for selects, raw `<textarea class="form-control">` for multi-line text
-- **Shared SCSS**: `frontend/src/styles/_form-layout.scss` provides `.form-grid`, `.section-grid`, `.form-group`, `.form-control`, `.error-msg`, `.checkbox-group`, `.file-upload-*`
+| Task involves…                                                     | File                           |
+| ------------------------------------------------------------------ | ------------------------------ |
+| Angular, components, SCSS, UI, Aero, templates, design system      | `frontend/CLAUDE.md`           |
+| FastAPI, SQLAlchemy, Pydantic, routers, services, schemas, backend | `backend/CLAUDE.md`            |
+| Multi-tenant sessions, per-company DB isolation                    | `.opencode/MULTITENANCY.md`    |
+| API patterns, DTOs, response shapes, pagination                    | `.opencode/API-PATTERNS.md`    |
+| Role permissions, user lifecycle                                   | `.opencode/USER-MANAGEMENT.md` |
 
 <!-- rtk-instructions v2 -->
 
