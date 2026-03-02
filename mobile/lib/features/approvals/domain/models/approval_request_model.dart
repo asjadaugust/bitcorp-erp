@@ -4,15 +4,19 @@ part 'approval_request_model.freezed.dart';
 part 'approval_request_model.g.dart';
 
 @freezed
-class ApprovalRequestModel with _$ApprovalRequestModel {
+abstract class ApprovalRequestModel with _$ApprovalRequestModel {
   const factory ApprovalRequestModel({
-    required String id,
-    required String tipo,
+    required int id,
+    @JsonKey(name: 'module_name') String? moduleName,
+    @JsonKey(name: 'entity_id') int? entityId,
     required String titulo,
-    required String descripcion,
-    required Map<String, dynamic> solicitante,
-    @JsonKey(name: 'fecha_creacion') required DateTime fechaCreacion,
+    @Default('') String descripcion,
     required String estado,
+    @JsonKey(name: 'paso_actual') int? pasoActual,
+    @JsonKey(name: 'fecha_creacion') required DateTime fechaCreacion,
+    @JsonKey(name: 'usuario_solicitante_id') int? usuarioSolicitanteId,
+    // UI-facing fields (populated from detail endpoint or local mock)
+    @Default({}) Map<String, dynamic> solicitante,
     @Default([]) List<String> adjuntos,
     @JsonKey(name: 'linea_tiempo')
     @Default([])
@@ -24,7 +28,7 @@ class ApprovalRequestModel with _$ApprovalRequestModel {
 }
 
 @freezed
-class ApprovalTimelineNode with _$ApprovalTimelineNode {
+abstract class ApprovalTimelineNode with _$ApprovalTimelineNode {
   const factory ApprovalTimelineNode({
     required int paso,
     required String estado,

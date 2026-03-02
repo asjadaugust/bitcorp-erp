@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$EquipmentDetailModel {
 
- String get id; String get codigo; String get descripcion; String get marca; String get modelo; int get anio; String get placa; ContractModel get contrato; List<DocumentComplianceModel> get documentos;
+ int get id;@JsonKey(name: 'codigo_equipo') String get codigoEquipo; String get marca; String get modelo;@JsonKey(name: 'anio_fabricacion') int? get anioFabricacion; String? get placa; String? get estado;@JsonKey(name: 'tipo_proveedor') String? get tipoProveedor;@JsonKey(name: 'medidor_uso') String? get medidorUso;@JsonKey(name: 'proveedor_razon_social') String? get proveedorRazonSocial;@JsonKey(name: 'tipo_equipo_nombre') String? get tipoEquipoNombre;@JsonKey(name: 'categoria_prd') String? get categoriaPrd;@JsonKey(name: 'fecha_venc_soat') String? get fechaVencSoat;@JsonKey(name: 'fecha_venc_citv') String? get fechaVencCitv;@JsonKey(name: 'fecha_venc_poliza') String? get fechaVencPoliza;
 /// Create a copy of EquipmentDetailModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $EquipmentDetailModelCopyWith<EquipmentDetailModel> get copyWith => _$EquipmentD
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentDetailModel&&(identical(other.id, id) || other.id == id)&&(identical(other.codigo, codigo) || other.codigo == codigo)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion)&&(identical(other.marca, marca) || other.marca == marca)&&(identical(other.modelo, modelo) || other.modelo == modelo)&&(identical(other.anio, anio) || other.anio == anio)&&(identical(other.placa, placa) || other.placa == placa)&&(identical(other.contrato, contrato) || other.contrato == contrato)&&const DeepCollectionEquality().equals(other.documentos, documentos));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EquipmentDetailModel&&(identical(other.id, id) || other.id == id)&&(identical(other.codigoEquipo, codigoEquipo) || other.codigoEquipo == codigoEquipo)&&(identical(other.marca, marca) || other.marca == marca)&&(identical(other.modelo, modelo) || other.modelo == modelo)&&(identical(other.anioFabricacion, anioFabricacion) || other.anioFabricacion == anioFabricacion)&&(identical(other.placa, placa) || other.placa == placa)&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.tipoProveedor, tipoProveedor) || other.tipoProveedor == tipoProveedor)&&(identical(other.medidorUso, medidorUso) || other.medidorUso == medidorUso)&&(identical(other.proveedorRazonSocial, proveedorRazonSocial) || other.proveedorRazonSocial == proveedorRazonSocial)&&(identical(other.tipoEquipoNombre, tipoEquipoNombre) || other.tipoEquipoNombre == tipoEquipoNombre)&&(identical(other.categoriaPrd, categoriaPrd) || other.categoriaPrd == categoriaPrd)&&(identical(other.fechaVencSoat, fechaVencSoat) || other.fechaVencSoat == fechaVencSoat)&&(identical(other.fechaVencCitv, fechaVencCitv) || other.fechaVencCitv == fechaVencCitv)&&(identical(other.fechaVencPoliza, fechaVencPoliza) || other.fechaVencPoliza == fechaVencPoliza));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,codigo,descripcion,marca,modelo,anio,placa,contrato,const DeepCollectionEquality().hash(documentos));
+int get hashCode => Object.hash(runtimeType,id,codigoEquipo,marca,modelo,anioFabricacion,placa,estado,tipoProveedor,medidorUso,proveedorRazonSocial,tipoEquipoNombre,categoriaPrd,fechaVencSoat,fechaVencCitv,fechaVencPoliza);
 
 @override
 String toString() {
-  return 'EquipmentDetailModel(id: $id, codigo: $codigo, descripcion: $descripcion, marca: $marca, modelo: $modelo, anio: $anio, placa: $placa, contrato: $contrato, documentos: $documentos)';
+  return 'EquipmentDetailModel(id: $id, codigoEquipo: $codigoEquipo, marca: $marca, modelo: $modelo, anioFabricacion: $anioFabricacion, placa: $placa, estado: $estado, tipoProveedor: $tipoProveedor, medidorUso: $medidorUso, proveedorRazonSocial: $proveedorRazonSocial, tipoEquipoNombre: $tipoEquipoNombre, categoriaPrd: $categoriaPrd, fechaVencSoat: $fechaVencSoat, fechaVencCitv: $fechaVencCitv, fechaVencPoliza: $fechaVencPoliza)';
 }
 
 
@@ -48,11 +48,11 @@ abstract mixin class $EquipmentDetailModelCopyWith<$Res>  {
   factory $EquipmentDetailModelCopyWith(EquipmentDetailModel value, $Res Function(EquipmentDetailModel) _then) = _$EquipmentDetailModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String codigo, String descripcion, String marca, String modelo, int anio, String placa, ContractModel contrato, List<DocumentComplianceModel> documentos
+ int id,@JsonKey(name: 'codigo_equipo') String codigoEquipo, String marca, String modelo,@JsonKey(name: 'anio_fabricacion') int? anioFabricacion, String? placa, String? estado,@JsonKey(name: 'tipo_proveedor') String? tipoProveedor,@JsonKey(name: 'medidor_uso') String? medidorUso,@JsonKey(name: 'proveedor_razon_social') String? proveedorRazonSocial,@JsonKey(name: 'tipo_equipo_nombre') String? tipoEquipoNombre,@JsonKey(name: 'categoria_prd') String? categoriaPrd,@JsonKey(name: 'fecha_venc_soat') String? fechaVencSoat,@JsonKey(name: 'fecha_venc_citv') String? fechaVencCitv,@JsonKey(name: 'fecha_venc_poliza') String? fechaVencPoliza
 });
 
 
-$ContractModelCopyWith<$Res> get contrato;
+
 
 }
 /// @nodoc
@@ -65,30 +65,27 @@ class _$EquipmentDetailModelCopyWithImpl<$Res>
 
 /// Create a copy of EquipmentDetailModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? codigo = null,Object? descripcion = null,Object? marca = null,Object? modelo = null,Object? anio = null,Object? placa = null,Object? contrato = null,Object? documentos = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? codigoEquipo = null,Object? marca = null,Object? modelo = null,Object? anioFabricacion = freezed,Object? placa = freezed,Object? estado = freezed,Object? tipoProveedor = freezed,Object? medidorUso = freezed,Object? proveedorRazonSocial = freezed,Object? tipoEquipoNombre = freezed,Object? categoriaPrd = freezed,Object? fechaVencSoat = freezed,Object? fechaVencCitv = freezed,Object? fechaVencPoliza = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,codigo: null == codigo ? _self.codigo : codigo // ignore: cast_nullable_to_non_nullable
-as String,descripcion: null == descripcion ? _self.descripcion : descripcion // ignore: cast_nullable_to_non_nullable
+as int,codigoEquipo: null == codigoEquipo ? _self.codigoEquipo : codigoEquipo // ignore: cast_nullable_to_non_nullable
 as String,marca: null == marca ? _self.marca : marca // ignore: cast_nullable_to_non_nullable
 as String,modelo: null == modelo ? _self.modelo : modelo // ignore: cast_nullable_to_non_nullable
-as String,anio: null == anio ? _self.anio : anio // ignore: cast_nullable_to_non_nullable
-as int,placa: null == placa ? _self.placa : placa // ignore: cast_nullable_to_non_nullable
-as String,contrato: null == contrato ? _self.contrato : contrato // ignore: cast_nullable_to_non_nullable
-as ContractModel,documentos: null == documentos ? _self.documentos : documentos // ignore: cast_nullable_to_non_nullable
-as List<DocumentComplianceModel>,
+as String,anioFabricacion: freezed == anioFabricacion ? _self.anioFabricacion : anioFabricacion // ignore: cast_nullable_to_non_nullable
+as int?,placa: freezed == placa ? _self.placa : placa // ignore: cast_nullable_to_non_nullable
+as String?,estado: freezed == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
+as String?,tipoProveedor: freezed == tipoProveedor ? _self.tipoProveedor : tipoProveedor // ignore: cast_nullable_to_non_nullable
+as String?,medidorUso: freezed == medidorUso ? _self.medidorUso : medidorUso // ignore: cast_nullable_to_non_nullable
+as String?,proveedorRazonSocial: freezed == proveedorRazonSocial ? _self.proveedorRazonSocial : proveedorRazonSocial // ignore: cast_nullable_to_non_nullable
+as String?,tipoEquipoNombre: freezed == tipoEquipoNombre ? _self.tipoEquipoNombre : tipoEquipoNombre // ignore: cast_nullable_to_non_nullable
+as String?,categoriaPrd: freezed == categoriaPrd ? _self.categoriaPrd : categoriaPrd // ignore: cast_nullable_to_non_nullable
+as String?,fechaVencSoat: freezed == fechaVencSoat ? _self.fechaVencSoat : fechaVencSoat // ignore: cast_nullable_to_non_nullable
+as String?,fechaVencCitv: freezed == fechaVencCitv ? _self.fechaVencCitv : fechaVencCitv // ignore: cast_nullable_to_non_nullable
+as String?,fechaVencPoliza: freezed == fechaVencPoliza ? _self.fechaVencPoliza : fechaVencPoliza // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
-/// Create a copy of EquipmentDetailModel
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$ContractModelCopyWith<$Res> get contrato {
-  
-  return $ContractModelCopyWith<$Res>(_self.contrato, (value) {
-    return _then(_self.copyWith(contrato: value));
-  });
-}
+
 }
 
 
@@ -170,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String codigo,  String descripcion,  String marca,  String modelo,  int anio,  String placa,  ContractModel contrato,  List<DocumentComplianceModel> documentos)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'codigo_equipo')  String codigoEquipo,  String marca,  String modelo, @JsonKey(name: 'anio_fabricacion')  int? anioFabricacion,  String? placa,  String? estado, @JsonKey(name: 'tipo_proveedor')  String? tipoProveedor, @JsonKey(name: 'medidor_uso')  String? medidorUso, @JsonKey(name: 'proveedor_razon_social')  String? proveedorRazonSocial, @JsonKey(name: 'tipo_equipo_nombre')  String? tipoEquipoNombre, @JsonKey(name: 'categoria_prd')  String? categoriaPrd, @JsonKey(name: 'fecha_venc_soat')  String? fechaVencSoat, @JsonKey(name: 'fecha_venc_citv')  String? fechaVencCitv, @JsonKey(name: 'fecha_venc_poliza')  String? fechaVencPoliza)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EquipmentDetailModel() when $default != null:
-return $default(_that.id,_that.codigo,_that.descripcion,_that.marca,_that.modelo,_that.anio,_that.placa,_that.contrato,_that.documentos);case _:
+return $default(_that.id,_that.codigoEquipo,_that.marca,_that.modelo,_that.anioFabricacion,_that.placa,_that.estado,_that.tipoProveedor,_that.medidorUso,_that.proveedorRazonSocial,_that.tipoEquipoNombre,_that.categoriaPrd,_that.fechaVencSoat,_that.fechaVencCitv,_that.fechaVencPoliza);case _:
   return orElse();
 
 }
@@ -191,10 +188,10 @@ return $default(_that.id,_that.codigo,_that.descripcion,_that.marca,_that.modelo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String codigo,  String descripcion,  String marca,  String modelo,  int anio,  String placa,  ContractModel contrato,  List<DocumentComplianceModel> documentos)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'codigo_equipo')  String codigoEquipo,  String marca,  String modelo, @JsonKey(name: 'anio_fabricacion')  int? anioFabricacion,  String? placa,  String? estado, @JsonKey(name: 'tipo_proveedor')  String? tipoProveedor, @JsonKey(name: 'medidor_uso')  String? medidorUso, @JsonKey(name: 'proveedor_razon_social')  String? proveedorRazonSocial, @JsonKey(name: 'tipo_equipo_nombre')  String? tipoEquipoNombre, @JsonKey(name: 'categoria_prd')  String? categoriaPrd, @JsonKey(name: 'fecha_venc_soat')  String? fechaVencSoat, @JsonKey(name: 'fecha_venc_citv')  String? fechaVencCitv, @JsonKey(name: 'fecha_venc_poliza')  String? fechaVencPoliza)  $default,) {final _that = this;
 switch (_that) {
 case _EquipmentDetailModel():
-return $default(_that.id,_that.codigo,_that.descripcion,_that.marca,_that.modelo,_that.anio,_that.placa,_that.contrato,_that.documentos);case _:
+return $default(_that.id,_that.codigoEquipo,_that.marca,_that.modelo,_that.anioFabricacion,_that.placa,_that.estado,_that.tipoProveedor,_that.medidorUso,_that.proveedorRazonSocial,_that.tipoEquipoNombre,_that.categoriaPrd,_that.fechaVencSoat,_that.fechaVencCitv,_that.fechaVencPoliza);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -211,10 +208,10 @@ return $default(_that.id,_that.codigo,_that.descripcion,_that.marca,_that.modelo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String codigo,  String descripcion,  String marca,  String modelo,  int anio,  String placa,  ContractModel contrato,  List<DocumentComplianceModel> documentos)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'codigo_equipo')  String codigoEquipo,  String marca,  String modelo, @JsonKey(name: 'anio_fabricacion')  int? anioFabricacion,  String? placa,  String? estado, @JsonKey(name: 'tipo_proveedor')  String? tipoProveedor, @JsonKey(name: 'medidor_uso')  String? medidorUso, @JsonKey(name: 'proveedor_razon_social')  String? proveedorRazonSocial, @JsonKey(name: 'tipo_equipo_nombre')  String? tipoEquipoNombre, @JsonKey(name: 'categoria_prd')  String? categoriaPrd, @JsonKey(name: 'fecha_venc_soat')  String? fechaVencSoat, @JsonKey(name: 'fecha_venc_citv')  String? fechaVencCitv, @JsonKey(name: 'fecha_venc_poliza')  String? fechaVencPoliza)?  $default,) {final _that = this;
 switch (_that) {
 case _EquipmentDetailModel() when $default != null:
-return $default(_that.id,_that.codigo,_that.descripcion,_that.marca,_that.modelo,_that.anio,_that.placa,_that.contrato,_that.documentos);case _:
+return $default(_that.id,_that.codigoEquipo,_that.marca,_that.modelo,_that.anioFabricacion,_that.placa,_that.estado,_that.tipoProveedor,_that.medidorUso,_that.proveedorRazonSocial,_that.tipoEquipoNombre,_that.categoriaPrd,_that.fechaVencSoat,_that.fechaVencCitv,_that.fechaVencPoliza);case _:
   return null;
 
 }
@@ -225,25 +222,25 @@ return $default(_that.id,_that.codigo,_that.descripcion,_that.marca,_that.modelo
 /// @nodoc
 @JsonSerializable()
 
-class _EquipmentDetailModel implements EquipmentDetailModel {
-  const _EquipmentDetailModel({required this.id, required this.codigo, required this.descripcion, required this.marca, required this.modelo, required this.anio, required this.placa, required this.contrato, required final  List<DocumentComplianceModel> documentos}): _documentos = documentos;
+class _EquipmentDetailModel extends EquipmentDetailModel {
+  const _EquipmentDetailModel({required this.id, @JsonKey(name: 'codigo_equipo') required this.codigoEquipo, required this.marca, required this.modelo, @JsonKey(name: 'anio_fabricacion') this.anioFabricacion, this.placa, this.estado, @JsonKey(name: 'tipo_proveedor') this.tipoProveedor, @JsonKey(name: 'medidor_uso') this.medidorUso, @JsonKey(name: 'proveedor_razon_social') this.proveedorRazonSocial, @JsonKey(name: 'tipo_equipo_nombre') this.tipoEquipoNombre, @JsonKey(name: 'categoria_prd') this.categoriaPrd, @JsonKey(name: 'fecha_venc_soat') this.fechaVencSoat, @JsonKey(name: 'fecha_venc_citv') this.fechaVencCitv, @JsonKey(name: 'fecha_venc_poliza') this.fechaVencPoliza}): super._();
   factory _EquipmentDetailModel.fromJson(Map<String, dynamic> json) => _$EquipmentDetailModelFromJson(json);
 
-@override final  String id;
-@override final  String codigo;
-@override final  String descripcion;
+@override final  int id;
+@override@JsonKey(name: 'codigo_equipo') final  String codigoEquipo;
 @override final  String marca;
 @override final  String modelo;
-@override final  int anio;
-@override final  String placa;
-@override final  ContractModel contrato;
- final  List<DocumentComplianceModel> _documentos;
-@override List<DocumentComplianceModel> get documentos {
-  if (_documentos is EqualUnmodifiableListView) return _documentos;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_documentos);
-}
-
+@override@JsonKey(name: 'anio_fabricacion') final  int? anioFabricacion;
+@override final  String? placa;
+@override final  String? estado;
+@override@JsonKey(name: 'tipo_proveedor') final  String? tipoProveedor;
+@override@JsonKey(name: 'medidor_uso') final  String? medidorUso;
+@override@JsonKey(name: 'proveedor_razon_social') final  String? proveedorRazonSocial;
+@override@JsonKey(name: 'tipo_equipo_nombre') final  String? tipoEquipoNombre;
+@override@JsonKey(name: 'categoria_prd') final  String? categoriaPrd;
+@override@JsonKey(name: 'fecha_venc_soat') final  String? fechaVencSoat;
+@override@JsonKey(name: 'fecha_venc_citv') final  String? fechaVencCitv;
+@override@JsonKey(name: 'fecha_venc_poliza') final  String? fechaVencPoliza;
 
 /// Create a copy of EquipmentDetailModel
 /// with the given fields replaced by the non-null parameter values.
@@ -258,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentDetailModel&&(identical(other.id, id) || other.id == id)&&(identical(other.codigo, codigo) || other.codigo == codigo)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion)&&(identical(other.marca, marca) || other.marca == marca)&&(identical(other.modelo, modelo) || other.modelo == modelo)&&(identical(other.anio, anio) || other.anio == anio)&&(identical(other.placa, placa) || other.placa == placa)&&(identical(other.contrato, contrato) || other.contrato == contrato)&&const DeepCollectionEquality().equals(other._documentos, _documentos));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EquipmentDetailModel&&(identical(other.id, id) || other.id == id)&&(identical(other.codigoEquipo, codigoEquipo) || other.codigoEquipo == codigoEquipo)&&(identical(other.marca, marca) || other.marca == marca)&&(identical(other.modelo, modelo) || other.modelo == modelo)&&(identical(other.anioFabricacion, anioFabricacion) || other.anioFabricacion == anioFabricacion)&&(identical(other.placa, placa) || other.placa == placa)&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.tipoProveedor, tipoProveedor) || other.tipoProveedor == tipoProveedor)&&(identical(other.medidorUso, medidorUso) || other.medidorUso == medidorUso)&&(identical(other.proveedorRazonSocial, proveedorRazonSocial) || other.proveedorRazonSocial == proveedorRazonSocial)&&(identical(other.tipoEquipoNombre, tipoEquipoNombre) || other.tipoEquipoNombre == tipoEquipoNombre)&&(identical(other.categoriaPrd, categoriaPrd) || other.categoriaPrd == categoriaPrd)&&(identical(other.fechaVencSoat, fechaVencSoat) || other.fechaVencSoat == fechaVencSoat)&&(identical(other.fechaVencCitv, fechaVencCitv) || other.fechaVencCitv == fechaVencCitv)&&(identical(other.fechaVencPoliza, fechaVencPoliza) || other.fechaVencPoliza == fechaVencPoliza));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,codigo,descripcion,marca,modelo,anio,placa,contrato,const DeepCollectionEquality().hash(_documentos));
+int get hashCode => Object.hash(runtimeType,id,codigoEquipo,marca,modelo,anioFabricacion,placa,estado,tipoProveedor,medidorUso,proveedorRazonSocial,tipoEquipoNombre,categoriaPrd,fechaVencSoat,fechaVencCitv,fechaVencPoliza);
 
 @override
 String toString() {
-  return 'EquipmentDetailModel(id: $id, codigo: $codigo, descripcion: $descripcion, marca: $marca, modelo: $modelo, anio: $anio, placa: $placa, contrato: $contrato, documentos: $documentos)';
+  return 'EquipmentDetailModel(id: $id, codigoEquipo: $codigoEquipo, marca: $marca, modelo: $modelo, anioFabricacion: $anioFabricacion, placa: $placa, estado: $estado, tipoProveedor: $tipoProveedor, medidorUso: $medidorUso, proveedorRazonSocial: $proveedorRazonSocial, tipoEquipoNombre: $tipoEquipoNombre, categoriaPrd: $categoriaPrd, fechaVencSoat: $fechaVencSoat, fechaVencCitv: $fechaVencCitv, fechaVencPoliza: $fechaVencPoliza)';
 }
 
 
@@ -278,11 +275,11 @@ abstract mixin class _$EquipmentDetailModelCopyWith<$Res> implements $EquipmentD
   factory _$EquipmentDetailModelCopyWith(_EquipmentDetailModel value, $Res Function(_EquipmentDetailModel) _then) = __$EquipmentDetailModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String codigo, String descripcion, String marca, String modelo, int anio, String placa, ContractModel contrato, List<DocumentComplianceModel> documentos
+ int id,@JsonKey(name: 'codigo_equipo') String codigoEquipo, String marca, String modelo,@JsonKey(name: 'anio_fabricacion') int? anioFabricacion, String? placa, String? estado,@JsonKey(name: 'tipo_proveedor') String? tipoProveedor,@JsonKey(name: 'medidor_uso') String? medidorUso,@JsonKey(name: 'proveedor_razon_social') String? proveedorRazonSocial,@JsonKey(name: 'tipo_equipo_nombre') String? tipoEquipoNombre,@JsonKey(name: 'categoria_prd') String? categoriaPrd,@JsonKey(name: 'fecha_venc_soat') String? fechaVencSoat,@JsonKey(name: 'fecha_venc_citv') String? fechaVencCitv,@JsonKey(name: 'fecha_venc_poliza') String? fechaVencPoliza
 });
 
 
-@override $ContractModelCopyWith<$Res> get contrato;
+
 
 }
 /// @nodoc
@@ -295,321 +292,40 @@ class __$EquipmentDetailModelCopyWithImpl<$Res>
 
 /// Create a copy of EquipmentDetailModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? codigo = null,Object? descripcion = null,Object? marca = null,Object? modelo = null,Object? anio = null,Object? placa = null,Object? contrato = null,Object? documentos = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? codigoEquipo = null,Object? marca = null,Object? modelo = null,Object? anioFabricacion = freezed,Object? placa = freezed,Object? estado = freezed,Object? tipoProveedor = freezed,Object? medidorUso = freezed,Object? proveedorRazonSocial = freezed,Object? tipoEquipoNombre = freezed,Object? categoriaPrd = freezed,Object? fechaVencSoat = freezed,Object? fechaVencCitv = freezed,Object? fechaVencPoliza = freezed,}) {
   return _then(_EquipmentDetailModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,codigo: null == codigo ? _self.codigo : codigo // ignore: cast_nullable_to_non_nullable
-as String,descripcion: null == descripcion ? _self.descripcion : descripcion // ignore: cast_nullable_to_non_nullable
+as int,codigoEquipo: null == codigoEquipo ? _self.codigoEquipo : codigoEquipo // ignore: cast_nullable_to_non_nullable
 as String,marca: null == marca ? _self.marca : marca // ignore: cast_nullable_to_non_nullable
 as String,modelo: null == modelo ? _self.modelo : modelo // ignore: cast_nullable_to_non_nullable
-as String,anio: null == anio ? _self.anio : anio // ignore: cast_nullable_to_non_nullable
-as int,placa: null == placa ? _self.placa : placa // ignore: cast_nullable_to_non_nullable
-as String,contrato: null == contrato ? _self.contrato : contrato // ignore: cast_nullable_to_non_nullable
-as ContractModel,documentos: null == documentos ? _self._documentos : documentos // ignore: cast_nullable_to_non_nullable
-as List<DocumentComplianceModel>,
-  ));
-}
-
-/// Create a copy of EquipmentDetailModel
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$ContractModelCopyWith<$Res> get contrato {
-  
-  return $ContractModelCopyWith<$Res>(_self.contrato, (value) {
-    return _then(_self.copyWith(contrato: value));
-  });
-}
-}
-
-
-/// @nodoc
-mixin _$ContractModel {
-
- String get estado;@JsonKey(name: 'tipo_tarifa') String get tipoTarifa;@JsonKey(name: 'anexo_a') List<String> get anexoA;
-/// Create a copy of ContractModel
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ContractModelCopyWith<ContractModel> get copyWith => _$ContractModelCopyWithImpl<ContractModel>(this as ContractModel, _$identity);
-
-  /// Serializes this ContractModel to a JSON map.
-  Map<String, dynamic> toJson();
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContractModel&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.tipoTarifa, tipoTarifa) || other.tipoTarifa == tipoTarifa)&&const DeepCollectionEquality().equals(other.anexoA, anexoA));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode => Object.hash(runtimeType,estado,tipoTarifa,const DeepCollectionEquality().hash(anexoA));
-
-@override
-String toString() {
-  return 'ContractModel(estado: $estado, tipoTarifa: $tipoTarifa, anexoA: $anexoA)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $ContractModelCopyWith<$Res>  {
-  factory $ContractModelCopyWith(ContractModel value, $Res Function(ContractModel) _then) = _$ContractModelCopyWithImpl;
-@useResult
-$Res call({
- String estado,@JsonKey(name: 'tipo_tarifa') String tipoTarifa,@JsonKey(name: 'anexo_a') List<String> anexoA
-});
-
-
-
-
-}
-/// @nodoc
-class _$ContractModelCopyWithImpl<$Res>
-    implements $ContractModelCopyWith<$Res> {
-  _$ContractModelCopyWithImpl(this._self, this._then);
-
-  final ContractModel _self;
-  final $Res Function(ContractModel) _then;
-
-/// Create a copy of ContractModel
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? estado = null,Object? tipoTarifa = null,Object? anexoA = null,}) {
-  return _then(_self.copyWith(
-estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
-as String,tipoTarifa: null == tipoTarifa ? _self.tipoTarifa : tipoTarifa // ignore: cast_nullable_to_non_nullable
-as String,anexoA: null == anexoA ? _self.anexoA : anexoA // ignore: cast_nullable_to_non_nullable
-as List<String>,
-  ));
-}
-
-}
-
-
-/// Adds pattern-matching-related methods to [ContractModel].
-extension ContractModelPatterns on ContractModel {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ContractModel value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _ContractModel() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ContractModel value)  $default,){
-final _that = this;
-switch (_that) {
-case _ContractModel():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ContractModel value)?  $default,){
-final _that = this;
-switch (_that) {
-case _ContractModel() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String estado, @JsonKey(name: 'tipo_tarifa')  String tipoTarifa, @JsonKey(name: 'anexo_a')  List<String> anexoA)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _ContractModel() when $default != null:
-return $default(_that.estado,_that.tipoTarifa,_that.anexoA);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String estado, @JsonKey(name: 'tipo_tarifa')  String tipoTarifa, @JsonKey(name: 'anexo_a')  List<String> anexoA)  $default,) {final _that = this;
-switch (_that) {
-case _ContractModel():
-return $default(_that.estado,_that.tipoTarifa,_that.anexoA);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String estado, @JsonKey(name: 'tipo_tarifa')  String tipoTarifa, @JsonKey(name: 'anexo_a')  List<String> anexoA)?  $default,) {final _that = this;
-switch (_that) {
-case _ContractModel() when $default != null:
-return $default(_that.estado,_that.tipoTarifa,_that.anexoA);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-@JsonSerializable()
-
-class _ContractModel implements ContractModel {
-  const _ContractModel({required this.estado, @JsonKey(name: 'tipo_tarifa') required this.tipoTarifa, @JsonKey(name: 'anexo_a') required final  List<String> anexoA}): _anexoA = anexoA;
-  factory _ContractModel.fromJson(Map<String, dynamic> json) => _$ContractModelFromJson(json);
-
-@override final  String estado;
-@override@JsonKey(name: 'tipo_tarifa') final  String tipoTarifa;
- final  List<String> _anexoA;
-@override@JsonKey(name: 'anexo_a') List<String> get anexoA {
-  if (_anexoA is EqualUnmodifiableListView) return _anexoA;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_anexoA);
-}
-
-
-/// Create a copy of ContractModel
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$ContractModelCopyWith<_ContractModel> get copyWith => __$ContractModelCopyWithImpl<_ContractModel>(this, _$identity);
-
-@override
-Map<String, dynamic> toJson() {
-  return _$ContractModelToJson(this, );
-}
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContractModel&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.tipoTarifa, tipoTarifa) || other.tipoTarifa == tipoTarifa)&&const DeepCollectionEquality().equals(other._anexoA, _anexoA));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode => Object.hash(runtimeType,estado,tipoTarifa,const DeepCollectionEquality().hash(_anexoA));
-
-@override
-String toString() {
-  return 'ContractModel(estado: $estado, tipoTarifa: $tipoTarifa, anexoA: $anexoA)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$ContractModelCopyWith<$Res> implements $ContractModelCopyWith<$Res> {
-  factory _$ContractModelCopyWith(_ContractModel value, $Res Function(_ContractModel) _then) = __$ContractModelCopyWithImpl;
-@override @useResult
-$Res call({
- String estado,@JsonKey(name: 'tipo_tarifa') String tipoTarifa,@JsonKey(name: 'anexo_a') List<String> anexoA
-});
-
-
-
-
-}
-/// @nodoc
-class __$ContractModelCopyWithImpl<$Res>
-    implements _$ContractModelCopyWith<$Res> {
-  __$ContractModelCopyWithImpl(this._self, this._then);
-
-  final _ContractModel _self;
-  final $Res Function(_ContractModel) _then;
-
-/// Create a copy of ContractModel
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? estado = null,Object? tipoTarifa = null,Object? anexoA = null,}) {
-  return _then(_ContractModel(
-estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
-as String,tipoTarifa: null == tipoTarifa ? _self.tipoTarifa : tipoTarifa // ignore: cast_nullable_to_non_nullable
-as String,anexoA: null == anexoA ? _self._anexoA : anexoA // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as String,anioFabricacion: freezed == anioFabricacion ? _self.anioFabricacion : anioFabricacion // ignore: cast_nullable_to_non_nullable
+as int?,placa: freezed == placa ? _self.placa : placa // ignore: cast_nullable_to_non_nullable
+as String?,estado: freezed == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
+as String?,tipoProveedor: freezed == tipoProveedor ? _self.tipoProveedor : tipoProveedor // ignore: cast_nullable_to_non_nullable
+as String?,medidorUso: freezed == medidorUso ? _self.medidorUso : medidorUso // ignore: cast_nullable_to_non_nullable
+as String?,proveedorRazonSocial: freezed == proveedorRazonSocial ? _self.proveedorRazonSocial : proveedorRazonSocial // ignore: cast_nullable_to_non_nullable
+as String?,tipoEquipoNombre: freezed == tipoEquipoNombre ? _self.tipoEquipoNombre : tipoEquipoNombre // ignore: cast_nullable_to_non_nullable
+as String?,categoriaPrd: freezed == categoriaPrd ? _self.categoriaPrd : categoriaPrd // ignore: cast_nullable_to_non_nullable
+as String?,fechaVencSoat: freezed == fechaVencSoat ? _self.fechaVencSoat : fechaVencSoat // ignore: cast_nullable_to_non_nullable
+as String?,fechaVencCitv: freezed == fechaVencCitv ? _self.fechaVencCitv : fechaVencCitv // ignore: cast_nullable_to_non_nullable
+as String?,fechaVencPoliza: freezed == fechaVencPoliza ? _self.fechaVencPoliza : fechaVencPoliza // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
 
 }
-
 
 /// @nodoc
 mixin _$DocumentComplianceModel {
 
- String get tipo;@JsonKey(name: 'fecha_vencimiento') DateTime get fechaVencimiento; String get estado;
+ String get tipo; String get fechaVencimiento; String get estado;
 /// Create a copy of DocumentComplianceModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $DocumentComplianceModelCopyWith<DocumentComplianceModel> get copyWith => _$DocumentComplianceModelCopyWithImpl<DocumentComplianceModel>(this as DocumentComplianceModel, _$identity);
 
-  /// Serializes this DocumentComplianceModel to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -617,7 +333,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is DocumentComplianceModel&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.fechaVencimiento, fechaVencimiento) || other.fechaVencimiento == fechaVencimiento)&&(identical(other.estado, estado) || other.estado == estado));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,tipo,fechaVencimiento,estado);
 
@@ -634,7 +350,7 @@ abstract mixin class $DocumentComplianceModelCopyWith<$Res>  {
   factory $DocumentComplianceModelCopyWith(DocumentComplianceModel value, $Res Function(DocumentComplianceModel) _then) = _$DocumentComplianceModelCopyWithImpl;
 @useResult
 $Res call({
- String tipo,@JsonKey(name: 'fecha_vencimiento') DateTime fechaVencimiento, String estado
+ String tipo, String fechaVencimiento, String estado
 });
 
 
@@ -655,7 +371,7 @@ class _$DocumentComplianceModelCopyWithImpl<$Res>
   return _then(_self.copyWith(
 tipo: null == tipo ? _self.tipo : tipo // ignore: cast_nullable_to_non_nullable
 as String,fechaVencimiento: null == fechaVencimiento ? _self.fechaVencimiento : fechaVencimiento // ignore: cast_nullable_to_non_nullable
-as DateTime,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
+as String,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -741,7 +457,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String tipo, @JsonKey(name: 'fecha_vencimiento')  DateTime fechaVencimiento,  String estado)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String tipo,  String fechaVencimiento,  String estado)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DocumentComplianceModel() when $default != null:
 return $default(_that.tipo,_that.fechaVencimiento,_that.estado);case _:
@@ -762,7 +478,7 @@ return $default(_that.tipo,_that.fechaVencimiento,_that.estado);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String tipo, @JsonKey(name: 'fecha_vencimiento')  DateTime fechaVencimiento,  String estado)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String tipo,  String fechaVencimiento,  String estado)  $default,) {final _that = this;
 switch (_that) {
 case _DocumentComplianceModel():
 return $default(_that.tipo,_that.fechaVencimiento,_that.estado);case _:
@@ -782,7 +498,7 @@ return $default(_that.tipo,_that.fechaVencimiento,_that.estado);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String tipo, @JsonKey(name: 'fecha_vencimiento')  DateTime fechaVencimiento,  String estado)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String tipo,  String fechaVencimiento,  String estado)?  $default,) {final _that = this;
 switch (_that) {
 case _DocumentComplianceModel() when $default != null:
 return $default(_that.tipo,_that.fechaVencimiento,_that.estado);case _:
@@ -794,14 +510,14 @@ return $default(_that.tipo,_that.fechaVencimiento,_that.estado);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _DocumentComplianceModel implements DocumentComplianceModel {
-  const _DocumentComplianceModel({required this.tipo, @JsonKey(name: 'fecha_vencimiento') required this.fechaVencimiento, required this.estado});
-  factory _DocumentComplianceModel.fromJson(Map<String, dynamic> json) => _$DocumentComplianceModelFromJson(json);
+  const _DocumentComplianceModel({required this.tipo, required this.fechaVencimiento, required this.estado});
+  
 
 @override final  String tipo;
-@override@JsonKey(name: 'fecha_vencimiento') final  DateTime fechaVencimiento;
+@override final  String fechaVencimiento;
 @override final  String estado;
 
 /// Create a copy of DocumentComplianceModel
@@ -810,17 +526,14 @@ class _DocumentComplianceModel implements DocumentComplianceModel {
 @pragma('vm:prefer-inline')
 _$DocumentComplianceModelCopyWith<_DocumentComplianceModel> get copyWith => __$DocumentComplianceModelCopyWithImpl<_DocumentComplianceModel>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$DocumentComplianceModelToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _DocumentComplianceModel&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.fechaVencimiento, fechaVencimiento) || other.fechaVencimiento == fechaVencimiento)&&(identical(other.estado, estado) || other.estado == estado));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,tipo,fechaVencimiento,estado);
 
@@ -837,7 +550,7 @@ abstract mixin class _$DocumentComplianceModelCopyWith<$Res> implements $Documen
   factory _$DocumentComplianceModelCopyWith(_DocumentComplianceModel value, $Res Function(_DocumentComplianceModel) _then) = __$DocumentComplianceModelCopyWithImpl;
 @override @useResult
 $Res call({
- String tipo,@JsonKey(name: 'fecha_vencimiento') DateTime fechaVencimiento, String estado
+ String tipo, String fechaVencimiento, String estado
 });
 
 
@@ -858,7 +571,7 @@ class __$DocumentComplianceModelCopyWithImpl<$Res>
   return _then(_DocumentComplianceModel(
 tipo: null == tipo ? _self.tipo : tipo // ignore: cast_nullable_to_non_nullable
 as String,fechaVencimiento: null == fechaVencimiento ? _self.fechaVencimiento : fechaVencimiento // ignore: cast_nullable_to_non_nullable
-as DateTime,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
+as String,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

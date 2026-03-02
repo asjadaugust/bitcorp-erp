@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
@@ -328,6 +329,7 @@ class _ActionButtonsBlockState extends ConsumerState<_ActionButtonsBlock> {
                   return;
                 }
                 Navigator.pop(context);
+                HapticFeedback.mediumImpact();
                 ref
                     .read(approvalActionProvider.notifier)
                     .rejectRequest(
@@ -348,6 +350,7 @@ class _ActionButtonsBlockState extends ConsumerState<_ActionButtonsBlock> {
   }
 
   void _approve() {
+    HapticFeedback.mediumImpact();
     ref
         .read(approvalActionProvider.notifier)
         .approveRequest(widget.request.id, null);

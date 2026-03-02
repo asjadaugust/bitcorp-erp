@@ -55,4 +55,4 @@ final class ValeCombustibleRepositoryProvider
 }
 
 String _$valeCombustibleRepositoryHash() =>
-    r'03e095154abefa9df5d83985cd0438b292306f7e';
+    r'0cdb10ddf7d6b98875c0dad53fca369571ae4add';

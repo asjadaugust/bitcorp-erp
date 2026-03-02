@@ -6,6 +6,11 @@ import 'package:mobile/features/approvals/domain/models/approval_request_model.d
 import 'package:mobile/features/approvals/presentation/providers/approvals_provider.dart';
 import 'package:mobile/features/notifications/presentation/widgets/notification_bell_button.dart';
 import 'package:mobile/core/widgets/global_search_delegate.dart';
+import 'package:mobile/core/network/dio_client.dart';
+import 'package:mobile/core/widgets/empty_state_widget.dart';
+import 'package:mobile/core/widgets/error_state_widget.dart';
+import 'package:mobile/core/widgets/shimmer_loading.dart';
+import 'package:mobile/core/widgets/status_badge.dart';
 
 class ApprovalsHubScreen extends ConsumerStatefulWidget {
   const ApprovalsHubScreen({super.key});
@@ -42,7 +47,7 @@ class _ApprovalsHubScreenState extends ConsumerState<ApprovalsHubScreen>
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              showSearch(context: context, delegate: GlobalSearchDelegate());
+              showSearch(context: context, delegate: GlobalSearchDelegate(ref.read(dioProvider)));
             },
           ),
           const NotificationBellButton(),
@@ -116,8 +121,10 @@ class _RecibidosList extends ConsumerWidget {
     return state.when(
       data: (items) {
         if (items.isEmpty) {
-          return const Center(
-            child: Text('No tienes aprobaciones pendientes.'),
+          return const EmptyStateWidget(
+            icon: Icons.check_circle_outline,
+            title: 'No tienes aprobaciones pendientes',
+            subtitle: 'Las solicitudes que recibas aparecerán aquí.',
           );
         }
         return RefreshIndicator(
@@ -132,8 +139,11 @@ class _RecibidosList extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text('Error: $e')),
+      loading: () => const ShimmerLoadingList(),
+      error: (e, st) => ErrorStateWidget(
+        message: 'Error al cargar aprobaciones',
+        onRetry: () => ref.read(recibidosListProvider.notifier).refresh(),
+      ),
     );
   }
 }
@@ -148,7 +158,11 @@ class _EnviadosList extends ConsumerWidget {
     return state.when(
       data: (items) {
         if (items.isEmpty) {
-          return const Center(child: Text('No has enviado solicitudes.'));
+          return const EmptyStateWidget(
+            icon: Icons.send_outlined,
+            title: 'No has enviado solicitudes',
+            subtitle: 'Las solicitudes que envíes aparecerán aquí.',
+          );
         }
         return RefreshIndicator(
           onRefresh: () async =>
@@ -162,8 +176,11 @@ class _EnviadosList extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text('Error: $e')),
+      loading: () => const ShimmerLoadingList(),
+      error: (e, st) => ErrorStateWidget(
+        message: 'Error al cargar solicitudes',
+        onRetry: () => ref.read(enviadosListProvider.notifier).refresh(),
+      ),
     );
   }
 }
@@ -173,30 +190,6 @@ class _ApprovalCard extends StatelessWidget {
   final bool isSentMode;
 
   const _ApprovalCard({required this.request, required this.isSentMode});
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'APPROVED':
-        return const Color(0xFF00C853); // semanticGreen
-      case 'REJECTED':
-        return AeroTheme.accent500;
-      case 'PENDING':
-      default:
-        return AeroTheme.semanticBlue500;
-    }
-  }
-
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'APPROVED':
-        return 'Aprobado';
-      case 'REJECTED':
-        return 'Rechazado';
-      case 'PENDING':
-      default:
-        return 'Pendiente';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,27 +213,7 @@ class _ApprovalCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(request.estado).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(AeroTheme.radiusSm),
-                      border: Border.all(
-                        color: _getStatusColor(request.estado),
-                      ),
-                    ),
-                    child: Text(
-                      _getStatusText(request.estado),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: _getStatusColor(request.estado),
-                      ),
-                    ),
-                  ),
+                  StatusBadge.fromStatus(request.estado),
                   Text(
                     '${request.fechaCreacion.day}/${request.fechaCreacion.month}/${request.fechaCreacion.year}',
                     style: const TextStyle(

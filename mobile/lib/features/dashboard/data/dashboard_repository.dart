@@ -31,36 +31,41 @@ class DashboardRepository {
   Future<DashboardSummaryModel> _fetchAndCache() async {
     try {
       final response = await _dio.get('/dashboard/operator/summary');
-      final summary = DashboardSummaryModel.fromJson(response.data);
+      // Unwrap the standard {success, data} envelope
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data'] as Map<String, dynamic>
+          : response.data as Map<String, dynamic>;
+      final summary = DashboardSummaryModel.fromJson(data);
 
       // Save for offline access
       await _localSource.cacheSummary(summary);
 
       return summary;
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.unknown) {
-        // App is likely offline or server unreachable. Load from cache.
-        final cached = await _localSource.getCachedSummary();
-        if (cached != null) return cached;
-      }
-
-      // If we don't have cache, throw the error
-      debugPrint('Failed to load dashboard: \${e.message}');
-
-      // For Demo/Dev purposes to proceed UI without API server
-      // Return a mocked dummy set if the API fails just for visual checks
+      // In debug mode: always fall back to a mock so UI is testable
+      // even when the backend endpoint doesn't exist yet.
       if (kDebugMode) {
+        debugPrint(
+          'Dashboard API unavailable (${e.response?.statusCode ?? e.type}), using mock data.',
+        );
         final mock = const DashboardSummaryModel(
           equipmentCode: 'EXC-001',
           equipmentDescription: 'Excavadora Caterpillar 336D2L',
+          equipmentId: '1',
           dailyReportStatus: 'Not Submitted',
           pendingChecklistCount: 1,
           pendingApprovalCount: 2,
         );
         await _localSource.cacheSummary(mock);
         return mock;
+      }
+
+      // In production: try cache, then fail with the original error.
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.unknown) {
+        final cached = await _localSource.getCachedSummary();
+        if (cached != null) return cached;
       }
       rethrow;
     }

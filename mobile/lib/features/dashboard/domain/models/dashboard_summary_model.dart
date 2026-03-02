@@ -1,6 +1,7 @@
 class DashboardSummaryModel {
   final String equipmentCode;
   final String equipmentDescription;
+  final String? equipmentId;
   final String dailyReportStatus;
   final int pendingChecklistCount;
   final int pendingApprovalCount;
@@ -8,6 +9,7 @@ class DashboardSummaryModel {
   const DashboardSummaryModel({
     required this.equipmentCode,
     required this.equipmentDescription,
+    this.equipmentId,
     required this.dailyReportStatus,
     required this.pendingChecklistCount,
     required this.pendingApprovalCount,
@@ -18,6 +20,7 @@ class DashboardSummaryModel {
       equipmentCode: json['equipmentCode'] as String? ?? 'N/A',
       equipmentDescription:
           json['equipmentDescription'] as String? ?? 'Sin asignar',
+      equipmentId: json['equipmentId'] as String?,
       dailyReportStatus:
           json['dailyReportStatus'] as String? ?? 'Not Submitted',
       pendingChecklistCount: json['pendingChecklistCount'] as int? ?? 0,
@@ -29,6 +32,7 @@ class DashboardSummaryModel {
     return {
       'equipmentCode': equipmentCode,
       'equipmentDescription': equipmentDescription,
+      'equipmentId': equipmentId,
       'dailyReportStatus': dailyReportStatus,
       'pendingChecklistCount': pendingChecklistCount,
       'pendingApprovalCount': pendingApprovalCount,

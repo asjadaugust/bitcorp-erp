@@ -55,4 +55,4 @@ final class ApprovalsRepositoryProvider
 }
 
 String _$approvalsRepositoryHash() =>
-    r'a97b8657035466604b907887ffa3964d9f742b0d';
+    r'9112f4807acddf8255e2743a1b8123a2c2648f7f';

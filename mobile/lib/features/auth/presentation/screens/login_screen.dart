@@ -12,21 +12,21 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   Future<void> _submitLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
       await ref
           .read(authProvider.notifier)
-          .login(_emailController.text, _passwordController.text);
+          .login(_usernameController.text, _passwordController.text);
       // The GoRouter redirect will handle navigation on success.
     }
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -95,23 +95,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     const Text(
-                      'Correo Electrónico',
+                      'Usuario',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
+                      controller: _usernameController,
+                      keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
-                        hintText: 'ejemplo@bitcorp.com',
+                        hintText: 'ej. admin, operador1',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Requerido';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Correo inválido';
                         }
                         return null;
                       },

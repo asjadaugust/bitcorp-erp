@@ -55,4 +55,4 @@ final class ValorizationsRepositoryProvider
 }
 
 String _$valorizationsRepositoryHash() =>
-    r'797687ed5f84307b85bd77c7ec8422856c817d12';
+    r'2e7e64abe893c056f12b149d60800ddb3203e934';

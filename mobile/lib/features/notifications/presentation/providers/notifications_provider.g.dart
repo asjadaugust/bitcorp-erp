@@ -33,7 +33,7 @@ final class NotificationsProvider
   Notifications create() => Notifications();
 }
 
-String _$notificationsHash() => r'd434e5ae67207f6aabba59ead63f29b71ef9659d';
+String _$notificationsHash() => r'b9fa33b34f172797490c9eaddb6f989c4e07337f';
 
 abstract class _$Notifications extends $AsyncNotifier<List<NotificationModel>> {
   FutureOr<List<NotificationModel>> build();
@@ -65,8 +65,8 @@ abstract class _$Notifications extends $AsyncNotifier<List<NotificationModel>> {
 final unreadNotificationsCountProvider = UnreadNotificationsCountProvider._();
 
 final class UnreadNotificationsCountProvider
-    extends $FunctionalProvider<int, int, int>
-    with $Provider<int> {
+    extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
+    with $FutureModifier<int>, $FutureProvider<int> {
   UnreadNotificationsCountProvider._()
     : super(
         from: null,
@@ -83,22 +83,14 @@ final class UnreadNotificationsCountProvider
 
   @$internal
   @override
-  $ProviderElement<int> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $FutureProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
-  int create(Ref ref) {
+  FutureOr<int> create(Ref ref) {
     return unreadNotificationsCount(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
   }
 }
 
 String _$unreadNotificationsCountHash() =>
-    r'0c371eafd91970b261dfd3cf96a73dd7911614cc';
+    r'3bd92d359579b93264ca5e52a97eb2fe61a09d55';

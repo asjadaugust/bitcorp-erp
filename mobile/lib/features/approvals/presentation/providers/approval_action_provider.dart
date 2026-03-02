@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:mobile/features/approvals/data/repositories/approvals_repository.dart';
 import 'package:mobile/features/approvals/presentation/providers/approvals_provider.dart';
 
 part 'approval_action_provider.g.dart';
@@ -8,22 +9,16 @@ class ApprovalAction extends _$ApprovalAction {
   @override
   FutureOr<void> build() {}
 
-  Future<void> approveRequest(String id, String? comment) async {
+  Future<void> approveRequest(int id, String? comment) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await Future.delayed(
-        const Duration(milliseconds: 1000),
-      ); // Simulate API call network delay
-
-      // We would normally fire an API call here.
-      // E.g. await ref.read(approvalsRepositoryProvider).approve(id, comment);
-
-      // After success, refresh list
+      final repo = ref.read(approvalsRepositoryProvider);
+      await repo.approveRequest(id, comment: comment);
       ref.invalidate(recibidosListProvider);
     });
   }
 
-  Future<void> rejectRequest(String id, String comment) async {
+  Future<void> rejectRequest(int id, String comment) async {
     if (comment.trim().isEmpty) {
       throw Exception(
         'El comentario es obligatorio para rechazar una solicitud.',
@@ -31,13 +26,8 @@ class ApprovalAction extends _$ApprovalAction {
     }
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await Future.delayed(
-        const Duration(milliseconds: 1000),
-      ); // Simulate API call
-
-      // API call logic...
-
-      // Refresh list
+      final repo = ref.read(approvalsRepositoryProvider);
+      await repo.rejectRequest(id, comment: comment);
       ref.invalidate(recibidosListProvider);
     });
   }

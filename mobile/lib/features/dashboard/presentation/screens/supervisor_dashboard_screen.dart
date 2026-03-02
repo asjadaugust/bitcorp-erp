@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/core/widgets/global_search_delegate.dart';
+import 'package:mobile/core/network/dio_client.dart';
 import 'package:mobile/features/dashboard/domain/models/supervisor_dashboard_model.dart';
 import 'package:mobile/features/dashboard/presentation/providers/supervisor_dashboard_provider.dart';
 
@@ -24,7 +25,7 @@ class SupervisorDashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              showSearch(context: context, delegate: GlobalSearchDelegate());
+              showSearch(context: context, delegate: GlobalSearchDelegate(ref.read(dioProvider)));
             },
           ),
         ],
@@ -48,7 +49,7 @@ class SupervisorDashboardScreen extends ConsumerWidget {
             error: (e, st) => Container(
               padding: const EdgeInsets.all(24),
               child: Text(
-                'Error: \$e',
+                'Error: $e',
                 style: const TextStyle(color: AeroTheme.accent500),
               ),
             ),
@@ -254,7 +255,7 @@ class _ObservationCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '¿Marcar la observación de \${observation.equipoCodigo} como resuelta?',
+                '¿Marcar la observación de ${observation.equipoCodigo} como resuelta?',
               ),
               const SizedBox(height: 16),
               TextField(

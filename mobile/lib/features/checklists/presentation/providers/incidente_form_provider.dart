@@ -136,7 +136,7 @@ class IncidenteForm extends _$IncidenteForm {
     } catch (e) {
       state = state.copyWith(
         isSubmitting: false,
-        errorText: 'Error al guardar el reporte: \$e',
+        errorText: 'Error al guardar el reporte: $e',
       );
       return false;
     }

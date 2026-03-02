@@ -199,7 +199,7 @@ class ChecklistForm extends _$ChecklistForm {
     } catch (e) {
       state = state.copyWith(
         isSubmitting: false,
-        errorText: 'Error al guardar el checklist: \$e',
+        errorText: 'Error al guardar el checklist: $e',
       );
       return false;
     }

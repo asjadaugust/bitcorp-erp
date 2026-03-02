@@ -4,6 +4,11 @@ import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/features/valorizations/domain/models/valorization_model.dart';
 import 'package:mobile/features/valorizations/presentation/providers/valorizations_provider.dart';
 import 'package:mobile/core/widgets/global_search_delegate.dart';
+import 'package:mobile/core/network/dio_client.dart';
+import 'package:mobile/features/notifications/presentation/widgets/notification_bell_button.dart';
+import 'package:mobile/core/widgets/empty_state_widget.dart';
+import 'package:mobile/core/widgets/error_state_widget.dart';
+import 'package:mobile/core/widgets/shimmer_loading.dart';
 
 class ValorizationsListScreen extends ConsumerWidget {
   const ValorizationsListScreen({super.key});
@@ -23,9 +28,11 @@ class ValorizationsListScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              showSearch(context: context, delegate: GlobalSearchDelegate());
+              showSearch(context: context, delegate: GlobalSearchDelegate(ref.read(dioProvider)));
             },
           ),
+          const NotificationBellButton(),
+          const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(
@@ -35,7 +42,11 @@ class ValorizationsListScreen extends ConsumerWidget {
         child: state.when(
           data: (list) {
             if (list.isEmpty) {
-              return _buildEmptyState(context);
+              return const EmptyStateWidget(
+                icon: Icons.request_quote_outlined,
+                title: 'No hay valorizaciones',
+                subtitle: 'Aún no hay registros de pago para este proyecto.',
+              );
             }
             return ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -48,59 +59,16 @@ class ValorizationsListScreen extends ConsumerWidget {
               },
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, st) => _buildErrorState(context, e.toString()),
+          loading: () => const ShimmerLoadingList(),
+          error: (e, st) => ErrorStateWidget(
+            message: 'Error al cargar valorizaciones',
+            onRetry: () => ref.read(valorizationsProvider.notifier).refresh(),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.request_quote_outlined,
-              size: 64,
-              color: AeroTheme.grey500,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No hay valorizaciones',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AeroTheme.primary900,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Aún no hay registros de pago para este proyecto.',
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AeroTheme.grey700),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 64, color: AeroTheme.accent500),
-          const SizedBox(height: AeroTheme.spacing16),
-          Text(message, style: const TextStyle(color: AeroTheme.accent500)),
-        ],
-      ),
-    );
-  }
 }
 
 class _ValorizationCard extends StatefulWidget {
@@ -118,7 +86,7 @@ class _ValorizationCardState extends State<_ValorizationCard> {
     final v = widget.valorization;
 
     // Formatting helper
-    String formatCurrency(double val) => 'S/ \${val.toStringAsFixed(2)}';
+    String formatCurrency(double val) => 'S/ ${val.toStringAsFixed(2)}';
 
     return Container(
       decoration: BoxDecoration(
@@ -155,7 +123,7 @@ class _ValorizationCardState extends State<_ValorizationCard> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      formatCurrency(v.montoNeto),
+                      formatCurrency(v.totalConIgv),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
@@ -173,8 +141,8 @@ class _ValorizationCardState extends State<_ValorizationCard> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: v.estado == 'PAGADO'
-                      ? const Color(0xFF00C853).withOpacity(0.1)
-                      : Colors.orange.shade700.withOpacity(0.1),
+                      ? const Color(0xFF00C853).withValues(alpha: 0.1)
+                      : Colors.orange.shade700.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AeroTheme.radiusSm),
                   border: Border.all(
                     color: v.estado == 'PAGADO'
@@ -200,38 +168,15 @@ class _ValorizationCardState extends State<_ValorizationCard> {
                 padding: const EdgeInsets.all(AeroTheme.spacing16),
                 child: Column(
                   children: [
-                    _buildLineItem('Monto Bruto', v.montoBruto, true),
+                    _buildLineItem('Total Valorizado', v.totalValorizado, true),
+                    if (v.igvMonto != null) ...[
+                      const SizedBox(height: AeroTheme.spacing8),
+                      _buildLineItem('IGV', v.igvMonto!, false),
+                    ],
                     const SizedBox(height: AeroTheme.spacing8),
                     const Divider(color: AeroTheme.grey300),
                     const SizedBox(height: AeroTheme.spacing8),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Deducciones',
-                        style: TextStyle(
-                          color: AeroTheme.grey500,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AeroTheme.spacing8),
-                    ...v.deducciones.entries
-                        .map(
-                          (e) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4.0),
-                            child: _buildLineItem(
-                              e.key.toUpperCase(),
-                              e.value,
-                              false,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    const SizedBox(height: AeroTheme.spacing8),
-                    const Divider(color: AeroTheme.grey300),
-                    const SizedBox(height: AeroTheme.spacing8),
-                    _buildLineItem('MONTO TOTAL NETA', v.montoNeto, true),
+                    _buildLineItem('TOTAL CON IGV', v.totalConIgv, true),
                   ],
                 ),
               ),
@@ -256,8 +201,8 @@ class _ValorizationCardState extends State<_ValorizationCard> {
         ),
         Text(
           isTotal
-              ? 'S/ \${amount.toStringAsFixed(2)}'
-              : '- S/ \${amount.toStringAsFixed(2)}',
+              ? 'S/ ${amount.toStringAsFixed(2)}'
+              : '- S/ ${amount.toStringAsFixed(2)}',
           style: TextStyle(
             color: isTotal && amount >= 0
                 ? AeroTheme.primary900

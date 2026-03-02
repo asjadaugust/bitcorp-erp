@@ -10,7 +10,8 @@ class NotificationBellButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unreadCount = ref.watch(unreadNotificationsCountProvider);
+    final unreadCountAsync = ref.watch(unreadNotificationsCountProvider);
+    final unreadCount = unreadCountAsync.value ?? 0;
 
     return badges.Badge(
       position: badges.BadgePosition.topEnd(top: 8, end: 8),

@@ -72,6 +72,40 @@ class ChecklistLocalSource {
     return ChecklistModel.fromMap(maps.first, items: items);
   }
 
+  Future<List<ChecklistModel>> getPendingSync() async {
+    final db = await _localDatabase.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'checklists',
+      where: 'estado_sincronizacion = ?',
+      whereArgs: ['PENDING_SYNC'],
+      orderBy: 'fecha DESC',
+    );
+
+    List<ChecklistModel> checklists = [];
+    for (final map in maps) {
+      final itemsMap = await db.query(
+        'checklist_items',
+        where: 'id_checklist = ?',
+        whereArgs: [map['id']],
+      );
+      final items =
+          itemsMap.map((e) => ChecklistItemModel.fromMap(e)).toList();
+      checklists.add(ChecklistModel.fromMap(map, items: items));
+    }
+    return checklists;
+  }
+
+  Future<void> updateSyncStatus(
+      String id, String estadoSincronizacion) async {
+    final db = await _localDatabase.database;
+    await db.update(
+      'checklists',
+      {'estado_sincronizacion': estadoSincronizacion},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<void> saveIncidente(IncidenteModel incidente) async {
     final db = await _localDatabase.database;
     await db.insert(

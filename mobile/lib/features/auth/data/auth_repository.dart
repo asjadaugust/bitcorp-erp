@@ -17,16 +17,21 @@ class AuthRepository {
     try {
       final response = await _dio.post('/auth/login', data: request.toJson());
 
-      final String token = response.data['access_token'];
+      // Backend wraps all responses in {success: true, data: {...}}
+      final responseData = response.data['data'] as Map<String, dynamic>;
+      final String token = responseData['access_token'];
       await _storageService.saveToken(token);
       return token;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        throw Exception('Credenciales inválidas');
+        // Parse the error envelope: {success: false, error: {message: ...}}
+        final errMsg =
+            e.response?.data?['error']?['message'] ?? 'Credenciales inválidas';
+        throw Exception(errMsg);
       }
       throw Exception('Error de conexión o servidor');
     } catch (e) {
-      throw Exception('Ocurrió un error inesperado');
+      rethrow;
     }
   }
 

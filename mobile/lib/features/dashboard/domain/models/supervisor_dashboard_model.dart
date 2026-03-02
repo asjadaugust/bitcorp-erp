@@ -4,7 +4,7 @@ part 'supervisor_dashboard_model.freezed.dart';
 part 'supervisor_dashboard_model.g.dart';
 
 @freezed
-class ObservationModel with _$ObservationModel {
+abstract class ObservationModel with _$ObservationModel {
   const factory ObservationModel({
     required String id,
     required String fecha,
@@ -20,7 +20,7 @@ class ObservationModel with _$ObservationModel {
 }
 
 @freezed
-class SupervisorDashboardModel with _$SupervisorDashboardModel {
+abstract class SupervisorDashboardModel with _$SupervisorDashboardModel {
   const factory SupervisorDashboardModel({
     required int totalEquipos,
     required int inspeccionadosPeriodo,

@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'vale_form_state.freezed.dart';
 
 @freezed
-class ValeFormState with _$ValeFormState {
+abstract class ValeFormState with _$ValeFormState {
   const factory ValeFormState({
     @Default('') String numeroVale,
     @Default('Diesel') String tipoCombustible, // Diesel, Gasolina

@@ -27,9 +27,9 @@ class ValeCombustibleLocalSource {
         vale.tipoCombustible,
         vale.cantidadGalones,
         vale.precioUnitario,
-        vale.idEquipo,
+        vale.equipoId,
         vale.fotoPath,
-        vale.notas,
+        vale.observaciones,
         vale.estado,
         vale.syncStatus,
       ],
@@ -56,7 +56,7 @@ class ValeCombustibleLocalSource {
     final List<Map<String, dynamic>> maps = await db.query(
       'combustibles',
       where: 'id_equipo = ? AND estado = ?',
-      whereArgs: [idEquipo, 'NO_VINCULADO'],
+      whereArgs: [idEquipo, 'PENDIENTE'],
       orderBy: 'fecha DESC',
     );
     return maps.map((map) {
@@ -70,6 +70,16 @@ class ValeCombustibleLocalSource {
     await db.update(
       'combustibles',
       {'estado': estado},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> updateSyncStatus(String id, String syncStatus) async {
+    final db = await _localDatabase.database;
+    await db.update(
+      'combustibles',
+      {'sync_status': syncStatus},
       where: 'id = ?',
       whereArgs: [id],
     );

@@ -40,18 +40,6 @@ class EquipmentDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AeroTheme.spacing8),
                   _DocumentComplianceSection(documents: equipment.documentos),
-                  const SizedBox(height: AeroTheme.spacing24),
-                  const Text(
-                    'Detalles del Contrato',
-                    style: TextStyle(
-                      fontFamily: AeroTheme.headingFont,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AeroTheme.primary900,
-                    ),
-                  ),
-                  const SizedBox(height: AeroTheme.spacing8),
-                  _ContractDetailsSection(contract: equipment.contrato),
                 ],
               ),
             ),
@@ -101,7 +89,7 @@ class _SpecsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      equipment.codigo,
+                      equipment.codigoEquipo,
                       style: const TextStyle(
                         fontFamily: AeroTheme.headingFont,
                         fontSize: 24,
@@ -128,10 +116,19 @@ class _SpecsCard extends StatelessWidget {
           const SizedBox(height: AeroTheme.spacing16),
           _buildSpecRow(
             'Año',
-            equipment.anio.toString(),
+            (equipment.anioFabricacion ?? 0).toString(),
             'Placa',
-            equipment.placa,
+            equipment.placa ?? '-',
           ),
+          if (equipment.tipoEquipoNombre != null) ...[
+            const SizedBox(height: AeroTheme.spacing16),
+            _buildSpecRow(
+              'Tipo',
+              equipment.tipoEquipoNombre!,
+              'Estado',
+              equipment.estado ?? '-',
+            ),
+          ],
         ],
       ),
     );
@@ -208,22 +205,17 @@ class _DocumentComplianceSection extends StatelessWidget {
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final doc = documents[index];
-          // Determine badge based on exactly 30 days or state
           Color badgeColor;
           String badgeText;
           IconData icon;
 
-          final daysUntil = doc.fechaVencimiento
-              .difference(DateTime.now())
-              .inDays;
-
-          if (doc.estado == 'EXPIRED' || daysUntil < 0) {
+          if (doc.estado == 'EXPIRED') {
             badgeColor = AeroTheme.accent500;
             badgeText = 'Vencido';
             icon = Icons.cancel;
-          } else if (doc.estado == 'WARNING' || daysUntil <= 30) {
+          } else if (doc.estado == 'WARNING') {
             badgeColor = Colors.orange.shade700;
-            badgeText = 'A expirar ($daysUntil d)';
+            badgeText = 'Por vencer';
             icon = Icons.warning;
           } else {
             badgeColor = const Color(0xFF00C853);
@@ -237,9 +229,7 @@ class _DocumentComplianceSection extends StatelessWidget {
               doc.tipo,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
-              'Vence: ${doc.fechaVencimiento.day}/${doc.fechaVencimiento.month}/${doc.fechaVencimiento.year}',
-            ),
+            subtitle: Text('Vence: ${doc.fechaVencimiento}'),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -265,87 +255,6 @@ class _DocumentComplianceSection extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _ContractDetailsSection extends StatelessWidget {
-  final ContractModel contract;
-
-  const _ContractDetailsSection({required this.contract});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
-        border: Border.all(color: AeroTheme.grey300),
-      ),
-      padding: const EdgeInsets.all(AeroTheme.spacing24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Estado del Contrato',
-                    style: TextStyle(color: AeroTheme.grey500, fontSize: 12),
-                  ),
-                  Text(
-                    contract.estado,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: contract.estado == 'ACTIVO'
-                          ? const Color(0xFF00C853)
-                          : AeroTheme.grey700,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    'Tipo de Tarifa',
-                    style: TextStyle(color: AeroTheme.grey500, fontSize: 12),
-                  ),
-                  Text(
-                    contract.tipoTarifa.replaceAll('_', ' '),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AeroTheme.primary900,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: AeroTheme.spacing24),
-          const Divider(),
-          const SizedBox(height: AeroTheme.spacing16),
-          const Text(
-            'Inclusiones (Anexo A)',
-            style: TextStyle(color: AeroTheme.grey500, fontSize: 12),
-          ),
-          const SizedBox(height: AeroTheme.spacing8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: contract.anexoA.map((item) {
-              return Chip(
-                label: Text(item, style: const TextStyle(fontSize: 12)),
-                backgroundColor: AeroTheme.primary100,
-                side: const BorderSide(color: AeroTheme.primary500),
-              );
-            }).toList(),
-          ),
-        ],
       ),
     );
   }

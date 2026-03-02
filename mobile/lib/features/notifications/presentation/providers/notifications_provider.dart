@@ -1,3 +1,4 @@
+import 'package:mobile/features/notifications/data/repositories/notifications_repository.dart';
 import 'package:mobile/features/notifications/domain/models/notification_model.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -7,45 +8,33 @@ part 'notifications_provider.g.dart';
 class Notifications extends _$Notifications {
   @override
   Future<List<NotificationModel>> build() async {
-    // Return mock unread notifications
-    return [
-      NotificationModel(
-        id: 'notif-1',
-        title: 'Aprobación requerida',
-        message:
-            'Tienes una nueva solicitud de Juan Perez para Aprobar Salida Temprano.',
-        isRead: false,
-        createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
-      ),
-      NotificationModel(
-        id: 'notif-2',
-        title: 'Vale Rechazado',
-        message: 'El vale de combustible VC-1002 fue rechazado.',
-        isRead: false,
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-    ];
+    final repo = ref.watch(notificationsRepositoryProvider);
+    return repo.getNotifications(unreadOnly: true);
   }
 
-  Future<void> markAsRead(String id) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final currentList = await build(); // re-fetch simulating db look
-      return currentList.map((e) {
-        if (e.id == id) {
-          return e.copyWith(isRead: true);
-        }
-        return e;
-      }).toList();
-    });
+  Future<void> markAsRead(int id) async {
+    final repo = ref.read(notificationsRepositoryProvider);
+    await repo.markAsRead(id);
+    // Refresh the list after marking as read
+    ref.invalidateSelf();
+    // Also refresh the unread count
+    ref.invalidate(unreadNotificationsCountProvider);
+  }
+
+  Future<void> markAllAsRead() async {
+    final repo = ref.read(notificationsRepositoryProvider);
+    await repo.markAllAsRead();
+    ref.invalidateSelf();
+    ref.invalidate(unreadNotificationsCountProvider);
+  }
+
+  Future<void> refresh() async {
+    ref.invalidateSelf();
   }
 }
 
 @riverpod
-int unreadNotificationsCount(Ref ref) {
-  final list = ref.watch(notificationsProvider);
-  return list.maybeWhen(
-    data: (notes) => notes.where((n) => !n.isRead).length,
-    orElse: () => 0,
-  );
+Future<int> unreadNotificationsCount(Ref ref) async {
+  final repo = ref.watch(notificationsRepositoryProvider);
+  return repo.getUnreadCount();
 }

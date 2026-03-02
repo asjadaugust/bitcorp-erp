@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import 'package:mobile/core/utils/image_compressor.dart';
 
 import '../../../../core/theme/aero_theme.dart';
+import '../../../../core/widgets/discard_changes_dialog.dart';
 import '../providers/incidente_form_provider.dart';
 
 class IncidenteFormScreen extends ConsumerStatefulWidget {
@@ -26,7 +27,16 @@ class _IncidenteFormScreenState extends ConsumerState<IncidenteFormScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(incidenteFormProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldDiscard = await showDiscardChangesDialog(context);
+        if (shouldDiscard && context.mounted) {
+          context.pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: AeroTheme.primary100,
       appBar: AppBar(
         title: const Text(
@@ -69,7 +79,7 @@ class _IncidenteFormScreenState extends ConsumerState<IncidenteFormScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildGeneralInfo(IncidenteFormState state) {
@@ -208,7 +218,7 @@ class _IncidenteFormScreenState extends ConsumerState<IncidenteFormScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Máximo 5 fotos (\${state.rutasFotos.length}/5)',
+            'Máximo 5 fotos (${state.rutasFotos.length}/5)',
             style: const TextStyle(color: AeroTheme.grey700),
           ),
           const SizedBox(height: 16),
@@ -291,7 +301,7 @@ class _IncidenteFormScreenState extends ConsumerState<IncidenteFormScreen> {
       if (compressedFile == null) return;
 
       final appDir = await getApplicationDocumentsDirectory();
-      final fileName = '\${const Uuid().v4()}.jpg';
+      final fileName = '${const Uuid().v4()}.jpg';
       final savedImage = await compressedFile.copy(
         path.join(appDir.path, fileName),
       );

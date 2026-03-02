@@ -54,10 +54,10 @@ class ValeForm extends _$ValeForm {
         tipoCombustible: state.tipoCombustible,
         cantidadGalones: cantidad,
         precioUnitario: precio,
-        idEquipo: state.idEquipo,
+        equipoId: state.idEquipo,
         fotoPath: state.fotoPath,
-        notas: state.notas.isEmpty ? null : state.notas,
-        estado: 'NO_VINCULADO',
+        observaciones: state.notas.isEmpty ? null : state.notas,
+        estado: 'PENDIENTE',
         syncStatus: 'PENDING_SYNC',
       );
 
@@ -71,7 +71,7 @@ class ValeForm extends _$ValeForm {
     } catch (e) {
       state = state.copyWith(
         isSubmitting: false,
-        error: 'Error al guardar el vale: \${e.toString()}',
+        error: 'Error al guardar el vale: ${e.toString()}',
       );
       return false;
     }

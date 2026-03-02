@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,6 +16,7 @@ import '../../domain/models/report_event_model.dart';
 import '../../domain/models/report_photo_model.dart';
 import '../../../vouchers/data/repositories/vale_combustible_repository.dart';
 import '../../../vouchers/domain/models/vale_combustible_model.dart';
+import '../../../equipment/data/repositories/equipment_repository.dart';
 
 class DailyReportFormScreen extends ConsumerStatefulWidget {
   const DailyReportFormScreen({super.key});
@@ -160,6 +162,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                 await ref.read(dailyReportFormProvider.notifier).saveReport();
 
                 if (context.mounted) {
+                  HapticFeedback.mediumImpact();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Reporte guardado como borrador local.'),
@@ -502,12 +505,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
   }
 
   Widget _buildGeneralDetailsCard(DailyReportModel draft) {
-    // Dummy equipment list
-    final equipmentOptions = [
-      'EXC-001 (Excavadora 320)',
-      'VOL-002 (Volquete Volvo)',
-      'MOT-003 (Motoniveladora)',
-    ];
+    final equipmentAsync = ref.watch(availableEquipmentProvider);
 
     return Card(
       elevation: 2,
@@ -546,24 +544,51 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
               ),
             ),
             const SizedBox(height: AeroTheme.spacing24),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Equipo Seleccionado',
+            equipmentAsync.when(
+              data: (equipment) => DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Equipo Seleccionado',
+                ),
+                items: equipment.map((e) {
+                  return DropdownMenuItem(
+                    value: e.code,
+                    child: Text(e.displayLabel),
+                  );
+                }).toList(),
+                value: draft.equipmentId.isNotEmpty &&
+                        equipment.any((e) => e.code == draft.equipmentId)
+                    ? draft.equipmentId
+                    : null,
+                onChanged: (val) {
+                  if (val != null) {
+                    ref
+                        .read(dailyReportFormProvider.notifier)
+                        .updateEquipment(val);
+                  }
+                },
+                validator: (v) => v == null ? 'Seleccione un equipo' : null,
               ),
-              items: equipmentOptions.map((e) {
-                return DropdownMenuItem(value: e.split(' ')[0], child: Text(e));
-              }).toList(),
-              initialValue: draft.equipmentId.isNotEmpty
-                  ? draft.equipmentId
-                  : null,
-              onChanged: (val) {
-                if (val != null) {
-                  ref
-                      .read(dailyReportFormProvider.notifier)
-                      .updateEquipment(val);
-                }
-              },
-              validator: (v) => v == null ? 'Seleccione un equipo' : null,
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+              error: (_, __) => Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AeroTheme.accent500.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AeroTheme.radiusSm),
+                ),
+                child: const Text(
+                  'Error al cargar equipos. Verifique su conexión.',
+                  style: TextStyle(color: AeroTheme.accent500),
+                ),
+              ),
             ),
             const SizedBox(height: AeroTheme.spacing24),
             if (draft.equipmentId.isNotEmpty)

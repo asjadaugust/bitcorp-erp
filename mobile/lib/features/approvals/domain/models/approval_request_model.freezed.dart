@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ApprovalRequestModel {
 
- String get id; String get tipo; String get titulo; String get descripcion; Map<String, dynamic> get solicitante;@JsonKey(name: 'fecha_creacion') DateTime get fechaCreacion; String get estado; List<String> get adjuntos;@JsonKey(name: 'linea_tiempo') List<ApprovalTimelineNode> get lineaTiempo;
+ int get id;@JsonKey(name: 'module_name') String? get moduleName;@JsonKey(name: 'entity_id') int? get entityId; String get titulo; String get descripcion; String get estado;@JsonKey(name: 'paso_actual') int? get pasoActual;@JsonKey(name: 'fecha_creacion') DateTime get fechaCreacion;@JsonKey(name: 'usuario_solicitante_id') int? get usuarioSolicitanteId;// UI-facing fields (populated from detail endpoint or local mock)
+ Map<String, dynamic> get solicitante; List<String> get adjuntos;@JsonKey(name: 'linea_tiempo') List<ApprovalTimelineNode> get lineaTiempo;
 /// Create a copy of ApprovalRequestModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $ApprovalRequestModelCopyWith<ApprovalRequestModel> get copyWith => _$ApprovalRe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ApprovalRequestModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion)&&const DeepCollectionEquality().equals(other.solicitante, solicitante)&&(identical(other.fechaCreacion, fechaCreacion) || other.fechaCreacion == fechaCreacion)&&(identical(other.estado, estado) || other.estado == estado)&&const DeepCollectionEquality().equals(other.adjuntos, adjuntos)&&const DeepCollectionEquality().equals(other.lineaTiempo, lineaTiempo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ApprovalRequestModel&&(identical(other.id, id) || other.id == id)&&(identical(other.moduleName, moduleName) || other.moduleName == moduleName)&&(identical(other.entityId, entityId) || other.entityId == entityId)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion)&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.pasoActual, pasoActual) || other.pasoActual == pasoActual)&&(identical(other.fechaCreacion, fechaCreacion) || other.fechaCreacion == fechaCreacion)&&(identical(other.usuarioSolicitanteId, usuarioSolicitanteId) || other.usuarioSolicitanteId == usuarioSolicitanteId)&&const DeepCollectionEquality().equals(other.solicitante, solicitante)&&const DeepCollectionEquality().equals(other.adjuntos, adjuntos)&&const DeepCollectionEquality().equals(other.lineaTiempo, lineaTiempo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tipo,titulo,descripcion,const DeepCollectionEquality().hash(solicitante),fechaCreacion,estado,const DeepCollectionEquality().hash(adjuntos),const DeepCollectionEquality().hash(lineaTiempo));
+int get hashCode => Object.hash(runtimeType,id,moduleName,entityId,titulo,descripcion,estado,pasoActual,fechaCreacion,usuarioSolicitanteId,const DeepCollectionEquality().hash(solicitante),const DeepCollectionEquality().hash(adjuntos),const DeepCollectionEquality().hash(lineaTiempo));
 
 @override
 String toString() {
-  return 'ApprovalRequestModel(id: $id, tipo: $tipo, titulo: $titulo, descripcion: $descripcion, solicitante: $solicitante, fechaCreacion: $fechaCreacion, estado: $estado, adjuntos: $adjuntos, lineaTiempo: $lineaTiempo)';
+  return 'ApprovalRequestModel(id: $id, moduleName: $moduleName, entityId: $entityId, titulo: $titulo, descripcion: $descripcion, estado: $estado, pasoActual: $pasoActual, fechaCreacion: $fechaCreacion, usuarioSolicitanteId: $usuarioSolicitanteId, solicitante: $solicitante, adjuntos: $adjuntos, lineaTiempo: $lineaTiempo)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $ApprovalRequestModelCopyWith<$Res>  {
   factory $ApprovalRequestModelCopyWith(ApprovalRequestModel value, $Res Function(ApprovalRequestModel) _then) = _$ApprovalRequestModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String tipo, String titulo, String descripcion, Map<String, dynamic> solicitante,@JsonKey(name: 'fecha_creacion') DateTime fechaCreacion, String estado, List<String> adjuntos,@JsonKey(name: 'linea_tiempo') List<ApprovalTimelineNode> lineaTiempo
+ int id,@JsonKey(name: 'module_name') String? moduleName,@JsonKey(name: 'entity_id') int? entityId, String titulo, String descripcion, String estado,@JsonKey(name: 'paso_actual') int? pasoActual,@JsonKey(name: 'fecha_creacion') DateTime fechaCreacion,@JsonKey(name: 'usuario_solicitante_id') int? usuarioSolicitanteId, Map<String, dynamic> solicitante, List<String> adjuntos,@JsonKey(name: 'linea_tiempo') List<ApprovalTimelineNode> lineaTiempo
 });
 
 
@@ -65,16 +66,19 @@ class _$ApprovalRequestModelCopyWithImpl<$Res>
 
 /// Create a copy of ApprovalRequestModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tipo = null,Object? titulo = null,Object? descripcion = null,Object? solicitante = null,Object? fechaCreacion = null,Object? estado = null,Object? adjuntos = null,Object? lineaTiempo = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? moduleName = freezed,Object? entityId = freezed,Object? titulo = null,Object? descripcion = null,Object? estado = null,Object? pasoActual = freezed,Object? fechaCreacion = null,Object? usuarioSolicitanteId = freezed,Object? solicitante = null,Object? adjuntos = null,Object? lineaTiempo = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,tipo: null == tipo ? _self.tipo : tipo // ignore: cast_nullable_to_non_nullable
-as String,titulo: null == titulo ? _self.titulo : titulo // ignore: cast_nullable_to_non_nullable
+as int,moduleName: freezed == moduleName ? _self.moduleName : moduleName // ignore: cast_nullable_to_non_nullable
+as String?,entityId: freezed == entityId ? _self.entityId : entityId // ignore: cast_nullable_to_non_nullable
+as int?,titulo: null == titulo ? _self.titulo : titulo // ignore: cast_nullable_to_non_nullable
 as String,descripcion: null == descripcion ? _self.descripcion : descripcion // ignore: cast_nullable_to_non_nullable
-as String,solicitante: null == solicitante ? _self.solicitante : solicitante // ignore: cast_nullable_to_non_nullable
-as Map<String, dynamic>,fechaCreacion: null == fechaCreacion ? _self.fechaCreacion : fechaCreacion // ignore: cast_nullable_to_non_nullable
-as DateTime,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
-as String,adjuntos: null == adjuntos ? _self.adjuntos : adjuntos // ignore: cast_nullable_to_non_nullable
+as String,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
+as String,pasoActual: freezed == pasoActual ? _self.pasoActual : pasoActual // ignore: cast_nullable_to_non_nullable
+as int?,fechaCreacion: null == fechaCreacion ? _self.fechaCreacion : fechaCreacion // ignore: cast_nullable_to_non_nullable
+as DateTime,usuarioSolicitanteId: freezed == usuarioSolicitanteId ? _self.usuarioSolicitanteId : usuarioSolicitanteId // ignore: cast_nullable_to_non_nullable
+as int?,solicitante: null == solicitante ? _self.solicitante : solicitante // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>,adjuntos: null == adjuntos ? _self.adjuntos : adjuntos // ignore: cast_nullable_to_non_nullable
 as List<String>,lineaTiempo: null == lineaTiempo ? _self.lineaTiempo : lineaTiempo // ignore: cast_nullable_to_non_nullable
 as List<ApprovalTimelineNode>,
   ));
@@ -161,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tipo,  String titulo,  String descripcion,  Map<String, dynamic> solicitante, @JsonKey(name: 'fecha_creacion')  DateTime fechaCreacion,  String estado,  List<String> adjuntos, @JsonKey(name: 'linea_tiempo')  List<ApprovalTimelineNode> lineaTiempo)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'module_name')  String? moduleName, @JsonKey(name: 'entity_id')  int? entityId,  String titulo,  String descripcion,  String estado, @JsonKey(name: 'paso_actual')  int? pasoActual, @JsonKey(name: 'fecha_creacion')  DateTime fechaCreacion, @JsonKey(name: 'usuario_solicitante_id')  int? usuarioSolicitanteId,  Map<String, dynamic> solicitante,  List<String> adjuntos, @JsonKey(name: 'linea_tiempo')  List<ApprovalTimelineNode> lineaTiempo)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ApprovalRequestModel() when $default != null:
-return $default(_that.id,_that.tipo,_that.titulo,_that.descripcion,_that.solicitante,_that.fechaCreacion,_that.estado,_that.adjuntos,_that.lineaTiempo);case _:
+return $default(_that.id,_that.moduleName,_that.entityId,_that.titulo,_that.descripcion,_that.estado,_that.pasoActual,_that.fechaCreacion,_that.usuarioSolicitanteId,_that.solicitante,_that.adjuntos,_that.lineaTiempo);case _:
   return orElse();
 
 }
@@ -182,10 +186,10 @@ return $default(_that.id,_that.tipo,_that.titulo,_that.descripcion,_that.solicit
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tipo,  String titulo,  String descripcion,  Map<String, dynamic> solicitante, @JsonKey(name: 'fecha_creacion')  DateTime fechaCreacion,  String estado,  List<String> adjuntos, @JsonKey(name: 'linea_tiempo')  List<ApprovalTimelineNode> lineaTiempo)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'module_name')  String? moduleName, @JsonKey(name: 'entity_id')  int? entityId,  String titulo,  String descripcion,  String estado, @JsonKey(name: 'paso_actual')  int? pasoActual, @JsonKey(name: 'fecha_creacion')  DateTime fechaCreacion, @JsonKey(name: 'usuario_solicitante_id')  int? usuarioSolicitanteId,  Map<String, dynamic> solicitante,  List<String> adjuntos, @JsonKey(name: 'linea_tiempo')  List<ApprovalTimelineNode> lineaTiempo)  $default,) {final _that = this;
 switch (_that) {
 case _ApprovalRequestModel():
-return $default(_that.id,_that.tipo,_that.titulo,_that.descripcion,_that.solicitante,_that.fechaCreacion,_that.estado,_that.adjuntos,_that.lineaTiempo);case _:
+return $default(_that.id,_that.moduleName,_that.entityId,_that.titulo,_that.descripcion,_that.estado,_that.pasoActual,_that.fechaCreacion,_that.usuarioSolicitanteId,_that.solicitante,_that.adjuntos,_that.lineaTiempo);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +206,10 @@ return $default(_that.id,_that.tipo,_that.titulo,_that.descripcion,_that.solicit
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tipo,  String titulo,  String descripcion,  Map<String, dynamic> solicitante, @JsonKey(name: 'fecha_creacion')  DateTime fechaCreacion,  String estado,  List<String> adjuntos, @JsonKey(name: 'linea_tiempo')  List<ApprovalTimelineNode> lineaTiempo)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'module_name')  String? moduleName, @JsonKey(name: 'entity_id')  int? entityId,  String titulo,  String descripcion,  String estado, @JsonKey(name: 'paso_actual')  int? pasoActual, @JsonKey(name: 'fecha_creacion')  DateTime fechaCreacion, @JsonKey(name: 'usuario_solicitante_id')  int? usuarioSolicitanteId,  Map<String, dynamic> solicitante,  List<String> adjuntos, @JsonKey(name: 'linea_tiempo')  List<ApprovalTimelineNode> lineaTiempo)?  $default,) {final _that = this;
 switch (_that) {
 case _ApprovalRequestModel() when $default != null:
-return $default(_that.id,_that.tipo,_that.titulo,_that.descripcion,_that.solicitante,_that.fechaCreacion,_that.estado,_that.adjuntos,_that.lineaTiempo);case _:
+return $default(_that.id,_that.moduleName,_that.entityId,_that.titulo,_that.descripcion,_that.estado,_that.pasoActual,_that.fechaCreacion,_that.usuarioSolicitanteId,_that.solicitante,_that.adjuntos,_that.lineaTiempo);case _:
   return null;
 
 }
@@ -217,22 +221,27 @@ return $default(_that.id,_that.tipo,_that.titulo,_that.descripcion,_that.solicit
 @JsonSerializable()
 
 class _ApprovalRequestModel implements ApprovalRequestModel {
-  const _ApprovalRequestModel({required this.id, required this.tipo, required this.titulo, required this.descripcion, required final  Map<String, dynamic> solicitante, @JsonKey(name: 'fecha_creacion') required this.fechaCreacion, required this.estado, final  List<String> adjuntos = const [], @JsonKey(name: 'linea_tiempo') final  List<ApprovalTimelineNode> lineaTiempo = const []}): _solicitante = solicitante,_adjuntos = adjuntos,_lineaTiempo = lineaTiempo;
+  const _ApprovalRequestModel({required this.id, @JsonKey(name: 'module_name') this.moduleName, @JsonKey(name: 'entity_id') this.entityId, required this.titulo, this.descripcion = '', required this.estado, @JsonKey(name: 'paso_actual') this.pasoActual, @JsonKey(name: 'fecha_creacion') required this.fechaCreacion, @JsonKey(name: 'usuario_solicitante_id') this.usuarioSolicitanteId, final  Map<String, dynamic> solicitante = const {}, final  List<String> adjuntos = const [], @JsonKey(name: 'linea_tiempo') final  List<ApprovalTimelineNode> lineaTiempo = const []}): _solicitante = solicitante,_adjuntos = adjuntos,_lineaTiempo = lineaTiempo;
   factory _ApprovalRequestModel.fromJson(Map<String, dynamic> json) => _$ApprovalRequestModelFromJson(json);
 
-@override final  String id;
-@override final  String tipo;
+@override final  int id;
+@override@JsonKey(name: 'module_name') final  String? moduleName;
+@override@JsonKey(name: 'entity_id') final  int? entityId;
 @override final  String titulo;
-@override final  String descripcion;
+@override@JsonKey() final  String descripcion;
+@override final  String estado;
+@override@JsonKey(name: 'paso_actual') final  int? pasoActual;
+@override@JsonKey(name: 'fecha_creacion') final  DateTime fechaCreacion;
+@override@JsonKey(name: 'usuario_solicitante_id') final  int? usuarioSolicitanteId;
+// UI-facing fields (populated from detail endpoint or local mock)
  final  Map<String, dynamic> _solicitante;
-@override Map<String, dynamic> get solicitante {
+// UI-facing fields (populated from detail endpoint or local mock)
+@override@JsonKey() Map<String, dynamic> get solicitante {
   if (_solicitante is EqualUnmodifiableMapView) return _solicitante;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableMapView(_solicitante);
 }
 
-@override@JsonKey(name: 'fecha_creacion') final  DateTime fechaCreacion;
-@override final  String estado;
  final  List<String> _adjuntos;
 @override@JsonKey() List<String> get adjuntos {
   if (_adjuntos is EqualUnmodifiableListView) return _adjuntos;
@@ -261,16 +270,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ApprovalRequestModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tipo, tipo) || other.tipo == tipo)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion)&&const DeepCollectionEquality().equals(other._solicitante, _solicitante)&&(identical(other.fechaCreacion, fechaCreacion) || other.fechaCreacion == fechaCreacion)&&(identical(other.estado, estado) || other.estado == estado)&&const DeepCollectionEquality().equals(other._adjuntos, _adjuntos)&&const DeepCollectionEquality().equals(other._lineaTiempo, _lineaTiempo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ApprovalRequestModel&&(identical(other.id, id) || other.id == id)&&(identical(other.moduleName, moduleName) || other.moduleName == moduleName)&&(identical(other.entityId, entityId) || other.entityId == entityId)&&(identical(other.titulo, titulo) || other.titulo == titulo)&&(identical(other.descripcion, descripcion) || other.descripcion == descripcion)&&(identical(other.estado, estado) || other.estado == estado)&&(identical(other.pasoActual, pasoActual) || other.pasoActual == pasoActual)&&(identical(other.fechaCreacion, fechaCreacion) || other.fechaCreacion == fechaCreacion)&&(identical(other.usuarioSolicitanteId, usuarioSolicitanteId) || other.usuarioSolicitanteId == usuarioSolicitanteId)&&const DeepCollectionEquality().equals(other._solicitante, _solicitante)&&const DeepCollectionEquality().equals(other._adjuntos, _adjuntos)&&const DeepCollectionEquality().equals(other._lineaTiempo, _lineaTiempo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tipo,titulo,descripcion,const DeepCollectionEquality().hash(_solicitante),fechaCreacion,estado,const DeepCollectionEquality().hash(_adjuntos),const DeepCollectionEquality().hash(_lineaTiempo));
+int get hashCode => Object.hash(runtimeType,id,moduleName,entityId,titulo,descripcion,estado,pasoActual,fechaCreacion,usuarioSolicitanteId,const DeepCollectionEquality().hash(_solicitante),const DeepCollectionEquality().hash(_adjuntos),const DeepCollectionEquality().hash(_lineaTiempo));
 
 @override
 String toString() {
-  return 'ApprovalRequestModel(id: $id, tipo: $tipo, titulo: $titulo, descripcion: $descripcion, solicitante: $solicitante, fechaCreacion: $fechaCreacion, estado: $estado, adjuntos: $adjuntos, lineaTiempo: $lineaTiempo)';
+  return 'ApprovalRequestModel(id: $id, moduleName: $moduleName, entityId: $entityId, titulo: $titulo, descripcion: $descripcion, estado: $estado, pasoActual: $pasoActual, fechaCreacion: $fechaCreacion, usuarioSolicitanteId: $usuarioSolicitanteId, solicitante: $solicitante, adjuntos: $adjuntos, lineaTiempo: $lineaTiempo)';
 }
 
 
@@ -281,7 +290,7 @@ abstract mixin class _$ApprovalRequestModelCopyWith<$Res> implements $ApprovalRe
   factory _$ApprovalRequestModelCopyWith(_ApprovalRequestModel value, $Res Function(_ApprovalRequestModel) _then) = __$ApprovalRequestModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String tipo, String titulo, String descripcion, Map<String, dynamic> solicitante,@JsonKey(name: 'fecha_creacion') DateTime fechaCreacion, String estado, List<String> adjuntos,@JsonKey(name: 'linea_tiempo') List<ApprovalTimelineNode> lineaTiempo
+ int id,@JsonKey(name: 'module_name') String? moduleName,@JsonKey(name: 'entity_id') int? entityId, String titulo, String descripcion, String estado,@JsonKey(name: 'paso_actual') int? pasoActual,@JsonKey(name: 'fecha_creacion') DateTime fechaCreacion,@JsonKey(name: 'usuario_solicitante_id') int? usuarioSolicitanteId, Map<String, dynamic> solicitante, List<String> adjuntos,@JsonKey(name: 'linea_tiempo') List<ApprovalTimelineNode> lineaTiempo
 });
 
 
@@ -298,16 +307,19 @@ class __$ApprovalRequestModelCopyWithImpl<$Res>
 
 /// Create a copy of ApprovalRequestModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tipo = null,Object? titulo = null,Object? descripcion = null,Object? solicitante = null,Object? fechaCreacion = null,Object? estado = null,Object? adjuntos = null,Object? lineaTiempo = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? moduleName = freezed,Object? entityId = freezed,Object? titulo = null,Object? descripcion = null,Object? estado = null,Object? pasoActual = freezed,Object? fechaCreacion = null,Object? usuarioSolicitanteId = freezed,Object? solicitante = null,Object? adjuntos = null,Object? lineaTiempo = null,}) {
   return _then(_ApprovalRequestModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,tipo: null == tipo ? _self.tipo : tipo // ignore: cast_nullable_to_non_nullable
-as String,titulo: null == titulo ? _self.titulo : titulo // ignore: cast_nullable_to_non_nullable
+as int,moduleName: freezed == moduleName ? _self.moduleName : moduleName // ignore: cast_nullable_to_non_nullable
+as String?,entityId: freezed == entityId ? _self.entityId : entityId // ignore: cast_nullable_to_non_nullable
+as int?,titulo: null == titulo ? _self.titulo : titulo // ignore: cast_nullable_to_non_nullable
 as String,descripcion: null == descripcion ? _self.descripcion : descripcion // ignore: cast_nullable_to_non_nullable
-as String,solicitante: null == solicitante ? _self._solicitante : solicitante // ignore: cast_nullable_to_non_nullable
-as Map<String, dynamic>,fechaCreacion: null == fechaCreacion ? _self.fechaCreacion : fechaCreacion // ignore: cast_nullable_to_non_nullable
-as DateTime,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
-as String,adjuntos: null == adjuntos ? _self._adjuntos : adjuntos // ignore: cast_nullable_to_non_nullable
+as String,estado: null == estado ? _self.estado : estado // ignore: cast_nullable_to_non_nullable
+as String,pasoActual: freezed == pasoActual ? _self.pasoActual : pasoActual // ignore: cast_nullable_to_non_nullable
+as int?,fechaCreacion: null == fechaCreacion ? _self.fechaCreacion : fechaCreacion // ignore: cast_nullable_to_non_nullable
+as DateTime,usuarioSolicitanteId: freezed == usuarioSolicitanteId ? _self.usuarioSolicitanteId : usuarioSolicitanteId // ignore: cast_nullable_to_non_nullable
+as int?,solicitante: null == solicitante ? _self._solicitante : solicitante // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>,adjuntos: null == adjuntos ? _self._adjuntos : adjuntos // ignore: cast_nullable_to_non_nullable
 as List<String>,lineaTiempo: null == lineaTiempo ? _self._lineaTiempo : lineaTiempo // ignore: cast_nullable_to_non_nullable
 as List<ApprovalTimelineNode>,
   ));

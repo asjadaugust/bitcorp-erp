@@ -10,12 +10,16 @@ enum AuthStatus { initial, unauthenticated, authenticated }
 class AuthState {
   final AuthStatus status;
   final String? role;
+  final String? userName;
+  final int? userId;
   final bool isLoading;
   final String? errorMessage;
 
   const AuthState({
     this.status = AuthStatus.initial,
     this.role,
+    this.userName,
+    this.userId,
     this.isLoading = false,
     this.errorMessage,
   });
@@ -23,12 +27,16 @@ class AuthState {
   AuthState copyWith({
     AuthStatus? status,
     String? role,
+    String? userName,
+    int? userId,
     bool? isLoading,
     String? errorMessage,
   }) {
     return AuthState(
       status: status ?? this.status,
       role: role ?? this.role,
+      userName: userName ?? this.userName,
+      userId: userId ?? this.userId,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -40,21 +48,24 @@ class AuthNotifier extends _$AuthNotifier {
   @override
   AuthState build() {
     final repo = ref.watch(authRepositoryProvider);
-    _checkInitialAuth(repo);
-    return const AuthState();
+    Future.microtask(() => _checkInitialAuth(repo));
+    return const AuthState(isLoading: true);
   }
 
   Future<void> _checkInitialAuth(AuthRepository repo) async {
-    state = state.copyWith(isLoading: true);
     final token = await repo.getValidTokenPrefix();
 
     if (token != null) {
       final decodedToken = JwtDecoder.decode(token);
       final role = decodedToken['rol']; // Backend payload uses 'rol'
+      final userName = decodedToken['nombre_completo'] as String?;
+      final userId = decodedToken['id_usuario'] as int?;
 
       state = state.copyWith(
         status: AuthStatus.authenticated,
         role: role,
+        userName: userName,
+        userId: userId,
         isLoading: false,
       );
     } else {
@@ -65,20 +76,24 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String username, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final repo = ref.read(authRepositoryProvider);
       final token = await repo.login(
-        LoginRequest(email: email, password: password),
+        LoginRequest(username: username, password: password),
       );
 
       final decodedToken = JwtDecoder.decode(token);
       final role = decodedToken['rol'];
+      final userName = decodedToken['nombre_completo'] as String?;
+      final userId = decodedToken['id_usuario'] as int?;
 
       state = state.copyWith(
         status: AuthStatus.authenticated,
         role: role,
+        userName: userName,
+        userId: userId,
         isLoading: false,
       );
       return true;

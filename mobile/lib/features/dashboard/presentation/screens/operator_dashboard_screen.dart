@@ -7,6 +7,9 @@ import 'package:mobile/core/providers/global_project_provider.dart';
 import 'package:mobile/features/notifications/presentation/widgets/notification_bell_button.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/widgets/global_search_delegate.dart';
+import 'package:mobile/core/network/dio_client.dart';
+
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 
 class OperatorDashboardScreen extends ConsumerWidget {
   const OperatorDashboardScreen({super.key});
@@ -14,39 +17,14 @@ class OperatorDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardState = ref.watch(dashboardProvider);
+    final authState = ref.watch(authProvider);
 
     final selectedProject = ref.watch(globalProjectProvider);
 
     return Scaffold(
       backgroundColor: AeroTheme.primary100,
       appBar: AppBar(
-        title: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: selectedProject,
-            icon: const Icon(
-              Icons.arrow_drop_down,
-              color: AeroTheme.primary900,
-            ),
-            style: const TextStyle(
-              fontFamily: AeroTheme.headingFont,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AeroTheme.primary900,
-            ),
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                ref.read(globalProjectProvider.notifier).setProject(newValue);
-                // In a real app we'd refresh providers that depend on it
-              }
-            },
-            items: availableProjects.map<DropdownMenuItem<String>>((project) {
-              return DropdownMenuItem<String>(
-                value: project['id'],
-                child: Text(project['nombre']!),
-              );
-            }).toList(),
-          ),
-        ),
+        title: _buildProjectDropdown(context, ref, selectedProject),
         backgroundColor: Colors.white,
         foregroundColor: AeroTheme.primary900,
         elevation: 1,
@@ -54,7 +32,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              showSearch(context: context, delegate: GlobalSearchDelegate());
+              showSearch(context: context, delegate: GlobalSearchDelegate(ref.read(dioProvider)));
             },
           ),
           const NotificationBellButton(),
@@ -72,7 +50,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Hola, Operador',
+                'Hola, ${authState.userName?.split(' ').first ?? 'Operador'}',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: AeroTheme.primary900,
                   fontWeight: FontWeight.bold,
@@ -91,7 +69,78 @@ class OperatorDashboardScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildProjectDropdown(
+    BuildContext context,
+    WidgetRef ref,
+    String? selectedProject,
+  ) {
+    final projectListState = ref.watch(projectListProvider);
+
+    return projectListState.when(
+      data: (projects) {
+        if (projects.isEmpty) {
+          return Text(
+            'Sin proyectos',
+            style: TextStyle(
+              fontFamily: AeroTheme.headingFont,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AeroTheme.primary900,
+            ),
+          );
+        }
+        // Ensure selectedProject is valid, fallback to first
+        final validSelection = projects.any((p) => p.id == selectedProject)
+            ? selectedProject
+            : projects.first.id;
+
+        return DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: validSelection,
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: AeroTheme.primary900,
+            ),
+            style: TextStyle(
+              fontFamily: AeroTheme.headingFont,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AeroTheme.primary900,
+            ),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                ref.read(globalProjectProvider.notifier).setProject(newValue);
+                ref.read(dashboardProvider.notifier).refresh();
+              }
+            },
+            items: projects.map<DropdownMenuItem<String>>((project) {
+              return DropdownMenuItem<String>(
+                value: project.id,
+                child: Text(project.name),
+              );
+            }).toList(),
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 20,
+        width: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+      error: (_, __) => Text(
+        'Proyecto',
+        style: TextStyle(
+          fontFamily: AeroTheme.headingFont,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AeroTheme.primary900,
+        ),
+      ),
+    );
+  }
+
   Widget _buildDashboardContent(BuildContext context, data) {
+    final equipmentId = data.equipmentId ?? data.equipmentCode;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -99,6 +148,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
           context,
           data.equipmentCode,
           data.equipmentDescription,
+          equipmentId,
         ),
         const SizedBox(height: 16),
         _buildStatusCard(
@@ -118,7 +168,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
                 context,
                 icon: Icons.fact_check,
                 title: 'Checklists',
-                value: '\${data.pendingChecklistCount} Pendientes',
+                value: '${data.pendingChecklistCount} Pendientes',
                 color: data.pendingChecklistCount > 0
                     ? AeroTheme.accent500
                     : AeroTheme.semanticGreen500,
@@ -147,6 +197,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
     BuildContext context,
     String code,
     String description,
+    String equipmentId,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -164,7 +215,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            context.push('/equipment/eq-001'); // Using mock equipment ID
+            context.push('/equipment/$equipmentId');
           },
           borderRadius: BorderRadius.circular(8),
           child: Padding(

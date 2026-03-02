@@ -33,7 +33,7 @@ final class ApprovalActionProvider
   ApprovalAction create() => ApprovalAction();
 }
 
-String _$approvalActionHash() => r'cde4451d84b6de6356472cf1a2138b89505e1182';
+String _$approvalActionHash() => r'dc5bd33517a8ce71d7d776a16ccccb5885a52a98';
 
 abstract class _$ApprovalAction extends $AsyncNotifier<void> {
   FutureOr<void> build();

@@ -74,6 +74,72 @@ class DailyReportLocalSource {
     return reports;
   }
 
+  Future<List<DailyReportModel>> getPendingSync() async {
+    final db = await _localDatabase.database;
+    final List<Map<String, dynamic>> reportMaps = await db.query(
+      'daily_reports',
+      where: 'sync_status = ?',
+      whereArgs: ['PENDING_SYNC'],
+      orderBy: 'date DESC',
+    );
+
+    List<DailyReportModel> reports = [];
+    for (var map in reportMaps) {
+      final reportId = map['id'] as String;
+      final List<Map<String, dynamic>> eventMaps = await db.query(
+        'report_events',
+        where: 'report_id = ?',
+        whereArgs: [reportId],
+      );
+      final List<Map<String, dynamic>> photoMaps = await db.query(
+        'report_photos',
+        where: 'report_id = ?',
+        whereArgs: [reportId],
+      );
+
+      final Map<String, dynamic> jsonMap = {
+        'id': map['id'],
+        'date': map['date'],
+        'equipmentId': map['equipment_id'],
+        'startHourMeter': map['start_hour_meter'],
+        'endHourMeter': map['end_hour_meter'],
+        'startOdometer': map['start_odometer'],
+        'endOdometer': map['end_odometer'],
+        'effectiveHours': map['effective_hours'],
+        'activityDescription': map['activity_description'],
+        'observations': map['observations'],
+        'signaturePath': map['signature_path'],
+        'syncStatus': map['sync_status'],
+        'idValeCombustible': map['id_vale_combustible'],
+      };
+      jsonMap['events'] = eventMaps
+          .map((e) => {
+                'id': e['id'],
+                'eventType': e['event_type'],
+                'startTime': e['start_time'],
+                'endTime': e['end_time'],
+                'duration': e['duration'],
+                'reason': e['reason'],
+              })
+          .toList();
+      jsonMap['photos'] = photoMaps
+          .map((p) => {'id': p['id'], 'filePath': p['file_path']})
+          .toList();
+      reports.add(DailyReportModel.fromJson(jsonMap));
+    }
+    return reports;
+  }
+
+  Future<void> updateSyncStatus(String id, String syncStatus) async {
+    final db = await _localDatabase.database;
+    await db.update(
+      'daily_reports',
+      {'sync_status': syncStatus},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<void> saveReport(DailyReportModel report) async {
     final db = await _localDatabase.database;
     await db.transaction((txn) async {

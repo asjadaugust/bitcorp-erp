@@ -55,4 +55,4 @@ final class DailyReportRepositoryProvider
 }
 
 String _$dailyReportRepositoryHash() =>
-    r'946ab0d18054edff23e1b2966ab7175bb4f1083f';
+    r'47b4fcd847d8a81a2c5e703fe428d7fd7db2df3a';

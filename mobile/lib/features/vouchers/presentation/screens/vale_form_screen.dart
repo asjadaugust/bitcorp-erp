@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +10,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 import 'package:mobile/core/utils/image_compressor.dart';
+
+import 'package:mobile/core/widgets/discard_changes_dialog.dart';
 
 class ValeFormScreen extends ConsumerStatefulWidget {
   const ValeFormScreen({super.key});
@@ -24,7 +27,16 @@ class _ValeFormScreenState extends ConsumerState<ValeFormScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(valeFormProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldDiscard = await showDiscardChangesDialog(context);
+        if (shouldDiscard && context.mounted) {
+          context.pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: AeroTheme.primary100,
       appBar: AppBar(
         title: const Text('Nuevo Vale'),
@@ -62,6 +74,7 @@ class _ValeFormScreenState extends ConsumerState<ValeFormScreen> {
                             .read(valeFormProvider.notifier)
                             .submit();
                         if (success && mounted) {
+                          HapticFeedback.mediumImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Vale guardado localmente.'),
@@ -99,7 +112,7 @@ class _ValeFormScreenState extends ConsumerState<ValeFormScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildValeDetails(valeState) {
@@ -328,7 +341,7 @@ class _ValeFormScreenState extends ConsumerState<ValeFormScreen> {
       );
       if (compressedFile == null) return;
 
-      final fileName = 'vale_\${const Uuid().v4()}.jpg';
+      final fileName = 'vale_${const Uuid().v4()}.jpg';
       final savedImage = await compressedFile.copy(
         path.join(appDir.path, fileName),
       );

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +11,7 @@ import 'package:uuid/uuid.dart';
 import 'package:mobile/core/utils/image_compressor.dart';
 
 import '../../../../core/theme/aero_theme.dart';
+import '../../../../core/widgets/discard_changes_dialog.dart';
 import '../providers/checklist_form_provider.dart';
 
 class ChecklistFormScreen extends ConsumerStatefulWidget {
@@ -27,7 +29,16 @@ class _ChecklistFormScreenState extends ConsumerState<ChecklistFormScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(checklistFormProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldDiscard = await showDiscardChangesDialog(context);
+        if (shouldDiscard && context.mounted) {
+          context.pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: AeroTheme.primary100,
       appBar: AppBar(
         title: const Text(
@@ -72,7 +83,7 @@ class _ChecklistFormScreenState extends ConsumerState<ChecklistFormScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildHeaderCard(ChecklistFormState state) {
@@ -470,6 +481,7 @@ class _ChecklistFormScreenState extends ConsumerState<ChecklistFormScreen> {
                   .read(checklistFormProvider.notifier)
                   .saveChecklist();
               if (success && mounted) {
+                HapticFeedback.mediumImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(

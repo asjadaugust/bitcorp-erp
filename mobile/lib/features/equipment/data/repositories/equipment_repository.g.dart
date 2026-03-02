@@ -55,4 +55,46 @@ final class EquipmentRepositoryProvider
 }
 
 String _$equipmentRepositoryHash() =>
-    r'6df8e018ff7620c4b5d90b3f06c7b7611f063164';
+    r'8746be0c463c6c27fd5fdb4ceba0289c1fd6af0d';
+
+@ProviderFor(availableEquipment)
+final availableEquipmentProvider = AvailableEquipmentProvider._();
+
+final class AvailableEquipmentProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<EquipmentListItem>>,
+          List<EquipmentListItem>,
+          FutureOr<List<EquipmentListItem>>
+        >
+    with
+        $FutureModifier<List<EquipmentListItem>>,
+        $FutureProvider<List<EquipmentListItem>> {
+  AvailableEquipmentProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'availableEquipmentProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$availableEquipmentHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<EquipmentListItem>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<EquipmentListItem>> create(Ref ref) {
+    return availableEquipment(ref);
+  }
+}
+
+String _$availableEquipmentHash() =>
+    r'efa4efa6e7449f2c3011f43ffb48a90c8873a565';

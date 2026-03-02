@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,11 @@ import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/features/vouchers/domain/models/vale_combustible_model.dart';
 import 'package:mobile/features/vouchers/presentation/providers/vale_list_provider.dart';
 import 'package:mobile/core/widgets/global_search_delegate.dart';
+import 'package:mobile/core/network/dio_client.dart';
+import 'package:mobile/features/notifications/presentation/widgets/notification_bell_button.dart';
+import 'package:mobile/core/widgets/empty_state_widget.dart';
+import 'package:mobile/core/widgets/error_state_widget.dart';
+import 'package:mobile/core/widgets/shimmer_loading.dart';
 
 class ValeListScreen extends ConsumerWidget {
   const ValeListScreen({super.key});
@@ -26,15 +32,23 @@ class ValeListScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              showSearch(context: context, delegate: GlobalSearchDelegate());
+              showSearch(
+                context: context,
+                delegate: GlobalSearchDelegate(ref.read(dioProvider)),
+              );
             },
           ),
+          const NotificationBellButton(),
+          const SizedBox(width: 8),
         ],
       ),
       body: valeListState.when(
         data: (vales) => _buildList(context, ref, vales),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _buildError(context, ref, error),
+        loading: () => const ShimmerLoadingList(),
+        error: (error, _) => ErrorStateWidget(
+          message: 'Hubo un problema cargando los vales.',
+          onRetry: () => ref.read(valeListProvider.notifier).refresh(),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/vouchers/new'),
@@ -54,28 +68,10 @@ class ValeListScreen extends ConsumerWidget {
     List<ValeCombustibleModel> vales,
   ) {
     if (vales.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.receipt_long, size: 64, color: AeroTheme.grey500),
-            const SizedBox(height: 16),
-            Text(
-              'No hay vales registrados',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AeroTheme.grey700,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Registra el combustible escaneando vales.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AeroTheme.grey500),
-            ),
-          ],
-        ),
+      return const EmptyStateWidget(
+        icon: Icons.receipt_long,
+        title: 'No hay vales registrados',
+        subtitle: 'Registra el combustible escaneando vales.',
       );
     }
 
@@ -90,40 +86,6 @@ class ValeListScreen extends ConsumerWidget {
           final vale = vales[index];
           return _ValeCard(vale: vale);
         },
-      ),
-    );
-  }
-
-  Widget _buildError(BuildContext context, WidgetRef ref, Object error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: AeroTheme.accent500),
-            const SizedBox(height: 16),
-            Text(
-              'Hubo un problema cargando los vales.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AeroTheme.primary900,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => ref.read(valeListProvider.notifier).refresh(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AeroTheme.primary500,
-              ),
-              child: const Text(
-                'Reintentar',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -148,122 +110,130 @@ class _ValeCard extends StatelessWidget {
       statusText += ' • PENDIENTE SYNC';
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 2,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Vale #\${vale.numeroVale}',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: AeroTheme.primary900,
-                              fontWeight: FontWeight.bold,
+      child: InkWell(
+        onTap: () => context.push('/vouchers/${vale.id}', extra: vale),
+        borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Vale #${vale.numeroVale}',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: AeroTheme.primary900,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Equipo: ${vale.equipoId}',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: AeroTheme.grey700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${vale.cantidadGalones} Galones (${vale.tipoCombustible})',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: AeroTheme.primary500,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: AeroTheme.grey500,
                             ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Equipo: \${vale.idEquipo}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AeroTheme.grey700,
-                          fontWeight: FontWeight.w500,
+                            const SizedBox(width: 4),
+                            Text(
+                              dateFormat.format(vale.fecha),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(color: AeroTheme.grey500),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\${vale.cantidadGalones} Galones (\${vale.tipoCombustible})',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AeroTheme.primary500,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 14,
-                            color: AeroTheme.grey500,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            dateFormat.format(vale.fecha),
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(color: AeroTheme.grey500),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AeroTheme.grey100,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: AeroTheme.grey300),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: Image.file(
-                      File(vale.fotoPath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Icon(Icons.broken_image, color: AeroTheme.grey500),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8),
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: AeroTheme.grey100,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: AeroTheme.grey300),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child:
+                          (kIsWeb ||
+                              vale.fotoPath == null ||
+                              vale.fotoPath!.isEmpty)
+                          ? Icon(Icons.image, color: AeroTheme.grey500)
+                          : Image.file(
+                              File(vale.fotoPath!),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.broken_image,
+                                color: AeroTheme.grey500,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  isVinculado ? Icons.link : Icons.link_off,
-                  size: 16,
-                  color: statusColor,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(AeroTheme.radiusMd),
+                  bottomRight: Radius.circular(AeroTheme.radiusMd),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  statusText.toUpperCase(),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isVinculado ? Icons.link : Icons.link_off,
+                    size: 16,
                     color: statusColor,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    statusText.toUpperCase(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
