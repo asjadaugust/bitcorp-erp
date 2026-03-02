@@ -8,6 +8,7 @@ import 'package:mobile/features/vouchers/presentation/providers/vale_form_provid
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
+import 'package:mobile/core/utils/image_compressor.dart';
 
 class ValeFormScreen extends ConsumerStatefulWidget {
   const ValeFormScreen({super.key});
@@ -317,17 +318,24 @@ class _ValeFormScreenState extends ConsumerState<ValeFormScreen> {
 
   Future<void> _takePhoto() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-    );
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
       final appDir = await getApplicationDocumentsDirectory();
+
+      final compressedFile = await ImageCompressor.compressFile(
+        File(pickedFile.path),
+      );
+      if (compressedFile == null) return;
+
       final fileName = 'vale_\${const Uuid().v4()}.jpg';
-      final savedImage = await File(
-        pickedFile.path,
-      ).copy(path.join(appDir.path, fileName));
+      final savedImage = await compressedFile.copy(
+        path.join(appDir.path, fileName),
+      );
+
+      if (await compressedFile.exists()) {
+        await compressedFile.delete();
+      }
 
       ref.read(valeFormProvider.notifier).updateFotoPath(savedImage.path);
     }

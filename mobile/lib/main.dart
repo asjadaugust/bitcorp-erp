@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/core/routing/app_router.dart';
+import 'package:mobile/core/widgets/forced_update_wrapper.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,9 @@ class BitCorpMobileApp extends ConsumerWidget {
       theme: AeroTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return ForcedUpdateWrapper(child: child!);
+      },
     );
   }
 }

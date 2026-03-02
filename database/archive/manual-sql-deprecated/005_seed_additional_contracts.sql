@@ -49,13 +49,13 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-01',
     '2025-12-31',
     'PEN',
-    'POR_HORA',
+    'HORA',
     280.00,
-    'ALQUILER CON OPERADOR',
+    'MAQUINA_SECA_OPERADA',
     true,
     true,
     NULL,
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -84,13 +84,13 @@ INSERT INTO equipo.contrato_adenda (
     '2025-03-01',
     '2025-08-31',
     'PEN',
-    'POR_HORA',
+    'HORA',
     220.00,
-    'ALQUILER SOLO EQUIPO',
+    'MAQUINA_SECA_NO_OPERADA',
     true,
     false,
     NULL,
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -120,14 +120,14 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-15',
     '2025-07-15',
     'PEN',
-    'TARIFA_FIJA_MENSUAL',
+    'MES',
     45000.00,
-    'ALQUILER CON OPERADOR Y COMBUSTIBLE',
+    'MAQUINA_SERVIDA_OPERADA',
     true,
     true,
     200, -- 200 hours included per month
     'Incluye mantenimiento preventivo mensual. Combustible incluido hasta 200 horas/mes.',
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -155,9 +155,9 @@ INSERT INTO equipo.contrato_adenda (
     '2024-09-01',
     '2024-12-31',
     'PEN',
-    'POR_HORA',
+    'HORA',
     240.00,
-    'ALQUILER CON OPERADOR',
+    'MAQUINA_SECA_OPERADA',
     true,
     true,
     'FINALIZADO',
@@ -190,14 +190,14 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-10',
     '2025-11-10',
     'PEN',
-    'POR_HORA',
+    'HORA',
     300.00,
-    'ALQUILER CON OPERADOR',
+    'MAQUINA_SECA_OPERADA',
     true,
     true,
     50.00, -- Additional cost per hour for fuel
     'Costo adicional de S/ 50/hora por combustible. Operador certificado incluido.',
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -229,12 +229,12 @@ INSERT INTO equipo.contrato_adenda (
     '2025-01-20',
     '2025-12-20',
     'PEN',
-    'POR_HORA',
+    'HORA',
     260.00,
-    'ALQUILER CON OPERADOR',
+    'MAQUINA_SECA_OPERADA',
     true,
     true,
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -265,15 +265,15 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-20',
     '2025-08-20',
     'PEN',
-    'TARIFA_FIJA_MENSUAL',
+    'MES',
     38000.00,
-    'ALQUILER SOLO EQUIPO',
+    'MAQUINA_SECA_NO_OPERADA',
     false,
     false,
     180, -- 180 hours included per month
     75.00, -- S/ 75/hour penalty for excess hours
     'Cliente provee operador. Incluye 180 horas/mes. Exceso: S/ 75/hora.',
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -301,12 +301,12 @@ INSERT INTO equipo.contrato_adenda (
     '2025-03-15',
     '2025-09-15',
     'PEN',
-    'POR_HORA',
+    'HORA',
     250.00,
-    'ALQUILER CON OPERADOR',
+    'MAQUINA_SECA_OPERADA',
     true,
     true,
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -340,14 +340,14 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-01',
     '2025-07-31',
     'PEN',
-    'POR_DIA',
+    'DIA',
     1200.00,
-    'ALQUILER CON OPERADOR Y COMBUSTIBLE',
+    'MAQUINA_SERVIDA_OPERADA',
     'DIA',
     true,
     true,
     'Incluye chofer y combustible. Máximo 200 km/día. Exceso: S/ 3/km.',
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -376,13 +376,13 @@ INSERT INTO equipo.contrato_adenda (
     '2025-03-01',
     '2025-12-31',
     'PEN',
-    'TARIFA_FIJA_MENSUAL',
+    'MES',
     32000.00,
-    'ALQUILER CON OPERADOR Y COMBUSTIBLE',
+    'MAQUINA_SERVIDA_OPERADA',
     true,
     true,
     'Incluye chofer, combustible y mantenimiento preventivo. 22 días/mes.',
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -410,9 +410,9 @@ INSERT INTO equipo.contrato_adenda (
     '2024-10-01',
     '2024-12-31',
     'PEN',
-    'POR_DIA',
+    'DIA',
     1100.00,
-    'ALQUILER CON OPERADOR',
+    'MAQUINA_SECA_OPERADA',
     true,
     true,
     'FINALIZADO',
@@ -447,12 +447,12 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-15',
     '2025-11-15',
     'PEN',
-    'POR_HORA',
+    'HORA',
     320.00,
-    'ALQUILER CON OPERADOR',
+    'MAQUINA_SECA_OPERADA',
     true,
     true,
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -482,14 +482,14 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-25',
     '2025-08-25',
     'PEN',
-    'TARIFA_FIJA_MENSUAL',
+    'MES',
     52000.00,
-    'ALQUILER CON OPERADOR Y COMBUSTIBLE',
+    'MAQUINA_SERVIDA_OPERADA',
     true,
     true,
     220, -- 220 hours included
     'Incluye operador certificado, combustible y mantenimiento preventivo. 220 horas/mes.',
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -521,12 +521,12 @@ INSERT INTO equipo.contrato_adenda (
     '2025-03-01',
     '2025-09-30',
     'PEN',
-    'POR_HORA',
+    'HORA',
     180.00,
-    'ALQUILER SOLO EQUIPO',
+    'MAQUINA_SECA_NO_OPERADA',
     false,
     false,
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -560,14 +560,14 @@ INSERT INTO equipo.contrato_adenda (
     '2025-02-20',
     '2025-12-20',
     'PEN',
-    'TARIFA_FIJA_MENSUAL',
+    'MES',
     48000.00,
-    'ALQUILER CON OPERADOR Y COMBUSTIBLE',
+    'MAQUINA_SERVIDA_OPERADA',
     true,
     true,
     200, -- 200 hours included
     'Incluye operador especializado, combustible y mantenimiento. 200 horas/mes.',
-    'ACTIVO',
+    'VIGENTE',
     1
 );
 
@@ -615,7 +615,7 @@ INSERT INTO equipo.contrato_adenda (
 --   c.fecha_fin
 -- FROM equipo.contrato_adenda c
 -- JOIN equipo.equipo e ON c.equipo_id = e.id
--- WHERE c.estado = 'ACTIVO'
+-- WHERE c.estado = 'VIGENTE'
 -- ORDER BY c.fecha_inicio DESC;
 
 -- =====================================================

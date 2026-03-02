@@ -5,6 +5,7 @@ import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/features/approvals/domain/models/approval_request_model.dart';
 import 'package:mobile/features/approvals/presentation/providers/approvals_provider.dart';
 import 'package:mobile/features/notifications/presentation/widgets/notification_bell_button.dart';
+import 'package:mobile/core/widgets/global_search_delegate.dart';
 
 class ApprovalsHubScreen extends ConsumerStatefulWidget {
   const ApprovalsHubScreen({super.key});
@@ -37,7 +38,16 @@ class _ApprovalsHubScreenState extends ConsumerState<ApprovalsHubScreen>
       backgroundColor: AeroTheme.primary100,
       appBar: AppBar(
         title: const Text('Centro de Aprobaciones'),
-        actions: const [NotificationBellButton(), SizedBox(width: 8)],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(context: context, delegate: GlobalSearchDelegate());
+            },
+          ),
+          const NotificationBellButton(),
+          const SizedBox(width: 8),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AeroTheme.primary500,

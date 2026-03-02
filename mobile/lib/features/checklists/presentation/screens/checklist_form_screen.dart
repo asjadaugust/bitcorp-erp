@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
+import 'package:mobile/core/utils/image_compressor.dart';
 
 import '../../../../core/theme/aero_theme.dart';
 import '../providers/checklist_form_provider.dart';
@@ -377,17 +378,23 @@ class _ChecklistFormScreenState extends ConsumerState<ChecklistFormScreen> {
 
   Future<void> _attachPhotoForItem(String itemId) async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-    );
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
+      final compressedFile = await ImageCompressor.compressFile(
+        File(pickedFile.path),
+      );
+      if (compressedFile == null) return;
+
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = '${const Uuid().v4()}.jpg';
-      final savedImage = await File(
-        pickedFile.path,
-      ).copy(path.join(appDir.path, fileName));
+      final savedImage = await compressedFile.copy(
+        path.join(appDir.path, fileName),
+      );
+
+      if (await compressedFile.exists()) {
+        await compressedFile.delete();
+      }
 
       ref
           .read(checklistFormProvider.notifier)

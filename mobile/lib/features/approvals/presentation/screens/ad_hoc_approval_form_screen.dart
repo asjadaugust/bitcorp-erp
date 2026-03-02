@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
+import 'package:mobile/core/utils/image_compressor.dart';
 
 class AdHocApprovalFormScreen extends StatefulWidget {
   const AdHocApprovalFormScreen({super.key});
@@ -36,14 +37,16 @@ class _AdHocApprovalFormScreenState extends State<AdHocApprovalFormScreen> {
       return;
     }
 
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-    );
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
 
     if (image != null) {
+      final compressedFile = await ImageCompressor.compressFile(
+        File(image.path),
+      );
+      if (compressedFile == null) return;
+
       setState(() {
-        _attachments.add(image);
+        _attachments.add(XFile(compressedFile.path));
       });
     }
   }

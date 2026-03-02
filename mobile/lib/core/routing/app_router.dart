@@ -1,12 +1,13 @@
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
-import 'package:mobile/core/widgets/placeholder_screen.dart';
+
 import 'package:mobile/core/widgets/app_shell.dart';
 import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:mobile/features/daily_report/presentation/screens/daily_report_list_screen.dart';
 import 'package:mobile/features/daily_report/presentation/screens/daily_report_form_screen.dart';
 import 'package:mobile/features/dashboard/presentation/screens/operator_dashboard_screen.dart';
+import 'package:mobile/features/dashboard/presentation/screens/supervisor_dashboard_screen.dart';
 import 'package:mobile/features/checklists/presentation/screens/checklist_list_screen.dart';
 import 'package:mobile/features/checklists/presentation/screens/checklist_form_screen.dart';
 import 'package:mobile/features/checklists/presentation/screens/incidente_form_screen.dart';
@@ -61,9 +62,7 @@ GoRouter goRouter(Ref ref) {
                 builder: (context, state) {
                   final role = authState.role;
                   if (role == 'SUPERVISOR') {
-                    return const PlaceholderScreen(
-                      title: 'Supervisor Dashboard',
-                    );
+                    return const SupervisorDashboardScreen();
                   }
                   return const OperatorDashboardScreen();
                 },

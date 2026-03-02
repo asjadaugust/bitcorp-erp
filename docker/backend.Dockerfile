@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/pyproject.toml ./
 RUN pip install --no-cache-dir -e ".[dev]"
 
+RUN playwright install --with-deps chromium
+
 COPY backend/ .
 
 EXPOSE 3410

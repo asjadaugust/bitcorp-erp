@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/features/valorizations/domain/models/valorization_model.dart';
 import 'package:mobile/features/valorizations/presentation/providers/valorizations_provider.dart';
+import 'package:mobile/core/widgets/global_search_delegate.dart';
 
 class ValorizationsListScreen extends ConsumerWidget {
   const ValorizationsListScreen({super.key});
@@ -18,6 +19,14 @@ class ValorizationsListScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         foregroundColor: AeroTheme.primary900,
         elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(context: context, delegate: GlobalSearchDelegate());
+            },
+          ),
+        ],
       ),
       body: RefreshIndicator(
         color: AeroTheme.primary500,
@@ -160,7 +169,7 @@ class _ValorizationCardState extends State<_ValorizationCard> {
             subtitle: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                margin: const EdgeInsets.top(AeroTheme.spacing8),
+                margin: const EdgeInsets.only(top: AeroTheme.spacing8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: v.estado == 'PAGADO'

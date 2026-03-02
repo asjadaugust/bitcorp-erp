@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
 import 'package:mobile/features/vouchers/domain/models/vale_combustible_model.dart';
 import 'package:mobile/features/vouchers/presentation/providers/vale_list_provider.dart';
+import 'package:mobile/core/widgets/global_search_delegate.dart';
 
 class ValeListScreen extends ConsumerWidget {
   const ValeListScreen({super.key});
@@ -21,6 +22,14 @@ class ValeListScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         foregroundColor: AeroTheme.primary900,
         elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(context: context, delegate: GlobalSearchDelegate());
+            },
+          ),
+        ],
       ),
       body: valeListState.when(
         data: (vales) => _buildList(context, ref, vales),

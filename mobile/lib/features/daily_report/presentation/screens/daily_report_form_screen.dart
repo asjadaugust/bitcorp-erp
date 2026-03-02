@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
+import 'package:mobile/core/utils/image_compressor.dart';
 import 'package:signature/signature.dart';
 import '../../../../core/theme/aero_theme.dart';
 import '../providers/daily_report_form_provider.dart';
@@ -246,16 +247,22 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
     }
 
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-    );
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
 
     if (image != null) {
+      final compressedFile = await ImageCompressor.compressFile(
+        File(image.path),
+      );
+      if (compressedFile == null) return;
+
       // Save permanently to local storage
       final directory = await getApplicationDocumentsDirectory();
       final String newPath = p.join(directory.path, '${const Uuid().v4()}.jpg');
-      final File savedImage = await File(image.path).copy(newPath);
+      final File savedImage = await compressedFile.copy(newPath);
+
+      if (await compressedFile.exists()) {
+        await compressedFile.delete();
+      }
 
       final photo = ReportPhotoModel(
         id: const Uuid().v4(),

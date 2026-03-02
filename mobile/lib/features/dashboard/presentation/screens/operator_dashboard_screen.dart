@@ -6,6 +6,7 @@ import 'package:mobile/features/dashboard/presentation/providers/dashboard_provi
 import 'package:mobile/core/providers/global_project_provider.dart';
 import 'package:mobile/features/notifications/presentation/widgets/notification_bell_button.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile/core/widgets/global_search_delegate.dart';
 
 class OperatorDashboardScreen extends ConsumerWidget {
   const OperatorDashboardScreen({super.key});
@@ -34,7 +35,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
             ),
             onChanged: (String? newValue) {
               if (newValue != null) {
-                ref.read(globalProjectProvider.notifier).state = newValue;
+                ref.read(globalProjectProvider.notifier).setProject(newValue);
                 // In a real app we'd refresh providers that depend on it
               }
             },
@@ -49,7 +50,16 @@ class OperatorDashboardScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         foregroundColor: AeroTheme.primary900,
         elevation: 1,
-        actions: const [NotificationBellButton(), SizedBox(width: 8)],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(context: context, delegate: GlobalSearchDelegate());
+            },
+          ),
+          const NotificationBellButton(),
+          const SizedBox(width: 8),
+        ],
       ),
       body: RefreshIndicator(
         color: AeroTheme.primary500,

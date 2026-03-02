@@ -7,9 +7,17 @@ const availableProjects = [
   {'id': 'proj-3', 'nombre': 'Mantenimiento Gamma'},
 ];
 
-// Stores the currently selected project ID.
-// Null means "All" or "Unselected", though ideally we default to the first one.
-final globalProjectProvider = StateProvider<String?>((ref) {
-  // Default to the first project
-  return availableProjects.first['id'];
-});
+class GlobalProjectNotifier extends Notifier<String?> {
+  @override
+  String? build() {
+    return availableProjects.first['id'];
+  }
+
+  void setProject(String? id) {
+    state = id;
+  }
+}
+
+final globalProjectProvider = NotifierProvider<GlobalProjectNotifier, String?>(
+  () => GlobalProjectNotifier(),
+);

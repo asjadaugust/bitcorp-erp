@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/aero_theme.dart';
 import '../../domain/models/checklist_model.dart';
 import '../providers/checklist_list_provider.dart';
+import 'package:mobile/core/widgets/global_search_delegate.dart';
 
 class ChecklistListScreen extends ConsumerStatefulWidget {
   const ChecklistListScreen({super.key});
@@ -37,6 +38,12 @@ class _ChecklistListScreenState extends ConsumerState<ChecklistListScreen> {
         centerTitle: false,
         elevation: 1,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: AeroTheme.primary900),
+            onPressed: () {
+              showSearch(context: context, delegate: GlobalSearchDelegate());
+            },
+          ),
           IconButton(
             icon: const Icon(
               Icons.notifications_none,

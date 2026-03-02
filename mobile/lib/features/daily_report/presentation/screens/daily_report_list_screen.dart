@@ -5,6 +5,7 @@ import '../../../../core/theme/aero_theme.dart';
 import '../providers/daily_report_list_provider.dart';
 import '../../domain/models/daily_report_model.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:mobile/core/widgets/global_search_delegate.dart';
 
 class DailyReportListScreen extends ConsumerWidget {
   const DailyReportListScreen({super.key});
@@ -17,7 +18,12 @@ class DailyReportListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Reportes Diarios'),
         actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(context: context, delegate: GlobalSearchDelegate());
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_none),
             onPressed: () {},

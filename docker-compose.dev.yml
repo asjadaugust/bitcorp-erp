@@ -58,10 +58,14 @@ services:
       LOG_LEVEL: debug
       ENVIRONMENT: development
       PORT: "3410"
+      PYTHONPATH: /app
     ports:
       - "3410:3410"
     volumes:
       - ./backend:/app
+    command: >
+      bash -c "alembic upgrade head &&
+               uvicorn app.main:app --host 0.0.0.0 --port 3410 --reload"
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,8 +77,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: docker/frontend.Dockerfile
-      target: development
+      dockerfile: docker/frontend.dev.Dockerfile
     container_name: bitcorp-frontend-dev
     environment:
       API_URL: http://backend:3410
