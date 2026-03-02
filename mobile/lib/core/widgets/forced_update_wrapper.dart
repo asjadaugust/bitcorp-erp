@@ -41,7 +41,7 @@ class ForcedUpdateWrapper extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Tu versión actual es \${state.currentVersion}. La versión mínima soportada es \${state.minSupportedVersion}. Por favor, actualiza la aplicación para continuar.',
+                      'Tu versión actual es ${state.currentVersion}. La versión mínima soportada es ${state.minSupportedVersion}. Por favor, actualiza la aplicación para continuar.',
                       style: const TextStyle(
                         fontSize: 16,
                         color: AeroTheme.grey300,

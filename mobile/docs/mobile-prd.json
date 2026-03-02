@@ -1,0 +1,1065 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "Login with email and password",
+      "steps": [
+        "Open app and see the login screen with email and password fields",
+        "Enter a valid operator email address",
+        "Enter a valid password",
+        "Tap 'Login' button",
+        "Verify a loading indicator appears during authentication",
+        "Verify successful login redirects to the Operator Dashboard",
+        "Verify JWT token is stored securely on-device (e.g., flutter_secure_storage)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Login with invalid credentials shows error",
+      "steps": [
+        "Open app login screen",
+        "Enter an invalid email or password",
+        "Tap 'Login' button",
+        "Verify an inline error message is displayed below the form (not a native OS alert)",
+        "Verify the password field is cleared but the email field retains its value"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Role-based access restricts navigation to operator-relevant modules only",
+      "steps": [
+        "Login as an operator (role: OPERADOR)",
+        "Verify the bottom navigation or side menu only shows: Dashboard, Daily Reports, Fuel Vouchers, Checklists, Approvals",
+        "Verify administrative modules (Contracts, Valorizations, Provider Management) are NOT visible",
+        "Login as a supervisor (role: SUPERVISOR)",
+        "Verify additional modules like Daily Report Reception and Equipment Inspection Tracking are visible"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Session persistence across app restarts",
+      "steps": [
+        "Login successfully",
+        "Force-close the app completely",
+        "Reopen the app",
+        "Verify the user is still logged in and redirected to the Dashboard (JWT not expired)",
+        "Verify if JWT is expired, the user is redirected to the login screen"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Logout clears session and navigates to login",
+      "steps": [
+        "Navigate to user profile or settings",
+        "Tap 'Logout' button",
+        "Verify a confirmation dialog appears asking 'Are you sure you want to logout?'",
+        "Confirm logout",
+        "Verify the user is redirected to the login screen",
+        "Verify the stored JWT token is cleared from secure storage"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Operator Dashboard shows summary of today's tasks and pending items",
+      "steps": [
+        "Login as an operator and land on the Dashboard",
+        "Verify Dashboard shows: assigned equipment with its code and description",
+        "Verify Dashboard shows: today's Daily Report status (Submitted / Not Submitted)",
+        "Verify Dashboard shows: pending checklist count (due today or overdue)",
+        "Verify Dashboard shows: pending approval requests count from 'Recibidos' tab",
+        "Verify Dashboard shows: notification badge for unread items",
+        "Tap on the 'Daily Report' card to navigate directly to the New Daily Report form"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Create a new Daily Equipment Report (Parte Diario) with all required fields",
+      "steps": [
+        "Navigate to 'New Daily Report' from Dashboard or Daily Reports list",
+        "Verify the form pre-fills today's date (editable)",
+        "Select assigned equipment from a dropdown (populated from API with equipment code and description)",
+        "Enter 'Horometro Inicio' (start hour meter reading) as a numeric field",
+        "Enter 'Horometro Fin' (end hour meter reading) as a numeric field",
+        "Verify validation: end reading must be greater than or equal to start reading",
+        "Enter 'Odometro Inicio' (start odometer, if applicable) as a numeric field",
+        "Enter 'Odometro Fin' (end odometer, if applicable) as a numeric field",
+        "Verify validation: end odometer must be greater than or equal to start odometer",
+        "Enter 'Horas Efectivas' (effective hours worked) as a numeric field",
+        "Select the work activity from a categorized list or enter free text description",
+        "Add multiple work activities if needed (dynamic list with add/remove)",
+        "Optionally attach a Fuel Voucher reference (link to existing voucher or create new)",
+        "Add optional observations or notes in a multiline text field",
+        "Verify all mandatory fields show validation errors if left empty upon submission attempt"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Daily Report captures standby, delays, and inoperability events",
+      "steps": [
+        "Open a Daily Report form",
+        "Tap 'Add Event' to record a standby period",
+        "Select event type from dropdown: Stand By (Sunday), Stand By (No work front), Stand By (Holiday), Inoperability, Weather Stoppage, Maintenance",
+        "Enter start time and end time for the event",
+        "Verify the system auto-calculates the duration in hours",
+        "Add a reason/description for the event",
+        "Verify multiple events can be added to a single daily report",
+        "Verify events appear in a scrollable list within the form"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Daily Report supports photo attachments",
+      "steps": [
+        "Open a Daily Report form",
+        "Tap 'Attach Photo' button",
+        "Verify option to take a new photo using device camera",
+        "Verify option to select from device gallery",
+        "Take or select a photo",
+        "Verify photo thumbnail preview appears in the form",
+        "Verify multiple photos can be attached (up to a configurable limit, e.g., 5)",
+        "Tap on a photo thumbnail to view it full-screen",
+        "Verify a delete/remove option is available for each attached photo"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Daily Report digital signature before submission",
+      "steps": [
+        "Complete all required fields in the Daily Report form",
+        "Tap 'Sign & Submit' button",
+        "Verify a signature pad canvas appears",
+        "Draw a signature on the canvas using finger/stylus",
+        "Verify 'Clear' button resets the signature canvas",
+        "Tap 'Confirm Signature' to finalize",
+        "Verify the signature is captured and displayed as an image preview"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Submit Daily Report and verify it triggers the approval workflow",
+      "steps": [
+        "Complete and sign a Daily Report",
+        "Tap 'Submit' button",
+        "Verify a loading indicator appears during submission",
+        "Verify submission API call is made with all form data, events, photos, and signature",
+        "Verify a success confirmation dialog/snackbar appears",
+        "Verify the report status changes to 'Pending Approval'",
+        "Navigate to 'Enviados' (Sent) tab in Approvals Hub",
+        "Verify the submitted report appears with status 'Pending at Step 1'",
+        "Navigate to the Daily Reports history list",
+        "Verify the report appears in the list with its date, equipment, status, and summary"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "View Daily Report history with filtering and search",
+      "steps": [
+        "Navigate to 'Daily Reports' list",
+        "Verify reports are listed in reverse chronological order (newest first)",
+        "Verify each list item shows: date, equipment code, status badge (Draft, Pending, Approved, Rejected)",
+        "Filter reports by date range using date picker",
+        "Filter reports by equipment using dropdown",
+        "Filter reports by status (All, Pending, Approved, Rejected)",
+        "Tap on a report to view its full details in read-only mode",
+        "Verify read-only view shows all fields, events, photos, and signature"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Edit a Draft Daily Report before submission",
+      "steps": [
+        "Navigate to Daily Reports list",
+        "Tap on a report with 'Draft' status",
+        "Verify the form opens in edit mode with pre-filled data",
+        "Modify any field (e.g., add an event or change hours)",
+        "Save as draft again or submit",
+        "Verify changes are persisted"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Daily Report validation enforces submission within 1 day (CORP-GEM-P-001 rule)",
+      "steps": [
+        "Attempt to create a Daily Report for a date older than 1 day ago",
+        "Verify a warning message appears: 'Daily reports must be submitted within 1 day of registration'",
+        "Verify the user can still submit but the warning is logged"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Create a new Fuel Voucher (Vale de Combustible)",
+      "steps": [
+        "Navigate to 'Fuel Vouchers' module from navigation",
+        "Tap 'New Voucher' button",
+        "Enter voucher number (text/numeric field)",
+        "Select fuel type from dropdown (Diesel, Gasolina, etc.)",
+        "Enter fuel quantity in gallons (numeric field with decimal support)",
+        "Enter unit price (optional, numeric field)",
+        "Select the equipment that received the fuel from a dropdown",
+        "Take a photo of the physical voucher using the device camera",
+        "Verify photo preview is shown in the form",
+        "Add optional notes/observations",
+        "Tap 'Save' button",
+        "Verify success confirmation appears",
+        "Verify the voucher appears in the Fuel Vouchers list"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Fuel Voucher can be linked to a Daily Report",
+      "steps": [
+        "Create a Fuel Voucher and save it",
+        "Open the Daily Report form",
+        "In the 'Fuel Voucher' section, tap 'Link Voucher'",
+        "Verify a list of unlinked vouchers for the selected equipment appears",
+        "Select the previously created voucher",
+        "Verify the voucher number and quantity appear in the Daily Report form",
+        "Submit the Daily Report",
+        "Verify the linked voucher is included in the submission payload"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "View Fuel Voucher history with list and detail view",
+      "steps": [
+        "Navigate to 'Fuel Vouchers' list",
+        "Verify vouchers are listed with: date, voucher number, equipment, quantity, and linked report status",
+        "Filter vouchers by date range",
+        "Filter vouchers by equipment",
+        "Tap on a voucher to see full details including photo",
+        "Verify the photo can be zoomed in and viewed full-screen"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Execute a Daily Pre-Use Checklist for light vehicles and minor equipment",
+      "steps": [
+        "Navigate to 'Checklists' module",
+        "Tap 'New Checklist'",
+        "Select equipment from dropdown",
+        "Verify the checklist type is auto-determined based on equipment category: Daily for minor equipment and light vehicles",
+        "Verify the checklist template is loaded from the API with categorized inspection items",
+        "Go through each inspection item and mark as Pass or Fail",
+        "For failed items, verify a mandatory comment field appears",
+        "For failed items, verify an optional photo attachment button appears",
+        "Take a photo of the defective item if applicable",
+        "Complete all items in the checklist",
+        "Tap 'Submit Checklist'",
+        "Verify success confirmation appears",
+        "Verify failed items trigger a notification to the Maintenance/SSOMA team via API"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Execute a Weekly Pre-Use Checklist for heavy equipment and heavy vehicles (Monday morning)",
+      "steps": [
+        "Navigate to 'Checklists' module on a Monday",
+        "Tap 'New Checklist'",
+        "Select heavy equipment or heavy vehicle from dropdown",
+        "Verify the checklist type is auto-determined: Weekly for heavy equipment",
+        "Verify the system suggests or enforces that weekly checklists are due on Mondays",
+        "Complete all inspection items with Pass/Fail marks",
+        "Submit the checklist",
+        "Verify the checklist is saved with the correct weekly frequency tag"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "View Checklist history and overdue status",
+      "steps": [
+        "Navigate to 'Checklists' list",
+        "Verify checklists are listed with: date, equipment, type (Daily/Weekly), pass/fail summary, status",
+        "Verify overdue checklists are highlighted with a visual indicator (e.g., accent-500 badge)",
+        "Filter checklists by equipment, date range, or status",
+        "Tap on a checklist to view its full details in read-only mode",
+        "Verify all items, comments, and photos are visible in the detail view"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Report equipment inoperability incident directly from checklist or standalone",
+      "steps": [
+        "From a checklist with failed critical items, tap 'Report Inoperability'",
+        "Alternatively, navigate to equipment detail and tap 'Report Incident'",
+        "Enter incident description (mandatory, multiline text)",
+        "Select severity level (Minor, Major, Critical) from dropdown",
+        "Take photos of the issue (at least 1 required for Major/Critical)",
+        "Enter estimated hours of inoperability (numeric field)",
+        "Submit the incident report",
+        "Verify the equipment status is updated to 'Inoperative' in the system",
+        "Verify a notification is sent to the Equipment Manager (Responsable de Equipo Mecanico)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "View assigned equipment details and documentation status",
+      "steps": [
+        "Navigate to 'My Equipment' section from Dashboard or navigation",
+        "Verify a list of assigned equipment appears with: code, type, brand, model",
+        "Tap on an equipment item to see its detail view",
+        "Verify detail view shows: full specifications (marca, modelo, serie, placa, ano, potencia neta)",
+        "Verify detail view shows: contract status (active/expired)",
+        "Verify detail view shows: document compliance status (SOAT, TREC insurance, technical inspection)",
+        "Verify detail view shows: upcoming document expirations with warning badges",
+        "Verify detail view shows: recent Daily Reports and Checklists for this equipment"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Navigate Approvals Hub with Received and Sent tabs",
+      "steps": [
+        "Navigate to 'Approvals' from the main navigation",
+        "Verify two tabs are visible: 'Recibidos' (Received) and 'Enviados' (Sent)",
+        "Tap 'Recibidos' tab",
+        "Verify a list of pending approval items is shown with: title, requester name, date, current step label",
+        "Verify items are sorted by most recent first",
+        "Verify a badge count on the tab shows the number of pending items",
+        "Tap 'Enviados' tab",
+        "Verify a list of user-initiated requests is shown with: title, date, status (Pending at Step X, Approved, Rejected)",
+        "Verify completed items show final status with approval/rejection date"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Review and take action on a received approval request",
+      "steps": [
+        "Open a pending item from the 'Recibidos' tab",
+        "Verify the detail view shows: title, description, attachments (tappable for preview), requester info",
+        "Verify the detail view shows: approval workflow steps with the current step highlighted",
+        "Verify the detail view shows: history of previous approvers' actions and comments",
+        "Type an optional comment in the comment field",
+        "Tap 'Approve' button",
+        "Verify a confirmation dialog appears: 'Are you sure you want to approve this request?'",
+        "Confirm the action",
+        "Verify success feedback and the item is removed from the 'Recibidos' list",
+        "Verify the workflow advances to the next step (visible if checking 'Enviados' as the requester)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Reject a received approval request with mandatory comment",
+      "steps": [
+        "Open a pending item from the 'Recibidos' tab",
+        "Tap 'Reject' button",
+        "Verify a mandatory comment field appears (cannot reject without a reason)",
+        "Enter a rejection reason",
+        "Confirm the rejection",
+        "Verify the request status changes to 'Rejected' with the comment logged",
+        "Verify the requester sees the rejection and comment in their 'Enviados' tab"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Create an Ad-Hoc (free-form) approval request",
+      "steps": [
+        "Navigate to Approvals Hub",
+        "Tap 'New Request' / '+' FAB button",
+        "Select 'Ad-Hoc Request' type",
+        "Enter a title (mandatory, text field, max 100 chars)",
+        "Enter a description/body (mandatory, multiline text field)",
+        "Attach supporting documents: tap 'Attach' to take a photo or select a file (PDF, image)",
+        "Verify multiple attachments can be added (up to 5)",
+        "Tap 'Add Approvers' -- search and select users by name or role",
+        "Verify at least one approver is required",
+        "Optionally tap 'Add CC/Informed' -- search and select users",
+        "Review the request summary",
+        "Tap 'Submit' button",
+        "Verify the request appears in the 'Enviados' tab with status 'Pending at Step 1'"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Module-integrated approval triggers automatically on Daily Report submission",
+      "steps": [
+        "Submit a completed Daily Report",
+        "Verify the backend API instantiates the approval workflow based on the active template (e.g., Operator -> Supervisor -> Resident Engineer)",
+        "Verify the report status shows 'Pending Approval' in the Daily Reports list",
+        "Verify the report appears in the 'Enviados' tab of the Approvals Hub with the correct step progress",
+        "Login as the next approver in the chain (e.g., Supervisor)",
+        "Verify the report appears in their 'Recibidos' tab"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Approval workflow supports fast-track routing (skip middle management)",
+      "steps": [
+        "Configure a project's Daily Report template to skip the Supervisor step (Operator -> Resident Engineer directly)",
+        "Submit a Daily Report as an operator",
+        "Verify the request goes directly to the Resident Engineer (no Supervisor step)",
+        "Verify the Resident Engineer sees it in their 'Recibidos' tab",
+        "Approve the request as Resident Engineer",
+        "Verify the report status changes to 'Approved'"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "View approval workflow step history and immutable audit trail",
+      "steps": [
+        "Open a completed (approved or rejected) request from 'Enviados' tab",
+        "Verify a step-by-step timeline is displayed showing: step number, approver name/role, action (Approved/Rejected), timestamp, comment",
+        "Verify the timeline is read-only and cannot be modified",
+        "Verify the template version (e.g., V1) is displayed for audit purposes"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Offline mode: create and save Daily Reports without network connectivity",
+      "steps": [
+        "Disable device network connection (airplane mode or turn off Wi-Fi/data)",
+        "Open the Daily Report form",
+        "Fill in all required fields, add events, take photos, and sign",
+        "Tap 'Save as Draft' or 'Submit'",
+        "Verify the report is saved locally with a 'Pending Sync' status badge",
+        "Verify a toast/snackbar message informs the user: 'Saved offline. Will sync when connected.'",
+        "Navigate to the Daily Reports list",
+        "Verify the offline report appears in the list with a 'Pending Sync' icon"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Offline mode: create and save Checklists without network connectivity",
+      "steps": [
+        "Disable device network connection",
+        "Open the Checklists module and create a new checklist",
+        "Complete all inspection items",
+        "Submit the checklist",
+        "Verify it is saved locally with 'Pending Sync' status",
+        "Verify photos are stored on-device until sync"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Automatic sync when network connectivity is restored",
+      "steps": [
+        "Create one or more offline records (Daily Reports, Checklists, Fuel Vouchers)",
+        "Re-enable device network connection",
+        "Verify the app automatically detects connectivity restoration",
+        "Verify a sync indicator appears (e.g., a sync icon in the app bar)",
+        "Verify all 'Pending Sync' records are uploaded to the backend API",
+        "Verify each record's status changes from 'Pending Sync' to 'Submitted' or 'Pending Approval'",
+        "Verify any sync failures show an error with retry option"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Offline data conflict resolution",
+      "steps": [
+        "Create an offline Daily Report for equipment X",
+        "Meanwhile, another user submits a Daily Report for equipment X on the same date via the web app",
+        "Restore connectivity and trigger sync",
+        "Verify the app detects the conflict",
+        "Verify the user is presented with conflict resolution options: overwrite remote, keep remote, or save as new draft"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Push notifications for pending approvals and status changes",
+      "steps": [
+        "Submit a Daily Report that triggers an approval workflow",
+        "Login as the approver on a different device",
+        "Verify a push notification is received: 'New approval request: Parte Diario [date] from [operator name]'",
+        "Tap the push notification",
+        "Verify the app opens directly to the approval detail view",
+        "Approve the request",
+        "Verify the original requester receives a push notification: 'Your Daily Report [date] has been approved by [approver name]'"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "In-app notification center with unread badge",
+      "steps": [
+        "Verify notification bell icon is visible in the app bar",
+        "Verify an unread count badge appears when new notifications exist",
+        "Tap the notification bell to open the notification center",
+        "Verify notifications are listed with: icon, title, description, timestamp, and read/unread state",
+        "Tap a notification to navigate to the relevant screen",
+        "Verify the notification is marked as read after tapping"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Supervisor: Receive and review Daily Reports from operators (Seguimiento y Control)",
+      "steps": [
+        "Login as a supervisor",
+        "Navigate to 'Daily Report Reception' or 'Recibidos' in Approvals",
+        "Verify a list of incoming Daily Reports appears with: date, operator name, equipment, status",
+        "Tap on a report to review its full details",
+        "Verify all fields (hours, activities, events, fuel, photos, signature) are visible in read-only mode",
+        "Add a comment/observation if needed",
+        "Approve or reject the report from this view",
+        "Verify the tracking log (CORP-GEM-F-007) is updated"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Supervisor: View equipment inspection tracking dashboard (CORP-GEM-F-008)",
+      "steps": [
+        "Login as a supervisor or equipment manager",
+        "Navigate to 'Equipment Inspections' section",
+        "Verify a summary dashboard shows: total equipment count, inspected this period, overdue inspections, open observations",
+        "Tap on an equipment item to see its inspection history",
+        "Verify open observations from checklists and daily reports are listed",
+        "Verify each observation shows: date reported, description, photo (if any), resolution status",
+        "Mark an observation as 'Resolved' with a comment"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "View monthly Valorization summary (read-only for field users)",
+      "steps": [
+        "Navigate to 'Valorizations' from the navigation (if role permits)",
+        "Verify a list of monthly valorization periods is shown",
+        "Tap on a period to see the valorization summary for assigned equipment",
+        "Verify the summary shows: total effective days/hours, minimum days/hours, days/hours to valorize, tariff, gross amount, deductions, net amount",
+        "Verify the deduction breakdown shows: fuel handling, parts/repairs, advances",
+        "Verify the data is read-only (no editing from mobile)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "View equipment contract details (read-only)",
+      "steps": [
+        "Navigate to equipment detail view",
+        "Tap 'Contract' tab or section",
+        "Verify contract details are displayed: contract number, start date, end date, tariff type (hourly/daily/monthly), tariff amount, modality (Seca Operada, Seca No Operada, etc.)",
+        "Verify Annex A information is shown: what the tariff includes (maintenance, operator, fuel, insurance, etc.)",
+        "Verify contract status badge: Active, Expired, Renewed",
+        "Verify the data is read-only (no editing from mobile)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Equipment document expiration warnings",
+      "steps": [
+        "View equipment detail",
+        "Verify document compliance section shows: SOAT status, TREC insurance status, Technical Inspection Certificate status, Operator License status",
+        "Verify documents expiring within 30 days show a warning badge",
+        "Verify expired documents show an error badge",
+        "Verify tapping on a document row shows its expiration date and renewal instructions"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Search across all modules from a global search bar",
+      "steps": [
+        "Tap the search icon in the app bar",
+        "Type a query (e.g., equipment code, report date, voucher number)",
+        "Verify search results are grouped by category: Daily Reports, Fuel Vouchers, Checklists, Equipment, Approvals",
+        "Tap a result to navigate directly to the item's detail view",
+        "Verify recent searches are displayed when the search field is empty"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Pull-to-refresh on all list screens",
+      "steps": [
+        "Navigate to any list screen (Daily Reports, Fuel Vouchers, Checklists, Approvals)",
+        "Pull down on the list to trigger a refresh",
+        "Verify a refresh indicator appears",
+        "Verify the list data is re-fetched from the API",
+        "Verify newly added items from other devices appear after refresh"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Paginated loading for long lists with infinite scroll",
+      "steps": [
+        "Navigate to a list screen with more than 20 items (e.g., Daily Reports)",
+        "Verify the first page of results loads (e.g., 20 items)",
+        "Scroll to the bottom of the list",
+        "Verify a loading indicator appears at the bottom",
+        "Verify the next page of results loads and appends to the list",
+        "Continue scrolling until all items have been loaded",
+        "Verify a 'No more items' indicator appears at the end"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Color palette strictly follows design-tokens.json gold standard",
+      "steps": [
+        "Inspect the app's visual elements across all screens",
+        "Verify primary text color is #072b45 (primary-900)",
+        "Verify interactive elements (buttons, links, toggles) use #0077cd (primary-500)",
+        "Verify app background / scaffold background is #ebf3f8 (primary-100)",
+        "Verify card backgrounds use #f6f7f8 (grey-100) or white",
+        "Verify accent color #e37222 (accent-500) is used sparingly for highlights",
+        "Verify informative states (info badges, info alerts) use #006fc9 (semantic-blue-500)",
+        "Verify KLM Blue (#00a1de) is NOT used anywhere in the UI (branding only)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Typography follows Aero Design System hierarchy",
+      "steps": [
+        "Verify headlines use a display-weight sans-serif font (or system equivalent of Universal Sans Display)",
+        "Verify body text uses a regular-weight sans-serif font (or system equivalent of Universal Sans)",
+        "Verify body text default size is 14px-16px depending on density",
+        "Verify heading hierarchy: H1 > H2 > H3 is visually distinct and consistent",
+        "Verify labels and captions use the designated smaller size (12px equivalent)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Spacing follows Aero spacing scale tokens",
+      "steps": [
+        "Inspect padding and margins across multiple screens",
+        "Verify spacing values are multiples of 4px (consistent with the spacing scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 72, 80)",
+        "Verify vertical gap between form fields is 24px",
+        "Verify horizontal gap between paired form fields (e.g., start/end dates) is 16px",
+        "Verify card internal padding is 16px or 24px",
+        "Verify list item vertical padding is 8px or 12px"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Buttons follow Aero action hierarchy and styling",
+      "steps": [
+        "Verify primary action buttons use filled style with primary-500 background and white text",
+        "Verify secondary action buttons use outlined style with primary-500 border and primary-500 text",
+        "Verify tertiary/text buttons have no border/background, only text in primary-500",
+        "Verify only one primary action button is visible per screen/view",
+        "Verify destructive actions use accent-500 styling",
+        "Verify button corner radius matches design system (radius-sm = 4px or radius-md = 8px)",
+        "Verify minimum touch target size is 48x48dp for all buttons"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Form inputs match Aero input component styling",
+      "steps": [
+        "Navigate to any form (Daily Report, Fuel Voucher, Checklist)",
+        "Verify text inputs have a visible border (grey-300) and label above the field",
+        "Verify focused inputs have a primary-500 border highlight",
+        "Verify error states show a visual indicator (accent border + error message below field)",
+        "Verify dropdown/select components match Aero dropdown aesthetics (not native OS picker)",
+        "Verify date pickers use a styled calendar component (not native OS date picker)",
+        "Verify all inputs have sufficient touch area (48dp height minimum)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Cards match Aero card component styling",
+      "steps": [
+        "Navigate to the Dashboard and any list screen",
+        "Verify cards have white background with subtle elevation/shadow",
+        "Verify cards have consistent corner radius (radius-md = 8px)",
+        "Verify cards have consistent internal padding (16px or 24px)",
+        "Verify card titles follow the heading hierarchy",
+        "Verify action buttons within cards are aligned to the bottom or right"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Status badges use consistent visual language",
+      "steps": [
+        "Navigate to any list with status indicators (Daily Reports, Approvals, Checklists)",
+        "Verify 'Approved' / 'Pass' statuses use semantic-blue-100 background with semantic-blue-500 text",
+        "Verify 'Pending' statuses use grey-100 background with grey-700 text",
+        "Verify 'Rejected' / 'Fail' statuses use accent-500-related background with dark text",
+        "Verify 'Draft' statuses use grey-200 background with grey-900 text",
+        "Verify all badges have consistent padding, border-radius (radius-sm), and font size"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Modals and dialogs follow Aero guidelines (no native OS alerts)",
+      "steps": [
+        "Trigger any confirmation dialog (e.g., logout, submit, delete, approve, reject)",
+        "Verify the dialog is a custom Flutter widget matching Aero card styling",
+        "Verify native window.confirm / alert equivalents are NOT used",
+        "Verify the dialog has: title, description, and action buttons",
+        "Verify the primary action button is positioned at the bottom right",
+        "Verify the background overlay uses primary-900 at 90% opacity (--overlay-backdrop)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Forms follow single-column layout for mobile devices",
+      "steps": [
+        "Open any form on a standard phone (360-412px width)",
+        "Verify all form fields are laid out in a single column",
+        "Verify no horizontal scrolling is required",
+        "Verify the submit/primary action button is full-width or prominently placed",
+        "Verify form sections are visually separated with section headers or dividers"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Tablet layout adapts to larger screen real estate",
+      "steps": [
+        "Open the app on an Android tablet (768-800px width)",
+        "Verify forms may use two-column layout for related field pairs where appropriate",
+        "Verify list views expand with more visible data per row",
+        "Verify the navigation adapts (e.g., permanent side nav instead of bottom nav on tablets)",
+        "Verify modals are not full-screen on tablets but centered with max-width",
+        "Verify content areas have appropriate max-width to prevent overly wide text lines"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Responsive layout handles orientation changes (portrait and landscape)",
+      "steps": [
+        "Open any screen on a phone in portrait mode",
+        "Rotate the device to landscape",
+        "Verify the UI adapts without content being cut off",
+        "Verify forms remain scrollable and usable in landscape",
+        "Verify the navigation adjusts appropriately",
+        "Rotate back to portrait and verify the UI reverts correctly"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Navigation uses bottom navigation bar on phones",
+      "steps": [
+        "Open the app on a phone",
+        "Verify a bottom navigation bar is present with icons and labels for: Dashboard, Reports, Vouchers, Checklists, Approvals",
+        "Verify the active tab is highlighted with primary-500 color",
+        "Verify inactive tabs use grey-700 color",
+        "Tap each tab and verify navigation to the correct screen",
+        "Verify the bottom nav remains visible on all main screens (hidden during full-screen forms if appropriate)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "App bar with consistent header pattern",
+      "steps": [
+        "Navigate through various screens",
+        "Verify the app bar shows the screen title in primary-900",
+        "Verify a back arrow appears on sub-screens (not on main dashboard tab screens)",
+        "Verify a notification bell icon is visible on the main screens",
+        "Verify a user avatar/initials icon is present for accessing profile/settings",
+        "Verify the app bar background is white or primary-100"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Empty states provide helpful guidance and actions",
+      "steps": [
+        "Navigate to a list screen with no data (e.g., new user with no Daily Reports)",
+        "Verify an empty state illustration or icon is displayed",
+        "Verify a descriptive message explains why the list is empty (e.g., 'No daily reports yet')",
+        "Verify a CTA button is available to create the first item (e.g., 'Create First Report')"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Loading states provide visual feedback on all data-fetching operations",
+      "steps": [
+        "Navigate to any screen that loads data from the API",
+        "Verify a shimmer/skeleton loading state appears while data is being fetched",
+        "Verify the shimmer placeholder matches the approximate layout of the expected content",
+        "Verify the loading state transitions smoothly to the loaded content",
+        "Verify no blank/white screen flashes during data loading"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Error states show clear messages with retry options",
+      "steps": [
+        "Simulate a network error (e.g., API down or timeout)",
+        "Verify an error message appears: 'Unable to load data. Please try again.'",
+        "Verify a 'Retry' button is visible",
+        "Tap 'Retry' and verify the request is re-attempted",
+        "Verify the error state uses the appropriate Aero notification styling"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Mobile app is an isolated project within the monorepo",
+      "steps": [
+        "Verify the Flutter app is created in a dedicated directory (e.g., /mobile)",
+        "Verify the mobile app has its own pubspec.yaml, lib/, test/ directories",
+        "Verify the mobile app only interacts with the backend via REST API calls",
+        "Verify no direct imports or dependencies on the Angular frontend code",
+        "Verify no modifications to the Node.js/NestJS backend are required to support the mobile app (uses existing API endpoints)",
+        "Verify the mobile app can be built and tested independently of the frontend/backend"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Application primarily targets Android devices",
+      "steps": [
+        "Verify the Flutter project has Android configured as the primary target platform",
+        "Verify compileSdkVersion and targetSdkVersion are set to modern Android API levels (34+)",
+        "Verify camera, storage, and network permissions are declared in AndroidManifest.xml",
+        "Verify the minSdkVersion supports the majority of field devices (API 23+ / Android 6.0+)",
+        "Verify iOS support is secondary but does not break the project structure"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "API layer uses a centralized HTTP client with auth headers and error handling",
+      "steps": [
+        "Verify all API calls go through a centralized HTTP client/service",
+        "Verify the client automatically attaches the JWT Bearer token to all requests",
+        "Verify the client handles 401 Unauthorized responses by redirecting to login",
+        "Verify the client handles network timeouts with a user-facing error message",
+        "Verify all API base URLs are configurable via environment/build flavors (dev, staging, prod)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Local database for offline storage using SQLite or Hive",
+      "steps": [
+        "Verify a local database (e.g., sqflite, drift, or Hive) is configured",
+        "Verify Daily Reports, Checklists, and Fuel Vouchers can be serialized to and from the local database",
+        "Verify the local database schema mirrors the API response structures",
+        "Verify a sync queue table tracks items pending upload",
+        "Verify the local database is initialized at app startup"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Secure storage for sensitive data (JWT tokens, credentials)",
+      "steps": [
+        "Verify flutter_secure_storage or equivalent is used for JWT token storage",
+        "Verify tokens are NOT stored in SharedPreferences or plain text files",
+        "Verify the app does not log sensitive data (tokens, passwords) to the console in production",
+        "Verify biometric authentication (fingerprint/face) can optionally be used to unlock the app"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "State management follows a predictable, testable pattern",
+      "steps": [
+        "Verify a state management solution is in place (e.g., Riverpod, BLoC, or Provider)",
+        "Verify global app state (auth, user profile, selected project) is managed centrally",
+        "Verify feature-specific state (form data, list filters) is scoped to the feature",
+        "Verify state changes trigger UI rebuilds predictably",
+        "Verify state management logic is unit-testable"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Multi-tenant support via project/empresa context",
+      "steps": [
+        "Login as a user assigned to multiple projects",
+        "Verify a project selector is available (e.g., in the app bar or settings)",
+        "Switch between projects",
+        "Verify all data (equipment, reports, vouchers, checklists, approvals) is scoped to the selected project",
+        "Verify the API calls include the appropriate id_empresa and id_proyecto headers or params"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Image compression before upload to reduce bandwidth usage in field conditions",
+      "steps": [
+        "Take a high-resolution photo (e.g., 12MP camera)",
+        "Verify the app compresses the image before uploading (target max ~1MB or 1920px longest side)",
+        "Verify the compression does not make the image unusable for inspection purposes",
+        "Verify the original photo is not retained on-device after upload (to save storage)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "App versioning and forced update mechanism",
+      "steps": [
+        "Verify the app displays the current version number in Settings/About",
+        "Verify the app checks the API for the minimum supported version at startup",
+        "If the current version is below the minimum, verify a blocking dialog prompts the user to update",
+        "Verify the update dialog links to the Play Store (or internal APK distribution)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Daily Report detail view (read-only)",
+      "steps": [
+        "Navigate to Daily Reports list",
+        "Tap on a report to open the detail view",
+        "Verify all fields are displayed in read-only mode: date, equipment, hours, activities, events",
+        "Verify photos and signature are visible",
+        "Verify status badge and approval history are shown"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Fuel Voucher detail view with photo display",
+      "steps": [
+        "Navigate to Fuel Vouchers list",
+        "Tap on a voucher to open the detail view",
+        "Verify all fields displayed: voucher number, equipment, fuel type, quantity, price",
+        "Verify photo of the voucher is displayed"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Checklist history/detail view",
+      "steps": [
+        "Navigate to Checklists list",
+        "Tap on a checklist to open the detail view",
+        "Verify all inspection items are displayed with pass/fail status",
+        "Verify failed items show comments and photos",
+        "Verify overall status and submission date are shown"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Valorization detail with breakdown",
+      "steps": [
+        "Navigate to Valorizations list",
+        "Tap on a valorization period",
+        "Verify summary totals are displayed: effective hours/days, tariff, gross amount",
+        "Verify deduction breakdown is visible"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Page transition animations",
+      "steps": [
+        "Navigate between screens using bottom nav and push routes",
+        "Verify smooth slide/fade transitions between pages",
+        "Verify no jarring instant transitions"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Haptic feedback on key actions",
+      "steps": [
+        "Submit a form (Daily Report, Checklist, Voucher)",
+        "Verify medium haptic feedback is triggered on successful submission",
+        "Verify haptic feedback on approval/rejection actions"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Offline connectivity banner",
+      "steps": [
+        "Disable network connectivity",
+        "Verify a dark banner appears at the top: 'Sin conexion - los cambios se guardan localmente'",
+        "Re-enable connectivity",
+        "Verify the banner disappears"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Consistent shimmer loading states across all screens",
+      "steps": [
+        "Navigate to any list screen while data is loading",
+        "Verify shimmer placeholders appear matching the expected content layout",
+        "Verify the shimmer animation is consistent across all list screens"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Consistent error states with retry across all screens",
+      "steps": [
+        "Simulate an API error on any list screen",
+        "Verify the ErrorStateWidget appears with message and retry button",
+        "Tap retry and verify the request is re-attempted"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Discard changes confirmation on form back navigation",
+      "steps": [
+        "Open any form (Daily Report, Checklist, Voucher, Incident)",
+        "Start filling in fields",
+        "Press the back button",
+        "Verify a confirmation dialog appears asking to discard changes",
+        "Cancel and verify you remain on the form",
+        "Confirm and verify you navigate back"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Reusable shared widgets (StatusBadge, EmptyState, ErrorState, ShimmerLoading)",
+      "steps": [
+        "Verify StatusBadge widget exists with consistent color mapping for all statuses",
+        "Verify EmptyStateWidget exists with icon, title, subtitle, and optional CTA button",
+        "Verify ErrorStateWidget exists with error message and retry callback",
+        "Verify ShimmerLoading widget exists for list loading placeholders",
+        "Verify all list screens use these shared widgets consistently"
+      ],
+      "passes": true
+    },
+    {
+      "category": "architecture",
+      "description": "Real sync service with connectivity-driven queue processing",
+      "steps": [
+        "Verify sync service processes pending items from all data types (reports, checklists, vouchers)",
+        "Verify sync triggers automatically when connectivity is restored",
+        "Verify pending count badge appears in bottom navigation",
+        "Verify sync errors are surfaced to the user via snackbar"
+      ],
+      "passes": true
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 import 'package:path/path.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 part 'local_database.g.dart';
 
@@ -14,12 +16,24 @@ class LocalDatabase {
   }
 
   Future<Database> _initDB(String filePath) async {
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+      final path = filePath;
+
+      return await openDatabase(
+        path,
+        version: 5,
+        onCreate: _createDB,
+        onUpgrade: _upgradeDB,
+      );
+    }
+
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -82,6 +96,37 @@ class LocalDatabase {
         )
       ''');
     }
+    // v4: ensure combustibles exists on any DB that was created before v3
+    // migration ran (e.g., web DBs from early dev). Safe to run multiple times.
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS combustibles (
+          id TEXT PRIMARY KEY,
+          numero_vale TEXT,
+          fecha TEXT,
+          tipo_combustible TEXT,
+          cantidad_galones REAL,
+          precio_unitario REAL,
+          id_equipo TEXT,
+          foto_path TEXT,
+          notas TEXT,
+          estado TEXT,
+          sync_status TEXT
+        )
+      ''');
+    }
+    // v5: fix dashboard_summary schema — old schema had individual columns,
+    // DashboardLocalSource expects a JSON payload blob.
+    if (oldVersion < 5) {
+      await db.execute('DROP TABLE IF EXISTS dashboard_summary');
+      await db.execute('''
+        CREATE TABLE dashboard_summary (
+          id TEXT PRIMARY KEY,
+          payload TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      ''');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -89,12 +134,8 @@ class LocalDatabase {
     await db.execute('''
       CREATE TABLE dashboard_summary (
         id TEXT PRIMARY KEY,
-        equipment_code TEXT,
-        equipment_description TEXT,
-        daily_report_status TEXT,
-        pending_checklist_count INTEGER,
-        pending_approval_count INTEGER,
-        last_updated INTEGER
+        payload TEXT NOT NULL,
+        updated_at TEXT NOT NULL
       )
     ''');
 
@@ -186,6 +227,22 @@ class LocalDatabase {
         id TEXT PRIMARY KEY,
         report_id TEXT,
         file_path TEXT
+      )
+    ''');
+    // Combustibles (Vale de Combustible) offline cache
+    await db.execute('''
+      CREATE TABLE combustibles (
+        id TEXT PRIMARY KEY,
+        numero_vale TEXT,
+        fecha TEXT,
+        tipo_combustible TEXT,
+        cantidad_galones REAL,
+        precio_unitario REAL,
+        id_equipo TEXT,
+        foto_path TEXT,
+        notas TEXT,
+        estado TEXT,
+        sync_status TEXT
       )
     ''');
   }

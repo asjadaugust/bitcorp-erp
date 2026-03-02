@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
@@ -6,14 +7,19 @@ import 'package:mobile/core/widgets/app_shell.dart';
 import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:mobile/features/daily_report/presentation/screens/daily_report_list_screen.dart';
 import 'package:mobile/features/daily_report/presentation/screens/daily_report_form_screen.dart';
+import 'package:mobile/features/daily_report/presentation/screens/daily_report_detail_screen.dart';
+import 'package:mobile/features/daily_report/domain/models/daily_report_model.dart';
 import 'package:mobile/features/dashboard/presentation/screens/operator_dashboard_screen.dart';
 import 'package:mobile/features/dashboard/presentation/screens/supervisor_dashboard_screen.dart';
 import 'package:mobile/features/checklists/presentation/screens/checklist_list_screen.dart';
 import 'package:mobile/features/checklists/presentation/screens/checklist_form_screen.dart';
-import 'package:mobile/features/checklists/presentation/screens/incidente_form_screen.dart';
+import 'package:mobile/features/checklists/presentation/screens/checklist_detail_screen.dart';
+import 'package:mobile/features/checklists/domain/models/checklist_model.dart';
 import 'package:mobile/features/checklists/presentation/screens/incidente_form_screen.dart';
 import 'package:mobile/features/vouchers/presentation/screens/vale_list_screen.dart';
 import 'package:mobile/features/vouchers/presentation/screens/vale_form_screen.dart';
+import 'package:mobile/features/vouchers/presentation/screens/vale_detail_screen.dart';
+import 'package:mobile/features/vouchers/domain/models/vale_combustible_model.dart';
 import 'package:mobile/features/approvals/presentation/screens/approvals_hub_screen.dart';
 import 'package:mobile/features/approvals/presentation/screens/approval_detail_screen.dart';
 import 'package:mobile/features/approvals/presentation/screens/ad_hoc_approval_form_screen.dart';
@@ -79,6 +85,16 @@ GoRouter goRouter(Ref ref) {
                     path: 'new',
                     builder: (context, state) => const DailyReportFormScreen(),
                   ),
+                  GoRoute(
+                    path: ':id',
+                    pageBuilder: (context, state) {
+                      final report = state.extra as DailyReportModel;
+                      return _slideTransition(
+                        state,
+                        DailyReportDetailScreen(report: report),
+                      );
+                    },
+                  ),
                 ],
               ),
             ],
@@ -92,6 +108,16 @@ GoRouter goRouter(Ref ref) {
                   GoRoute(
                     path: 'new',
                     builder: (context, state) => const ValeFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    pageBuilder: (context, state) {
+                      final vale = state.extra as ValeCombustibleModel;
+                      return _slideTransition(
+                        state,
+                        ValeDetailScreen(vale: vale),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -111,6 +137,16 @@ GoRouter goRouter(Ref ref) {
                     path: 'incidente',
                     builder: (context, state) => const IncidenteFormScreen(),
                   ),
+                  GoRoute(
+                    path: ':id',
+                    pageBuilder: (context, state) {
+                      final checklist = state.extra as ChecklistModel;
+                      return _slideTransition(
+                        state,
+                        ChecklistDetailScreen(checklist: checklist),
+                      );
+                    },
+                  ),
                 ],
               ),
             ],
@@ -128,9 +164,12 @@ GoRouter goRouter(Ref ref) {
                   ),
                   GoRoute(
                     path: ':id',
-                    builder: (context, state) {
+                    pageBuilder: (context, state) {
                       final item = state.extra as ApprovalRequestModel;
-                      return ApprovalDetailScreen(request: item);
+                      return _slideTransition(
+                        state,
+                        ApprovalDetailScreen(request: item),
+                      );
                     },
                   ),
                 ],
@@ -151,5 +190,25 @@ GoRouter goRouter(Ref ref) {
         builder: (context, state) => const ValorizationsListScreen(),
       ),
     ],
+  );
+}
+
+/// Slide-from-right page transition for detail routes.
+CustomTransitionPage<void> _slideTransition(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final tween = Tween<Offset>(
+        begin: const Offset(1.0, 0.0),
+        end: Offset.zero,
+      ).chain(CurveTween(curve: Curves.easeOutCubic));
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+      );
+    },
   );
 }

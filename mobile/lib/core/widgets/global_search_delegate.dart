@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/theme/aero_theme.dart';
@@ -19,47 +20,12 @@ class SearchResult {
 }
 
 class GlobalSearchDelegate extends SearchDelegate<String?> {
-  // Mock data source
-  final List<SearchResult> defaultResults = const [
-    SearchResult(
-      id: 'eq-001',
-      title: 'EXC-001',
-      subtitle: 'Excavadora Orugas Cat 336D',
-      category: 'Equipos',
-      route: '/equipment/eq-001',
-    ),
-    SearchResult(
-      id: 'eq-002',
-      title: 'VOL-045',
-      subtitle: 'Volquete Volvo FMX 440',
-      category: 'Equipos',
-      route: '/equipment/eq-002',
-    ),
-    SearchResult(
-      id: 'dr-101',
-      title: 'Parte Diario: 2026-03-01',
-      subtitle: 'EXC-001 - Juan Perez',
-      category: 'Partes Diarios',
-      route: '/reports',
-    ),
-    SearchResult(
-      id: 'val-001',
-      title: 'Vale: VC-9921',
-      subtitle: '50 Gls Diesel - EXC-001',
-      category: 'Vales de Combustible',
-      route: '/vouchers',
-    ),
-    SearchResult(
-      id: 'chk-001',
-      title: 'Checklist Semanal',
-      subtitle: 'VOL-045 - Aprobado',
-      category: 'Checklists',
-      route: '/checklists',
-    ),
-  ];
+  final Dio _dio;
+
+  GlobalSearchDelegate(this._dio);
 
   @override
-  String get searchFieldLabel => 'Buscar...';
+  String get searchFieldLabel => 'Buscar equipos, reportes...';
 
   @override
   TextStyle? get searchFieldStyle =>
@@ -103,7 +69,7 @@ class GlobalSearchDelegate extends SearchDelegate<String?> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return _buildResultList(context);
+    return _buildSearchResults(context);
   }
 
   @override
@@ -121,7 +87,7 @@ class GlobalSearchDelegate extends SearchDelegate<String?> {
             ),
             SizedBox(height: 8),
             Text(
-              'Busca equipos, partes diarios, vales, etc.',
+              'Busca equipos, partes diarios y más.',
               style: TextStyle(color: AeroTheme.grey500),
             ),
           ],
@@ -129,79 +95,173 @@ class GlobalSearchDelegate extends SearchDelegate<String?> {
       );
     }
 
-    return _buildResultList(context);
-  }
-
-  Widget _buildResultList(BuildContext context) {
-    final lowerQuery = query.toLowerCase();
-
-    // Filter results
-    final filtered = defaultResults.where((r) {
-      return r.title.toLowerCase().contains(lowerQuery) ||
-          r.subtitle.toLowerCase().contains(lowerQuery) ||
-          r.id.toLowerCase().contains(lowerQuery);
-    }).toList();
-
-    if (filtered.isEmpty) {
+    if (query.length < 2) {
       return const Center(
         child: Text(
-          'No se encontraron resultados',
+          'Escribe al menos 2 caracteres para buscar',
           style: TextStyle(color: AeroTheme.grey500),
         ),
       );
     }
 
-    // Group by category
-    final grouped = <String, List<SearchResult>>{};
-    for (var r in filtered) {
-      grouped.putIfAbsent(r.category, () => []).add(r);
-    }
+    return _buildSearchResults(context);
+  }
 
-    return ListView.builder(
-      itemCount: grouped.keys.length,
-      itemBuilder: (context, index) {
-        final category = grouped.keys.elementAt(index);
-        final items = grouped[category]!;
+  Widget _buildSearchResults(BuildContext context) {
+    return FutureBuilder<List<SearchResult>>(
+      future: _performSearch(query),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: AeroTheme.primary500),
+          );
+        }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                category,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AeroTheme.primary500,
-                  fontSize: 12,
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: AeroTheme.grey500),
+                const SizedBox(height: 16),
+                Text(
+                  'Error al buscar',
+                  style: TextStyle(color: AeroTheme.grey700, fontSize: 16),
                 ),
-              ),
+              ],
             ),
-            ...items.map(
-              (item) => ListTile(
-                leading: _getCategoryIcon(category),
-                title: Text(
-                  item.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AeroTheme.primary900,
+          );
+        }
+
+        final results = snapshot.data ?? [];
+        if (results.isEmpty) {
+          return const Center(
+            child: Text(
+              'No se encontraron resultados',
+              style: TextStyle(color: AeroTheme.grey500),
+            ),
+          );
+        }
+
+        // Group by category
+        final grouped = <String, List<SearchResult>>{};
+        for (var r in results) {
+          grouped.putIfAbsent(r.category, () => []).add(r);
+        }
+
+        return ListView.builder(
+          itemCount: grouped.keys.length,
+          itemBuilder: (context, index) {
+            final category = grouped.keys.elementAt(index);
+            final items = grouped[category]!;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    category,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AeroTheme.primary500,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-                subtitle: Text(
-                  item.subtitle,
-                  style: const TextStyle(color: AeroTheme.grey500),
+                ...items.map(
+                  (item) => ListTile(
+                    leading: _getCategoryIcon(category),
+                    title: Text(
+                      item.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AeroTheme.primary900,
+                      ),
+                    ),
+                    subtitle: Text(
+                      item.subtitle,
+                      style: const TextStyle(color: AeroTheme.grey500),
+                    ),
+                    onTap: () {
+                      close(context, null);
+                      context.push(item.route);
+                    },
+                  ),
                 ),
-                onTap: () {
-                  close(context, null);
-                  context.push(item.route);
-                },
-              ),
-            ),
-            const Divider(height: 1, color: AeroTheme.grey200),
-          ],
+                const Divider(height: 1, color: AeroTheme.grey200),
+              ],
+            );
+          },
         );
       },
     );
+  }
+
+  Future<List<SearchResult>> _performSearch(String searchQuery) async {
+    final results = <SearchResult>[];
+
+    // Query equipment and reports in parallel
+    final futures = await Future.wait([
+      _searchEquipment(searchQuery),
+      _searchReports(searchQuery),
+    ]);
+
+    results.addAll(futures[0]);
+    results.addAll(futures[1]);
+
+    return results;
+  }
+
+  Future<List<SearchResult>> _searchEquipment(String q) async {
+    try {
+      final response = await _dio.get(
+        '/equipment/',
+        queryParameters: {'search': q, 'limit': 5},
+      );
+      final data = response.data['data'] as List? ?? [];
+      return data.map<SearchResult>((e) {
+        final id = e['id'].toString();
+        final code = e['codigo_equipo'] as String? ?? '';
+        final marca = e['marca'] as String? ?? '';
+        final modelo = e['modelo'] as String? ?? '';
+        final desc = '$marca $modelo'.trim();
+        return SearchResult(
+          id: id,
+          title: code,
+          subtitle: desc.isNotEmpty ? desc : 'Equipo',
+          category: 'Equipos',
+          route: '/equipment/$id',
+        );
+      }).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<SearchResult>> _searchReports(String q) async {
+    try {
+      final response = await _dio.get(
+        '/reports/',
+        queryParameters: {'search': q, 'limit': 5},
+      );
+      final data = response.data['data'] as List? ?? [];
+      return data.map<SearchResult>((e) {
+        final id = e['id'].toString();
+        final fecha = e['fecha'] as String? ?? '';
+        final equipo = e['codigo_equipo'] as String? ?? '';
+        final operador = e['operador_nombre'] as String? ?? '';
+        return SearchResult(
+          id: id,
+          title: 'Parte Diario: $fecha',
+          subtitle: '$equipo - $operador'.trim(),
+          category: 'Partes Diarios',
+          route: '/reports',
+        );
+      }).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Widget _getCategoryIcon(String category) {

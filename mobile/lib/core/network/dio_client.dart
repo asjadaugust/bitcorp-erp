@@ -11,7 +11,8 @@ Dio dio(Ref ref) {
   final dio = Dio(
     BaseOptions(
       // TODO: Replace with environment variable base URL
-      baseUrl: 'https://api.bitcorp-erp.com/v1',
+      baseUrl:
+          'http://localhost:3410/api', // Changed from production domain to local dev environment
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 20),
       sendTimeout: const Duration(seconds: 20),

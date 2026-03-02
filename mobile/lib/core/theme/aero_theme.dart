@@ -30,6 +30,7 @@ class AeroTheme {
   // Border Radius
   static const double radiusSm = 4.0;
   static const double radiusMd = 8.0;
+  static const double radiusLg = 16.0;
 
   // Typography
   static const String headingFont = 'Universal Sans Display';

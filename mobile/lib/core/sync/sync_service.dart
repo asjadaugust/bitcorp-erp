@@ -4,6 +4,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'models/sync_conflict.dart';
 
 import 'package:mobile/features/vouchers/data/repositories/vale_combustible_repository.dart';
+import 'package:mobile/features/daily_report/data/repositories/daily_report_repository.dart';
+import 'package:mobile/features/checklists/data/repositories/checklist_repository.dart';
 
 part 'sync_service.g.dart';
 
@@ -67,56 +69,52 @@ class SyncService extends _$SyncService {
 
   Future<void> processQueue() async {
     if (state.status == SyncStatus.syncing ||
-        state.status == SyncStatus.conflict)
+        state.status == SyncStatus.conflict) {
       return;
+    }
 
     state = state.copyWith(status: SyncStatus.syncing, errorMessage: null);
 
     try {
-      // 1. Fetch pending reports
-      // 2. Fetch pending checklists
-      // 3. Fetch pending incidents
-      // 4. Fetch pending fuel vouchers
-      final valeConfigRepo = ref.read(valeCombustibleRepositoryProvider);
-      final pendingVales = await valeConfigRepo.getValesCombustible();
-      final pendingSyncVales = pendingVales
-          .where((v) => v.syncStatus == 'PENDING_SYNC')
-          .toList();
+      final valeRepo = ref.read(valeCombustibleRepositoryProvider);
+      final reportRepo = ref.read(dailyReportRepositoryProvider);
+      final checklistRepo = ref.read(checklistRepositoryProvider);
 
-      final totalPending = pendingSyncVales.length;
+      // Gather all pending items
+      final pendingVales = await valeRepo.getPendingSync();
+      final pendingReports = await reportRepo.getPendingSync();
+      final pendingChecklists = await checklistRepo.getPendingSync();
 
-      // MOCK: Simulate network latency and finding items
-      await Future.delayed(const Duration(seconds: 2));
+      final totalPending =
+          pendingVales.length +
+          pendingReports.length +
+          pendingChecklists.length;
 
-      // MOCK: Suppose we hit a hardcoded conflict for testing
-      // Remove this mock once verified, but keep it for Walkthrough step
-      const mockConflict = false;
-
-      if (mockConflict) {
-        state = state.copyWith(
-          status: SyncStatus.conflict,
-          currentConflict: const SyncConflict(
-            recordId: 'mock-123',
-            recordType: 'CHECKLIST',
-            localData: {},
-            remoteData: {},
-            message:
-                'El equipo ya tiene un checklist reportado hoy por otro usuario.',
-          ),
-        );
+      if (totalPending == 0) {
+        state = state.copyWith(status: SyncStatus.idle, pendingCount: 0);
         return;
       }
 
-      // MOCK: Auto-approve pending vales
-      for (final vale in pendingSyncVales) {
-        await valeConfigRepo.updateValeStatus(vale.id, vale.estado);
-        // We would technically update sync_status to SUBMITTED here,
-        // but for now we'll just mock the iteration
+      state = state.copyWith(pendingCount: totalPending);
+
+      // Sync fuel vouchers
+      for (final vale in pendingVales) {
+        await valeRepo.syncVale(vale);
+      }
+
+      // Sync daily reports
+      for (final report in pendingReports) {
+        await reportRepo.syncReport(report);
+      }
+
+      // Sync checklists
+      for (final checklist in pendingChecklists) {
+        await checklistRepo.syncChecklist(checklist);
       }
 
       state = state.copyWith(
         status: SyncStatus.idle,
-        pendingCount: totalPending,
+        pendingCount: 0,
       );
     } catch (e) {
       state = state.copyWith(
@@ -131,18 +129,13 @@ class SyncService extends _$SyncService {
     state = state.copyWith(status: SyncStatus.syncing, clearConflict: true);
 
     try {
-      // Execute the respective logic based on choice
-      await Future.delayed(
-        const Duration(seconds: 1),
-      ); // Mock network operation
-
       // After resolving, continue syncing the rest of the queue
       state = state.copyWith(status: SyncStatus.idle);
       await processQueue();
     } catch (e) {
       state = state.copyWith(
         status: SyncStatus.error,
-        errorMessage: 'Error al resolver conflicto: \$e',
+        errorMessage: 'Error al resolver conflicto: $e',
       );
     }
   }
