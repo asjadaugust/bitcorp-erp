@@ -1,6 +1,7 @@
 """Router de checklists de inspección.
 """
 
+from datetime import date as _date
 from typing import Any
 
 from fastapi import APIRouter, Query
@@ -207,6 +208,139 @@ async def completar_inspeccion(
     servicio = ServicioChecklist(db)
     datos = await servicio.completar_inspeccion(inspeccion_id)
     return enviar_exito(datos.model_dump())
+
+
+# ─── Seguimiento de Observaciones ──────────────────────────────────────
+
+
+@router.get("/observations")
+async def listar_observaciones(
+    usuario: UsuarioActual,
+    db: SesionDb,
+    fecha_desde: str | None = Query(None),
+    fecha_hasta: str | None = Query(None),
+    equipo_id: int | None = Query(None),
+    accion_requerida: str | None = Query(None),
+    es_critico: bool | None = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+) -> ORJSONResponse:
+    """Listar observaciones (ítems no conformes) de inspecciones."""
+    conditions = ["cr.conforme = FALSE"]
+    params: dict[str, Any] = {"limit": limit, "offset": (page - 1) * limit}
+
+    if fecha_desde:
+        conditions.append("ci.fecha_inspeccion >= :fdesde")
+        params["fdesde"] = _date.fromisoformat(fecha_desde)
+    if fecha_hasta:
+        conditions.append("ci.fecha_inspeccion <= :fhasta")
+        params["fhasta"] = _date.fromisoformat(fecha_hasta)
+    if equipo_id:
+        conditions.append("ci.equipo_id = :eid")
+        params["eid"] = equipo_id
+    if accion_requerida:
+        conditions.append("cr.accion_requerida = :accion")
+        params["accion"] = accion_requerida
+    if es_critico is not None:
+        conditions.append("citem.es_critico = :critico")
+        params["critico"] = es_critico
+
+    where = " AND ".join(conditions)
+
+    list_result = await db.execute(
+        text(
+            f"""
+            SELECT
+                cr.id,
+                cr.inspeccion_id,
+                ci.codigo AS inspeccion_codigo,
+                ci.equipo_id,
+                e.codigo_equipo AS equipo_codigo,
+                e.marca AS equipo_marca,
+                e.modelo AS equipo_modelo,
+                ci.fecha_inspeccion,
+                citem.descripcion AS item_descripcion,
+                citem.categoria,
+                citem.es_critico,
+                cr.observaciones,
+                COALESCE(cr.accion_requerida, 'NINGUNA') AS accion_requerida,
+                cr.foto_url,
+                ci.estado AS estado_inspeccion,
+                ci.resultado_general
+            FROM equipo.checklist_resultado cr
+            JOIN equipo.checklist_inspeccion ci ON cr.inspeccion_id = ci.id
+            JOIN equipo.equipo e ON ci.equipo_id = e.id
+            JOIN equipo.checklist_item citem ON cr.item_id = citem.id
+            WHERE {where}
+            ORDER BY ci.fecha_inspeccion DESC, citem.es_critico DESC, cr.id DESC
+            LIMIT :limit OFFSET :offset
+            """
+        ),
+        params,
+    )
+    rows = list_result.mappings().all()
+
+    count_result = await db.execute(
+        text(
+            f"""
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE citem.es_critico = TRUE) AS criticas,
+                COUNT(*) FILTER (WHERE cr.accion_requerida IN ('REPARAR','MANTENIMIENTO')) AS a_reparar,
+                COUNT(*) FILTER (WHERE cr.accion_requerida IN ('REEMPLAZAR','REEMPLAZO')) AS a_reemplazar
+            FROM equipo.checklist_resultado cr
+            JOIN equipo.checklist_inspeccion ci ON cr.inspeccion_id = ci.id
+            JOIN equipo.equipo e ON ci.equipo_id = e.id
+            JOIN equipo.checklist_item citem ON cr.item_id = citem.id
+            WHERE {where}
+            """
+        ),
+        {k: v for k, v in params.items() if k not in ("limit", "offset")},
+    )
+    stats_row = count_result.mappings().first()
+
+    total = int(stats_row["total"]) if stats_row else 0
+    items = [
+        {
+            "id": r["id"],
+            "inspeccion_id": r["inspeccion_id"],
+            "inspeccion_codigo": r["inspeccion_codigo"],
+            "equipo_id": r["equipo_id"],
+            "equipo_codigo": r["equipo_codigo"],
+            "equipo_marca": r["equipo_marca"],
+            "equipo_modelo": r["equipo_modelo"],
+            "fecha_inspeccion": r["fecha_inspeccion"].isoformat() if r["fecha_inspeccion"] else None,
+            "item_descripcion": r["item_descripcion"],
+            "categoria": r["categoria"],
+            "es_critico": r["es_critico"],
+            "observaciones": r["observaciones"],
+            "accion_requerida": r["accion_requerida"],
+            "foto_url": r["foto_url"],
+            "estado_inspeccion": r["estado_inspeccion"],
+            "resultado_general": r["resultado_general"],
+        }
+        for r in rows
+    ]
+
+    from app.utils.respuesta import enviar_exito  # noqa: PLC0415
+
+    return enviar_exito(
+        {
+            "items": items,
+            "stats": {
+                "total": total,
+                "criticas": int(stats_row["criticas"]) if stats_row else 0,
+                "a_reparar": int(stats_row["a_reparar"]) if stats_row else 0,
+                "a_reemplazar": int(stats_row["a_reemplazar"]) if stats_row else 0,
+            },
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "total_pages": max(1, -(-total // limit)),
+            },
+        }
+    )
 
 
 # ─── Estadísticas ───────────────────────────────────────────────────────

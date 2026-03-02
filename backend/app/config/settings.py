@@ -22,7 +22,7 @@ class Configuracion(BaseSettings):
     # JWT
     jwt_secret: str = "dev_jwt_secret_change_in_production"
     jwt_refresh_secret: str = "dev_refresh_secret_change_in_production"
-    jwt_expires_minutes: int = 15
+    jwt_expires_minutes: int = 43200
     jwt_refresh_expires_days: int = 7
     jwt_algorithm: str = "HS256"
 

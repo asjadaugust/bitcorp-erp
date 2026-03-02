@@ -85,7 +85,7 @@ class ServicioDashboard:
         # Contratos activos
         r2 = await self.db.execute(
             select(func.count(ContratoAdenda.id)).where(
-                ContratoAdenda.tenant_id == tenant_id, ContratoAdenda.estado == "ACTIVO"
+                ContratoAdenda.tenant_id == tenant_id, ContratoAdenda.estado == "VIGENTE"
             )
         )
         contratos_activos: int = r2.scalar_one()

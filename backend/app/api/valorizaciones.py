@@ -10,6 +10,7 @@ from sqlalchemy import text
 
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.valorizacion import (
+    AnalisisCombustibleActualizar,
     ConformidadDto,
     DocumentoPagoActualizar,
     DocumentoPagoCrear,
@@ -99,14 +100,27 @@ async def analiticas_valorizaciones(
 async def registro_valorizaciones(
     db: SesionDb,
     usuario: UsuarioActual,
+    estado: str | None = None,
+    periodo_desde: str | None = None,
+    periodo_hasta: str | None = None,
+    proveedor: str | None = None,
+    equipo_id: int | None = None,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> dict[str, Any]:
-    """Registro consolidado de valorizaciones (misma data que list)."""
+    """Registro consolidado de valorizaciones con filtros."""
     svc = ServicioValorizacion(db)
     items, total = await svc.listar(
-        usuario.id_empresa, sort_by="created_at", sort_order="DESC",
-        page=page, limit=limit,
+        usuario.id_empresa,
+        estado=estado,
+        equipo_id=equipo_id,
+        periodo_desde=periodo_desde,
+        periodo_hasta=periodo_hasta,
+        proveedor=proveedor,
+        sort_by="created_at",
+        sort_order="DESC",
+        page=page,
+        limit=limit,
     )
     return _paginated(items, total, page, limit)
 
@@ -275,6 +289,91 @@ async def recalcular_valorizacion(
 ) -> dict[str, Any]:
     svc = ServicioValorizacion(db)
     dto = await svc.recalcular(usuario.id_empresa, val_id)
+    return _ok(dto)
+
+
+# ─── Valorizar (calculation engine) ──────────────────────────────────────
+
+
+@router.post("/{val_id}/valorizar", response_class=ORJSONResponse)
+async def valorizar(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Execute the full valuation calculation engine."""
+    svc = ServicioValorizacion(db)
+    dto = await svc.valorizar(usuario.id_empresa, val_id)
+    return _ok(dto)
+
+
+# ─── Detail data endpoints ───────────────────────────────────────────────
+
+
+@router.get("/{val_id}/resumen", response_class=ORJSONResponse)
+async def resumen_detallado(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Tab 1: Financial summary with provider/equipment/contract info."""
+    svc = ServicioValorizacion(db)
+    dto = await svc.obtener_resumen(usuario.id_empresa, val_id)
+    return _ok(dto)
+
+
+@router.get("/{val_id}/resumen-acumulado", response_class=ORJSONResponse)
+async def resumen_acumulado(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Tab 2: All valuations for same contract with running totals."""
+    svc = ServicioValorizacion(db)
+    items = await svc.obtener_resumen_acumulado(usuario.id_empresa, val_id)
+    return _ok_list(items)
+
+
+@router.get("/{val_id}/partes-detalle", response_class=ORJSONResponse)
+async def partes_detalle(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Tab 3: Daily reports with computed columns."""
+    svc = ServicioValorizacion(db)
+    items = await svc.obtener_partes_detalle(usuario.id_empresa, val_id)
+    return _ok_list(items)
+
+
+@router.get("/{val_id}/combustible-detalle", response_class=ORJSONResponse)
+async def combustible_detalle(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Tab 4: Fuel vouchers with summary."""
+    svc = ServicioValorizacion(db)
+    dto = await svc.obtener_combustible_detalle(usuario.id_empresa, val_id)
+    return _ok(dto)
+
+
+@router.get("/{val_id}/analisis-combustible", response_class=ORJSONResponse)
+async def analisis_combustible(
+    val_id: int, db: SesionDb, usuario: UsuarioActual
+) -> dict[str, Any]:
+    """Tab 7: Fuel excess analysis."""
+    svc = ServicioValorizacion(db)
+    items = await svc.obtener_analisis_combustible(usuario.id_empresa, val_id)
+    return _ok_list(items)
+
+
+@router.put(
+    "/analisis-combustible/{analisis_id}", response_class=ORJSONResponse
+)
+async def actualizar_analisis(
+    analisis_id: int,
+    datos: AnalisisCombustibleActualizar,
+    db: SesionDb,
+    usuario: UsuarioActual,
+) -> dict[str, Any]:
+    """Update ratio_control/precio_unitario, recalculate excess."""
+    svc = ServicioValorizacion(db)
+    dto = await svc.actualizar_analisis(
+        usuario.id_empresa, analisis_id,
+        ratio_control=datos.ratio_control,
+        precio_unitario=datos.precio_unitario,
+    )
     return _ok(dto)
 
 

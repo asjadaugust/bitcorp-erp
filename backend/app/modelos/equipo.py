@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.modelos.base import Base
-from app.modelos.proveedores import Proveedor
+from app.modelos.proveedores import Proveedor  # noqa: F401
 from app.modelos.proyectos import Edt
 from app.modelos.rrhh import Trabajador
 
@@ -178,9 +178,10 @@ class ContratoAdenda(Base):
     fecha_liquidacion: Mapped[date | None] = mapped_column(nullable=True)
     liquidado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     observaciones_liquidacion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    precio_manipuleo: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
     condiciones_especiales: Mapped[str | None] = mapped_column(Text, nullable=True)
     documento_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-    estado: Mapped[str] = mapped_column(String(50), default="ACTIVO", nullable=False)
+    estado: Mapped[str] = mapped_column(String(50), default="VIGENTE", nullable=False)
     creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -921,7 +922,13 @@ class ValeCombustible(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
+    valorizacion_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.valorizacion_equipo.id"), nullable=True
+    )
     equipo_rel: Mapped[Equipo] = relationship("Equipo", lazy="joined")
+    valorizacion: Mapped[ValorizacionEquipo | None] = relationship(
+        "ValorizacionEquipo", lazy="select"
+    )
 
 
 # ─── Inoperability Period (Periodo Inoperatividad) ───────────────────────
@@ -960,3 +967,94 @@ class PeriodoInoperatividad(Base):
     )
 
     equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")
+
+
+# ─── Valorizacion Detail Tables ──────────────────────────────────────────
+
+
+class GastoEnObra(Base):
+    """Modelo para equipo.gasto_en_obra — Gastos en obra de una valorización."""
+
+    __tablename__ = "gasto_en_obra"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    valorizacion_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.valorizacion_equipo.id"), nullable=False
+    )
+    fecha: Mapped[date] = mapped_column(Date, nullable=False)
+    proveedor: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    concepto: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    tipo_documento: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    numero_documento: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    importe: Mapped[float] = mapped_column(Numeric(12, 2), default=0, nullable=False)
+    incluye_igv: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    importe_sin_igv: Mapped[float] = mapped_column(Numeric(12, 2), default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    tenant_id: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    valorizacion: Mapped[ValorizacionEquipo] = relationship(
+        "ValorizacionEquipo", lazy="select"
+    )
+
+
+class AdelantoAmortizacion(Base):
+    """Modelo para equipo.adelanto_amortizacion — Adelantos y amortizaciones."""
+
+    __tablename__ = "adelanto_amortizacion"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    equipo_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.equipo.id"), nullable=False
+    )
+    valorizacion_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.valorizacion_equipo.id"), nullable=True
+    )
+    tipo_operacion: Mapped[str] = mapped_column(String(50), nullable=False)
+    # DB column is fecha_operacion; exposed as fecha for service/schema compatibility
+    fecha: Mapped[date] = mapped_column(Date, name="fecha_operacion", nullable=False)
+    numero_documento: Mapped[str | None] = mapped_column(String(50), name="num_documento", nullable=True)
+    concepto: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    numero_cuota: Mapped[str | None] = mapped_column(String(20), name="num_cuota", nullable=True)
+    monto: Mapped[float] = mapped_column(Numeric(15, 2), default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    equipo_rel: Mapped[Equipo] = relationship("Equipo", lazy="select")
+    valorizacion: Mapped[ValorizacionEquipo | None] = relationship(
+        "ValorizacionEquipo", lazy="select"
+    )
+
+
+class AnalisisCombustible(Base):
+    """Modelo para equipo.analisis_combustible — Análisis de exceso de combustible."""
+
+    __tablename__ = "analisis_combustible"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    valorizacion_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("equipo.valorizacion_equipo.id"), nullable=False
+    )
+    consumo_combustible: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
+    tipo_horometro_odometro: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    lectura_inicio: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    lectura_final: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    total_uso: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    rendimiento: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    ratio_control: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    diferencia: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    exceso_combustible: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    precio_unitario: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
+    importe_exceso: Mapped[float] = mapped_column(Numeric(12, 4), default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    valorizacion: Mapped[ValorizacionEquipo] = relationship(
+        "ValorizacionEquipo", lazy="select"
+    )

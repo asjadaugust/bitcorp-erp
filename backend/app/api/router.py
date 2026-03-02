@@ -3,6 +3,10 @@
 from fastapi import APIRouter
 
 from app.api.actas_devolucion import router as router_actas_devolucion
+from app.api.adelantos import (
+    router_contratos as router_adelantos_contratos,
+    router_valorizaciones as router_adelantos_valorizaciones,
+)
 from app.api.analitica import router as router_analitica
 from app.api.aprobaciones import router as router_aprobaciones
 from app.api.auth import router as router_auth
@@ -15,6 +19,7 @@ from app.api.cuentas_por_pagar import router as router_cuentas_por_pagar
 from app.api.dashboard import router as router_dashboard
 from app.api.empleados import router as router_empleados
 from app.api.equipos import router as router_equipos
+from app.api.gastos_obra import router as router_gastos_obra
 from app.api.inoperatividad import router as router_inoperatividad
 from app.api.licitaciones import router as router_licitaciones
 from app.api.logistica import router as router_logistica
@@ -65,6 +70,15 @@ router_api.include_router(router_contratos, prefix="/contracts", tags=["Contrato
 router_api.include_router(router_reportes, prefix="/reports", tags=["Reportes"])
 router_api.include_router(
     router_valorizaciones, prefix="/valuations", tags=["Valorizaciones"]
+)
+router_api.include_router(
+    router_gastos_obra, prefix="/valuations", tags=["Gastos en Obra"]
+)
+router_api.include_router(
+    router_adelantos_valorizaciones, prefix="/valuations", tags=["Adelantos Valorizacion"]
+)
+router_api.include_router(
+    router_adelantos_contratos, prefix="/contracts", tags=["Adelantos Contrato"]
 )
 router_api.include_router(router_pagos, prefix="/payments", tags=["Pagos"])
 

@@ -71,10 +71,10 @@ class ServicioLegalizacion:
         """Iniciar legalización (idempotente)."""
         contrato = await self._verificar_contrato(tenant_id, contrato_id)
 
-        if contrato.estado not in ("ACTIVO", "BORRADOR"):
+        if contrato.estado not in ("VIGENTE", "EN_PROCESO"):
             raise ReglaDeNegocioError(
                 f"No se puede iniciar legalización en estado {contrato.estado}. "
-                "Solo contratos ACTIVO o BORRADOR."
+                "Solo contratos VIGENTE o EN_PROCESO."
             )
 
         # Check if already initialized

@@ -174,9 +174,9 @@ def test_renderizar_plantilla_contrato() -> None:
         "contrato": {
             "numero_contrato": "CTR-001",
             "tipo": "CONTRATO",
-            "estado": "ACTIVO",
+            "estado": "VIGENTE",
             "fecha_contrato": "2024-01-15",
-            "modalidad": "MAQUINA SECA",
+            "modalidad": "MAQUINA_SECA_NO_OPERADA",
             "moneda": "PEN",
             "tipo_tarifa": "HORA",
             "tarifa": 150.0,

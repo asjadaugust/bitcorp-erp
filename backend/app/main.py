@@ -71,13 +71,29 @@ app = FastAPI(
 # --- Middleware (orden inverso de ejecución) ---
 app.add_middleware(MiddlewareTenant)
 app.add_middleware(MiddlewareLogSolicitud)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=configuracion.origenes_cors,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# --- CORS Middleware ---
+# Development: allow ALL origins (Flutter web uses random ports).
+# Production: use strict allow-list from config.
+#
+# IMPORTANT: 'allow_credentials=True' is INCOMPATIBLE with allow_origins=["*"].
+# Since we authenticate via JWT Bearer tokens (not cookies), credentials=False
+# is correct and safe here.
+if configuracion.es_desarrollo:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,  # Must be False when allow_origins=["*"]
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=configuracion.origenes_cors,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # --- Manejadores de excepciones ---
 

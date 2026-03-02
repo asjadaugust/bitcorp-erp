@@ -89,7 +89,7 @@ class ServicioCron:
         resultado = await self.db.execute(
             select(ContratoAdenda).where(
                 ContratoAdenda.fecha_fin.between(hoy, limite),
-                ContratoAdenda.estado.in_(["ACTIVO", "VENCIDO"]),
+                ContratoAdenda.estado.in_(["VIGENTE", "VENCIDO"]),
             )
         )
         contratos = list(resultado.scalars().all())
