@@ -6,6 +6,14 @@ import 'package:mobile/core/widgets/global_search_delegate.dart';
 import 'package:mobile/core/network/dio_client.dart';
 import 'package:mobile/features/dashboard/domain/models/supervisor_dashboard_model.dart';
 import 'package:mobile/features/dashboard/presentation/providers/supervisor_dashboard_provider.dart';
+import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+
+String _supervisorInitials(String? name) {
+  if (name == null || name.trim().isEmpty) return '?';
+  final parts = name.trim().split(RegExp(r'\s+'));
+  if (parts.length == 1) return parts[0][0].toUpperCase();
+  return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+}
 
 class SupervisorDashboardScreen extends ConsumerWidget {
   const SupervisorDashboardScreen({super.key});
@@ -13,6 +21,7 @@ class SupervisorDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(supervisorDashboardProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: AeroTheme.primary100,
@@ -28,6 +37,23 @@ class SupervisorDashboardScreen extends ConsumerWidget {
               showSearch(context: context, delegate: GlobalSearchDelegate(ref.read(dioProvider)));
             },
           ),
+          IconButton(
+            tooltip: 'Mi Cuenta',
+            icon: CircleAvatar(
+              radius: 14,
+              backgroundColor: AeroTheme.primary500,
+              child: Text(
+                _supervisorInitials(authState.userName),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            onPressed: () => context.push('/profile'),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(

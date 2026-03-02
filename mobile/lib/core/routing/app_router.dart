@@ -26,6 +26,7 @@ import 'package:mobile/features/approvals/presentation/screens/ad_hoc_approval_f
 import 'package:mobile/features/approvals/domain/models/approval_request_model.dart';
 import 'package:mobile/features/equipment/presentation/screens/equipment_detail_screen.dart';
 import 'package:mobile/features/valorizations/presentation/screens/valorizations_list_screen.dart';
+import 'package:mobile/features/auth/presentation/screens/profile_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -188,6 +189,10 @@ GoRouter goRouter(Ref ref) {
       GoRoute(
         path: '/valorizations',
         builder: (context, state) => const ValorizationsListScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );

@@ -11,6 +11,13 @@ import 'package:mobile/core/network/dio_client.dart';
 
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 
+String _dashboardInitials(String? name) {
+  if (name == null || name.trim().isEmpty) return '?';
+  final parts = name.trim().split(RegExp(r'\s+'));
+  if (parts.length == 1) return parts[0][0].toUpperCase();
+  return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+}
+
 class OperatorDashboardScreen extends ConsumerWidget {
   const OperatorDashboardScreen({super.key});
 
@@ -36,6 +43,22 @@ class OperatorDashboardScreen extends ConsumerWidget {
             },
           ),
           const NotificationBellButton(),
+          IconButton(
+            tooltip: 'Mi Cuenta',
+            icon: CircleAvatar(
+              radius: 14,
+              backgroundColor: AeroTheme.primary500,
+              child: Text(
+                _dashboardInitials(authState.userName),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            onPressed: () => context.push('/profile'),
+          ),
           const SizedBox(width: 8),
         ],
       ),
