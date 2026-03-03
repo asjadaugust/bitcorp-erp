@@ -103,6 +103,7 @@ services:
     environment:
       API_URL: http://backend:3410
       NODE_ENV: development
+      NG_CLI_ANALYTICS: "false"
     ports:
       - "3420:3420"
     volumes:
@@ -119,7 +120,10 @@ services:
         max-size: "10m"
         max-file: "3"
     tty: true
-    command: npm run start -- --poll 2000
+    command: >
+      bash -c "npm install --legacy-peer-deps &&
+               npm install --no-save --force @rollup/rollup-linux-x64-gnu &&
+               npm run start -- --poll 2000"
 
   pgadmin:
     image: dpage/pgadmin4:latest

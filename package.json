@@ -20,7 +20,7 @@
     "logs:backend": "docker-compose logs -f backend",
     "logs:frontend": "docker-compose logs -f frontend",
     "test:all": "npm run test:backend && npm run test:frontend && npm run test:e2e",
-    "test:backend": "cd backend && python -m pytest tests/ -q",
+    "test:backend": "docker compose exec -T backend python -m pytest tests/ -q",
     "test:frontend": "cd frontend && npm run test",
     "test:e2e": "echo 'Skipping E2E tests for commit' && exit 0",
     "test:e2e:ui": "cd tests && npx playwright test --ui",
