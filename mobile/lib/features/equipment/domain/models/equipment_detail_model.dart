@@ -68,7 +68,11 @@ abstract class EquipmentDetailModel with _$EquipmentDetailModel {
   }
 
   factory EquipmentDetailModel.fromJson(Map<String, dynamic> json) =>
-      _$EquipmentDetailModelFromJson(json);
+      _$EquipmentDetailModelFromJson({
+        ...json,
+        'marca': (json['marca'] as String?) ?? '-',
+        'modelo': (json['modelo'] as String?) ?? '-',
+      });
 }
 
 @freezed

@@ -17,6 +17,7 @@ import '../../domain/models/report_photo_model.dart';
 import '../../../vouchers/data/repositories/vale_combustible_repository.dart';
 import '../../../vouchers/domain/models/vale_combustible_model.dart';
 import '../../../equipment/data/repositories/equipment_repository.dart';
+import 'package:mobile/core/widgets/discard_changes_dialog.dart';
 
 class DailyReportFormScreen extends ConsumerStatefulWidget {
   const DailyReportFormScreen({super.key});
@@ -106,7 +107,10 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
         title: const Text('Nuevo Parte Diario'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => _showDiscardDialog(context),
+          onPressed: () async {
+            final discard = await showDiscardChangesDialog(context);
+            if (discard && context.mounted) context.pop();
+          },
         ),
       ),
       body: Form(
@@ -815,36 +819,6 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
     );
   }
 
-  Future<void> _showDiscardDialog(BuildContext context) async {
-    final bool? discard = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Descartar cambios?'),
-        content: const Text(
-          'Los datos ingresados se perderán. ¿Deseas salir de todas formas?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: AeroTheme.grey700),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AeroTheme.accent500,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Descartar'),
-          ),
-        ],
-      ),
-    );
-    if (discard == true && context.mounted) {
-      context.pop();
-    }
-  }
 }
 
 class _AddEventForm extends ConsumerStatefulWidget {
@@ -939,8 +913,13 @@ class _AddEventFormState extends ConsumerState<_AddEventForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AeroTheme.spacing24),
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        left: AeroTheme.spacing24,
+        right: AeroTheme.spacing24,
+        top: AeroTheme.spacing24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AeroTheme.spacing24,
+      ),
       child: Form(
         key: _formKey,
         child: Column(

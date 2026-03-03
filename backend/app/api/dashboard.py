@@ -1,7 +1,7 @@
 """Router de dashboard.
 """
 
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import APIRouter
 from fastapi.responses import ORJSONResponse
@@ -75,10 +75,16 @@ async def operator_summary(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespon
         )
     ).mappings().fetchone()
 
+    def _build_desc(row: dict, marca_key: str = "marca", modelo_key: str = "modelo") -> str:
+        marca = (row[marca_key] or "").strip()
+        modelo = (row[modelo_key] or "").strip()
+        desc = f"{marca} {modelo}".strip()
+        return desc if desc else "Sin asignar"
+
     if fila_equipo:
         equipo_id = str(fila_equipo["equipo_id"])
         codigo_equipo = fila_equipo["codigo_equipo"]
-        descripcion_equipo = f"{fila_equipo['marca']} {fila_equipo['modelo']}"
+        descripcion_equipo = _build_desc(fila_equipo)
     else:
         # Fallback: any active equipment in the tenant
         fila_any = (
@@ -95,7 +101,7 @@ async def operator_summary(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespon
         if fila_any:
             equipo_id = str(fila_any["id"])
             codigo_equipo = fila_any["codigo_equipo"]
-            descripcion_equipo = f"{fila_any['marca']} {fila_any['modelo']}"
+            descripcion_equipo = _build_desc(fila_any)
         else:
             equipo_id = ""
             codigo_equipo = "N/A"
@@ -146,6 +152,65 @@ async def operator_summary(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespon
     ).mappings().fetchone()
     pending_approval_count: int = fila_ap["cnt"] if fila_ap else 0
 
+    # ── 5. Stats: partes diarios del operador ──────────────────────────────
+    hoy_inicio = hoy
+    semana_inicio = hoy - timedelta(days=hoy.weekday())  # Monday of current week
+    mes_inicio = hoy.replace(day=1)
+
+    fila_stats = (
+        await db.execute(
+            text("""
+                SELECT
+                    COUNT(*) FILTER (WHERE pd.fecha = :hoy) AS partes_hoy,
+                    COUNT(*) FILTER (WHERE pd.fecha >= :semana) AS partes_semana,
+                    COUNT(*) FILTER (WHERE pd.fecha >= :mes) AS partes_mes,
+                    COALESCE(SUM(pd.horas_trabajadas) FILTER (WHERE pd.fecha >= :mes), 0) AS horas_mes
+                FROM equipo.parte_diario pd
+                JOIN rrhh.trabajador t ON t.id = pd.trabajador_id
+                JOIN sistema.usuario u ON u.dni = t.dni
+                WHERE u.id = :uid
+                  AND pd.tenant_id = :tid
+            """),
+            {"uid": id_usuario, "tid": id_empresa, "hoy": hoy_inicio,
+             "semana": semana_inicio, "mes": mes_inicio},
+        )
+    ).mappings().fetchone()
+
+    stats = {
+        "partes_hoy": int(fila_stats["partes_hoy"]) if fila_stats else 0,
+        "partes_semana": int(fila_stats["partes_semana"]) if fila_stats else 0,
+        "partes_mes": int(fila_stats["partes_mes"]) if fila_stats else 0,
+        "horas_mes": float(fila_stats["horas_mes"]) if fila_stats else 0.0,
+    }
+
+    # ── 6. Recent partes (last 5) ───────────────────────────────────────────
+    filas_recent = (
+        await db.execute(
+            text("""
+                SELECT pd.id, pd.fecha, pd.estado, pd.codigo, pd.horas_trabajadas
+                FROM equipo.parte_diario pd
+                JOIN rrhh.trabajador t ON t.id = pd.trabajador_id
+                JOIN sistema.usuario u ON u.dni = t.dni
+                WHERE u.id = :uid
+                  AND pd.tenant_id = :tid
+                ORDER BY pd.fecha DESC, pd.created_at DESC
+                LIMIT 5
+            """),
+            {"uid": id_usuario, "tid": id_empresa},
+        )
+    ).mappings().fetchall()
+
+    recent_partes = [
+        {
+            "id": row["id"],
+            "fecha": str(row["fecha"]),
+            "estado": row["estado"],
+            "codigo": row["codigo"],
+            "horas_trabajadas": float(row["horas_trabajadas"]) if row["horas_trabajadas"] is not None else None,
+        }
+        for row in filas_recent
+    ]
+
     return enviar_exito({
         "equipmentCode": codigo_equipo,
         "equipmentDescription": descripcion_equipo,
@@ -153,4 +218,6 @@ async def operator_summary(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespon
         "dailyReportStatus": daily_report_status,
         "pendingChecklistCount": pending_checklist_count,
         "pendingApprovalCount": pending_approval_count,
+        "stats": stats,
+        "recent_partes": recent_partes,
     })

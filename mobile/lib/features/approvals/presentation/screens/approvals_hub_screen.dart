@@ -97,9 +97,7 @@ class _ApprovalsHubScreenState extends ConsumerState<ApprovalsHubScreen>
         children: const [_RecibidosList(), _EnviadosList()],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // TODO: Implement Ad-Hoc form creation
-        },
+        onPressed: () => context.push('/approvals/new'),
         backgroundColor: AeroTheme.primary500,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(

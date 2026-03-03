@@ -8,6 +8,7 @@ import 'package:mobile/features/notifications/presentation/widgets/notification_
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/widgets/global_search_delegate.dart';
 import 'package:mobile/core/network/dio_client.dart';
+import 'package:mobile/features/dashboard/domain/models/dashboard_summary_model.dart';
 
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 
@@ -16,6 +17,36 @@ String _dashboardInitials(String? name) {
   final parts = name.trim().split(RegExp(r'\s+'));
   if (parts.length == 1) return parts[0][0].toUpperCase();
   return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+}
+
+String _estadoLabel(String estado) {
+  switch (estado.toUpperCase()) {
+    case 'NOT_SUBMITTED':
+      return 'No enviado';
+    case 'BORRADOR':
+      return 'Borrador';
+    case 'PENDIENTE_APROBACION':
+      return 'Pendiente aprobación';
+    case 'APROBADO':
+      return 'Aprobado';
+    case 'RECHAZADO':
+      return 'Rechazado';
+    default:
+      return estado;
+  }
+}
+
+Color _estadoColor(String estado) {
+  switch (estado.toUpperCase()) {
+    case 'APROBADO':
+      return AeroTheme.semanticGreen500;
+    case 'RECHAZADO':
+      return AeroTheme.accent500;
+    case 'PENDIENTE_APROBACION':
+      return AeroTheme.semanticBlue500;
+    default:
+      return AeroTheme.grey500;
+  }
 }
 
 class OperatorDashboardScreen extends ConsumerWidget {
@@ -79,6 +110,13 @@ class OperatorDashboardScreen extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              const SizedBox(height: 4),
+              Text(
+                _todayLabel(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AeroTheme.grey500,
+                ),
+              ),
               const SizedBox(height: 24),
               dashboardState.when(
                 data: (data) => _buildDashboardContent(context, data),
@@ -90,6 +128,16 @@ class OperatorDashboardScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _todayLabel() {
+    final now = DateTime.now();
+    const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const months = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ];
+    return '${days[now.weekday - 1]}, ${now.day} de ${months[now.month - 1]}';
   }
 
   Widget _buildProjectDropdown(
@@ -112,7 +160,6 @@ class OperatorDashboardScreen extends ConsumerWidget {
             ),
           );
         }
-        // Ensure selectedProject is valid, fallback to first
         final validSelection = projects.any((p) => p.id == selectedProject)
             ? selectedProject
             : projects.first.id;
@@ -162,57 +209,120 @@ class OperatorDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDashboardContent(BuildContext context, data) {
-    final equipmentId = data.equipmentId ?? data.equipmentCode;
+  Widget _buildDashboardContent(BuildContext context, DashboardSummaryModel data) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // ── Stats grid (2×2) ─────────────────────────────────────────────
+        _buildStatsGrid(context, data.stats),
+        const SizedBox(height: 16),
+
+        // ── Equipo asignado ──────────────────────────────────────────────
         _buildEquipmentCard(
           context,
           data.equipmentCode,
           data.equipmentDescription,
-          equipmentId,
+          data.equipmentId,
         ),
         const SizedBox(height: 16),
-        _buildStatusCard(
+
+        // ── Quick actions ────────────────────────────────────────────────
+        _buildQuickActions(context),
+        const SizedBox(height: 16),
+
+        // ── Parte diario de hoy ──────────────────────────────────────────
+        _buildDailyReportCard(context, data.dailyReportStatus),
+        const SizedBox(height: 16),
+
+        // ── Reportes recientes ───────────────────────────────────────────
+        _buildRecentPartes(context, data.recentPartes),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid(BuildContext context, DashboardStatsModel? stats) {
+    final s = stats;
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.6,
+      children: [
+        _buildStatCard(
           context,
-          icon: Icons.assignment_turned_in,
-          title: 'Parte Diario',
-          value: data.dailyReportStatus,
-          color: data.dailyReportStatus == 'Enviado'
-              ? AeroTheme.semanticGreen500
-              : AeroTheme.accent500,
+          icon: Icons.assignment,
+          label: 'Partes Hoy',
+          value: '${s?.partesHoy ?? 0}',
+          color: AeroTheme.primary500,
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatusCard(
-                context,
-                icon: Icons.fact_check,
-                title: 'Checklists',
-                value: '${data.pendingChecklistCount} Pendientes',
-                color: data.pendingChecklistCount > 0
-                    ? AeroTheme.accent500
-                    : AeroTheme.semanticGreen500,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => context.push('/valorizations'),
-                child: _buildStatusCard(
-                  context,
-                  icon: Icons.request_quote_outlined,
-                  title: 'Valorizaciones',
-                  value: 'Ver Detalles',
-                  color: AeroTheme.primary500,
-                ),
-              ),
-            ),
-          ],
+        _buildStatCard(
+          context,
+          icon: Icons.date_range,
+          label: 'Esta Semana',
+          value: '${s?.partesSemana ?? 0}',
+          color: AeroTheme.primary500,
+        ),
+        _buildStatCard(
+          context,
+          icon: Icons.calendar_month,
+          label: 'Este Mes',
+          value: '${s?.partesMes ?? 0}',
+          color: AeroTheme.primary500,
+        ),
+        _buildStatCard(
+          context,
+          icon: Icons.timer,
+          label: 'Horas del Mes',
+          value: s != null ? s.horasMes.toStringAsFixed(1) : '0.0',
+          color: AeroTheme.semanticGreen500,
         ),
       ],
+    );
+  }
+
+  Widget _buildStatCard(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AeroTheme.primary900,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AeroTheme.grey500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -220,8 +330,9 @@ class OperatorDashboardScreen extends ConsumerWidget {
     BuildContext context,
     String code,
     String description,
-    String equipmentId,
+    String? equipmentId,
   ) {
+    final hasEquipment = equipmentId != null && code != 'N/A';
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -237,47 +348,66 @@ class OperatorDashboardScreen extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            context.push('/equipment/$equipmentId');
-          },
+          onTap: hasEquipment ? () => context.push('/equipment/$equipmentId') : null,
           borderRadius: BorderRadius.circular(8),
           child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Equipo Asignado',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AeroTheme.grey500,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12,
-                      color: AeroTheme.grey500,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  code,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AeroTheme.primary500,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: hasEquipment
+                        ? AeroTheme.primary100
+                        : AeroTheme.grey100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.construction,
+                    color: hasEquipment
+                        ? AeroTheme.primary500
+                        : AeroTheme.grey300,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: AeroTheme.primary900),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Equipo Asignado',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: AeroTheme.grey500,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        code,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: hasEquipment
+                              ? AeroTheme.primary500
+                              : AeroTheme.grey500,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AeroTheme.grey700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                if (hasEquipment)
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: AeroTheme.grey300,
+                  ),
               ],
             ),
           ),
@@ -286,13 +416,86 @@ class OperatorDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusCard(
+  Widget _buildQuickActions(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildActionButton(
+            context,
+            icon: Icons.add_circle_outline,
+            label: 'Nuevo Parte',
+            onTap: () => context.push('/reports/new'),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildActionButton(
+            context,
+            icon: Icons.history,
+            label: 'Ver Historial',
+            onTap: () => context.push('/reports'),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildActionButton(
+            context,
+            icon: Icons.fact_check_outlined,
+            label: 'Checklists',
+            onTap: () => context.push('/checklists'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(
     BuildContext context, {
     required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
+    required String label,
+    required VoidCallback onTap,
   }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: AeroTheme.primary500, size: 24),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AeroTheme.primary900,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDailyReportCard(BuildContext context, String estado) {
+    final color = _estadoColor(estado);
+    final label = _estadoLabel(estado);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -301,32 +504,185 @@ class OperatorDashboardScreen extends ConsumerWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Icon(icon, color: AeroTheme.grey500, size: 28),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AeroTheme.grey500,
-              fontWeight: FontWeight.w600,
+          Icon(Icons.assignment_turned_in, color: AeroTheme.grey500, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Parte Diario de Hoy',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AeroTheme.grey500,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
               color: color,
-              fontWeight: FontWeight.bold,
+              shape: BoxShape.circle,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecentPartes(
+    BuildContext context,
+    List<DashboardRecentParteModel> partes,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            'Reportes Recientes',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: AeroTheme.primary900,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        if (partes.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                'No hay reportes recientes',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AeroTheme.grey500,
+                ),
+              ),
+            ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: partes.asMap().entries.map((entry) {
+                final isLast = entry.key == partes.length - 1;
+                final parte = entry.value;
+                return _buildRecentParteRow(context, parte, isLast);
+              }).toList(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRecentParteRow(
+    BuildContext context,
+    DashboardRecentParteModel parte,
+    bool isLast,
+  ) {
+    final color = _estadoColor(parte.estado);
+    final label = _estadoLabel(parte.estado);
+    return InkWell(
+      onTap: () => context.push('/reports/${parte.id}'),
+      borderRadius: isLast
+          ? const BorderRadius.vertical(bottom: Radius.circular(8))
+          : BorderRadius.zero,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : const Border(
+                  bottom: BorderSide(color: AeroTheme.grey100),
+                ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    parte.codigo ?? 'PD-${parte.id}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AeroTheme.primary900,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    parte.fecha,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AeroTheme.grey500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (parte.horasTrabajadas != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Text(
+                  '${parte.horasTrabajadas!.toStringAsFixed(1)}h',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AeroTheme.grey700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -359,7 +715,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AeroTheme.primary500,
               foregroundColor: Colors.white,
-              minimumSize: const Size(200, 48), // Touch target constraint
+              minimumSize: const Size(200, 48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -383,17 +739,24 @@ class _DashboardSkeleton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSkeletonBox(height: 120),
-          const SizedBox(height: 16),
-          _buildSkeletonBox(height: 100),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: _buildSkeletonBox(height: 120)),
-              const SizedBox(width: 16),
-              Expanded(child: _buildSkeletonBox(height: 120)),
-            ],
+          // Stats grid skeleton
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.6,
+            children: List.generate(4, (_) => _buildSkeletonBox(height: 80)),
           ),
+          const SizedBox(height: 16),
+          _buildSkeletonBox(height: 72),
+          const SizedBox(height: 16),
+          _buildSkeletonBox(height: 56),
+          const SizedBox(height: 16),
+          _buildSkeletonBox(height: 72),
+          const SizedBox(height: 16),
+          _buildSkeletonBox(height: 200),
         ],
       ),
     );
