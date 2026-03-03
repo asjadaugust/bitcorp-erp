@@ -559,7 +559,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                     child: Text(e.displayLabel),
                   );
                 }).toList(),
-                value: draft.equipmentId.isNotEmpty &&
+                initialValue: draft.equipmentId.isNotEmpty &&
                         equipment.any((e) => e.code == draft.equipmentId)
                     ? draft.equipmentId
                     : null,
@@ -582,7 +582,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                   ),
                 ),
               ),
-              error: (_, __) => Container(
+              error: (_, _) => Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AeroTheme.accent500.withValues(alpha: 0.1),
@@ -1106,7 +1106,7 @@ class _UnlinkedVouchersDropdownState
         ),
         helperText: 'Vales reportados en modo offline para este equipo.',
       ),
-      value: widget.draft.idValeCombustible,
+      initialValue: widget.draft.idValeCombustible,
       items: [
         const DropdownMenuItem<String>(
           value: null,

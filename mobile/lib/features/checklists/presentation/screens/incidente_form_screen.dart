@@ -158,7 +158,7 @@ class _IncidenteFormScreenState extends ConsumerState<IncidenteFormScreen> {
                 borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
               ),
             ),
-            value: state.severidad,
+            initialValue: state.severidad,
             items: const [
               DropdownMenuItem(
                 value: 'MINOR',

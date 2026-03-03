@@ -246,7 +246,7 @@ class ValeDetailScreen extends StatelessWidget {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: 200,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   height: 200,
                   color: AeroTheme.grey100,
                   child: const Center(
@@ -286,7 +286,7 @@ class ValeDetailScreen extends StatelessWidget {
               child: Image.file(
                 File(vale.fotoPath!),
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (_, _, _) => const Icon(
                   Icons.broken_image,
                   size: 64,
                   color: Colors.white54,

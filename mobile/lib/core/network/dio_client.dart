@@ -55,13 +55,3 @@ Dio dio(Ref ref) {
 
   return dio;
 }
-
-
-// # Allow ssh through the application firewall so Colima port forwards are accessible from LAN
-// sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add /usr/bin/ssh
-// sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock /usr/bin/ssh
-
-// sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
-// sudo: a password is required
-// sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
-// sudo: a password is required

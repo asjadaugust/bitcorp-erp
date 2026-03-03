@@ -47,7 +47,7 @@ class AppShell extends ConsumerWidget {
     final isOnline = connectivityAsync.when(
       data: (connected) => connected,
       loading: () => true,
-      error: (_, __) => true,
+      error: (_, _) => true,
     );
 
     return Scaffold(

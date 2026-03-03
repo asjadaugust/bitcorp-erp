@@ -163,7 +163,7 @@ class _ValeFormScreenState extends ConsumerState<ValeFormScreen> {
                 borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
               ),
             ),
-            value: valeState.tipoCombustible,
+            initialValue: valeState.tipoCombustible,
             items: const [
               DropdownMenuItem(value: 'Diesel', child: Text('Diesel')),
               DropdownMenuItem(value: 'Gasolina', child: Text('Gasolina')),

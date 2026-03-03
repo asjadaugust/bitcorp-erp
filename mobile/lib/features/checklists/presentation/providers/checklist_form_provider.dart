@@ -62,34 +62,34 @@ class ChecklistForm extends _$ChecklistForm {
     }
 
     // MOCK TEMPLATE items
-    final _uuid = const Uuid();
+    final uuid = const Uuid();
     final items = [
       ChecklistItemModel(
-        id: _uuid.v4(),
+        id: uuid.v4(),
         idChecklist: '', // Assigned later
         nombreItem: 'Nivel de Aceite del Motor',
         categoria: 'Fluidos y Filtros',
       ),
       ChecklistItemModel(
-        id: _uuid.v4(),
+        id: uuid.v4(),
         idChecklist: '',
         nombreItem: 'Nivel de Refrigerante',
         categoria: 'Fluidos y Filtros',
       ),
       ChecklistItemModel(
-        id: _uuid.v4(),
+        id: uuid.v4(),
         idChecklist: '',
         nombreItem: 'Estado de Neumáticos / Orugas',
         categoria: 'Tren de Rodaje',
       ),
       ChecklistItemModel(
-        id: _uuid.v4(),
+        id: uuid.v4(),
         idChecklist: '',
         nombreItem: 'Frenos y Dirección',
         categoria: 'Sistemas Críticos',
       ),
       ChecklistItemModel(
-        id: _uuid.v4(),
+        id: uuid.v4(),
         idChecklist: '',
         nombreItem: 'Luces y Señalización',
         categoria: 'Seguridad',
@@ -173,8 +173,8 @@ class ChecklistForm extends _$ChecklistForm {
 
     state = state.copyWith(isSubmitting: true, errorText: null);
 
-    final _uuid = const Uuid();
-    final checklistId = _uuid.v4();
+    final uuid = const Uuid();
+    final checklistId = uuid.v4();
     final isPass = state.items.every((item) => item.aprobado == true);
 
     final checklistItems = state.items

@@ -114,9 +114,9 @@ class IncidenteForm extends _$IncidenteForm {
 
     state = state.copyWith(isSubmitting: true, errorText: null);
 
-    final _uuid = const Uuid();
+    final uuid = const Uuid();
     final model = IncidenteModel(
-      id: _uuid.v4(),
+      id: uuid.v4(),
       idEquipo: state.equipmentId,
       descripcion: state.descripcion,
       severidad: state.severidad,

@@ -197,7 +197,7 @@ class OperatorDashboardScreen extends ConsumerWidget {
         width: 20,
         child: CircularProgressIndicator(strokeWidth: 2),
       ),
-      error: (_, __) => Text(
+      error: (_, _) => Text(
         'Proyecto',
         style: TextStyle(
           fontFamily: AeroTheme.headingFont,

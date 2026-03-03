@@ -195,7 +195,7 @@ class _ValeCard extends StatelessWidget {
                           : Image.file(
                               File(vale.fotoPath!),
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Icon(
+                              errorBuilder: (_, _, _) => Icon(
                                 Icons.broken_image,
                                 color: AeroTheme.grey500,
                               ),

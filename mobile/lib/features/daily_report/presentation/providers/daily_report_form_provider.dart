@@ -5,7 +5,6 @@ import '../../domain/models/report_photo_model.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/daily_report_list_provider.dart';
 import '../../data/repositories/daily_report_repository.dart';
-import '../../../vouchers/data/repositories/vale_combustible_repository.dart';
 
 part 'daily_report_form_provider.g.dart';
 

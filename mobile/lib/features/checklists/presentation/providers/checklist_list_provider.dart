@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/repositories/checklist_repository.dart';
 import '../../domain/models/checklist_model.dart';
-import '../../domain/models/incidente_model.dart';
 
 part 'checklist_list_provider.g.dart';
 

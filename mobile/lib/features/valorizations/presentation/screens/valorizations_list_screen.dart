@@ -52,7 +52,7 @@ class ValorizationsListScreen extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(AeroTheme.spacing16),
               itemCount: list.length,
-              separatorBuilder: (_, __) =>
+              separatorBuilder: (_, _) =>
                   const SizedBox(height: AeroTheme.spacing16),
               itemBuilder: (context, index) {
                 return _ValorizationCard(valorization: list[index]);

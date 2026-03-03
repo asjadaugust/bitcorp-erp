@@ -135,7 +135,7 @@ class _ChecklistFormScreenState extends ConsumerState<ChecklistFormScreen> {
                 borderSide: const BorderSide(color: AeroTheme.primary500),
               ),
             ),
-            value: state.equipmentId,
+            initialValue: state.equipmentId,
             items: const [
               DropdownMenuItem(
                 value: 'EXC-001',

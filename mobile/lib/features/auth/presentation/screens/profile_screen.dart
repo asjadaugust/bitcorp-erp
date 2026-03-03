@@ -189,7 +189,7 @@ class ProfileScreen extends ConsumerWidget {
                       label: 'Versión de la app',
                       value: '…',
                     ),
-                    error: (_, __) => const _InfoRow(
+                    error: (_, _) => const _InfoRow(
                       icon: Icons.info_outline,
                       label: 'Versión de la app',
                       value: '—',
