@@ -13,13 +13,22 @@ services:
       - postgres_dev_data:/var/lib/postgresql/data
     networks:
       - bitcorp-network
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "fsync=off"
+    shm_size: 256mb
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U bitcorp -d bitcorp_dev" ]
+      test: ["CMD-SHELL", "pg_isready -U bitcorp -d bitcorp_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,7 +37,7 @@ services:
     image: redis:7-alpine
     container_name: bitcorp-redis-dev
     ports:
-      - '3460:6379'
+      - "3460:6379"
     volumes:
       - redis_dev_data:/data
     networks:
@@ -40,7 +49,7 @@ services:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: [ 'CMD', 'redis-cli', 'ping' ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,19 +58,29 @@ services:
     build:
       context: .
       dockerfile: docker/backend.Dockerfile
-      target: development
     container_name: bitcorp-backend-dev
-    env_file:
-      - .env
     environment:
-      NODE_ENV: development
+      DATABASE_URL: postgresql+asyncpg://bitcorp:dev_password_change_me@postgres:5432/bitcorp_dev
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      POSTGRES_DB: bitcorp_dev
+      POSTGRES_USER: bitcorp
+      POSTGRES_PASSWORD: dev_password_change_me
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      JWT_REFRESH_SECRET: dev_refresh_secret_change_in_production
+      CORS_ORIGINS: http://localhost:3420,http://localhost:4200,http://127.0.0.1:3420,http://127.0.0.1:4200
+      LOG_LEVEL: debug
+      ENVIRONMENT: development
+      PORT: "3410"
+      PYTHONPATH: /app
     ports:
-      - '3400:3400'
-      - '3429:9229' # Node.js debugging
+      - "3410:3410"
     volumes:
       - ./backend:/app
-      - /app/node_modules
-      - ./docs:/app/docs:ro
+    command: >
+      bash -c "alembic upgrade head &&
+               uvicorn app.main:app --host 0.0.0.0 --port 3410 --reload"
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,25 +94,23 @@ services:
         max-size: "10m"
         max-file: "3"
     tty: true
-    command: npm run dev
 
   frontend:
     build:
       context: .
-      dockerfile: docker/frontend.Dockerfile
-      target: development
+      dockerfile: docker/frontend.dev.Dockerfile
     container_name: bitcorp-frontend-dev
     environment:
-      API_URL: http://localhost:3400
+      API_URL: http://backend:3410
       NODE_ENV: development
-      CHOKIDAR_USEPOLLING: 'true'
-      CHOKIDAR_INTERVAL: '1000'
-      NG_CLI_ANALYTICS: "false"
     ports:
-      - '3420:3420'
+      - "3420:3420"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
+      - frontend_angular_cache:/app/.angular
+    depends_on:
+      - backend
     networks:
       - bitcorp-network
     logging:
@@ -102,17 +119,18 @@ services:
         max-size: "10m"
         max-file: "3"
     tty: true
-    command: [ 'sh', '-c', 'npm install --legacy-peer-deps && npm start' ]
+    command: npm run start -- --poll 2000
 
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: bitcorp-pgadmin-dev
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@bitcorp.com
+      PGADMIN_DEFAULT_EMAIL: admin@bitcorp.local
       PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
-      - '3450:80'
+      - "3450:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
@@ -156,7 +174,6 @@ volumes:
   pgadmin_data:
   frontend_node_modules:
   frontend_angular_cache:
-
 
 networks:
   bitcorp-network:

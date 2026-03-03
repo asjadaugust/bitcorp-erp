@@ -30,9 +30,9 @@ docker-compose up -d
 docker-compose down
 
 # Root-level shorthand
-npm run dev:build       # docker-compose.dev.yml up --build
-npm run dev             # docker-compose.dev.yml up
-npm run dev:down        # docker-compose.dev.yml down
+npm run dev:build       # docker-compose up --build
+npm run dev             # docker-compose up
+npm run dev:down        # docker-compose down
 npm run dev:clean       # down -v (removes volumes)
 ```
 
@@ -70,12 +70,12 @@ Seeds are embedded in migration files — running `migrate` applies both schema 
 alembic upgrade head
 
 # Or via the db.sh helper (run from host):
-docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh migrate    # apply all pending migrations
-docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh fresh      # wipe + re-apply all migrations
-docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh downgrade  # revert all migrations
-docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh current    # show current revision
-docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh history    # show migration history
-docker-compose -f docker-compose.dev.yml exec backend bash scripts/db.sh revision -m "description"  # new migration
+docker-compose exec backend bash scripts/db.sh migrate    # apply all pending migrations
+docker-compose exec backend bash scripts/db.sh fresh      # wipe + re-apply all migrations
+docker-compose exec backend bash scripts/db.sh downgrade  # revert all migrations
+docker-compose exec backend bash scripts/db.sh current    # show current revision
+docker-compose exec backend bash scripts/db.sh history    # show migration history
+docker-compose exec backend bash scripts/db.sh revision -m "description"  # new migration
 ```
 
 ### Git commits
