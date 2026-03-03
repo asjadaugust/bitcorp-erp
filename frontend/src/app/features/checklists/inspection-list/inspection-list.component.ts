@@ -66,9 +66,11 @@ import { AeroButtonComponent } from '../../../core/design-system';
           (pageSizeChange)="onPageSizeChange($event)"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
+            codigo: codigoTemplate,
             equipo: equipoTemplate,
             trabajador: trabajadorTemplate,
             progreso: progresoTemplate,
+            noConformes: noConformesTemplate,
           }"
           (rowClick)="viewInspection($event)"
         >
@@ -76,6 +78,15 @@ import { AeroButtonComponent } from '../../../core/design-system';
       </app-page-card>
 
       <!-- Custom Templates -->
+      <ng-template #codigoTemplate let-row>
+        <div class="cell-group">
+          <span class="code-badge">{{ row.codigo }}</span>
+          @if (row.plantilla?.nombre) {
+            <span class="cell-secondary">{{ row.plantilla.nombre }}</span>
+          }
+        </div>
+      </ng-template>
+
       <ng-template #equipoTemplate let-row>
         <div class="equipment-info" *ngIf="row.equipo">
           <span class="equip-code">{{ row.equipo.codigo || 'N/A' }}</span>
@@ -100,6 +111,14 @@ import { AeroButtonComponent } from '../../../core/design-system';
             {{ (row.itemsConforme || 0) + (row.itemsNoConforme || 0) }} / {{ row.itemsTotal || 0 }}
           </span>
         </div>
+      </ng-template>
+
+      <ng-template #noConformesTemplate let-row>
+        @if ((row.itemsNoConforme || 0) > 0) {
+          <span class="nc-count">{{ row.itemsNoConforme }}</span>
+        } @else {
+          <span class="nc-zero">0</span>
+        }
       </ng-template>
 
       <!-- Actions Template -->
@@ -188,6 +207,43 @@ import { AeroButtonComponent } from '../../../core/design-system';
         font-weight: 600;
       }
 
+      .cell-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .code-badge {
+        font-family: monospace;
+        font-size: 12px;
+        background: var(--grey-100);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        color: var(--primary-700);
+        display: inline-block;
+      }
+
+      .cell-secondary {
+        font-size: 12px;
+        color: var(--grey-500);
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .nc-count {
+        font-weight: 700;
+        color: var(--semantic-red-500);
+        font-size: 13px;
+      }
+
+      .nc-zero {
+        color: var(--grey-400);
+        font-size: 13px;
+      }
+
       .action-buttons {
         display: flex;
         justify-content: flex-end;
@@ -216,6 +272,7 @@ export class InspectionListComponent implements OnInit {
   filters = {
     page: 1,
     limit: 10,
+    search: '',
     equipoId: undefined as number | undefined,
     trabajadorId: undefined as number | undefined,
     estado: '',
@@ -231,6 +288,12 @@ export class InspectionListComponent implements OnInit {
   ];
 
   filterConfig: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Buscar',
+      type: 'text',
+      placeholder: 'Buscar por código, equipo...',
+    },
     {
       key: 'fechaDesde',
       label: 'Fecha Desde',
@@ -267,11 +330,12 @@ export class InspectionListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'text' },
-    { key: 'fechaInspeccion', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
+    { key: 'codigo', label: 'Código', type: 'template', width: '160px' },
+    { key: 'fechaInspeccion', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy', width: '110px' },
     { key: 'equipo', label: 'Equipo', type: 'template' },
     { key: 'trabajador', label: 'Inspector', type: 'template' },
-    { key: 'progreso', label: 'Progreso', type: 'template' },
+    { key: 'progreso', label: 'Progreso', type: 'template', width: '130px' },
+    { key: 'noConformes', label: 'No Conf.', type: 'template', width: '80px' },
     {
       key: 'estado',
       label: 'Estado',
@@ -343,6 +407,7 @@ export class InspectionListComponent implements OnInit {
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
+    this.filters.search = (filters['search'] as string) || '';
     this.filters.fechaDesde = (filters['fechaDesde'] as string) || '';
     this.filters.fechaHasta = (filters['fechaHasta'] as string) || '';
     this.filters.estado = (filters['estado'] as string) || '';

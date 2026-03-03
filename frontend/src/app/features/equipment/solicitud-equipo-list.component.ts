@@ -79,8 +79,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           (pageChange)="onPageChange($event)"
           [templates]="{
             codigo: codeTemplate,
-            estado: estadoTemplate,
-            prioridad: prioridadTemplate,
+            equipo_info: equipoInfoTemplate,
           }"
           (rowClick)="verDetalle($event.id)"
         >
@@ -92,17 +91,13 @@ import { AeroButtonComponent } from '../../core/design-system';
         <span class="code-badge">{{ row.codigo }}</span>
       </ng-template>
 
-      <ng-template #estadoTemplate let-row>
-        <span class="status-badge" [ngClass]="'status-' + row.estado.toLowerCase()">
-          <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
-          {{ row.estado }}
-        </span>
-      </ng-template>
-
-      <ng-template #prioridadTemplate let-row>
-        <span class="priority-badge" [ngClass]="'priority-' + row.prioridad.toLowerCase()">
-          {{ row.prioridad }}
-        </span>
+      <ng-template #equipoInfoTemplate let-row>
+        <div class="equipo-info-cell">
+          <span class="equipo-tipo">{{ row.tipo_equipo }}</span>
+          @if (row.descripcion) {
+            <span class="equipo-desc">{{ row.descripcion | slice: 0 : 60 }}</span>
+          }
+        </div>
       </ng-template>
 
       <!-- Actions Template -->
@@ -162,52 +157,23 @@ import { AeroButtonComponent } from '../../core/design-system';
         color: var(--primary-700);
       }
 
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
+      .equipo-info-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
       }
-
-      .status-borrador {
-        background: var(--grey-100);
-        color: var(--grey-600);
-      }
-      .status-enviado {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-aprobado {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-      .status-rechazado {
-        background: var(--semantic-red-50);
+      .equipo-tipo {
+        font-weight: 500;
         color: var(--grey-900);
+        font-size: 13px;
       }
-
-      .priority-badge {
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 700;
-      }
-
-      .priority-alta {
-        background: var(--grey-100);
-        color: var(--accent-500);
-      }
-      .priority-media {
-        background: var(--grey-100);
-        color: var(--accent-500);
-      }
-      .priority-baja {
-        background: var(--semantic-blue-100);
-        color: var(--semantic-blue-500);
+      .equipo-desc {
+        font-size: 12px;
+        color: var(--grey-500);
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .action-buttons {
@@ -280,11 +246,39 @@ export class SolicitudEquipoListComponent implements OnInit {
 
   columns: TableColumn[] = [
     { key: 'codigo', label: 'Código', type: 'template', width: '120px' },
-    { key: 'tipo_equipo', label: 'Tipo de Equipo', type: 'text' },
-    { key: 'cantidad', label: 'Cant.', type: 'text', width: '80px', align: 'center' },
-    { key: 'fecha_requerida', label: 'F. Requerida', type: 'date', width: '150px' },
-    { key: 'prioridad', label: 'Prioridad', type: 'template', width: '120px', align: 'center' },
-    { key: 'estado', label: 'Estado', type: 'template', width: '150px', align: 'center' },
+    { key: 'equipo_info', label: 'Equipo Solicitado', type: 'template' },
+    { key: 'cantidad', label: 'Cant.', type: 'text', width: '70px', align: 'center' },
+    { key: 'created_at', label: 'F. Solicitud', type: 'date', width: '120px' },
+    { key: 'fecha_requerida', label: 'F. Requerida', type: 'date', width: '120px' },
+    {
+      key: 'prioridad',
+      label: 'Prioridad',
+      type: 'badge',
+      width: '110px',
+      align: 'center',
+      badgeConfig: {
+        ALTA: { label: 'Alta', class: 'status-badge status-error', icon: 'fa-arrow-up' },
+        MEDIA: { label: 'Media', class: 'status-badge status-warning', icon: 'fa-minus' },
+        BAJA: { label: 'Baja', class: 'status-badge status-info', icon: 'fa-arrow-down' },
+      },
+    },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      width: '130px',
+      align: 'center',
+      badgeConfig: {
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-draft', icon: 'fa-pencil' },
+        ENVIADO: {
+          label: 'Enviado',
+          class: 'status-badge status-in-progress',
+          icon: 'fa-paper-plane',
+        },
+        APROBADO: { label: 'Aprobado', class: 'status-badge status-completed', icon: 'fa-check' },
+        RECHAZADO: { label: 'Rechazado', class: 'status-badge status-cancelled', icon: 'fa-times' },
+      },
+    },
   ];
 
   ngOnInit() {
@@ -351,16 +345,6 @@ export class SolicitudEquipoListComponent implements OnInit {
         color: 'danger',
       },
     ];
-  }
-
-  getStatusIcon(estado: string): string {
-    const icons: Record<string, string> = {
-      BORRADOR: 'fa-pencil',
-      ENVIADO: 'fa-paper-plane',
-      APROBADO: 'fa-check',
-      RECHAZADO: 'fa-times',
-    };
-    return icons[estado] || 'fa-info-circle';
   }
 
   navigateToCreate() {

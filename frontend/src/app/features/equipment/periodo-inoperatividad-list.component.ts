@@ -59,9 +59,9 @@ import { AeroButtonComponent } from '../../core/design-system';
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             equipo_codigo: equipoTemplate,
-            estado: estadoTemplate,
             excede: excedeTemplate,
             dias: diasTemplate,
+            penalidad: penalidadTemplate,
           }"
           (rowClick)="verDetalle($event)"
         ></aero-table>
@@ -111,8 +111,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       </div>
     </ng-template>
 
-    <ng-template #estadoTemplate let-row>
-      <span class="badge" [ngClass]="estadoClass(row.estado)">{{ estadoLabel(row.estado) }}</span>
+    <ng-template #penalidadTemplate let-row>
+      @if (row.monto_penalidad) {
+        <span class="penalidad-monto">S/ {{ row.monto_penalidad | number: '1.2-2' }}</span>
+      } @else {
+        <span class="text-muted">—</span>
+      }
     </ng-template>
 
     <ng-template #excedeTemplate let-row>
@@ -367,6 +371,14 @@ import { AeroButtonComponent } from '../../core/design-system';
         color: var(--grey-500);
       }
 
+      .penalidad-monto {
+        font-family: monospace;
+        font-weight: 600;
+        color: var(--semantic-red-500);
+      }
+      .text-muted {
+        color: var(--grey-400);
+      }
       .row-actions {
         display: flex;
         gap: 6px;
@@ -504,11 +516,23 @@ export class PeriodoInoperatividadListComponent implements OnInit {
 
   columns: TableColumn[] = [
     { key: 'equipo_codigo', label: 'Equipo', type: 'template' },
-    { key: 'fecha_inicio', label: 'Inicio', type: 'date' },
-    { key: 'fecha_fin', label: 'Fin', type: 'date' },
-    { key: 'dias', label: 'Días inop.', type: 'template' },
-    { key: 'estado', label: 'Estado', type: 'template' },
-    { key: 'excede', label: 'SLA (5 días)', type: 'template' },
+    { key: 'fecha_inicio', label: 'Inicio', type: 'date', width: '100px' },
+    { key: 'fecha_fin', label: 'Fin', type: 'date', width: '100px' },
+    { key: 'dias', label: 'Días', type: 'template', width: '90px' },
+    { key: 'motivo', label: 'Motivo', type: 'text' },
+    { key: 'penalidad', label: 'Penalidad', type: 'template', width: '110px' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      width: '110px',
+      badgeConfig: {
+        ACTIVO: { label: 'Activo', class: 'status-badge status-warning', icon: 'fa-clock' },
+        RESUELTO: { label: 'Resuelto', class: 'status-badge status-completed', icon: 'fa-check' },
+        PENALIZADO: { label: 'Penalizado', class: 'status-badge status-error', icon: 'fa-gavel' },
+      },
+    },
+    { key: 'excede', label: 'SLA (5 días)', type: 'template', width: '130px' },
   ];
 
   private filters: Record<string, string> = {};
@@ -609,24 +633,6 @@ export class PeriodoInoperatividadListComponent implements OnInit {
         );
       },
     });
-  }
-
-  estadoLabel(estado: string): string {
-    const map: Record<string, string> = {
-      ACTIVO: 'Activo',
-      RESUELTO: 'Resuelto',
-      PENALIZADO: 'Penalizado',
-    };
-    return map[estado] ?? estado;
-  }
-
-  estadoClass(estado: string): string {
-    const map: Record<string, string> = {
-      ACTIVO: 'badge-warning',
-      RESUELTO: 'badge-success',
-      PENALIZADO: 'badge-danger',
-    };
-    return map[estado] ?? 'badge-secondary';
   }
 
   diasClass(row: PeriodoInoperatividad): string {

@@ -19,10 +19,17 @@ logger = obtener_logger(__name__)
 
 
 def _a_lista_dto(a: ActaDevolucion) -> ActaDevolucionListaDto:
+    eq = a.equipo if hasattr(a, "equipo") and a.equipo else None
     return ActaDevolucionListaDto(
         id=a.id, codigo=a.codigo, equipo_id=a.equipo_id,
+        equipo_codigo=eq.codigo_equipo if eq else None,
+        equipo_descripcion=f"{eq.marca or ''} {eq.modelo or ''}".strip() if eq else None,
         fecha_devolucion=a.fecha_devolucion, tipo=a.tipo,
-        estado=a.estado, condicion_equipo=a.condicion_equipo, is_active=a.is_active,
+        estado=a.estado, condicion_equipo=a.condicion_equipo,
+        tiene_firma_entregado=bool(a.firma_entregado),
+        tiene_firma_recibido=bool(a.firma_recibido),
+        observaciones=a.observaciones,
+        is_active=a.is_active,
     )
 
 

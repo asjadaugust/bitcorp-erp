@@ -9,10 +9,15 @@ class ActaDevolucionListaDto(BaseModel):
     id: int
     codigo: str
     equipo_id: int
+    equipo_codigo: str | None = None
+    equipo_descripcion: str | None = None
     fecha_devolucion: date
     tipo: str
     estado: str
     condicion_equipo: str
+    tiene_firma_entregado: bool = False
+    tiene_firma_recibido: bool = False
+    observaciones: str | None = None
     is_active: bool
 
 

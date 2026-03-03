@@ -89,9 +89,14 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <!-- Custom cell templates -->
       <ng-template #numeroPagoTemplate let-row>
-        <a class="code-link" (click)="$event.stopPropagation(); viewPayment(row)">
-          {{ row.numero_pago }}
-        </a>
+        <div class="cell-group">
+          <a class="code-link" (click)="$event.stopPropagation(); viewPayment(row)">
+            {{ row.numero_pago }}
+          </a>
+          @if (row.numero_valorizacion) {
+            <span class="cell-secondary">Val: {{ row.numero_valorizacion }}</span>
+          }
+        </div>
       </ng-template>
 
       <ng-template #montoTemplate let-row>
@@ -153,6 +158,17 @@ import { AeroButtonComponent } from '../../core/design-system';
   `,
   styles: [
     `
+      .cell-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .cell-secondary {
+        font-size: 12px;
+        color: var(--grey-500);
+      }
+
       .code-link {
         color: var(--primary-500);
         font-weight: 600;
@@ -250,14 +266,28 @@ export class PaymentListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'numero_pago', label: 'N° Pago', type: 'template' },
-    { key: 'numero_valorizacion', label: 'N° Valorización', type: 'text' },
-    { key: 'fecha_pago', label: 'Fecha', type: 'date' },
-    { key: 'monto_pagado', label: 'Monto', type: 'template' },
+    { key: 'numero_pago', label: 'N° Pago / Val.', type: 'template', width: '150px' },
+    { key: 'fecha_pago', label: 'Fecha Pago', type: 'date', width: '110px' },
+    { key: 'monto_pagado', label: 'Monto', type: 'template', width: '120px' },
+    {
+      key: 'moneda',
+      label: 'Moneda',
+      type: 'badge',
+      width: '80px',
+      badgeConfig: {
+        PEN: { label: 'PEN', class: 'status-badge status-info', icon: 'fa-solid fa-coins' },
+        USD: {
+          label: 'USD',
+          class: 'status-badge status-warning',
+          icon: 'fa-solid fa-dollar-sign',
+        },
+      },
+    },
     {
       key: 'metodo_pago',
       label: 'Método',
       type: 'badge',
+      width: '120px',
       badgeConfig: {
         TRANSFERENCIA: { label: 'Transferencia', class: 'status-badge status-info' },
         CHEQUE: { label: 'Cheque', class: 'status-badge status-info' },
@@ -271,31 +301,33 @@ export class PaymentListComponent implements OnInit {
       key: 'estado',
       label: 'Estado',
       type: 'badge',
+      width: '110px',
       badgeConfig: {
         PENDIENTE: {
           label: 'Pendiente',
-          class: 'status-badge status-PENDIENTE',
+          class: 'status-badge status-pending',
           icon: 'fa-clock',
         },
         CONFIRMADO: {
           label: 'Confirmado',
-          class: 'status-badge status-CONFIRMADO',
+          class: 'status-badge status-completed',
           icon: 'fa-check-circle',
         },
         RECHAZADO: {
           label: 'Rechazado',
-          class: 'status-badge status-RECHAZADO',
+          class: 'status-badge status-rejected',
           icon: 'fa-times-circle',
         },
         ANULADO: {
           label: 'Anulado',
-          class: 'status-badge status-ANULADO',
+          class: 'status-badge status-cancelled',
           icon: 'fa-ban',
         },
       },
     },
-    { key: 'conciliado', label: 'Conciliado', type: 'template' },
+    { key: 'conciliado', label: 'Concil.', type: 'template', width: '80px' },
     { key: 'numero_operacion', label: 'N° Operación', type: 'template' },
+    { key: 'created_at', label: 'Creado', type: 'date', width: '100px' },
   ];
 
   ngOnInit() {

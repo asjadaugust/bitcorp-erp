@@ -9,11 +9,15 @@ class ValeCombustibleListaDto(BaseModel):
     id: int
     codigo: str
     equipo_id: int
+    equipo_codigo: str | None = None
+    equipo_descripcion: str | None = None
     fecha: date
     numero_vale: str
     tipo_combustible: str
     cantidad_galones: float
+    precio_unitario: float | None = None
     monto_total: float | None = None
+    proveedor: str | None = None
     estado: str
 
 

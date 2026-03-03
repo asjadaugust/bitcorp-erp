@@ -9,8 +9,10 @@ class OrdenAlquilerListaDto(BaseModel):
     id: int
     codigo: str
     proveedor_id: int
+    proveedor_nombre: str | None = None
     descripcion_equipo: str
     fecha_orden: date
+    fecha_inicio_estimada: date | None = None
     tarifa_acordada: float
     tipo_tarifa: str
     moneda: str

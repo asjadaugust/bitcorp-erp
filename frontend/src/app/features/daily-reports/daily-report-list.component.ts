@@ -76,8 +76,8 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
       <div *ngIf="!loading && reports.length > 0" class="reports-grid" data-testid="reports-grid">
         <app-aero-card
           *ngFor="let report of reports"
-          [title]="report.equipo_nombre || report.codigo_equipo || 'Sin Equipo'"
-          [subtitle]="'Cod: #' + report.id"
+          [title]="report.equipo_nombre || 'Sin Equipo'"
+          [subtitle]="report.codigo_equipo || 'ID: #' + report.id"
           [icon]="'fa-solid fa-truck-front'"
           [statusLabel]="getStatusLabel(report.estado)"
           [statusClass]="report.estado"
@@ -541,6 +541,12 @@ export class DailyReportListComponent implements OnInit {
 
   filterConfig: FilterConfig[] = [
     {
+      key: 'equipment',
+      label: 'Equipo',
+      type: 'text',
+      placeholder: 'Buscar por código o nombre de equipo...',
+    },
+    {
       key: 'status',
       label: 'Estado',
       type: 'select',
@@ -622,6 +628,16 @@ export class DailyReportListComponent implements OnInit {
         label: 'Horas',
         value: `${report.horas_trabajadas || report.horometro_diferencia || 0}h`,
         highlight: true,
+      },
+      {
+        icon: 'fa-solid fa-building',
+        label: 'Proyecto',
+        value: (report as any).proyecto_nombre || (report as any).proyecto_codigo || '-',
+      },
+      {
+        icon: 'fa-solid fa-sun',
+        label: 'Turno',
+        value: (report as any).turno === 'NOCHE' ? 'Noche' : 'Día',
       },
     ];
   }

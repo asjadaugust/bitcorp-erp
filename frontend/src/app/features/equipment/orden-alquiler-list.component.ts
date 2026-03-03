@@ -67,7 +67,6 @@ import { AeroButtonComponent } from '../../core/design-system';
           [templates]="{
             codigo: codeTemplate,
             proveedor: proveedorTemplate,
-            estado: estadoTemplate,
             tarifa: tarifaTemplate,
           }"
           (rowClick)="verDetalle($event.id)"
@@ -82,13 +81,6 @@ import { AeroButtonComponent } from '../../core/design-system';
       <ng-template #proveedorTemplate let-row>
         <span class="proveedor-cell">
           {{ row.proveedor_nombre || '#' + row.proveedor_id }}
-        </span>
-      </ng-template>
-
-      <ng-template #estadoTemplate let-row>
-        <span class="status-badge" [ngClass]="'status-' + row.estado.toLowerCase()">
-          <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
-          {{ estadoLabel(row.estado) }}
         </span>
       </ng-template>
 
@@ -314,34 +306,6 @@ import { AeroButtonComponent } from '../../core/design-system';
         color: var(--primary-700);
       }
 
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      .status-borrador {
-        background: var(--grey-100);
-        color: var(--grey-600);
-      }
-      .status-enviado {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .status-confirmado {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-      .status-cancelado {
-        background: var(--semantic-red-50);
-        color: var(--grey-900);
-      }
-
       .proveedor-cell {
         font-size: 13px;
         color: var(--grey-900);
@@ -450,6 +414,12 @@ export class OrdenAlquilerListComponent implements OnInit {
 
   filterConfig: FilterConfig[] = [
     {
+      key: 'search',
+      label: 'Buscar',
+      type: 'text',
+      placeholder: 'Buscar por código, equipo, proveedor...',
+    },
+    {
       key: 'estado',
       label: 'Estado',
       type: 'select',
@@ -464,12 +434,33 @@ export class OrdenAlquilerListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'template', width: '130px' },
+    { key: 'codigo', label: 'Código', type: 'template', width: '120px' },
     { key: 'descripcion_equipo', label: 'Equipo', type: 'text' },
-    { key: 'proveedor_nombre', label: 'Proveedor', type: 'template' },
-    { key: 'fecha_orden', label: 'Fecha Orden', type: 'date', width: '140px' },
-    { key: 'tarifa', label: 'Tarifa', type: 'template', width: '180px' },
-    { key: 'estado', label: 'Estado', type: 'template', width: '140px', align: 'center' },
+    { key: 'proveedor', label: 'Proveedor', type: 'template' },
+    { key: 'fecha_orden', label: 'F. Orden', type: 'date', width: '110px' },
+    { key: 'fecha_inicio_estimada', label: 'F. Entrega', type: 'date', width: '110px' },
+    { key: 'tarifa', label: 'Tarifa', type: 'template', width: '160px' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      width: '130px',
+      align: 'center',
+      badgeConfig: {
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-draft', icon: 'fa-pencil' },
+        ENVIADO: {
+          label: 'Enviado',
+          class: 'status-badge status-in-progress',
+          icon: 'fa-paper-plane',
+        },
+        CONFIRMADO: {
+          label: 'Confirmado',
+          class: 'status-badge status-completed',
+          icon: 'fa-check-circle',
+        },
+        CANCELADO: { label: 'Cancelado', class: 'status-badge status-cancelled', icon: 'fa-ban' },
+      },
+    },
   ];
 
   ngOnInit() {
@@ -595,16 +586,6 @@ export class OrdenAlquilerListComponent implements OnInit {
     });
   }
 
-  estadoLabel(estado: string): string {
-    const labels: Record<string, string> = {
-      BORRADOR: 'Borrador',
-      ENVIADO: 'Enviado',
-      CONFIRMADO: 'Confirmado',
-      CANCELADO: 'Cancelado',
-    };
-    return labels[estado] ?? estado;
-  }
-
   tipoTarifaLabel(tipo: string): string {
     const labels: Record<string, string> = {
       HORA: 'Hora',
@@ -612,15 +593,5 @@ export class OrdenAlquilerListComponent implements OnInit {
       MES: 'Mes',
     };
     return labels[tipo] ?? tipo;
-  }
-
-  getStatusIcon(estado: string): string {
-    const icons: Record<string, string> = {
-      BORRADOR: 'fa-pencil',
-      ENVIADO: 'fa-paper-plane',
-      CONFIRMADO: 'fa-check-circle',
-      CANCELADO: 'fa-ban',
-    };
-    return icons[estado] || 'fa-info-circle';
   }
 }

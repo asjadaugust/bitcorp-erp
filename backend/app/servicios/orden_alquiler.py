@@ -22,9 +22,12 @@ logger = obtener_logger(__name__)
 
 
 def _a_lista_dto(o: OrdenAlquiler) -> OrdenAlquilerListaDto:
+    prov = o.proveedor if hasattr(o, "proveedor") and o.proveedor else None
     return OrdenAlquilerListaDto(
         id=o.id, codigo=o.codigo, proveedor_id=o.proveedor_id,
+        proveedor_nombre=prov.razon_social if prov else None,
         descripcion_equipo=o.descripcion_equipo, fecha_orden=o.fecha_orden,
+        fecha_inicio_estimada=o.fecha_inicio_estimada,
         tarifa_acordada=float(o.tarifa_acordada), tipo_tarifa=o.tipo_tarifa,
         moneda=o.moneda, estado=o.estado, is_active=o.is_active,
     )

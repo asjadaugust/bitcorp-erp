@@ -17,12 +17,17 @@ logger = obtener_logger(__name__)
 
 
 def _a_lista_dto(v: ValeCombustible) -> ValeCombustibleListaDto:
+    eq = v.equipo_rel if hasattr(v, "equipo_rel") and v.equipo_rel else None
     return ValeCombustibleListaDto(
         id=v.id, codigo=v.codigo, equipo_id=v.equipo_id,
+        equipo_codigo=eq.codigo_equipo if eq else None,
+        equipo_descripcion=f"{eq.marca or ''} {eq.modelo or ''}".strip() if eq else None,
         fecha=v.fecha, numero_vale=v.numero_vale,
         tipo_combustible=v.tipo_combustible,
         cantidad_galones=float(v.cantidad_galones),
+        precio_unitario=float(v.precio_unitario) if v.precio_unitario else None,
         monto_total=float(v.monto_total) if v.monto_total else None,
+        proveedor=v.proveedor,
         estado=v.estado,
     )
 

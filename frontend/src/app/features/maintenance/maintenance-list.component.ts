@@ -73,6 +73,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           [templates]="{
             equipo: equipmentTemplate,
             descripcion: descriptionTemplate,
+            fechaProgramada: fechaTemplate,
           }"
           (rowClick)="viewRecord($event)"
         >
@@ -91,6 +92,17 @@ import { AeroButtonComponent } from '../../core/design-system';
       <ng-template #descriptionTemplate let-row>
         <div class="description-text" title="{{ row.descripcion }}">
           {{ row.descripcion }}
+        </div>
+      </ng-template>
+
+      <ng-template #fechaTemplate let-row>
+        <div class="fecha-cell">
+          <span>{{ row.fechaProgramada | date: 'dd/MM/yyyy' }}</span>
+          @if (isOverdue(row)) {
+            <span class="overdue-indicator" title="Vencido">
+              <i class="fa-solid fa-triangle-exclamation"></i> Vencido
+            </span>
+          }
         </div>
       </ng-template>
 
@@ -148,6 +160,19 @@ import { AeroButtonComponent } from '../../core/design-system';
         white-space: nowrap;
       }
 
+      .fecha-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .overdue-indicator {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--semantic-red-500);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
       .action-buttons {
         display: flex;
         justify-content: flex-end;
@@ -221,8 +246,9 @@ export class MaintenanceListComponent implements OnInit {
       },
     },
     { key: 'descripcion', label: 'Descripción', type: 'template' },
-    { key: 'fechaProgramada', label: 'Fecha Programada', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'costoEstimado', label: 'Costo Est.', type: 'currency', format: 'PEN' },
+    { key: 'fechaProgramada', label: 'Fecha Prog.', type: 'template', width: '130px' },
+    { key: 'costoEstimado', label: 'Costo Est.', type: 'currency', format: 'PEN', width: '110px' },
+    { key: 'costoReal', label: 'Costo Real', type: 'currency', format: 'PEN', width: '110px' },
     { key: 'tecnicoResponsable', label: 'Técnico', type: 'text' },
     {
       key: 'estado',
@@ -310,6 +336,12 @@ export class MaintenanceListComponent implements OnInit {
     if (!id) return '';
     const equip = this.equipmentMap.get(id);
     return equip ? `${(equip['marca'] as string) || ''} ${(equip['modelo'] as string) || ''}` : '';
+  }
+
+  isOverdue(record: MaintenanceRecord): boolean {
+    if (!record.fechaProgramada) return false;
+    if (!['PROGRAMADO', 'EN_PROCESO', 'PENDIENTE'].includes(record.estado)) return false;
+    return new Date(record.fechaProgramada) < new Date();
   }
 
   viewRecord(record: MaintenanceRecord): void {

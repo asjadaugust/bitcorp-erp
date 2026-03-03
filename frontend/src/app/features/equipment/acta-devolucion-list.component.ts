@@ -58,9 +58,8 @@ import { AeroButtonComponent } from '../../core/design-system';
           [loading]="loading"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
-            tipo: tipoTemplate,
-            condicion: condicionTemplate,
-            estado: estadoTemplate,
+            codigo: codigoTemplate,
+            equipo: equipoTemplate,
             firmas: firmasTemplate,
           }"
           (rowClick)="verDetalle($event.id)"
@@ -69,20 +68,17 @@ import { AeroButtonComponent } from '../../core/design-system';
       </app-page-card>
 
       <!-- Templates -->
-      <ng-template #tipoTemplate let-row>
-        <span class="badge" [ngClass]="tipoClass(row.tipo)">
-          {{ tipoLabel(row.tipo) }}
-        </span>
+      <ng-template #codigoTemplate let-row>
+        <span class="code-badge">{{ row.codigo }}</span>
       </ng-template>
 
-      <ng-template #condicionTemplate let-row>
-        <span class="badge" [ngClass]="condicionClass(row.condicion_equipo)">
-          {{ condicionLabel(row.condicion_equipo) }}
-        </span>
-      </ng-template>
-
-      <ng-template #estadoTemplate let-row>
-        <span class="badge" [ngClass]="estadoClass(row.estado)">{{ row.estado }}</span>
+      <ng-template #equipoTemplate let-row>
+        <div class="equipo-cell">
+          <span class="equipo-codigo">{{ row.equipo_codigo || '#' + row.equipo_id }}</span>
+          @if (row.equipo_descripcion) {
+            <span class="equipo-desc">{{ row.equipo_descripcion }}</span>
+          }
+        </div>
       </ng-template>
 
       <ng-template #firmasTemplate let-row>
@@ -132,56 +128,33 @@ import { AeroButtonComponent } from '../../core/design-system';
   `,
   styles: [
     `
-      .badge {
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-      .badge-borrador {
+      .code-badge {
+        font-family: monospace;
+        font-size: 12px;
         background: var(--grey-100);
-        color: var(--grey-600);
-      }
-      .badge-pendiente {
-        background: var(--semantic-yellow-50);
-        color: var(--grey-900);
-      }
-      .badge-firmado {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-      .badge-anulado {
-        background: var(--semantic-red-50);
-        color: var(--grey-900);
-      }
-      .badge-devolucion {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
-      }
-      .badge-desmobil {
-        background: var(--primary-50);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
         color: var(--primary-700);
       }
-      .badge-transfer {
+      .equipo-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .equipo-codigo {
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--grey-900);
         background: var(--grey-100);
-        color: var(--grey-900);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+        display: inline-block;
       }
-      .badge-bueno {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-      .badge-regular {
-        background: var(--semantic-yellow-50);
-        color: var(--grey-900);
-      }
-      .badge-malo {
-        background: var(--semantic-red-50);
-        color: var(--grey-900);
-      }
-      .badge-obs {
-        background: var(--semantic-blue-50);
-        color: var(--semantic-blue-700);
+      .equipo-desc {
+        font-size: 12px;
+        color: var(--grey-500);
       }
       .firma-indicators {
         display: flex;
@@ -252,13 +225,46 @@ export class ActaDevolucionListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'text' },
-    { key: 'equipo_id', label: 'Equipo ID', type: 'text' },
-    { key: 'tipo', label: 'Tipo', type: 'template' },
-    { key: 'fecha_devolucion', label: 'Fecha Devolución', type: 'date' },
-    { key: 'condicion_equipo', label: 'Condición', type: 'template' },
-    { key: 'estado', label: 'Estado', type: 'template' },
-    { key: 'firmas', label: 'Firmas', type: 'template' },
+    { key: 'codigo', label: 'Código', type: 'template', width: '110px' },
+    { key: 'equipo', label: 'Equipo', type: 'template' },
+    {
+      key: 'tipo',
+      label: 'Tipo',
+      type: 'badge',
+      width: '110px',
+      badgeConfig: {
+        DEVOLUCION: { label: 'Devolución', class: 'status-badge status-info' },
+        DESMOBILIZACION: { label: 'Desmovil.', class: 'status-badge status-warning' },
+        TRANSFERENCIA: { label: 'Transfer.', class: 'status-badge status-neutral' },
+      },
+    },
+    { key: 'fecha_devolucion', label: 'Fecha', type: 'date', width: '110px' },
+    {
+      key: 'condicion_equipo',
+      label: 'Condición',
+      type: 'badge',
+      width: '110px',
+      badgeConfig: {
+        BUENO: { label: 'Bueno', class: 'status-badge status-completed', icon: 'fa-check' },
+        REGULAR: { label: 'Regular', class: 'status-badge status-warning', icon: 'fa-minus' },
+        MALO: { label: 'Malo', class: 'status-badge status-error', icon: 'fa-times' },
+        CON_OBSERVACIONES: { label: 'C/Obs.', class: 'status-badge status-info', icon: 'fa-eye' },
+      },
+    },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      width: '110px',
+      badgeConfig: {
+        BORRADOR: { label: 'Borrador', class: 'status-badge status-draft', icon: 'fa-pencil' },
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-pending', icon: 'fa-clock' },
+        FIRMADO: { label: 'Firmado', class: 'status-badge status-completed', icon: 'fa-check' },
+        ANULADO: { label: 'Anulado', class: 'status-badge status-cancelled', icon: 'fa-ban' },
+      },
+    },
+    { key: 'firmas', label: 'Firmas', type: 'template', width: '80px' },
+    { key: 'observaciones', label: 'Observaciones', type: 'text' },
   ];
 
   ngOnInit() {
@@ -317,50 +323,5 @@ export class ActaDevolucionListComponent implements OnInit {
           this.svc.enviarParaFirma(a.id).subscribe(() => this.cargar());
         }
       });
-  }
-
-  estadoClass(estado: string) {
-    return {
-      'badge-borrador': estado === 'BORRADOR',
-      'badge-pendiente': estado === 'PENDIENTE',
-      'badge-firmado': estado === 'FIRMADO',
-      'badge-anulado': estado === 'ANULADO',
-    };
-  }
-
-  tipoClass(tipo: string) {
-    return {
-      'badge-devolucion': tipo === 'DEVOLUCION',
-      'badge-desmobil': tipo === 'DESMOBILIZACION',
-      'badge-transfer': tipo === 'TRANSFERENCIA',
-    };
-  }
-
-  tipoLabel(tipo: string): string {
-    const labels: Record<string, string> = {
-      DEVOLUCION: 'Devolución',
-      DESMOBILIZACION: 'Desmovil.',
-      TRANSFERENCIA: 'Transfer.',
-    };
-    return labels[tipo] ?? tipo;
-  }
-
-  condicionClass(c: string) {
-    return {
-      'badge-bueno': c === 'BUENO',
-      'badge-regular': c === 'REGULAR',
-      'badge-malo': c === 'MALO',
-      'badge-obs': c === 'CON_OBSERVACIONES',
-    };
-  }
-
-  condicionLabel(c: string): string {
-    const labels: Record<string, string> = {
-      BUENO: 'Bueno',
-      REGULAR: 'Regular',
-      MALO: 'Malo',
-      CON_OBSERVACIONES: 'C/Obs.',
-    };
-    return labels[c] ?? c;
   }
 }

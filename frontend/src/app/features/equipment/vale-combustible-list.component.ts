@@ -82,10 +82,10 @@ import { AeroButtonComponent } from '../../core/design-system';
           (pageChange)="onPageChange($event)"
           [templates]="{
             codigo: codeTemplate,
+            equipo: equipoTemplate,
             tipo_combustible: tipoTemplate,
             cantidad_galones: cantidadTemplate,
             monto_total: montoTemplate,
-            estado: estadoTemplate,
           }"
           (rowClick)="verDetalle($event.id)"
           data-testid="vale-combustible-table"
@@ -95,6 +95,15 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <ng-template #codeTemplate let-row>
         <span class="code-badge" data-testid="vale-codigo">{{ row.codigo }}</span>
+      </ng-template>
+
+      <ng-template #equipoTemplate let-row>
+        <div class="equipo-cell">
+          <span class="equipo-codigo">{{ row.equipo_codigo || '#' + row.equipo_id }}</span>
+          @if (row.equipo_descripcion) {
+            <span class="equipo-desc">{{ row.equipo_descripcion }}</span>
+          }
+        </div>
       </ng-template>
 
       <ng-template #tipoTemplate let-row>
@@ -110,10 +119,6 @@ import { AeroButtonComponent } from '../../core/design-system';
       <ng-template #montoTemplate let-row>
         <span *ngIf="row.monto_total">S/ {{ row.monto_total | number: '1.2-2' }}</span>
         <span *ngIf="!row.monto_total" class="text-muted">—</span>
-      </ng-template>
-
-      <ng-template #estadoTemplate let-row>
-        <span class="badge" [ngClass]="getEstadoClass(row.estado)">{{ row.estado }}</span>
       </ng-template>
 
       <ng-template #actionsTemplate let-row>
@@ -200,6 +205,25 @@ import { AeroButtonComponent } from '../../core/design-system';
         background: var(--primary-50);
         color: var(--primary-700);
       }
+      .equipo-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .equipo-codigo {
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--grey-900);
+        background: var(--grey-100);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+        display: inline-block;
+      }
+      .equipo-desc {
+        font-size: 12px;
+        color: var(--grey-500);
+      }
       .table-actions {
         display: flex;
         gap: 4px;
@@ -228,17 +252,45 @@ export class ValeCombustibleListComponent implements OnInit {
   ];
 
   columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código' },
-    { key: 'fecha', label: 'Fecha' },
-    { key: 'numero_vale', label: 'N° Vale' },
-    { key: 'tipo_combustible', label: 'Tipo' },
-    { key: 'cantidad_galones', label: 'Cantidad' },
-    { key: 'proveedor', label: 'Proveedor' },
-    { key: 'monto_total', label: 'Monto Total' },
-    { key: 'estado', label: 'Estado' },
+    { key: 'codigo', label: 'Código', type: 'template', width: '110px' },
+    { key: 'fecha', label: 'Fecha', type: 'date', width: '110px' },
+    { key: 'equipo', label: 'Equipo', type: 'template' },
+    { key: 'numero_vale', label: 'N° Vale', type: 'text' },
+    { key: 'tipo_combustible', label: 'Tipo', type: 'template', width: '80px' },
+    {
+      key: 'cantidad_galones',
+      label: 'Cantidad',
+      type: 'template',
+      width: '100px',
+      align: 'right',
+    },
+    { key: 'precio_unitario', label: 'P.U.', type: 'currency', width: '90px' },
+    { key: 'proveedor', label: 'Proveedor', type: 'text' },
+    { key: 'monto_total', label: 'Monto Total', type: 'template', width: '110px' },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'badge',
+      width: '120px',
+      badgeConfig: {
+        PENDIENTE: { label: 'Pendiente', class: 'status-badge status-pending', icon: 'fa-clock' },
+        REGISTRADO: {
+          label: 'Registrado',
+          class: 'status-badge status-completed',
+          icon: 'fa-check',
+        },
+        ANULADO: { label: 'Anulado', class: 'status-badge status-cancelled', icon: 'fa-ban' },
+      },
+    },
   ];
 
   filterConfig: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Buscar',
+      type: 'text',
+      placeholder: 'Buscar por código, vale, proveedor...',
+    },
     {
       key: 'estado',
       label: 'Estado',
@@ -365,13 +417,5 @@ export class ValeCombustibleListComponent implements OnInit {
       GNV: 'GNV',
     };
     return map[tipo] || tipo;
-  }
-
-  getEstadoClass(estado: string): Record<string, boolean> {
-    return {
-      'badge-warning': estado === 'PENDIENTE',
-      'badge-success': estado === 'REGISTRADO',
-      'badge-danger': estado === 'ANULADO',
-    };
   }
 }

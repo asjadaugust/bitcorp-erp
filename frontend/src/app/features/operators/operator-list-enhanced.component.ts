@@ -89,10 +89,21 @@ import { AeroButtonComponent } from '../../core/design-system';
       </ng-template>
 
       <ng-template #licenseTemplate let-row>
-        <span class="license-badge" *ngIf="row.licencia_conducir">
-          {{ row.licencia_conducir }}
-        </span>
-        <span class="text-muted" *ngIf="!row.licencia_conducir">-</span>
+        @if (row.licencia_conducir) {
+          <div class="license-cell">
+            <span class="license-badge">{{ row.licencia_conducir }}</span>
+            @if (row.vencimiento_licencia) {
+              <span
+                class="license-expiry"
+                [class.license-expired]="isLicenseExpired(row.vencimiento_licencia)"
+              >
+                Vence: {{ row.vencimiento_licencia | date: 'dd/MM/yyyy' }}
+              </span>
+            }
+          </div>
+        } @else {
+          <span class="text-muted">-</span>
+        }
       </ng-template>
 
       <!-- Actions Template -->
@@ -192,6 +203,19 @@ import { AeroButtonComponent } from '../../core/design-system';
         font-size: 12px;
       }
 
+      .license-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .license-expiry {
+        font-size: 11px;
+        color: var(--grey-500);
+      }
+      .license-expired {
+        color: var(--semantic-red-500);
+        font-weight: 600;
+      }
       .text-muted {
         color: var(--grey-400);
       }
@@ -234,6 +258,7 @@ export class OperatorListEnhancedComponent implements OnInit {
     { key: 'nombre_completo', label: 'Operador', type: 'template' },
     { key: 'contacto', label: 'Contacto', type: 'template' },
     { key: 'licencia', label: 'Licencia', type: 'template' },
+    { key: 'especialidad', label: 'Especialidad', type: 'text' },
     { key: 'fecha_ingreso', label: 'Ingreso', type: 'date' },
     {
       key: 'is_active',
@@ -296,6 +321,11 @@ export class OperatorListEnhancedComponent implements OnInit {
 
   addOperator(): void {
     this.router.navigate(['/operators/new']);
+  }
+
+  isLicenseExpired(dateStr: string): boolean {
+    if (!dateStr) return false;
+    return new Date(dateStr) < new Date();
   }
 
   deleteOperator(operator: Operator): void {
