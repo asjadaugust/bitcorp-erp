@@ -16,4 +16,52 @@ export const LOGISTICS_ROUTES: Routes = [
   { path: 'movements/new', component: MovementFormComponent },
   { path: 'movements/:id', component: MovementDetailComponent },
   { path: 'movements/:id/edit', component: MovementFormComponent },
+  // Material Requests
+  {
+    path: 'material-requests',
+    loadComponent: () =>
+      import('./requests/solicitud-list.component').then((m) => m.SolicitudListComponent),
+  },
+  {
+    path: 'material-requests/new',
+    loadComponent: () =>
+      import('./requests/solicitud-form.component').then((m) => m.SolicitudFormComponent),
+  },
+  {
+    path: 'material-requests/:id',
+    loadComponent: () =>
+      import('./requests/solicitud-form.component').then((m) => m.SolicitudFormComponent),
+  },
+  {
+    path: 'material-requests/:id/edit',
+    loadComponent: () =>
+      import('./requests/solicitud-form.component').then((m) => m.SolicitudFormComponent),
+  },
+  // Requirements
+  {
+    path: 'requirements',
+    loadComponent: () =>
+      import('./requests/requerimiento-list.component').then((m) => m.RequerimientoListComponent),
+  },
+  {
+    path: 'requirements/new',
+    loadComponent: () =>
+      import('./requests/requerimiento-form.component').then((m) => m.RequerimientoFormComponent),
+  },
+  {
+    path: 'requirements/:id',
+    loadComponent: () =>
+      import('./requests/requerimiento-form.component').then((m) => m.RequerimientoFormComponent),
+  },
+  {
+    path: 'requirements/:id/edit',
+    loadComponent: () =>
+      import('./requests/requerimiento-form.component').then((m) => m.RequerimientoFormComponent),
+  },
+  // Categories
+  {
+    path: 'categories',
+    loadComponent: () =>
+      import('./requests/categoria-list.component').then((m) => m.CategoriaListComponent),
+  },
 ];

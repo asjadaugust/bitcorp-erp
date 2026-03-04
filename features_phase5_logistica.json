@@ -1,0 +1,128 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "Read-only categoria listing for product categories",
+      "steps": [
+        "GET /api/logistics/requests/categorias — verify lists >= 25 categories",
+        "Verify each item has: id, codigo, nombre, descripcion"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for Solicitud Material with nested detail lines",
+      "steps": [
+        "POST /api/logistics/requests/solicitudes-material with header + 3 detail lines — verify 201",
+        "Verify header has motivo, fecha_solicitud, solicitado_por",
+        "Verify each detail line has producto, cantidad, unidad_medida, estatus",
+        "GET /api/logistics/requests/solicitudes-material — verify paginated list",
+        "GET /api/logistics/requests/solicitudes-material/{id} — verify detail includes nested detalles array",
+        "PUT /api/logistics/requests/solicitudes-material/{id} — verify update",
+        "DELETE /api/logistics/requests/solicitudes-material/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for Requerimiento with nested detail lines",
+      "steps": [
+        "POST /api/logistics/requests/requerimientos with header + 2 detail lines — verify 201",
+        "Verify auto-increment numero_requerimiento",
+        "Verify header has numero_requerimiento, motivo, fecha_requerimiento",
+        "GET /api/logistics/requests/requerimientos — verify paginated list",
+        "GET /api/logistics/requests/requerimientos/{id} — verify nested detalles",
+        "PUT /api/logistics/requests/requerimientos/{id} — verify update",
+        "DELETE /api/logistics/requests/requerimientos/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Read-only cotizacion logistica listing",
+      "steps": [
+        "GET /api/logistics/requests/cotizaciones-logistica — verify lists seeded data",
+        "Verify each item has: id, numero_cotizacion"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Solicitud material detail lines reference products correctly",
+      "steps": [
+        "Create solicitud with detail line referencing existing producto",
+        "Verify producto name matches when fetching detail",
+        "Verify unidad_medida comes from catalog"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Solicitud Material list page with aero-data-grid",
+      "steps": [
+        "Navigate to /logistics/material-requests",
+        "Verify page-layout with title 'Solicitudes de Material'",
+        "Verify grid columns: motivo, fecha_solicitud, solicitado_por",
+        "Click row — verify navigates to detail",
+        "Verify 'Nueva Solicitud' button"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Solicitud Material form with dynamic detail lines",
+      "steps": [
+        "Navigate to solicitud material form",
+        "Fill header: motivo, fecha_solicitud",
+        "Click 'Agregar Linea' to add detail line",
+        "Fill detail: producto (with search/lookup), cantidad, unidad_medida (from catalog dropdown)",
+        "Add second detail line",
+        "Remove first detail line — verify FormArray updates",
+        "Submit — verify creation and redirect"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Requerimiento list and form follow same pattern",
+      "steps": [
+        "Navigate to /logistics/requirements",
+        "Verify list page loads with aero-data-grid",
+        "Navigate to /logistics/requirements/new",
+        "Verify form has header + detail lines pattern",
+        "Submit — verify creation"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Categoria reference list page",
+      "steps": [
+        "Navigate to /logistics/categories",
+        "Verify simple list shows all 25 categories",
+        "Verify columns: codigo, nombre, descripcion"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Logistica tabs include new sections",
+      "steps": [
+        "Navigate to /logistics",
+        "Verify tab bar includes: Solicitudes, Requerimientos, Categorias (in addition to existing tabs)",
+        "Click each tab — verify navigation"
+      ],
+      "passes": true
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for solicitud material pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_solicitud_material.py passes all tests",
+        "Verify no regressions"
+      ],
+      "passes": true
+    }
+  ]
+}
