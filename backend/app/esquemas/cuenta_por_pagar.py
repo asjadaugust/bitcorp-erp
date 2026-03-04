@@ -5,11 +5,11 @@ from pydantic import BaseModel, Field
 
 class CuentaPorPagarListaDto(BaseModel):
     id: int
-    proveedor_id: int
-    numero_factura: str
-    fecha_emision: str
-    fecha_vencimiento: str
-    monto_total: float
+    proveedor_id: int | None = None
+    numero_factura: str | None = None
+    fecha_emision: str | None = None
+    fecha_vencimiento: str | None = None
+    monto_total: float | None = None
     monto_pagado: float
     saldo: float | None = None
     moneda: str
@@ -18,11 +18,11 @@ class CuentaPorPagarListaDto(BaseModel):
 
 class CuentaPorPagarDetalleDto(BaseModel):
     id: int
-    proveedor_id: int
-    numero_factura: str
-    fecha_emision: str
-    fecha_vencimiento: str
-    monto_total: float
+    proveedor_id: int | None = None
+    numero_factura: str | None = None
+    fecha_emision: str | None = None
+    fecha_vencimiento: str | None = None
+    monto_total: float | None = None
     monto_pagado: float
     saldo: float | None = None
     moneda: str
@@ -33,8 +33,8 @@ class CuentaPorPagarDetalleDto(BaseModel):
 
 
 class CuentaPorPagarCrear(BaseModel):
-    proveedor_id: int
-    numero_factura: str = Field(..., max_length=50)
+    proveedor_id: int | None = None
+    numero_factura: str | None = Field(None, max_length=50)
     fecha_emision: str
     fecha_vencimiento: str
     monto_total: float = Field(..., gt=0)

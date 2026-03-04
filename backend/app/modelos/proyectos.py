@@ -19,15 +19,19 @@ class Edt(Base):
     __table_args__ = {"schema": "proyectos"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
-    codigo: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    codigo: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     nombre: Mapped[str] = mapped_column(String(255), nullable=False)
     descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
     ubicacion: Mapped[str | None] = mapped_column(String(255), nullable=True)
     fecha_inicio: Mapped[date | None] = mapped_column(Date, nullable=True)
     fecha_fin: Mapped[date | None] = mapped_column(Date, nullable=True)
     presupuesto: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
-    estado: Mapped[str] = mapped_column(String(50), default="PLANIFICACION", nullable=False)
+    estado: Mapped[str] = mapped_column(
+        String(50), default="PLANIFICACION", nullable=False
+    )
     empresa_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     unidad_operativa_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     cliente: Mapped[str | None] = mapped_column(String(255), nullable=True)

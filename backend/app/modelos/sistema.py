@@ -46,7 +46,10 @@ class Rol(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     usuarios: Mapped[list["Usuario"]] = relationship(
@@ -61,7 +64,9 @@ class UnidadOperativa(Base):
     __table_args__ = {"schema": "sistema"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     codigo: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     nombre: Mapped[str] = mapped_column(String(100), nullable=False)
     descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -71,7 +76,10 @@ class UnidadOperativa(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
 
@@ -82,12 +90,16 @@ class Usuario(Base):
     __table_args__ = {"schema": "sistema"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
-    nombre_usuario: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    nombre_usuario: Mapped[str] = mapped_column(
+        String(100), unique=True, nullable=False
+    )
     contrasena: Mapped[str] = mapped_column(String(255), nullable=False)
     nombres: Mapped[str | None] = mapped_column(String(100), nullable=True)
     apellidos: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    correo_electronico: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    correo_electronico: Mapped[str | None] = mapped_column(String(100), nullable=True)
     dni: Mapped[str | None] = mapped_column(String(20), nullable=True)
     telefono: Mapped[str | None] = mapped_column(String(20), nullable=True)
     rol_id: Mapped[int | None] = mapped_column(
@@ -105,10 +117,15 @@ class Usuario(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
-    rol_directo: Mapped[Rol | None] = relationship("Rol", foreign_keys=[rol_id], lazy="joined")
+    rol_directo: Mapped[Rol | None] = relationship(
+        "Rol", foreign_keys=[rol_id], lazy="joined"
+    )
     unidad_operativa: Mapped[UnidadOperativa | None] = relationship(
         "UnidadOperativa", foreign_keys=[unidad_operativa_id], lazy="joined"
     )
@@ -130,3 +147,98 @@ class Usuario(Base):
                 if r.codigo:
                     return r.codigo
         return "OPERADOR"
+
+
+# ─── Permissions ─────────────────────────────────────────────────────────
+
+
+class Permiso(Base):
+    """Modelo para sistema.permiso (from tbl_G00006_Permiso)."""
+
+    __tablename__ = "permiso"
+    __table_args__ = {"schema": "sistema"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    proceso: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    modulo: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    permiso: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+# Tabla de asociación many-to-many: rol_permiso (from tbl_G00005_RolPermiso)
+tabla_rol_permiso = Table(
+    "rol_permiso",
+    Base.metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("rol_id", Integer, ForeignKey("sistema.rol.id"), nullable=True),
+    Column("permiso_id", Integer, ForeignKey("sistema.permiso.id"), nullable=True),
+    schema="sistema",
+)
+
+
+class UsuarioRolUnidadOperativa(Base):
+    """Modelo para sistema.usuario_rol_unidad_operativa (from tbl_G00003)."""
+
+    __tablename__ = "usuario_rol_unidad_operativa"
+    __table_args__ = {"schema": "sistema"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    usuario_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sistema.usuario.id"), nullable=True
+    )
+    rol_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sistema.rol.id"), nullable=True
+    )
+    unidad_operativa_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sistema.unidad_operativa.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class ComponenteUnidadOperativa(Base):
+    """Modelo para sistema.componente_unidad_operativa (from tbl_G00007)."""
+
+    __tablename__ = "componente_unidad_operativa"
+    __table_args__ = {"schema": "sistema"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    codigo: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    componente: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    unidad_operativa_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sistema.unidad_operativa.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )

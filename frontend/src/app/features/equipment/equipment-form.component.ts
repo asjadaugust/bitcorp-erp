@@ -748,11 +748,9 @@ export class EquipmentFormComponent implements OnInit {
       delete equipmentData.notes;
     }
 
-    // Convert numeric fields
+    // potencia_neta is now a string field — pass as-is, allow text like "130@3400"
     if (equipmentData.potencia_neta) {
-      // Remove non-numeric characters if user types "300 HP"
-      const potencia = String(equipmentData.potencia_neta).replace(/[^0-9.]/g, '');
-      equipmentData.potencia_neta = potencia ? Number(potencia) : null;
+      equipmentData.potencia_neta = String(equipmentData.potencia_neta).trim() || null;
     } else {
       equipmentData.potencia_neta = null;
     }

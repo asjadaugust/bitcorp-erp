@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 class UsuarioListaDto(BaseModel):
     id: int
     username: str
-    email: str
+    email: str | None = None
     full_name: str
     nombres: str | None = None
     apellidos: str | None = None
@@ -29,7 +29,7 @@ class UsuarioDetalleDto(UsuarioListaDto):
 class UsuarioCrear(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     password: str = Field(..., min_length=8)
-    email: EmailStr
+    email: EmailStr | None = None
     first_name: str | None = None
     last_name: str | None = None
     dni: str | None = None

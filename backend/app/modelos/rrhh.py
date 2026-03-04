@@ -32,7 +32,9 @@ class Trabajador(Base):
     __table_args__ = {"schema": "rrhh"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     dni: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     nombres: Mapped[str] = mapped_column(String(100), nullable=False)
     apellido_paterno: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -69,7 +71,10 @@ class CertificacionOperador(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     trabajador_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("rrhh.trabajador.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer,
+        ForeignKey("rrhh.trabajador.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     nombre_certificacion: Mapped[str] = mapped_column(String(200), nullable=False)
     numero_certificacion: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -82,7 +87,10 @@ class CertificacionOperador(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     trabajador: Mapped[Trabajador] = relationship("Trabajador", lazy="joined")
@@ -99,18 +107,28 @@ class HabilidadOperador(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     trabajador_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("rrhh.trabajador.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer,
+        ForeignKey("rrhh.trabajador.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     tipo_equipo: Mapped[str] = mapped_column(String(100), nullable=False)
-    nivel_habilidad: Mapped[str] = mapped_column(String(20), default="PRINCIPIANTE", nullable=False)
-    anios_experiencia: Mapped[float] = mapped_column(Numeric(4, 1), default=0, nullable=False)
+    nivel_habilidad: Mapped[str] = mapped_column(
+        String(20), default="PRINCIPIANTE", nullable=False
+    )
+    anios_experiencia: Mapped[float] = mapped_column(
+        Numeric(4, 1), default=0, nullable=False
+    )
     ultima_verificacion: Mapped[date | None] = mapped_column(Date, nullable=True)
     tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     trabajador: Mapped[Trabajador] = relationship("Trabajador", lazy="joined")
@@ -124,7 +142,9 @@ class DisponibilidadOperador(Base):
 
     __tablename__ = "disponibilidad_operador"
     __table_args__ = (
-        UniqueConstraint("trabajador_id", "fecha", "tenant_id", name="uq_disp_op_fecha"),
+        UniqueConstraint(
+            "trabajador_id", "fecha", "tenant_id", name="uq_disp_op_fecha"
+        ),
         {"schema": "rrhh"},
     )
 
@@ -140,7 +160,10 @@ class DisponibilidadOperador(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
 
@@ -154,12 +177,16 @@ class Tareo(Base):
     __table_args__ = {"schema": "rrhh"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     trabajador_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("rrhh.trabajador.id"), nullable=False, index=True
     )
     periodo: Mapped[str] = mapped_column(String(7), nullable=False, index=True)
-    total_dias_trabajados: Mapped[int] = mapped_column(Integer, default=0, nullable=True)
+    total_dias_trabajados: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=True
+    )
     total_horas: Mapped[float] = mapped_column(Numeric(8, 2), default=0, nullable=True)
     monto_calculado: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     estado: Mapped[str] = mapped_column(
@@ -191,7 +218,10 @@ class DetalleTareo(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     tareo_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("rrhh.tareo.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer,
+        ForeignKey("rrhh.tareo.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     proyecto_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("proyectos.edt.id"), nullable=True, index=True
@@ -201,3 +231,87 @@ class DetalleTareo(Base):
     tarifa_hora: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
     monto: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+# ─── Legacy: Comportamiento, Registro, EdtTareo ─────────────────────────
+
+
+class RegistroTrabajador(Base):
+    """Modelo para rrhh.registro_trabajador (from tbl_C05027_RegistroTrabajador)."""
+
+    __tablename__ = "registro_trabajador"
+    __table_args__ = {"schema": "rrhh"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    unidad_operativa_legacy_id: Mapped[str | None] = mapped_column(
+        String(7), nullable=True
+    )
+    trabajador_dni: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    proveedor_ruc: Mapped[str | None] = mapped_column(String(11), nullable=True)
+    fecha_ingreso: Mapped[date | None] = mapped_column(Date, nullable=True)
+    fecha_cese: Mapped[date | None] = mapped_column(Date, nullable=True)
+    estatus: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    fecha_registro: Mapped[date | None] = mapped_column(Date, nullable=True)
+    registrado_por: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    sub_grupo: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class ComportamientoHistorico(Base):
+    """Modelo para rrhh.comportamiento_historico (from tbl_C05027_ComportamientoHistorico)."""
+
+    __tablename__ = "comportamiento_historico"
+    __table_args__ = {"schema": "rrhh"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    cargo: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    salario: Mapped[float | None] = mapped_column(Numeric(18, 2), nullable=True)
+    fecha_inicio: Mapped[date | None] = mapped_column(Date, nullable=True)
+    fecha_fin: Mapped[date | None] = mapped_column(Date, nullable=True)
+    numero_contrato: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    registro_trabajador_legacy_id: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class EdtTareo(Base):
+    """Modelo para rrhh.edt_tareo (from tbl_C05032_EDTTareo)."""
+
+    __tablename__ = "edt_tareo"
+    __table_args__ = {"schema": "rrhh"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    edt_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tareo_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("rrhh.tareo.id"), nullable=True
+    )
+    horas: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

@@ -29,6 +29,7 @@ _SCHEMAS = [
     "sst",
     "sig",
     "aprobaciones",
+    "catalogo",
 ]
 
 
@@ -44,6 +45,7 @@ def upgrade() -> None:
     # Import every model module so their classes register with Base.metadata.
     import app.modelos.administracion  # noqa: F401
     import app.modelos.aprobaciones  # noqa: F401
+    import app.modelos.catalogo  # noqa: F401
     import app.modelos.checklist  # noqa: F401
     import app.modelos.equipo  # noqa: F401
     import app.modelos.licitacion  # noqa: F401
@@ -67,6 +69,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     import app.modelos.administracion  # noqa: F401
     import app.modelos.aprobaciones  # noqa: F401
+    import app.modelos.catalogo  # noqa: F401
     import app.modelos.checklist  # noqa: F401
     import app.modelos.equipo  # noqa: F401
     import app.modelos.licitacion  # noqa: F401

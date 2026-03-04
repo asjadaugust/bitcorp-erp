@@ -2,12 +2,22 @@
 
 Fase 2: Stub model — FK target only, no service/router yet.
 Fase 3: ContactoProveedor, InfoFinancieraProveedor.
+Legacy: CriterioSeleccionEvaluacion, SeleccionProveedor, EvaluacionProveedor.
 Columns match the actual live DB schema.
 """
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.modelos.base import Base
@@ -20,23 +30,30 @@ class Proveedor(Base):
     __table_args__ = {"schema": "proveedores"}
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     ruc: Mapped[str] = mapped_column(String(11), unique=True, nullable=False)
     razon_social: Mapped[str] = mapped_column(String(255), nullable=False)
     nombre_comercial: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    tipo_proveedor: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    tipo_proveedor: Mapped[str | None] = mapped_column(String(100), nullable=True)
     direccion: Mapped[str | None] = mapped_column(Text, nullable=True)
-    telefono: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    telefono: Mapped[str | None] = mapped_column(String(50), nullable=True)
     correo_electronico: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
     estado_contribuyente: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    condicion_contribuyente: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    condicion_contribuyente: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
     tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
 
 
@@ -59,7 +76,9 @@ class ContactoProveedor(Base):
     secondary_phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     secondary_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    contact_type: Mapped[str] = mapped_column(String(50), default="general", nullable=False)
+    contact_type: Mapped[str] = mapped_column(
+        String(50), default="general", nullable=False
+    )
     is_primary: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="active", nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -70,7 +89,10 @@ class ContactoProveedor(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     proveedor: Mapped[Proveedor] = relationship("Proveedor", lazy="joined")
@@ -104,5 +126,105 @@ class InfoFinancieraProveedor(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+# ─── Legacy: Criterios & Evaluaciones ───────────────────────────────────
+
+
+class CriterioSeleccionEvaluacion(Base):
+    """Modelo para proveedores.criterio_seleccion_evaluacion (from tbl_C07002)."""
+
+    __tablename__ = "criterio_seleccion_evaluacion"
+    __table_args__ = {"schema": "proveedores"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    seleccion_evaluacion: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    proveedor_de: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    aspecto: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    aspecto_peso: Mapped[float | None] = mapped_column(Numeric(6, 4), nullable=True)
+    criterio_seleccion: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    criterio_seleccion_peso: Mapped[float | None] = mapped_column(
+        Numeric(6, 4), nullable=True
+    )
+    parametro: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    punto: Mapped[float | None] = mapped_column(Numeric(6, 4), nullable=True)
+    puntaje: Mapped[float | None] = mapped_column(Numeric(6, 4), nullable=True)
+    registrado_por: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    fecha_registro: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class SeleccionProveedor(Base):
+    """Modelo para proveedores.seleccion_proveedor (from tbl_C07003)."""
+
+    __tablename__ = "seleccion_proveedor"
+    __table_args__ = {"schema": "proveedores"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class EvaluacionProveedor(Base):
+    """Modelo para proveedores.evaluacion_proveedor (from tbl_C07004)."""
+
+    __tablename__ = "evaluacion_proveedor"
+    __table_args__ = {"schema": "proveedores"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    ruc: Mapped[str | None] = mapped_column(String(11), nullable=True)
+    razon_social: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    precio: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    plazo_pago: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    calidad: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    plazo_cumplimiento: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    ubicacion: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    atencion_cliente: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    sgc: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    sgsst: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    sga: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    puntaje: Mapped[float | None] = mapped_column(Numeric(6, 4), nullable=True)
+    resultado: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    accion: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    parametro_valor: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    observacion: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    fecha_evaluacion: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    evaluado_por: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )

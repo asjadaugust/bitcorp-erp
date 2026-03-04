@@ -18,14 +18,20 @@ def upgrade() -> None:
     conn = op.get_bind()
 
     # ── 1. Fuel config ────────────────────────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.configuracion_combustible (precio_manipuleo, activo)
         VALUES (0.80, true)
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
     # ── 2. Providers ──────────────────────────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO proveedores.proveedor
             (legacy_id, ruc, razon_social, nombre_comercial, tipo_proveedor,
              direccion, telefono, correo_electronico, is_active, tenant_id)
@@ -39,10 +45,14 @@ def upgrade() -> None:
             ('PROV004','20514738291','FERREYROS S.A.','Ferreyros','EQUIPO_PESADO',
              'Av. Argentina 1920, Callao','(01) 517-4100','ventas@ferreyros.com.pe',true,1)
         ON CONFLICT (ruc) DO NOTHING
-    """))
+    """
+        )
+    )
 
     # ── 3. Projects (EDT) ─────────────────────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO proyectos.edt
             (legacy_id, codigo, nombre, descripcion, ubicacion,
              fecha_inicio, fecha_fin, presupuesto, estado, is_active)
@@ -56,13 +66,17 @@ def upgrade() -> None:
             ('PRJ003','MANTENIMIENTO-001','Mantenimiento Rutinario Lima-Callao',
              'Mantenimiento periodico de vias','Lima',
              '2024-02-01','2024-08-31',1500000.00,'ACTIVO',true)
-        ON CONFLICT (codigo) DO NOTHING
-    """))
+        ON CONFLICT (legacy_id) DO NOTHING
+    """
+        )
+    )
 
     # ── 4. Equipment types (PRD categories) ───────────────────────────────────
     # categoria_prd must be one of: MAQUINARIA_PESADA, VEHICULOS_PESADOS,
     #                                VEHICULOS_LIVIANOS, EQUIPOS_MENORES
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.tipo_equipo (codigo, nombre, categoria_prd, descripcion, activo)
         VALUES
             ('EXCHI','Excavadora Hidraulica','MAQUINARIA_PESADA','Excavadora sobre orugas hidraulica',true),
@@ -72,10 +86,14 @@ def upgrade() -> None:
             ('VOLQ','Volquete','VEHICULOS_PESADOS','Volquete de 15m3',true),
             ('TRAC','Tractor de Oruga','MAQUINARIA_PESADA','Tractor sobre orugas (bulldozer)',true)
         ON CONFLICT (codigo) DO NOTHING
-    """))
+    """
+        )
+    )
 
     # ── 5. Equipment ──────────────────────────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.equipo
             (legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id,
              tipo_proveedor, categoria, placa, marca, modelo,
@@ -88,9 +106,13 @@ def upgrade() -> None:
         FROM proveedores.proveedor p, equipo.tipo_equipo t
         WHERE p.legacy_id='PROV001' AND t.codigo='EXCHI'
         ON CONFLICT (codigo_equipo) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.equipo
             (legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id,
              tipo_proveedor, categoria, placa, marca, modelo,
@@ -103,9 +125,13 @@ def upgrade() -> None:
         FROM proveedores.proveedor p, equipo.tipo_equipo t
         WHERE p.legacy_id='PROV001' AND t.codigo='EXCHI'
         ON CONFLICT (codigo_equipo) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.equipo
             (legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id,
              tipo_proveedor, categoria, placa, marca, modelo,
@@ -118,9 +144,13 @@ def upgrade() -> None:
         FROM proveedores.proveedor p, equipo.tipo_equipo t
         WHERE p.legacy_id='PROV002' AND t.codigo='CARGF'
         ON CONFLICT (codigo_equipo) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.equipo
             (legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id,
              tipo_proveedor, categoria, placa, marca, modelo,
@@ -133,9 +163,13 @@ def upgrade() -> None:
         FROM proveedores.proveedor p, equipo.tipo_equipo t
         WHERE p.legacy_id='PROV003' AND t.codigo='RODCO'
         ON CONFLICT (codigo_equipo) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.equipo
             (legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id,
              tipo_proveedor, categoria, placa, marca, modelo,
@@ -148,9 +182,13 @@ def upgrade() -> None:
         FROM proveedores.proveedor p, equipo.tipo_equipo t
         WHERE p.legacy_id='PROV001' AND t.codigo='MOTON'
         ON CONFLICT (codigo_equipo) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.equipo
             (legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id,
              tipo_proveedor, categoria, placa, marca, modelo,
@@ -163,9 +201,13 @@ def upgrade() -> None:
         FROM proveedores.proveedor p, equipo.tipo_equipo t
         WHERE p.legacy_id='PROV003' AND t.codigo='VOLQ'
         ON CONFLICT (codigo_equipo) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.equipo
             (legacy_id, codigo_equipo, proveedor_id, tipo_equipo_id,
              tipo_proveedor, categoria, placa, marca, modelo,
@@ -178,10 +220,14 @@ def upgrade() -> None:
         FROM proveedores.proveedor p, equipo.tipo_equipo t
         WHERE p.legacy_id='PROV002' AND t.codigo='EXCHI'
         ON CONFLICT (codigo_equipo) DO NOTHING
-    """))
+    """
+        )
+    )
 
     # ── 6. Contracts ──────────────────────────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.contrato_adenda
             (legacy_id, equipo_id, proveedor_id, numero_contrato, tipo,
              fecha_contrato, fecha_inicio, fecha_fin, moneda,
@@ -193,9 +239,13 @@ def upgrade() -> None:
             'H-M',150.00,false,false,200,0.80,'ACTIVO',1
         FROM equipo.equipo e WHERE e.legacy_id='EQ001'
         ON CONFLICT (numero_contrato) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.contrato_adenda
             (legacy_id, equipo_id, proveedor_id, numero_contrato, tipo,
              fecha_contrato, fecha_inicio, fecha_fin, moneda,
@@ -207,9 +257,13 @@ def upgrade() -> None:
             'H-M',145.00,false,false,200,0.80,'ACTIVO',1
         FROM equipo.equipo e WHERE e.legacy_id='EQ002'
         ON CONFLICT (numero_contrato) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.contrato_adenda
             (legacy_id, equipo_id, proveedor_id, numero_contrato, tipo,
              fecha_contrato, fecha_inicio, fecha_fin, moneda,
@@ -221,9 +275,13 @@ def upgrade() -> None:
             'H-M',130.00,true,false,200,0.80,'ACTIVO',1
         FROM equipo.equipo e WHERE e.legacy_id='EQ003'
         ON CONFLICT (numero_contrato) DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.contrato_adenda
             (legacy_id, equipo_id, proveedor_id, numero_contrato, tipo,
              fecha_contrato, fecha_inicio, fecha_fin, moneda,
@@ -235,10 +293,14 @@ def upgrade() -> None:
             'DIARIA',800.00,true,true,0,0.00,'ACTIVO',1
         FROM equipo.equipo e WHERE e.legacy_id='EQ006'
         ON CONFLICT (numero_contrato) DO NOTHING
-    """))
+    """
+        )
+    )
 
     # ── 7. Workers ────────────────────────────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO rrhh.trabajador
             (legacy_id, dni, nombres, apellido_paterno, apellido_materno,
              fecha_nacimiento, telefono, correo_electronico,
@@ -266,10 +328,14 @@ def upgrade() -> None:
              'Operador de Volquete','Volquete','A-IIIc',
              'CONTRATO','2023-05-30',true,1)
         ON CONFLICT (dni) DO NOTHING
-    """))
+    """
+        )
+    )
 
     # ── 8. Daily reports (a few samples) ─────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.parte_diario
             (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
@@ -280,9 +346,13 @@ def upgrade() -> None:
         FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
         WHERE e.legacy_id='EQ001' AND w.legacy_id='OPR001' AND p.legacy_id='PRJ001'
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.parte_diario
             (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
@@ -293,9 +363,13 @@ def upgrade() -> None:
         FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
         WHERE e.legacy_id='EQ002' AND w.legacy_id='OPR002' AND p.legacy_id='PRJ001'
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.parte_diario
             (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
@@ -306,9 +380,13 @@ def upgrade() -> None:
         FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
         WHERE e.legacy_id='EQ001' AND w.legacy_id='OPR001' AND p.legacy_id='PRJ001'
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO equipo.parte_diario
             (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
@@ -319,7 +397,9 @@ def upgrade() -> None:
         FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
         WHERE e.legacy_id='EQ004' AND w.legacy_id='OPR003' AND p.legacy_id='PRJ002'
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
     # ── 9. Sample valuations ──────────────────────────────────────────────────
     # All columns with Python-only defaults must be supplied explicitly.
@@ -333,7 +413,9 @@ def upgrade() -> None:
              total_valorizado, conformidad_proveedor,
              estado, observaciones, creado_por, tenant_id)"""
 
-    conn.execute(sa.text(f"""
+    conn.execute(
+        sa.text(
+            f"""
         INSERT INTO equipo.valorizacion_equipo {val_cols}
         SELECT
             'VAL001', e.id, c.id, '2024-01',
@@ -346,9 +428,13 @@ def upgrade() -> None:
         JOIN equipo.contrato_adenda c ON c.legacy_id='CON001'
         WHERE e.legacy_id='EQ001'
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text(f"""
+    conn.execute(
+        sa.text(
+            f"""
         INSERT INTO equipo.valorizacion_equipo {val_cols}
         SELECT
             'VAL002', e.id, c.id, '2024-01',
@@ -361,9 +447,13 @@ def upgrade() -> None:
         JOIN equipo.contrato_adenda c ON c.legacy_id='CON002'
         WHERE e.legacy_id='EQ002'
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
-    conn.execute(sa.text(f"""
+    conn.execute(
+        sa.text(
+            f"""
         INSERT INTO equipo.valorizacion_equipo {val_cols}
         SELECT
             'VAL003', e.id, c.id, '2024-02',
@@ -376,16 +466,50 @@ def upgrade() -> None:
         JOIN equipo.contrato_adenda c ON c.legacy_id='CON001'
         WHERE e.legacy_id='EQ001'
         ON CONFLICT DO NOTHING
-    """))
+    """
+        )
+    )
 
 
 def downgrade() -> None:
     conn = op.get_bind()
-    conn.execute(sa.text("DELETE FROM equipo.valorizacion_equipo WHERE legacy_id IN ('VAL001','VAL002','VAL003')"))
-    conn.execute(sa.text("DELETE FROM equipo.parte_diario WHERE legacy_id IN ('DR001','DR002','DR003','DR004')"))
-    conn.execute(sa.text("DELETE FROM rrhh.trabajador WHERE legacy_id IN ('OPR001','OPR002','OPR003','OPR004','OPR005')"))
-    conn.execute(sa.text("DELETE FROM equipo.contrato_adenda WHERE legacy_id IN ('CON001','CON002','CON003','CON004')"))
-    conn.execute(sa.text("DELETE FROM equipo.equipo WHERE legacy_id IN ('EQ001','EQ002','EQ003','EQ004','EQ005','EQ006','EQ007')"))
-    conn.execute(sa.text("DELETE FROM equipo.tipo_equipo WHERE codigo IN ('EXCHI','CARGF','RODCO','MOTON','VOLQ','TRAC')"))
-    conn.execute(sa.text("DELETE FROM proyectos.edt WHERE legacy_id IN ('PRJ001','PRJ002','PRJ003')"))
-    conn.execute(sa.text("DELETE FROM proveedores.proveedor WHERE legacy_id IN ('PROV001','PROV002','PROV003','PROV004')"))
+    conn.execute(
+        sa.text(
+            "DELETE FROM equipo.valorizacion_equipo WHERE legacy_id IN ('VAL001','VAL002','VAL003')"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DELETE FROM equipo.parte_diario WHERE legacy_id IN ('DR001','DR002','DR003','DR004')"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DELETE FROM rrhh.trabajador WHERE legacy_id IN ('OPR001','OPR002','OPR003','OPR004','OPR005')"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DELETE FROM equipo.contrato_adenda WHERE legacy_id IN ('CON001','CON002','CON003','CON004')"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DELETE FROM equipo.equipo WHERE legacy_id IN ('EQ001','EQ002','EQ003','EQ004','EQ005','EQ006','EQ007')"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DELETE FROM equipo.tipo_equipo WHERE codigo IN ('EXCHI','CARGF','RODCO','MOTON','VOLQ','TRAC')"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DELETE FROM proyectos.edt WHERE legacy_id IN ('PRJ001','PRJ002','PRJ003')"
+        )
+    )
+    conn.execute(
+        sa.text(
+            "DELETE FROM proveedores.proveedor WHERE legacy_id IN ('PROV001','PROV002','PROV003','PROV004')"
+        )
+    )

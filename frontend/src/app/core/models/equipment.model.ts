@@ -20,7 +20,7 @@ export interface Equipment {
   numero_chasis?: string | null;
   numero_serie_motor?: string | null;
   anio_fabricacion?: number | null;
-  potencia_neta?: number | null;
+  potencia_neta?: string | null;
   tipo_motor?: string | null;
   medidor_uso?: string | null;
   created_by?: number | null;
