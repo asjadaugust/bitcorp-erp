@@ -183,6 +183,62 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'sst/inspecciones',
+        loadComponent: () =>
+          import('./features/sst/inspecciones/inspeccion-list.component').then(
+            (m) => m.InspeccionListComponent
+          ),
+      },
+      {
+        path: 'sst/inspecciones/new',
+        loadComponent: () =>
+          import('./features/sst/inspecciones/inspeccion-form.component').then(
+            (m) => m.InspeccionFormComponent
+          ),
+      },
+      {
+        path: 'sst/inspecciones/:id',
+        loadComponent: () =>
+          import('./features/sst/inspecciones/inspeccion-detail.component').then(
+            (m) => m.InspeccionDetailComponent
+          ),
+      },
+      {
+        path: 'sst/inspecciones/:id/edit',
+        loadComponent: () =>
+          import('./features/sst/inspecciones/inspeccion-form.component').then(
+            (m) => m.InspeccionFormComponent
+          ),
+      },
+      {
+        path: 'sst/reportes-acto',
+        loadComponent: () =>
+          import('./features/sst/reportes/reporte-list.component').then(
+            (m) => m.ReporteListComponent
+          ),
+      },
+      {
+        path: 'sst/reportes-acto/new',
+        loadComponent: () =>
+          import('./features/sst/reportes/reporte-form.component').then(
+            (m) => m.ReporteFormComponent
+          ),
+      },
+      {
+        path: 'sst/reportes-acto/:id',
+        loadComponent: () =>
+          import('./features/sst/reportes/reporte-detail.component').then(
+            (m) => m.ReporteDetailComponent
+          ),
+      },
+      {
+        path: 'sst/reportes-acto/:id/edit',
+        loadComponent: () =>
+          import('./features/sst/reportes/reporte-form.component').then(
+            (m) => m.ReporteFormComponent
+          ),
+      },
+      {
         path: 'sst/:id/edit',
         loadComponent: () =>
           import('./features/sst/components/incident-form/incident-form.component').then(

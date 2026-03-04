@@ -1,0 +1,130 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "CRUD for Seguimiento Inspeccion SSOMA with nested seguimiento children",
+      "steps": [
+        "POST /api/sst/inspecciones with {fecha_hallazgo, lugar_hallazgo, tipo_inspeccion: 'Planificado', nivel_riesgo: 'ALTO', descripcion_hallazgo} — verify 201",
+        "GET /api/sst/inspecciones — verify paginated list",
+        "GET /api/sst/inspecciones/{id} — verify detail includes empty seguimientos array",
+        "PUT /api/sst/inspecciones/{id} with {estado: 'EN PROCESO'} — verify 200",
+        "DELETE /api/sst/inspecciones/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Add and remove child seguimiento inspections",
+      "steps": [
+        "Create a seguimiento_inspeccion_ssoma",
+        "POST /api/sst/inspecciones/{id}/seguimientos with {descripcion_inspeccion, inspector, avance_estimado: 50} — verify 201",
+        "POST another seguimiento with avance_estimado: 80",
+        "GET /api/sst/inspecciones/{id} — verify seguimientos array has 2 items",
+        "DELETE /api/sst/inspecciones/{id}/seguimientos/{seg_id} — verify 204",
+        "GET /api/sst/inspecciones/{id} — verify seguimientos array has 1 item"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Filter inspecciones by tipo_inspeccion and nivel_riesgo",
+      "steps": [
+        "GET /api/sst/inspecciones?tipo_inspeccion=Planificado — verify filter",
+        "GET /api/sst/inspecciones?nivel_riesgo=ALTO — verify filter",
+        "GET /api/sst/inspecciones?estado=ABIERTO — verify filter"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for Reporte Acto/Condicion Insegura (5-section report)",
+      "steps": [
+        "POST /api/sst/reportes-acto-condicion with all 5 sections: reporter info (dni, cargo, empresa), incident info (fecha, lugar, sistema_gestion: 'SST', tipo_reporte: 'ACTO INSEGURO', acto_condicion from catalog), damage (dano_a), 5-why analysis (por_que_1 through por_que_5), corrective action — verify 201",
+        "GET /api/sst/reportes-acto-condicion — verify paginated list",
+        "GET /api/sst/reportes-acto-condicion/{id} — verify all 5 sections returned",
+        "PUT /api/sst/reportes-acto-condicion/{id} with {estado: 'CERRADO', accion_correctiva: 'Installed guard rail'} — verify 200",
+        "DELETE /api/sst/reportes-acto-condicion/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Reporte acto/condicion tipo_reporte determines catalog filter",
+      "steps": [
+        "GET /api/sst/actos-condicion — verify lists >= 49 catalog items",
+        "Verify items have categoria field for filtering by ACTO INSEGURO vs CONDICION INSEGURA",
+        "Create report with tipo_reporte: 'ACTO INSEGURO' and matching acto_condicion — verify success",
+        "Create report with tipo_reporte: 'CONDICION INSEGURA' and matching acto_condicion — verify success"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Reporte stores damage checkboxes as semicolon-separated string",
+      "steps": [
+        "Create report with dano_a: 'CABEZA;OJOS Y CARA;SISTEMA RESPIRATORIO'",
+        "GET report — verify dano_a stored and returned correctly",
+        "Create report with environmental: dano_a: 'AFECTACION AL AGUA;AFECTACION AL SUELO'"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Inspeccion SSOMA list page with risk level badges",
+      "steps": [
+        "Navigate to /sst/inspecciones",
+        "Verify aero-data-grid columns: fecha_hallazgo, lugar_hallazgo, tipo_inspeccion, nivel_riesgo (badge: red=ALTO, yellow=MEDIO, green=BAJO), estado",
+        "Verify filter bar with tipo_inspeccion and nivel_riesgo filters",
+        "Click row — verify navigates to detail"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Inspeccion detail shows seguimiento timeline",
+      "steps": [
+        "Navigate to /sst/inspecciones/{id}",
+        "Verify entity-detail-shell with header: lugar, tipo, riesgo, estado",
+        "Verify seguimientos displayed as timeline/table with fecha, inspector, descripcion, avance",
+        "Verify 'Agregar Seguimiento' button opens inline form",
+        "Submit seguimiento — verify appears in timeline"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Reporte Acto/Condicion multi-section form",
+      "steps": [
+        "Navigate to /sst/reportes-acto/new",
+        "Verify form has 5 sections matching legacy: Datos del Reportante, Datos del Evento, Danos, Analisis 5 Por Que, Accion Correctiva",
+        "Verify sistema_gestion dropdown: 'SST (SEGURIDAD)', 'GESTION AMBIENTAL'",
+        "Verify tipo_reporte dropdown: 'ACTO INSEGURO', 'CONDICION INSEGURA'",
+        "Verify acto_condicion dropdown filters based on tipo_reporte selection",
+        "Verify damage section has checkboxes for personal injury and environmental",
+        "Verify 5-why section has 5 text fields",
+        "Submit — verify creation"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "SST tabs include Inspecciones and Reportes",
+      "steps": [
+        "Navigate to /sst",
+        "Verify tab bar: Incidentes (existing), Inspecciones (new), Reportes A/C (new)",
+        "Click each tab — verify navigation"
+      ],
+      "passes": true
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for SST inspecciones and reportes pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_seguimiento_inspeccion.py passes all tests",
+        "Verify no regressions in existing test_sst.py"
+      ],
+      "passes": true
+    }
+  ]
+}
