@@ -105,4 +105,31 @@ export const ADMINISTRACION_ROUTES: Routes = [
     loadComponent: () =>
       import('./petty-cash/petty-cash-form.component').then((m) => m.PettyCashFormComponent),
   },
+
+  // Caja y Banco
+  {
+    path: 'bank-cash',
+    loadComponent: () =>
+      import('./bank-cash/bank-cash-list.component').then((m) => m.BankCashListComponent),
+  },
+  {
+    path: 'bank-cash/new',
+    loadComponent: () =>
+      import('./bank-cash/bank-cash-form.component').then((m) => m.BankCashFormComponent),
+  },
+  {
+    path: 'bank-cash/cuentas',
+    loadComponent: () =>
+      import('./bank-cash/cuenta-list.component').then((m) => m.CuentaListComponent),
+  },
+  {
+    path: 'bank-cash/:id',
+    loadComponent: () =>
+      import('./bank-cash/bank-cash-form.component').then((m) => m.BankCashFormComponent),
+  },
+  {
+    path: 'bank-cash/:id/edit',
+    loadComponent: () =>
+      import('./bank-cash/bank-cash-form.component').then((m) => m.BankCashFormComponent),
+  },
 ];

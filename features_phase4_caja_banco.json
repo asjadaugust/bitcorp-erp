@@ -1,0 +1,117 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "CRUD for CuentaCajaBanco (bank accounts)",
+      "steps": [
+        "GET /api/bank-cash/cuentas — verify lists >= 4 accounts from seed data",
+        "POST /api/bank-cash/cuentas with {numero_cuenta: '001-123456', cuenta: 'BCP Corriente', estatus: 'ACTIVO'} — verify 201",
+        "GET /api/bank-cash/cuentas/{id} — verify fields",
+        "PUT /api/bank-cash/cuentas/{id} with {estatus: 'INACTIVO'} — verify 200",
+        "DELETE /api/bank-cash/cuentas/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for FlujoCajaBanco (bank cash flow) with pagination and filters",
+      "steps": [
+        "GET /api/bank-cash/flujos?page=1&limit=10 — verify paginated response with >= 6137 total",
+        "GET /api/bank-cash/flujos?tipo_movimiento=SALIDA — verify filter works",
+        "GET /api/bank-cash/flujos?moneda=SOLES — verify filter works",
+        "POST /api/bank-cash/flujos with full data — verify 201",
+        "GET /api/bank-cash/flujos/{id} — verify detail with total_letra (number in Spanish text)",
+        "PUT /api/bank-cash/flujos/{id} with {voucher: 'V-001'} — verify 200"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "FlujoCajaBanco detail lines (DetalleMovimientoContable) CRUD",
+      "steps": [
+        "GET /api/bank-cash/flujos/{id}/detalles — verify returns detail lines",
+        "POST /api/bank-cash/flujos/{id}/detalles with {concepto: 'Pago factura', clasificacion: 'PAGO DE MATERIAL', monto: 1500} — verify 201",
+        "Verify clasificacion accepts all 17 legacy values: VALORIZACION, PAGO DE MATERIAL, PAGO DE EQUIPO, PAGO DE TRABAJADOR, PAGO DE SUBCONTRATO, PAGO DE SERVICIO, PAGO DE DETRACCION, PAGO DE IGV, ITF, PAGO DE COMISION, GASTO BANCARIO, OTROS GASTOS, AMORTIZACION, INTERES, MOVIMIENTO, OTROS INGRESOS, PRESTAMO",
+        "DELETE /api/bank-cash/flujos/{id}/detalles/{detail_id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "AdminCentroCosto read-only listing",
+      "steps": [
+        "GET /api/bank-cash/admin-centros-costo — verify returns data",
+        "GET /api/bank-cash/admin-centros-costo?cuenta_por_pagar_legacy_id=X — verify filter works",
+        "Verify each item has: codigo_componente, codigo_centro_costo, centro_costo, porcentaje, monto_final"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Bank cash endpoints require appropriate roles",
+      "steps": [
+        "Login as OPERADOR — GET /api/bank-cash/flujos — verify 403",
+        "Login as CONTABILIDAD — verify 200",
+        "Login as ADMIN — verify 200"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Caja y Banco list page with filters",
+      "steps": [
+        "Navigate to /administracion/bank-cash",
+        "Verify aero-data-grid loads flujos data",
+        "Verify filter bar: tipo_movimiento (SALIDA/INGRESO), moneda (SOLES/DOLARES), date range",
+        "Apply SALIDA filter — verify grid updates",
+        "Verify 'Nuevo Movimiento' button works"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Caja y Banco form with detail lines",
+      "steps": [
+        "Navigate to bank cash form",
+        "Select tipo_movimiento from dropdown (SALIDA/INGRESO)",
+        "Select cuenta_origen from CuentaCajaBanco dropdown",
+        "Verify dynamic detail lines section with FormArray",
+        "Add detail line: select clasificacion from 17-value dropdown, enter monto",
+        "Verify total auto-calculates from sum of detail montos",
+        "Submit — verify creation"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Cuenta Caja Banco management page",
+      "steps": [
+        "Navigate to bank accounts management",
+        "Verify grid shows: numero_cuenta, cuenta, estatus",
+        "Add new account — verify form works",
+        "Verify seed data (4 accounts) displays"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Administracion tabs include Caja y Banco",
+      "steps": [
+        "Navigate to /administracion",
+        "Verify tab bar includes 'Caja y Banco' tab",
+        "Click tab — verify navigation"
+      ],
+      "passes": true
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for caja y banco pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_caja_banco.py passes all tests",
+        "Verify no regressions"
+      ],
+      "passes": true
+    }
+  ]
+}
