@@ -11,9 +11,10 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import {
-  AeroCardComponent,
-  CardInfoItem,
-} from '../../shared/components/aero-card/aero-card.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+  DataGridSortEvent,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   TabItem,
@@ -23,6 +24,7 @@ import {
   FilterConfig,
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../core/design-system';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -36,10 +38,11 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
     FormsModule,
     RouterModule,
     PageLayoutComponent,
+    PageCardComponent,
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
-    AeroCardComponent,
+    AeroDataGridComponent,
     AeroButtonComponent,
   ],
   template: `
@@ -73,89 +76,82 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <div *ngIf="!loading && reports.length > 0" class="reports-grid" data-testid="reports-grid">
-        <app-aero-card
-          *ngFor="let report of reports"
-          [title]="report.equipo_nombre || 'Sin Equipo'"
-          [subtitle]="report.codigo_equipo || 'ID: #' + report.id"
-          [icon]="'fa-solid fa-truck-front'"
-          [statusLabel]="getStatusLabel(report.estado)"
-          [statusClass]="report.estado"
-          [statusIcon]="getStatusIcon(report.estado)"
-          [date]="report.fecha_parte"
-          [timestamp]="report.created_at"
-          [infoItems]="getReportInfoItems(report)"
-          [observations]="report.observaciones ? (report.observaciones | slice: 0 : 100) : ''"
-          (cardClick)="viewReport(report)"
-          [attr.data-testid]="'report-card-' + report.id"
+      <app-page-card [noPadding]="true">
+        <aero-data-grid
+          [columns]="columns"
+          [data]="reports"
+          [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            estado: statusTemplate,
+          }"
+          (rowClick)="viewReport($event)"
+          (sortChange)="onSortChange($event)"
         >
-          <div actions>
-            <button
-              *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
-              type="button"
-              class="report-card__btn report-card__btn--approve"
-              (click)="approveReport($event, report)"
-              title="Aprobar"
-              data-testid="btn-approve"
-            >
-              <i class="fa-solid fa-check"></i>
-            </button>
-            <button
-              *ngIf="report.estado === 'PENDIENTE' || report.estado === 'BORRADOR'"
-              type="button"
-              class="report-card__btn report-card__btn--reject"
-              (click)="rejectReport($event, report)"
-              title="Rechazar"
-              data-testid="btn-reject"
-            >
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-            <button
-              *ngIf="puedeFirearResidente(report)"
-              type="button"
-              class="report-card__btn report-card__btn--sign"
-              (click)="firmarResidente($event, report)"
-              title="Firmar como Residente"
-              data-testid="btn-firmar-residente"
-            >
-              <i class="fa-solid fa-signature"></i>
-            </button>
-            <button
-              type="button"
-              class="report-card__btn report-card__btn--edit"
-              (click)="editReport($event, report)"
-              title="Editar"
-              data-testid="btn-edit"
-            >
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button
-              type="button"
-              class="report-card__btn report-card__btn--view"
-              (click)="viewReport(report)"
-              title="Ver detalles"
-              data-testid="btn-view"
-            >
-              <i class="fa-solid fa-eye"></i>
-            </button>
-            <button
-              type="button"
-              class="report-card__btn report-card__btn--pdf"
-              (click)="descargarPdf($event, report)"
-              [disabled]="downloadingPdfId === report.id"
-              title="Descargar PDF"
-              [attr.data-testid]="'btn-download-pdf-' + report.id"
-            >
-              <i
-                class="fa-solid"
-                [class.fa-file-pdf]="downloadingPdfId !== report.id"
-                [class.fa-spinner]="downloadingPdfId === report.id"
-                [class.fa-spin]="downloadingPdfId === report.id"
-              ></i>
-            </button>
-          </div>
-        </app-aero-card>
-      </div>
+        </aero-data-grid>
+      </app-page-card>
+
+      <!-- Status Badge Template -->
+      <ng-template #statusTemplate let-row>
+        <span class="status-badge status-{{ row.estado?.toLowerCase() }}">
+          <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
+          {{ getStatusLabel(row.estado) }}
+        </span>
+      </ng-template>
+
+      <!-- Actions Template -->
+      <ng-template #actionsTemplate let-row>
+        <div class="action-buttons" (click)="$event.stopPropagation()">
+          <aero-button
+            *ngIf="row.estado === 'PENDIENTE' || row.estado === 'BORRADOR'"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-check"
+            title="Aprobar"
+            (clicked)="approveReport($event, row)"
+          ></aero-button>
+          <aero-button
+            *ngIf="row.estado === 'PENDIENTE' || row.estado === 'BORRADOR'"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-xmark"
+            title="Rechazar"
+            (clicked)="rejectReport($event, row)"
+          ></aero-button>
+          <aero-button
+            *ngIf="puedeFirearResidente(row)"
+            variant="ghost"
+            size="small"
+            iconCenter="fa-signature"
+            title="Firmar como Residente"
+            (clicked)="firmarResidente($event, row)"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-pen"
+            title="Editar"
+            (clicked)="editReport($event, row)"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            iconCenter="fa-eye"
+            title="Ver detalles"
+            (clicked)="viewReport(row)"
+          ></aero-button>
+          <aero-button
+            variant="ghost"
+            size="small"
+            [iconCenter]="downloadingPdfId === row.id ? 'fa-spinner fa-spin' : 'fa-file-pdf'"
+            title="Descargar PDF"
+            [disabled]="downloadingPdfId === row.id"
+            (clicked)="descargarPdf($event, row)"
+          ></aero-button>
+        </div>
+      </ng-template>
 
       <div *ngIf="!loading && reports.length === 0" class="empty-state" data-testid="empty-state">
         <div class="empty-state__icon">
@@ -173,273 +169,54 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
   `,
   styles: [
     `
-      /* Grid Layout */
-      .reports-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.25rem;
-      }
-
-      /* Report Card */
-      .report-card {
-        background: var(--grey-100);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--grey-300);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .report-card:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--grey-400);
-      }
-
-      /* Card Header */
-      .report-card__header {
-        padding: 1rem 1.25rem;
-        background: linear-gradient(135deg, var(--grey-100) 0%, var(--grey-100) 100%);
-        border-bottom: 1px solid var(--grey-200);
-      }
-
-      .report-card__status-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-      }
-
-      .report-card__status {
+      .status-badge {
         display: inline-flex;
         align-items: center;
         gap: 0.375rem;
-        padding: 0.25rem 0.75rem;
+        padding: 0.2rem 0.625rem;
         border-radius: 20px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.025em;
+        white-space: nowrap;
       }
 
-      .report-card__status--draft {
+      .status-borrador {
         background: var(--grey-100);
         color: var(--grey-500);
       }
 
-      .report-card__status--submitted {
+      .status-pendiente {
         background: var(--primary-100);
         color: var(--primary-500);
       }
 
-      .report-card__status--approved,
-      .report-card__status--finance_approved {
+      .status-aprobado,
+      .status-aprobado_finanzas {
         background: var(--semantic-blue-100);
         color: var(--semantic-blue-500);
       }
 
-      .report-card__status--rejected {
+      .status-rechazado {
         background: var(--grey-100);
         color: var(--accent-500);
       }
 
-      .report-card__status--pending_supervisor,
-      .report-card__status--pending_cost_engineer,
-      .report-card__status--pending_finance {
-        background: var(--grey-100);
-        color: var(--grey-900);
-      }
-
-      .report-card__status--supervisor_approved {
+      .status-aprobado_supervisor {
         background: var(--semantic-blue-100);
         color: var(--semantic-blue-500);
       }
 
-      .report-card__status--cost_reviewed {
+      .status-revisado_costos {
         background: var(--primary-100);
         color: var(--primary-500);
       }
 
-      .report-card__date {
+      .action-buttons {
         display: flex;
+        gap: var(--s-4);
         align-items: center;
-        gap: 0.375rem;
-        font-size: 0.8125rem;
-        color: var(--grey-500);
-      }
-
-      .report-card__title {
-        margin: 0;
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--grey-900);
-        line-height: 1.3;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      /* Card Body */
-      .report-card__body {
-        padding: 1rem 1.25rem;
-        flex: 1;
-      }
-
-      .report-card__info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.875rem;
-      }
-
-      .report-card__info-item {
-        display: flex;
-        flex-direction: column;
-        gap: 0.125rem;
-      }
-
-      .report-card__info-item i {
-        font-size: 0.875rem;
-        color: var(--grey-400);
-        margin-bottom: 0.125rem;
-      }
-
-      .report-card__info-label {
-        font-size: 0.6875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--grey-400);
-        font-weight: 500;
-      }
-
-      .report-card__info-value {
-        font-size: 0.875rem;
-        color: var(--grey-900);
-        font-weight: 500;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .report-card__info-value--highlight {
-        color: var(--primary-500);
-        font-weight: 700;
-      }
-
-      .report-card__observations {
-        margin-top: 0.875rem;
-        padding-top: 0.875rem;
-        border-top: 1px dashed var(--grey-300);
-      }
-
-      .report-card__observations p {
-        margin: 0;
-        font-size: 0.8125rem;
-        color: var(--grey-500);
-        line-height: 1.5;
-      }
-
-      /* Card Footer */
-      .report-card__footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 1.25rem;
-        background: var(--grey-50);
-        border-top: 1px solid var(--grey-200);
-      }
-
-      .report-card__timestamp {
-        display: flex;
-        align-items: center;
-        gap: 0.375rem;
-        font-size: 0.75rem;
-        color: var(--grey-400);
-      }
-
-      .report-card__actions {
-        display: flex;
-        gap: 0.5rem;
-      }
-
-      .report-card__btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s ease;
-        font-size: 0.875rem;
-      }
-
-      .report-card__btn--approve {
-        background: var(--semantic-blue-100);
-        color: var(--semantic-blue-500);
-      }
-
-      .report-card__btn--approve:hover {
-        background: var(--semantic-blue-500);
-        color: var(--grey-100);
-      }
-
-      .report-card__btn--reject {
-        background: var(--grey-100);
-        color: var(--accent-500);
-      }
-
-      .report-card__btn--reject:hover {
-        background: var(--accent-500);
-        color: var(--grey-100);
-      }
-
-      .report-card__btn--edit {
-        background: var(--primary-100);
-        color: var(--primary-500);
-      }
-
-      .report-card__btn--edit:hover {
-        background: var(--primary-500);
-        color: var(--grey-100);
-      }
-
-      .report-card__btn--view {
-        background: var(--grey-100);
-        color: var(--grey-500);
-      }
-
-      .report-card__btn--view:hover {
-        background: var(--grey-500);
-        color: var(--grey-100);
-      }
-
-      .report-card__btn--sign {
-        background: var(--semantic-blue-100);
-        color: var(--semantic-blue-500);
-      }
-
-      .report-card__btn--sign:hover {
-        background: var(--semantic-blue-500);
-        color: var(--grey-100);
-      }
-
-      .report-card__btn--pdf {
-        background: var(--grey-100);
-        color: var(--grey-900);
-      }
-
-      .report-card__btn--pdf:hover {
-        background: var(--grey-900);
-        color: var(--grey-100);
-      }
-
-      .report-card__btn--pdf:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
       }
 
       /* Empty State */
@@ -481,36 +258,6 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
         max-width: 400px;
         margin-left: auto;
         margin-right: auto;
-      }
-
-      /* Actions Container */
-      .actions-container {
-        display: flex;
-        gap: var(--s-8);
-        align-items: center;
-      }
-
-      /* Responsive */
-      @media (max-width: 768px) {
-        .reports-grid {
-          grid-template-columns: 1fr;
-          gap: 1rem;
-        }
-
-        .report-card__info-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.75rem;
-        }
-
-        .report-card__actions {
-          gap: 0.375rem;
-        }
-
-        .report-card__btn {
-          width: 28px;
-          height: 28px;
-          font-size: 0.8125rem;
-        }
       }
     `,
   ],
@@ -564,10 +311,121 @@ export class DailyReportListComponent implements OnInit {
     },
   ];
 
+  columns: DataGridColumn[] = [
+    { key: 'codigo_equipo', label: 'Equipo', type: 'text', sortable: true, filterable: true },
+    {
+      key: 'equipo_nombre',
+      label: 'Nombre Equipo',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+    },
+    { key: 'fecha_parte', label: 'Fecha', type: 'date', sortable: true, filterable: true },
+    { key: 'trabajador_nombre', label: 'Operador', type: 'text', sortable: true, filterable: true },
+    { key: 'hora_inicio', label: 'Hora Inicio', type: 'text', sortable: true, filterable: true },
+    { key: 'hora_fin', label: 'Hora Fin', type: 'text', sortable: true, filterable: true },
+    {
+      key: 'diesel_gln',
+      label: 'Combustible (gal)',
+      type: 'number',
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'estado',
+      label: 'Estado',
+      type: 'template',
+      sortable: true,
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Borrador', value: 'BORRADOR' },
+        { label: 'Pendiente', value: 'PENDIENTE' },
+        { label: 'Aprobado', value: 'APROBADO' },
+        { label: 'Rechazado', value: 'RECHAZADO' },
+      ],
+    },
+
+    // --- Legacy columns (hidden by default, visible via column chooser) ---
+    { key: 'turno', label: 'Turno', type: 'text', hidden: true, sortable: true },
+    {
+      key: 'horometro_inicio',
+      label: 'Hor\u00F3m. Inicio',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'horometro_fin',
+      label: 'Hor\u00F3m. Fin',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'horas_trabajadas',
+      label: 'Hrs. Trabajadas',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'horas_disponibles',
+      label: 'Hrs. Disponibles',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'horas_mantenimiento',
+      label: 'Hrs. Mant.',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'kilometraje_inicio', label: 'Km Inicio', type: 'number', hidden: true, sortable: true },
+    { key: 'kilometraje_fin', label: 'Km Fin', type: 'number', hidden: true, sortable: true },
+    {
+      key: 'combustible_cantidad',
+      label: 'Combustible Cant.',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'combustible_tipo',
+      label: 'Tipo Combustible',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'ubicacion_trabajo',
+      label: 'Ubicaci\u00F3n Trabajo',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'actividad_realizada', label: 'Actividad', type: 'text', hidden: true, sortable: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true, sortable: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'usuario_registro',
+      label: 'Registrado por',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
+  ];
+
   currentFilters: Record<string, string> = { status: '', date: '' };
 
   ngOnInit(): void {
     this.loadReports();
+  }
+
+  onSortChange(event: DataGridSortEvent): void {
+    console.log('Sort changed:', event.column, event.direction);
   }
 
   getStatusIcon(status: string): string {
@@ -604,42 +462,6 @@ export class DailyReportListComponent implements OnInit {
     }
     this.currentFilters = { ...this.currentFilters, ...typedFilters };
     this.loadReports();
-  }
-
-  getReportInfoItems(report: DailyReport): CardInfoItem[] {
-    return [
-      {
-        icon: 'fa-solid fa-hard-hat',
-        label: 'Operador',
-        value: report.trabajador_nombre || 'Sin asignar',
-      },
-      {
-        icon: 'fa-solid fa-clock',
-        label: 'Horario',
-        value: `${report.hora_inicio || '--:--'} - ${report.hora_fin || '--:--'}`,
-      },
-      {
-        icon: 'fa-solid fa-gas-pump',
-        label: 'Combustible',
-        value: `${report.diesel_gln || 0} gal`,
-      },
-      {
-        icon: 'fa-solid fa-gauge-high',
-        label: 'Horas',
-        value: `${report.horas_trabajadas || report.horometro_diferencia || 0}h`,
-        highlight: true,
-      },
-      {
-        icon: 'fa-solid fa-building',
-        label: 'Proyecto',
-        value: (report as any).proyecto_nombre || (report as any).proyecto_codigo || '-',
-      },
-      {
-        icon: 'fa-solid fa-sun',
-        label: 'Turno',
-        value: (report as any).turno === 'NOCHE' ? 'Noche' : 'Día',
-      },
-    ];
   }
 
   loadReports(): void {
