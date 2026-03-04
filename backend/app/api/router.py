@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from app.api.actas_devolucion import router as router_actas_devolucion
+from app.api.catalogo import router as router_catalogo
 from app.api.adelantos import (
     router_contratos as router_adelantos_contratos,
     router_valorizaciones as router_adelantos_valorizaciones,
@@ -132,3 +133,6 @@ router_api.include_router(router_checklists, prefix="/checklists", tags=["Checkl
 router_api.include_router(
     router_tareas_programadas, prefix="/scheduling", tags=["Tareas Programadas"]
 )
+
+# Legacy Features — Catalog (SUNAT reference tables)
+router_api.include_router(router_catalogo, prefix="/catalog", tags=["Catalogo"])
