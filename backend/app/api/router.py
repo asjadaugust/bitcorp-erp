@@ -36,6 +36,7 @@ from app.api.pagos import router as router_pagos
 from app.api.precalentamiento import router as router_precalentamiento
 from app.api.programacion_pago import router as router_programacion_pago
 from app.api.proveedores import router as router_proveedores
+from app.api.registro_trabajador import router as router_registro_trabajador
 
 # Fase 5 — Secondary Modules
 from app.api.proyectos import router as router_proyectos
@@ -142,6 +143,11 @@ router_api.include_router(
 # Fase 5 — Secondary Modules
 router_api.include_router(router_proyectos, prefix="/projects", tags=["Proyectos"])
 router_api.include_router(router_empleados, prefix="/hr/employees", tags=["Empleados"])
+router_api.include_router(
+    router_registro_trabajador,
+    prefix="/hr/worker-registry",
+    tags=["Registro Trabajador"],
+)
 router_api.include_router(
     router_tareos, prefix="/scheduling/timesheets", tags=["Tareos"]
 )
