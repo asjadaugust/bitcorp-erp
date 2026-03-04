@@ -76,6 +76,10 @@ export interface TableSortEvent {
   direction: SortDirection;
 }
 
+/**
+ * @deprecated Use AeroDataGridComponent instead.
+ * This component is kept for backward compatibility during migration.
+ */
 @Component({
   selector: 'aero-table',
   encapsulation: ViewEncapsulation.None,
