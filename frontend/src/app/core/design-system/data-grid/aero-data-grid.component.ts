@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
   ElementRef,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -238,7 +239,7 @@ export interface DataGridSortEvent {
 
                   <!-- Badge Column -->
                   <ng-container *ngIf="col.type === 'badge'">
-                    <span [class]="getBadgeClass(col, row[col.key])">
+                    <span [ngClass]="getBadgeClass(col, row[col.key])">
                       {{ getBadgeLabel(col, row[col.key]) }}
                     </span>
                   </ng-container>
@@ -344,7 +345,7 @@ export interface DataGridSortEvent {
 
                   <!-- Chip Column -->
                   <ng-container *ngIf="col.type === 'chip'">
-                    <span class="aero-datagrid__chip" [class]="getChipClass(col, row[col.key])">
+                    <span class="aero-datagrid__chip" [ngClass]="getChipClass(col, row[col.key])">
                       <i
                         *ngIf="getChipIcon(col, row[col.key])"
                         [class]="getChipIcon(col, row[col.key])"
@@ -409,11 +410,11 @@ export interface DataGridSortEvent {
                       <button
                         type="button"
                         class="aero-datagrid__expand-btn"
-                        (click)="toggleExpand(rowIdx); $event.stopPropagation()"
+                        (click)="toggleExpand(row); $event.stopPropagation()"
                       >
                         <i
                           class="fa-solid fa-chevron-down"
-                          [class.aero-datagrid__expand-btn--open]="isRowExpanded(rowIdx)"
+                          [class.aero-datagrid__expand-btn--open]="isRowExpanded(row)"
                         ></i>
                       </button>
                       <span *ngIf="col.secondaryKey">{{ row[col.secondaryKey] }}</span>
@@ -463,10 +464,7 @@ export interface DataGridSortEvent {
               </tr>
 
               <!-- Expanded row -->
-              <tr
-                *ngIf="expandTemplate && isRowExpanded(rowIdx)"
-                class="aero-datagrid__expanded-row"
-              >
+              <tr *ngIf="expandTemplate && isRowExpanded(row)" class="aero-datagrid__expanded-row">
                 <td [attr.colspan]="totalColspan">
                   <ng-container
                     *ngTemplateOutlet="expandTemplate; context: { $implicit: row }"
@@ -520,7 +518,7 @@ export interface DataGridSortEvent {
               [ngModel]="pageSize"
               (ngModelChange)="onPageSizeChange($event)"
             >
-              <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+              <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">{{ opt }}</option>
             </select>
           </div>
         </div>
@@ -1353,7 +1351,7 @@ export interface DataGridSortEvent {
     `,
   ],
 })
-export class AeroDataGridComponent implements OnChanges {
+export class AeroDataGridComponent implements OnChanges, OnDestroy {
   // ─── Inputs ───
   @Input() columns: DataGridColumn[] = [];
   @Input() data: Record<string, unknown>[] = [];
@@ -1396,7 +1394,7 @@ export class AeroDataGridComponent implements OnChanges {
   columnChooserOpen = false;
   currentPage = 1;
   selectedRows: Set<unknown> = new Set();
-  expandedRows: Set<number> = new Set();
+  expandedRows: Set<unknown> = new Set();
   pageSizeOptions = [10, 25, 50, 100];
 
   // Resize state
@@ -1414,8 +1412,14 @@ export class AeroDataGridComponent implements OnChanges {
       this.visibleColumns = new Set(this.columns.filter((c) => !c.hidden).map((c) => c.key));
     }
     if (changes['data']) {
+      this.selectedRows.clear();
+      this.expandedRows.clear();
       this.currentPage = 1;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.onResizeEnd();
   }
 
   // ─── Computed ───
@@ -1772,23 +1776,22 @@ export class AeroDataGridComponent implements OnChanges {
 
   // ─── Expansion ───
 
-  isRowExpanded(index: number): boolean {
-    return this.expandedRows.has(index);
+  isRowExpanded(row: Record<string, unknown>): boolean {
+    return this.expandedRows.has(row[this.trackByKey]);
   }
 
-  toggleExpand(index: number): void {
-    if (this.expandedRows.has(index)) {
-      this.expandedRows.delete(index);
+  toggleExpand(row: Record<string, unknown>): void {
+    const key = row[this.trackByKey];
+    if (this.expandedRows.has(key)) {
+      this.expandedRows.delete(key);
     } else {
-      this.expandedRows.add(index);
+      this.expandedRows.add(key);
     }
   }
 
   // ─── Cell Actions ───
 
   onCellCheck(row: Record<string, unknown>, col: DataGridColumn, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
-    row[col.key] = checked;
     this.cellAction.emit({ row, action: col.key });
   }
 
