@@ -42,6 +42,7 @@ from app.api.reportes import router as router_reportes
 from app.api.reportes_analiticos import router as router_reportes_analiticos
 from app.api.sig import router as router_sig
 from app.api.solicitudes_equipo import router as router_solicitudes_equipo
+from app.api.solicitudes_material import router as router_solicitudes_material
 from app.api.sst import router as router_sst
 from app.api.tareas_programadas import router as router_tareas_programadas
 from app.api.tareos import router as router_tareos
@@ -143,6 +144,11 @@ router_api.include_router(
     router_tareos, prefix="/scheduling/timesheets", tags=["Tareos"]
 )
 router_api.include_router(router_logistica, prefix="/logistics", tags=["Logistica"])
+router_api.include_router(
+    router_solicitudes_material,
+    prefix="/logistics/requests",
+    tags=["Solicitudes Material"],
+)
 router_api.include_router(router_sst, prefix="/sst", tags=["SST"])
 router_api.include_router(router_sig, prefix="/sig", tags=["SIG"])
 router_api.include_router(router_licitaciones, prefix="/tenders", tags=["Licitaciones"])
