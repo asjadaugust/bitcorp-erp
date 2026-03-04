@@ -21,6 +21,7 @@ from app.api.cotizaciones import router as router_cotizaciones
 from app.api.cuentas_por_pagar import router as router_cuentas_por_pagar
 from app.api.dashboard import router as router_dashboard
 from app.api.empleados import router as router_empleados
+from app.api.evaluacion_proveedor import router as router_evaluacion_proveedor
 from app.api.equipos import router as router_equipos
 from app.api.gastos_obra import router as router_gastos_obra
 from app.api.inoperatividad import router as router_inoperatividad
@@ -166,3 +167,10 @@ router_api.include_router(router_caja_chica, prefix="/petty-cash", tags=["Caja C
 
 # Legacy Features — Caja y Banco (Bank Cash Flow)
 router_api.include_router(router_caja_banco, prefix="/bank-cash", tags=["Caja y Banco"])
+
+# Legacy Features — Evaluacion Proveedor
+router_api.include_router(
+    router_evaluacion_proveedor,
+    prefix="/providers/evaluations",
+    tags=["Evaluacion Proveedor"],
+)
