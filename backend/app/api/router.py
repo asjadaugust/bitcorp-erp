@@ -44,6 +44,7 @@ from app.api.reportes_analiticos import router as router_reportes_analiticos
 from app.api.sig import router as router_sig
 from app.api.solicitudes_equipo import router as router_solicitudes_equipo
 from app.api.solicitudes_material import router as router_solicitudes_material
+from app.api.inspecciones_ssoma import router as router_inspecciones_ssoma
 from app.api.sst import router as router_sst
 from app.api.tareas_programadas import router as router_tareas_programadas
 from app.api.tareos import router as router_tareos
@@ -151,6 +152,11 @@ router_api.include_router(
     tags=["Solicitudes Material"],
 )
 router_api.include_router(router_sst, prefix="/sst", tags=["SST"])
+router_api.include_router(
+    router_inspecciones_ssoma,
+    prefix="/sst",
+    tags=["SST Inspecciones"],
+)
 router_api.include_router(router_sig, prefix="/sig", tags=["SIG"])
 router_api.include_router(router_licitaciones, prefix="/tenders", tags=["Licitaciones"])
 router_api.include_router(router_checklists, prefix="/checklists", tags=["Checklists"])
