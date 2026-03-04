@@ -9,9 +9,10 @@ import { Equipment } from '../../core/models/equipment.model';
 import { ConfirmService } from '../../core/services/confirm.service';
 
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+  DataGridSortEvent,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
@@ -36,7 +37,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 
     ActionsContainerComponent,
     StatsGridComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     AeroBadgeComponent,
     PageLayoutComponent,
     PageCardComponent,
@@ -77,10 +78,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="equipment"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             codigo_equipo: codeTemplate,
@@ -88,8 +91,9 @@ import { AeroButtonComponent } from '../../core/design-system';
             categoria: categoriaTemplate,
           }"
           (rowClick)="viewDetails($event)"
+          (sortChange)="onSortChange($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -253,16 +257,43 @@ export class EquipmentListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo_equipo', label: 'Código', type: 'template' },
-    { key: 'brand_model', label: 'Marca / Modelo', type: 'template' },
-    { key: 'categoria', label: 'Tipo / Categoría', type: 'template' },
-    { key: 'placa', label: 'Placa', type: 'text' },
-    { key: 'tipo_proveedor', label: 'Tipo Proveedor', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo_equipo', label: 'Codigo', type: 'template', sortable: true, filterable: true },
+    {
+      key: 'brand_model',
+      label: 'Marca / Modelo',
+      type: 'template',
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'categoria',
+      label: 'Tipo / Categoria',
+      type: 'template',
+      sortable: true,
+      filterable: true,
+    },
+    { key: 'placa', label: 'Placa', type: 'text', sortable: true, filterable: true },
+    {
+      key: 'tipo_proveedor',
+      label: 'Tipo Proveedor',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+    },
     {
       key: 'estado',
       label: 'Estado',
       type: 'badge',
+      sortable: true,
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Disponible', value: 'DISPONIBLE' },
+        { label: 'En Uso', value: 'EN_USO' },
+        { label: 'Mantenimiento', value: 'MANTENIMIENTO' },
+        { label: 'Retirado', value: 'RETIRADO' },
+      ],
       badgeConfig: {
         available: {
           label: 'Disponible',
@@ -298,7 +329,49 @@ export class EquipmentListComponent implements OnInit {
         retirado: { label: 'Retirado', class: 'status-badge status-retired', icon: 'fa-ban' },
       },
     },
-    { key: 'proveedor_nombre', label: 'Proveedor', type: 'text' },
+    { key: 'proveedor_nombre', label: 'Proveedor', type: 'text', sortable: true, filterable: true },
+
+    // ─── Legacy columns (hidden by default, visible via column chooser) ───
+    { key: 'serie', label: 'N\u00B0 Serie', type: 'text', hidden: true, sortable: true },
+    { key: 'placa', label: 'Placa', type: 'text', hidden: true, sortable: true },
+    {
+      key: 'anio_fabricacion',
+      label: 'A\u00F1o Fab.',
+      type: 'number',
+      format: '1.0-0',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'proveedor_nombre', label: 'Proveedor', type: 'text', hidden: true, sortable: true },
+    { key: 'contrato_codigo', label: 'Contrato', type: 'text', hidden: true, sortable: true },
+    { key: 'potencia', label: 'Potencia', type: 'text', hidden: true, sortable: true },
+    { key: 'peso', label: 'Peso', type: 'number', hidden: true, sortable: true },
+    { key: 'capacidad', label: 'Capacidad', type: 'text', hidden: true, sortable: true },
+    {
+      key: 'horometro_inicial',
+      label: 'Hor\u00F3m. Inicial',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'horometro_actual',
+      label: 'Hor\u00F3m. Actual',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'ubicacion', label: 'Ubicaci\u00F3n', type: 'text', hidden: true, sortable: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true, sortable: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'usuario_registro',
+      label: 'Registrado por',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'unidad_operativa', label: 'Unidad Op.', type: 'text', hidden: true, sortable: true },
   ];
 
   actionsTemplate: TemplateRef<unknown> | undefined;
@@ -364,6 +437,10 @@ export class EquipmentListComponent implements OnInit {
     this.filters.categoria_prd = (filters['categoria_prd'] as string) || '';
     this.filters.marca = (filters['marca'] as string) || '';
     this.loadEquipment();
+  }
+
+  onSortChange(event: DataGridSortEvent): void {
+    console.log('Sort changed:', event.column, event.direction);
   }
 
   navigateToCreate(): void {
