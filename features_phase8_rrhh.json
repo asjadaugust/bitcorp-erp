@@ -1,0 +1,107 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "CRUD for Registro Trabajador (worker registration per unidad operativa)",
+      "steps": [
+        "POST /api/hr/worker-registry/registros with {trabajador_dni: existing DNI, proveedor_ruc: existing RUC, fecha_ingreso: '2024-01-15'} — verify 201",
+        "GET /api/hr/worker-registry/registros — verify paginated list",
+        "GET /api/hr/worker-registry/registros/{id} — verify detail includes empty comportamiento_historico array",
+        "PUT /api/hr/worker-registry/registros/{id} with {fecha_cese: '2024-06-30', estatus: 'CESADO'} — verify 200",
+        "DELETE /api/hr/worker-registry/registros/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Filter registros by estatus and sub_grupo",
+      "steps": [
+        "GET /api/hr/worker-registry/registros?estatus=ACTIVO — verify filter",
+        "GET /api/hr/worker-registry/registros?sub_grupo=OBRERO — verify filter",
+        "GET /api/hr/worker-registry/registros?search=12345678 — verify DNI search"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for Comportamiento Historico (employment history as child records)",
+      "steps": [
+        "Create a registro_trabajador",
+        "POST /api/hr/worker-registry/registros/{id}/comportamiento with {cargo: 'OPERADOR', salario: 3500, fecha_inicio: '2024-01-15'} — verify 201",
+        "POST another with {cargo: 'SUPERVISOR', salario: 4500, fecha_inicio: '2024-07-01'} — verify 201",
+        "GET /api/hr/worker-registry/registros/{id} — verify comportamiento_historico has 2 entries",
+        "PUT /api/hr/worker-registry/registros/{id}/comportamiento/{ch_id} with {fecha_fin: '2024-06-30'} — verify 200",
+        "DELETE /api/hr/worker-registry/registros/{id}/comportamiento/{ch_id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "EDT Tareo read-only listing with filter",
+      "steps": [
+        "GET /api/hr/worker-registry/edt-tareo — verify lists seeded data",
+        "GET /api/hr/worker-registry/edt-tareo?tareo_id=X — verify filter by tareo",
+        "Verify each item has: edt_id, tareo_id, horas"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Registro Trabajador list page with aero-data-grid",
+      "steps": [
+        "Navigate to /rrhh/worker-registry",
+        "Verify page-layout with title 'Registro de Trabajadores'",
+        "Verify grid columns: trabajador_dni, proveedor_ruc, fecha_ingreso, fecha_cese, estatus (badge), sub_grupo",
+        "Verify filter bar: estatus, sub_grupo, search by DNI",
+        "Verify 'Nuevo Registro' button"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Registro form with worker lookup by DNI",
+      "steps": [
+        "Navigate to /rrhh/worker-registry/new",
+        "Enter DNI in search field — verify auto-lookup from trabajador table",
+        "Verify auto-filled fields: nombre, apellido from trabajador",
+        "Select proveedor (optional)",
+        "Set fecha_ingreso",
+        "Submit — verify creation"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Registro detail shows employment history timeline",
+      "steps": [
+        "Navigate to /rrhh/worker-registry/{id}",
+        "Verify entity-detail-shell layout with worker info header",
+        "Verify comportamiento_historico displayed as timeline/table",
+        "Columns: cargo, salario, fecha_inicio, fecha_fin, numero_contrato",
+        "Verify 'Agregar Historial' button to add new entry",
+        "Add entry — verify appears in timeline"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "RRHH tabs include Registro",
+      "steps": [
+        "Navigate to /rrhh",
+        "Verify tab bar includes 'Registro' tab",
+        "Click tab — verify navigates to /rrhh/worker-registry"
+      ],
+      "passes": true
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for registro trabajador pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_registro_trabajador.py passes all tests",
+        "Verify no regressions"
+      ],
+      "passes": true
+    }
+  ]
+}

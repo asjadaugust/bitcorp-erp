@@ -33,4 +33,24 @@ export const HR_ROUTES: Routes = [
         (m) => m.EmployeeFormComponent
       ),
   },
+  {
+    path: 'worker-registry',
+    loadComponent: () =>
+      import('./worker-registry/registro-list.component').then((m) => m.RegistroListComponent),
+  },
+  {
+    path: 'worker-registry/new',
+    loadComponent: () =>
+      import('./worker-registry/registro-form.component').then((m) => m.RegistroFormComponent),
+  },
+  {
+    path: 'worker-registry/:id',
+    loadComponent: () =>
+      import('./worker-registry/registro-detail.component').then((m) => m.RegistroDetailComponent),
+  },
+  {
+    path: 'worker-registry/:id/edit',
+    loadComponent: () =>
+      import('./worker-registry/registro-form.component').then((m) => m.RegistroFormComponent),
+  },
 ];
