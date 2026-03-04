@@ -6,7 +6,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
 @Component({
   selector: 'app-form-container',
   standalone: true,
-  imports: [CommonModule, BackButtonComponent],
+  imports: [CommonModule, BackButtonComponent, AeroButtonComponent],
   template: `
     <div class="form-container">
       <!-- Header -->
