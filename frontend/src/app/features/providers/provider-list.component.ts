@@ -7,9 +7,9 @@ import { ConfirmService } from '../../core/services/confirm.service';
 import { ProviderService } from '../../core/services/provider.service';
 import { Provider } from '../../core/models/provider.model';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -33,7 +33,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -61,10 +61,12 @@ import { AeroButtonComponent } from '../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
+      <aero-data-grid
         [columns]="columns"
         [data]="providers"
         [loading]="loading"
+        [dense]="true"
+        [showColumnChooser]="true"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           provider: providerTemplate,
@@ -73,8 +75,9 @@ import { AeroButtonComponent } from '../../core/design-system';
           location: locationTemplate,
         }"
         (rowClick)="viewProvider($event)"
+        (sortChange)="onSort($event)"
       >
-      </aero-table>
+      </aero-data-grid>
 
       <!-- Custom Templates -->
       <ng-template #providerTemplate let-row>
@@ -247,15 +250,17 @@ export class ProviderListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'provider', label: 'Razón Social', type: 'template' },
-    { key: 'ruc', label: 'RUC', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'provider', label: 'Razón Social', type: 'template', sortable: true, filterable: true },
+    { key: 'ruc', label: 'RUC', type: 'template', sortable: true, filterable: true },
     { key: 'contact', label: 'Contacto', type: 'template' },
     { key: 'location', label: 'Ubicación', type: 'template' },
     {
       key: 'is_active',
       label: 'Estado',
       type: 'badge',
+      sortable: true,
+      filterable: true,
       badgeConfig: {
         true: {
           label: 'Activo',
@@ -269,6 +274,25 @@ export class ProviderListComponent implements OnInit {
         },
       },
     },
+    // Legacy hidden columns (from 307_Proveedor.tbl_C07001_Proveedor)
+    { key: 'ruc', label: 'RUC', hidden: true, sortable: true, filterable: true },
+    { key: 'direccion', label: 'Dirección', hidden: true },
+    { key: 'telefono', label: 'Teléfono', hidden: true },
+    { key: 'email', label: 'Email', hidden: true },
+    { key: 'contacto_nombre', label: 'Contacto', hidden: true },
+    { key: 'contacto_cargo', label: 'Cargo Contacto', hidden: true },
+    { key: 'contacto_telefono', label: 'Tel. Contacto', hidden: true },
+    { key: 'departamento', label: 'Departamento', hidden: true },
+    { key: 'provincia', label: 'Provincia', hidden: true },
+    { key: 'distrito', label: 'Distrito', hidden: true },
+    { key: 'tipo_proveedor', label: 'Tipo', hidden: true, filterable: true },
+    { key: 'cuenta_bancaria', label: 'Cuenta Bancaria', hidden: true },
+    { key: 'banco', label: 'Banco', hidden: true },
+    { key: 'cci', label: 'CCI', hidden: true },
+    { key: 'cuenta_detraccion', label: 'Cta. Detracción', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', hidden: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true, sortable: true },
+    { key: 'usuario_registro', label: 'Registrado por', hidden: true },
   ];
 
   ngOnInit(): void {
@@ -292,6 +316,10 @@ export class ProviderListComponent implements OnInit {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.status = (filters['status'] as string) || '';
     this.loadProviders();
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   viewProvider(provider: Provider): void {
