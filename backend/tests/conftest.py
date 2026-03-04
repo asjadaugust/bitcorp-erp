@@ -30,7 +30,7 @@ async def obtener_token_admin() -> str:
     async with AsyncClient(transport=transport, base_url="http://test") as c:
         resp = await c.post(
             "/api/auth/login",
-            json={"username": "admin", "password": "admin123"},
+            json={"username": "admin", "password": "Admin@123"},
         )
         token: str = resp.json()["data"]["access_token"]
         return token

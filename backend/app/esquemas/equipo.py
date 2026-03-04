@@ -1,5 +1,4 @@
-"""Esquemas Pydantic para equipos.
-"""
+"""Esquemas Pydantic para equipos."""
 
 from datetime import date, datetime
 from enum import StrEnum
@@ -41,7 +40,7 @@ class EquipoDetalleDto(EquipoListaDto):
     numero_serie_equipo: str | None = None
     numero_chasis: str | None = None
     numero_serie_motor: str | None = None
-    potencia_neta: float | None = None
+    potencia_neta: str | None = None
     tipo_motor: str | None = None
     fecha_venc_poliza: date | None = None
     fecha_venc_soat: date | None = None
@@ -71,7 +70,7 @@ class EquipoCrear(BaseModel):
     numero_serie_motor: str | None = None
     placa: str | None = None
     anio_fabricacion: int | None = None
-    potencia_neta: float | None = None
+    potencia_neta: str | None = None
     tipo_motor: str | None = None
     medidor_uso: str | None = None
     estado: str | None = None
@@ -93,7 +92,7 @@ class EquipoActualizar(BaseModel):
     numero_serie_motor: str | None = None
     placa: str | None = None
     anio_fabricacion: int | None = None
-    potencia_neta: float | None = None
+    potencia_neta: str | None = None
     tipo_motor: str | None = None
     medidor_uso: str | None = None
     estado: str | None = None

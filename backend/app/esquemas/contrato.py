@@ -1,5 +1,4 @@
-"""Esquemas Pydantic para contratos.
-"""
+"""Esquemas Pydantic para contratos."""
 
 from datetime import date, datetime
 from typing import Literal
@@ -69,13 +68,13 @@ LEGALIZACION_PASOS = [
 
 class ContratoListaDto(BaseModel):
     id: int
-    numero_contrato: str
+    numero_contrato: str | None = None
     tipo: str
     equipo_id: int
     contrato_padre_id: int | None = None
-    fecha_contrato: date
-    fecha_inicio: date
-    fecha_fin: date
+    fecha_contrato: date | None = None
+    fecha_inicio: date | None = None
+    fecha_fin: date | None = None
     moneda: str
     tipo_tarifa: str | None = None
     tarifa: float | None = None

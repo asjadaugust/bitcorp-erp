@@ -60,7 +60,10 @@ class PrecalentamientoConfig(Base):
     )
     activo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     tipo_equipo: Mapped[TipoEquipo] = relationship("TipoEquipo", lazy="joined")
@@ -79,7 +82,10 @@ class ConfiguracionCombustible(Base):
     activo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     updated_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
 
@@ -93,7 +99,9 @@ class Equipo(Base):
     __table_args__ = {"schema": "equipo"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     codigo_equipo: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     tipo_equipo_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("equipo.tipo_equipo.id"), nullable=True
@@ -110,10 +118,12 @@ class Equipo(Base):
     numero_chasis: Mapped[str | None] = mapped_column(String(100), nullable=True)
     numero_serie_motor: Mapped[str | None] = mapped_column(String(100), nullable=True)
     anio_fabricacion: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    potencia_neta: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    potencia_neta: Mapped[str | None] = mapped_column(String(50), nullable=True)
     tipo_motor: Mapped[str | None] = mapped_column(String(50), nullable=True)
     medidor_uso: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    estado: Mapped[str] = mapped_column(String(50), default="DISPONIBLE", nullable=False)
+    estado: Mapped[str] = mapped_column(
+        String(50), default="DISPONIBLE", nullable=False
+    )
     fecha_venc_poliza: Mapped[date | None] = mapped_column(nullable=True)
     fecha_venc_soat: Mapped[date | None] = mapped_column(nullable=True)
     fecha_venc_citv: Mapped[date | None] = mapped_column(nullable=True)
@@ -123,10 +133,15 @@ class Equipo(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
-    tipo_equipo_rel: Mapped[TipoEquipo | None] = relationship("TipoEquipo", lazy="joined")
+    tipo_equipo_rel: Mapped[TipoEquipo | None] = relationship(
+        "TipoEquipo", lazy="joined"
+    )
     proveedor: Mapped[Proveedor | None] = relationship("Proveedor", lazy="joined")
 
 
@@ -140,39 +155,49 @@ class ContratoAdenda(Base):
     __table_args__ = {"schema": "equipo"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     equipo_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("equipo.equipo.id"), nullable=False
     )
     proveedor_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("proveedores.proveedor.id"), nullable=True
     )
-    numero_contrato: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    numero_contrato: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     tipo: Mapped[str] = mapped_column(String(50), default="CONTRATO")
     contrato_padre_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("equipo.contrato_adenda.id"), nullable=True
     )
-    fecha_contrato: Mapped[date] = mapped_column(nullable=False)
-    fecha_inicio: Mapped[date] = mapped_column(nullable=False)
-    fecha_fin: Mapped[date] = mapped_column(nullable=False)
-    moneda: Mapped[str] = mapped_column(String(3), default="PEN")
+    fecha_contrato: Mapped[date | None] = mapped_column(nullable=True)
+    fecha_inicio: Mapped[date | None] = mapped_column(nullable=True)
+    fecha_fin: Mapped[date | None] = mapped_column(nullable=True)
+    moneda: Mapped[str] = mapped_column(String(10), default="PEN")
     modalidad: Mapped[str | None] = mapped_column(String(50), nullable=True)
     tipo_tarifa: Mapped[str | None] = mapped_column(String(50), nullable=True)
     tarifa: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     incluye_motor: Mapped[bool] = mapped_column(Boolean, default=False)
     incluye_operador: Mapped[bool] = mapped_column(Boolean, default=False)
-    costo_adicional_motor: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    costo_adicional_motor: Mapped[float | None] = mapped_column(
+        Numeric(12, 2), nullable=True
+    )
     horas_incluidas: Mapped[int | None] = mapped_column(Integer, nullable=True)
     minimo_por: Mapped[str | None] = mapped_column(String(20), nullable=True)
     cantidad_minima: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    penalidad_exceso: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    penalidad_exceso: Mapped[float | None] = mapped_column(
+        Numeric(12, 2), nullable=True
+    )
     documento_acredita: Mapped[str | None] = mapped_column(String(200), nullable=True)
     fecha_acreditada: Mapped[date | None] = mapped_column(nullable=True)
     jurisdiccion: Mapped[str | None] = mapped_column(String(200), nullable=True)
     plazo_texto: Mapped[str | None] = mapped_column(String(200), nullable=True)
     motivo_resolucion: Mapped[str | None] = mapped_column(Text, nullable=True)
     fecha_resolucion: Mapped[date | None] = mapped_column(nullable=True)
-    monto_liquidacion: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    monto_liquidacion: Mapped[float | None] = mapped_column(
+        Numeric(12, 2), nullable=True
+    )
     causal_resolucion: Mapped[str | None] = mapped_column(String(30), nullable=True)
     resuelto_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fecha_liquidacion: Mapped[date | None] = mapped_column(nullable=True)
@@ -187,7 +212,10 @@ class ContratoAdenda(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
     tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
@@ -216,7 +244,9 @@ class ValorizacionEquipo(Base):
     __table_args__ = {"schema": "equipo"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     equipo_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("equipo.equipo.id"), nullable=False
     )
@@ -228,16 +258,26 @@ class ValorizacionEquipo(Base):
     fecha_inicio: Mapped[date] = mapped_column(nullable=False)
     fecha_fin: Mapped[date] = mapped_column(nullable=False)
     dias_trabajados: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    horas_trabajadas: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    combustible_consumido: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    horas_trabajadas: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
+    combustible_consumido: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     costo_base: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
-    costo_combustible: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
-    cargos_adicionales: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
+    costo_combustible: Mapped[float | None] = mapped_column(
+        Numeric(15, 2), nullable=True
+    )
+    cargos_adicionales: Mapped[float | None] = mapped_column(
+        Numeric(15, 2), nullable=True
+    )
     importe_manipuleo: Mapped[float] = mapped_column(Numeric(15, 2), default=0)
     importe_gasto_obra: Mapped[float] = mapped_column(Numeric(15, 2), default=0)
     importe_adelanto: Mapped[float] = mapped_column(Numeric(15, 2), default=0)
     importe_exceso_combustible: Mapped[float] = mapped_column(Numeric(15, 2), default=0)
-    total_valorizado: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
+    total_valorizado: Mapped[float | None] = mapped_column(
+        Numeric(15, 2), nullable=True
+    )
     numero_valorizacion: Mapped[str | None] = mapped_column(String(20), nullable=True)
     tipo_cambio: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
     descuento_porcentaje: Mapped[float] = mapped_column(Numeric(5, 2), default=0)
@@ -249,9 +289,13 @@ class ValorizacionEquipo(Base):
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
     creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     aprobado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    aprobado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    aprobado_en: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     validado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    validado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    validado_en: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     conformidad_proveedor: Mapped[bool] = mapped_column(Boolean, default=False)
     conformidad_fecha: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
@@ -262,11 +306,16 @@ class ValorizacionEquipo(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
     tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    contrato_rel: Mapped[ContratoAdenda | None] = relationship("ContratoAdenda", lazy="joined")
+    contrato_rel: Mapped[ContratoAdenda | None] = relationship(
+        "ContratoAdenda", lazy="joined"
+    )
     equipo_rel: Mapped[Equipo] = relationship("Equipo", lazy="joined")
 
 
@@ -290,10 +339,15 @@ class ValorizacionDocumentoPago(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
-    valorizacion: Mapped[ValorizacionEquipo] = relationship("ValorizacionEquipo", lazy="joined")
+    valorizacion: Mapped[ValorizacionEquipo] = relationship(
+        "ValorizacionEquipo", lazy="joined"
+    )
 
 
 class RegistroPago(Base):
@@ -344,10 +398,15 @@ class RegistroPago(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
-    valorizacion: Mapped[ValorizacionEquipo] = relationship("ValorizacionEquipo", lazy="joined")
+    valorizacion: Mapped[ValorizacionEquipo] = relationship(
+        "ValorizacionEquipo", lazy="joined"
+    )
     contrato: Mapped[ContratoAdenda] = relationship("ContratoAdenda", lazy="joined")
 
 
@@ -415,7 +474,10 @@ class ContratoAnexo(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     contrato: Mapped[ContratoAdenda] = relationship("ContratoAdenda", lazy="joined")
@@ -440,7 +502,10 @@ class ContratoDocumentoRequerido(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     contrato: Mapped[ContratoAdenda] = relationship("ContratoAdenda", lazy="joined")
@@ -469,7 +534,10 @@ class ContratoLegalizacionPaso(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     contrato: Mapped[ContratoAdenda] = relationship("ContratoAdenda", lazy="joined")
@@ -485,7 +553,9 @@ class ParteDiario(Base):
     __table_args__ = {"schema": "equipo"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    legacy_id: Mapped[str | None] = mapped_column(String(50), unique=True, nullable=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
     equipo_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("equipo.equipo.id"), nullable=False
     )
@@ -502,19 +572,29 @@ class ParteDiario(Base):
     hora_inicio: Mapped[time | None] = mapped_column(Time, nullable=True)
     hora_fin: Mapped[time | None] = mapped_column(Time, nullable=True)
     horas_trabajadas: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
-    horometro_inicial: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    horometro_inicial: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     horometro_final: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    odometro_inicial: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    odometro_inicial: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     odometro_final: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
     km_recorridos: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    combustible_inicial: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    combustible_consumido: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    combustible_inicial: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
+    combustible_consumido: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     horas_precalentamiento: Mapped[float] = mapped_column(Numeric(5, 2), default=0)
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
     estado: Mapped[str] = mapped_column(String(50), default="BORRADOR", nullable=False)
     creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     aprobado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    aprobado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    aprobado_en: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     codigo: Mapped[str | None] = mapped_column(String(50), nullable=True)
     empresa: Mapped[str | None] = mapped_column(String(100), nullable=True)
     placa: Mapped[str | None] = mapped_column(String(20), nullable=True)
@@ -525,7 +605,9 @@ class ParteDiario(Base):
     gasolina_gln: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
     hora_abastecimiento: Mapped[time | None] = mapped_column(Time, nullable=True)
     num_vale_combustible: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    horometro_kilometraje: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    horometro_kilometraje: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
     lugar_salida: Mapped[str | None] = mapped_column(String(200), nullable=True)
     lugar_llegada: Mapped[str | None] = mapped_column(String(200), nullable=True)
     observaciones_correcciones: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -539,7 +621,10 @@ class ParteDiario(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
     tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
@@ -562,11 +647,17 @@ class ParteDiarioProduccion(Base):
         Integer, ForeignKey("equipo.parte_diario.id"), nullable=False
     )
     numero: Mapped[int] = mapped_column(Integer, nullable=False)
-    ubicacion_labores_prog_ini: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    ubicacion_labores_prog_fin: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    ubicacion_labores_prog_ini: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
+    ubicacion_labores_prog_fin: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
     hora_ini: Mapped[time | None] = mapped_column(Time, nullable=True)
     hora_fin: Mapped[time | None] = mapped_column(Time, nullable=True)
-    material_trabajado_descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    material_trabajado_descripcion: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
     metrado: Mapped[str | None] = mapped_column(String(50), nullable=True)
     edt: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -656,7 +747,9 @@ class ParteDiarioFoto(Base):
     )
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     original_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    mime_type: Mapped[str] = mapped_column(String(100), default="image/jpeg", nullable=False)
+    mime_type: Mapped[str] = mapped_column(
+        String(100), default="image/jpeg", nullable=False
+    )
     size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     orden: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -701,7 +794,10 @@ class SolicitudEquipo(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
 
@@ -732,15 +828,19 @@ class OrdenAlquiler(Base):
     fecha_fin_estimada: Mapped[date | None] = mapped_column(Date, nullable=True)
     tarifa_acordada: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     tipo_tarifa: Mapped[str] = mapped_column(String(10), default="HORA", nullable=False)
-    moneda: Mapped[str] = mapped_column(String(5), default="PEN", nullable=False)
+    moneda: Mapped[str] = mapped_column(String(10), default="PEN", nullable=False)
     tipo_cambio: Mapped[float | None] = mapped_column(Numeric(8, 4), nullable=True)
     horas_incluidas: Mapped[float | None] = mapped_column(Numeric(8, 2), nullable=True)
-    penalidad_exceso: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    penalidad_exceso: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     condiciones_especiales: Mapped[str | None] = mapped_column(Text, nullable=True)
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
     estado: Mapped[str] = mapped_column(String(20), default="BORRADOR", nullable=False)
     enviado_a: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    fecha_envio: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fecha_envio: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     confirmado_por: Mapped[str | None] = mapped_column(String(255), nullable=True)
     fecha_confirmacion: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
@@ -752,7 +852,10 @@ class OrdenAlquiler(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     proveedor: Mapped[Proveedor | None] = relationship("Proveedor", lazy="joined")
@@ -780,23 +883,34 @@ class ActaDevolucion(Base):
     fecha_devolucion: Mapped[date] = mapped_column(Date, nullable=False)
     tipo: Mapped[str] = mapped_column(String(30), default="DEVOLUCION", nullable=False)
     estado: Mapped[str] = mapped_column(String(20), default="BORRADOR", nullable=False)
-    condicion_equipo: Mapped[str] = mapped_column(String(20), default="BUENO", nullable=False)
-    horometro_devolucion: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    kilometraje_devolucion: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    condicion_equipo: Mapped[str] = mapped_column(
+        String(20), default="BUENO", nullable=False
+    )
+    horometro_devolucion: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
+    kilometraje_devolucion: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
     observaciones_fisicas: Mapped[str | None] = mapped_column(Text, nullable=True)
     recibido_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     entregado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     firma_recibido: Mapped[str | None] = mapped_column(Text, nullable=True)
     firma_entregado: Mapped[str | None] = mapped_column(Text, nullable=True)
-    fecha_firma: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fecha_firma: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     creado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")
@@ -822,9 +936,11 @@ class CotizacionProveedor(Base):
     descripcion_equipo: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tarifa_propuesta: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     tipo_tarifa: Mapped[str] = mapped_column(String(10), default="HORA", nullable=False)
-    moneda: Mapped[str] = mapped_column(String(5), default="PEN", nullable=False)
+    moneda: Mapped[str] = mapped_column(String(10), default="PEN", nullable=False)
     horas_incluidas: Mapped[float | None] = mapped_column(Numeric(8, 2), nullable=True)
-    penalidad_exceso: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    penalidad_exceso: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     plazo_entrega_dias: Mapped[int | None] = mapped_column(Integer, nullable=True)
     condiciones_pago: Mapped[str | None] = mapped_column(Text, nullable=True)
     condiciones_especiales: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -833,7 +949,9 @@ class CotizacionProveedor(Base):
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
     puntaje: Mapped[int | None] = mapped_column(Integer, nullable=True)
     motivo_seleccion: Mapped[str | None] = mapped_column(Text, nullable=True)
-    estado: Mapped[str] = mapped_column(String(20), default="REGISTRADA", nullable=False)
+    estado: Mapped[str] = mapped_column(
+        String(20), default="REGISTRADA", nullable=False
+    )
     evaluado_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fecha_evaluacion: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
@@ -848,7 +966,10 @@ class CotizacionProveedor(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     proveedor: Mapped[Proveedor | None] = relationship("Proveedor", lazy="joined")
@@ -874,14 +995,19 @@ class ProgramaMantenimiento(Base):
     costo_estimado: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     costo_real: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     tecnico_responsable: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    estado: Mapped[str] = mapped_column(String(50), default="PROGRAMADO", nullable=False)
+    estado: Mapped[str] = mapped_column(
+        String(50), default="PROGRAMADO", nullable=False
+    )
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
     tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")
@@ -907,7 +1033,9 @@ class ValeCombustible(Base):
     proyecto_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fecha: Mapped[date] = mapped_column(Date, nullable=False)
     numero_vale: Mapped[str] = mapped_column(String(50), nullable=False)
-    tipo_combustible: Mapped[str] = mapped_column(String(20), default="DIESEL", nullable=False)
+    tipo_combustible: Mapped[str] = mapped_column(
+        String(20), default="DIESEL", nullable=False
+    )
     cantidad_galones: Mapped[float] = mapped_column(Numeric(8, 2), nullable=False)
     precio_unitario: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
     monto_total: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
@@ -919,7 +1047,10 @@ class ValeCombustible(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     valorizacion_id: Mapped[int | None] = mapped_column(
@@ -954,7 +1085,9 @@ class PeriodoInoperatividad(Base):
     estado: Mapped[str] = mapped_column(String(20), default="ACTIVO", nullable=False)
     excede_plazo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     dias_plazo: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
-    penalidad_aplicada: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    penalidad_aplicada: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
     monto_penalidad: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     observaciones_penalidad: Mapped[str | None] = mapped_column(Text, nullable=True)
     resuelto_por: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -963,7 +1096,10 @@ class PeriodoInoperatividad(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")
@@ -989,7 +1125,9 @@ class GastoEnObra(Base):
     numero_documento: Mapped[str | None] = mapped_column(String(50), nullable=True)
     importe: Mapped[float] = mapped_column(Numeric(12, 2), default=0, nullable=False)
     incluye_igv: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    importe_sin_igv: Mapped[float] = mapped_column(Numeric(12, 2), default=0, nullable=False)
+    importe_sin_igv: Mapped[float] = mapped_column(
+        Numeric(12, 2), default=0, nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -1016,9 +1154,13 @@ class AdelantoAmortizacion(Base):
     tipo_operacion: Mapped[str] = mapped_column(String(50), nullable=False)
     # DB column is fecha_operacion; exposed as fecha for service/schema compatibility
     fecha: Mapped[date] = mapped_column(Date, name="fecha_operacion", nullable=False)
-    numero_documento: Mapped[str | None] = mapped_column(String(50), name="num_documento", nullable=True)
+    numero_documento: Mapped[str | None] = mapped_column(
+        String(50), name="num_documento", nullable=True
+    )
     concepto: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    numero_cuota: Mapped[str | None] = mapped_column(String(20), name="num_cuota", nullable=True)
+    numero_cuota: Mapped[str | None] = mapped_column(
+        String(20), name="num_cuota", nullable=True
+    )
     monto: Mapped[float] = mapped_column(Numeric(15, 2), default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -1041,7 +1183,9 @@ class AnalisisCombustible(Base):
         Integer, ForeignKey("equipo.valorizacion_equipo.id"), nullable=False
     )
     consumo_combustible: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
-    tipo_horometro_odometro: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    tipo_horometro_odometro: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )
     lectura_inicio: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
     lectura_final: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
     total_uso: Mapped[float] = mapped_column(Numeric(10, 4), default=0)
@@ -1057,4 +1201,62 @@ class AnalisisCombustible(Base):
 
     valorizacion: Mapped[ValorizacionEquipo] = relationship(
         "ValorizacionEquipo", lazy="select"
+    )
+
+
+# ─── Legacy: EquipoEDT & EquipoCombustible ──────────────────────────────
+
+
+class EquipoEdt(Base):
+    """Modelo para equipo.equipo_edt (from tbl_C08006_EquipoEDT)."""
+
+    __tablename__ = "equipo_edt"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    parte_diario_legacy_id: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )
+    parte_diario_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("equipo.parte_diario.id"), nullable=True
+    )
+    edt_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("proyectos.edt.id"), nullable=True
+    )
+    porcentaje: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
+    edt_nombre: Mapped[str | None] = mapped_column(String(250), nullable=True)
+    actividad: Mapped[str | None] = mapped_column(String(250), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class EquipoCombustible(Base):
+    """Modelo para equipo.equipo_combustible (from tbl_C08007_EquipoCombustible)."""
+
+    __tablename__ = "equipo_combustible"
+    __table_args__ = {"schema": "equipo"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    legacy_id: Mapped[str | None] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
+    valorizacion_legacy_id: Mapped[str | None] = mapped_column(
+        String(22), nullable=True
+    )
+    numero_vale_salida: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fecha: Mapped[date | None] = mapped_column(Date, nullable=True)
+    horometro_odometro: Mapped[str | None] = mapped_column(String(9), nullable=True)
+    inicial: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    cantidad: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    precio_unitario_sin_igv: Mapped[float | None] = mapped_column(
+        Numeric(10, 4), nullable=True
+    )
+    importe: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    comentario: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )

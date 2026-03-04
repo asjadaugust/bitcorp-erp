@@ -13,22 +13,22 @@ class DetalleProgramacionPagoDto(BaseModel):
 
 class ProgramacionPagoListaDto(BaseModel):
     id: int
-    proveedor_id: int
+    proveedor_id: int | None = None
     proyecto_id: int | None = None
-    periodo: str
+    periodo: str | None = None
     fecha_programada: str | None = None
     monto_total: float | None = None
-    estado: str
+    estado: str | None = None
 
 
 class ProgramacionPagoDetalleDto(BaseModel):
     id: int
-    proveedor_id: int
+    proveedor_id: int | None = None
     proyecto_id: int | None = None
-    periodo: str
+    periodo: str | None = None
     fecha_programada: str | None = None
     monto_total: float | None = None
-    estado: str
+    estado: str | None = None
     observaciones: str | None = None
     detalles: list[DetalleProgramacionPagoDto] = []
     created_at: str
@@ -36,9 +36,9 @@ class ProgramacionPagoDetalleDto(BaseModel):
 
 
 class ProgramacionPagoCrear(BaseModel):
-    proveedor_id: int
+    proveedor_id: int | None = None
     proyecto_id: int | None = None
-    periodo: str = Field(..., max_length=7)
+    periodo: str | None = Field(None, max_length=7)
     fecha_programada: str | None = None
     monto_total: float | None = Field(None, ge=0)
     observaciones: str | None = None
