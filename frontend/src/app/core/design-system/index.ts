@@ -98,6 +98,7 @@ export type { StepperOrientation, StepStatus, StepItem } from './stepper/aero-st
 export { AeroSectionControlComponent } from './section-control/aero-section-control.component';
 export type { SectionItem } from './section-control/aero-section-control.component';
 
+/** @deprecated Use AeroDataGridComponent instead */
 export { AeroTableComponent } from './table/aero-table.component';
 export type {
   TableColumn,
