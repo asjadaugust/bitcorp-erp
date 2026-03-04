@@ -5,9 +5,9 @@ import { Router } from '@angular/router';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AdministrationService, PaymentSchedule } from '../../services/administration.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -31,7 +31,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
   standalone: true,
   imports: [
     CommonModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -62,13 +62,16 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="filteredSchedules"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
+          (sortChange)="onSort($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <ng-template #actionsTemplate let-row>
@@ -170,15 +173,17 @@ export class PaymentScheduleListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'periodo', label: 'Período', type: 'text' },
-    { key: 'schedule_date', label: 'Fecha Programación', type: 'date' },
-    { key: 'description', label: 'Descripción', type: 'text' },
-    { key: 'total_amount', label: 'Monto Total', type: 'currency', format: 'PEN' },
+  columns: DataGridColumn[] = [
+    { key: 'periodo', label: 'Período', type: 'text', sortable: true, filterable: true },
+    { key: 'schedule_date', label: 'Fecha Programación', type: 'date', sortable: true },
+    { key: 'description', label: 'Descripción', type: 'text', filterable: true },
+    { key: 'total_amount', label: 'Monto Total', type: 'currency', format: 'PEN', sortable: true },
     {
       key: 'estado',
       label: 'Estado',
       type: 'badge',
+      filterable: true,
+      sortable: true,
       badgeConfig: {
         PROGRAMADO: { label: 'Programado', class: 'badge status-PROGRAMADO' },
         BORRADOR: { label: 'Borrador', class: 'badge status-BORRADOR' },
@@ -224,6 +229,10 @@ export class PaymentScheduleListComponent implements OnInit {
 
       return matchesSearch && matchesStatus;
     });
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   createSchedule(): void {

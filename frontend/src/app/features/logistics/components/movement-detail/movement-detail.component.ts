@@ -8,9 +8,9 @@ import {
   AuditInfo,
 } from '../../../../shared/components/entity-detail/entity-detail.types';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AeroButtonComponent } from '../../../../core/design-system';
 
@@ -21,7 +21,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     CommonModule,
     RouterModule,
     EntityDetailShellComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     AeroButtonComponent,
   ],
   template: `
@@ -125,15 +125,18 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         <!-- ITEMS TAB -->
         @if (activeTab === 'items' && movement) {
           <div class="items-container">
-            <aero-table
+            <aero-data-grid
               [columns]="itemColumns"
               [data]="movement.detalles || []"
               [loading]="false"
+              [dense]="true"
+              [showColumnChooser]="true"
               [templates]="{
                 monto_total: montoTemplate,
               }"
+              (sortChange)="onSort($event)"
             >
-            </aero-table>
+            </aero-data-grid>
 
             <ng-template #montoTemplate let-row>
               <span class="font-bold text-primary-700">
@@ -304,12 +307,12 @@ export class MovementDetailComponent implements OnInit {
   loading = true;
   activeTab: 'general' | 'items' | 'others' = 'general';
 
-  itemColumns: TableColumn[] = [
-    { key: 'producto_nombre', label: 'Producto', type: 'text' },
-    { key: 'producto_codigo', label: 'Código', type: 'text' },
-    { key: 'cantidad', label: 'Cantidad', type: 'text' },
-    { key: 'precio_unitario', label: 'Precio Unit.', type: 'currency' },
-    { key: 'monto_total', label: 'Subtotal', type: 'template' },
+  itemColumns: DataGridColumn[] = [
+    { key: 'producto_nombre', label: 'Producto', type: 'text', sortable: true, filterable: true },
+    { key: 'producto_codigo', label: 'Codigo', type: 'text', sortable: true },
+    { key: 'cantidad', label: 'Cantidad', type: 'text', sortable: true },
+    { key: 'precio_unitario', label: 'Precio Unit.', type: 'currency', sortable: true },
+    { key: 'monto_total', label: 'Subtotal', type: 'template', sortable: true },
   ];
 
   get header(): EntityDetailHeader {
@@ -384,5 +387,9 @@ export class MovementDetailComponent implements OnInit {
   calculateTotal(): number {
     if (!this.movement?.detalles) return 0;
     return this.movement.detalles.reduce((acc, item) => acc + Number(item.monto_total || 0), 0);
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 }

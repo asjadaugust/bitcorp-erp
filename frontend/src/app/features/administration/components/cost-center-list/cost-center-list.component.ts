@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AdministrationService, CostCenter } from '../../services/administration.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -23,7 +23,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
   standalone: true,
   imports: [
     CommonModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     AeroButtonComponent,
@@ -49,13 +49,16 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="filteredCostCenters"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
+          (sortChange)="onSort($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <ng-template #actionsTemplate let-row>
@@ -100,10 +103,17 @@ export class CostCenterListComponent implements OnInit {
     { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar centros de costo...' },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'text' },
-    { key: 'nombre', label: 'Nombre', type: 'text' },
-    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', format: 'PEN' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Código', type: 'text', sortable: true, filterable: true },
+    { key: 'nombre', label: 'Nombre', type: 'text', sortable: true, filterable: true },
+    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', format: 'PEN', sortable: true },
+    // Legacy hidden columns
+    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', hidden: true },
+    { key: 'gasto_acumulado', label: 'Gasto Acum.', type: 'currency', hidden: true },
+    { key: 'saldo_disponible', label: 'Saldo Disp.', type: 'currency', hidden: true },
+    { key: 'responsable', label: 'Responsable', hidden: true },
+    { key: 'proyecto_asociado', label: 'Proyecto', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', hidden: true },
   ];
 
   ngOnInit() {
@@ -148,6 +158,10 @@ export class CostCenterListComponent implements OnInit {
 
       return matchesSearch;
     });
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   createCostCenter(): void {

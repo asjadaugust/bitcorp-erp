@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InventoryService, Movement } from '../../services/inventory.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { LOGISTICS_TABS } from '../../logistics-tabs';
 import {
@@ -34,7 +34,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -77,10 +77,12 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
+      <aero-data-grid
         [columns]="columns"
         [data]="filteredMovements"
         [loading]="loading"
+        [dense]="true"
+        [showColumnChooser]="true"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           type: typeTemplate,
@@ -88,8 +90,9 @@ import { AeroButtonComponent } from '../../../../core/design-system';
           entity: entityTemplate,
           items: itemsTemplate,
         }"
+        (sortChange)="onSort($event)"
       >
-      </aero-table>
+      </aero-data-grid>
 
       <!-- Custom Templates -->
       <ng-template #dateTemplate let-row>
@@ -214,13 +217,23 @@ export class MovementListComponent implements OnInit {
     { key: 'startDate', label: 'Fecha', type: 'date' },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'fecha', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'type', label: 'Tipo', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'fecha', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy', sortable: true },
+    { key: 'type', label: 'Tipo', type: 'template', sortable: true, filterable: true },
     { key: 'document', label: 'Documento', type: 'template' },
-    { key: 'entity', label: 'Proyecto/Origen', type: 'template' },
-    { key: 'items', label: 'Items', type: 'template' },
+    { key: 'entity', label: 'Proyecto/Origen', type: 'template', filterable: true },
+    { key: 'items', label: 'Items', type: 'template', sortable: true },
     { key: 'observaciones', label: 'Observaciones', type: 'text' },
+    { key: 'numero_documento', label: 'N. Documento', hidden: true },
+    { key: 'tipo_documento', label: 'Tipo Doc.', hidden: true },
+    { key: 'almacen_origen', label: 'Almacen Origen', hidden: true },
+    { key: 'almacen_destino', label: 'Almacen Destino', hidden: true },
+    { key: 'solicitante', label: 'Solicitante', hidden: true },
+    { key: 'centro_costo', label: 'Centro Costo', hidden: true },
+    { key: 'proyecto', label: 'Proyecto', hidden: true },
+    { key: 'observaciones_extra', label: 'Observaciones Extra', hidden: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true },
+    { key: 'usuario_registro', label: 'Registrado por', hidden: true },
   ];
 
   ngOnInit(): void {
@@ -278,6 +291,10 @@ export class MovementListComponent implements OnInit {
     this.filters.type = (filters['type'] as string) || '';
     this.filters.startDate = (filters['startDate'] as string) || '';
     this.applyFilters();
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   applyFilters(): void {
