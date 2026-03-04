@@ -8,9 +8,10 @@ import { FormErrorHandlerService } from '../../core/services/form-error-handler.
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+  DataGridSortEvent,
+} from '../../core/design-system';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
@@ -26,7 +27,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     AeroButtonComponent,
@@ -51,10 +52,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="operators"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             nombre_completo: userTemplate,
@@ -62,8 +65,9 @@ import { AeroButtonComponent } from '../../core/design-system';
             licencia: licenseTemplate,
           }"
           (rowClick)="viewOperator($event)"
+          (sortChange)="onSortChange($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -253,17 +257,25 @@ export class OperatorListEnhancedComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'dni', label: 'DNI', type: 'text' },
-    { key: 'nombre_completo', label: 'Operador', type: 'template' },
+  columns: DataGridColumn[] = [
+    // ─── Visible columns ───
+    { key: 'dni', label: 'DNI', type: 'text', sortable: true, filterable: true },
+    { key: 'nombre_completo', label: 'Operador', type: 'template', sortable: true, filterable: true },
     { key: 'contacto', label: 'Contacto', type: 'template' },
     { key: 'licencia', label: 'Licencia', type: 'template' },
-    { key: 'especialidad', label: 'Especialidad', type: 'text' },
-    { key: 'fecha_ingreso', label: 'Ingreso', type: 'date' },
+    { key: 'especialidad', label: 'Especialidad', type: 'text', sortable: true, filterable: true },
+    { key: 'fecha_ingreso', label: 'Ingreso', type: 'date', sortable: true },
     {
       key: 'is_active',
       label: 'Estado',
       type: 'badge',
+      sortable: true,
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Activo', value: 'true' },
+        { label: 'Inactivo', value: 'false' },
+      ],
       badgeConfig: {
         true: {
           label: 'Activo',
@@ -277,6 +289,22 @@ export class OperatorListEnhancedComponent implements OnInit {
         },
       },
     },
+
+    // ─── Legacy hidden columns (from 305_RRHH.tbl_C05000_Trabajador) ───
+    { key: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', hidden: true, sortable: true },
+    { key: 'apellido_materno', label: 'Apellido Materno', type: 'text', hidden: true, sortable: true },
+    { key: 'nombres', label: 'Nombres', type: 'text', hidden: true, sortable: true },
+    { key: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date', hidden: true, sortable: true },
+    { key: 'direccion', label: 'Dirección', type: 'text', hidden: true, sortable: true },
+    { key: 'telefono', label: 'Teléfono', type: 'text', hidden: true, sortable: true },
+    { key: 'correo_electronico', label: 'Correo Electrónico', type: 'text', hidden: true, sortable: true },
+    { key: 'cargo', label: 'Cargo', type: 'text', hidden: true, sortable: true },
+    { key: 'tipo_contrato', label: 'Tipo Contrato', type: 'text', hidden: true, sortable: true },
+    { key: 'fecha_cese', label: 'Fecha Cese', type: 'date', hidden: true, sortable: true },
+    { key: 'licencia_conducir', label: 'Licencia Conducir', type: 'text', hidden: true, sortable: true },
+    { key: 'vencimiento_licencia', label: 'Vencimiento Licencia', type: 'date', hidden: true, sortable: true },
+    { key: 'created_at', label: 'Fecha Registro', type: 'date', hidden: true, sortable: true },
+    { key: 'updated_at', label: 'Última Actualización', type: 'date', hidden: true, sortable: true },
   ];
 
   actionsTemplate: unknown;
@@ -303,6 +331,10 @@ export class OperatorListEnhancedComponent implements OnInit {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.status = (filters['status'] as string) || '';
     this.loadOperators();
+  }
+
+  onSortChange(event: DataGridSortEvent): void {
+    console.log('Sort changed:', event.column, event.direction);
   }
 
   getInitials(operator: Operator): string {
