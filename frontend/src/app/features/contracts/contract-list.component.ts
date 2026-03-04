@@ -8,9 +8,10 @@ import { ContractService } from '../../core/services/contract.service';
 import { Contract } from '../../core/models/contract.model';
 
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+  DataGridSortEvent,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
@@ -33,7 +34,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -65,18 +66,22 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="contracts"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
+          [showFilters]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             numero_contrato: codeTemplate,
             vigencia: vigenciaTemplate,
           }"
           (rowClick)="viewContract($event)"
+          (sortChange)="onSortChange($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Column Templates -->
@@ -203,16 +208,46 @@ export class ContractListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'numero_contrato', label: 'Código', type: 'template' },
-    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' },
-    { key: 'equipo_info', label: 'Equipo (Modelo / Placa)', type: 'text' },
-    { key: 'modalidad_display', label: 'Modalidad', type: 'text' },
-    { key: 'vigencia', label: 'Vigencia', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'numero_contrato', label: 'Código', type: 'template', sortable: true, filterable: true },
+    {
+      key: 'proveedor_razon_social',
+      label: 'Proveedor',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'equipo_info',
+      label: 'Equipo (Modelo / Placa)',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: 'modalidad_display',
+      label: 'Modalidad',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+    },
+    { key: 'vigencia', label: 'Vigencia', type: 'template', sortable: false },
     {
       key: 'estado',
       label: 'Estado',
       type: 'badge',
+      sortable: true,
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Vigente', value: 'VIGENTE' },
+        { label: 'En Proceso', value: 'EN_PROCESO' },
+        { label: 'Sin Contrato', value: 'SIN_CONTRATO' },
+        { label: 'Vencido', value: 'VENCIDO' },
+        { label: 'Cancelado', value: 'CANCELADO' },
+        { label: 'Resuelto', value: 'RESUELTO' },
+        { label: 'Liquidado', value: 'LIQUIDADO' },
+      ],
       badgeConfig: {
         VIGENTE: {
           label: 'Vigente',
@@ -251,6 +286,52 @@ export class ContractListComponent implements OnInit {
         },
       },
     },
+    // ─── Legacy columns (hidden by default) ───
+    { key: 'tipo_contrato', label: 'Tipo Contrato', type: 'text', hidden: true, sortable: true },
+    { key: 'fecha_inicio', label: 'Fecha Inicio', type: 'date', hidden: true, sortable: true },
+    { key: 'fecha_fin', label: 'Fecha Fin', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'monto_contrato',
+      label: 'Monto Contrato',
+      type: 'financial',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'moneda', label: 'Moneda', type: 'text', hidden: true, sortable: true },
+    { key: 'cliente_ruc', label: 'RUC Cliente', type: 'text', hidden: true, sortable: true },
+    {
+      key: 'representante_legal',
+      label: 'Representante Legal',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'plazo_dias',
+      label: 'Plazo Días',
+      type: 'number',
+      format: '1.0-0',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'penalidad_porcentaje',
+      label: '% Penalidad',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'garantia', label: 'Garantía', type: 'text', hidden: true, sortable: true },
+    { key: 'adenda_numero', label: 'N° Adenda', type: 'text', hidden: true, sortable: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true, sortable: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'usuario_registro',
+      label: 'Registrado por',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
   ];
 
   ngOnInit(): void {
@@ -274,6 +355,10 @@ export class ContractListComponent implements OnInit {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.estado = (filters['estado'] as string) || '';
     this.loadContracts();
+  }
+
+  onSortChange(event: DataGridSortEvent): void {
+    // Sorting is handled client-side by aero-data-grid
   }
 
   viewContract(contract: Contract): void {
