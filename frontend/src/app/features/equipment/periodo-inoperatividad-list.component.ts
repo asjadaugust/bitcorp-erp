@@ -7,9 +7,9 @@ import {
   PeriodoInoperatividad,
 } from '../../core/services/periodo-inoperatividad.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -28,7 +28,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     RouterModule,
     PageLayoutComponent,
     ActionsContainerComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     FilterBarComponent,
     AeroButtonComponent,
   ],
@@ -52,10 +52,12 @@ import { AeroButtonComponent } from '../../core/design-system';
           (filterChange)="onFilterChange($event)"
         ></app-filter-bar>
 
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="periodos"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             equipo_codigo: equipoTemplate,
@@ -64,7 +66,7 @@ import { AeroButtonComponent } from '../../core/design-system';
             penalidad: penalidadTemplate,
           }"
           (rowClick)="verDetalle($event)"
-        ></aero-table>
+        ></aero-data-grid>
 
         <ng-container *ngTemplateOutlet="sharedTemplates"></ng-container>
       </app-page-layout>
@@ -84,10 +86,11 @@ import { AeroButtonComponent } from '../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
+      <aero-data-grid
         [columns]="columns"
         [data]="periodos"
         [loading]="loading"
+        [dense]="true"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           equipo_codigo: equipoTemplate,
@@ -96,7 +99,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           dias: diasTemplate,
         }"
         (rowClick)="verDetalle($event.id)"
-      ></aero-table>
+      ></aero-data-grid>
     }
 
     <!-- Shared templates (declared once, referenced above) -->
@@ -514,13 +517,16 @@ export class PeriodoInoperatividadListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'equipo_codigo', label: 'Equipo', type: 'template' },
-    { key: 'fecha_inicio', label: 'Inicio', type: 'date', width: '100px' },
-    { key: 'fecha_fin', label: 'Fin', type: 'date', width: '100px' },
-    { key: 'dias', label: 'Días', type: 'template', width: '90px' },
+  columns: DataGridColumn[] = [
+    { key: 'equipo_codigo', label: 'Equipo', type: 'template', sortable: true },
+    { key: 'fecha_inicio', label: 'Inicio', type: 'date', width: '100px', sortable: true },
+    { key: 'fecha_fin', label: 'Fin', type: 'date', width: '100px', sortable: true },
+    { key: 'dias', label: 'Dias', type: 'template', width: '90px', sortable: true },
     { key: 'motivo', label: 'Motivo', type: 'text' },
     { key: 'penalidad', label: 'Penalidad', type: 'template', width: '110px' },
+    { key: 'contrato', label: 'Contrato', type: 'text', hidden: true },
+    { key: 'responsable', label: 'Responsable', type: 'text', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true },
     {
       key: 'estado',
       label: 'Estado',

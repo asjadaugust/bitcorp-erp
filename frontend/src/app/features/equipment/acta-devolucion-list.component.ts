@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ActaDevolucionService, ActaDevolucion } from '../../core/services/acta-devolucion.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -27,7 +27,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     RouterModule,
     PageLayoutComponent,
     ActionsContainerComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     FilterBarComponent,
     PageCardComponent,
     AeroButtonComponent,
@@ -52,10 +52,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="actas"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             codigo: codigoTemplate,
@@ -64,7 +66,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           }"
           (rowClick)="verDetalle($event.id)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Templates -->
@@ -224,21 +226,24 @@ export class ActaDevolucionListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'template', width: '110px' },
-    { key: 'equipo', label: 'Equipo', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Codigo', type: 'template', width: '110px', sortable: true },
+    { key: 'equipo', label: 'Equipo', type: 'template', sortable: true },
     {
       key: 'tipo',
       label: 'Tipo',
       type: 'badge',
       width: '110px',
       badgeConfig: {
-        DEVOLUCION: { label: 'Devolución', class: 'status-badge status-info' },
+        DEVOLUCION: { label: 'Devolucion', class: 'status-badge status-info' },
         DESMOBILIZACION: { label: 'Desmovil.', class: 'status-badge status-warning' },
         TRANSFERENCIA: { label: 'Transfer.', class: 'status-badge status-neutral' },
       },
     },
-    { key: 'fecha_devolucion', label: 'Fecha', type: 'date', width: '110px' },
+    { key: 'fecha_devolucion', label: 'Fecha', type: 'date', width: '110px', sortable: true },
+    { key: 'proyecto', label: 'Proyecto', type: 'text', hidden: true },
+    { key: 'responsable', label: 'Responsable', type: 'text', hidden: true },
+    { key: 'motivo', label: 'Motivo', type: 'text', hidden: true },
     {
       key: 'condicion_equipo',
       label: 'Condición',

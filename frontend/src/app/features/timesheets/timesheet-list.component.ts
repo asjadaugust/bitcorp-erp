@@ -20,9 +20,9 @@ import {
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AeroButtonComponent } from '../../core/design-system';
@@ -38,7 +38,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     FilterBarComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     AeroButtonComponent,
   ],
   template: `
@@ -73,10 +73,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       </div>
 
       <!-- Timesheets Table -->
-      <aero-table
+      <aero-data-grid
         [columns]="columns"
         [data]="timesheets"
         [loading]="loading"
+        [dense]="true"
+        [showColumnChooser]="true"
         [templates]="{
           id: idTemplate,
           trabajador: trabajadorTemplate,
@@ -85,7 +87,7 @@ import { AeroButtonComponent } from '../../core/design-system';
         }"
         (rowClick)="viewTimesheet($event.id)"
       >
-      </aero-table>
+      </aero-data-grid>
 
       <!-- Custom Templates -->
       <ng-template #idTemplate let-row>
@@ -219,12 +221,15 @@ export class TimesheetListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'id', label: 'ID', type: 'template' },
-    { key: 'trabajador', label: 'Trabajador', type: 'template' },
-    { key: 'periodo', label: 'Período', type: 'template' },
-    { key: 'totalHoras', label: 'Horas Totales', type: 'text' },
-    { key: 'totalDiasTrabajados', label: 'Días Trab.', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'id', label: 'ID', type: 'template', sortable: true },
+    { key: 'trabajador', label: 'Trabajador', type: 'template', sortable: true },
+    { key: 'periodo', label: 'Periodo', type: 'template', sortable: true },
+    { key: 'totalHoras', label: 'Horas Totales', type: 'text', sortable: true },
+    { key: 'totalDiasTrabajados', label: 'Dias Trab.', type: 'text', sortable: true },
+    { key: 'proyecto', label: 'Proyecto', type: 'text', hidden: true },
+    { key: 'aprobado_por', label: 'Aprobado Por', type: 'text', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true },
     {
       key: 'estado',
       label: 'Estado',

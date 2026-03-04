@@ -4,9 +4,9 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ChecklistService } from '../../../core/services/checklist.service';
 import { ChecklistTemplate } from '../../../core/models/checklist.model';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../core/design-system/data-grid/aero-data-grid.component';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import { CHECKLISTS_TABS } from '../checklists-tabs';
 import {
@@ -28,7 +28,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
   imports: [
     CommonModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     AeroButtonComponent,
@@ -55,10 +55,12 @@ import { AeroButtonComponent } from '../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="templates"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             itemCount: itemCountTemplate,
@@ -66,7 +68,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
           }"
           (rowClick)="viewTemplate($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -185,12 +187,15 @@ export class TemplateListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'text' },
-    { key: 'nombre', label: 'Nombre', type: 'text' },
-    { key: 'tipoEquipo', label: 'Tipo Equipo', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Codigo', type: 'text', sortable: true },
+    { key: 'nombre', label: 'Nombre', type: 'text', sortable: true },
+    { key: 'tipoEquipo', label: 'Tipo Equipo', type: 'text', sortable: true },
     { key: 'frecuencia', label: 'Frecuencia', type: 'template' },
     { key: 'itemCount', label: 'Items', type: 'template' },
+    { key: 'version', label: 'Version', type: 'text', hidden: true },
+    { key: 'categoria', label: 'Categoria', type: 'text', hidden: true },
+    { key: 'created_at', label: 'Fecha Creacion', type: 'date', hidden: true },
     {
       key: 'activo',
       label: 'Estado',

@@ -11,9 +11,9 @@ import {
 } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import { ProjectService } from '../../core/services/project.service';
 import { Project } from '../../core/models/project.model';
 import {
@@ -39,7 +39,7 @@ interface MatrixDate {
     CommonModule,
     PageLayoutComponent,
     PageCardComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     FilterBarComponent,
     StatsGridComponent,
   ],
@@ -83,12 +83,14 @@ interface MatrixDate {
 
       <!-- Summary View -->
       <app-page-card [noPadding]="true" *ngIf="viewMode === 'summary'">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="data"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [templates]="{ recepcion: recepcionTemplate, faltantes: faltantesTemplate }"
-        ></aero-table>
+        ></aero-data-grid>
       </app-page-card>
 
       <!-- Matrix View -->
@@ -517,13 +519,16 @@ export class DailyReportReceptionComponent implements OnInit {
     { label: 'Recepción de Partes' },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo_equipo', label: 'Código', type: 'text' },
-    { key: 'marca', label: 'Marca', type: 'text' },
-    { key: 'modelo', label: 'Modelo', type: 'text' },
-    { key: 'reportes_recibidos', label: 'Recibidos', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo_equipo', label: 'Código', type: 'text', sortable: true },
+    { key: 'marca', label: 'Marca', type: 'text', sortable: true },
+    { key: 'modelo', label: 'Modelo', type: 'text', sortable: true },
+    { key: 'reportes_recibidos', label: 'Recibidos', type: 'text', sortable: true },
     { key: 'total_dias', label: 'Total Días', type: 'text' },
     { key: 'recepcion', label: 'Recepción', type: 'template' },
+    { key: 'proyecto', label: 'Proyecto', type: 'text', hidden: true },
+    { key: 'operador', label: 'Operador', type: 'text', hidden: true },
+    { key: 'porcentaje_recepcion', label: '% Recepción', type: 'text', hidden: true },
     { key: 'faltantes', label: 'Faltantes', type: 'template' },
   ];
 

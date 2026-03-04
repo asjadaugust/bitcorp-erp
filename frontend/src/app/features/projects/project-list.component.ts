@@ -6,9 +6,9 @@ import { Router, RouterModule } from '@angular/router';
 import { ProjectService } from '../../core/services/project.service';
 import { Project } from '../../core/models/project.model';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   TabItem,
@@ -33,7 +33,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -62,10 +62,12 @@ import { AeroButtonComponent } from '../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
+      <aero-data-grid
         [columns]="columns"
         [data]="projects"
         [loading]="loading"
+        [dense]="true"
+        [showColumnChooser]="true"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           code: codeTemplate,
@@ -74,7 +76,7 @@ import { AeroButtonComponent } from '../../core/design-system';
         }"
         (rowClick)="viewProject($event)"
       >
-      </aero-table>
+      </aero-data-grid>
 
       <!-- Custom Templates -->
       <ng-template #codeTemplate let-row>
@@ -227,13 +229,16 @@ export class ProjectListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'code', label: 'Código', type: 'template' },
-    { key: 'project', label: 'Nombre del Proyecto', type: 'template' },
-    { key: 'cliente', label: 'Cliente', type: 'text' },
-    { key: 'ubicacion', label: 'Ubicación', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'code', label: 'Codigo', type: 'template', sortable: true },
+    { key: 'project', label: 'Nombre del Proyecto', type: 'template', sortable: true },
+    { key: 'cliente', label: 'Cliente', type: 'text', sortable: true },
+    { key: 'ubicacion', label: 'Ubicacion', type: 'text', sortable: true },
     { key: 'dates', label: 'Fechas', type: 'template' },
-    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', format: 'PEN' },
+    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', format: 'PEN', sortable: true },
+    { key: 'responsable', label: 'Responsable', type: 'text', hidden: true },
+    { key: 'tipo_proyecto', label: 'Tipo Proyecto', type: 'text', hidden: true },
+    { key: 'avance', label: 'Avance %', type: 'number', hidden: true },
     {
       key: 'estado',
       label: 'Estado',

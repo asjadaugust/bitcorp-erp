@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TenderService, Tender } from '../../services/tender.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -22,7 +22,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
   standalone: true,
   imports: [
     CommonModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
@@ -46,7 +46,14 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table [columns]="columns" [data]="filteredTenders" [loading]="loading"> </aero-table>
+      <aero-data-grid
+        [columns]="columns"
+        [data]="filteredTenders"
+        [loading]="loading"
+        [dense]="true"
+        [showColumnChooser]="true"
+      >
+      </aero-data-grid>
     </app-page-layout>
   `,
   styles: [],
@@ -78,12 +85,27 @@ export class TenderListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'text' },
-    { key: 'nombre', label: 'Título', type: 'text' },
-    { key: 'entidad_convocante', label: 'Cliente', type: 'text' },
-    { key: 'fecha_presentacion', label: 'Fecha Límite', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'monto_referencial', label: 'Presupuesto', type: 'currency', format: 'PEN' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Codigo', type: 'text', sortable: true },
+    { key: 'nombre', label: 'Titulo', type: 'text', sortable: true },
+    { key: 'entidad_convocante', label: 'Cliente', type: 'text', sortable: true },
+    {
+      key: 'fecha_presentacion',
+      label: 'Fecha Limite',
+      type: 'date',
+      format: 'dd/MM/yyyy',
+      sortable: true,
+    },
+    {
+      key: 'monto_referencial',
+      label: 'Presupuesto',
+      type: 'currency',
+      format: 'PEN',
+      sortable: true,
+    },
+    { key: 'responsable', label: 'Responsable', type: 'text', hidden: true },
+    { key: 'tipo_licitacion', label: 'Tipo', type: 'text', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true },
     {
       key: 'estado',
       label: 'Estado',

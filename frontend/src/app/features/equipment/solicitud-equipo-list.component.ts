@@ -13,9 +13,9 @@ import {
 } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -37,7 +37,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     RouterModule,
     PageLayoutComponent,
     ActionsContainerComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     FilterBarComponent,
     StatsGridComponent,
     PageCardComponent,
@@ -68,10 +68,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="solicitudes"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [serverSide]="true"
           [totalItems]="total"
@@ -83,7 +85,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           }"
           (rowClick)="verDetalle($event.id)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -244,12 +246,15 @@ export class SolicitudEquipoListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'template', width: '120px' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Codigo', type: 'template', width: '120px', sortable: true },
     { key: 'equipo_info', label: 'Equipo Solicitado', type: 'template' },
     { key: 'cantidad', label: 'Cant.', type: 'text', width: '70px', align: 'center' },
-    { key: 'created_at', label: 'F. Solicitud', type: 'date', width: '120px' },
-    { key: 'fecha_requerida', label: 'F. Requerida', type: 'date', width: '120px' },
+    { key: 'created_at', label: 'F. Solicitud', type: 'date', width: '120px', sortable: true },
+    { key: 'fecha_requerida', label: 'F. Requerida', type: 'date', width: '120px', sortable: true },
+    { key: 'solicitante', label: 'Solicitante', type: 'text', hidden: true },
+    { key: 'proyecto', label: 'Proyecto', type: 'text', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true },
     {
       key: 'prioridad',
       label: 'Prioridad',

@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SigService, SigDocument } from '../../services/sig.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import { Breadcrumb } from '../../../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
@@ -16,7 +16,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
 @Component({
   selector: 'app-document-list',
   standalone: true,
-  imports: [CommonModule, AeroTableComponent, FilterBarComponent, AeroButtonComponent],
+  imports: [CommonModule, AeroDataGridComponent, FilterBarComponent, AeroButtonComponent],
   template: `
     <div class="document-list-container">
       <div class="actions-bar">
@@ -30,13 +30,15 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
+      <aero-data-grid
         [columns]="columns"
         [data]="filteredDocuments"
         [loading]="loading"
+        [dense]="true"
+        [showColumnChooser]="true"
         [actionsTemplate]="actionsTemplate"
       >
-      </aero-table>
+      </aero-data-grid>
 
       <ng-template #actionsTemplate let-row>
         <div class="action-buttons">
@@ -113,12 +115,21 @@ export class DocumentListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'text' },
-    { key: 'titulo', label: 'Título', type: 'text' },
-    { key: 'tipoDocumento', label: 'Tipo', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Código', type: 'text', sortable: true },
+    { key: 'titulo', label: 'Título', type: 'text', sortable: true },
+    { key: 'tipoDocumento', label: 'Tipo', type: 'text', sortable: true },
     { key: 'version', label: 'Versión', type: 'text' },
-    { key: 'fechaEmision', label: 'Fecha Emisión', type: 'date', format: 'dd/MM/yyyy' },
+    {
+      key: 'fechaEmision',
+      label: 'Fecha Emisión',
+      type: 'date',
+      format: 'dd/MM/yyyy',
+      sortable: true,
+    },
+    { key: 'responsable', label: 'Responsable', type: 'text', hidden: true },
+    { key: 'area', label: 'Área', type: 'text', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true },
     {
       key: 'estado',
       label: 'Estado',

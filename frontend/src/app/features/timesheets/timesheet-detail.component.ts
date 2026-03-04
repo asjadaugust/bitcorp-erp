@@ -4,9 +4,9 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TimesheetService } from '../../core/services/timesheet.service';
 import { Timesheet } from '../../core/models/scheduling.model';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   StatsGridComponent,
   StatItem,
@@ -27,7 +27,7 @@ import { AeroButtonComponent } from '../../core/design-system';
   imports: [
     CommonModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     StatsGridComponent,
     EntityDetailShellComponent,
     AeroButtonComponent,
@@ -49,16 +49,17 @@ import { AeroButtonComponent } from '../../core/design-system';
       <div entity-main-content class="detail-sections" *ngIf="timesheet">
         <div class="detail-section">
           <h2>Detalle Diario</h2>
-          <aero-table
+          <aero-data-grid
             [columns]="columns"
             [data]="timesheet.details || []"
+            [dense]="true"
             [templates]="{
               project: projectTemplate,
               equipment: equipmentTemplate,
               hours: hoursTemplate,
             }"
           >
-          </aero-table>
+          </aero-data-grid>
 
           <ng-template #projectTemplate let-row>
             {{ row.project?.G00007_Nombre || '-' }}
@@ -166,8 +167,8 @@ export class TimesheetDetailComponent implements OnInit {
     backRoute: '/operaciones/timesheets',
   };
 
-  columns: TableColumn[] = [
-    { key: 'work_date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
+  columns: DataGridColumn[] = [
+    { key: 'work_date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy', sortable: true },
     { key: 'project', label: 'Proyecto', type: 'template' },
     { key: 'equipment', label: 'Equipo', type: 'template' },
     { key: 'start_time', label: 'Hora Inicio', type: 'text' },

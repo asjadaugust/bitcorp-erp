@@ -21,9 +21,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ContractAddendumDialogComponent } from './components/contract-addendum-dialog/contract-addendum-dialog.component';
 
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 
 import {
   EntityDetailShellComponent,
@@ -47,7 +47,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     FormsModule,
     RouterModule,
     MatDialogModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
     AeroButtonComponent,
@@ -155,17 +155,18 @@ import { AeroButtonComponent } from '../../core/design-system';
         @if (valuations.length > 0) {
           <section class="detail-section">
             <h2>Historial de Valorizaciones</h2>
-            <aero-table
+            <aero-data-grid
               [columns]="valuationColumns"
               [data]="valuations"
               [loading]="false"
+              [dense]="true"
               [templates]="{
                 numero_valorizacion: valCodeTemplate,
                 total_valorizado: amountTemplate,
               }"
               (rowClick)="router.navigate(['/equipment/valuations', $event.id])"
             >
-            </aero-table>
+            </aero-data-grid>
 
             <ng-template #valCodeTemplate let-row>
               <a
@@ -189,13 +190,14 @@ import { AeroButtonComponent } from '../../core/design-system';
         @if (annexA.length > 0) {
           <section class="detail-section">
             <h2>ANEXO A — Inclusiones de Tarifa</h2>
-            <aero-table
+            <aero-data-grid
               [columns]="annexColumns"
               [data]="annexA"
               [loading]="false"
+              [dense]="true"
               [templates]="{ incluido: incluidoTemplate }"
             >
-            </aero-table>
+            </aero-data-grid>
 
             <ng-template #incluidoTemplate let-row>
               <span [class]="row.incluido ? 'text-success' : 'text-danger'" style="font-weight:600">
@@ -1378,7 +1380,7 @@ export class ContractDetailComponent implements OnInit {
     backRoute: '/equipment/operaciones/contratos',
   };
 
-  valuationColumns: TableColumn[] = [
+  valuationColumns: DataGridColumn[] = [
     { key: 'numero_valorizacion', label: 'N° Valorización', type: 'template' },
     { key: 'periodo', label: 'Periodo', type: 'text' },
     { key: 'fechaInicio', label: 'Fecha Inicio', type: 'date' },
@@ -1416,7 +1418,7 @@ export class ContractDetailComponent implements OnInit {
     },
   ];
 
-  annexColumns: TableColumn[] = [
+  annexColumns: DataGridColumn[] = [
     { key: 'concepto', label: 'Concepto', type: 'text' },
     { key: 'incluido', label: 'Incluido', type: 'template' },
     { key: 'observaciones', label: 'Observaciones', type: 'text' },

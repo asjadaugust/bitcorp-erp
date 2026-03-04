@@ -7,9 +7,9 @@ import {
   ValeCombustible,
 } from '../../core/services/vale-combustible.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -37,7 +37,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     RouterModule,
     PageLayoutComponent,
     ActionsContainerComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     FilterBarComponent,
     StatsGridComponent,
     PageCardComponent,
@@ -71,10 +71,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="vales"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [serverSide]="true"
           [totalItems]="total"
@@ -90,7 +92,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           (rowClick)="verDetalle($event.id)"
           data-testid="vale-combustible-table"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <ng-template #codeTemplate let-row>
@@ -251,11 +253,11 @@ export class ValeCombustibleListComponent implements OnInit {
     { label: 'Vales de Combustible' },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'template', width: '110px' },
-    { key: 'fecha', label: 'Fecha', type: 'date', width: '110px' },
-    { key: 'equipo', label: 'Equipo', type: 'template' },
-    { key: 'numero_vale', label: 'N° Vale', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Codigo', type: 'template', width: '110px', sortable: true },
+    { key: 'fecha', label: 'Fecha', type: 'date', width: '110px', sortable: true },
+    { key: 'equipo', label: 'Equipo', type: 'template', sortable: true },
+    { key: 'numero_vale', label: 'N. Vale', type: 'text', sortable: true },
     { key: 'tipo_combustible', label: 'Tipo', type: 'template', width: '80px' },
     {
       key: 'cantidad_galones',
@@ -263,10 +265,14 @@ export class ValeCombustibleListComponent implements OnInit {
       type: 'template',
       width: '100px',
       align: 'right',
+      sortable: true,
     },
     { key: 'precio_unitario', label: 'P.U.', type: 'currency', width: '90px' },
-    { key: 'proveedor', label: 'Proveedor', type: 'text' },
-    { key: 'monto_total', label: 'Monto Total', type: 'template', width: '110px' },
+    { key: 'proveedor', label: 'Proveedor', type: 'text', sortable: true, hidden: true },
+    { key: 'monto_total', label: 'Monto Total', type: 'template', width: '110px', sortable: true },
+    { key: 'operador', label: 'Operador', type: 'text', hidden: true },
+    { key: 'proyecto', label: 'Proyecto', type: 'text', hidden: true },
+    { key: 'odometro', label: 'Odometro', type: 'number', hidden: true },
     {
       key: 'estado',
       label: 'Estado',
