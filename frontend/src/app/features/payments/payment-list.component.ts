@@ -13,9 +13,9 @@ import {
 } from '../../core/models/payment-record.model';
 
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import {
@@ -31,7 +31,7 @@ import { AeroButtonComponent } from '../../core/design-system';
   standalone: true,
   imports: [
     CommonModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     PageCardComponent,
     FilterBarComponent,
@@ -66,15 +66,18 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="payments"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [serverSide]="true"
           [totalItems]="totalItems"
           [pageSize]="pageSize"
           (pageChange)="onPageChange($event)"
           (pageSizeChange)="onPageSizeChange($event)"
+          (sortChange)="onSort($event)"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             numero_pago: numeroPagoTemplate,
@@ -84,7 +87,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           }"
           (rowClick)="viewPayment($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom cell templates -->
@@ -265,15 +268,23 @@ export class PaymentListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'numero_pago', label: 'N° Pago / Val.', type: 'template', width: '150px' },
-    { key: 'fecha_pago', label: 'Fecha Pago', type: 'date', width: '110px' },
-    { key: 'monto_pagado', label: 'Monto', type: 'template', width: '120px' },
+  columns: DataGridColumn[] = [
+    {
+      key: 'numero_pago',
+      label: 'N° Pago / Val.',
+      type: 'template',
+      width: '150px',
+      sortable: true,
+      filterable: true,
+    },
+    { key: 'fecha_pago', label: 'Fecha Pago', type: 'date', width: '110px', sortable: true },
+    { key: 'monto_pagado', label: 'Monto', type: 'template', width: '120px', sortable: true },
     {
       key: 'moneda',
       label: 'Moneda',
       type: 'badge',
       width: '80px',
+      filterable: true,
       badgeConfig: {
         PEN: { label: 'PEN', class: 'status-badge status-info', icon: 'fa-solid fa-coins' },
         USD: {
@@ -288,6 +299,7 @@ export class PaymentListComponent implements OnInit {
       label: 'Método',
       type: 'badge',
       width: '120px',
+      filterable: true,
       badgeConfig: {
         TRANSFERENCIA: { label: 'Transferencia', class: 'status-badge status-info' },
         CHEQUE: { label: 'Cheque', class: 'status-badge status-info' },
@@ -302,6 +314,8 @@ export class PaymentListComponent implements OnInit {
       label: 'Estado',
       type: 'badge',
       width: '110px',
+      filterable: true,
+      sortable: true,
       badgeConfig: {
         PENDIENTE: {
           label: 'Pendiente',
@@ -327,7 +341,24 @@ export class PaymentListComponent implements OnInit {
     },
     { key: 'conciliado', label: 'Concil.', type: 'template', width: '80px' },
     { key: 'numero_operacion', label: 'N° Operación', type: 'template' },
-    { key: 'created_at', label: 'Creado', type: 'date', width: '100px' },
+    { key: 'created_at', label: 'Creado', type: 'date', width: '100px', sortable: true },
+    // Legacy hidden columns (304_Administracion.tbl_C04003_CuentaPorPagar)
+    { key: 'numero_factura', label: 'N° Factura', hidden: true },
+    { key: 'fecha_factura', label: 'Fecha Factura', type: 'date', hidden: true, sortable: true },
+    { key: 'fecha_vencimiento', label: 'Fecha Venc.', type: 'date', hidden: true, sortable: true },
+    { key: 'moneda', label: 'Moneda', hidden: true },
+    { key: 'tipo_cambio', label: 'T/C', type: 'number', format: '1.4-4', hidden: true },
+    { key: 'monto_original', label: 'Monto Original', type: 'currency', hidden: true },
+    { key: 'monto_pagado', label: 'Monto Pagado', type: 'currency', hidden: true },
+    { key: 'saldo', label: 'Saldo', type: 'currency', hidden: true },
+    { key: 'numero_operacion', label: 'N° Operación', hidden: true },
+    { key: 'banco', label: 'Banco', hidden: true },
+    { key: 'forma_pago', label: 'Forma Pago', hidden: true },
+    { key: 'centro_costo', label: 'Centro Costo', hidden: true },
+    { key: 'proyecto', label: 'Proyecto', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', hidden: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true },
+    { key: 'usuario_registro', label: 'Registrado por', hidden: true },
   ];
 
   ngOnInit() {
@@ -375,6 +406,10 @@ export class PaymentListComponent implements OnInit {
     this.filters.limit = size;
     this.filters.page = 1;
     this.loadPayments();
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   viewPayment(payment: PaymentRecordList | Record<string, unknown>) {

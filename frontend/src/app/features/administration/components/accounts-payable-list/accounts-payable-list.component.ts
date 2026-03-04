@@ -5,9 +5,9 @@ import { Router } from '@angular/router';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AdministrationService, AccountsPayable } from '../../services/administration.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -31,7 +31,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
   standalone: true,
   imports: [
     CommonModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -62,14 +62,17 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="filteredRecords"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{ mora: moraTemplate }"
+          (sortChange)="onSort($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <ng-template #moraTemplate let-row>
@@ -184,16 +187,24 @@ export class AccountsPayableListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'numero_factura', label: 'N° Documento', type: 'text' },
-    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' },
-    { key: 'monto_total', label: 'Monto', type: 'currency', format: 'PEN' },
-    { key: 'fecha_vencimiento', label: 'Vencimiento', type: 'date' },
+  columns: DataGridColumn[] = [
+    {
+      key: 'numero_factura',
+      label: 'N° Documento',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+    },
+    { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text', filterable: true },
+    { key: 'monto_total', label: 'Monto', type: 'currency', format: 'PEN', sortable: true },
+    { key: 'fecha_vencimiento', label: 'Vencimiento', type: 'date', sortable: true },
     { key: 'mora', label: 'Mora', type: 'template' },
     {
       key: 'estado',
       label: 'Estado',
       type: 'badge',
+      filterable: true,
+      sortable: true,
       badgeConfig: {
         PENDIENTE: { label: 'Pendiente', class: 'badge status-PENDIENTE' },
         PARCIAL: { label: 'Parcial', class: 'badge status-in_progress' },
@@ -201,6 +212,23 @@ export class AccountsPayableListComponent implements OnInit {
         ANULADO: { label: 'Anulado', class: 'badge status-CANCELADO' },
       },
     },
+    // Legacy hidden columns (304_Administracion.tbl_C04003_CuentaPorPagar)
+    { key: 'numero_factura', label: 'N° Factura', hidden: true },
+    { key: 'fecha_factura', label: 'Fecha Factura', type: 'date', hidden: true, sortable: true },
+    { key: 'fecha_vencimiento', label: 'Fecha Venc.', type: 'date', hidden: true, sortable: true },
+    { key: 'moneda', label: 'Moneda', hidden: true },
+    { key: 'tipo_cambio', label: 'T/C', type: 'number', format: '1.4-4', hidden: true },
+    { key: 'monto_original', label: 'Monto Original', type: 'currency', hidden: true },
+    { key: 'monto_pagado', label: 'Monto Pagado', type: 'currency', hidden: true },
+    { key: 'saldo', label: 'Saldo', type: 'currency', hidden: true },
+    { key: 'numero_operacion', label: 'N° Operación', hidden: true },
+    { key: 'banco', label: 'Banco', hidden: true },
+    { key: 'forma_pago', label: 'Forma Pago', hidden: true },
+    { key: 'centro_costo', label: 'Centro Costo', hidden: true },
+    { key: 'proyecto', label: 'Proyecto', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', hidden: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true },
+    { key: 'usuario_registro', label: 'Registrado por', hidden: true },
   ];
 
   ngOnInit() {
@@ -259,6 +287,10 @@ export class AccountsPayableListComponent implements OnInit {
 
       return matchesSearch && matchesStatus && matchesDateRange;
     });
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   createRecord(): void {

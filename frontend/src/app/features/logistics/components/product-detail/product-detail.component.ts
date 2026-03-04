@@ -5,9 +5,9 @@ import { InventoryService, Product, Movement } from '../../services/inventory.se
 import { EntityDetailShellComponent } from '../../../../shared/components/entity-detail/entity-detail-shell.component';
 import { EntityDetailHeader } from '../../../../shared/components/entity-detail/entity-detail.types';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   AeroBadgeComponent,
   BadgeVariant,
@@ -26,7 +26,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     CommonModule,
     RouterModule,
     EntityDetailShellComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     AeroBadgeComponent,
     AeroCardComponent,
     AeroTabsComponent,
@@ -106,16 +106,19 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         <!-- MOVEMENTS TAB -->
         @if (activeTab === 'movements') {
           <div class="movements-container">
-            <aero-table
+            <aero-data-grid
               [columns]="movementColumns"
               [data]="movements"
               [loading]="loadingMovements"
+              [dense]="true"
+              [showColumnChooser]="true"
               [templates]="{
                 tipo_movimiento: typeTemplate,
                 fecha: dateTemplate,
               }"
+              (sortChange)="onSort($event)"
             >
-            </aero-table>
+            </aero-data-grid>
 
             <ng-template #dateTemplate let-row>
               {{ row.fecha | date: 'dd/MM/yyyy HH:mm' }}
@@ -309,11 +312,11 @@ export class ProductDetailComponent implements OnInit {
   movements: Movement[] = [];
   loadingMovements = false;
 
-  movementColumns: TableColumn[] = [
-    { key: 'fecha', label: 'Fecha', type: 'template' },
-    { key: 'tipo_movimiento', label: 'Tipo', type: 'template' },
+  movementColumns: DataGridColumn[] = [
+    { key: 'fecha', label: 'Fecha', type: 'template', sortable: true },
+    { key: 'tipo_movimiento', label: 'Tipo', type: 'template', sortable: true, filterable: true },
     { key: 'numero_documento', label: 'Documento', type: 'text' },
-    { key: 'proyecto_nombre', label: 'Origen/Destino', type: 'text' },
+    { key: 'proyecto_nombre', label: 'Origen/Destino', type: 'text', filterable: true },
     { key: 'observaciones', label: 'Observaciones', type: 'text' },
   ];
 
@@ -394,6 +397,10 @@ export class ProductDetailComponent implements OnInit {
 
   onTabChange(tab: TabItem & { id?: string }): void {
     this.activeTab = (tab.id as 'general' | 'movements' | 'others') || 'general';
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   navigateToList(): void {

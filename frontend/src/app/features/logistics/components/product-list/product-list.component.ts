@@ -5,9 +5,9 @@ import { Router } from '@angular/router';
 import { InventoryService, Product } from '../../services/inventory.service';
 import { WebMcpService } from '../../../../core/services/webmcp.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import { PageLayoutComponent } from '../../../../shared/components/page-layout/page-layout.component';
 import { LOGISTICS_TABS } from '../../logistics-tabs';
 import {
@@ -39,7 +39,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     FormsModule,
     ActionsContainerComponent,
     StatsGridComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     AeroBadgeComponent,
     PageLayoutComponent,
     PageCardComponent,
@@ -75,10 +75,12 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="filteredProducts"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             code: codeTemplate,
@@ -86,8 +88,9 @@ import { AeroButtonComponent } from '../../../../core/design-system';
             stock: stockTemplate,
             totalValue: totalValueTemplate,
           }"
+          (sortChange)="onSort($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -222,24 +225,44 @@ export class ProductListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'code', label: 'Código', type: 'template' },
-    { key: 'nombre', label: 'Nombre', type: 'text' },
-    { key: 'category', label: 'Categoría', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'code', label: 'Codigo', type: 'template', sortable: true },
+    { key: 'nombre', label: 'Nombre', type: 'text', sortable: true, filterable: true },
+    { key: 'category', label: 'Categoria', type: 'template', sortable: true, filterable: true },
     { key: 'unidad_medida', label: 'Unidad', type: 'text' },
-    { key: 'stock', label: 'Stock', type: 'template' },
-    { key: 'precio_unitario', label: 'Precio Unit.', type: 'currency', format: 'PEN' },
-    { key: 'totalValue', label: 'Valor Total', type: 'template' },
-    { key: 'ubicacion', label: 'Ubicación', type: 'text' },
+    { key: 'stock', label: 'Stock', type: 'template', sortable: true },
+    {
+      key: 'precio_unitario',
+      label: 'Precio Unit.',
+      type: 'currency',
+      format: 'PEN',
+      sortable: true,
+    },
+    { key: 'totalValue', label: 'Valor Total', type: 'template', sortable: true },
+    { key: 'ubicacion', label: 'Ubicacion', type: 'text', filterable: true },
     {
       key: 'esta_activo',
       label: 'Estado',
       type: 'badge',
+      sortable: true,
+      filterable: true,
       badgeConfig: {
         true: { label: 'Activo', class: 'status-badge status-active', icon: 'fa-check' },
         false: { label: 'Inactivo', class: 'status-badge status-inactive', icon: 'fa-ban' },
       },
     },
+    { key: 'codigo_interno', label: 'Codigo Interno', hidden: true },
+    { key: 'marca', label: 'Marca', hidden: true, filterable: true },
+    { key: 'modelo', label: 'Modelo', hidden: true },
+    { key: 'presentacion', label: 'Presentacion', hidden: true },
+    { key: 'stock_minimo', label: 'Stock Min.', type: 'number', hidden: true },
+    { key: 'stock_maximo', label: 'Stock Max.', type: 'number', hidden: true },
+    { key: 'punto_reorden', label: 'Punto Reorden', type: 'number', hidden: true },
+    { key: 'ubicacion_almacen', label: 'Ubicacion Almacen', hidden: true },
+    { key: 'proveedor_principal', label: 'Proveedor Principal', hidden: true },
+    { key: 'fecha_ultimo_ingreso', label: 'Ult. Ingreso', type: 'date', hidden: true },
+    { key: 'fecha_ultima_salida', label: 'Ult. Salida', type: 'date', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', hidden: true },
   ];
 
   ngOnInit(): void {
@@ -354,6 +377,10 @@ export class ProductListComponent implements OnInit {
     this.filters.category = (filters['category'] as string) || '';
     this.filters.stockStatus = (filters['stockStatus'] as string) || '';
     this.applyFilters();
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 
   applyFilters(): void {
