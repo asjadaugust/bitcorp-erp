@@ -83,4 +83,26 @@ export const ADMINISTRACION_ROUTES: Routes = [
         (m) => m.PaymentScheduleFormComponent
       ),
   },
+
+  // Caja Chica
+  {
+    path: 'petty-cash',
+    loadComponent: () =>
+      import('./petty-cash/petty-cash-list.component').then((m) => m.PettyCashListComponent),
+  },
+  {
+    path: 'petty-cash/new',
+    loadComponent: () =>
+      import('./petty-cash/petty-cash-form.component').then((m) => m.PettyCashFormComponent),
+  },
+  {
+    path: 'petty-cash/:id',
+    loadComponent: () =>
+      import('./petty-cash/petty-cash-detail.component').then((m) => m.PettyCashDetailComponent),
+  },
+  {
+    path: 'petty-cash/:id/edit',
+    loadComponent: () =>
+      import('./petty-cash/petty-cash-form.component').then((m) => m.PettyCashFormComponent),
+  },
 ];
