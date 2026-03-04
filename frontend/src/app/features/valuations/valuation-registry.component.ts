@@ -15,9 +15,9 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
 
 @Component({
@@ -33,7 +33,7 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
     DropdownComponent,
     AeroCardComponent,
     AeroInputComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
   ],
   template: `
     <app-page-layout
@@ -112,22 +112,25 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
       </aero-card>
 
       <!-- Data Table -->
-      <aero-table
+      <aero-data-grid
         [columns]="tableColumns"
         [data]="registryData"
         [loading]="loading"
         [serverSide]="true"
         [totalItems]="totalRecords"
+        [dense]="true"
+        [showColumnChooser]="true"
         (pageChange)="onPageChange($event)"
         (pageSizeChange)="onPageSizeChange($event)"
         (rowClick)="viewDetail($event)"
+        (sortChange)="onSort($event)"
         [templates]="{
           equipo: equipoTemplate,
           proveedor: proveedorTemplate,
           contrato: contratoTemplate,
         }"
       >
-      </aero-table>
+      </aero-data-grid>
 
       <!-- Column Templates -->
       <ng-template #equipoTemplate let-row>
@@ -338,19 +341,26 @@ export class ValuationRegistryComponent implements OnInit {
     limit: 50,
   };
 
-  tableColumns: TableColumn[] = [
+  tableColumns: DataGridColumn[] = [
     {
       key: 'numeroValorizacion',
       label: 'N° Val',
       width: '100px',
       sticky: true,
+      sortable: true,
       customTemplate: (row: any) => row.numeroValorizacion || '-',
     },
-    { key: 'periodo', label: 'Periodo', width: '100px' },
-    { key: 'equipo', label: 'Equipo', width: '180px', type: 'template' },
-    { key: 'proveedor', label: 'Proveedor', width: '250px', type: 'template' },
+    { key: 'periodo', label: 'Periodo', width: '100px', sortable: true, filterable: true },
+    { key: 'equipo', label: 'Equipo', width: '180px', type: 'template', sortable: true },
+    { key: 'proveedor', label: 'Proveedor', width: '250px', type: 'template', filterable: true },
     { key: 'contrato', label: 'Contrato', width: '120px', type: 'template' },
-    { key: 'totalValorizado', label: 'Total Val.', align: 'right', type: 'currency' },
+    {
+      key: 'totalValorizado',
+      label: 'Total Val.',
+      align: 'right',
+      type: 'currency',
+      sortable: true,
+    },
     { key: 'igvMonto', label: 'IGV', align: 'right', type: 'currency' },
     { key: 'totalConIgv', label: 'Total', align: 'right', type: 'currency' },
     {
@@ -358,6 +368,17 @@ export class ValuationRegistryComponent implements OnInit {
       label: 'Estado',
       align: 'center',
       type: 'badge',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { value: 'BORRADOR', label: 'Borrador' },
+        { value: 'PENDIENTE', label: 'Pendiente' },
+        { value: 'EN_REVISION', label: 'En Revisión' },
+        { value: 'VALIDADO', label: 'Validado' },
+        { value: 'APROBADO', label: 'Aprobado' },
+        { value: 'RECHAZADO', label: 'Rechazado' },
+        { value: 'PAGADO', label: 'Pagado' },
+      ],
       badgeConfig: {
         BORRADOR: { label: 'Borrador', class: 'status-badge status-BORRADOR' },
         PENDIENTE: { label: 'Pendiente', class: 'status-badge status-PENDIENTE' },
@@ -369,6 +390,38 @@ export class ValuationRegistryComponent implements OnInit {
         ELIMINADO: { label: 'Eliminado', class: 'status-badge status-ELIMINADO' },
       },
     },
+    // Legacy columns (hidden by default, visible via column chooser)
+    {
+      key: 'horasOperativas',
+      label: 'Hrs. Operativas',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'horasStandby', label: 'Hrs. Standby', type: 'number', hidden: true, sortable: true },
+    {
+      key: 'horasInoperativas',
+      label: 'Hrs. Inoperativas',
+      type: 'number',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'dieselGalones', label: 'Diesel (gln)', type: 'number', hidden: true, sortable: true },
+    { key: 'dieselMonto', label: 'Diesel (S/)', type: 'currency', hidden: true, sortable: true },
+    { key: 'repuestosMonto', label: 'Repuestos', type: 'currency', hidden: true },
+    { key: 'otrosGastos', label: 'Otros Gastos', type: 'currency', hidden: true },
+    { key: 'penalidad', label: 'Penalidad', type: 'currency', hidden: true },
+    { key: 'deduccion', label: 'Deducción', type: 'currency', hidden: true },
+    { key: 'fechaEmision', label: 'Fecha Emisión', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'fechaAprobacion',
+      label: 'Fecha Aprobación',
+      type: 'date',
+      hidden: true,
+      sortable: true,
+    },
+    { key: 'observaciones', label: 'Observaciones', hidden: true },
+    { key: 'usuario_registro', label: 'Registrado por', hidden: true },
   ];
 
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -410,6 +463,13 @@ export class ValuationRegistryComponent implements OnInit {
 
   onPageSizeChange(size: number): void {
     this.filters['limit'] = size;
+    this.filters['page'] = 1;
+    this.loadRegistry();
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    this.filters['sort_by'] = event.column;
+    this.filters['sort_dir'] = event.direction || '';
     this.filters['page'] = 1;
     this.loadRegistry();
   }
