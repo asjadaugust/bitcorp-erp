@@ -239,6 +239,23 @@ export const routes: Routes = [
         path: 'users',
         loadChildren: () => import('./features/users/user.routes').then((m) => m.USER_ROUTES),
       },
+      // Permissions Management (ADMIN only)
+      {
+        path: 'permissions',
+        loadComponent: () =>
+          import('./features/permissions/permission-list.component').then(
+            (m) => m.PermissionListComponent
+          ),
+        data: { title: 'Permisos' },
+      },
+      {
+        path: 'permissions/matrix',
+        loadComponent: () =>
+          import('./features/permissions/role-permission-matrix.component').then(
+            (m) => m.RolePermissionMatrixComponent
+          ),
+        data: { title: 'Matriz Rol-Permiso' },
+      },
       {
         path: 'settings',
         loadComponent: () =>
