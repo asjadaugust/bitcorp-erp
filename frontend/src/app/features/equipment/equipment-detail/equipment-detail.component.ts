@@ -23,9 +23,9 @@ import {
 } from '../../../core/services/solicitud-equipo.service';
 import { ValeCombustibleService } from '../../../core/services/vale-combustible.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../core/design-system/data-grid/aero-data-grid.component';
 import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-list.component';
 import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tabs.component';
 import { AeroButtonComponent } from '../../../core/design-system';
@@ -37,7 +37,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
     CommonModule,
     RouterModule,
     EntityDetailShellComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PeriodoInoperatividadListComponent,
     AeroTabsComponent,
     AeroButtonComponent,
@@ -212,12 +212,13 @@ import { AeroButtonComponent } from '../../../core/design-system';
                 >
               </div>
 
-              <aero-table
+              <aero-data-grid
                 [columns]="maintenanceColumns"
                 [data]="maintenanceHistory"
                 [loading]="false"
+                [dense]="true"
                 emptyMessage="No hay registros de mantenimiento para este equipo."
-              ></aero-table>
+              ></aero-data-grid>
             </div>
           }
           @if (activeTab === 'contracts') {
@@ -226,14 +227,15 @@ import { AeroButtonComponent } from '../../../core/design-system';
                 <h3>Contratos Asociados</h3>
               </div>
 
-              <aero-table
+              <aero-data-grid
                 [columns]="contractColumns"
                 [data]="contracts"
                 [loading]="false"
+                [dense]="true"
                 [templates]="{ numero_contrato: contractCodeTemplate }"
                 emptyMessage="No hay contratos asociados a este equipo."
                 (rowClick)="router.navigate(['/equipment/operaciones/contratos', $event.id])"
-              ></aero-table>
+              ></aero-data-grid>
 
               <ng-template #contractCodeTemplate let-row>
                 <a
@@ -252,14 +254,15 @@ import { AeroButtonComponent } from '../../../core/design-system';
                 <h3>Partes Diarios Recientes</h3>
               </div>
 
-              <aero-table
+              <aero-data-grid
                 [columns]="reportColumns"
                 [data]="dailyReports"
                 [loading]="false"
+                [dense]="true"
                 [templates]="{ codigo: reportCodeTemplate }"
                 emptyMessage="No se han registrado partes diarios para este equipo recientemente."
                 (rowClick)="router.navigate(['/daily-reports', $event.id])"
-              ></aero-table>
+              ></aero-data-grid>
 
               <ng-template #reportCodeTemplate let-row>
                 <span class="code-badge">{{ row.codigo || row.id }}</span>
@@ -272,13 +275,14 @@ import { AeroButtonComponent } from '../../../core/design-system';
                 <h3>Solicitudes de Equipo</h3>
               </div>
 
-              <aero-table
+              <aero-data-grid
                 [columns]="solicitudColumns"
                 [data]="solicitudes"
                 [loading]="false"
+                [dense]="true"
                 [templates]="{ codigo: solicitudCodeTemplate }"
                 emptyMessage="No hay solicitudes pendientes para este tipo de equipo."
-              ></aero-table>
+              ></aero-data-grid>
 
               <ng-template #solicitudCodeTemplate let-row>
                 <span class="code-badge">{{ row.codigo || row.id }}</span>
@@ -308,14 +312,15 @@ import { AeroButtonComponent } from '../../../core/design-system';
                   >Nuevo Vale</aero-button
                 >
               </div>
-              <aero-table
+              <aero-data-grid
                 [columns]="fuelColumns"
                 [data]="fuelVouchers"
                 [loading]="loadingFuel"
+                [dense]="true"
                 [templates]="{ codigo: fuelCodeTemplate }"
                 emptyMessage="No hay vales de combustible para este equipo."
                 (rowClick)="router.navigate(['/equipment/vales-combustible', $event.id])"
-              ></aero-table>
+              ></aero-data-grid>
               <ng-template #fuelCodeTemplate let-row>
                 <a
                   [routerLink]="['/equipment/vales-combustible', row.id]"
@@ -601,7 +606,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     { id: 'combustible', label: 'Combustible', icon: 'fa-solid fa-gas-pump' },
   ];
 
-  maintenanceColumns: TableColumn[] = [
+  maintenanceColumns: DataGridColumn[] = [
     { key: 'fechaProgramada', label: 'Fecha Prog.', type: 'date' },
     { key: 'tipoMantenimiento', label: 'Tipo', type: 'text' },
     { key: 'descripcion', label: 'Descripción', type: 'text' },
@@ -631,7 +636,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     },
   ];
 
-  contractColumns: TableColumn[] = [
+  contractColumns: DataGridColumn[] = [
     { key: 'numero_contrato', label: 'N° Contrato', type: 'template' },
     { key: 'proveedor_razon_social', label: 'Proveedor', type: 'text' },
     { key: 'fecha_inicio', label: 'Fecha Inicio', type: 'date' },
@@ -654,7 +659,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     },
   ];
 
-  reportColumns: TableColumn[] = [
+  reportColumns: DataGridColumn[] = [
     { key: 'codigo', label: 'Código', type: 'template' },
     { key: 'fecha_parte', label: 'Fecha', type: 'date' },
     { key: 'proyecto_nombre', label: 'Proyecto', type: 'text' },
@@ -674,7 +679,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     },
   ];
 
-  solicitudColumns: TableColumn[] = [
+  solicitudColumns: DataGridColumn[] = [
     { key: 'codigo', label: 'Código', type: 'template' },
     { key: 'fecha_requerida', label: 'Fecha Req.', type: 'date' },
     { key: 'tipo_equipo', label: 'Tipo de Equipo', type: 'text' },
@@ -706,7 +711,7 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
     },
   ];
 
-  fuelColumns: TableColumn[] = [
+  fuelColumns: DataGridColumn[] = [
     { key: 'codigo', label: 'Código', type: 'template' },
     { key: 'fecha', label: 'Fecha', type: 'date' },
     { key: 'tipo_combustible', label: 'Tipo', type: 'text' },

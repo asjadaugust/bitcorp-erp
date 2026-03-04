@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReportingService } from '../../core/services/reporting.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   DropdownComponent,
   DropdownOption,
@@ -15,7 +15,13 @@ import { AeroButtonComponent } from '../../core/design-system';
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, AeroTableComponent, DropdownComponent, AeroButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    AeroDataGridComponent,
+    DropdownComponent,
+    AeroButtonComponent,
+  ],
   template: `
     <div class="reports-container">
       <div class="header">
@@ -69,7 +75,11 @@ import { AeroButtonComponent } from '../../core/design-system';
         class="report-result card"
       >
         <h3>Reporte de Utilización</h3>
-        <aero-table [columns]="columnsUtilization" [data]="reportData"></aero-table>
+        <aero-data-grid
+          [columns]="columnsUtilization"
+          [data]="reportData"
+          [dense]="true"
+        ></aero-data-grid>
       </div>
 
       <!-- Maintenance Report Table -->
@@ -78,14 +88,15 @@ import { AeroButtonComponent } from '../../core/design-system';
         class="report-result card"
       >
         <h3>Historial de Mantenimiento</h3>
-        <aero-table
+        <aero-data-grid
           [columns]="columnsMaintenance"
           [data]="reportData"
+          [dense]="true"
           [templates]="{
             maintenance_type: maintenanceTypeTemplate,
             status: statusTemplate,
           }"
-        ></aero-table>
+        ></aero-data-grid>
 
         <ng-template #maintenanceTypeTemplate let-row>
           {{ row.maintenance_type | titlecase }}
@@ -102,13 +113,14 @@ import { AeroButtonComponent } from '../../core/design-system';
         class="report-result card"
       >
         <h3>Movimientos de Inventario</h3>
-        <aero-table
+        <aero-data-grid
           [columns]="columnsInventory"
           [data]="reportData"
+          [dense]="true"
           [templates]="{
             tipo_movimiento: movementTypeTemplate,
           }"
-        ></aero-table>
+        ></aero-data-grid>
 
         <ng-template #movementTypeTemplate let-row>
           <span
@@ -125,7 +137,11 @@ import { AeroButtonComponent } from '../../core/design-system';
         class="report-result card"
       >
         <h3>Timesheet de Operadores</h3>
-        <aero-table [columns]="columnsTimesheet" [data]="reportData"></aero-table>
+        <aero-data-grid
+          [columns]="columnsTimesheet"
+          [data]="reportData"
+          [dense]="true"
+        ></aero-data-grid>
       </div>
     </div>
   `,
@@ -244,42 +260,42 @@ export class ReportsComponent {
     { label: 'Timesheet de Operadores', value: 'timesheet' },
   ];
 
-  columnsUtilization: TableColumn[] = [
-    { key: 'codigo_equipo', label: 'Equipo', type: 'text' },
-    { key: 'date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'trabajador_nombre', label: 'Operador', type: 'text' },
-    { key: 'proyecto_nombre', label: 'Proyecto', type: 'text' },
-    { key: 'total_hours', label: 'Horas Totales', type: 'text' },
+  columnsUtilization: DataGridColumn[] = [
+    { key: 'codigo_equipo', label: 'Equipo', type: 'text', sortable: true },
+    { key: 'date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy', sortable: true },
+    { key: 'trabajador_nombre', label: 'Operador', type: 'text', sortable: true },
+    { key: 'proyecto_nombre', label: 'Proyecto', type: 'text', sortable: true },
+    { key: 'total_hours', label: 'Horas Totales', type: 'text', sortable: true },
     { key: 'avg_daily_hours', label: 'Promedio Diario', type: 'text' },
     { key: 'total_fuel', label: 'Combustible (Gal)', type: 'text' },
   ];
 
-  columnsMaintenance: TableColumn[] = [
-    { key: 'start_date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy' },
-    { key: 'equipo_nombre', label: 'Equipo', type: 'text' },
-    { key: 'provider_name', label: 'Proveedor', type: 'text' },
+  columnsMaintenance: DataGridColumn[] = [
+    { key: 'start_date', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy', sortable: true },
+    { key: 'equipo_nombre', label: 'Equipo', type: 'text', sortable: true },
+    { key: 'provider_name', label: 'Proveedor', type: 'text', sortable: true },
     { key: 'maintenance_type', label: 'Tipo', type: 'template' },
     { key: 'status', label: 'Estado', type: 'template' },
-    { key: 'cost', label: 'Costo', type: 'currency', format: 'PEN' },
+    { key: 'cost', label: 'Costo', type: 'currency', format: 'PEN', sortable: true },
     { key: 'description', label: 'Descripción', type: 'text' },
   ];
 
-  columnsInventory: TableColumn[] = [
-    { key: 'fecha', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
+  columnsInventory: DataGridColumn[] = [
+    { key: 'fecha', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm', sortable: true },
     { key: 'tipo_movimiento', label: 'Tipo', type: 'template' },
     { key: 'tipo_documento', label: 'Documento', type: 'text' },
-    { key: 'numero_documento', label: 'Número', type: 'text' },
-    { key: 'proyecto_nombre', label: 'Proyecto', type: 'text' },
+    { key: 'numero_documento', label: 'Número', type: 'text', sortable: true },
+    { key: 'proyecto_nombre', label: 'Proyecto', type: 'text', sortable: true },
     { key: 'provider_name', label: 'Proveedor', type: 'text' },
     { key: 'items_count', label: 'Items', type: 'text' },
-    { key: 'total_amount', label: 'Total', type: 'currency', format: 'PEN' },
+    { key: 'total_amount', label: 'Total', type: 'currency', format: 'PEN', sortable: true },
   ];
 
-  columnsTimesheet: TableColumn[] = [
-    { key: 'trabajador_nombre', label: 'Operador', type: 'text' },
+  columnsTimesheet: DataGridColumn[] = [
+    { key: 'trabajador_nombre', label: 'Operador', type: 'text', sortable: true },
     { key: 'equipment_count', label: 'Equipos Operados', type: 'text' },
-    { key: 'proyecto_nombre', label: 'Proyecto Principal', type: 'text' },
-    { key: 'total_hours', label: 'Horas Totales', type: 'text' },
+    { key: 'proyecto_nombre', label: 'Proyecto Principal', type: 'text', sortable: true },
+    { key: 'total_hours', label: 'Horas Totales', type: 'text', sortable: true },
     { key: 'overtime_hours', label: 'Horas Extras', type: 'text' },
   ];
 

@@ -8,9 +8,9 @@ import { MaintenanceRecord } from '../../core/models/maintenance-record.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExcelExportService } from '../../core/services/excel-export.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -36,7 +36,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -65,10 +65,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="records"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             equipo: equipmentTemplate,
@@ -77,7 +79,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           }"
           (rowClick)="viewRecord($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -233,8 +235,8 @@ export class MaintenanceListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'equipo', label: 'Equipo', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'equipo', label: 'Equipo', type: 'template', sortable: true },
     {
       key: 'tipoMantenimiento',
       label: 'Tipo',
@@ -245,11 +247,34 @@ export class MaintenanceListComponent implements OnInit {
         PREDICTIVO: { label: 'Predictivo', class: 'badge type-predictive' },
       },
     },
-    { key: 'descripcion', label: 'Descripción', type: 'template' },
-    { key: 'fechaProgramada', label: 'Fecha Prog.', type: 'template', width: '130px' },
-    { key: 'costoEstimado', label: 'Costo Est.', type: 'currency', format: 'PEN', width: '110px' },
-    { key: 'costoReal', label: 'Costo Real', type: 'currency', format: 'PEN', width: '110px' },
-    { key: 'tecnicoResponsable', label: 'Técnico', type: 'text' },
+    { key: 'descripcion', label: 'Descripcion', type: 'template' },
+    {
+      key: 'fechaProgramada',
+      label: 'Fecha Prog.',
+      type: 'template',
+      width: '130px',
+      sortable: true,
+    },
+    {
+      key: 'costoEstimado',
+      label: 'Costo Est.',
+      type: 'currency',
+      format: 'PEN',
+      width: '110px',
+      sortable: true,
+    },
+    {
+      key: 'costoReal',
+      label: 'Costo Real',
+      type: 'currency',
+      format: 'PEN',
+      width: '110px',
+      sortable: true,
+    },
+    { key: 'tecnicoResponsable', label: 'Tecnico', type: 'text', sortable: true },
+    { key: 'horometro', label: 'Horometro', type: 'number', hidden: true },
+    { key: 'proveedor', label: 'Proveedor', type: 'text', hidden: true },
+    { key: 'repuestos', label: 'Repuestos', type: 'text', hidden: true },
     {
       key: 'estado',
       label: 'Estado',

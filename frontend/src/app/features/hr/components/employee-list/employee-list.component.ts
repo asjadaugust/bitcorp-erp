@@ -5,9 +5,9 @@ import { Router, RouterModule } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { Employee } from '../../models/employee.model';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -29,7 +29,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     AeroButtonComponent,
@@ -55,17 +55,19 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="employees"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             nombre_completo: userTemplate,
           }"
           (rowClick)="viewEmployee($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -174,12 +176,15 @@ export class EmployeeListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'dni', label: 'DNI', type: 'text' },
+  columns: DataGridColumn[] = [
+    { key: 'dni', label: 'DNI', type: 'text', sortable: true },
     { key: 'nombre_completo', label: 'Personal', type: 'template' },
     { key: 'telefono', label: 'Teléfono', type: 'text' },
     { key: 'email', label: 'Email', type: 'text' },
-    { key: 'cargo', label: 'Cargo', type: 'text' },
+    { key: 'cargo', label: 'Cargo', type: 'text', sortable: true },
+    { key: 'fecha_ingreso', label: 'Fecha Ingreso', type: 'date', hidden: true },
+    { key: 'area', label: 'Área', type: 'text', hidden: true },
+    { key: 'direccion', label: 'Dirección', type: 'text', hidden: true },
     {
       key: 'esta_activo',
       label: 'Estado',

@@ -6,9 +6,9 @@ import {
 } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -28,7 +28,7 @@ import { EQUIPMENT_TABS } from './equipment-tabs';
     CommonModule,
     PageLayoutComponent,
     PageCardComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     FilterBarComponent,
     StatsGridComponent,
   ],
@@ -48,10 +48,12 @@ import { EQUIPMENT_TABS } from './equipment-tabs';
       <app-stats-grid *ngIf="stats && statItems.length > 0" [items]="statItems"></app-stats-grid>
 
       <app-page-card [noPadding]="true" *ngIf="items.length > 0 || loading">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="items"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [templates]="{
             fecha: fechaTpl,
             equipo: equipoTpl,
@@ -59,7 +61,7 @@ import { EQUIPMENT_TABS } from './equipment-tabs';
             critico: criticoTpl,
             accion: accionTpl,
           }"
-        ></aero-table>
+        ></aero-data-grid>
       </app-page-card>
 
       <div class="empty-state" *ngIf="!loading && items.length === 0">
@@ -285,12 +287,15 @@ export class InspectionTrackingComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'fecha', label: 'Fecha / Código', type: 'template' },
-    { key: 'equipo', label: 'Equipo', type: 'template' },
-    { key: 'item', label: 'Ítem / Observación', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'fecha', label: 'Fecha / Codigo', type: 'template', sortable: true },
+    { key: 'equipo', label: 'Equipo', type: 'template', sortable: true },
+    { key: 'item', label: 'Item / Observacion', type: 'template' },
     { key: 'critico', label: 'Criticidad', type: 'template' },
-    { key: 'accion', label: 'Acción Requerida', type: 'template' },
+    { key: 'accion', label: 'Accion Requerida', type: 'template' },
+    { key: 'responsable', label: 'Responsable', type: 'text', hidden: true },
+    { key: 'plazo_correccion', label: 'Plazo Correccion', type: 'date', hidden: true },
+    { key: 'estado_item', label: 'Estado Item', type: 'text', hidden: true },
   ];
 
   get statItems(): StatItem[] {

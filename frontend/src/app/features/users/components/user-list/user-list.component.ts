@@ -5,9 +5,9 @@ import { Router, RouterModule } from '@angular/router';
 import { UserManagementService } from '../../services/user-management.service';
 import { ManagedUser, RoleOption } from '../../../../core/models/managed-user.model';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -28,7 +28,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     CommonModule,
     FormsModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
@@ -52,10 +52,12 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-table
+      <aero-data-grid
         [columns]="columns"
         [data]="users"
         [loading]="loading"
+        [dense]="true"
+        [showColumnChooser]="true"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           fullName: fullNameTemplate,
@@ -64,7 +66,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         }"
         (rowClick)="editUser($event)"
       >
-      </aero-table>
+      </aero-data-grid>
 
       <!-- Custom Templates -->
       <ng-template #fullNameTemplate let-row>
@@ -358,10 +360,13 @@ export class UserListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'username', label: 'Usuario', width: '140px' },
-    { key: 'fullName', label: 'Nombre / Email', type: 'template' },
-    { key: 'rolName', label: 'Rol', type: 'template', width: '200px' },
+  columns: DataGridColumn[] = [
+    { key: 'username', label: 'Usuario', width: '140px', sortable: true },
+    { key: 'fullName', label: 'Nombre / Email', type: 'template', sortable: true },
+    { key: 'rolName', label: 'Rol', type: 'template', width: '200px', sortable: true },
+    { key: 'empresa', label: 'Empresa', type: 'text', hidden: true },
+    { key: 'telefono', label: 'Telefono', type: 'text', hidden: true },
+    { key: 'created_at', label: 'Fecha Registro', type: 'date', hidden: true },
     {
       key: 'is_active',
       label: 'Estado',

@@ -4,9 +4,9 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ChecklistService } from '../../../core/services/checklist.service';
 import { ChecklistInspection } from '../../../core/models/checklist.model';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../core/design-system/data-grid/aero-data-grid.component';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import { CHECKLISTS_TABS } from '../checklists-tabs';
 import {
@@ -28,7 +28,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
   imports: [
     CommonModule,
     RouterModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ExportDropdownComponent,
@@ -56,10 +56,12 @@ import { AeroButtonComponent } from '../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="inspections"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [serverSide]="true"
           [totalItems]="pagination.total"
           (pageChange)="onPageChange($event)"
@@ -74,7 +76,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
           }"
           (rowClick)="viewInspection($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <!-- Custom Templates -->
@@ -329,13 +331,23 @@ export class InspectionListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'template', width: '160px' },
-    { key: 'fechaInspeccion', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy', width: '110px' },
-    { key: 'equipo', label: 'Equipo', type: 'template' },
-    { key: 'trabajador', label: 'Inspector', type: 'template' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Codigo', type: 'template', width: '160px', sortable: true },
+    {
+      key: 'fechaInspeccion',
+      label: 'Fecha',
+      type: 'date',
+      format: 'dd/MM/yyyy',
+      width: '110px',
+      sortable: true,
+    },
+    { key: 'equipo', label: 'Equipo', type: 'template', sortable: true },
+    { key: 'trabajador', label: 'Inspector', type: 'template', sortable: true },
     { key: 'progreso', label: 'Progreso', type: 'template', width: '130px' },
     { key: 'noConformes', label: 'No Conf.', type: 'template', width: '80px' },
+    { key: 'plantilla', label: 'Plantilla', type: 'text', hidden: true },
+    { key: 'ubicacion', label: 'Ubicacion', type: 'text', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true },
     {
       key: 'estado',
       label: 'Estado',

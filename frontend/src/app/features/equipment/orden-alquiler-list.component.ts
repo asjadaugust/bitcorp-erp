@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { OrdenAlquilerService, OrdenAlquiler } from '../../core/services/orden-alquiler.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../core/design-system/data-grid/aero-data-grid.component';
 import {
   FilterBarComponent,
   FilterConfig,
@@ -29,7 +29,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     RouterModule,
     PageLayoutComponent,
     ActionsContainerComponent,
-    AeroTableComponent,
+    AeroDataGridComponent,
     FilterBarComponent,
     PageCardComponent,
     AeroButtonComponent,
@@ -55,10 +55,12 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="ordenes"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           [actionsTemplate]="actionsTemplate"
           [serverSide]="true"
           [totalItems]="total"
@@ -71,7 +73,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           }"
           (rowClick)="verDetalle($event.id)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
 
       <ng-template #codeTemplate let-row>
@@ -433,13 +435,22 @@ export class OrdenAlquilerListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'codigo', label: 'Código', type: 'template', width: '120px' },
-    { key: 'descripcion_equipo', label: 'Equipo', type: 'text' },
-    { key: 'proveedor', label: 'Proveedor', type: 'template' },
-    { key: 'fecha_orden', label: 'F. Orden', type: 'date', width: '110px' },
-    { key: 'fecha_inicio_estimada', label: 'F. Entrega', type: 'date', width: '110px' },
+  columns: DataGridColumn[] = [
+    { key: 'codigo', label: 'Codigo', type: 'template', width: '120px', sortable: true },
+    { key: 'descripcion_equipo', label: 'Equipo', type: 'text', sortable: true },
+    { key: 'proveedor', label: 'Proveedor', type: 'template', sortable: true },
+    { key: 'fecha_orden', label: 'F. Orden', type: 'date', width: '110px', sortable: true },
+    {
+      key: 'fecha_inicio_estimada',
+      label: 'F. Entrega',
+      type: 'date',
+      width: '110px',
+      sortable: true,
+    },
     { key: 'tarifa', label: 'Tarifa', type: 'template', width: '160px' },
+    { key: 'moneda', label: 'Moneda', type: 'text', hidden: true },
+    { key: 'plazo_dias', label: 'Plazo (dias)', type: 'number', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', type: 'text', hidden: true },
     {
       key: 'estado',
       label: 'Estado',
