@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SstService, SstIncidente } from '../../services/sst.service';
 import {
-  AeroTableComponent,
-  TableColumn,
-} from '../../../../core/design-system/table/aero-table.component';
+  AeroDataGridComponent,
+  DataGridColumn,
+} from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import {
   PageLayoutComponent,
   Breadcrumb,
@@ -23,7 +23,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
   standalone: true,
   imports: [
     CommonModule,
-    AeroTableComponent,
+    AeroDataGridComponent,
     PageLayoutComponent,
     FilterBarComponent,
     ActionsContainerComponent,
@@ -49,13 +49,16 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <app-page-card [noPadding]="true">
-        <aero-table
+        <aero-data-grid
           [columns]="columns"
           [data]="filteredIncidents"
           [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
           (rowClick)="onRowClick($event)"
+          (sortChange)="onSort($event)"
         >
-        </aero-table>
+        </aero-data-grid>
       </app-page-card>
     </app-page-layout>
   `,
@@ -96,15 +99,23 @@ export class IncidentListComponent implements OnInit {
     },
   ];
 
-  columns: TableColumn[] = [
-    { key: 'fecha_incidente', label: 'Fecha', type: 'date', format: 'dd/MM/yyyy HH:mm' },
-    { key: 'tipo_incidente', label: 'Tipo', type: 'text' },
+  columns: DataGridColumn[] = [
+    {
+      key: 'fecha_incidente',
+      label: 'Fecha',
+      type: 'date',
+      format: 'dd/MM/yyyy HH:mm',
+      sortable: true,
+    },
+    { key: 'tipo_incidente', label: 'Tipo', type: 'text', filterable: true },
     { key: 'descripcion', label: 'Descripción', type: 'text' },
-    { key: 'ubicacion', label: 'Ubicación', type: 'text' },
+    { key: 'ubicacion', label: 'Ubicación', type: 'text', filterable: true },
     {
       key: 'severidad',
       label: 'Severidad',
       type: 'badge',
+      filterable: true,
+      sortable: true,
       badgeConfig: {
         LEVE: { label: 'Leve', class: 'badge info' },
         MODERADO: { label: 'Moderado', class: 'badge warning' },
@@ -116,12 +127,33 @@ export class IncidentListComponent implements OnInit {
       key: 'estado',
       label: 'Estado',
       type: 'badge',
+      filterable: true,
+      sortable: true,
       badgeConfig: {
         ABIERTO: { label: 'Abierto', class: 'badge warning' },
         EN_INVESTIGACION: { label: 'En Investigación', class: 'badge info' },
         CERRADO: { label: 'Cerrado', class: 'badge success' },
       },
     },
+    // Hidden legacy columns — toggled via column chooser
+    { key: 'gravedad', label: 'Gravedad', hidden: true, filterable: true },
+    { key: 'area_trabajo', label: 'Área Trabajo', hidden: true },
+    { key: 'turno', label: 'Turno', hidden: true },
+    { key: 'trabajador_afectado', label: 'Trabajador Afectado', hidden: true },
+    { key: 'cargo_trabajador', label: 'Cargo', hidden: true },
+    { key: 'descripcion_evento', label: 'Descripción', hidden: true },
+    { key: 'causa_inmediata', label: 'Causa Inmediata', hidden: true },
+    { key: 'causa_basica', label: 'Causa Básica', hidden: true },
+    { key: 'accion_correctiva', label: 'Acción Correctiva', hidden: true },
+    { key: 'responsable_accion', label: 'Responsable', hidden: true },
+    { key: 'fecha_cierre', label: 'Fecha Cierre', type: 'date', hidden: true },
+    { key: 'dias_perdidos', label: 'Días Perdidos', type: 'number', format: '1.0-0', hidden: true },
+    { key: 'costo_estimado', label: 'Costo Est.', type: 'currency', hidden: true },
+    { key: 'testigos', label: 'Testigos', hidden: true },
+    { key: 'observaciones', label: 'Observaciones', hidden: true },
+    { key: 'fecha_registro', label: 'Fecha Registro', type: 'date', hidden: true, sortable: true },
+    { key: 'usuario_registro', label: 'Registrado por', hidden: true },
+    { key: 'tipo_incidente_detail', label: 'Tipo Incidente', hidden: true, filterable: true },
   ];
 
   ngOnInit() {
@@ -174,5 +206,9 @@ export class IncidentListComponent implements OnInit {
 
   onRowClick(row: SstIncidente): void {
     this.router.navigate(['/sst', row.id, 'edit']);
+  }
+
+  onSort(event: { column: string; direction: string | null }): void {
+    // Sort handled client-side by the grid
   }
 }
