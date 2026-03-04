@@ -1,0 +1,104 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "Read-only criterio seleccion evaluacion listing",
+      "steps": [
+        "GET /api/providers/evaluations/criterios — verify lists >= 33 criteria",
+        "Verify each item has: seleccion_evaluacion, proveedor_de, aspecto, parametro, puntaje",
+        "Verify criteria cover all 9 aspects: Precios, Plazo de pago, Calidad, Plazo de Cumplimiento, Ubicacion, Atencion al cliente, SGC, SGSST, SGA"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for Evaluacion Proveedor with auto-scoring",
+      "steps": [
+        "POST /api/providers/evaluations/evaluaciones with 9 criteria scores — verify 201",
+        "Verify puntaje auto-calculated as sum of 9 criteria",
+        "Verify resultado auto-derived: score <= 10 -> 'Pesimo', <= 12 -> 'Regular', <= 15 -> 'Bueno', <= 18 -> 'Muy Bueno', <= 20 -> 'Excelente'",
+        "Verify accion auto-derived based on resultado",
+        "GET /api/providers/evaluations/evaluaciones — verify paginated list",
+        "GET /api/providers/evaluations/evaluaciones/{id} — verify all 9 criteria + puntaje + resultado",
+        "PUT /api/providers/evaluations/evaluaciones/{id} — verify score recalculates",
+        "DELETE /api/providers/evaluations/evaluaciones/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Scoring ranges produce correct results",
+      "steps": [
+        "Create evaluation with all minimum scores (total ~9) — verify resultado = 'Pesimo', accion = 'Buscar otros proveedores'",
+        "Create evaluation with mid scores (total ~14) — verify resultado = 'Bueno', accion = 'Se continua trabajando'",
+        "Create evaluation with max scores (total 20) — verify resultado = 'Excelente'"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Filter evaluaciones by proveedor RUC",
+      "steps": [
+        "GET /api/providers/evaluations/evaluaciones/proveedor/{ruc} — verify returns evaluations for specific provider",
+        "Verify returns empty array for non-existent RUC"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Filter evaluaciones by resultado",
+      "steps": [
+        "GET /api/providers/evaluations/evaluaciones?resultado=Bueno — verify filter works",
+        "Verify only evaluations with 'Bueno' resultado returned"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Evaluacion list page with score badges",
+      "steps": [
+        "Navigate to /providers/evaluaciones",
+        "Verify aero-data-grid columns: ruc, razon_social, puntaje, resultado (badge colored by score), fecha_evaluacion",
+        "Verify badge colors: red for Pesimo, orange for Regular, yellow for Bueno, green for Muy Bueno/Excelente",
+        "Verify filter bar with resultado filter",
+        "Click row — verify navigates to detail"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Evaluacion form with 9-criteria scoring and real-time calculation",
+      "steps": [
+        "Navigate to /providers/evaluaciones/new",
+        "Verify form has: proveedor selector (RUC + razon_social), 9 criteria dropdowns",
+        "Each criteria dropdown shows parametro text with puntaje values from criterio catalog",
+        "Select values for all 9 criteria — verify real-time puntaje sum updates",
+        "Verify resultado label updates dynamically based on puntaje",
+        "Submit — verify creation with correct auto-calculated fields"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Evaluacion detail page shows scorecard",
+      "steps": [
+        "Navigate to /providers/evaluaciones/{id}",
+        "Verify entity-detail-shell layout",
+        "Verify all 9 criteria displayed with their scores",
+        "Verify total puntaje and resultado prominently displayed",
+        "Verify accion recommendation displayed"
+      ],
+      "passes": true
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for evaluacion proveedor pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_evaluacion_proveedor.py passes all tests including scoring logic",
+        "Verify no regressions"
+      ],
+      "passes": true
+    }
+  ]
+}

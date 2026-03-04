@@ -221,6 +221,34 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'providers/evaluaciones',
+        loadComponent: () =>
+          import('./features/providers/evaluations/evaluacion-list.component').then(
+            (m) => m.EvaluacionListComponent
+          ),
+      },
+      {
+        path: 'providers/evaluaciones/new',
+        loadComponent: () =>
+          import('./features/providers/evaluations/evaluacion-form.component').then(
+            (m) => m.EvaluacionFormComponent
+          ),
+      },
+      {
+        path: 'providers/evaluaciones/:id',
+        loadComponent: () =>
+          import('./features/providers/evaluations/evaluacion-detail.component').then(
+            (m) => m.EvaluacionDetailComponent
+          ),
+      },
+      {
+        path: 'providers/evaluaciones/:id/edit',
+        loadComponent: () =>
+          import('./features/providers/evaluations/evaluacion-form.component').then(
+            (m) => m.EvaluacionFormComponent
+          ),
+      },
+      {
         path: 'providers/:id',
         loadComponent: () =>
           import('./features/providers/provider-detail.component').then(
