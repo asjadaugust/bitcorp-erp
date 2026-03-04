@@ -27,6 +27,7 @@ from app.api.logistica import router as router_logistica
 from app.api.mantenimiento import router as router_mantenimiento
 from app.api.notificaciones import router as router_notificaciones
 from app.api.operadores import router as router_operadores
+from app.api.permisos import router as router_permisos
 from app.api.ordenes_alquiler import router as router_ordenes_alquiler
 from app.api.pagos import router as router_pagos
 from app.api.precalentamiento import router as router_precalentamiento
@@ -52,9 +53,13 @@ router_api = APIRouter(prefix="/api")
 
 # Fase 1 — Auth + Simple CRUD
 router_api.include_router(router_auth, prefix="/auth", tags=["Auth"])
-router_api.include_router(router_tipos_equipo, prefix="/tipos-equipo", tags=["Tipos de Equipo"])
 router_api.include_router(
-    router_precalentamiento, prefix="/precalentamiento-config", tags=["Precalentamiento"]
+    router_tipos_equipo, prefix="/tipos-equipo", tags=["Tipos de Equipo"]
+)
+router_api.include_router(
+    router_precalentamiento,
+    prefix="/precalentamiento-config",
+    tags=["Precalentamiento"],
 )
 router_api.include_router(
     router_combustible, prefix="/combustible-config", tags=["Combustible"]
@@ -76,7 +81,9 @@ router_api.include_router(
     router_gastos_obra, prefix="/valuations", tags=["Gastos en Obra"]
 )
 router_api.include_router(
-    router_adelantos_valorizaciones, prefix="/valuations", tags=["Adelantos Valorizacion"]
+    router_adelantos_valorizaciones,
+    prefix="/valuations",
+    tags=["Adelantos Valorizacion"],
 )
 router_api.include_router(
     router_adelantos_contratos, prefix="/contracts", tags=["Adelantos Contrato"]
@@ -86,7 +93,9 @@ router_api.include_router(router_pagos, prefix="/payments", tags=["Pagos"])
 # Fase 3 — Operational Modules
 router_api.include_router(router_operadores, prefix="/operators", tags=["Operadores"])
 router_api.include_router(router_proveedores, prefix="/providers", tags=["Proveedores"])
-router_api.include_router(router_cotizaciones, prefix="/cotizaciones", tags=["Cotizaciones"])
+router_api.include_router(
+    router_cotizaciones, prefix="/cotizaciones", tags=["Cotizaciones"]
+)
 router_api.include_router(
     router_solicitudes_equipo, prefix="/solicitudes-equipo", tags=["Solicitudes Equipo"]
 )
@@ -96,7 +105,9 @@ router_api.include_router(
 router_api.include_router(
     router_actas_devolucion, prefix="/actas-devolucion", tags=["Actas Devolucion"]
 )
-router_api.include_router(router_mantenimiento, prefix="/maintenance", tags=["Mantenimiento"])
+router_api.include_router(
+    router_mantenimiento, prefix="/maintenance", tags=["Mantenimiento"]
+)
 router_api.include_router(
     router_vales_combustible, prefix="/vales-combustible", tags=["Vales Combustible"]
 )
@@ -116,7 +127,9 @@ router_api.include_router(
 router_api.include_router(
     router_programacion_pago, prefix="/payment-schedules", tags=["Programacion Pago"]
 )
-router_api.include_router(router_aprobaciones, prefix="/approvals", tags=["Aprobaciones"])
+router_api.include_router(
+    router_aprobaciones, prefix="/approvals", tags=["Aprobaciones"]
+)
 router_api.include_router(
     router_reportes_analiticos, prefix="/reporting", tags=["Reportes Analiticos"]
 )
@@ -124,7 +137,9 @@ router_api.include_router(
 # Fase 5 — Secondary Modules
 router_api.include_router(router_proyectos, prefix="/projects", tags=["Proyectos"])
 router_api.include_router(router_empleados, prefix="/hr/employees", tags=["Empleados"])
-router_api.include_router(router_tareos, prefix="/scheduling/timesheets", tags=["Tareos"])
+router_api.include_router(
+    router_tareos, prefix="/scheduling/timesheets", tags=["Tareos"]
+)
 router_api.include_router(router_logistica, prefix="/logistics", tags=["Logistica"])
 router_api.include_router(router_sst, prefix="/sst", tags=["SST"])
 router_api.include_router(router_sig, prefix="/sig", tags=["SIG"])
@@ -136,3 +151,4 @@ router_api.include_router(
 
 # Legacy Features — Catalog (SUNAT reference tables)
 router_api.include_router(router_catalogo, prefix="/catalog", tags=["Catalogo"])
+router_api.include_router(router_permisos, prefix="/permissions", tags=["Permisos"])
