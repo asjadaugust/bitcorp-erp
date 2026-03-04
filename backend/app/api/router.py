@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from app.api.actas_devolucion import router as router_actas_devolucion
+from app.api.caja_chica import router as router_caja_chica
 from app.api.catalogo import router as router_catalogo
 from app.api.adelantos import (
     router_contratos as router_adelantos_contratos,
@@ -152,3 +153,6 @@ router_api.include_router(
 # Legacy Features — Catalog (SUNAT reference tables)
 router_api.include_router(router_catalogo, prefix="/catalog", tags=["Catalogo"])
 router_api.include_router(router_permisos, prefix="/permissions", tags=["Permisos"])
+
+# Legacy Features — Caja Chica (Petty Cash)
+router_api.include_router(router_caja_chica, prefix="/petty-cash", tags=["Caja Chica"])
