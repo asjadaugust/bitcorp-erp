@@ -82,6 +82,10 @@ export interface DataGridSortEvent {
           <thead>
             <!-- Group header row -->
             <tr *ngIf="columnGroups.length > 0" class="aero-datagrid__group-row">
+              <th
+                *ngIf="selectable"
+                class="aero-datagrid__th aero-datagrid__th--group aero-datagrid__th--group-empty"
+              ></th>
               <ng-container *ngFor="let group of computedGroupHeaders">
                 <th
                   [attr.colspan]="group.span"
@@ -99,6 +103,17 @@ export interface DataGridSortEvent {
 
             <!-- Column header row -->
             <tr>
+              <th *ngIf="selectable" class="aero-datagrid__th" style="width: 48px">
+                <label class="aero-datagrid__check-wrap" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    [checked]="allSelected"
+                    [indeterminate]="someSelected"
+                    (change)="toggleSelectAll()"
+                  />
+                  <span class="aero-datagrid__checkmark"></span>
+                </label>
+              </th>
               <th
                 *ngFor="let col of activeColumns; let i = index"
                 class="aero-datagrid__th"
@@ -148,6 +163,7 @@ export interface DataGridSortEvent {
 
             <!-- Filter row -->
             <tr *ngIf="showFilters" class="aero-datagrid__filter-row">
+              <th *ngIf="selectable" class="aero-datagrid__th aero-datagrid__th--filter"></th>
               <th
                 *ngFor="let col of activeColumns; let i = index"
                 class="aero-datagrid__th aero-datagrid__th--filter"
@@ -184,82 +200,280 @@ export interface DataGridSortEvent {
 
           <!-- ─── TBODY ─── -->
           <tbody>
-            <tr
-              *ngFor="let row of displayData; let rowIdx = index"
-              class="aero-datagrid__row"
-              [class.aero-datagrid__row--striped]="rowStriped && rowIdx % 2 === 1"
-              [class.aero-datagrid__row--highlighted]="highlightRow(row)"
-              [class.aero-datagrid__row--clickable]="rowClick.observed"
-              (click)="onRowClick(row)"
-            >
-              <td
-                *ngFor="let col of activeColumns; let i = index"
-                class="aero-datagrid__td"
-                [style.width]="getColumnWidth(col)"
-                [class.aero-datagrid__td--right]="isRightAligned(col)"
-                [class.aero-datagrid__td--center]="col.align === 'center'"
-                [class.aero-datagrid__td--bold]="col.bold"
-                [class.aero-datagrid__td--sticky]="i < stickyColumns"
-                [style.left]="i < stickyColumns ? getStickyOffset(i) : null"
-                [style.z-index]="i < stickyColumns ? 2 : null"
+            <ng-container *ngFor="let row of displayData; let rowIdx = index">
+              <tr
+                class="aero-datagrid__row"
+                [class.aero-datagrid__row--striped]="rowStriped && rowIdx % 2 === 1"
+                [class.aero-datagrid__row--highlighted]="highlightRow(row)"
+                [class.aero-datagrid__row--clickable]="rowClick.observed"
+                (click)="onRowClick(row)"
               >
-                <!-- Template Column -->
-                <ng-container *ngIf="col.type === 'template'">
+                <td *ngIf="selectable" class="aero-datagrid__td" style="width: 48px">
+                  <label class="aero-datagrid__check-wrap" (click)="$event.stopPropagation()">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(row)"
+                      (change)="toggleSelect(row)"
+                    />
+                    <span class="aero-datagrid__checkmark"></span>
+                  </label>
+                </td>
+                <td
+                  *ngFor="let col of activeColumns; let i = index"
+                  class="aero-datagrid__td"
+                  [style.width]="getColumnWidth(col)"
+                  [class.aero-datagrid__td--right]="isRightAligned(col)"
+                  [class.aero-datagrid__td--center]="col.align === 'center'"
+                  [class.aero-datagrid__td--bold]="col.bold"
+                  [class.aero-datagrid__td--sticky]="i < stickyColumns"
+                  [style.left]="i < stickyColumns ? getStickyOffset(i) : null"
+                  [style.z-index]="i < stickyColumns ? 2 : null"
+                >
+                  <!-- Template Column -->
+                  <ng-container *ngIf="col.type === 'template'">
+                    <ng-container
+                      *ngTemplateOutlet="getTemplate(col.key); context: { $implicit: row }"
+                    ></ng-container>
+                  </ng-container>
+
+                  <!-- Badge Column -->
+                  <ng-container *ngIf="col.type === 'badge'">
+                    <span [class]="getBadgeClass(col, row[col.key])">
+                      {{ getBadgeLabel(col, row[col.key]) }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Currency Column -->
+                  <ng-container *ngIf="col.type === 'currency'">
+                    <span class="aero-datagrid__financial">
+                      {{ row[col.key] | currency: col.format || 'USD' : 'symbol' }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Financial Column -->
+                  <ng-container *ngIf="col.type === 'financial'">
+                    <span class="aero-datagrid__financial">
+                      {{ formatFinancial(row[col.key]) }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Number Column -->
+                  <ng-container *ngIf="col.type === 'number'">
+                    <span class="aero-datagrid__number">
+                      {{
+                        row[col.key] != null ? (row[col.key] | number: col.format || '1.2-2') : '—'
+                      }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Date Column -->
+                  <ng-container *ngIf="col.type === 'date'">
+                    <span class="aero-datagrid__date">
+                      {{ row[col.key] ? (row[col.key] | date: col.format || 'dd/MM/yyyy') : '—' }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Default Text Column -->
+                  <ng-container *ngIf="!col.type || col.type === 'text'">
+                    {{ row[col.key] != null ? row[col.key] : '—' }}
+                  </ng-container>
+
+                  <!-- Checkbox Column -->
+                  <ng-container *ngIf="col.type === 'checkbox'">
+                    <div class="aero-datagrid__inline-check">
+                      <label class="aero-datagrid__check-wrap" (click)="$event.stopPropagation()">
+                        <input
+                          type="checkbox"
+                          [checked]="!!row[col.key]"
+                          (change)="onCellCheck(row, col, $event)"
+                        />
+                        <span class="aero-datagrid__checkmark"></span>
+                      </label>
+                      <span *ngIf="col.secondaryKey">{{ row[col.secondaryKey] }}</span>
+                    </div>
+                  </ng-container>
+
+                  <!-- Radio Column -->
+                  <ng-container *ngIf="col.type === 'radio'">
+                    <div class="aero-datagrid__inline-check">
+                      <label class="aero-datagrid__radio-wrap" (click)="$event.stopPropagation()">
+                        <input
+                          type="radio"
+                          [name]="col.key"
+                          [checked]="!!row[col.key]"
+                          (change)="onCellRadio(row, col)"
+                        />
+                        <span class="aero-datagrid__radiomark"></span>
+                      </label>
+                      <span *ngIf="col.secondaryKey">{{ row[col.secondaryKey] }}</span>
+                    </div>
+                  </ng-container>
+
+                  <!-- Avatar Column -->
+                  <ng-container *ngIf="col.type === 'avatar'">
+                    <div class="aero-datagrid__avatar-cell">
+                      <div class="aero-datagrid__avatar">
+                        <img
+                          *ngIf="row[col.avatarKey || 'avatar']"
+                          [src]="row[col.avatarKey || 'avatar']"
+                          [alt]="asString(row[col.key])"
+                          class="aero-datagrid__avatar-img"
+                        />
+                        <span
+                          *ngIf="!row[col.avatarKey || 'avatar']"
+                          class="aero-datagrid__avatar-placeholder"
+                          >{{ getInitials(asString(row[col.key])) }}</span
+                        >
+                        <span
+                          *ngIf="row[col.avatarStatusKey || 'status']"
+                          class="aero-datagrid__avatar-status"
+                          [class.aero-datagrid__avatar-status--online]="
+                            row[col.avatarStatusKey || 'status'] === 'online'
+                          "
+                          [class.aero-datagrid__avatar-status--offline]="
+                            row[col.avatarStatusKey || 'status'] === 'offline'
+                          "
+                          [class.aero-datagrid__avatar-status--away]="
+                            row[col.avatarStatusKey || 'status'] === 'away'
+                          "
+                        ></span>
+                      </div>
+                      <span>{{ row[col.key] }}</span>
+                    </div>
+                  </ng-container>
+
+                  <!-- Chip Column -->
+                  <ng-container *ngIf="col.type === 'chip'">
+                    <span class="aero-datagrid__chip" [class]="getChipClass(col, row[col.key])">
+                      <i
+                        *ngIf="getChipIcon(col, row[col.key])"
+                        [class]="getChipIcon(col, row[col.key])"
+                      ></i>
+                      {{ getChipLabel(col, row[col.key]) }}
+                    </span>
+                  </ng-container>
+
+                  <!-- Trend Column -->
+                  <ng-container *ngIf="col.type === 'trend'">
+                    <div
+                      class="aero-datagrid__trend"
+                      [class.aero-datagrid__trend--down]="isTrendDown(row, col)"
+                    >
+                      <i
+                        [class]="
+                          isTrendDown(row, col)
+                            ? 'fa-solid fa-arrow-trend-down'
+                            : 'fa-solid fa-arrow-trend-up'
+                        "
+                      ></i>
+                      <span>{{ row[col.key] }}%</span>
+                    </div>
+                  </ng-container>
+
+                  <!-- Progress Column -->
+                  <ng-container *ngIf="col.type === 'progress'">
+                    <div class="aero-datagrid__progress-cell">
+                      <div class="aero-datagrid__progress-row">
+                        <div class="aero-datagrid__progress-bar">
+                          <div
+                            class="aero-datagrid__progress-fill"
+                            [style.width.%]="clamp(asNumber(row[col.key]), 0, 100)"
+                          ></div>
+                          <div
+                            *ngIf="col.progressTarget"
+                            class="aero-datagrid__progress-target"
+                            [style.left.%]="clamp(col.progressTarget, 0, 100)"
+                          ></div>
+                        </div>
+                        <span class="aero-datagrid__progress-value">{{ row[col.key] }}%</span>
+                      </div>
+                      <div *ngIf="col.secondaryKey" class="aero-datagrid__progress-row">
+                        <div
+                          class="aero-datagrid__progress-bar aero-datagrid__progress-bar--secondary"
+                        >
+                          <div
+                            class="aero-datagrid__progress-fill aero-datagrid__progress-fill--secondary"
+                            [style.width.%]="clamp(asNumber(row[col.secondaryKey]), 0, 100)"
+                          ></div>
+                        </div>
+                        <span class="aero-datagrid__progress-value"
+                          >{{ row[col.secondaryKey] }}%</span
+                        >
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <!-- Expand Column -->
+                  <ng-container *ngIf="col.type === 'expand'">
+                    <div class="aero-datagrid__expand-cell">
+                      <button
+                        type="button"
+                        class="aero-datagrid__expand-btn"
+                        (click)="toggleExpand(rowIdx); $event.stopPropagation()"
+                      >
+                        <i
+                          class="fa-solid fa-chevron-down"
+                          [class.aero-datagrid__expand-btn--open]="isRowExpanded(rowIdx)"
+                        ></i>
+                      </button>
+                      <span *ngIf="col.secondaryKey">{{ row[col.secondaryKey] }}</span>
+                    </div>
+                  </ng-container>
+
+                  <!-- Icon Column -->
+                  <ng-container *ngIf="col.type === 'icon'">
+                    <div class="aero-datagrid__icon-cell">
+                      <i
+                        [ngClass]="asString(row[col.iconKey || col.key])"
+                        class="aero-datagrid__cell-icon"
+                      ></i>
+                      <span *ngIf="col.secondaryKey">{{ row[col.secondaryKey] }}</span>
+                    </div>
+                  </ng-container>
+
+                  <!-- Action Column -->
+                  <ng-container *ngIf="col.type === 'action'">
+                    <ng-container *ngIf="getTemplate(col.key) as tpl">
+                      <ng-container
+                        *ngTemplateOutlet="tpl; context: { $implicit: row }"
+                      ></ng-container>
+                    </ng-container>
+                    <button
+                      *ngIf="!getTemplate(col.key)"
+                      type="button"
+                      class="aero-datagrid__action-btn"
+                      (click)="onAction(row, col.key); $event.stopPropagation()"
+                    >
+                      <i [ngClass]="col.iconKey || 'fa-solid fa-pen'"></i>
+                    </button>
+                  </ng-container>
+
+                  <!-- Empty Column -->
+                  <ng-container *ngIf="col.type === 'empty'">
+                    <span class="aero-datagrid__empty-cell">&mdash;</span>
+                  </ng-container>
+                </td>
+
+                <!-- Actions column -->
+                <td *ngIf="actionsTemplate" class="aero-datagrid__td aero-datagrid__td--actions">
                   <ng-container
-                    *ngTemplateOutlet="getTemplate(col.key); context: { $implicit: row }"
+                    *ngTemplateOutlet="actionsTemplate; context: { $implicit: row }"
                   ></ng-container>
-                </ng-container>
+                </td>
+              </tr>
 
-                <!-- Badge Column -->
-                <ng-container *ngIf="col.type === 'badge'">
-                  <span [class]="getBadgeClass(col, row[col.key])">
-                    {{ getBadgeLabel(col, row[col.key]) }}
-                  </span>
-                </ng-container>
-
-                <!-- Currency Column -->
-                <ng-container *ngIf="col.type === 'currency'">
-                  <span class="aero-datagrid__financial">
-                    {{ row[col.key] | currency: col.format || 'USD' : 'symbol' }}
-                  </span>
-                </ng-container>
-
-                <!-- Financial Column -->
-                <ng-container *ngIf="col.type === 'financial'">
-                  <span class="aero-datagrid__financial">
-                    {{ formatFinancial(row[col.key]) }}
-                  </span>
-                </ng-container>
-
-                <!-- Number Column -->
-                <ng-container *ngIf="col.type === 'number'">
-                  <span class="aero-datagrid__number">
-                    {{
-                      row[col.key] != null ? (row[col.key] | number: col.format || '1.2-2') : '—'
-                    }}
-                  </span>
-                </ng-container>
-
-                <!-- Date Column -->
-                <ng-container *ngIf="col.type === 'date'">
-                  <span class="aero-datagrid__date">
-                    {{ row[col.key] ? (row[col.key] | date: col.format || 'dd/MM/yyyy') : '—' }}
-                  </span>
-                </ng-container>
-
-                <!-- Default Text Column -->
-                <ng-container *ngIf="!col.type || col.type === 'text'">
-                  {{ row[col.key] != null ? row[col.key] : '—' }}
-                </ng-container>
-              </td>
-
-              <!-- Actions column -->
-              <td *ngIf="actionsTemplate" class="aero-datagrid__td aero-datagrid__td--actions">
-                <ng-container
-                  *ngTemplateOutlet="actionsTemplate; context: { $implicit: row }"
-                ></ng-container>
-              </td>
-            </tr>
+              <!-- Expanded row -->
+              <tr
+                *ngIf="expandTemplate && isRowExpanded(rowIdx)"
+                class="aero-datagrid__expanded-row"
+              >
+                <td [attr.colspan]="totalColspan">
+                  <ng-container
+                    *ngTemplateOutlet="expandTemplate; context: { $implicit: row }"
+                  ></ng-container>
+                </td>
+              </tr>
+            </ng-container>
 
             <!-- Empty state -->
             <tr *ngIf="!loading && displayData.length === 0">
@@ -275,6 +489,7 @@ export interface DataGridSortEvent {
           <!-- ─── TFOOT ─── -->
           <tfoot *ngIf="hasFooter && displayData.length > 0">
             <tr class="aero-datagrid__footer-row">
+              <td *ngIf="selectable" class="aero-datagrid__td aero-datagrid__td--footer"></td>
               <td
                 *ngFor="let col of activeColumns; let i = index"
                 class="aero-datagrid__td aero-datagrid__td--footer"
@@ -292,15 +507,37 @@ export interface DataGridSortEvent {
       </div>
 
       <!-- Pagination -->
-      <div *ngIf="totalPages > 1" class="aero-datagrid__pagination">
-        <span class="aero-datagrid__pagination-info">
-          {{ startIndex + 1 }}–{{ endIndex }} de {{ filteredData.length }}
-        </span>
+      <div *ngIf="totalPages > 1 || serverSide" class="aero-datagrid__pagination">
+        <div class="aero-datagrid__pagination-info">
+          <span
+            >Mostrando {{ startIndex + 1 }} &ndash; {{ endIndex }} de
+            {{ totalResults }} resultados</span
+          >
+          <div class="aero-datagrid__page-size">
+            <span class="aero-datagrid__page-size-label">Filas:</span>
+            <select
+              class="aero-datagrid__page-size-select"
+              [ngModel]="pageSize"
+              (ngModelChange)="onPageSizeChange($event)"
+            >
+              <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+            </select>
+          </div>
+        </div>
         <div class="aero-datagrid__pagination-controls">
           <button
             class="aero-datagrid__page-btn"
             [disabled]="currentPage === 1"
+            (click)="goToPage(1)"
+            title="Primera"
+          >
+            <i class="fa-solid fa-angles-left"></i>
+          </button>
+          <button
+            class="aero-datagrid__page-btn"
+            [disabled]="currentPage === 1"
             (click)="goToPage(currentPage - 1)"
+            title="Anterior"
           >
             <i class="fa-solid fa-angle-left"></i>
           </button>
@@ -309,8 +546,17 @@ export interface DataGridSortEvent {
             class="aero-datagrid__page-btn"
             [disabled]="currentPage === totalPages"
             (click)="goToPage(currentPage + 1)"
+            title="Siguiente"
           >
             <i class="fa-solid fa-angle-right"></i>
+          </button>
+          <button
+            class="aero-datagrid__page-btn"
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(totalPages)"
+            title="Ultima"
+          >
+            <i class="fa-solid fa-angles-right"></i>
           </button>
         </div>
       </div>
@@ -700,6 +946,9 @@ export interface DataGridSortEvent {
       }
 
       .aero-datagrid__pagination-info {
+        display: flex;
+        align-items: center;
+        gap: var(--s-16);
         font-size: 12px;
         color: var(--grey-600);
         margin-right: auto;
@@ -751,6 +1000,356 @@ export interface DataGridSortEvent {
         gap: 4px;
         white-space: nowrap;
       }
+
+      /* ─── Checkbox / Radio ─── */
+      .aero-datagrid__check-wrap {
+        display: inline-flex;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .aero-datagrid__check-wrap input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .aero-datagrid__checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--grey-600);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--grey-100);
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+      }
+
+      .aero-datagrid__check-wrap input:checked + .aero-datagrid__checkmark {
+        background-color: var(--primary-500);
+        border-color: var(--primary-500);
+      }
+
+      .aero-datagrid__check-wrap input:checked + .aero-datagrid__checkmark::after {
+        content: '';
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+        margin-top: -2px;
+      }
+
+      .aero-datagrid__check-wrap input:indeterminate + .aero-datagrid__checkmark {
+        background-color: var(--primary-500);
+        border-color: var(--primary-500);
+      }
+
+      .aero-datagrid__check-wrap input:indeterminate + .aero-datagrid__checkmark::after {
+        content: '';
+        width: 10px;
+        height: 2px;
+        background: white;
+      }
+
+      .aero-datagrid__radio-wrap {
+        display: inline-flex;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .aero-datagrid__radio-wrap input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .aero-datagrid__radiomark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--grey-600);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--grey-100);
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+      }
+
+      .aero-datagrid__radio-wrap input:checked + .aero-datagrid__radiomark {
+        border-color: var(--primary-500);
+      }
+
+      .aero-datagrid__radio-wrap input:checked + .aero-datagrid__radiomark::after {
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary-500);
+      }
+
+      .aero-datagrid__inline-check {
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+
+      /* ─── Avatar ─── */
+      .aero-datagrid__avatar-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--s-12);
+      }
+
+      .aero-datagrid__avatar {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+      }
+
+      .aero-datagrid--dense .aero-datagrid__avatar {
+        width: 32px;
+        height: 32px;
+      }
+
+      .aero-datagrid__avatar-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .aero-datagrid__avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primary-100);
+        color: var(--primary-500);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .aero-datagrid__avatar-status {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid var(--grey-100);
+        background-color: var(--grey-400);
+      }
+
+      .aero-datagrid__avatar-status--online {
+        background-color: var(--semantic-blue-500);
+      }
+      .aero-datagrid__avatar-status--offline {
+        background-color: var(--grey-400);
+      }
+      .aero-datagrid__avatar-status--away {
+        background-color: var(--accent-500);
+      }
+
+      /* ─── Chip ─── */
+      .aero-datagrid__chip {
+        padding: var(--s-4) var(--s-10, 10px);
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        line-height: 16px;
+      }
+
+      /* ─── Trend ─── */
+      .aero-datagrid__trend {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-4);
+        color: var(--semantic-blue-500);
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .aero-datagrid__trend--down {
+        color: var(--accent-500);
+      }
+
+      /* ─── Progress ─── */
+      .aero-datagrid__progress-cell {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-4);
+        min-width: 120px;
+      }
+
+      .aero-datagrid__progress-row {
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+
+      .aero-datagrid__progress-bar {
+        flex: 1;
+        height: 6px;
+        background-color: var(--grey-200);
+        border-radius: 3px;
+        position: relative;
+        overflow: visible;
+      }
+
+      .aero-datagrid__progress-fill {
+        height: 100%;
+        background-color: var(--primary-500);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+      }
+
+      .aero-datagrid__progress-fill--secondary {
+        background-color: var(--accent-500);
+      }
+      .aero-datagrid__progress-bar--secondary {
+        height: 4px;
+      }
+
+      .aero-datagrid__progress-target {
+        position: absolute;
+        top: -3px;
+        bottom: -3px;
+        width: 2px;
+        background-color: var(--primary-900);
+        border-radius: 1px;
+      }
+
+      .aero-datagrid__progress-value {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--grey-700);
+        flex-shrink: 0;
+        min-width: 32px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ─── Expand ─── */
+      .aero-datagrid__expand-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+
+      .aero-datagrid__expand-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: var(--primary-500);
+        font-size: 12px;
+        border-radius: var(--radius-sm);
+        transition: background-color 0.15s ease;
+      }
+
+      .aero-datagrid__expand-btn:hover {
+        background-color: var(--grey-100);
+      }
+
+      .aero-datagrid__expand-btn i {
+        transition: transform 0.2s ease;
+      }
+      .aero-datagrid__expand-btn--open {
+        transform: rotate(180deg);
+      }
+
+      .aero-datagrid__expanded-row td {
+        padding: var(--s-16);
+        background-color: var(--grey-50);
+        border-bottom: 1px solid var(--grey-100);
+      }
+
+      /* ─── Icon Cell ─── */
+      .aero-datagrid__icon-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+
+      .aero-datagrid__cell-icon {
+        font-size: 18px;
+        color: var(--primary-500);
+        width: 24px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      /* ─── Action ─── */
+      .aero-datagrid__action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: var(--primary-500);
+        font-size: 14px;
+        border-radius: var(--radius-sm);
+        transition: background-color 0.15s ease;
+      }
+
+      .aero-datagrid__action-btn:hover {
+        background-color: var(--primary-100);
+      }
+
+      /* ─── Empty Cell ─── */
+      .aero-datagrid__empty-cell {
+        color: var(--grey-400);
+      }
+
+      /* ─── Page Size Dropdown ─── */
+      .aero-datagrid__page-size {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .aero-datagrid__page-size-label {
+        font-size: 12px;
+        color: var(--grey-700);
+        white-space: nowrap;
+      }
+
+      .aero-datagrid__page-size-select {
+        padding: var(--s-4) var(--s-6);
+        border: 1px solid var(--grey-300);
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-family: var(--font-text);
+        color: var(--grey-700);
+        background: var(--neutral-0);
+        outline: none;
+        cursor: pointer;
+      }
+
+      .aero-datagrid__page-size-select:focus {
+        border-color: var(--primary-500);
+      }
     `,
   ],
 })
@@ -772,12 +1371,21 @@ export class AeroDataGridComponent implements OnChanges {
   @Input() emptyIcon = 'fa-table';
   @Input() templates: { [key: string]: TemplateRef<unknown> } = {};
   @Input() actionsTemplate?: TemplateRef<unknown>;
+  @Input() selectable = false;
+  @Input() trackByKey = 'id';
+  @Input() expandTemplate?: TemplateRef<unknown>;
+  @Input() serverSide = false;
+  @Input() totalItems = 0;
 
   // ─── Outputs ───
   @Output() sortChange = new EventEmitter<DataGridSortEvent>();
   @Output() rowClick = new EventEmitter<Record<string, unknown>>();
   @Output() visibleColumnsChange = new EventEmitter<string[]>();
   @Output() filterChange = new EventEmitter<Record<string, string>>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
+  @Output() selectionChange = new EventEmitter<Record<string, unknown>[]>();
+  @Output() cellAction = new EventEmitter<{ row: Record<string, unknown>; action: string }>();
 
   // ─── Internal State ───
   sortColumn = '';
@@ -787,6 +1395,9 @@ export class AeroDataGridComponent implements OnChanges {
   columnWidths: Record<string, string> = {};
   columnChooserOpen = false;
   currentPage = 1;
+  selectedRows: Set<unknown> = new Set();
+  expandedRows: Set<number> = new Set();
+  pageSizeOptions = [10, 25, 50, 100];
 
   // Resize state
   private resizingColumn: DataGridColumn | null = null;
@@ -814,7 +1425,7 @@ export class AeroDataGridComponent implements OnChanges {
   }
 
   get totalColspan(): number {
-    return this.activeColumns.length + (this.actionsTemplate ? 1 : 0);
+    return this.activeColumns.length + (this.actionsTemplate ? 1 : 0) + (this.selectable ? 1 : 0);
   }
 
   get filteredData(): Record<string, unknown>[] {
@@ -859,12 +1470,22 @@ export class AeroDataGridComponent implements OnChanges {
   }
 
   get displayData(): Record<string, unknown>[] {
+    if (this.serverSide) {
+      return this.filteredData;
+    }
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredData.slice(start, start + this.pageSize);
   }
 
   get totalPages(): number {
+    if (this.serverSide) {
+      return Math.ceil(this.totalItems / this.pageSize);
+    }
     return Math.ceil(this.filteredData.length / this.pageSize);
+  }
+
+  get totalResults(): number {
+    return this.serverSide ? this.totalItems : this.filteredData.length;
   }
 
   get startIndex(): number {
@@ -872,6 +1493,9 @@ export class AeroDataGridComponent implements OnChanges {
   }
 
   get endIndex(): number {
+    if (this.serverSide) {
+      return Math.min(this.startIndex + this.pageSize, this.totalItems);
+    }
     return Math.min(this.startIndex + this.pageSize, this.filteredData.length);
   }
 
@@ -964,6 +1588,18 @@ export class AeroDataGridComponent implements OnChanges {
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      if (this.serverSide) {
+        this.pageChange.emit(this.currentPage);
+      }
+    }
+  }
+
+  onPageSizeChange(size: number | string): void {
+    this.pageSize = typeof size === 'string' ? parseInt(size, 10) : size;
+    this.currentPage = 1;
+    if (this.serverSide) {
+      this.pageSizeChange.emit(this.pageSize);
+      this.pageChange.emit(1);
     }
   }
 
@@ -1091,6 +1727,136 @@ export class AeroDataGridComponent implements OnChanges {
       return col.badgeConfig[v].label;
     }
     return v;
+  }
+
+  // ─── Selection ───
+
+  isSelected(row: Record<string, unknown>): boolean {
+    return this.selectedRows.has(row[this.trackByKey]);
+  }
+
+  toggleSelect(row: Record<string, unknown>): void {
+    const key = row[this.trackByKey];
+    if (this.selectedRows.has(key)) {
+      this.selectedRows.delete(key);
+    } else {
+      this.selectedRows.add(key);
+    }
+    this.emitSelection();
+  }
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.displayData.forEach((row) => this.selectedRows.delete(row[this.trackByKey]));
+    } else {
+      this.displayData.forEach((row) => this.selectedRows.add(row[this.trackByKey]));
+    }
+    this.emitSelection();
+  }
+
+  private emitSelection(): void {
+    const selected = (this.data || []).filter((row) => this.selectedRows.has(row[this.trackByKey]));
+    this.selectionChange.emit(selected);
+  }
+
+  get allSelected(): boolean {
+    if (!this.displayData.length) return false;
+    return this.displayData.every((row) => this.isSelected(row));
+  }
+
+  get someSelected(): boolean {
+    if (!this.displayData.length) return false;
+    const count = this.displayData.filter((row) => this.isSelected(row)).length;
+    return count > 0 && count < this.displayData.length;
+  }
+
+  // ─── Expansion ───
+
+  isRowExpanded(index: number): boolean {
+    return this.expandedRows.has(index);
+  }
+
+  toggleExpand(index: number): void {
+    if (this.expandedRows.has(index)) {
+      this.expandedRows.delete(index);
+    } else {
+      this.expandedRows.add(index);
+    }
+  }
+
+  // ─── Cell Actions ───
+
+  onCellCheck(row: Record<string, unknown>, col: DataGridColumn, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    row[col.key] = checked;
+    this.cellAction.emit({ row, action: col.key });
+  }
+
+  onCellRadio(row: Record<string, unknown>, col: DataGridColumn): void {
+    this.cellAction.emit({ row, action: col.key });
+  }
+
+  onAction(row: Record<string, unknown>, action: string): void {
+    this.cellAction.emit({ row, action });
+  }
+
+  // ─── Chip (reuses badgeConfig) ───
+
+  getChipClass(col: DataGridColumn, value: unknown): string {
+    const v = value as string;
+    if (col.badgeConfig && col.badgeConfig[v]) {
+      return col.badgeConfig[v].class;
+    }
+    return 'aero-datagrid__chip';
+  }
+
+  getChipLabel(col: DataGridColumn, value: unknown): string {
+    const v = value as string;
+    if (col.badgeConfig && col.badgeConfig[v]) {
+      return col.badgeConfig[v].label;
+    }
+    return v;
+  }
+
+  getChipIcon(col: DataGridColumn, value: unknown): string | null {
+    const v = value as string;
+    if (col.badgeConfig && col.badgeConfig[v] && col.badgeConfig[v].icon) {
+      return col.badgeConfig[v].icon!;
+    }
+    return null;
+  }
+
+  // ─── Utility Helpers ───
+
+  asString(value: unknown): string {
+    return value != null ? String(value) : '';
+  }
+
+  asNumber(value: unknown): number {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') return parseFloat(value) || 0;
+    return 0;
+  }
+
+  clamp(value: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  getInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  isTrendDown(row: Record<string, unknown>, col: DataGridColumn): boolean {
+    const key = col.trendKey || col.key;
+    const val = row[key];
+    if (typeof val === 'number') return val < 0;
+    if (typeof val === 'string') return parseFloat(val) < 0;
+    return false;
   }
 
   // ─── Helpers ───
