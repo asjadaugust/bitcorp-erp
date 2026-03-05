@@ -443,7 +443,7 @@ def upgrade() -> None:
              estado, paso_actual, fecha_creacion)
         SELECT
             1,
-            ((gs - 1) % (SELECT COUNT(*) FROM aprobaciones.plantilla_aprobacion)) + 1,
+            ((gs - 1) % GREATEST((SELECT COUNT(*) FROM aprobaciones.plantilla_aprobacion), 1)) + 1,
             CASE (gs % 5)
                 WHEN 0 THEN 'equipos'
                 WHEN 1 THEN 'valorizaciones'
@@ -477,6 +477,7 @@ def upgrade() -> None:
             NOW() - ((50 - gs) * interval '1 day')
         FROM generate_series(1, 50) gs
         WHERE NOT EXISTS (SELECT 1 FROM aprobaciones.solicitud_aprobacion LIMIT 1)
+          AND EXISTS (SELECT 1 FROM aprobaciones.plantilla_aprobacion LIMIT 1)
     """))
 
     # ── 3F. aprobaciones.respuesta_adhoc (12 rows) ─────────────────────
@@ -497,6 +498,7 @@ def upgrade() -> None:
             NOW() - ((12 - gs) * interval '1 day')
         FROM generate_series(1, 12) gs
         WHERE NOT EXISTS (SELECT 1 FROM aprobaciones.respuesta_adhoc LIMIT 1)
+          AND (SELECT COUNT(*) FROM aprobaciones.solicitud_aprobacion) >= 6
     """))
 
     # ╔══════════════════════════════════════════════════════════════════════╗
@@ -514,7 +516,8 @@ def upgrade() -> None:
              created_at, updated_at)
         SELECT
             'INS-' || LPAD((gs + 9)::text, 4, '0'),
-            ((gs - 1) % 15) + 1,
+            (SELECT id FROM equipo.checklist_plantilla ORDER BY id LIMIT 1
+             OFFSET (gs - 1) % GREATEST((SELECT COUNT(*) FROM equipo.checklist_plantilla), 1)),
             ((gs - 1) % 679) + 1,
             ((gs - 1) % 533) + 1,
             '2024-01-15'::date + (gs * interval '1 day'),
@@ -545,6 +548,7 @@ def upgrade() -> None:
             NOW(), NOW()
         FROM generate_series(1, 50) gs
         WHERE NOT EXISTS (SELECT 1 FROM equipo.checklist_inspeccion LIMIT 1)
+          AND EXISTS (SELECT 1 FROM equipo.checklist_plantilla LIMIT 1)
     """))
 
     # ── 4B. aprobaciones.paso_solicitud (100 rows — 2 per solicitud) ───
