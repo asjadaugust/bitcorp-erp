@@ -17,6 +17,7 @@ import {
 import { ActionsContainerComponent } from '../../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../../../core/design-system';
+import { SST_TABS } from '../../sst-tabs';
 
 @Component({
   selector: 'app-incident-list',
@@ -36,6 +37,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       icon="fa-triangle-exclamation"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="primary" iconLeft="fa-plus" (clicked)="reportIncident()"
@@ -50,11 +52,17 @@ import { AeroButtonComponent } from '../../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'incident-list'"
           [columns]="columns"
-          [data]="filteredIncidents"
+          [data]="incidents"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
           (sortChange)="onSort($event)"
         >
@@ -67,15 +75,17 @@ export class IncidentListComponent implements OnInit {
   private readonly sstService = inject(SstService);
   private readonly router = inject(Router);
 
+  tabs = SST_TABS;
   incidents: SstIncidente[] = [];
-  filteredIncidents: SstIncidente[] = [];
   loading = false;
-  filters = { search: '', severidad: '', estado: '' };
+  total = 0;
+  pageSize = 50;
+  page = 1;
+  filters = { severidad: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'SST' }];
 
   filterConfig: FilterConfig[] = [
-    { key: 'search', label: 'Buscar', type: 'text', placeholder: 'Buscar incidentes...' },
     {
       key: 'severidad',
       label: 'Severidad',
@@ -162,42 +172,42 @@ export class IncidentListComponent implements OnInit {
 
   loadIncidents() {
     this.loading = true;
-    this.sstService.getIncidents().subscribe({
-      next: (incidents) => {
-        this.incidents = incidents;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.incidents = [];
-        this.filteredIncidents = [];
-        this.loading = false;
-      },
-    });
+    this.sstService
+      .getIncidents({
+        page: this.page,
+        limit: this.pageSize,
+        severidad: this.filters.severidad || undefined,
+        estado: this.filters.estado || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.incidents = response.data;
+          this.total = response.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.incidents = [];
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
-    this.filters.search = (filters['search'] as string) || '';
     this.filters.severidad = (filters['severidad'] as string) || '';
     this.filters.estado = (filters['estado'] as string) || '';
-    this.applyFilters();
+    this.page = 1;
+    this.loadIncidents();
   }
 
-  applyFilters(): void {
-    this.filteredIncidents = this.incidents.filter((incident) => {
-      const matchesSearch =
-        !this.filters.search ||
-        incident.descripcion?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        incident.ubicacion?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        incident.tipo_incidente?.toLowerCase().includes(this.filters.search.toLowerCase());
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadIncidents();
+  }
 
-      const matchesSeveridad =
-        !this.filters.severidad || incident.severidad === this.filters.severidad;
-
-      const matchesEstado = !this.filters.estado || incident.estado === this.filters.estado;
-
-      return matchesSearch && matchesSeveridad && matchesEstado;
-    });
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadIncidents();
   }
 
   reportIncident(): void {
@@ -208,7 +218,7 @@ export class IncidentListComponent implements OnInit {
     this.router.navigate(['/sst', row.id, 'edit']);
   }
 
-  onSort(event: { column: string; direction: string | null }): void {
+  onSort(_event: { column: string; direction: string | null }): void {
     // Sort handled client-side by the grid
   }
 }

@@ -106,6 +106,7 @@ import {
       }
 
       <aero-data-grid
+        [gridId]="'combustible-panel'"
         [columns]="columns"
         [data]="combustibleList"
         [loading]="loadingList"

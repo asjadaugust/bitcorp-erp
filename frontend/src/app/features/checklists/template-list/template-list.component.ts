@@ -56,16 +56,21 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'checklist-template-list'"
           [columns]="columns"
           [data]="templates"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             itemCount: itemCountTemplate,
             frecuencia: frecuenciaTemplate,
           }"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="viewTemplate($event)"
         >
         </aero-data-grid>
@@ -143,6 +148,9 @@ export class TemplateListComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   templates: ChecklistTemplate[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   tabs = CHECKLISTS_TABS;
   loading = false;
   filters = { activo: undefined as boolean | undefined, tipoEquipo: '', search: '' };
@@ -221,16 +229,35 @@ export class TemplateListComponent implements OnInit {
 
   loadTemplates(): void {
     this.loading = true;
-    this.checklistService.getAllTemplates(this.filters).subscribe({
-      next: (data) => {
-        this.templates = data;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading templates:', error);
-        this.loading = false;
-      },
-    });
+    this.checklistService
+      .getAllTemplatesPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        activo: this.filters.activo,
+        tipoEquipo: this.filters.tipoEquipo || undefined,
+        search: this.filters.search || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.templates = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading templates:', error);
+          this.loading = false;
+        },
+      });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadTemplates();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadTemplates();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
@@ -245,6 +272,7 @@ export class TemplateListComponent implements OnInit {
       this.filters.activo = undefined;
     }
 
+    this.page = 1;
     this.loadTemplates();
   }
 

@@ -63,12 +63,17 @@ import { AeroButtonComponent } from '../../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'payment-schedule-list'"
           [columns]="columns"
-          [data]="filteredSchedules"
+          [data]="schedules"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
           [actionsTemplate]="actionsTemplate"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (sortChange)="onSort($event)"
         >
         </aero-data-grid>
@@ -147,7 +152,9 @@ export class PaymentScheduleListComponent implements OnInit {
   tabs = ADMINISTRACION_TABS;
   loading = false;
   schedules: PaymentSchedule[] = [];
-  filteredSchedules: PaymentSchedule[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   filters: Record<string, string> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
@@ -200,39 +207,44 @@ export class PaymentScheduleListComponent implements OnInit {
 
   loadSchedules() {
     this.loading = true;
-    this.adminService.getPaymentSchedules().subscribe({
-      next: (schedules) => {
-        this.schedules = schedules;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+    this.adminService
+      .getPaymentSchedulesPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        estado: this.filters['estado'] || undefined,
+        search: this.filters['search'] || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.schedules = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadSchedules();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadSchedules();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters['search'] = (filters['search'] as string) || '';
     this.filters['estado'] = (filters['estado'] as string) || '';
-    this.applyFilters();
-  }
-
-  applyFilters(): void {
-    this.filteredSchedules = this.schedules.filter((schedule) => {
-      const matchesSearch =
-        !this.filters['search'] ||
-        schedule.description?.toLowerCase().includes(this.filters['search'].toLowerCase()) ||
-        schedule.periodo?.toLowerCase().includes(this.filters['search'].toLowerCase());
-
-      const matchesStatus = !this.filters['estado'] || schedule.estado === this.filters['estado'];
-
-      return matchesSearch && matchesStatus;
-    });
+    this.page = 1;
+    this.loadSchedules();
   }
 
   onSort(event: { column: string; direction: string | null }): void {
-    // Sort handled client-side by the grid
+    // Sort handled server-side
   }
 
   createSchedule(): void {

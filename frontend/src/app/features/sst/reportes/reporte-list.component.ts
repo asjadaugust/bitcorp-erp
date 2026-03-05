@@ -20,6 +20,7 @@ import {
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../../core/design-system';
+import { SST_TABS } from '../sst-tabs';
 
 @Component({
   selector: 'app-reporte-list',
@@ -39,6 +40,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       icon="fa-file-lines"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToNew()">
@@ -53,11 +55,17 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'reporte-sst-list'"
           [columns]="columns"
-          [data]="filteredReportes"
+          [data]="reportes"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
           (sortChange)="onSort($event)"
         >
@@ -70,10 +78,13 @@ export class ReporteListComponent implements OnInit {
   private readonly service = inject(InspeccionSsomaService);
   private readonly router = inject(Router);
 
+  tabs = SST_TABS;
   reportes: ReporteActoCondicionLista[] = [];
-  filteredReportes: ReporteActoCondicionLista[] = [];
   loading = false;
-  filters = { search: '', tipo_reporte: '', estado: '' };
+  total = 0;
+  pageSize = 50;
+  page = 1;
+  filters = { tipo_reporte: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -83,18 +94,12 @@ export class ReporteListComponent implements OnInit {
 
   filterConfig: FilterConfig[] = [
     {
-      key: 'search',
-      label: 'Buscar',
-      type: 'text',
-      placeholder: 'Buscar por lugar...',
-    },
-    {
       key: 'tipo_reporte',
       label: 'Tipo Reporte',
       type: 'select',
       options: [
         { label: 'Acto Inseguro', value: 'ACTO INSEGURO' },
-        { label: 'Condici\u00f3n Insegura', value: 'CONDICION INSEGURA' },
+        { label: 'Condición Insegura', value: 'CONDICION INSEGURA' },
       ],
     },
     {
@@ -129,12 +134,12 @@ export class ReporteListComponent implements OnInit {
       sortable: true,
       badgeConfig: {
         'ACTO INSEGURO': { label: 'Acto Inseguro', class: 'badge warning' },
-        'CONDICION INSEGURA': { label: 'Condici\u00f3n Insegura', class: 'badge error' },
+        'CONDICION INSEGURA': { label: 'Condición Insegura', class: 'badge error' },
       },
     },
     {
       key: 'acto_condicion',
-      label: 'Acto/Condici\u00f3n',
+      label: 'Acto/Condición',
       type: 'text',
       sortable: true,
     },
@@ -162,47 +167,42 @@ export class ReporteListComponent implements OnInit {
 
   loadReportes(): void {
     this.loading = true;
-    const tipo = this.filters.tipo_reporte || undefined;
-    const estado = this.filters.estado || undefined;
-    this.service.getReportes(1, 100, tipo, estado).subscribe({
-      next: (res) => {
-        this.reportes = res.data;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.reportes = [];
-        this.filteredReportes = [];
-        this.loading = false;
-      },
-    });
+    this.service
+      .getReportes({
+        page: this.page,
+        limit: this.pageSize,
+        tipo_reporte: this.filters.tipo_reporte || undefined,
+        estado: this.filters.estado || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.reportes = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.reportes = [];
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
-    const newTipo = (filters['tipo_reporte'] as string) || '';
-    const newEstado = (filters['estado'] as string) || '';
-    const serverFilterChanged =
-      newTipo !== this.filters.tipo_reporte || newEstado !== this.filters.estado;
-
-    this.filters.search = (filters['search'] as string) || '';
-    this.filters.tipo_reporte = newTipo;
-    this.filters.estado = newEstado;
-
-    if (serverFilterChanged) {
-      this.loadReportes();
-    } else {
-      this.applyFilters();
-    }
+    this.filters.tipo_reporte = (filters['tipo_reporte'] as string) || '';
+    this.filters.estado = (filters['estado'] as string) || '';
+    this.page = 1;
+    this.loadReportes();
   }
 
-  applyFilters(): void {
-    this.filteredReportes = this.reportes.filter((item) => {
-      const matchesSearch =
-        !this.filters.search ||
-        item.lugar?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        item.acto_condicion?.toLowerCase().includes(this.filters.search.toLowerCase());
-      return matchesSearch;
-    });
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadReportes();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadReportes();
   }
 
   onRowClick(row: ReporteActoCondicionLista): void {

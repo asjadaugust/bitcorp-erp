@@ -156,3 +156,14 @@ When building a new page, read the matching reference file FIRST:
 - **Styles**: `@use 'form-layout'` in component styles — NEVER duplicate `.form-grid`, `.section-grid`, `.form-group` CSS inline
 - **Inputs**: `<aero-input>` for text/number/date, `<aero-dropdown>` for selects, raw `<textarea class="form-control">` for multi-line text
 - **Shared SCSS**: `frontend/src/styles/_form-layout.scss` provides `.form-grid`, `.section-grid`, `.form-group`, `.form-control`, `.error-msg`, `.checkbox-group`, `.file-upload-*`
+
+---
+
+## Data Grid Persistence Rule
+
+Every `<aero-data-grid>` MUST include a `[gridId]` binding with a unique kebab-case identifier.
+This enables automatic persistence of column visibility, widths, sort, and page size per user via `GridSettingsService` (localStorage).
+
+Pattern: `[gridId]="'feature-name-list'"`
+
+Convention: use kebab-case matching the feature route (e.g., `'equipment-list'`, `'tender-list'`, `'petty-cash-detail'`).

@@ -156,6 +156,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           <section class="detail-section">
             <h2>Historial de Valorizaciones</h2>
             <aero-data-grid
+              [gridId]="'contract-detail'"
               [columns]="valuationColumns"
               [data]="valuations"
               [loading]="false"
@@ -191,6 +192,7 @@ import { AeroButtonComponent } from '../../core/design-system';
           <section class="detail-section">
             <h2>ANEXO A — Inclusiones de Tarifa</h2>
             <aero-data-grid
+              [gridId]="'contract-detail-annex'"
               [columns]="annexColumns"
               [data]="annexA"
               [loading]="false"

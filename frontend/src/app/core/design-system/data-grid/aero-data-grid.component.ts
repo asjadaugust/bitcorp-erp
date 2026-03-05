@@ -9,10 +9,12 @@ import {
   OnChanges,
   OnDestroy,
   SimpleChanges,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import type { TableColumn, TableColumnType, SortDirection } from '../table/aero-table.component';
+import { GridSettingsService } from '../../services/grid-settings.service';
 
 // ─── Extended interfaces ────────────────────────────────────────────────
 
@@ -1374,6 +1376,7 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
   @Input() expandTemplate?: TemplateRef<unknown>;
   @Input() serverSide = false;
   @Input() totalItems = 0;
+  @Input() gridId = '';
 
   // ─── Outputs ───
   @Output() sortChange = new EventEmitter<DataGridSortEvent>();
@@ -1384,6 +1387,7 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
   @Output() pageSizeChange = new EventEmitter<number>();
   @Output() selectionChange = new EventEmitter<Record<string, unknown>[]>();
   @Output() cellAction = new EventEmitter<{ row: Record<string, unknown>; action: string }>();
+  @Output() columnWidthsChange = new EventEmitter<Record<string, string>>();
 
   // ─── Internal State ───
   sortColumn = '';
@@ -1404,12 +1408,23 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
   private boundMouseMove: ((e: MouseEvent) => void) | null = null;
   private boundMouseUp: (() => void) | null = null;
 
+  // Persistence state
+  private gridSettingsService = inject(GridSettingsService);
+  private settingsLoaded = false;
+  private saveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(private elementRef: ElementRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['columns'] && changes['columns'].currentValue) {
       // Initialize visible columns from column definitions
       this.visibleColumns = new Set(this.columns.filter((c) => !c.hidden).map((c) => c.key));
+
+      // Load persisted settings once after first column initialization
+      if (!this.settingsLoaded && this.gridId) {
+        this.loadSettings();
+        this.settingsLoaded = true;
+      }
     }
     if (changes['data']) {
       this.selectedRows.clear();
@@ -1420,6 +1435,9 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.onResizeEnd();
+    if (this.saveDebounceTimer) {
+      clearTimeout(this.saveDebounceTimer);
+    }
   }
 
   // ─── Computed ───
@@ -1557,6 +1575,7 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
       this.visibleColumns.add(key);
     }
     this.visibleColumnsChange.emit(Array.from(this.visibleColumns));
+    this.saveSettings();
   }
 
   // ─── Sorting ───
@@ -1577,6 +1596,7 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
     }
     this.currentPage = 1;
     this.sortChange.emit({ column: this.sortColumn, direction: this.sortDirection });
+    this.saveSettings();
   }
 
   // ─── Filtering ───
@@ -1605,6 +1625,7 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
       this.pageSizeChange.emit(this.pageSize);
       this.pageChange.emit(1);
     }
+    this.saveSettings();
   }
 
   // ─── Row Click ───
@@ -1653,6 +1674,7 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
   }
 
   private onResizeEnd(): void {
+    const wasResizing = !!this.resizingColumn;
     this.resizingColumn = null;
     if (this.boundMouseMove) {
       document.removeEventListener('mousemove', this.boundMouseMove);
@@ -1662,6 +1684,54 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
     }
     this.boundMouseMove = null;
     this.boundMouseUp = null;
+    if (wasResizing) {
+      this.columnWidthsChange.emit({ ...this.columnWidths });
+      this.saveSettings();
+    }
+  }
+
+  // ─── Settings Persistence ───
+
+  private loadSettings(): void {
+    const saved = this.gridSettingsService.load(this.gridId);
+    if (!saved) return;
+
+    if (saved.visibleColumns?.length) {
+      // Only restore columns that still exist in the column definitions
+      const validKeys = new Set(this.columns.map((c) => c.key));
+      const restored = saved.visibleColumns.filter((k) => validKeys.has(k));
+      if (restored.length > 0) {
+        this.visibleColumns = new Set(restored);
+      }
+    }
+    if (saved.columnWidths) {
+      this.columnWidths = { ...saved.columnWidths };
+    }
+    if (saved.sortColumn !== undefined) {
+      this.sortColumn = saved.sortColumn;
+      this.sortDirection = saved.sortDirection ?? null;
+    }
+    if (saved.pageSize) {
+      this.pageSize = saved.pageSize;
+    }
+  }
+
+  private saveSettings(): void {
+    if (!this.gridId) return;
+
+    if (this.saveDebounceTimer) {
+      clearTimeout(this.saveDebounceTimer);
+    }
+    this.saveDebounceTimer = setTimeout(() => {
+      this.gridSettingsService.save(this.gridId, {
+        visibleColumns: Array.from(this.visibleColumns),
+        columnWidths: { ...this.columnWidths },
+        sortColumn: this.sortColumn,
+        sortDirection: this.sortDirection,
+        pageSize: this.pageSize,
+      });
+      this.saveDebounceTimer = null;
+    }, 300);
   }
 
   // ─── Sticky Columns ───

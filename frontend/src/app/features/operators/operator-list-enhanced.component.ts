@@ -2,16 +2,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { OperatorService } from '../../core/services/operator.service';
+import { OperatorService, PaginatedResponse } from '../../core/services/operator.service';
 import { Operator } from '../../core/models/operator.model';
 import { FormErrorHandlerService } from '../../core/services/form-error-handler.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  AeroDataGridComponent,
-  DataGridColumn,
-  DataGridSortEvent,
-} from '../../core/design-system';
+import { AeroDataGridComponent, DataGridColumn, DataGridSortEvent } from '../../core/design-system';
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import {
   FilterBarComponent,
@@ -53,17 +49,22 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'operator-list'"
           [columns]="columns"
           [data]="operators"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             nombre_completo: userTemplate,
             contacto: contactTemplate,
             licencia: licenseTemplate,
           }"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="viewOperator($event)"
           (sortChange)="onSortChange($event)"
         >
@@ -234,6 +235,9 @@ export class OperatorListEnhancedComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   operators: Operator[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   loading = false;
   filters = { status: '', search: '' };
   errorMessage = '';
@@ -260,7 +264,13 @@ export class OperatorListEnhancedComponent implements OnInit {
   columns: DataGridColumn[] = [
     // ─── Visible columns ───
     { key: 'dni', label: 'DNI', type: 'text', sortable: true, filterable: true },
-    { key: 'nombre_completo', label: 'Operador', type: 'template', sortable: true, filterable: true },
+    {
+      key: 'nombre_completo',
+      label: 'Operador',
+      type: 'template',
+      sortable: true,
+      filterable: true,
+    },
     { key: 'contacto', label: 'Contacto', type: 'template' },
     { key: 'licencia', label: 'Licencia', type: 'template' },
     { key: 'especialidad', label: 'Especialidad', type: 'text', sortable: true, filterable: true },
@@ -291,20 +301,62 @@ export class OperatorListEnhancedComponent implements OnInit {
     },
 
     // ─── Legacy hidden columns (from 305_RRHH.tbl_C05000_Trabajador) ───
-    { key: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', hidden: true, sortable: true },
-    { key: 'apellido_materno', label: 'Apellido Materno', type: 'text', hidden: true, sortable: true },
+    {
+      key: 'apellido_paterno',
+      label: 'Apellido Paterno',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'apellido_materno',
+      label: 'Apellido Materno',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
     { key: 'nombres', label: 'Nombres', type: 'text', hidden: true, sortable: true },
-    { key: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'fecha_nacimiento',
+      label: 'Fecha Nacimiento',
+      type: 'date',
+      hidden: true,
+      sortable: true,
+    },
     { key: 'direccion', label: 'Dirección', type: 'text', hidden: true, sortable: true },
     { key: 'telefono', label: 'Teléfono', type: 'text', hidden: true, sortable: true },
-    { key: 'correo_electronico', label: 'Correo Electrónico', type: 'text', hidden: true, sortable: true },
+    {
+      key: 'correo_electronico',
+      label: 'Correo Electrónico',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
     { key: 'cargo', label: 'Cargo', type: 'text', hidden: true, sortable: true },
     { key: 'tipo_contrato', label: 'Tipo Contrato', type: 'text', hidden: true, sortable: true },
     { key: 'fecha_cese', label: 'Fecha Cese', type: 'date', hidden: true, sortable: true },
-    { key: 'licencia_conducir', label: 'Licencia Conducir', type: 'text', hidden: true, sortable: true },
-    { key: 'vencimiento_licencia', label: 'Vencimiento Licencia', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'licencia_conducir',
+      label: 'Licencia Conducir',
+      type: 'text',
+      hidden: true,
+      sortable: true,
+    },
+    {
+      key: 'vencimiento_licencia',
+      label: 'Vencimiento Licencia',
+      type: 'date',
+      hidden: true,
+      sortable: true,
+    },
     { key: 'created_at', label: 'Fecha Registro', type: 'date', hidden: true, sortable: true },
-    { key: 'updated_at', label: 'Última Actualización', type: 'date', hidden: true, sortable: true },
+    {
+      key: 'updated_at',
+      label: 'Última Actualización',
+      type: 'date',
+      hidden: true,
+      sortable: true,
+    },
   ];
 
   actionsTemplate: unknown;
@@ -315,21 +367,40 @@ export class OperatorListEnhancedComponent implements OnInit {
 
   loadOperators(): void {
     this.loading = true;
-    this.operatorService.getAll(this.filters).subscribe({
-      next: (data) => {
-        this.operators = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.errorMessage = this.errorHandler.getErrorMessage(err);
-        this.loading = false;
-      },
-    });
+    this.operatorService
+      .getAllPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        search: this.filters.search || undefined,
+        estado: this.filters.status || undefined,
+      })
+      .subscribe({
+        next: (res: PaginatedResponse<Operator>) => {
+          this.operators = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.errorMessage = this.errorHandler.getErrorMessage(err);
+          this.loading = false;
+        },
+      });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadOperators();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadOperators();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.status = (filters['status'] as string) || '';
+    this.page = 1;
     this.loadOperators();
   }
 

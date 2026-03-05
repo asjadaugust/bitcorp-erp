@@ -53,6 +53,7 @@ import { AeroButtonComponent } from '../../core/design-system';
         ></app-filter-bar>
 
         <aero-data-grid
+          [gridId]="'periodo-inoperatividad-list'"
           [columns]="columns"
           [data]="periodos"
           [loading]="loading"
@@ -87,6 +88,7 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <aero-data-grid
+        [gridId]="'periodo-inoperatividad-list'"
         [columns]="columns"
         [data]="periodos"
         [loading]="loading"

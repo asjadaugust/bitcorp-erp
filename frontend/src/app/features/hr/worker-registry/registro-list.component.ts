@@ -17,6 +17,7 @@ import {
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../../core/design-system';
+import { HR_TABS } from '../hr-tabs';
 
 @Component({
   selector: 'app-registro-list',
@@ -36,6 +37,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       icon="fa-id-card"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToNew()">
@@ -50,11 +52,17 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'registro-trabajador-list'"
           [columns]="columns"
           [data]="registros"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
           (sortChange)="onSort($event)"
         >
@@ -67,8 +75,12 @@ export class RegistroListComponent implements OnInit {
   private readonly service = inject(WorkerRegistryService);
   private readonly router = inject(Router);
 
+  tabs = HR_TABS;
   registros: RegistroTrabajadorLista[] = [];
   loading = false;
+  total = 0;
+  pageSize = 50;
+  page = 1;
   filters = { search: '', estatus: '', sub_grupo: '' };
 
   breadcrumbs: Breadcrumb[] = [
@@ -153,38 +165,44 @@ export class RegistroListComponent implements OnInit {
 
   loadRegistros(): void {
     this.loading = true;
-    const estatus = this.filters.estatus || undefined;
-    const sub_grupo = this.filters.sub_grupo || undefined;
-    const search = this.filters.search || undefined;
-    this.service.getRegistros(1, 100, estatus, sub_grupo, search).subscribe({
-      next: (res) => {
-        this.registros = res.data;
-        this.loading = false;
-      },
-      error: () => {
-        this.registros = [];
-        this.loading = false;
-      },
-    });
+    this.service
+      .getRegistros(
+        this.page,
+        this.pageSize,
+        this.filters.estatus || undefined,
+        this.filters.sub_grupo || undefined,
+        this.filters.search || undefined
+      )
+      .subscribe({
+        next: (res) => {
+          this.registros = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.registros = [];
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
-    const newEstatus = (filters['estatus'] as string) || '';
-    const newSubGrupo = (filters['sub_grupo'] as string) || '';
-    const newSearch = (filters['search'] as string) || '';
+    this.filters.search = (filters['search'] as string) || '';
+    this.filters.estatus = (filters['estatus'] as string) || '';
+    this.filters.sub_grupo = (filters['sub_grupo'] as string) || '';
+    this.page = 1;
+    this.loadRegistros();
+  }
 
-    const serverFilterChanged =
-      newEstatus !== this.filters.estatus ||
-      newSubGrupo !== this.filters.sub_grupo ||
-      newSearch !== this.filters.search;
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadRegistros();
+  }
 
-    this.filters.estatus = newEstatus;
-    this.filters.sub_grupo = newSubGrupo;
-    this.filters.search = newSearch;
-
-    if (serverFilterChanged) {
-      this.loadRegistros();
-    }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadRegistros();
   }
 
   onRowClick(row: RegistroTrabajadorLista): void {

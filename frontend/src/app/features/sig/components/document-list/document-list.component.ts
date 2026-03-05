@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SigService, SigDocument } from '../../services/sig.service';
+import { SigService, SigDocument, PaginatedResponse } from '../../services/sig.service';
 import {
   AeroDataGridComponent,
   DataGridColumn,
@@ -31,12 +31,17 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <aero-data-grid
+        [gridId]="'sig-document-list'"
         [columns]="columns"
-        [data]="filteredDocuments"
+        [data]="documents"
         [loading]="loading"
         [dense]="true"
         [showColumnChooser]="true"
+        [serverSide]="true"
+        [totalItems]="total"
         [actionsTemplate]="actionsTemplate"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       >
       </aero-data-grid>
 
@@ -90,9 +95,11 @@ export class DocumentListComponent implements OnInit {
   private router = inject(Router);
 
   documents: SigDocument[] = [];
-  filteredDocuments: SigDocument[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   loading = false;
-  filters = { search: '', category: '' };
+  filters = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -149,44 +156,40 @@ export class DocumentListComponent implements OnInit {
 
   loadDocuments() {
     this.loading = true;
-    this.sigService.getDocuments().subscribe({
-      next: (response: unknown) => {
-        // Handle paginated response { success, data, meta/pagination } or direct array
-        if (response && typeof response === 'object' && 'data' in response) {
-          this.documents = Array.isArray(response.data) ? response.data : [];
-        } else if (Array.isArray(response)) {
-          this.documents = response;
-        } else {
+    this.sigService
+      .getDocumentsPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        estado: this.filters.estado || undefined,
+      })
+      .subscribe({
+        next: (res: PaginatedResponse<SigDocument>) => {
+          this.documents = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
           this.documents = [];
-        }
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.documents = [];
-        this.filteredDocuments = [];
-        this.loading = false;
-      },
-    });
+          this.loading = false;
+        },
+      });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadDocuments();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadDocuments();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
-    this.filters.category = (filters['category'] as string) || '';
-    this.applyFilters();
-  }
-
-  applyFilters(): void {
-    this.filteredDocuments = this.documents.filter((doc) => {
-      const matchesSearch =
-        !this.filters.search ||
-        doc.titulo?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        doc.codigo?.toLowerCase().includes(this.filters.search.toLowerCase());
-
-      const matchesCategory = !this.filters.category || doc.estado === this.filters.category;
-
-      return matchesSearch && matchesCategory;
-    });
+    this.filters.estado = (filters['estado'] as string) || '';
+    this.page = 1;
+    this.loadDocuments();
   }
 
   uploadDocument(): void {

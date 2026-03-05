@@ -56,6 +56,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'orden-alquiler-list'"
           [columns]="columns"
           [data]="ordenes"
           [loading]="loading"
@@ -404,7 +405,7 @@ export class OrdenAlquilerListComponent implements OnInit {
   loading = false;
   filtroEstado = '';
   page = 1;
-  limit = 20;
+  limit = 10;
   total = 0;
 
   breadcrumbs: Breadcrumb[] = [

@@ -107,6 +107,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
         @if (activeTab === 'movements') {
           <div class="movements-container">
             <aero-data-grid
+              [gridId]="'product-detail'"
               [columns]="movementColumns"
               [data]="movements"
               [loading]="loadingMovements"

@@ -113,6 +113,7 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
 
       <!-- Data Table -->
       <aero-data-grid
+        [gridId]="'valuation-registry'"
         [columns]="tableColumns"
         [data]="registryData"
         [loading]="loading"

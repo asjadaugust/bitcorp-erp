@@ -66,6 +66,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'maintenance-list'"
           [columns]="columns"
           [data]="records"
           [loading]="loading"

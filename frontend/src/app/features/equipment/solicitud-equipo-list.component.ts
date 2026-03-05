@@ -69,6 +69,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'solicitud-equipo-list'"
           [columns]="columns"
           [data]="solicitudes"
           [loading]="loading"
@@ -212,7 +213,7 @@ export class SolicitudEquipoListComponent implements OnInit {
   loading = false;
   filtroEstado = '';
   page = 1;
-  limit = 20;
+  limit = 10;
   total = 0;
   totalPages = 1;
 

@@ -50,6 +50,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'permission-list'"
           [columns]="columns"
           [data]="filteredPermisos"
           [loading]="loading"

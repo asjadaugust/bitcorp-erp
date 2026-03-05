@@ -78,6 +78,7 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'daily-report-list'"
           [columns]="columns"
           [data]="reports"
           [loading]="loading"

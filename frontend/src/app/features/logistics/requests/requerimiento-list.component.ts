@@ -17,6 +17,7 @@ import {
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../../core/design-system';
+import { LOGISTICS_TABS } from '../logistics-tabs';
 
 @Component({
   selector: 'app-requerimiento-list',
@@ -36,6 +37,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       icon="fa-clipboard-list"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToNew()">
@@ -50,11 +52,17 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'requerimiento-list'"
           [columns]="columns"
-          [data]="filteredRequerimientos"
+          [data]="requerimientos"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
           (sortChange)="onSort($event)"
         >
@@ -67,9 +75,12 @@ export class RequerimientoListComponent implements OnInit {
   private readonly solicitudService = inject(SolicitudMaterialService);
   private readonly router = inject(Router);
 
+  tabs = LOGISTICS_TABS;
   requerimientos: Requerimiento[] = [];
-  filteredRequerimientos: Requerimiento[] = [];
   loading = false;
+  total = 0;
+  pageSize = 50;
+  page = 1;
   filters = { search: '' };
 
   breadcrumbs: Breadcrumb[] = [
@@ -90,7 +101,7 @@ export class RequerimientoListComponent implements OnInit {
   columns: DataGridColumn[] = [
     {
       key: 'numero_requerimiento',
-      label: 'N\u00b0 Requerimiento',
+      label: 'Nº Requerimiento',
       type: 'number',
       sortable: true,
     },
@@ -122,34 +133,40 @@ export class RequerimientoListComponent implements OnInit {
 
   loadRequerimientos(): void {
     this.loading = true;
-    this.solicitudService.getRequerimientos({ page: 1, limit: 100 }).subscribe({
-      next: (requerimientos) => {
-        this.requerimientos = requerimientos;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.requerimientos = [];
-        this.filteredRequerimientos = [];
-        this.loading = false;
-      },
-    });
+    this.solicitudService
+      .getRequerimientos({
+        page: this.page,
+        limit: this.pageSize,
+        search: this.filters.search || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.requerimientos = response.data;
+          this.total = response.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.requerimientos = [];
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
-    this.applyFilters();
+    this.page = 1;
+    this.loadRequerimientos();
   }
 
-  applyFilters(): void {
-    this.filteredRequerimientos = this.requerimientos.filter((req) => {
-      const matchesSearch =
-        !this.filters.search ||
-        req.motivo?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        req.solicitado_por?.toLowerCase().includes(this.filters.search.toLowerCase());
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadRequerimientos();
+  }
 
-      return matchesSearch;
-    });
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadRequerimientos();
   }
 
   onRowClick(row: Requerimiento): void {

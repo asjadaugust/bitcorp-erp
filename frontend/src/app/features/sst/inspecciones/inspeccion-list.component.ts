@@ -17,6 +17,7 @@ import {
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../../core/design-system';
+import { SST_TABS } from '../sst-tabs';
 
 @Component({
   selector: 'app-inspeccion-list',
@@ -36,6 +37,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       icon="fa-magnifying-glass"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToNew()">
@@ -50,11 +52,17 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'inspeccion-ssoma-list'"
           [columns]="columns"
-          [data]="filteredInspecciones"
+          [data]="inspecciones"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
           (sortChange)="onSort($event)"
         >
@@ -67,10 +75,13 @@ export class InspeccionListComponent implements OnInit {
   private readonly service = inject(InspeccionSsomaService);
   private readonly router = inject(Router);
 
+  tabs = SST_TABS;
   inspecciones: InspeccionSsomaLista[] = [];
-  filteredInspecciones: InspeccionSsomaLista[] = [];
   loading = false;
-  filters = { search: '', tipo_inspeccion: '', nivel_riesgo: '' };
+  total = 0;
+  pageSize = 50;
+  page = 1;
+  filters = { tipo_inspeccion: '', nivel_riesgo: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
@@ -79,12 +90,6 @@ export class InspeccionListComponent implements OnInit {
   ];
 
   filterConfig: FilterConfig[] = [
-    {
-      key: 'search',
-      label: 'Buscar',
-      type: 'text',
-      placeholder: 'Buscar por lugar...',
-    },
     {
       key: 'tipo_inspeccion',
       label: 'Tipo',
@@ -161,46 +166,42 @@ export class InspeccionListComponent implements OnInit {
 
   loadInspecciones(): void {
     this.loading = true;
-    const tipo = this.filters.tipo_inspeccion || undefined;
-    const riesgo = this.filters.nivel_riesgo || undefined;
-    this.service.getInspecciones(1, 100, tipo, riesgo).subscribe({
-      next: (res) => {
-        this.inspecciones = res.data;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.inspecciones = [];
-        this.filteredInspecciones = [];
-        this.loading = false;
-      },
-    });
+    this.service
+      .getInspecciones({
+        page: this.page,
+        limit: this.pageSize,
+        tipo_inspeccion: this.filters.tipo_inspeccion || undefined,
+        nivel_riesgo: this.filters.nivel_riesgo || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.inspecciones = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.inspecciones = [];
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
-    const newTipo = (filters['tipo_inspeccion'] as string) || '';
-    const newRiesgo = (filters['nivel_riesgo'] as string) || '';
-    const serverFilterChanged =
-      newTipo !== this.filters.tipo_inspeccion || newRiesgo !== this.filters.nivel_riesgo;
-
-    this.filters.search = (filters['search'] as string) || '';
-    this.filters.tipo_inspeccion = newTipo;
-    this.filters.nivel_riesgo = newRiesgo;
-
-    if (serverFilterChanged) {
-      this.loadInspecciones();
-    } else {
-      this.applyFilters();
-    }
+    this.filters.tipo_inspeccion = (filters['tipo_inspeccion'] as string) || '';
+    this.filters.nivel_riesgo = (filters['nivel_riesgo'] as string) || '';
+    this.page = 1;
+    this.loadInspecciones();
   }
 
-  applyFilters(): void {
-    this.filteredInspecciones = this.inspecciones.filter((item) => {
-      const matchesSearch =
-        !this.filters.search ||
-        item.lugar_hallazgo?.toLowerCase().includes(this.filters.search.toLowerCase());
-      return matchesSearch;
-    });
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadInspecciones();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadInspecciones();
   }
 
   onRowClick(row: InspeccionSsomaLista): void {

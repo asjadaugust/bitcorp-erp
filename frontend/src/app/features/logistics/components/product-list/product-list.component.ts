@@ -76,11 +76,14 @@ import { AeroButtonComponent } from '../../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'product-list'"
           [columns]="columns"
-          [data]="filteredProducts"
+          [data]="products"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             code: codeTemplate,
@@ -88,6 +91,8 @@ import { AeroButtonComponent } from '../../../../core/design-system';
             stock: stockTemplate,
             totalValue: totalValueTemplate,
           }"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (sortChange)="onSort($event)"
         >
         </aero-data-grid>
@@ -170,7 +175,9 @@ export class ProductListComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   products: Product[] = [];
-  filteredProducts: Product[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   statItems: StatItem[] = [];
   tabs = LOGISTICS_TABS;
   loading = false;
@@ -308,22 +315,29 @@ export class ProductListComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    this.inventoryService.getProducts().subscribe({
-      next: (data) => {
-        this.products = data;
-        this.calculateStats();
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading products', error);
-        this.loading = false;
-      },
-    });
+    this.inventoryService
+      .getProductsPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        categoria: this.filters.category || undefined,
+        search: this.filters.search || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.products = res.data;
+          this.total = res.pagination.total;
+          this.calculateStats();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading products', error);
+          this.loading = false;
+        },
+      });
   }
 
   calculateStats(): void {
-    this.stats.total = this.products.length;
+    this.stats.total = this.total;
     this.stats.totalValue = this.products.reduce(
       (acc, p) => acc + Number(p.stock_actual) * Number(p.precio_unitario),
       0
@@ -372,34 +386,26 @@ export class ProductListComponent implements OnInit {
     ];
   }
 
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadProducts();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadProducts();
+  }
+
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.category = (filters['category'] as string) || '';
     this.filters.stockStatus = (filters['stockStatus'] as string) || '';
-    this.applyFilters();
+    this.page = 1;
+    this.loadProducts();
   }
 
   onSort(event: { column: string; direction: string | null }): void {
-    // Sort handled client-side by the grid
-  }
-
-  applyFilters(): void {
-    this.filteredProducts = this.products.filter((product) => {
-      const matchesSearch =
-        !this.filters.search ||
-        product.nombre.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        product.codigo.toLowerCase().includes(this.filters.search.toLowerCase());
-
-      const matchesCategory = !this.filters.category || product.categoria === this.filters.category;
-
-      let matchesStock = true;
-      if (this.filters.stockStatus === 'low')
-        matchesStock = product.stock_actual > 0 && product.stock_actual <= 5;
-      if (this.filters.stockStatus === 'out') matchesStock = product.stock_actual <= 0;
-      if (this.filters.stockStatus === 'available') matchesStock = product.stock_actual > 5;
-
-      return matchesSearch && matchesCategory && matchesStock;
-    });
+    // Sort handled server-side
   }
 
   getStockClass(stock: number): string {

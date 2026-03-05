@@ -72,6 +72,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'vale-combustible-list'"
           [columns]="columns"
           [data]="vales"
           [loading]="loading"
@@ -246,7 +247,7 @@ export class ValeCombustibleListComponent implements OnInit {
   loading = false;
   total = 0;
   page = 1;
-  limit = 20;
+  limit = 10;
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Equipos', url: '/equipment' },

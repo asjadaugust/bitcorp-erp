@@ -427,6 +427,7 @@ import { CombustiblePanelComponent } from '../equipment/associations/combustible
           <section class="detail-section">
             <h2>Resumen Acumulado del Contrato</h2>
             <aero-data-grid
+              [gridId]="'valuation-detail'"
               [columns]="acumuladoColumns"
               [data]="acumuladoData"
               [loading]="loadingTab"

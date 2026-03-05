@@ -17,6 +17,7 @@ import {
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../../core/design-system';
+import { ADMINISTRACION_TABS } from '../administracion-tabs';
 
 @Component({
   selector: 'app-petty-cash-list',
@@ -36,6 +37,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       icon="fa-cash-register"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="primary" iconLeft="fa-plus" (clicked)="navigateToNew()">
@@ -50,11 +52,14 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'petty-cash-list'"
           [columns]="columns"
           [data]="filteredCajas"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="filteredCajas.length"
           (rowClick)="onRowClick($event)"
           (sortChange)="onSort($event)"
         >
@@ -67,6 +72,7 @@ export class PettyCashListComponent implements OnInit {
   private readonly pettyCashService = inject(PettyCashService);
   private readonly router = inject(Router);
 
+  tabs = ADMINISTRACION_TABS;
   cajas: CajaChica[] = [];
   filteredCajas: CajaChica[] = [];
   loading = false;
