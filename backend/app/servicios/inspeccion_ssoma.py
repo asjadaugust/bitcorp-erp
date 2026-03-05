@@ -330,9 +330,7 @@ class ServicioInspeccionSsoma:
 
         link_key = _parent_link_key(parent)
         entidad = SeguimientoInspeccion(
-            fecha=(
-                datetime.fromisoformat(datos.fecha) if datos.fecha else None
-            ),
+            fecha=(datetime.fromisoformat(datos.fecha) if datos.fecha else None),
             inspector_dni=datos.inspector_dni,
             inspector=datos.inspector,
             descripcion_inspeccion=datos.descripcion_inspeccion,
@@ -399,9 +397,7 @@ class ServicioInspeccionSsoma:
     async def obtener_reporte(self, reporte_id: int) -> ReporteActoCondicionDetalleDto:
         """Obtener reporte acto/condicion por ID."""
         resultado = await self.db.execute(
-            select(ReporteActoCondicion).where(
-                ReporteActoCondicion.id == reporte_id
-            )
+            select(ReporteActoCondicion).where(ReporteActoCondicion.id == reporte_id)
         )
         entidad = resultado.scalars().first()
         if not entidad:
@@ -450,9 +446,7 @@ class ServicioInspeccionSsoma:
     ) -> ReporteActoCondicionDetalleDto:
         """Actualizar un reporte acto/condicion."""
         resultado = await self.db.execute(
-            select(ReporteActoCondicion).where(
-                ReporteActoCondicion.id == reporte_id
-            )
+            select(ReporteActoCondicion).where(ReporteActoCondicion.id == reporte_id)
         )
         entidad = resultado.scalars().first()
         if not entidad:
@@ -472,9 +466,7 @@ class ServicioInspeccionSsoma:
     async def eliminar_reporte(self, reporte_id: int) -> None:
         """Eliminar un reporte acto/condicion."""
         resultado = await self.db.execute(
-            select(ReporteActoCondicion).where(
-                ReporteActoCondicion.id == reporte_id
-            )
+            select(ReporteActoCondicion).where(ReporteActoCondicion.id == reporte_id)
         )
         entidad = resultado.scalars().first()
         if not entidad:

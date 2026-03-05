@@ -9,7 +9,12 @@ from app.esquemas.evaluacion_proveedor import (
     EvaluacionProveedorCrear,
 )
 from app.servicios.evaluacion_proveedor import ServicioEvaluacionProveedor
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter(
     dependencies=[Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA"))],
@@ -35,7 +40,7 @@ async def listar_evaluaciones(
     usuario: UsuarioActual,
     db: SesionDb,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     resultado: str | None = Query(None),
 ) -> ORJSONResponse:
     """Listar evaluaciones de proveedor con paginacion."""

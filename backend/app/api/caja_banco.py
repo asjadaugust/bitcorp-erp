@@ -12,7 +12,12 @@ from app.esquemas.caja_banco import (
     FlujoCajaBancoCrear,
 )
 from app.servicios.caja_banco import ServicioCajaBanco
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter(
     dependencies=[Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA", "CONTABILIDAD"))],
@@ -81,7 +86,7 @@ async def listar_flujos(
     usuario: UsuarioActual,
     db: SesionDb,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     tipo_movimiento: str | None = Query(None),
     moneda: str | None = Query(None),
     fecha_desde: str | None = Query(None),

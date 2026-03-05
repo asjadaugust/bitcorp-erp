@@ -12,7 +12,12 @@ from app.esquemas.inspeccion_ssoma import (
     SeguimientoInspeccionCrear,
 )
 from app.servicios.inspeccion_ssoma import ServicioInspeccionSsoma
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -28,7 +33,7 @@ async def listar_inspecciones(
     nivel_riesgo: str | None = Query(None),
     estado: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar inspecciones SSOMA con filtros y paginación."""
     servicio = ServicioInspeccionSsoma(db)
@@ -121,7 +126,7 @@ async def listar_reportes(
     tipo_reporte: str | None = Query(None),
     estado: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar reportes acto/condicion con filtros y paginación."""
     servicio = ServicioInspeccionSsoma(db)

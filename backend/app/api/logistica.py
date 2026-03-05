@@ -1,5 +1,4 @@
-"""Router de logística / inventario.
-"""
+"""Router de logística / inventario."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
@@ -19,7 +18,7 @@ async def listar_productos(
     categoria: str | None = Query(None),
     search: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar productos con filtros y paginación."""
     servicio = ServicioLogistica(db)
@@ -47,12 +46,16 @@ async def listar_movimientos(
     fecha_inicio: str | None = Query(None),
     fecha_fin: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar movimientos con filtros y paginación."""
     servicio = ServicioLogistica(db)
     datos, total = await servicio.listar_movimientos(
-        tipo=tipo, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, pagina=page, limite=limit
+        tipo=tipo,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
+        pagina=page,
+        limite=limit,
     )
     return enviar_paginado([d.model_dump() for d in datos], page, limit, total)
 

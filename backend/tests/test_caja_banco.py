@@ -185,9 +185,7 @@ async def test_detalle_movimiento_crud() -> None:
         assert detalles[0]["concepto"] == "Pago proveedor"
 
         # Delete detail line
-        resp = await c.delete(
-            f"/api/bank-cash/flujos/{flujo_id}/detalles/{detalle_id}"
-        )
+        resp = await c.delete(f"/api/bank-cash/flujos/{flujo_id}/detalles/{detalle_id}")
         assert resp.status_code == 204
 
         # Verify deleted

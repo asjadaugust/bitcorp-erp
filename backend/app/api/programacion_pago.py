@@ -1,5 +1,4 @@
-"""Router de programación de pagos.
-"""
+"""Router de programación de pagos."""
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import ORJSONResponse
@@ -11,10 +10,17 @@ from app.esquemas.programacion_pago import (
     ProgramacionPagoCrear,
 )
 from app.servicios.programacion_pago import ServicioProgramacionPago
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter(
-    dependencies=[Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA", "DIRECTOR", "CONTABILIDAD"))],
+    dependencies=[
+        Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA", "DIRECTOR", "CONTABILIDAD"))
+    ],
 )
 
 
@@ -25,7 +31,7 @@ async def listar_programaciones(
     proveedor_id: int | None = Query(None),
     estado: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar programaciones de pago."""
     servicio = ServicioProgramacionPago(db)

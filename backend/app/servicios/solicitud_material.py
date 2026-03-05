@@ -54,7 +54,9 @@ def _solicitud_a_lista_dto(e: SolicitudMaterial) -> SolicitudMaterialListaDto:
     )
 
 
-def _detalle_solicitud_a_dto(e: DetalleSolicitudMaterial) -> DetalleSolicitudMaterialDto:
+def _detalle_solicitud_a_dto(
+    e: DetalleSolicitudMaterial,
+) -> DetalleSolicitudMaterialDto:
     return DetalleSolicitudMaterialDto(
         id=e.id,
         solicitud_legacy_id=e.solicitud_legacy_id,
@@ -75,7 +77,9 @@ def _requerimiento_a_lista_dto(e: Requerimiento) -> RequerimientoListaDto:
         id=e.id,
         numero_requerimiento=e.numero_requerimiento,
         motivo=e.motivo,
-        fecha_requerimiento=e.fecha_requerimiento.isoformat() if e.fecha_requerimiento else None,
+        fecha_requerimiento=(
+            e.fecha_requerimiento.isoformat() if e.fecha_requerimiento else None
+        ),
         solicitado_por=e.solicitado_por,
     )
 
@@ -113,9 +117,7 @@ class ServicioSolicitudMaterial:
 
     async def listar_categorias(self) -> list[CategoriaDto]:
         """Listar todas las categorias."""
-        resultado = await self.db.execute(
-            select(Categoria).order_by(Categoria.id)
-        )
+        resultado = await self.db.execute(select(Categoria).order_by(Categoria.id))
         entidades = list(resultado.scalars().all())
         logger.info("categorias_listadas", total=len(entidades))
         return [_categoria_a_dto(e) for e in entidades]
@@ -164,7 +166,9 @@ class ServicioSolicitudMaterial:
             id=entidad.id,
             legacy_id=entidad.legacy_id,
             motivo=entidad.motivo,
-            fecha_solicitud=entidad.fecha_solicitud.isoformat() if entidad.fecha_solicitud else None,
+            fecha_solicitud=(
+                entidad.fecha_solicitud.isoformat() if entidad.fecha_solicitud else None
+            ),
             solicitado_por=entidad.solicitado_por,
             created_at=entidad.created_at.isoformat() if entidad.created_at else None,
             updated_at=entidad.updated_at.isoformat() if entidad.updated_at else None,
@@ -176,7 +180,9 @@ class ServicioSolicitudMaterial:
         entidad = SolicitudMaterial(
             motivo=datos.motivo,
             fecha_solicitud=(
-                date.fromisoformat(datos.fecha_solicitud) if datos.fecha_solicitud else None
+                date.fromisoformat(datos.fecha_solicitud)
+                if datos.fecha_solicitud
+                else None
             ),
             solicitado_por=datos.solicitado_por,
         )
@@ -192,7 +198,9 @@ class ServicioSolicitudMaterial:
                 cantidad=det.cantidad,
                 unidad_medida=det.unidad_medida,
                 fecha_requerida=(
-                    date.fromisoformat(det.fecha_requerida) if det.fecha_requerida else None
+                    date.fromisoformat(det.fecha_requerida)
+                    if det.fecha_requerida
+                    else None
                 ),
                 marca_sugerida=det.marca_sugerida,
                 descripcion=det.descripcion,
@@ -297,7 +305,9 @@ class ServicioSolicitudMaterial:
             numero_requerimiento=entidad.numero_requerimiento,
             motivo=entidad.motivo,
             fecha_requerimiento=(
-                entidad.fecha_requerimiento.isoformat() if entidad.fecha_requerimiento else None
+                entidad.fecha_requerimiento.isoformat()
+                if entidad.fecha_requerimiento
+                else None
             ),
             solicitado_por=entidad.solicitado_por,
             created_at=entidad.created_at.isoformat() if entidad.created_at else None,
@@ -317,7 +327,9 @@ class ServicioSolicitudMaterial:
             numero_requerimiento=next_num,
             motivo=datos.motivo,
             fecha_requerimiento=(
-                date.fromisoformat(datos.fecha_requerimiento) if datos.fecha_requerimiento else None
+                date.fromisoformat(datos.fecha_requerimiento)
+                if datos.fecha_requerimiento
+                else None
             ),
             solicitado_por=datos.solicitado_por,
         )
@@ -333,7 +345,9 @@ class ServicioSolicitudMaterial:
                 cantidad=det.cantidad,
                 unidad_medida=det.unidad_medida,
                 fecha_requerida=(
-                    date.fromisoformat(det.fecha_requerida) if det.fecha_requerida else None
+                    date.fromisoformat(det.fecha_requerida)
+                    if det.fecha_requerida
+                    else None
                 ),
                 marca_sugerida=det.marca_sugerida,
                 descripcion=det.descripcion,
@@ -360,7 +374,9 @@ class ServicioSolicitudMaterial:
 
         campos = datos.model_dump(exclude_unset=True)
         if "fecha_requerimiento" in campos and campos["fecha_requerimiento"]:
-            campos["fecha_requerimiento"] = date.fromisoformat(campos["fecha_requerimiento"])
+            campos["fecha_requerimiento"] = date.fromisoformat(
+                campos["fecha_requerimiento"]
+            )
         for campo, valor in campos.items():
             setattr(entidad, campo, valor)
 

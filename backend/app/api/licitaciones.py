@@ -1,13 +1,21 @@
-"""Router de licitaciones.
-"""
+"""Router de licitaciones."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
 
 from app.core.dependencias import SesionDb, UsuarioActual
-from app.esquemas.licitacion import LicitacionActualizar, LicitacionCrear, TransicionEstado
+from app.esquemas.licitacion import (
+    LicitacionActualizar,
+    LicitacionCrear,
+    TransicionEstado,
+)
 from app.servicios.licitacion import ServicioLicitacion
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -19,7 +27,7 @@ async def listar_licitaciones(
     estado: str | None = Query(None),
     search: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar licitaciones con filtros y paginación."""
     servicio = ServicioLicitacion(db)
@@ -51,7 +59,10 @@ async def crear_licitacion(
 
 @router.put("/{licitacion_id}")
 async def actualizar_licitacion(
-    licitacion_id: int, datos: LicitacionActualizar, usuario: UsuarioActual, db: SesionDb
+    licitacion_id: int,
+    datos: LicitacionActualizar,
+    usuario: UsuarioActual,
+    db: SesionDb,
 ) -> ORJSONResponse:
     """Actualizar una licitación existente."""
     servicio = ServicioLicitacion(db)

@@ -15,13 +15,10 @@ class NotificationsRepository {
   Future<List<NotificationModel>> getNotifications({
     bool? unreadOnly,
     int page = 1,
-    int limit = 20,
+    int limit = 10,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'limit': limit,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
       if (unreadOnly == true) {
         queryParams['leido'] = false;
       }

@@ -1,5 +1,4 @@
-"""Router de SIG / documentos.
-"""
+"""Router de SIG / documentos."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
@@ -7,7 +6,12 @@ from fastapi.responses import ORJSONResponse
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.documento_sig import DocumentoSigActualizar, DocumentoSigCrear
 from app.servicios.documento_sig import ServicioDocumentoSig
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -20,13 +24,16 @@ async def listar_documentos(
     estado: str | None = Query(None),
     search: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar documentos SIG con filtros y paginación."""
     servicio = ServicioDocumentoSig(db)
     datos, total = await servicio.listar(
-        tipo_documento=tipo_documento, estado=estado, busqueda=search,
-        pagina=page, limite=limit,
+        tipo_documento=tipo_documento,
+        estado=estado,
+        busqueda=search,
+        pagina=page,
+        limite=limit,
     )
     return enviar_paginado([d.model_dump() for d in datos], page, limit, total)
 
@@ -53,7 +60,10 @@ async def crear_documento(
 
 @router.put("/documents/{documento_id}")
 async def actualizar_documento(
-    documento_id: int, datos: DocumentoSigActualizar, usuario: UsuarioActual, db: SesionDb
+    documento_id: int,
+    datos: DocumentoSigActualizar,
+    usuario: UsuarioActual,
+    db: SesionDb,
 ) -> ORJSONResponse:
     """Actualizar un documento existente."""
     servicio = ServicioDocumentoSig(db)

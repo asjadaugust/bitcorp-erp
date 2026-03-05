@@ -1,14 +1,21 @@
-"""Router de tareas programadas.
-"""
+"""Router de tareas programadas."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
 
 from app.core.dependencias import SesionDb, UsuarioActual
-from app.esquemas.tarea_programada import TareaProgramadaActualizar, TareaProgramadaCrear
+from app.esquemas.tarea_programada import (
+    TareaProgramadaActualizar,
+    TareaProgramadaCrear,
+)
 from app.servicios.tarea_programada import ServicioTareaProgramada
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -26,7 +33,7 @@ async def listar_tareas(
     fecha_inicio: str | None = Query(None),
     fecha_fin: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar tareas programadas."""
     servicio = ServicioTareaProgramada(db)
@@ -63,7 +70,10 @@ async def crear_tarea(
 
 @router.put("/tasks/{tarea_id}")
 async def actualizar_tarea(
-    tarea_id: int, datos: TareaProgramadaActualizar, usuario: UsuarioActual, db: SesionDb
+    tarea_id: int,
+    datos: TareaProgramadaActualizar,
+    usuario: UsuarioActual,
+    db: SesionDb,
 ) -> ORJSONResponse:
     """Actualizar una tarea programada."""
     servicio = ServicioTareaProgramada(db)

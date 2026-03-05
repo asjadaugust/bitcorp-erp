@@ -1,5 +1,4 @@
-"""Router de checklists de inspección.
-"""
+"""Router de checklists de inspección."""
 
 from datetime import date as _date
 from typing import Any
@@ -27,7 +26,7 @@ async def listar_plantillas(
     tipo_equipo: str | None = Query(None),
     activo: bool | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar plantillas de checklists."""
     servicio = ServicioChecklist(db)
@@ -80,7 +79,7 @@ async def listar_inspecciones(
     equipo_id: int | None = Query(None),
     estado: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar inspecciones."""
     servicio = ServicioChecklist(db)
@@ -143,9 +142,7 @@ async def estadisticas_inspecciones(
 
 
 @router.get("/inspections/overdue")
-async def inspecciones_vencidas(
-    usuario: UsuarioActual, db: SesionDb
-) -> ORJSONResponse:
+async def inspecciones_vencidas(usuario: UsuarioActual, db: SesionDb) -> ORJSONResponse:
     """Inspecciones vencidas por frecuencia de plantilla."""
     result = await db.execute(
         text(
@@ -169,9 +166,9 @@ async def inspecciones_vencidas(
                 "equipo_id": r["equipo_id"],
                 "plantilla_id": r["plantilla_id"],
                 "estado": r["estado"],
-                "fecha_inspeccion": r["fecha_inspeccion"].isoformat()
-                if r["fecha_inspeccion"]
-                else None,
+                "fecha_inspeccion": (
+                    r["fecha_inspeccion"].isoformat() if r["fecha_inspeccion"] else None
+                ),
                 "plantilla_nombre": r["plantilla_nombre"],
                 "frecuencia": r["frecuencia"],
             }
@@ -223,7 +220,7 @@ async def listar_observaciones(
     accion_requerida: str | None = Query(None),
     es_critico: bool | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar observaciones (ítems no conformes) de inspecciones."""
     conditions = ["cr.conforme = FALSE"]
@@ -309,7 +306,9 @@ async def listar_observaciones(
             "equipo_codigo": r["equipo_codigo"],
             "equipo_marca": r["equipo_marca"],
             "equipo_modelo": r["equipo_modelo"],
-            "fecha_inspeccion": r["fecha_inspeccion"].isoformat() if r["fecha_inspeccion"] else None,
+            "fecha_inspeccion": (
+                r["fecha_inspeccion"].isoformat() if r["fecha_inspeccion"] else None
+            ),
             "item_descripcion": r["item_descripcion"],
             "categoria": r["categoria"],
             "es_critico": r["es_critico"],

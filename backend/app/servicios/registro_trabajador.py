@@ -164,14 +164,10 @@ class ServicioRegistroTrabajador:
             trabajador_dni=datos.trabajador_dni,
             proveedor_ruc=datos.proveedor_ruc,
             fecha_ingreso=(
-                date.fromisoformat(datos.fecha_ingreso)
-                if datos.fecha_ingreso
-                else None
+                date.fromisoformat(datos.fecha_ingreso) if datos.fecha_ingreso else None
             ),
             fecha_cese=(
-                date.fromisoformat(datos.fecha_cese)
-                if datos.fecha_cese
-                else None
+                date.fromisoformat(datos.fecha_cese) if datos.fecha_cese else None
             ),
             estatus=datos.estatus,
             sub_grupo=datos.sub_grupo,
@@ -245,14 +241,10 @@ class ServicioRegistroTrabajador:
             cargo=datos.cargo,
             salario=datos.salario,
             fecha_inicio=(
-                date.fromisoformat(datos.fecha_inicio)
-                if datos.fecha_inicio
-                else None
+                date.fromisoformat(datos.fecha_inicio) if datos.fecha_inicio else None
             ),
             fecha_fin=(
-                date.fromisoformat(datos.fecha_fin)
-                if datos.fecha_fin
-                else None
+                date.fromisoformat(datos.fecha_fin) if datos.fecha_fin else None
             ),
             numero_contrato=datos.numero_contrato,
             registro_trabajador_legacy_id=link_key,
@@ -300,9 +292,7 @@ class ServicioRegistroTrabajador:
 
     # ── EdtTareo (read-only) ──────────────────────────────────────────
 
-    async def listar_edt_tareo(
-        self, tareo_id: int | None = None
-    ) -> list[EdtTareoDto]:
+    async def listar_edt_tareo(self, tareo_id: int | None = None) -> list[EdtTareoDto]:
         """Listar EdtTareo, opcionalmente filtrado por tareo_id."""
         consulta = select(EdtTareo)
         if tareo_id is not None:

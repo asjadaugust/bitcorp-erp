@@ -170,9 +170,7 @@ async def test_inspeccion_filtros() -> None:
         assert resp.status_code == 200
         datos = resp.json()
         assert datos["pagination"]["total"] >= 1
-        assert any(
-            i["tipo_inspeccion"] == f"TIPO_{uid}" for i in datos["data"]
-        )
+        assert any(i["tipo_inspeccion"] == f"TIPO_{uid}" for i in datos["data"])
 
         # Filter by nivel_riesgo
         resp = await c.get(f"/api/sst/inspecciones?nivel_riesgo=NR_{uid}")

@@ -45,10 +45,14 @@ def _solicitud_a_lista_dto(e: SolicitudCaja) -> SolicitudCajaListaDto:
         dni_usuario=e.dni_usuario,
         nombre=e.nombre,
         motivo=e.motivo,
-        monto_solicitado=float(e.monto_solicitado) if e.monto_solicitado is not None else None,
+        monto_solicitado=(
+            float(e.monto_solicitado) if e.monto_solicitado is not None else None
+        ),
         monto_rendido=float(e.monto_rendido) if e.monto_rendido is not None else None,
         monto_devuelto_reembolsado=(
-            float(e.monto_devuelto_reembolsado) if e.monto_devuelto_reembolsado is not None else None
+            float(e.monto_devuelto_reembolsado)
+            if e.monto_devuelto_reembolsado is not None
+            else None
         ),
         estatus=e.estatus,
     )
@@ -135,12 +139,30 @@ class ServicioCajaChica:
             id=entidad.id,
             legacy_id=entidad.legacy_id,
             numero_caja=entidad.numero_caja,
-            saldo_inicial=float(entidad.saldo_inicial) if entidad.saldo_inicial is not None else None,
-            ingreso_total=float(entidad.ingreso_total) if entidad.ingreso_total is not None else None,
-            salida_total=float(entidad.salida_total) if entidad.salida_total is not None else None,
-            saldo_final=float(entidad.saldo_final) if entidad.saldo_final is not None else None,
-            fecha_apertura=entidad.fecha_apertura.isoformat() if entidad.fecha_apertura else None,
-            fecha_cierre=entidad.fecha_cierre.isoformat() if entidad.fecha_cierre else None,
+            saldo_inicial=(
+                float(entidad.saldo_inicial)
+                if entidad.saldo_inicial is not None
+                else None
+            ),
+            ingreso_total=(
+                float(entidad.ingreso_total)
+                if entidad.ingreso_total is not None
+                else None
+            ),
+            salida_total=(
+                float(entidad.salida_total)
+                if entidad.salida_total is not None
+                else None
+            ),
+            saldo_final=(
+                float(entidad.saldo_final) if entidad.saldo_final is not None else None
+            ),
+            fecha_apertura=(
+                entidad.fecha_apertura.isoformat() if entidad.fecha_apertura else None
+            ),
+            fecha_cierre=(
+                entidad.fecha_cierre.isoformat() if entidad.fecha_cierre else None
+            ),
             estatus=entidad.estatus,
             created_at=entidad.created_at.isoformat() if entidad.created_at else None,
             updated_at=entidad.updated_at.isoformat() if entidad.updated_at else None,
@@ -157,7 +179,11 @@ class ServicioCajaChica:
             ingreso_total=0,
             salida_total=0,
             saldo_final=saldo_inicial,
-            fecha_apertura=date.fromisoformat(datos.fecha_apertura) if datos.fecha_apertura else None,
+            fecha_apertura=(
+                date.fromisoformat(datos.fecha_apertura)
+                if datos.fecha_apertura
+                else None
+            ),
             estatus="ABIERTA",
         )
         self.db.add(entidad)
@@ -166,7 +192,9 @@ class ServicioCajaChica:
         logger.info("caja_chica_creada", id=entidad.id)
         return entidad
 
-    async def actualizar_caja(self, caja_id: int, datos: CajaChicaActualizar) -> CajaChica:
+    async def actualizar_caja(
+        self, caja_id: int, datos: CajaChicaActualizar
+    ) -> CajaChica:
         """Actualizar una caja chica."""
         resultado = await self.db.execute(
             select(CajaChica).where(CajaChica.id == caja_id)
@@ -218,14 +246,18 @@ class ServicioCajaChica:
 
         # Recalculate totals
         ingreso_total = sum(
-            float(m.monto) for m in movimientos
+            float(m.monto)
+            for m in movimientos
             if m.entrada_salida == "ENTRADA" and m.monto is not None
         )
         salida_total = sum(
-            float(m.monto) for m in movimientos
+            float(m.monto)
+            for m in movimientos
             if m.entrada_salida == "SALIDA" and m.monto is not None
         )
-        saldo_inicial = float(entidad.saldo_inicial) if entidad.saldo_inicial is not None else 0
+        saldo_inicial = (
+            float(entidad.saldo_inicial) if entidad.saldo_inicial is not None else 0
+        )
 
         entidad.ingreso_total = ingreso_total
         entidad.salida_total = salida_total
@@ -263,7 +295,11 @@ class ServicioCajaChica:
     async def crear_solicitud(self, datos: SolicitudCajaCrear) -> SolicitudCaja:
         """Crear una solicitud de caja."""
         entidad = SolicitudCaja(
-            fecha_solicitud=datetime.fromisoformat(datos.fecha_solicitud) if datos.fecha_solicitud else None,
+            fecha_solicitud=(
+                datetime.fromisoformat(datos.fecha_solicitud)
+                if datos.fecha_solicitud
+                else None
+            ),
             dni_usuario=datos.dni_usuario,
             nombre=datos.nombre,
             motivo=datos.motivo,
@@ -289,15 +325,17 @@ class ServicioCajaChica:
 
         campos = datos.model_dump(exclude_unset=True)
         if "fecha_solicitud" in campos and campos["fecha_solicitud"]:
-            campos["fecha_solicitud"] = datetime.fromisoformat(campos["fecha_solicitud"])
+            campos["fecha_solicitud"] = datetime.fromisoformat(
+                campos["fecha_solicitud"]
+            )
         for campo, valor in campos.items():
             setattr(entidad, campo, valor)
 
         # Auto-calculate monto_devuelto_reembolsado when monto_rendido is set
         if entidad.monto_solicitado is not None and entidad.monto_rendido is not None:
-            entidad.monto_devuelto_reembolsado = (
-                float(entidad.monto_solicitado) - float(entidad.monto_rendido)
-            )
+            entidad.monto_devuelto_reembolsado = float(
+                entidad.monto_solicitado
+            ) - float(entidad.monto_rendido)
 
         await self.db.commit()
         await self.db.refresh(entidad)
@@ -345,7 +383,11 @@ class ServicioCajaChica:
                 )
 
         entidad = MovimientoCaja(
-            fecha_movimiento=datetime.fromisoformat(datos.fecha_movimiento) if datos.fecha_movimiento else None,
+            fecha_movimiento=(
+                datetime.fromisoformat(datos.fecha_movimiento)
+                if datos.fecha_movimiento
+                else None
+            ),
             numero_caja=datos.numero_caja,
             rubro=datos.rubro,
             fecha=date.fromisoformat(datos.fecha) if datos.fecha else None,
@@ -368,9 +410,13 @@ class ServicioCajaChica:
             caja = res_caja.scalars().first()
             if caja:
                 if datos.entrada_salida == "ENTRADA":
-                    caja.ingreso_total = float(caja.ingreso_total or 0) + float(datos.monto)
+                    caja.ingreso_total = float(caja.ingreso_total or 0) + float(
+                        datos.monto
+                    )
                 elif datos.entrada_salida == "SALIDA":
-                    caja.salida_total = float(caja.salida_total or 0) + float(datos.monto)
+                    caja.salida_total = float(caja.salida_total or 0) + float(
+                        datos.monto
+                    )
 
         await self.db.commit()
         await self.db.refresh(entidad)
