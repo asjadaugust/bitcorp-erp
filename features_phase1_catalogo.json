@@ -1,0 +1,71 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "GET /api/catalog/tipos-medio-pago returns all active payment method types",
+      "steps": [
+        "Login as admin at http://localhost:3410/docs",
+        "Call GET /api/catalog/tipos-medio-pago",
+        "Verify response status 200",
+        "Verify response has success: true and data array",
+        "Verify data contains >= 8 items",
+        "Verify each item has: id, codigo, nombre, is_active fields"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "GET /api/catalog/unidades-medida returns all active units of measure",
+      "steps": [
+        "Call GET /api/catalog/unidades-medida with auth token",
+        "Verify response status 200",
+        "Verify data contains >= 42 items",
+        "Verify each item has: id, codigo, nombre, abreviatura, is_active"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "GET /api/catalog/tipos-comprobante returns all active voucher types",
+      "steps": [
+        "Call GET /api/catalog/tipos-comprobante with auth token",
+        "Verify response status 200",
+        "Verify data contains >= 11 items",
+        "Verify items include FACTURA, BOLETA DE VENTA, etc."
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "GET /api/catalog/tipos-operacion returns all active operation types",
+      "steps": [
+        "Call GET /api/catalog/tipos-operacion with auth token",
+        "Verify response status 200",
+        "Verify data contains >= 16 items",
+        "Verify each item has ingreso_salida field (INGRESO or SALIDA)"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Catalog endpoints reject unauthenticated requests",
+      "steps": [
+        "Call GET /api/catalog/tipos-medio-pago without Authorization header",
+        "Verify response status 401",
+        "Call GET /api/catalog/unidades-medida without Authorization header",
+        "Verify response status 401"
+      ],
+      "passes": false
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for catalog endpoints all pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_catalogo.py passes all 5 tests",
+        "Verify no other tests regressed"
+      ],
+      "passes": false
+    }
+  ]
+}

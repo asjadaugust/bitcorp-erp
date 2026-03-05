@@ -1,0 +1,90 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "CRUD operations for permisos (permissions)",
+      "steps": [
+        "Login as admin",
+        "GET /api/permissions/ — verify lists >= 26 permissions",
+        "POST /api/permissions/ with {proceso: 'TEST', modulo: 'TEST', permiso: 'TEST_PERM'} — verify 201",
+        "GET /api/permissions/{id} — verify returns created permission",
+        "PUT /api/permissions/{id} with {permiso: 'UPDATED'} — verify 200",
+        "DELETE /api/permissions/{id} — verify 204"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Assign and revoke permissions from roles",
+      "steps": [
+        "GET /api/permissions/roles/{rol_id}/permisos — verify lists current role permissions",
+        "POST /api/permissions/roles/{rol_id}/permisos with {permiso_id: X} — verify assignment",
+        "GET /api/permissions/roles/{rol_id}/permisos — verify new permission appears",
+        "DELETE /api/permissions/roles/{rol_id}/permisos/{permiso_id} — verify revocation",
+        "GET /api/permissions/roles/{rol_id}/permisos — verify permission removed"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for usuario-rol-unidad-operativa assignments",
+      "steps": [
+        "GET /api/permissions/usuario-rol-uo — verify lists >= 44 assignments",
+        "POST /api/permissions/usuario-rol-uo with valid {usuario_id, rol_id, unidad_operativa_id} — verify 201",
+        "DELETE /api/permissions/usuario-rol-uo/{id} — verify 204"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Componente-UO listing (read-only)",
+      "steps": [
+        "GET /api/permissions/componentes-uo — verify lists >= 3 components",
+        "Verify each item has codigo, componente, unidad_operativa_id"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Permission endpoints require ADMIN_SISTEMA or ADMIN role",
+      "steps": [
+        "Login as OPERADOR user",
+        "GET /api/permissions/ — verify 403 Forbidden",
+        "Login as admin — verify 200"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Permission list page displays permissions in aero-data-grid",
+      "steps": [
+        "Navigate to permission management page",
+        "Verify page uses app-page-layout with correct title",
+        "Verify aero-data-grid shows columns: proceso, modulo, permiso, is_active",
+        "Verify data loads from API"
+      ],
+      "passes": false
+    },
+    {
+      "category": "ui",
+      "description": "Role-permission matrix allows checkbox toggling",
+      "steps": [
+        "Navigate to role permissions management",
+        "Verify matrix shows roles as columns and permissions as rows",
+        "Check a permission checkbox — verify API call to assign",
+        "Uncheck — verify API call to revoke"
+      ],
+      "passes": false
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for permisos pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_permisos.py passes all tests",
+        "Verify no regressions"
+      ],
+      "passes": false
+    }
+  ]
+}

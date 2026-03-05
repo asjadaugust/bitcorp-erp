@@ -1,0 +1,81 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "Migration 010 seeds solicitud_material with 3-5 rows and 2-3 detail lines each",
+      "steps": [
+        "Run: docker-compose exec backend bash scripts/db.sh migrate",
+        "Verify migration 010 applied: docker-compose exec backend bash scripts/db.sh current",
+        "Connect to DB and run: SELECT COUNT(*) FROM logistica.solicitud_material",
+        "Verify count >= 3",
+        "Run: SELECT COUNT(*) FROM logistica.detalle_solicitud_material",
+        "Verify count >= 6"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Migration 010 seeds requerimiento with 3-5 rows and 2-3 detail lines each",
+      "steps": [
+        "Connect to DB and run: SELECT COUNT(*) FROM logistica.requerimiento",
+        "Verify count >= 3",
+        "Run: SELECT COUNT(*) FROM logistica.detalle_requerimiento",
+        "Verify count >= 6"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Migration 010 seeds cotizacion_logistica with 2-3 rows",
+      "steps": [
+        "Connect to DB and run: SELECT COUNT(*) FROM logistica.cotizacion_logistica",
+        "Verify count >= 2"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Migration 010 seeds seleccion_proveedor with 2-3 rows",
+      "steps": [
+        "Connect to DB and run: SELECT COUNT(*) FROM proveedores.seleccion_proveedor",
+        "Verify count >= 2"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Migration 010 seeds SST inspection and report data",
+      "steps": [
+        "Run: SELECT COUNT(*) FROM sst.seguimiento_inspeccion",
+        "Verify count >= 5",
+        "Run: SELECT COUNT(*) FROM sst.reporte_acto_condicion",
+        "Verify count >= 3"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Migration 010 seeds RRHH worker registry and history data",
+      "steps": [
+        "Run: SELECT COUNT(*) FROM rrhh.registro_trabajador",
+        "Verify count >= 5",
+        "Run: SELECT COUNT(*) FROM rrhh.comportamiento_historico",
+        "Verify count >= 3",
+        "Run: SELECT COUNT(*) FROM rrhh.edt_tareo",
+        "Verify count >= 5"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Migration 010 uses valid FK references from existing seed data",
+      "steps": [
+        "Verify no FK constraint violations in docker-compose logs backend",
+        "Run: docker-compose exec backend bash scripts/db.sh fresh",
+        "Verify all migrations apply cleanly (no errors)",
+        "Verify row counts match expectations for all seeded tables"
+      ],
+      "passes": false
+    }
+  ]
+}
