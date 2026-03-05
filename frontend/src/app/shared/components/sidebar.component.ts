@@ -1,6 +1,7 @@
-import { Component, inject, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { Role } from '../../core/types/roles';
 
@@ -11,6 +12,7 @@ interface NavItem {
   roles?: Role[];
   children?: NavItem[];
   expanded?: boolean;
+  exact?: boolean;
 }
 
 @Component({
@@ -61,6 +63,7 @@ interface NavItem {
                 <a
                   [routerLink]="child.route"
                   routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: child.exact ?? false }"
                   class="child-link"
                   *ngIf="hasAccess(child)"
                   (click)="onMobileLinkClick()"
@@ -365,9 +368,19 @@ interface NavItem {
     `,
   ],
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   public authService = inject(AuthService);
+  private router = inject(Router);
   currentUser$ = this.authService.currentUser$;
+  currentUrl = this.router.url;
+
+  ngOnInit() {
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        this.currentUrl = (e as NavigationEnd).urlAfterRedirects;
+      });
+  }
 
   @Input() collapsed = true;
   @Output() collapsedChange = new EventEmitter<boolean>();
@@ -382,15 +395,59 @@ export class SidebarComponent {
     { label: 'Operaciones', route: '/operaciones', icon: 'fa-solid fa-helmet-safety' },
 
     // Nivel 3
-    { label: 'SST', route: '/sst', icon: 'fa-solid fa-user-shield' },
+    {
+      label: 'SST',
+      route: '/sst',
+      icon: 'fa-solid fa-user-shield',
+      children: [
+        { label: 'Incidentes', route: '/sst', icon: 'fa-solid fa-triangle-exclamation', exact: true },
+        { label: 'Inspecciones', route: '/sst/inspecciones', icon: 'fa-solid fa-magnifying-glass' },
+        { label: 'Reportes A/C', route: '/sst/reportes-acto', icon: 'fa-solid fa-file-lines' },
+      ],
+    },
     {
       label: 'Administración',
       route: '/administracion',
       icon: 'fa-solid fa-briefcase',
+      children: [
+        { label: 'Centros de Costo', route: '/administracion/cost-centers', icon: 'fa-solid fa-building-columns' },
+        { label: 'Cuentas por Pagar', route: '/administracion/accounts-payable', icon: 'fa-solid fa-file-invoice-dollar' },
+        { label: 'Cronograma', route: '/administracion/payment-schedules', icon: 'fa-solid fa-calendar-check' },
+        { label: 'Caja Chica', route: '/administracion/petty-cash', icon: 'fa-solid fa-cash-register' },
+        { label: 'Caja y Banco', route: '/administracion/bank-cash', icon: 'fa-solid fa-building-columns' },
+      ],
     },
-    { label: 'RRHH', route: '/rrhh', icon: 'fa-solid fa-users-gear' },
-    { label: 'Logística', route: '/logistics', icon: 'fa-solid fa-boxes-stacked' },
-    { label: 'Proveedores', route: '/providers', icon: 'fa-solid fa-handshake' },
+    {
+      label: 'RRHH',
+      route: '/rrhh',
+      icon: 'fa-solid fa-users-gear',
+      children: [
+        { label: 'Dashboard', route: '/rrhh', icon: 'fa-solid fa-chart-pie', exact: true },
+        { label: 'Personal', route: '/rrhh/employees', icon: 'fa-solid fa-users' },
+        { label: 'Registro', route: '/rrhh/worker-registry', icon: 'fa-solid fa-id-card' },
+      ],
+    },
+    {
+      label: 'Logística',
+      route: '/logistics',
+      icon: 'fa-solid fa-boxes-stacked',
+      children: [
+        { label: 'Productos', route: '/logistics/products', icon: 'fa-solid fa-box' },
+        { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-solid fa-dolly' },
+        { label: 'Solicitudes', route: '/logistics/material-requests', icon: 'fa-solid fa-file-lines' },
+        { label: 'Requerimientos', route: '/logistics/requirements', icon: 'fa-solid fa-clipboard-list' },
+        { label: 'Categorías', route: '/logistics/categories', icon: 'fa-solid fa-tags' },
+      ],
+    },
+    {
+      label: 'Proveedores',
+      route: '/providers',
+      icon: 'fa-solid fa-handshake',
+      children: [
+        { label: 'Lista', route: '/providers', icon: 'fa-solid fa-list', exact: true },
+        { label: 'Evaluaciones', route: '/providers/evaluaciones', icon: 'fa-solid fa-clipboard-check' },
+      ],
+    },
     {
       label: 'Equipo Mecánico',
       route: '/equipment',
@@ -441,8 +498,7 @@ export class SidebarComponent {
 
   isParentActive(item: NavItem): boolean {
     if (!item.children) return false;
-    const currentRoute = window.location.pathname;
-    return item.children.some((child) => currentRoute.startsWith(child.route));
+    return item.children.some((child) => this.currentUrl.startsWith(child.route));
   }
 
   hasAccess(item: NavItem): boolean {

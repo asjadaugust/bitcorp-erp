@@ -1,14 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { Employee } from '../models/employee.model';
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  pagination?: unknown;
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
 }
 
 @Injectable({
@@ -18,21 +21,16 @@ export class EmployeeService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/hr/employees`;
 
-  getEmployees(search?: string): Observable<Employee[]> {
-    let params = new HttpParams();
-    if (search) {
-      params = params.set('search', search);
-    }
-    // API returns paginated response: {success, data, pagination}
-    // Interceptor does NOT unwrap when pagination exists, so we extract data here
-    return this.http.get<ApiResponse<Employee[]>>(this.apiUrl, { params }).pipe(
-      map((response) => {
-        if (response && typeof response === 'object' && 'data' in response) {
-          return response.data as Employee[];
-        }
-        return Array.isArray(response) ? (response as unknown as Employee[]) : [];
-      })
-    );
+  getEmployees(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Observable<PaginatedResponse<Employee>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PaginatedResponse<Employee>>(this.apiUrl, { params: httpParams });
   }
 
   getEmployeeByDni(dni: string): Observable<Employee> {

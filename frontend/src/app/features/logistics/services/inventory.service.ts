@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: { page: number; limit: number; total: number; total_pages: number };
+}
 import { environment } from '../../../../environments/environment';
 import { StatsSummary } from '../../../core/models/stats.model';
 
@@ -62,6 +67,23 @@ export class InventoryService {
   private apiUrl = `${environment.apiUrl}/logistics`;
   private http = inject(HttpClient);
 
+  getProductsPaginated(params?: { page?: number; limit?: number; categoria?: string; search?: string }): Observable<PaginatedResponse<Product>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.categoria) httpParams = httpParams.set('categoria', params.categoria);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/products`, { params: httpParams }).pipe(
+      map((response) => {
+        const data = ((response?.['data'] ?? response) as Product[]);
+        const pagination = (response?.['pagination'] as PaginatedResponse<Product>['pagination']) ?? {
+          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        };
+        return { data: Array.isArray(data) ? data : [], pagination };
+      })
+    );
+  }
+
   getProducts(): Observable<Product[]> {
     return this.http
       .get<{ data: Product[] }>(`${this.apiUrl}/products`)
@@ -82,6 +104,23 @@ export class InventoryService {
 
   updateProduct(id: string | number, product: Partial<Product>): Observable<Product> {
     return this.http.put<Product>(`${this.apiUrl}/products/${id}`, product);
+  }
+
+  getMovementsPaginated(params?: { page?: number; limit?: number; tipo?: string; producto_id?: number }): Observable<PaginatedResponse<Movement>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.tipo) httpParams = httpParams.set('tipo', params.tipo);
+    if (params?.producto_id) httpParams = httpParams.set('producto_id', params.producto_id.toString());
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/movements`, { params: httpParams }).pipe(
+      map((response) => {
+        const data = ((response?.['data'] ?? response) as Movement[]);
+        const pagination = (response?.['pagination'] as PaginatedResponse<Movement>['pagination']) ?? {
+          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        };
+        return { data: Array.isArray(data) ? data : [], pagination };
+      })
+    );
   }
 
   getMovements(): Observable<Movement[]> {

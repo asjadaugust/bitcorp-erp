@@ -6,6 +6,16 @@ import { environment } from '../../../environments/environment';
 import { Provider } from '../models/provider.model';
 import { ProviderDocument } from '../models/provider-document.model';
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
 /**
  * Provider Service with DTO mapping
  *
@@ -69,6 +79,33 @@ export class ProviderService {
         }
 
         return providers.map((p: Record<string, unknown>) => this.mapApiToProvider(p));
+      })
+    );
+  }
+
+  getAllPaginated(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  }): Observable<PaginatedResponse<Provider>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+
+    return this.http.get<Record<string, unknown>>(this.apiUrl, { params: httpParams }).pipe(
+      map((response) => {
+        const raw = (response?.['data'] as Record<string, unknown>[]) || [];
+        const data = raw.map((p) => this.mapApiToProvider(p));
+        const pagination = (response?.['pagination'] as PaginatedResponse<Provider>['pagination']) || {
+          page: 1,
+          limit: params?.limit ?? 20,
+          total: data.length,
+          total_pages: 1,
+        };
+        return { data, pagination };
       })
     );
   }

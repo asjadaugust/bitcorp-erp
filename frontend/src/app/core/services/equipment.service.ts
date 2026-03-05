@@ -18,6 +18,11 @@ export class EquipmentService {
       });
     }
 
+    // DEFAULT LIMIT: Backend defaults to limit=10, set 100 to load all equipment for client-side pagination
+    if (!filters?.['limit']) {
+      params = params.set('limit', '100');
+    }
+
     return this.http.get<EquipmentListResponse>(this.apiUrl, { params });
   }
 

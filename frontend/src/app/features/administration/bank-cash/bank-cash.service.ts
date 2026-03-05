@@ -108,7 +108,8 @@ export class BankCashService {
     moneda?: string;
     fecha_desde?: string;
     fecha_hasta?: string;
-  }): Observable<any> {
+    search?: string;
+  }): Observable<PaginatedResponse<FlujoCajaBanco>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
@@ -117,7 +118,8 @@ export class BankCashService {
     if (params?.moneda) httpParams = httpParams.set('moneda', params.moneda);
     if (params?.fecha_desde) httpParams = httpParams.set('fecha_desde', params.fecha_desde);
     if (params?.fecha_hasta) httpParams = httpParams.set('fecha_hasta', params.fecha_hasta);
-    return this.http.get(`${this.baseUrl}/flujos`, { params: httpParams });
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PaginatedResponse<FlujoCajaBanco>>(`${this.baseUrl}/flujos`, { params: httpParams });
   }
 
   getFlujo(id: number): Observable<FlujoCajaBancoDetalle> {

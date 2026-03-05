@@ -1,8 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
 
 export type SeveridadIncidente = 'LEVE' | 'MODERADO' | 'GRAVE' | 'MUY_GRAVE';
 export type EstadoIncidente = 'ABIERTO' | 'EN_INVESTIGACION' | 'CERRADO';
@@ -41,15 +50,20 @@ export class SstService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/sst`;
 
-  /** Paginated response — interceptor does NOT unwrap */
-  getIncidents(): Observable<SstIncidente[]> {
-    return this.http
-      .get<{
-        success: boolean;
-        data: SstIncidente[];
-        pagination: unknown;
-      }>(`${this.apiUrl}/incidents`)
-      .pipe(map((response) => response.data ?? []));
+  getIncidents(params?: {
+    page?: number;
+    limit?: number;
+    severidad?: string;
+    estado?: string;
+  }): Observable<PaginatedResponse<SstIncidente>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.severidad) httpParams = httpParams.set('severidad', params.severidad);
+    if (params?.estado) httpParams = httpParams.set('estado', params.estado);
+    return this.http.get<PaginatedResponse<SstIncidente>>(`${this.apiUrl}/incidents`, {
+      params: httpParams,
+    });
   }
 
   /** Single response — interceptor unwraps automatically */

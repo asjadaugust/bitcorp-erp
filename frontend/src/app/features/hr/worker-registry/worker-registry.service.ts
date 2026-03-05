@@ -33,9 +33,12 @@ export interface RegistroTrabajadorDetalle extends RegistroTrabajadorLista {
 
 export interface PaginatedResponse<T> {
   data: T[];
-  page: number;
-  limit: number;
-  total: number;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
 }
 
 @Injectable({ providedIn: 'root' })

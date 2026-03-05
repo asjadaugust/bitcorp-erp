@@ -12,4 +12,14 @@ export const ADMINISTRACION_TABS: TabItem[] = [
     route: '/administracion/payment-schedules',
     icon: 'fa-calendar-check',
   },
+  {
+    label: 'Caja Chica',
+    route: '/administracion/petty-cash',
+    icon: 'fa-cash-register',
+  },
+  {
+    label: 'Caja y Banco',
+    route: '/administracion/bank-cash',
+    icon: 'fa-building-columns',
+  },
 ];

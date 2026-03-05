@@ -1224,7 +1224,7 @@ export class AeroTableComponent {
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
 
-  @Input() pageSize = 10;
+  @Input() pageSize = 50;
   currentPage = 1;
 
   // ─── New Inputs ───

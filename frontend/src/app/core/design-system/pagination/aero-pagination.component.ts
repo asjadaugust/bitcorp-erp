@@ -114,7 +114,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AeroPaginationComponent {
   @Input() page = 1;
-  @Input() pageSize = 10;
+  @Input() pageSize = 50;
   @Input() total = 0;
 
   @Output() pageChange = new EventEmitter<number>();
