@@ -14,7 +14,9 @@ async def _crear_cliente() -> AsyncClient:
 async def test_login_credenciales_validas() -> None:
     """Login con admin/admin123 debe retornar tokens y datos de usuario."""
     async with await _crear_cliente() as c:
-        resp = await c.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
+        resp = await c.post(
+            "/api/auth/login", json={"username": "admin", "password": "Admin@123"}
+        )
     assert resp.status_code == 200
     datos = resp.json()
     assert datos["success"] is True
@@ -28,7 +30,9 @@ async def test_login_credenciales_validas() -> None:
 async def test_login_credenciales_invalidas() -> None:
     """Login con password incorrecto debe retornar 401."""
     async with await _crear_cliente() as c:
-        resp = await c.post("/api/auth/login", json={"username": "admin", "password": "wrong"})
+        resp = await c.post(
+            "/api/auth/login", json={"username": "admin", "password": "wrong"}
+        )
     assert resp.status_code == 401
     assert resp.json()["success"] is False
 
@@ -37,7 +41,9 @@ async def test_login_credenciales_invalidas() -> None:
 async def test_login_usuario_inexistente() -> None:
     """Login con usuario inexistente debe retornar 401."""
     async with await _crear_cliente() as c:
-        resp = await c.post("/api/auth/login", json={"username": "noexiste", "password": "pass"})
+        resp = await c.post(
+            "/api/auth/login", json={"username": "noexiste", "password": "pass"}
+        )
     assert resp.status_code == 401
 
 
@@ -45,7 +51,9 @@ async def test_login_usuario_inexistente() -> None:
 async def test_me_con_token_valido() -> None:
     """/me con token válido debe retornar datos del usuario."""
     async with await _crear_cliente() as c:
-        login = await c.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
+        login = await c.post(
+            "/api/auth/login", json={"username": "admin", "password": "Admin@123"}
+        )
         token = login.json()["data"]["access_token"]
         resp = await c.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert resp.status_code == 200
@@ -74,7 +82,9 @@ async def test_me_token_invalido() -> None:
 async def test_refresh_token() -> None:
     """Refresh token debe generar nuevos tokens."""
     async with await _crear_cliente() as c:
-        login = await c.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
+        login = await c.post(
+            "/api/auth/login", json={"username": "admin", "password": "Admin@123"}
+        )
         refresh = login.json()["data"]["refresh_token"]
         resp = await c.post("/api/auth/refresh", json={"refresh_token": refresh})
     assert resp.status_code == 200
@@ -96,7 +106,9 @@ async def test_refresh_token_invalido() -> None:
 async def test_login_formato_api() -> None:
     """Login exitoso cumple el contrato {success, data}."""
     async with await _crear_cliente() as c:
-        resp = await c.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
+        resp = await c.post(
+            "/api/auth/login", json={"username": "admin", "password": "Admin@123"}
+        )
     datos = resp.json()
     assert "success" in datos
     assert "data" in datos

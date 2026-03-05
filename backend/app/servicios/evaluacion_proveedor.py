@@ -52,7 +52,9 @@ def _criterio_a_dto(e: CriterioSeleccionEvaluacion) -> CriterioSeleccionEvaluaci
         aspecto_peso=float(e.aspecto_peso) if e.aspecto_peso is not None else None,
         criterio_seleccion=e.criterio_seleccion,
         criterio_seleccion_peso=(
-            float(e.criterio_seleccion_peso) if e.criterio_seleccion_peso is not None else None
+            float(e.criterio_seleccion_peso)
+            if e.criterio_seleccion_peso is not None
+            else None
         ),
         parametro=e.parametro,
         punto=float(e.punto) if e.punto is not None else None,
@@ -147,9 +149,7 @@ class ServicioEvaluacionProveedor:
         logger.info("evaluaciones_proveedor_listadas", total=total, pagina=pagina)
         return [_evaluacion_a_lista_dto(e) for e in entidades], total
 
-    async def listar_por_proveedor(
-        self, ruc: str
-    ) -> list[EvaluacionProveedorListaDto]:
+    async def listar_por_proveedor(self, ruc: str) -> list[EvaluacionProveedorListaDto]:
         """Listar evaluaciones filtradas por RUC del proveedor."""
         resultado = await self.db.execute(
             select(EvaluacionProveedor)
@@ -218,7 +218,9 @@ class ServicioEvaluacionProveedor:
 
         campos = datos.model_dump(exclude_unset=True)
         if "fecha_evaluacion" in campos and campos["fecha_evaluacion"]:
-            campos["fecha_evaluacion"] = datetime.fromisoformat(campos["fecha_evaluacion"])
+            campos["fecha_evaluacion"] = datetime.fromisoformat(
+                campos["fecha_evaluacion"]
+            )
         for campo, valor in campos.items():
             setattr(entidad, campo, valor)
 

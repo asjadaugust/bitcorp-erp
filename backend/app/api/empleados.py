@@ -1,5 +1,4 @@
-"""Router de empleados (trabajadores).
-"""
+"""Router de empleados (trabajadores)."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
@@ -7,7 +6,12 @@ from fastapi.responses import ORJSONResponse
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.empleado import EmpleadoActualizar, EmpleadoCrear
 from app.servicios.empleado import ServicioEmpleado
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -19,7 +23,7 @@ async def listar_empleados(
     search: str | None = Query(None),
     is_active: bool | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar empleados con filtros y paginación."""
     servicio = ServicioEmpleado(db)

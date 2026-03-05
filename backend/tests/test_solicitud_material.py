@@ -77,7 +77,10 @@ async def test_solicitud_material_crud() -> None:
         assert detalle["motivo"] == "Compra urgente"
         assert detalle["solicitado_por"] == "Juan Test"
         assert len(detalle["detalles"]) == 2
-        assert detalle["detalles"][0]["producto"] in ("Tornillos 1/4", "Clavos 2 pulgadas")
+        assert detalle["detalles"][0]["producto"] in (
+            "Tornillos 1/4",
+            "Clavos 2 pulgadas",
+        )
 
         # Update header
         resp = await c.put(

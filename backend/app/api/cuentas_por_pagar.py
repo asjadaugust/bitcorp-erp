@@ -1,5 +1,4 @@
-"""Router de cuentas por pagar.
-"""
+"""Router de cuentas por pagar."""
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import ORJSONResponse
@@ -7,10 +6,17 @@ from fastapi.responses import ORJSONResponse
 from app.core.dependencias import SesionDb, UsuarioActual, requerir_roles
 from app.esquemas.cuenta_por_pagar import CuentaPorPagarActualizar, CuentaPorPagarCrear
 from app.servicios.cuenta_por_pagar import ServicioCuentaPorPagar
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter(
-    dependencies=[Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA", "DIRECTOR", "CONTABILIDAD"))],
+    dependencies=[
+        Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA", "DIRECTOR", "CONTABILIDAD"))
+    ],
 )
 
 
@@ -21,7 +27,7 @@ async def listar_cuentas(
     estado: str | None = Query(None),
     proveedor_id: int | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar cuentas por pagar."""
     servicio = ServicioCuentaPorPagar(db)

@@ -11,7 +11,12 @@ from app.esquemas.solicitud_material import (
     SolicitudMaterialCrear,
 )
 from app.servicios.solicitud_material import ServicioSolicitudMaterial
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter(
     dependencies=[Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA", "ALMACEN"))],
@@ -37,7 +42,7 @@ async def listar_solicitudes(
     usuario: UsuarioActual,
     db: SesionDb,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar solicitudes de material con paginacion."""
     servicio = ServicioSolicitudMaterial(db)
@@ -96,7 +101,7 @@ async def listar_requerimientos(
     usuario: UsuarioActual,
     db: SesionDb,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar requerimientos con paginacion."""
     servicio = ServicioSolicitudMaterial(db)
@@ -151,9 +156,7 @@ async def eliminar_requerimiento(
 
 
 @router.get("/cotizaciones-logistica")
-async def listar_cotizaciones(
-    usuario: UsuarioActual, db: SesionDb
-) -> ORJSONResponse:
+async def listar_cotizaciones(usuario: UsuarioActual, db: SesionDb) -> ORJSONResponse:
     """Listar todas las cotizaciones logisticas."""
     servicio = ServicioSolicitudMaterial(db)
     datos = await servicio.listar_cotizaciones()

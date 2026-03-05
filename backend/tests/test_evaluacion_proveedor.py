@@ -137,12 +137,12 @@ async def test_scoring_ranges() -> None:
             resp = await c.get(f"{BASE}/evaluaciones/{eval_id}")
             assert resp.status_code == 200
             detalle = resp.json()["data"]
-            assert detalle["resultado"] == resultado_esperado, (
-                f"puntaje={puntaje}: expected resultado={resultado_esperado}, got={detalle['resultado']}"
-            )
-            assert detalle["accion"] == accion_esperada, (
-                f"puntaje={puntaje}: expected accion={accion_esperada}, got={detalle['accion']}"
-            )
+            assert (
+                detalle["resultado"] == resultado_esperado
+            ), f"puntaje={puntaje}: expected resultado={resultado_esperado}, got={detalle['resultado']}"
+            assert (
+                detalle["accion"] == accion_esperada
+            ), f"puntaje={puntaje}: expected accion={accion_esperada}, got={detalle['accion']}"
 
         # Cleanup
         for eid in ids_creados:

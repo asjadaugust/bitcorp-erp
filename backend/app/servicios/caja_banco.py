@@ -94,7 +94,9 @@ def _flujo_a_detalle_dto(
         registrado_por=e.registrado_por,
         fecha_registro=e.fecha_registro.isoformat() if e.fecha_registro else None,
         actualizado_por=e.actualizado_por,
-        fecha_actualizacion=e.fecha_actualizacion.isoformat() if e.fecha_actualizacion else None,
+        fecha_actualizacion=(
+            e.fecha_actualizacion.isoformat() if e.fecha_actualizacion else None
+        ),
         created_at=e.created_at.isoformat() if e.created_at else None,
         updated_at=e.updated_at.isoformat() if e.updated_at else None,
         detalles=detalles or [],
@@ -279,7 +281,9 @@ class ServicioCajaBanco:
         entidad = FlujoCajaBanco(
             tipo_movimiento=datos.tipo_movimiento,
             fecha_movimiento=(
-                date.fromisoformat(datos.fecha_movimiento) if datos.fecha_movimiento else None
+                date.fromisoformat(datos.fecha_movimiento)
+                if datos.fecha_movimiento
+                else None
             ),
             numero_cuenta_origen=datos.numero_cuenta_origen,
             cuenta_origen=datos.cuenta_origen,
@@ -395,7 +399,8 @@ class ServicioCajaBanco:
         consulta = select(AdminCentroCosto)
         if cuenta_por_pagar_legacy_id:
             consulta = consulta.where(
-                AdminCentroCosto.cuenta_por_pagar_legacy_id == cuenta_por_pagar_legacy_id
+                AdminCentroCosto.cuenta_por_pagar_legacy_id
+                == cuenta_por_pagar_legacy_id
             )
         consulta = consulta.order_by(AdminCentroCosto.id)
 

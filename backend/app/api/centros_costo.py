@@ -1,5 +1,4 @@
-"""Router de centros de costo.
-"""
+"""Router de centros de costo."""
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import ORJSONResponse
@@ -7,7 +6,12 @@ from fastapi.responses import ORJSONResponse
 from app.core.dependencias import SesionDb, UsuarioActual, requerir_roles
 from app.esquemas.centro_costo import CentroCostoActualizar, CentroCostoCrear
 from app.servicios.centro_costo import ServicioCentroCosto
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter(
     dependencies=[Depends(requerir_roles("ADMIN", "ADMIN_SISTEMA", "DIRECTOR"))],
@@ -22,7 +26,7 @@ async def listar_centros_costo(
     proyecto_id: int | None = Query(None),
     is_active: bool | None = Query(True),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     sort_by: str = Query("codigo"),
     sort_order: str = Query("ASC"),
 ) -> ORJSONResponse:
@@ -86,7 +90,9 @@ async def crear_centro_costo(
     """Crear un nuevo centro de costo."""
     servicio = ServicioCentroCosto(db)
     creado = await servicio.crear(usuario.id_empresa, datos)
-    return enviar_creado({"id": creado.id, "message": "Centro de costo creado exitosamente"})
+    return enviar_creado(
+        {"id": creado.id, "message": "Centro de costo creado exitosamente"}
+    )
 
 
 @router.put("/{cc_id}")

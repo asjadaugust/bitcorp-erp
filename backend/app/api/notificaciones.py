@@ -1,5 +1,4 @@
-"""Router de notificaciones.
-"""
+"""Router de notificaciones."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
@@ -7,7 +6,12 @@ from fastapi.responses import ORJSONResponse
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.notificacion import NotificacionCrear
 from app.servicios.notificacion import ServicioNotificacion
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -18,7 +22,7 @@ async def listar_notificaciones(
     db: SesionDb,
     leido: bool | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar notificaciones del usuario actual."""
     servicio = ServicioNotificacion(db)

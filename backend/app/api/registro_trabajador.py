@@ -11,7 +11,12 @@ from app.esquemas.registro_trabajador import (
     RegistroTrabajadorCrear,
 )
 from app.servicios.registro_trabajador import ServicioRegistroTrabajador
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -24,7 +29,7 @@ async def listar_registros(
     usuario: UsuarioActual,
     db: SesionDb,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     estatus: str | None = Query(None),
     sub_grupo: str | None = Query(None),
     search: str | None = Query(None),

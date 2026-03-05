@@ -91,6 +91,8 @@ async def test_tipos_operacion_listar() -> None:
 @pytest.mark.asyncio
 async def test_catalogo_sin_auth() -> None:
     """Debe retornar 401 sin autenticación."""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         resp = await c.get("/api/catalog/tipos-medio-pago")
     assert resp.status_code == 401

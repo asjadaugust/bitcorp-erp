@@ -164,7 +164,9 @@ async def test_comportamiento_historico_crud() -> None:
             "fecha_inicio": "2025-01-15",
             "numero_contrato": "C-001",
         }
-        resp = await c.post(f"{BASE}/registros/{reg_id}/comportamiento", json=ch1_payload)
+        resp = await c.post(
+            f"{BASE}/registros/{reg_id}/comportamiento", json=ch1_payload
+        )
         assert resp.status_code == 201, resp.text
         ch1_id = resp.json()["data"]["id"]
 
@@ -174,7 +176,9 @@ async def test_comportamiento_historico_crud() -> None:
             "fecha_inicio": "2025-03-01",
             "numero_contrato": "C-002",
         }
-        resp = await c.post(f"{BASE}/registros/{reg_id}/comportamiento", json=ch2_payload)
+        resp = await c.post(
+            f"{BASE}/registros/{reg_id}/comportamiento", json=ch2_payload
+        )
         assert resp.status_code == 201, resp.text
         ch2_id = resp.json()["data"]["id"]
 

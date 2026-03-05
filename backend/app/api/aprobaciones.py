@@ -1,5 +1,4 @@
-"""Router de aprobaciones.
-"""
+"""Router de aprobaciones."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
@@ -30,13 +29,16 @@ async def listar_plantillas(
     module_name: str | None = Query(None),
     estado: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar plantillas de aprobación."""
     srv = ServicioPlantillaAprobacion(db)
     datos, total = await srv.listar(
-        usuario.id_empresa, module_name=module_name, estado=estado,
-        pagina=page, limite=limit,
+        usuario.id_empresa,
+        module_name=module_name,
+        estado=estado,
+        pagina=page,
+        limite=limit,
     )
     return enviar_paginado([d.model_dump() for d in datos], page, limit, total)
 
@@ -118,13 +120,16 @@ async def listar_solicitudes(
     module_name: str | None = Query(None),
     estado: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar solicitudes de aprobación."""
     srv = ServicioSolicitudAprobacion(db)
     datos, total = await srv.listar(
-        usuario.id_empresa, module_name=module_name, estado=estado,
-        pagina=page, limite=limit,
+        usuario.id_empresa,
+        module_name=module_name,
+        estado=estado,
+        pagina=page,
+        limite=limit,
     )
     return enviar_paginado([d.model_dump() for d in datos], page, limit, total)
 
@@ -210,7 +215,7 @@ async def listar_adhoc(
     db: SesionDb,
     estado: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar solicitudes ad-hoc."""
     srv = ServicioAprobacionAdhoc(db)

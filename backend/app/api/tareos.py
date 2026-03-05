@@ -1,5 +1,4 @@
-"""Router de tareos (timesheets).
-"""
+"""Router de tareos (timesheets)."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
@@ -20,7 +19,7 @@ async def listar_tareos(
     estado: str | None = Query(None),
     trabajador_id: int | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar tareos con filtros y paginación."""
     servicio = ServicioTareo(db)

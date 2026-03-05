@@ -1,5 +1,4 @@
-"""Router de proyectos (EDT).
-"""
+"""Router de proyectos (EDT)."""
 
 from fastapi import APIRouter, Query
 from fastapi.responses import ORJSONResponse
@@ -7,7 +6,12 @@ from fastapi.responses import ORJSONResponse
 from app.core.dependencias import SesionDb, UsuarioActual
 from app.esquemas.proyecto import ProyectoActualizar, ProyectoCrear
 from app.servicios.proyecto import ServicioProyecto
-from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado, enviar_sin_contenido
+from app.utils.respuesta import (
+    enviar_creado,
+    enviar_exito,
+    enviar_paginado,
+    enviar_sin_contenido,
+)
 
 router = APIRouter()
 
@@ -19,7 +23,7 @@ async def listar_proyectos(
     estado: str | None = Query(None),
     search: str | None = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> ORJSONResponse:
     """Listar proyectos con filtros y paginación."""
     servicio = ServicioProyecto(db)

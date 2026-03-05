@@ -15,7 +15,6 @@ Tables seeded:
   - sst.reporte_acto_condicion (4 rows)
   - rrhh.registro_trabajador (5 rows)
   - rrhh.comportamiento_historico (5 rows)
-  - rrhh.edt_tareo (5 rows)
 
 Revision ID: 010_seed_operational_data
 Revises: 009_seed_legacy_data
@@ -35,7 +34,6 @@ _SEEDED_TABLES = [
     "logistica.detalle_solicitud_material",
     "logistica.detalle_requerimiento",
     "rrhh.comportamiento_historico",
-    "rrhh.edt_tareo",
     "logistica.solicitud_material",
     "logistica.requerimiento",
     "logistica.cotizacion_logistica",
@@ -50,7 +48,9 @@ def upgrade() -> None:
     conn = op.get_bind()
 
     # ── 1. Solicitud Material (4 rows) ────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO logistica.solicitud_material
             (motivo, fecha_solicitud, solicitado_por)
         VALUES
@@ -62,10 +62,14 @@ def upgrade() -> None:
              '2026-02-20', 'Maria Lopez'),
             ('Solicitud de EPP para personal nuevo',
              '2026-02-25', 'Ana Torres')
-    """))
+    """
+        )
+    )
 
     # ── 2. Detalle Solicitud Material (10 rows) ──────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO logistica.detalle_solicitud_material
             (solicitud_legacy_id, producto_legacy_id, producto,
              cantidad, unidad_medida, fecha_requerida,
@@ -101,10 +105,14 @@ def upgrade() -> None:
             (NULL, NULL, 'CLAVO DE CALAMINA 2"',
              45, 'KG', '2026-03-01',
              NULL, 'Clavos de calamina', 'PENDIENTE')
-    """))
+    """
+        )
+    )
 
     # ── 3. Requerimiento (4 rows) ─────────────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO logistica.requerimiento
             (numero_requerimiento, motivo, fecha_requerimiento, solicitado_por)
         VALUES
@@ -116,10 +124,14 @@ def upgrade() -> None:
              '2026-02-18', 'Maria Lopez'),
             (1004, 'Requerimiento herramientas sector C',
              '2026-02-28', 'Pedro Quispe')
-    """))
+    """
+        )
+    )
 
     # ── 4. Detalle Requerimiento (10 rows) ────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO logistica.detalle_requerimiento
             (requerimiento_legacy_id, producto_legacy_id, producto,
              cantidad, unidad_medida, fecha_requerida,
@@ -155,30 +167,42 @@ def upgrade() -> None:
             (NULL, NULL, 'CLAVO DE 1/2',
              30, 'KG', '2026-03-01',
              NULL, 'Clavos muy cortos para detalles', 'PENDIENTE')
-    """))
+    """
+        )
+    )
 
     # ── 5. Cotizacion Logistica (3 rows) ──────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO logistica.cotizacion_logistica
             (numero_cotizacion)
         VALUES
             (5001),
             (5002),
             (5003)
-    """))
+    """
+        )
+    )
 
     # ── 6. Seleccion Proveedor (3 rows) ───────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO proveedores.seleccion_proveedor
             (legacy_id)
         VALUES
             ('SEL-001'),
             ('SEL-002'),
             ('SEL-003')
-    """))
+    """
+        )
+    )
 
     # ── 7. Seguimiento Inspeccion (5 rows) ────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO sst.seguimiento_inspeccion
             (fecha, inspector_dni, inspector, descripcion_inspeccion,
              link_evidencia, fecha_proxima_inspeccion, avance_estimado,
@@ -199,10 +223,14 @@ def upgrade() -> None:
             ('2026-02-20 11:00:00', '12345678', 'Roberto Sanchez',
              'Inspeccion general almacen de materiales',
              NULL, '2026-03-20', 50, '1')
-    """))
+    """
+        )
+    )
 
     # ── 8. Reporte Acto Condicion (4 rows) ────────────────────────────────
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO sst.reporte_acto_condicion
             (fecha_registro, registrado_por_dni, registrado_por,
              reportado_por_dni, reportado_por_nombre, cargo,
@@ -235,11 +263,15 @@ def upgrade() -> None:
              'SGA', 'CONDICION', 'C07',
              'Residuos mal segregados', 'Contenedor de residuos peligrosos sin tapa', 'ABIERTO',
              'Reemplazo de contenedor y capacitacion')
-    """))
+    """
+        )
+    )
 
     # ── 9. Registro Trabajador (5 rows) ───────────────────────────────────
     # Uses DNI references to rrhh.trabajador (first 5 workers)
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO rrhh.registro_trabajador
             (trabajador_dni, proveedor_ruc, fecha_ingreso, fecha_cese,
              estatus, fecha_registro, registrado_por, sub_grupo)
@@ -254,11 +286,15 @@ def upgrade() -> None:
              'CESADO', '2025-04-01', 'Admin Sistema', 'OBREROS'),
             ('01270942', NULL, '2025-05-15', NULL,
              'ACTIVO', '2025-05-15', 'Admin Sistema', 'OPERADORES')
-    """))
+    """
+        )
+    )
 
     # ── 10. Comportamiento Historico (5 rows) ─────────────────────────────
     # References registro_trabajador via legacy_id pattern
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text(
+            """
         INSERT INTO rrhh.comportamiento_historico
             (cargo, salario, fecha_inicio, fecha_fin,
              numero_contrato, registro_trabajador_legacy_id)
@@ -273,20 +309,10 @@ def upgrade() -> None:
              '2025-04-01', '2025-12-31', 'CONT-2025-004', NULL),
             ('Operador de volquete', 3000.00,
              '2025-05-15', NULL, 'CONT-2025-005', NULL)
-    """))
+    """
+        )
+    )
 
-    # ── 11. EDT Tareo (5 rows) ────────────────────────────────────────────
-    # References rrhh.tareo and proyectos.edt
-    conn.execute(sa.text("""
-        INSERT INTO rrhh.edt_tareo
-            (edt_id, tareo_id, horas)
-        VALUES
-            (1, 1, 8.00),
-            (2, 1, 4.50),
-            (1, 2, 10.00),
-            (3, 3, 6.00),
-            (2, 4, 7.50)
-    """))
 
 
 def downgrade() -> None:

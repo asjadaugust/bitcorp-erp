@@ -58,7 +58,9 @@ def _combustible_a_lista_dto(e: EquipoCombustible) -> EquipoCombustibleListaDto:
         fecha=_iso(e.fecha),
         cantidad=float(e.cantidad) if e.cantidad is not None else None,
         precio_unitario_sin_igv=(
-            float(e.precio_unitario_sin_igv) if e.precio_unitario_sin_igv is not None else None
+            float(e.precio_unitario_sin_igv)
+            if e.precio_unitario_sin_igv is not None
+            else None
         ),
         importe=float(e.importe) if e.importe is not None else None,
         comentario=e.comentario,
@@ -76,7 +78,9 @@ def _combustible_a_detalle_dto(e: EquipoCombustible) -> EquipoCombustibleDetalle
         inicial=float(e.inicial) if e.inicial is not None else None,
         cantidad=float(e.cantidad) if e.cantidad is not None else None,
         precio_unitario_sin_igv=(
-            float(e.precio_unitario_sin_igv) if e.precio_unitario_sin_igv is not None else None
+            float(e.precio_unitario_sin_igv)
+            if e.precio_unitario_sin_igv is not None
+            else None
         ),
         importe=float(e.importe) if e.importe is not None else None,
         comentario=e.comentario,

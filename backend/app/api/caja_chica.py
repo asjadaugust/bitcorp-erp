@@ -87,9 +87,7 @@ async def cerrar_caja(
 
 
 @router.get("/solicitudes")
-async def listar_solicitudes(
-    usuario: UsuarioActual, db: SesionDb
-) -> ORJSONResponse:
+async def listar_solicitudes(usuario: UsuarioActual, db: SesionDb) -> ORJSONResponse:
     """Listar todas las solicitudes de caja."""
     servicio = ServicioCajaChica(db)
     datos = await servicio.listar_solicitudes()
