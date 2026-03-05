@@ -28,6 +28,7 @@ import {
 } from '../../shared/components/dropdown/dropdown.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
+import { AeroButtonComponent } from '../../core/design-system/button/aero-button.component';
 
 type TabId = 'flota' | 'utilizacion' | 'combustible';
 
@@ -43,6 +44,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
     DropdownComponent,
     AeroInputComponent,
     AeroCardComponent,
+    AeroButtonComponent,
   ],
   template: `
     <app-page-layout
@@ -111,7 +113,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
                 <i class="fa-solid fa-check-circle"></i> Todos los equipos con utilización óptima
               </div>
               <div
-                *ngFor="let eq of flota()!.equipos_sub_utilizados; let i = index"
+                *ngFor="let eq of displayedSubUtilizados(); let i = index"
                 class="rank-item"
                 [attr.data-testid]="'sub-utilizado-' + i"
               >
@@ -124,6 +126,21 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
                   ></div>
                 </div>
                 <span class="rank-value warn">{{ eq.tasa_utilizacion | number: '1.1-1' }}%</span>
+              </div>
+
+              <div
+                *ngIf="flota()!.equipos_sub_utilizados.length > SUB_LIMIT"
+                class="show-more-wrapper"
+              >
+                <aero-button variant="text" size="small" (click)="toggleSubUtilizados()">
+                  <ng-container *ngIf="!showAllSubUtilizados()">
+                    Mostrar más
+                    <span class="show-more-count"
+                      >({{ flota()!.equipos_sub_utilizados.length - SUB_LIMIT }} más)</span
+                    >
+                  </ng-container>
+                  <ng-container *ngIf="showAllSubUtilizados()">Mostrar menos</ng-container>
+                </aero-button>
               </div>
             </aero-card>
           </div>
@@ -415,6 +432,18 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
       .rank-value.warn {
         color: var(--grey-900);
       }
+      .show-more-wrapper {
+        display: flex;
+        justify-content: center;
+        padding-top: var(--s-8);
+        margin-top: var(--s-4);
+        border-top: 1px solid var(--grey-100);
+      }
+      .show-more-count {
+        color: var(--grey-500);
+        font-weight: 400;
+        margin-left: var(--s-4);
+      }
 
       /* Bar charts */
       .bar-chart {
@@ -589,6 +618,17 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
   cargandoFlota = signal(false);
   errorFlota = signal<string | null>(null);
 
+  // ── Sub-utilizados show-more ─────────────────────────────────────────────────
+  readonly SUB_LIMIT = 5;
+  showAllSubUtilizados = signal(false);
+  displayedSubUtilizados = computed(() => {
+    const list = this.flota()?.equipos_sub_utilizados ?? [];
+    return this.showAllSubUtilizados() ? list : list.slice(0, this.SUB_LIMIT);
+  });
+  toggleSubUtilizados(): void {
+    this.showAllSubUtilizados.update((v) => !v);
+  }
+
   // ── Utilization data ────────────────────────────────────────────────────────
   utilizacion = signal<UtilizacionEquipoDto | null>(null);
   tendenciaUtilizacion = signal<TendenciaUtilizacionDto[]>([]);
@@ -709,9 +749,8 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
   constructor() {
     const now = new Date();
     const hace30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const ayer = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     this.fechaInicio = hace30.toISOString().split('T')[0];
-    this.fechaFin = ayer.toISOString().split('T')[0];
+    this.fechaFin = now.toISOString().split('T')[0];
   }
 
   ngOnInit(): void {

@@ -2,7 +2,7 @@
 """
 
 import calendar
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -22,6 +22,7 @@ from app.esquemas.valorizacion import (
     CombustibleDetalleDto,
     CombustibleDetalleItemDto,
     ContratoResumenDto,
+    DeadlinesDto,
     DocumentoPagoActualizar,
     DocumentoPagoCrear,
     DocumentoPagoDto,
@@ -128,6 +129,28 @@ def _a_lista_dto(v: ValorizacionEquipo) -> ValorizacionListaDto:
     )
 
 
+def _calcular_deadlines(fecha_fin: date, estado: str) -> DeadlinesDto:
+    """Compute valuation deadlines relative to period end date."""
+    parcial = fecha_fin + timedelta(days=5)
+    gasto_obra = fecha_fin + timedelta(days=10)
+    cierre = fecha_fin + timedelta(days=15)
+
+    alerta = None
+    today = date.today()
+    if estado in ("BORRADOR", "PENDIENTE"):
+        if today > cierre:
+            alerta = f"Vencido hace {(today - cierre).days} días"
+        elif today > gasto_obra:
+            alerta = f"Faltan {(cierre - today).days} días para el cierre"
+
+    return DeadlinesDto(
+        parcial=parcial,
+        gasto_obra=gasto_obra,
+        cierre=cierre,
+        alerta_vencimiento=alerta,
+    )
+
+
 def _a_detalle_dto(v: ValorizacionEquipo) -> ValorizacionDetalleDto:
     return ValorizacionDetalleDto(
         id=v.id,
@@ -157,6 +180,7 @@ def _a_detalle_dto(v: ValorizacionEquipo) -> ValorizacionDetalleDto:
             v.contrato_rel.numero_contrato if v.contrato_rel else None
         ),
         # Detail-only
+        deadlines=_calcular_deadlines(v.fecha_fin, v.estado),
         legacy_id=v.legacy_id,
         combustible_consumido=_num(v.combustible_consumido),
         costo_combustible=_num(v.costo_combustible),
@@ -663,7 +687,15 @@ class ServicioValorizacion:
                 dias_trabajados += 1
 
         cantidad_a_valorizar = float(max(total_efectiva, total_minima))
-        costo_base = round(cantidad_a_valorizar * tarifa, 2)
+        if tipo_tarifa == "MES":
+            days_in_month = calendar.monthrange(
+                val.fecha_inicio.year, val.fecha_inicio.month
+            )[1]
+            costo_base = round(
+                (cantidad_a_valorizar / days_in_month) * tarifa, 2
+            )
+        else:
+            costo_base = round(cantidad_a_valorizar * tarifa, 2)
 
         # ── Step 3: Compute discounts ───────────────────────────────
 

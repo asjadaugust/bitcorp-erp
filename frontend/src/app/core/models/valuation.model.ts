@@ -69,10 +69,8 @@ export interface Valuation {
   deadlines?: {
     parcial: string;
     gasto_obra: string;
-    adelantos: string;
-    final: string;
-    is_overdue: boolean;
-    days_until_final: number;
+    cierre: string;
+    alerta_vencimiento: string | null;
   } | null;
 
   // Relations (populated by backend joins)

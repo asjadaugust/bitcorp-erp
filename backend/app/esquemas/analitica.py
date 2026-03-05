@@ -3,39 +3,54 @@
 from pydantic import BaseModel
 
 
-class UtilizacionEquipoDto(BaseModel):
-    equipo_id: int
-    total_horas: float
-    dias_con_reporte: int
-    promedio_diario: float
-    utilizacion_porcentaje: float
-
-
-class TendenciaUtilizacionDto(BaseModel):
-    mes: str
-    total_horas: float
-    dias_con_reporte: int
-    promedio_diario: float
+class FlotaEquipoResumenDto(BaseModel):
+    codigo_equipo: str
+    tasa_utilizacion: float
 
 
 class UtilizacionFlotaDto(BaseModel):
     total_equipos: int
-    equipos_con_actividad: int
-    total_horas: float
-    promedio_por_equipo: float
-
-
-class MetricaCombustibleDto(BaseModel):
-    equipo_id: int
-    total_galones: float
+    equipos_activos: int
+    tasa_utilizacion_promedio: float
     costo_total: float
-    galones_por_hora: float
+    mejores_equipos: list[FlotaEquipoResumenDto]
+    equipos_sub_utilizados: list[FlotaEquipoResumenDto]
+
+
+class UtilizacionEquipoDto(BaseModel):
+    equipo_id: int
+    codigo_equipo: str
+    horas_totales: float
+    horas_trabajadas: float
+    horas_inactivas: float
+    tasa_utilizacion: float
+    costo_por_hora: float
+    costo_total: float
+    periodo_inicio: str
+    periodo_fin: str
+
+
+class TendenciaUtilizacionDto(BaseModel):
+    fecha: str  # YYYY-MM-DD (daily)
+    tasa_utilizacion: float
+    horas_trabajadas: float
+    costo: float
+
+
+class CombustibleEquipoDto(BaseModel):
+    equipo_id: int
+    total_combustible_consumido: float
+    promedio_combustible_por_hora: float
+    costo_total_combustible: float
+    costo_promedio_por_hora: float
+    eficiencia: str  # 'buena' | 'promedio' | 'deficiente'
 
 
 class TendenciaCombustibleDto(BaseModel):
-    mes: str
-    total_galones: float
-    costo_total: float
+    fecha: str  # YYYY-MM-DD (daily)
+    combustible_consumido: float
+    costo_combustible: float
+    combustible_por_hora: float
 
 
 class MetricaMantenimientoDto(BaseModel):

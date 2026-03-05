@@ -64,7 +64,7 @@ async def listar_equipos(
     usuario: UsuarioActual,
     db: SesionDb,
     page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=500),
     estado: str | None = None,
     categoria: str | None = None,
     categoria_prd: str | None = None,

@@ -73,11 +73,8 @@ export interface Breadcrumb {
         </nav>
       </div>
 
-      <!-- Content Area with Loading Overlay -->
+      <!-- Content Area -->
       <div class="content-wrapper">
-        <div class="loading-overlay" *ngIf="loading">
-          <div class="spinner"></div>
-        </div>
         <ng-content></ng-content>
       </div>
     </div>
@@ -278,36 +275,6 @@ export interface Breadcrumb {
         display: flex;
         flex-direction: column;
         gap: var(--s-16);
-      }
-
-      .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(2px);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        border-radius: var(--s-8);
-      }
-
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid var(--primary-100);
-        border-top-color: var(--primary-500);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
       }
 
       @media (max-width: 768px) {

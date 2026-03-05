@@ -28,6 +28,18 @@ class ContratoResumenDto(BaseModel):
     proveedor: ProveedorResumenDto | None = None
 
 
+# ─── Deadline DTO ────────────────────────────────────────────────────────
+
+
+class DeadlinesDto(BaseModel):
+    """Plazos de cierre relativos al fin del periodo."""
+
+    parcial: date
+    gasto_obra: date
+    cierre: date
+    alerta_vencimiento: str | None = None
+
+
 # ─── Valorizacion DTOs ────────────────────────────────────────────────────
 
 
@@ -66,6 +78,7 @@ class ValorizacionListaDto(BaseModel):
 class ValorizacionDetalleDto(ValorizacionListaDto):
     """DTO para detalle de valorización."""
 
+    deadlines: DeadlinesDto | None = None
     legacy_id: str | None = None
     combustible_consumido: float | None = None
     costo_combustible: float | None = None

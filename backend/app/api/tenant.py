@@ -29,7 +29,7 @@ async def mis_proyectos(usuario: UsuarioActual, db: SesionDb) -> JSONResponse:
                        COALESCE(estado, 'ACTIVO') AS status,
                        created_at, updated_at
                 FROM proyectos.edt
-                WHERE nivel = 0 AND tenant_id = :tenant_id
+                WHERE nivel = 0 AND empresa_id = :tenant_id
                 ORDER BY nombre
                 """
             ),
