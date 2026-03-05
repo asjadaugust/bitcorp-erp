@@ -63,6 +63,13 @@ import { AeroButtonComponent } from '../../core/design-system';
           data-testid="btn-anular"
           >Anular</aero-button
         >
+        <aero-button
+          variant="ghost"
+          [fullWidth]="true"
+          iconLeft="fa-arrow-left"
+          routerLink="/equipment/vales-combustible"
+          >Volver a Lista</aero-button
+        >
       </ng-container>
 
       <!-- ── MAIN CONTENT ──────────────────────────── -->

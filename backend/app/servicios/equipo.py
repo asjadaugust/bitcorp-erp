@@ -36,6 +36,16 @@ _CAMPOS_ORDENAMIENTO: dict[str, str] = {
 }
 
 
+def _safe_float(value: object) -> float | None:
+    """Convert to float safely; return None if conversion fails."""
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
 def _a_lista_dto(e: Equipo) -> EquipoListaDto:
     return EquipoListaDto(
         id=e.id,
@@ -91,7 +101,7 @@ def _a_detalle_dto(e: Equipo) -> EquipoDetalleDto:
         numero_serie_equipo=e.numero_serie_equipo,
         numero_chasis=e.numero_chasis,
         numero_serie_motor=e.numero_serie_motor,
-        potencia_neta=float(e.potencia_neta) if e.potencia_neta is not None else None,
+        potencia_neta=_safe_float(e.potencia_neta),
         tipo_motor=e.tipo_motor,
         fecha_venc_poliza=e.fecha_venc_poliza,
         fecha_venc_soat=e.fecha_venc_soat,

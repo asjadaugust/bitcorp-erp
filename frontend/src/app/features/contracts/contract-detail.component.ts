@@ -209,6 +209,33 @@ import { AeroButtonComponent } from '../../core/design-system';
           </section>
         }
 
+        <!-- Annex B -->
+        <section class="detail-section">
+          <h2>ANEXO B — Condiciones de Valorización</h2>
+          @if (annexB.length > 0) {
+            <aero-data-grid
+              [gridId]="'contract-detail-annex-b'"
+              [columns]="annexColumns"
+              [data]="annexB"
+              [loading]="false"
+              [dense]="true"
+              [templates]="{ incluido: incluidoBTemplate }"
+            >
+            </aero-data-grid>
+
+            <ng-template #incluidoBTemplate let-row>
+              <span [class]="row.incluido ? 'text-success' : 'text-danger'" style="font-weight:600">
+                {{ row.incluido ? 'Sí' : 'No' }}
+              </span>
+            </ng-template>
+          } @else {
+            <p class="empty-hint">
+              <i class="fa-solid fa-circle-info"></i>
+              Sin condiciones de valorización configuradas para este contrato.
+            </p>
+          }
+        </section>
+
         <!-- Propiedad y Jurisdicción -->
         @if (contract?.documento_acredita || contract?.jurisdiccion) {
           <section class="detail-section">

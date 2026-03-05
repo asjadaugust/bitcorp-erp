@@ -63,7 +63,7 @@ export class AnalyticsService {
     fechaFin: string
   ): Observable<UtilizacionEquipoDto> {
     return this.http.get<UtilizacionEquipoDto>(`/api/analytics/equipment/${equipoId}/utilization`, {
-      params: { startDate: fechaInicio, endDate: fechaFin },
+      params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin },
     });
   }
 
@@ -74,13 +74,13 @@ export class AnalyticsService {
   ): Observable<TendenciaUtilizacionDto[]> {
     return this.http.get<TendenciaUtilizacionDto[]>(
       `/api/analytics/equipment/${equipoId}/utilization-trend`,
-      { params: { startDate: fechaInicio, endDate: fechaFin } }
+      { params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin } }
     );
   }
 
   obtenerFlotaUtilizacion(fechaInicio: string, fechaFin: string): Observable<FlotaUtilizacionDto> {
     return this.http.get<FlotaUtilizacionDto>(`/api/analytics/fleet/utilization`, {
-      params: { startDate: fechaInicio, endDate: fechaFin },
+      params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin },
     });
   }
 
@@ -90,7 +90,7 @@ export class AnalyticsService {
     fechaFin: string
   ): Observable<CombustibleEquipoDto> {
     return this.http.get<CombustibleEquipoDto>(`/api/analytics/equipment/${equipoId}/fuel`, {
-      params: { startDate: fechaInicio, endDate: fechaFin },
+      params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin },
     });
   }
 
@@ -101,7 +101,7 @@ export class AnalyticsService {
   ): Observable<TendenciaCombustibleDto[]> {
     return this.http.get<TendenciaCombustibleDto[]>(
       `/api/analytics/equipment/${equipoId}/fuel-trend`,
-      { params: { startDate: fechaInicio, endDate: fechaFin } }
+      { params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin } }
     );
   }
 }

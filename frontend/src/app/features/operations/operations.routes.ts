@@ -49,6 +49,13 @@ export const OPERATIONS_ROUTES: Routes = [
           ),
       },
       {
+        path: 'tasks/:id',
+        loadComponent: () =>
+          import('../scheduling/scheduled-task/scheduled-task-form.component').then(
+            (m) => m.ScheduledTaskFormComponent
+          ),
+      },
+      {
         path: 'tasks/:id/edit',
         loadComponent: () =>
           import('../scheduling/scheduled-task/scheduled-task-form.component').then(

@@ -1,6 +1,9 @@
 """Router de analítica de equipos.
 """
 
+from datetime import date, timedelta
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import ORJSONResponse
 
@@ -18,11 +21,14 @@ async def obtener_utilizacion_equipo(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    period: str = Query("30d"),
+    fecha_inicio: Optional[date] = Query(default=None),
+    fecha_fin: Optional[date] = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener utilización de un equipo."""
+    fin = fecha_fin or date.today()
+    inicio = fecha_inicio or fin - timedelta(days=30)
     servicio = ServicioAnalitica(db)
-    datos = await servicio.obtener_utilizacion_equipo(usuario.id_empresa, equipo_id, period)
+    datos = await servicio.obtener_utilizacion_equipo(usuario.id_empresa, equipo_id, inicio, fin)
     return enviar_exito(datos.model_dump())
 
 
@@ -31,21 +37,29 @@ async def obtener_tendencia_utilizacion(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    months: int = Query(6, ge=1, le=24),
+    fecha_inicio: Optional[date] = Query(default=None),
+    fecha_fin: Optional[date] = Query(default=None),
 ) -> ORJSONResponse:
-    """Obtener tendencia mensual de utilización."""
+    """Obtener tendencia diaria de utilización."""
+    fin = fecha_fin or date.today()
+    inicio = fecha_inicio or fin - timedelta(days=30)
     servicio = ServicioAnalitica(db)
-    datos = await servicio.obtener_tendencia_utilizacion(usuario.id_empresa, equipo_id, months)
+    datos = await servicio.obtener_tendencia_utilizacion(usuario.id_empresa, equipo_id, inicio, fin)
     return enviar_exito([d.model_dump() for d in datos])
 
 
 @router.get("/fleet/utilization")
 async def obtener_utilizacion_flota(
-    usuario: UsuarioActual, db: SesionDb
+    usuario: UsuarioActual,
+    db: SesionDb,
+    fecha_inicio: Optional[date] = Query(default=None),
+    fecha_fin: Optional[date] = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener utilización de toda la flota."""
+    fin = fecha_fin or date.today()
+    inicio = fecha_inicio or fin - timedelta(days=30)
     servicio = ServicioAnalitica(db)
-    datos = await servicio.obtener_utilizacion_flota(usuario.id_empresa)
+    datos = await servicio.obtener_utilizacion_flota(usuario.id_empresa, inicio, fin)
     return enviar_exito(datos.model_dump())
 
 
@@ -54,11 +68,14 @@ async def obtener_metricas_combustible(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    period: str = Query("30d"),
+    fecha_inicio: Optional[date] = Query(default=None),
+    fecha_fin: Optional[date] = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener métricas de combustible de un equipo."""
+    fin = fecha_fin or date.today()
+    inicio = fecha_inicio or fin - timedelta(days=30)
     servicio = ServicioAnalitica(db)
-    datos = await servicio.obtener_metricas_combustible(usuario.id_empresa, equipo_id, period)
+    datos = await servicio.obtener_metricas_combustible(usuario.id_empresa, equipo_id, inicio, fin)
     return enviar_exito(datos.model_dump())
 
 
@@ -67,11 +84,16 @@ async def obtener_tendencia_combustible(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    months: int = Query(6, ge=1, le=24),
+    fecha_inicio: Optional[date] = Query(default=None),
+    fecha_fin: Optional[date] = Query(default=None),
 ) -> ORJSONResponse:
-    """Obtener tendencia mensual de combustible."""
+    """Obtener tendencia diaria de combustible."""
+    fin = fecha_fin or date.today()
+    inicio = fecha_inicio or fin - timedelta(days=30)
     servicio = ServicioAnalitica(db)
-    datos = await servicio.obtener_tendencia_combustible(usuario.id_empresa, equipo_id, months)
+    datos = await servicio.obtener_tendencia_combustible(
+        usuario.id_empresa, equipo_id, inicio, fin
+    )
     return enviar_exito([d.model_dump() for d in datos])
 
 
