@@ -1,0 +1,129 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "CRUD for Caja Chica (petty cash periods)",
+      "steps": [
+        "POST /api/petty-cash/cajas with {numero_caja: 'CC-001', saldo_inicial: 5000, fecha_apertura: '2024-01-15'} — verify 201",
+        "GET /api/petty-cash/cajas — verify lists created caja",
+        "GET /api/petty-cash/cajas/{id} — verify saldo_final equals saldo_inicial, estatus is ABIERTA",
+        "PUT /api/petty-cash/cajas/{id} with {saldo_inicial: 6000} — verify 200",
+        "DELETE /api/petty-cash/cajas/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Closing a caja chica recalculates saldo and sets CERRADA",
+      "steps": [
+        "Create a caja chica with saldo_inicial: 5000",
+        "Create 2 movimientos: one ENTRADA 1000, one SALIDA 500",
+        "POST /api/petty-cash/cajas/{id}/cerrar",
+        "GET /api/petty-cash/cajas/{id} — verify estatus is CERRADA",
+        "Verify saldo_final = 5000 + 1000 - 500 = 5500",
+        "Verify ingreso_total = 1000, salida_total = 500"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Cannot create movimientos on a closed caja chica",
+      "steps": [
+        "Create and close a caja chica",
+        "POST /api/petty-cash/movimientos with numero_caja referencing closed caja",
+        "Verify 422 business rule error"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for Solicitud Caja (petty cash requests)",
+      "steps": [
+        "POST /api/petty-cash/solicitudes with {motivo: 'Compra de utiles', monto_solicitado: 150, fecha_solicitud: '2024-01-20'} — verify 201",
+        "GET /api/petty-cash/solicitudes — verify pagination works",
+        "GET /api/petty-cash/solicitudes/{id} — verify all fields returned",
+        "PUT /api/petty-cash/solicitudes/{id} with {monto_rendido: 120, estatus: 'RENDIDO'} — verify 200",
+        "Verify monto_devuelto_reembolsado calculates correctly"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for Movimiento Caja (petty cash movements)",
+      "steps": [
+        "Create an open caja chica",
+        "POST /api/petty-cash/movimientos with ENTRADA movement — verify 201",
+        "POST /api/petty-cash/movimientos with SALIDA movement — verify 201",
+        "GET /api/petty-cash/movimientos?numero_caja=CC-001 — verify filter works",
+        "GET /api/petty-cash/movimientos/{id} — verify detail fields",
+        "Verify parent caja's ingreso_total and salida_total updated"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "Caja chica endpoints require ADMIN or CONTABILIDAD role",
+      "steps": [
+        "Login as OPERADOR — GET /api/petty-cash/cajas — verify 403",
+        "Login as admin — verify 200"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Caja Chica list page with aero-data-grid",
+      "steps": [
+        "Navigate to /administracion/petty-cash",
+        "Verify page-layout with title 'Caja Chica'",
+        "Verify grid columns: numero_caja, saldo_inicial, ingreso_total, salida_total, saldo_final, estatus (badge)",
+        "Verify filter bar with estatus filter (ABIERTA/CERRADA)",
+        "Verify 'Nueva Caja' button navigates to form"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Caja Chica form creates new petty cash period",
+      "steps": [
+        "Navigate to /administracion/petty-cash/new",
+        "Verify form-container with title 'Nueva Caja Chica'",
+        "Fill numero_caja, saldo_inicial, fecha_apertura",
+        "Submit — verify redirect to list",
+        "Verify new caja appears in list"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Caja Chica detail shows solicitudes and movimientos",
+      "steps": [
+        "Navigate to /administracion/petty-cash/{id}",
+        "Verify entity-detail-shell layout",
+        "Verify solicitud sub-table displays related requests",
+        "Verify movimiento sub-table displays related movements",
+        "Verify 'Cerrar Caja' action button appears for ABIERTA status"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Administracion tabs include Caja Chica",
+      "steps": [
+        "Navigate to /administracion",
+        "Verify tab bar includes 'Caja Chica' tab",
+        "Click tab — verify navigates to /administracion/petty-cash"
+      ],
+      "passes": true
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for caja chica pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_caja_chica.py passes all tests",
+        "Verify no regressions"
+      ],
+      "passes": true
+    }
+  ]
+}
