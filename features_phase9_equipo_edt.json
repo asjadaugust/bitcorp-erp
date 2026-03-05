@@ -1,0 +1,116 @@
+{
+  "features": [
+    {
+      "category": "functional",
+      "description": "CRUD for EquipoEdt (EDT associations per parte diario)",
+      "steps": [
+        "GET /api/equipment/associations/edt?parte_diario_id=X — verify lists EDT associations for a parte diario",
+        "Verify seed data loads (10,457 rows total)",
+        "POST /api/equipment/associations/edt with {parte_diario_id, edt_id, porcentaje: 60, actividad: 'Excavacion'} — verify 201",
+        "POST another EDT with porcentaje: 40 — verify 201",
+        "GET /api/equipment/associations/edt/{id} — verify detail",
+        "PUT /api/equipment/associations/edt/{id} with {porcentaje: 50} — verify 200",
+        "DELETE /api/equipment/associations/edt/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "EquipoEdt porcentaje validation: must sum to 100% per parte_diario",
+      "steps": [
+        "Create EDT 1 with porcentaje: 60",
+        "Create EDT 2 with porcentaje: 30",
+        "GET /api/equipment/associations/edt/validate/{parte_diario_id} — verify returns {valid: false, total: 90}",
+        "Create EDT 3 with porcentaje: 10",
+        "GET validate — verify {valid: true, total: 100}",
+        "Try creating EDT 4 with porcentaje that would exceed 100 — verify appropriate warning/error"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "CRUD for EquipoCombustible (fuel consumption per valorizacion)",
+      "steps": [
+        "GET /api/equipment/associations/combustible?valorizacion_legacy_id=X — verify lists fuel records",
+        "Verify seed data loads (4,451 rows total)",
+        "POST /api/equipment/associations/combustible with {fecha, cantidad: 50, precio_unitario_sin_igv: 12.50} — verify 201",
+        "Verify importe auto-calculated: 50 * 12.50 = 625.00",
+        "GET /api/equipment/associations/combustible/{id} — verify detail with calculated importe",
+        "PUT /api/equipment/associations/combustible/{id} with {cantidad: 60} — verify importe recalculates to 750.00",
+        "DELETE /api/equipment/associations/combustible/{id} — verify 204"
+      ],
+      "passes": true
+    },
+    {
+      "category": "functional",
+      "description": "EquipoCombustible auto-calculates importe from cantidad * precio_unitario",
+      "steps": [
+        "Create record with cantidad: 100, precio_unitario_sin_igv: 15.00",
+        "GET record — verify importe = 1500.00",
+        "Update cantidad to 120 — verify importe recalculates to 1800.00",
+        "Update precio_unitario_sin_igv to 16.00 — verify importe recalculates to 1920.00"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "EquipoEdt panel embedded in parte diario detail page",
+      "steps": [
+        "Navigate to an existing parte diario detail page",
+        "Verify EDT panel appears as a section/card within the detail",
+        "Verify grid shows: porcentaje, EDT nombre, actividad",
+        "Verify percentage bar/indicator showing total percentage",
+        "Click 'Agregar EDT' — verify form appears with EDT picker and porcentaje input",
+        "Add EDT — verify appears in grid and percentage updates",
+        "Remove EDT — verify grid and percentage update"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "EquipoCombustible panel embedded in valorizacion detail page",
+      "steps": [
+        "Navigate to an existing valorizacion detail page",
+        "Verify fuel consumption panel appears as a section/card",
+        "Verify aero-data-grid shows: numero_vale, fecha, cantidad, precio_unitario, importe",
+        "Click 'Agregar Combustible' — verify inline form",
+        "Add record — verify importe auto-calculates in the form",
+        "Verify total sum displays at bottom of grid"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Existing parte diario detail page still works after EquipoEdt integration",
+      "steps": [
+        "Navigate to /equipment/operaciones/partes-diarios/{id}",
+        "Verify existing sections still render correctly",
+        "Verify no console errors",
+        "Verify EDT panel loads data correctly",
+        "Verify page performance is acceptable (no excessive API calls)"
+      ],
+      "passes": true
+    },
+    {
+      "category": "ui",
+      "description": "Existing valorizacion detail page still works after EquipoCombustible integration",
+      "steps": [
+        "Navigate to an existing valorizacion detail page",
+        "Verify existing sections still render correctly",
+        "Verify no console errors",
+        "Verify combustible panel loads data correctly"
+      ],
+      "passes": true
+    },
+    {
+      "category": "testing",
+      "description": "Backend tests for equipo EDT and combustible pass",
+      "steps": [
+        "Run: npm run test:backend",
+        "Verify test_equipo_edt.py passes all tests including porcentaje validation",
+        "Verify no regressions in existing test_reportes.py and test_valorizaciones.py"
+      ],
+      "passes": true
+    }
+  ]
+}

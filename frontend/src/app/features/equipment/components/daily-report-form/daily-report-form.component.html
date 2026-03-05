@@ -279,4 +279,9 @@
 
     </form>
   </div>
+
+  <!-- EDT Panel (only show for existing reports) -->
+  <div *ngIf="reportId" class="card form-card" style="margin-top: 24px;">
+    <app-edt-panel [parteDiarioId]="reportId"></app-edt-panel>
+  </div>
 </div>

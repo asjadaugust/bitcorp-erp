@@ -24,6 +24,7 @@ import {
 import { AeroButtonComponent } from '../../core/design-system';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 import { TabItem } from '../../shared/components/page-layout/page-layout.component';
+import { CombustiblePanelComponent } from '../equipment/associations/combustible-panel.component';
 
 @Component({
   selector: 'app-valuation-detail',
@@ -38,6 +39,7 @@ import { TabItem } from '../../shared/components/page-layout/page-layout.compone
     AeroButtonComponent,
     AeroTabsComponent,
     AeroDataGridComponent,
+    CombustiblePanelComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -693,6 +695,16 @@ import { TabItem } from '../../shared/components/page-layout/page-layout.compone
                 No hay análisis de combustible. Ejecute "Valorizar" para generar el análisis.
               </p>
             }
+          </section>
+        }
+
+        <!-- ═══ TAB 8: CONSUMO EQUIPO (Legacy) ═══ -->
+        @if (activeTab === 'consumo_legacy') {
+          <section class="detail-section">
+            <h2>Consumo de Combustible por Equipo</h2>
+            <app-combustible-panel
+              [valorizacionLegacyId]="valuation?.legacyId || ''"
+            ></app-combustible-panel>
           </section>
         }
       </div>
@@ -2540,7 +2552,8 @@ export class ValuationDetailComponent implements OnInit {
     { id: 'combustible', label: 'Combustible', icon: 'fa-gas-pump' },
     { id: 'gastos', label: 'Gasto en Obra', icon: 'fa-receipt' },
     { id: 'adelantos', label: 'Adelantos', icon: 'fa-hand-holding-dollar' },
-    { id: 'analisis', label: 'Análisis', icon: 'fa-chart-line' },
+    { id: 'analisis', label: 'Analisis', icon: 'fa-chart-line' },
+    { id: 'consumo_legacy', label: 'Consumo Equipo', icon: 'fa-fire-flame-curved' },
   ];
 
   // Tab data

@@ -19,6 +19,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
+import { EdtPanelComponent } from '../../associations/edt-panel.component';
 
 export interface DailyReportFormData {
   fecha_parte: string;
@@ -47,7 +48,13 @@ export interface DailyReportFormData {
 @Component({
   selector: 'app-equipment-daily-report-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, DropdownComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatSnackBarModule,
+    DropdownComponent,
+    EdtPanelComponent,
+  ],
   templateUrl: './daily-report-form.component.html',
   styleUrls: ['./daily-report-form.component.scss'],
 })
