@@ -213,6 +213,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
               </div>
 
               <aero-data-grid
+                [gridId]="'equipment-detail'"
                 [columns]="maintenanceColumns"
                 [data]="maintenanceHistory"
                 [loading]="false"
@@ -228,6 +229,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
               </div>
 
               <aero-data-grid
+                [gridId]="'equipment-detail-contracts'"
                 [columns]="contractColumns"
                 [data]="contracts"
                 [loading]="false"
@@ -255,6 +257,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
               </div>
 
               <aero-data-grid
+                [gridId]="'equipment-detail-reports'"
                 [columns]="reportColumns"
                 [data]="dailyReports"
                 [loading]="false"
@@ -276,6 +279,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
               </div>
 
               <aero-data-grid
+                [gridId]="'equipment-detail-solicitudes'"
                 [columns]="solicitudColumns"
                 [data]="solicitudes"
                 [loading]="false"
@@ -313,6 +317,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
                 >
               </div>
               <aero-data-grid
+                [gridId]="'equipment-detail-fuel'"
                 [columns]="fuelColumns"
                 [data]="fuelVouchers"
                 [loading]="loadingFuel"

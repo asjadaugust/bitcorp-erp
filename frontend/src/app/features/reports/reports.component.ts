@@ -76,6 +76,7 @@ import { AeroButtonComponent } from '../../core/design-system';
       >
         <h3>Reporte de Utilización</h3>
         <aero-data-grid
+          [gridId]="'report-utilization'"
           [columns]="columnsUtilization"
           [data]="reportData"
           [dense]="true"
@@ -89,6 +90,7 @@ import { AeroButtonComponent } from '../../core/design-system';
       >
         <h3>Historial de Mantenimiento</h3>
         <aero-data-grid
+          [gridId]="'report-maintenance'"
           [columns]="columnsMaintenance"
           [data]="reportData"
           [dense]="true"
@@ -114,6 +116,7 @@ import { AeroButtonComponent } from '../../core/design-system';
       >
         <h3>Movimientos de Inventario</h3>
         <aero-data-grid
+          [gridId]="'report-inventory'"
           [columns]="columnsInventory"
           [data]="reportData"
           [dense]="true"
@@ -138,6 +141,7 @@ import { AeroButtonComponent } from '../../core/design-system';
       >
         <h3>Timesheet de Operadores</h3>
         <aero-data-grid
+          [gridId]="'report-timesheet'"
           [columns]="columnsTimesheet"
           [data]="reportData"
           [dense]="true"

@@ -57,6 +57,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'checklist-inspection-list'"
           [columns]="columns"
           [data]="inspections"
           [loading]="loading"

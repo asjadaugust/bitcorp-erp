@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { TenderService, Tender } from '../../services/tender.service';
+import { TenderService, Tender, PaginatedResponse } from '../../services/tender.service';
 import {
   AeroDataGridComponent,
   DataGridColumn,
@@ -47,11 +47,16 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <aero-data-grid
+        [gridId]="'tender-list'"
         [columns]="columns"
-        [data]="filteredTenders"
+        [data]="tenders"
         [loading]="loading"
         [dense]="true"
         [showColumnChooser]="true"
+        [serverSide]="true"
+        [totalItems]="total"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       >
       </aero-data-grid>
     </app-page-layout>
@@ -63,7 +68,9 @@ export class TenderListComponent implements OnInit {
   private readonly router = inject(Router);
 
   tenders: Tender[] = [];
-  filteredTenders: Tender[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   loading = false;
   filters = { search: '', status: '' };
 
@@ -146,42 +153,39 @@ export class TenderListComponent implements OnInit {
 
   loadTenders() {
     this.loading = true;
-    this.tenderService.getTenders().subscribe({
-      next: (tenders) => {
-        this.tenders = tenders;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+    this.tenderService
+      .getTendersPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        estado: this.filters.status || undefined,
+      })
+      .subscribe({
+        next: (res: PaginatedResponse<Tender>) => {
+          this.tenders = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadTenders();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadTenders();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.status = (filters['status'] as string) || '';
-    this.applyFilters();
-  }
-
-  applyFilters(): void {
-    // Guard clause: if tenders not loaded yet, skip filtering
-    if (!this.tenders) {
-      this.filteredTenders = [];
-      return;
-    }
-
-    this.filteredTenders = this.tenders.filter((tender) => {
-      const matchesSearch =
-        !this.filters.search ||
-        tender.nombre?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        tender.entidad_convocante?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        tender.codigo?.toLowerCase().includes(this.filters.search.toLowerCase());
-
-      const matchesStatus = !this.filters.status || tender.estado === this.filters.status;
-
-      return matchesSearch && matchesStatus;
-    });
+    this.page = 1;
+    this.loadTenders();
   }
 
   createTender(): void {

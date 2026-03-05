@@ -17,6 +17,7 @@ import {
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../../core/design-system';
+import { ADMINISTRACION_TABS } from '../administracion-tabs';
 
 @Component({
   selector: 'app-bank-cash-list',
@@ -36,6 +37,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       icon="fa-building-columns"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="secondary" iconLeft="fa-wallet" (clicked)="navigateToCuentas()">
@@ -53,11 +55,17 @@ import { AeroButtonComponent } from '../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'bank-cash-list'"
           [columns]="columns"
-          [data]="filteredFlujos"
+          [data]="flujos"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="onRowClick($event)"
           (sortChange)="onSort($event)"
         >
@@ -70,14 +78,17 @@ export class BankCashListComponent implements OnInit {
   private readonly bankCashService = inject(BankCashService);
   private readonly router = inject(Router);
 
+  tabs = ADMINISTRACION_TABS;
   flujos: FlujoCajaBanco[] = [];
-  filteredFlujos: FlujoCajaBanco[] = [];
   loading = false;
+  total = 0;
+  pageSize = 50;
+  page = 1;
   filters = { search: '', tipo_movimiento: '', moneda: '' };
 
   breadcrumbs: Breadcrumb[] = [
     { label: 'Inicio', url: '/app' },
-    { label: 'Administraci\u00f3n', url: '/administracion' },
+    { label: 'Administración', url: '/administracion' },
     { label: 'Caja y Banco' },
   ];
 
@@ -103,7 +114,7 @@ export class BankCashListComponent implements OnInit {
       type: 'select',
       options: [
         { label: 'Soles', value: 'SOLES' },
-        { label: 'D\u00f3lares', value: 'DOLARES' },
+        { label: 'Dólares', value: 'DOLARES' },
       ],
     },
   ];
@@ -168,52 +179,42 @@ export class BankCashListComponent implements OnInit {
     this.loading = true;
     this.bankCashService
       .getFlujos({
-        page: 1,
-        limit: 100,
+        page: this.page,
+        limit: this.pageSize,
         tipo_movimiento: this.filters.tipo_movimiento || undefined,
         moneda: this.filters.moneda || undefined,
+        search: this.filters.search || undefined,
       })
       .subscribe({
-        next: (flujos: FlujoCajaBanco[]) => {
-          this.flujos = flujos;
-          this.filteredFlujos = flujos;
-          this.applyFilters();
+        next: (response) => {
+          this.flujos = response.data;
+          this.total = response.pagination.total;
           this.loading = false;
         },
         error: () => {
           this.flujos = [];
-          this.filteredFlujos = [];
           this.loading = false;
         },
       });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
-    const prevTipo = this.filters.tipo_movimiento;
-    const prevMoneda = this.filters.moneda;
-
     this.filters.search = (filters['search'] as string) || '';
     this.filters.tipo_movimiento = (filters['tipo_movimiento'] as string) || '';
     this.filters.moneda = (filters['moneda'] as string) || '';
-
-    // Re-fetch from server if tipo_movimiento or moneda changed
-    if (prevTipo !== this.filters.tipo_movimiento || prevMoneda !== this.filters.moneda) {
-      this.loadFlujos();
-    } else {
-      this.applyFilters();
-    }
+    this.page = 1;
+    this.loadFlujos();
   }
 
-  applyFilters(): void {
-    this.filteredFlujos = this.flujos.filter((flujo) => {
-      const matchesSearch =
-        !this.filters.search ||
-        flujo.concepto?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        flujo.cuenta_origen?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        flujo.voucher?.toLowerCase().includes(this.filters.search.toLowerCase());
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadFlujos();
+  }
 
-      return matchesSearch;
-    });
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadFlujos();
   }
 
   onRowClick(row: FlujoCajaBanco): void {

@@ -15,6 +15,7 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
 import { AeroButtonComponent } from '../../../core/design-system';
+import { ADMINISTRACION_TABS } from '../administracion-tabs';
 
 @Component({
   selector: 'app-cuenta-list',
@@ -35,6 +36,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       icon="fa-wallet"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-actions-container actions>
         <aero-button variant="secondary" iconLeft="fa-arrow-left" (clicked)="navigateBack()">
@@ -43,7 +45,15 @@ import { AeroButtonComponent } from '../../../core/design-system';
       </app-actions-container>
 
       <app-page-card [noPadding]="true">
-        <aero-data-grid [columns]="columns" [data]="cuentas" [loading]="loading" [dense]="true">
+        <aero-data-grid
+          [gridId]="'cuenta-list'"
+          [columns]="columns"
+          [data]="cuentas"
+          [loading]="loading"
+          [dense]="true"
+          [serverSide]="true"
+          [totalItems]="cuentas.length"
+        >
         </aero-data-grid>
       </app-page-card>
 
@@ -130,6 +140,7 @@ export class CuentaListComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
 
+  tabs = ADMINISTRACION_TABS;
   cuentas: CuentaCajaBanco[] = [];
   loading = false;
   submitting = false;

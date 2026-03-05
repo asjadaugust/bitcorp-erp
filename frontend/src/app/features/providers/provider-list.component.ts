@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ProviderService } from '../../core/services/provider.service';
+import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import { Provider } from '../../core/models/provider.model';
 import {
   AeroDataGridComponent,
@@ -39,6 +40,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     ExportDropdownComponent,
     ActionsContainerComponent,
     AeroButtonComponent,
+    PageCardComponent,
   ],
   template: `
     <app-page-layout
@@ -61,23 +63,31 @@ import { AeroButtonComponent } from '../../core/design-system';
         (filterChange)="onFilterChange($event)"
       ></app-filter-bar>
 
-      <aero-data-grid
-        [columns]="columns"
-        [data]="providers"
-        [loading]="loading"
-        [dense]="true"
-        [showColumnChooser]="true"
-        [actionsTemplate]="actionsTemplate"
-        [templates]="{
-          provider: providerTemplate,
-          ruc: rucTemplate,
-          contact: contactTemplate,
-          location: locationTemplate,
-        }"
-        (rowClick)="viewProvider($event)"
-        (sortChange)="onSort($event)"
-      >
-      </aero-data-grid>
+      <app-page-card [noPadding]="true">
+        <aero-data-grid
+          [gridId]="'provider-list'"
+          [columns]="columns"
+          [data]="providers"
+          [loading]="loading"
+          [dense]="true"
+          [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
+          [actionsTemplate]="actionsTemplate"
+          [templates]="{
+            provider: providerTemplate,
+            ruc: rucTemplate,
+            contact: contactTemplate,
+            location: locationTemplate,
+          }"
+          (rowClick)="viewProvider($event)"
+          (sortChange)="onSort($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </aero-data-grid>
+      </app-page-card>
 
       <!-- Custom Templates -->
       <ng-template #providerTemplate let-row>
@@ -215,6 +225,9 @@ export class ProviderListComponent implements OnInit {
 
   providers: Provider[] = [];
   loading = false;
+  total = 0;
+  pageSize = 50;
+  page = 1;
   filters = { status: '', search: '' };
 
   breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'Proveedores' }];
@@ -301,20 +314,40 @@ export class ProviderListComponent implements OnInit {
 
   loadProviders(): void {
     this.loading = true;
-    this.providerService.getAll(this.filters).subscribe({
-      next: (data) => {
-        this.providers = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+    this.providerService
+      .getAllPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        search: this.filters.search || undefined,
+        status: this.filters.status || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.providers = response.data;
+          this.total = response.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.status = (filters['status'] as string) || '';
+    this.page = 1;
+    this.loadProviders();
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadProviders();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
     this.loadProviders();
   }
 

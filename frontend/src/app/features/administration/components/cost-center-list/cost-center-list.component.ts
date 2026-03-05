@@ -50,12 +50,17 @@ import { AeroButtonComponent } from '../../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'cost-center-list'"
           [columns]="columns"
-          [data]="filteredCostCenters"
+          [data]="costCenters"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
           [actionsTemplate]="actionsTemplate"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (sortChange)="onSort($event)"
         >
         </aero-data-grid>
@@ -89,7 +94,9 @@ export class CostCenterListComponent implements OnInit {
 
   tabs = ADMINISTRACION_TABS;
   costCenters: CostCenter[] = [];
-  filteredCostCenters: CostCenter[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   loading = false;
   filters = { search: '' };
 
@@ -122,46 +129,43 @@ export class CostCenterListComponent implements OnInit {
 
   loadCostCenters() {
     this.loading = true;
-    this.adminService.getCostCenters().subscribe({
-      next: (response: unknown) => {
-        // Handle paginated response { success, data, pagination } or direct array
-        const resp = response as Record<string, unknown>;
-        if (resp && typeof resp === 'object' && 'data' in resp) {
-          this.costCenters = Array.isArray(resp['data']) ? (resp['data'] as CostCenter[]) : [];
-        } else if (Array.isArray(response)) {
-          this.costCenters = response as CostCenter[];
-        } else {
+    this.adminService
+      .getCostCentersPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        search: this.filters.search || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.costCenters = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
           this.costCenters = [];
-        }
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.costCenters = [];
-        this.filteredCostCenters = [];
-        this.loading = false;
-      },
-    });
+          this.loading = false;
+        },
+      });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadCostCenters();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadCostCenters();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
-    this.applyFilters();
-  }
-
-  applyFilters(): void {
-    this.filteredCostCenters = this.costCenters.filter((cc) => {
-      const matchesSearch =
-        !this.filters.search ||
-        cc.nombre?.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        cc.codigo?.toLowerCase().includes(this.filters.search.toLowerCase());
-
-      return matchesSearch;
-    });
+    this.page = 1;
+    this.loadCostCenters();
   }
 
   onSort(event: { column: string; direction: string | null }): void {
-    // Sort handled client-side by the grid
+    // Sort handled server-side
   }
 
   createCostCenter(): void {

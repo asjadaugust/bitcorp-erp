@@ -102,6 +102,7 @@ import {
       }
 
       <aero-data-grid
+        [gridId]="'edt-panel'"
         [columns]="columns"
         [data]="edtList"
         [loading]="loadingList"

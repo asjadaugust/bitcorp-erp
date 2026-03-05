@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TimesheetService } from '../../core/services/timesheet.service';
+import { TimesheetService, PaginatedResponse } from '../../core/services/timesheet.service';
 import { Timesheet } from '../../core/models/scheduling.model';
 import { ExcelExportService } from '../../core/services/excel-export.service';
 
@@ -74,17 +74,22 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <!-- Timesheets Table -->
       <aero-data-grid
+        [gridId]="'timesheet-list'"
         [columns]="columns"
         [data]="timesheets"
         [loading]="loading"
         [dense]="true"
         [showColumnChooser]="true"
+        [serverSide]="true"
+        [totalItems]="total"
         [templates]="{
           id: idTemplate,
           trabajador: trabajadorTemplate,
           periodo: periodoTemplate,
           acciones: accionesTemplate,
         }"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
         (rowClick)="viewTimesheet($event.id)"
       >
       </aero-data-grid>
@@ -185,6 +190,9 @@ export class TimesheetListComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   timesheets: Timesheet[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   loading = false;
   error: string | null = null;
 
@@ -250,8 +258,19 @@ export class TimesheetListComponent implements OnInit {
     this.loadTimesheets();
   }
 
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadTimesheets();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadTimesheets();
+  }
+
   onFilterChange(filters: Record<string, unknown>) {
     this.currentFilters = filters;
+    this.page = 1;
     this.loadTimesheets();
   }
 
@@ -259,18 +278,26 @@ export class TimesheetListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.timesheetService.listTimesheets(this.currentFilters).subscribe({
-      next: (timesheets: Timesheet[]) => {
-        this.timesheets = timesheets;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading timesheets:', err);
-        this.timesheets = [];
-        this.error = 'No se pudieron cargar las planillas';
-        this.loading = false;
-      },
-    });
+    this.timesheetService
+      .listTimesheetsPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        estado: (this.currentFilters['estado'] as string) || undefined,
+        periodo: (this.currentFilters['periodo'] as string) || undefined,
+      })
+      .subscribe({
+        next: (res: PaginatedResponse<Timesheet>) => {
+          this.timesheets = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error loading timesheets:', err);
+          this.timesheets = [];
+          this.error = 'No se pudieron cargar las planillas';
+          this.loading = false;
+        },
+      });
   }
 
   navigateToGenerate() {

@@ -10,6 +10,7 @@ import {
   Breadcrumb,
 } from '../../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
+import { LOGISTICS_TABS } from '../logistics-tabs';
 
 @Component({
   selector: 'app-categoria-list',
@@ -21,14 +22,18 @@ import { PageCardComponent } from '../../../shared/components/page-card/page-car
       icon="fa-tags"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      [tabs]="tabs"
     >
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'categoria-list'"
           [columns]="columns"
           [data]="categorias"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="categorias.length"
           (sortChange)="onSort($event)"
         >
         </aero-data-grid>
@@ -39,6 +44,7 @@ import { PageCardComponent } from '../../../shared/components/page-card/page-car
 export class CategoriaListComponent implements OnInit {
   private readonly solicitudService = inject(SolicitudMaterialService);
 
+  tabs = LOGISTICS_TABS;
   categorias: Categoria[] = [];
   loading = false;
 

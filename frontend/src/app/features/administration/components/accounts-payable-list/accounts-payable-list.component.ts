@@ -63,13 +63,19 @@ import { AeroButtonComponent } from '../../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'accounts-payable-list'"
           [columns]="columns"
           [data]="filteredRecords"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
           [actionsTemplate]="actionsTemplate"
           [templates]="{ mora: moraTemplate }"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (sortChange)="onSort($event)"
         >
         </aero-data-grid>
@@ -153,6 +159,9 @@ export class AccountsPayableListComponent implements OnInit {
   records: AccountsPayable[] = [];
   filteredRecords: AccountsPayable[] = [];
   loading = false;
+  total = 0;
+  pageSize = 50;
+  page = 1;
   filters: Record<string, string> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
@@ -237,25 +246,49 @@ export class AccountsPayableListComponent implements OnInit {
 
   loadRecords() {
     this.loading = true;
-    this.adminService.getAccountsPayable().subscribe({
-      next: (records) => {
-        this.records = records.map((r) => ({
-          ...r,
-          proveedor_razon_social: r.provider?.razonSocial || r.provider?.nombreComercial || 'N/A',
-        }));
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+    this.adminService
+      .getAccountsPayable({
+        page: this.page,
+        limit: this.pageSize,
+        estado: this.filters['estado'] || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.records = response.data.map((r) => ({
+            ...r,
+            proveedor_razon_social: r.provider?.razonSocial || r.provider?.nombreComercial || 'N/A',
+          }));
+          this.total = response.pagination.total;
+          this.applyFilters();
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
+    const prevEstado = this.filters['estado'];
     this.filters['search'] = (filters['search'] as string) || '';
     this.filters['estado'] = (filters['estado'] as string) || '';
-    this.applyFilters();
+    this.page = 1;
+    if (prevEstado !== this.filters['estado']) {
+      this.loadRecords();
+    } else {
+      this.applyFilters();
+    }
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadRecords();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadRecords();
   }
 
   applyFilters(): void {

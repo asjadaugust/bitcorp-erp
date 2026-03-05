@@ -49,6 +49,7 @@ import { EQUIPMENT_TABS } from './equipment-tabs';
 
       <app-page-card [noPadding]="true" *ngIf="items.length > 0 || loading">
         <aero-data-grid
+          [gridId]="'inspection-tracking'"
           [columns]="columns"
           [data]="items"
           [loading]="loading"

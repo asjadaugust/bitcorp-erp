@@ -50,6 +50,7 @@ import { AeroButtonComponent } from '../../core/design-system';
         <div class="detail-section">
           <h2>Detalle Diario</h2>
           <aero-data-grid
+            [gridId]="'timesheet-detail'"
             [columns]="columns"
             [data]="timesheet.details || []"
             [dense]="true"

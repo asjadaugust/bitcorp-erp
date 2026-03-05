@@ -63,17 +63,22 @@ import { AeroButtonComponent } from '../../core/design-system';
       ></app-filter-bar>
 
       <aero-data-grid
+        [gridId]="'project-list'"
         [columns]="columns"
         [data]="projects"
         [loading]="loading"
         [dense]="true"
         [showColumnChooser]="true"
+        [serverSide]="true"
+        [totalItems]="total"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           code: codeTemplate,
           project: projectTemplate,
           dates: datesTemplate,
         }"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
         (rowClick)="viewProject($event)"
       >
       </aero-data-grid>
@@ -182,6 +187,9 @@ export class ProjectListComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
 
   projects: Project[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   loading = false;
   filters = { status: '', search: '' };
 
@@ -267,20 +275,39 @@ export class ProjectListComponent implements OnInit {
 
   loadProjects(): void {
     this.loading = true;
-    this.projectService.getAll(this.filters).subscribe({
-      next: (data) => {
-        this.projects = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+    this.projectService
+      .getAllPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        search: this.filters.search || undefined,
+        estado: this.filters.status || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.projects = res.data;
+          this.total = res.pagination.total;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadProjects();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadProjects();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.status = (filters['status'] as string) || '';
+    this.page = 1;
     this.loadProjects();
   }
 

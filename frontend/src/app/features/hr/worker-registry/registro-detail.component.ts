@@ -168,6 +168,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
           }
 
           <aero-data-grid
+            [gridId]="'registro-trabajador-detail'"
             [columns]="historialColumns"
             [data]="registro.comportamiento_historico"
             [loading]="loading"

@@ -53,17 +53,22 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'acta-devolucion-list'"
           [columns]="columns"
           [data]="actas"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             codigo: codigoTemplate,
             equipo: equipoTemplate,
             firmas: firmasTemplate,
           }"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="verDetalle($event.id)"
         >
         </aero-data-grid>
@@ -186,7 +191,7 @@ export class ActaDevolucionListComponent implements OnInit {
   filtroTipo = '';
   search = '';
   page = 1;
-  limit = 20;
+  limit = 10;
   total = 0;
   totalPages = 1;
 
@@ -297,6 +302,16 @@ export class ActaDevolucionListComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.cargar();
+  }
+  onPageSizeChange(size: number): void {
+    this.limit = size;
+    this.page = 1;
+    this.cargar();
   }
 
   onFilterChange(filters: Record<string, unknown>): void {

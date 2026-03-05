@@ -100,6 +100,7 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-sy
         <!-- Movimientos -->
         <app-page-card title="Movimientos" [noPadding]="true">
           <aero-data-grid
+            [gridId]="'petty-cash-detail'"
             [columns]="movimientoColumns"
             [data]="caja.movimientos || []"
             [loading]="false"
@@ -112,6 +113,7 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-sy
         @if (caja.solicitudes && caja.solicitudes.length > 0) {
           <app-page-card title="Solicitudes" [noPadding]="true">
             <aero-data-grid
+              [gridId]="'petty-cash-detail-solicitudes'"
               [columns]="solicitudColumns"
               [data]="caja.solicitudes"
               [loading]="false"

@@ -78,11 +78,14 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <aero-data-grid
+        [gridId]="'movement-list'"
         [columns]="columns"
-        [data]="filteredMovements"
+        [data]="movements"
         [loading]="loading"
         [dense]="true"
         [showColumnChooser]="true"
+        [serverSide]="true"
+        [totalItems]="total"
         [actionsTemplate]="actionsTemplate"
         [templates]="{
           type: typeTemplate,
@@ -90,6 +93,8 @@ import { AeroButtonComponent } from '../../../../core/design-system';
           entity: entityTemplate,
           items: itemsTemplate,
         }"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
         (sortChange)="onSort($event)"
       >
       </aero-data-grid>
@@ -179,7 +184,9 @@ export class MovementListComponent implements OnInit {
 
   tabs = LOGISTICS_TABS;
   movements: Movement[] = [];
-  filteredMovements: Movement[] = [];
+  total = 0;
+  page = 1;
+  pageSize = 20;
   loading = false;
   statItems: StatItem[] = [];
 
@@ -242,29 +249,34 @@ export class MovementListComponent implements OnInit {
 
   loadMovements(): void {
     this.loading = true;
-    this.inventoryService.getMovements().subscribe({
-      next: (data) => {
-        this.movements = data;
-        this.calculateStats();
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading movements', error);
-        this.loading = false;
-      },
-    });
+    this.inventoryService
+      .getMovementsPaginated({
+        page: this.page,
+        limit: this.pageSize,
+        tipo: this.filters.type || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.movements = res.data;
+          this.total = res.pagination.total;
+          this.updateStats();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading movements', error);
+          this.loading = false;
+        },
+      });
   }
 
-  calculateStats(): void {
-    const total = this.movements.length;
+  updateStats(): void {
     const inCount = this.movements.filter((m) => m.tipo_movimiento === 'entrada').length;
     const outCount = this.movements.filter((m) => m.tipo_movimiento === 'salida').length;
 
     this.statItems = [
       {
         label: 'Total Movimientos',
-        value: total,
+        value: this.total,
         icon: 'fa-right-left',
         color: 'primary',
         testId: 'total-movements',
@@ -286,34 +298,26 @@ export class MovementListComponent implements OnInit {
     ];
   }
 
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadMovements();
+  }
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadMovements();
+  }
+
   onFilterChange(filters: Record<string, unknown>): void {
     this.filters.search = (filters['search'] as string) || '';
     this.filters.type = (filters['type'] as string) || '';
     this.filters.startDate = (filters['startDate'] as string) || '';
-    this.applyFilters();
+    this.page = 1;
+    this.loadMovements();
   }
 
   onSort(event: { column: string; direction: string | null }): void {
-    // Sort handled client-side by the grid
-  }
-
-  applyFilters(): void {
-    this.filteredMovements = this.movements.filter((movement) => {
-      const matchesSearch =
-        !this.filters.search ||
-        (movement.numero_documento &&
-          movement.numero_documento.toLowerCase().includes(this.filters.search.toLowerCase())) ||
-        (movement.observaciones &&
-          movement.observaciones.toLowerCase().includes(this.filters.search.toLowerCase()));
-
-      const matchesType = !this.filters.type || movement.tipo_movimiento === this.filters.type;
-
-      const matchesDate =
-        !this.filters.startDate ||
-        new Date(movement.fecha).toISOString().split('T')[0] === this.filters.startDate;
-
-      return matchesSearch && matchesType && matchesDate;
-    });
+    // Sort handled server-side
   }
 
   registerMovement(type: 'entrada' | 'salida'): void {

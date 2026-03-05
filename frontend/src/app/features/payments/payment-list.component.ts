@@ -67,6 +67,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'payment-list'"
           [columns]="columns"
           [data]="payments"
           [loading]="loading"
@@ -217,7 +218,7 @@ export class PaymentListComponent implements OnInit {
   payments: PaymentRecordList[] = [];
   loading = false;
   totalItems = 0;
-  pageSize = 20;
+  pageSize = 50;
 
   filters: PaymentRecordQuery = {
     page: 1,

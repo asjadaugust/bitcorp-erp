@@ -56,15 +56,21 @@ import { AeroButtonComponent } from '../../../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'employee-list'"
           [columns]="columns"
           [data]="employees"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             nombre_completo: userTemplate,
           }"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="viewEmployee($event)"
         >
         </aero-data-grid>
@@ -159,6 +165,9 @@ export class EmployeeListComponent implements OnInit {
   tabs = HR_TABS;
   employees: Employee[] = [];
   loading = false;
+  total = 0;
+  pageSize = 50;
+  page = 1;
   searchTerm = '';
 
   breadcrumbs: Breadcrumb[] = [
@@ -210,21 +219,40 @@ export class EmployeeListComponent implements OnInit {
 
   loadEmployees(): void {
     this.loading = true;
-    this.employeeService.getEmployees(this.searchTerm).subscribe({
-      next: (data) => {
-        this.employees = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading employees', err);
-        this.loading = false;
-        this.snackBar.open('Error al cargar empleados', 'Cerrar', { duration: 3000 });
-      },
-    });
+    this.employeeService
+      .getEmployees({
+        page: this.page,
+        limit: this.pageSize,
+        search: this.searchTerm || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.employees = response.data;
+          this.total = response.pagination.total;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error loading employees', err);
+          this.loading = false;
+          this.snackBar.open('Error al cargar empleados', 'Cerrar', { duration: 3000 });
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
     this.searchTerm = (filters['search'] as string) || '';
+    this.page = 1;
+    this.loadEmployees();
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadEmployees();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
     this.loadEmployees();
   }
 

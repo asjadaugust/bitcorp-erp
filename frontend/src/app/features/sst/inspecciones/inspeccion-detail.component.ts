@@ -184,6 +184,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
           }
 
           <aero-data-grid
+            [gridId]="'inspeccion-ssoma-detail'"
             [columns]="seguimientoColumns"
             [data]="inspeccion.seguimientos"
             [loading]="loading"

@@ -53,6 +53,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       ></app-filter-bar>
 
       <aero-data-grid
+        [gridId]="'user-list'"
         [columns]="columns"
         [data]="users"
         [loading]="loading"

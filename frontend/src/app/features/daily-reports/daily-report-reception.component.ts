@@ -84,6 +84,7 @@ interface MatrixDate {
       <!-- Summary View -->
       <app-page-card [noPadding]="true" *ngIf="viewMode === 'summary'">
         <aero-data-grid
+          [gridId]="'daily-report-reception'"
           [columns]="columns"
           [data]="data"
           [loading]="loading"

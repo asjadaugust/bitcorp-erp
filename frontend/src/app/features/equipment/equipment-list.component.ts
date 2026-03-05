@@ -79,17 +79,23 @@ import { AeroButtonComponent } from '../../core/design-system';
 
       <app-page-card [noPadding]="true">
         <aero-data-grid
+          [gridId]="'equipment-list'"
           [columns]="columns"
           [data]="equipment"
           [loading]="loading"
           [dense]="true"
           [showColumnChooser]="true"
+          [serverSide]="true"
+          [totalItems]="total"
+          [pageSize]="pageSize"
           [actionsTemplate]="actionsTemplate"
           [templates]="{
             codigo_equipo: codeTemplate,
             brand_model: brandModelTemplate,
             categoria: categoriaTemplate,
           }"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
           (rowClick)="viewDetails($event)"
           (sortChange)="onSortChange($event)"
         >
@@ -217,6 +223,9 @@ export class EquipmentListComponent implements OnInit {
   successMessage = '';
   statistics: Record<string, number> | null = null;
   statItems: StatItem[] = [];
+  total = 0;
+  pageSize = 50;
+  page = 1;
 
   filters = { status: '', search: '', categoria_prd: '', marca: '' };
 
@@ -419,16 +428,19 @@ export class EquipmentListComponent implements OnInit {
 
   loadEquipment(): void {
     this.loading = true;
-    this.equipmentService.getAll(this.filters).subscribe({
-      next: (response) => {
-        this.equipment = response.data;
-        this.loading = false;
-      },
-      error: (_error) => {
-        this.errorMessage = 'Error al cargar la lista de equipos';
-        this.loading = false;
-      },
-    });
+    this.equipmentService
+      .getAll({ ...this.filters, page: this.page, limit: this.pageSize })
+      .subscribe({
+        next: (response) => {
+          this.equipment = response.data;
+          this.total = response.pagination.total;
+          this.loading = false;
+        },
+        error: (_error) => {
+          this.errorMessage = 'Error al cargar la lista de equipos';
+          this.loading = false;
+        },
+      });
   }
 
   onFilterChange(filters: Record<string, unknown>): void {
@@ -436,6 +448,18 @@ export class EquipmentListComponent implements OnInit {
     this.filters.status = (filters['status'] as string) || '';
     this.filters.categoria_prd = (filters['categoria_prd'] as string) || '';
     this.filters.marca = (filters['marca'] as string) || '';
+    this.page = 1;
+    this.loadEquipment();
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadEquipment();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
     this.loadEquipment();
   }
 
