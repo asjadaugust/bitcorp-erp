@@ -17,6 +17,7 @@ from app.core.excepciones import (
     ValidacionError,
 )
 from app.esquemas.valorizacion import (
+    AdelantoAmortizacionDto,
     AnalisisCombustibleDto,
     CombustibleDetalleDto,
     CombustibleDetalleItemDto,
@@ -25,6 +26,7 @@ from app.esquemas.valorizacion import (
     DocumentoPagoCrear,
     DocumentoPagoDto,
     EquipoResumenDto,
+    GastoEnObraDto,
     ParteDetalleDto,
     ProveedorResumenDto,
     ResumenAcumuladoItemDto,
@@ -71,11 +73,18 @@ def _num(val: float | None) -> float | None:
     return float(val) if val is not None else None
 
 
+def _f(val) -> float:
+    """Convert to float, returning 0.0 for None values."""
+    if val is None:
+        return 0.0
+    return float(val)
+
+
 def _a_lista_dto(v: ValorizacionEquipo) -> ValorizacionListaDto:
     eq = v.equipo_rel
     ct = v.contrato_rel
     prov = ct.proveedor if ct else None
-    igv = float(v.igv_monto) if v.igv_monto is not None else round(float(v.total_con_igv) - float(v.total_valorizado or 0), 2)
+    igv = _f(v.igv_monto) if v.igv_monto is not None else round(_f(v.total_con_igv) - _f(v.total_valorizado), 2)
     return ValorizacionListaDto(
         id=v.id,
         equipo_id=v.equipo_id,
@@ -89,7 +98,7 @@ def _a_lista_dto(v: ValorizacionEquipo) -> ValorizacionListaDto:
         costo_base=_num(v.costo_base),
         total_valorizado=_num(v.total_valorizado),
         igv_monto=igv,
-        total_con_igv=float(v.total_con_igv),
+        total_con_igv=float(v.total_con_igv or 0),
         numero_valorizacion=v.numero_valorizacion,
         estado=v.estado,
         conformidad_proveedor=v.conformidad_proveedor,
@@ -132,7 +141,7 @@ def _a_detalle_dto(v: ValorizacionEquipo) -> ValorizacionDetalleDto:
         horas_trabajadas=_num(v.horas_trabajadas),
         costo_base=_num(v.costo_base),
         total_valorizado=_num(v.total_valorizado),
-        total_con_igv=float(v.total_con_igv),
+        total_con_igv=float(v.total_con_igv or 0),
         numero_valorizacion=v.numero_valorizacion,
         estado=v.estado,
         conformidad_proveedor=v.conformidad_proveedor,
@@ -940,9 +949,9 @@ class ServicioValorizacion:
             descuento_exceso_combustible=float(val.importe_exceso_combustible or 0),
             total_descuento=float(val.descuento_monto or 0),
             valorizacion_neta=float(val.total_valorizado or 0),
-            igv_porcentaje=float(val.igv_porcentaje),
-            igv_monto=float(val.igv_monto),
-            total_con_igv=float(val.total_con_igv),
+            igv_porcentaje=_f(val.igv_porcentaje),
+            igv_monto=_f(val.igv_monto),
+            total_con_igv=_f(val.total_con_igv),
             # Period
             fecha_inicio=val.fecha_inicio,
             fecha_fin=val.fecha_fin,
@@ -1143,6 +1152,36 @@ class ServicioValorizacion:
                 created_at=a.created_at,
             )
             for a in rows
+        ]
+
+    async def obtener_gastos_obra(
+        self, tenant_id: int, val_id: int
+    ) -> list[GastoEnObraDto]:
+        """Gastos en obra for PDF page 6."""
+        await self._obtener_o_404(tenant_id, val_id)
+        result = await self.db.execute(
+            select(GastoEnObra)
+            .where(GastoEnObra.valorizacion_id == val_id)
+            .order_by(GastoEnObra.fecha.asc())
+        )
+        return [
+            GastoEnObraDto.model_validate(g, from_attributes=True)
+            for g in result.scalars().all()
+        ]
+
+    async def obtener_adelantos(
+        self, tenant_id: int, val_id: int
+    ) -> list[AdelantoAmortizacionDto]:
+        """Adelantos y amortizaciones for PDF page 7."""
+        await self._obtener_o_404(tenant_id, val_id)
+        result = await self.db.execute(
+            select(AdelantoAmortizacion)
+            .where(AdelantoAmortizacion.valorizacion_id == val_id)
+            .order_by(AdelantoAmortizacion.fecha.asc())
+        )
+        return [
+            AdelantoAmortizacionDto.model_validate(a, from_attributes=True)
+            for a in result.scalars().all()
         ]
 
     async def actualizar_analisis(

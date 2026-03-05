@@ -247,6 +247,20 @@ class ServicioPdf:
         """Genera PDF de acta de entrega."""
         return await self.generar_pdf_desde_plantilla("acta-entrega.html", datos)
 
+    async def generar_pdf_valorizacion(self, datos: dict[str, Any]) -> bytes:
+        """Genera PDF de valorizacion (7-page report)."""
+        css_path = RUTA_PLANTILLAS / "estilos" / "valorizacion.css"
+        estilos = css_path.read_text(encoding="utf-8") if css_path.exists() else ""
+        datos["estilos_css"] = estilos
+        return await self.generar_pdf_desde_plantilla(
+            "valorizacion.html",
+            datos,
+            margen_superior="8mm",
+            margen_inferior="8mm",
+            margen_izquierdo="8mm",
+            margen_derecho="8mm",
+        )
+
     async def generar_pdf_valorizacion_completa(
         self, paginas_pdf: list[bytes]
     ) -> bytes:

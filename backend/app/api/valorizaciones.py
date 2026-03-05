@@ -1,5 +1,4 @@
-"""Rutas para valorizaciones de equipo.
-"""
+"""Rutas para valorizaciones de equipo."""
 
 from typing import Any
 
@@ -23,9 +22,7 @@ from app.servicios.valorizacion import ServicioValorizacion
 router = APIRouter()
 
 
-def _paginated(
-    data: list[Any], total: int, page: int, limit: int
-) -> dict[str, Any]:
+def _paginated(data: list[Any], total: int, page: int, limit: int) -> dict[str, Any]:
     return {
         "success": True,
         "data": [d.model_dump() if hasattr(d, "model_dump") else d for d in data],
@@ -90,8 +87,14 @@ async def analiticas_valorizaciones(
         }
     except Exception:
         stats = {
-            "total": 0, "pendientes": 0, "en_revision": 0, "aprobados": 0,
-            "pagados": 0, "rechazados": 0, "monto_total": 0, "monto_pagado": 0,
+            "total": 0,
+            "pendientes": 0,
+            "en_revision": 0,
+            "aprobados": 0,
+            "pagados": 0,
+            "rechazados": 0,
+            "monto_total": 0,
+            "monto_pagado": 0,
         }
     return _ok(stats)
 
@@ -106,7 +109,7 @@ async def registro_valorizaciones(
     proveedor: str | None = None,
     equipo_id: int | None = None,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
 ) -> dict[str, Any]:
     """Registro consolidado de valorizaciones con filtros."""
     svc = ServicioValorizacion(db)
@@ -273,7 +276,8 @@ async def registrar_conformidad(
 ) -> dict[str, Any]:
     svc = ServicioValorizacion(db)
     dto = await svc.registrar_conformidad(
-        usuario.id_empresa, val_id,
+        usuario.id_empresa,
+        val_id,
         fecha=datos.fecha,
         observaciones=datos.observaciones,
     )
@@ -358,9 +362,7 @@ async def analisis_combustible(
     return _ok_list(items)
 
 
-@router.put(
-    "/analisis-combustible/{analisis_id}", response_class=ORJSONResponse
-)
+@router.put("/analisis-combustible/{analisis_id}", response_class=ORJSONResponse)
 async def actualizar_analisis(
     analisis_id: int,
     datos: AnalisisCombustibleActualizar,
@@ -370,7 +372,8 @@ async def actualizar_analisis(
     """Update ratio_control/precio_unitario, recalculate excess."""
     svc = ServicioValorizacion(db)
     dto = await svc.actualizar_analisis(
-        usuario.id_empresa, analisis_id,
+        usuario.id_empresa,
+        analisis_id,
         ratio_control=datos.ratio_control,
         precio_unitario=datos.precio_unitario,
     )
@@ -380,9 +383,7 @@ async def actualizar_analisis(
 # ─── Documentos de pago ──────────────────────────────────────────────────
 
 
-@router.get(
-    "/{val_id}/payment-documents", response_class=ORJSONResponse
-)
+@router.get("/{val_id}/payment-documents", response_class=ORJSONResponse)
 async def listar_documentos_pago(
     val_id: int, db: SesionDb, usuario: UsuarioActual
 ) -> dict[str, Any]:
@@ -407,9 +408,7 @@ async def crear_documento_pago(
     return {"success": True, "data": {"id": doc.id, "message": "Documento creado"}}
 
 
-@router.put(
-    "/payment-documents/{doc_id}", response_class=ORJSONResponse
-)
+@router.put("/payment-documents/{doc_id}", response_class=ORJSONResponse)
 async def actualizar_documento_pago(
     doc_id: int,
     datos: DocumentoPagoActualizar,
@@ -421,16 +420,12 @@ async def actualizar_documento_pago(
     return _ok(doc)
 
 
-@router.get(
-    "/{val_id}/payment-documents/check", response_class=ORJSONResponse
-)
+@router.get("/{val_id}/payment-documents/check", response_class=ORJSONResponse)
 async def verificar_documentos_completos(
     val_id: int, db: SesionDb, usuario: UsuarioActual
 ) -> dict[str, Any]:
     svc = ServicioValorizacion(db)
-    result = await svc.verificar_documentos_completos(
-        usuario.id_empresa, val_id
-    )
+    result = await svc.verificar_documentos_completos(usuario.id_empresa, val_id)
     return _ok(result)
 
 
@@ -441,30 +436,37 @@ async def verificar_documentos_completos(
 async def generar_pdf_valorizacion(
     val_id: int, db: SesionDb, usuario: UsuarioActual
 ) -> Response:
-    """Generar PDF de valorizacion (stub — full 7-page merge deferred)."""
-    svc = ServicioValorizacion(db)
-    dto = await svc.obtener_por_id(usuario.id_empresa, val_id)
-    # Stub: return a simple HTML-rendered single-page PDF
+    """Generar PDF de valorizacion (7-page report)."""
+    from datetime import datetime
+
     from app.servicios.pdf import servicio_pdf
 
-    datos = dto.model_dump() if hasattr(dto, "model_dump") else dto
-    html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>Valorizacion {val_id}</title>
-    <style>body{{font-family:Arial;font-size:10pt;padding:20mm;}}</style>
-    </head><body>
-    <h1>Valorizacion #{val_id}</h1>
-    <p>Numero: {datos.get('numero_valorizacion','')}</p>
-    <p>Estado: {datos.get('estado','')}</p>
-    <p>Periodo: {datos.get('fecha_inicio','')} - {datos.get('fecha_fin','')}</p>
-    <p><em>PDF completo de 7 paginas en desarrollo.</em></p>
-    </body></html>"""
-    browser = await servicio_pdf.inicializar_navegador()
-    page = await browser.new_page()
-    try:
-        await page.set_content(html, wait_until="networkidle")
-        pdf_bytes = await page.pdf(format="A4", print_background=True)
-    finally:
-        await page.close()
+    svc = ServicioValorizacion(db)
+    tenant = usuario.id_empresa
+
+    resumen = await svc.obtener_resumen(tenant, val_id)
+    acumulado = await svc.obtener_resumen_acumulado(tenant, val_id)
+    partes = await svc.obtener_partes_detalle(tenant, val_id)
+    combustible = await svc.obtener_combustible_detalle(tenant, val_id)
+    analisis = await svc.obtener_analisis_combustible(tenant, val_id)
+    gastos = await svc.obtener_gastos_obra(tenant, val_id)
+    adelantos = await svc.obtener_adelantos(tenant, val_id)
+
+    datos = {
+        "resumen": resumen.model_dump(),
+        "acumulado": [a.model_dump() for a in acumulado],
+        "partes": [p.model_dump() for p in partes],
+        "combustible": {
+            **combustible.model_dump(),
+            "vales": [i.model_dump() for i in combustible.items],
+        },
+        "analisis": [a.model_dump() for a in analisis],
+        "gastos": [g.model_dump() for g in gastos],
+        "adelantos": [a.model_dump() for a in adelantos],
+        "fecha_generacion": datetime.now(),
+    }
+    pdf_bytes = await servicio_pdf.generar_pdf_valorizacion(datos)
+
     filename = f"valorizacion-{val_id}.pdf"
     return Response(
         content=pdf_bytes,
@@ -536,7 +538,9 @@ async def listar_eventos_descuento(
                 "fecha": r["fecha"].isoformat() if r["fecha"] else None,
                 "horas": float(r["horas"]) if r["horas"] else None,
                 "descripcion": r["descripcion"],
-                "monto_descuento": float(r["monto_descuento"]) if r["monto_descuento"] else 0,
+                "monto_descuento": (
+                    float(r["monto_descuento"]) if r["monto_descuento"] else 0
+                ),
                 "created_at": r["created_at"].isoformat() if r["created_at"] else None,
             }
             for r in rows
@@ -645,9 +649,7 @@ async def listar_deducciones(
     return _ok_list(deducciones)
 
 
-@router.post(
-    "/{val_id}/deducciones", response_class=ORJSONResponse, status_code=201
-)
+@router.post("/{val_id}/deducciones", response_class=ORJSONResponse, status_code=201)
 async def crear_deduccion(
     val_id: int,
     datos: DeduccionCrear,

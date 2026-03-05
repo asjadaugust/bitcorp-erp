@@ -1,27 +1,279 @@
 /**
- * Valuation Report PDF Styles (placeholder for full template conversion)
+ * Valuation Report PDF Styles
  * Based on SSRS Report: Reporte_Valorizacion_V01.rdl
+ * Light-blue headers (#b8cce4), 8pt Verdana, table-based layout
  */
 
-@page { size: A4 portrait; margin: 10mm; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: Verdana, Geneva, sans-serif; font-size: 8pt; line-height: 1.2; color: #000000; }
+@page {
+  size: A4 portrait;
+  margin: 8mm;
+}
 
-.report-header { background-color: #b8cce4; padding: 8mm 5mm; margin-bottom: 5mm; position: relative; min-height: 30mm; }
-.report-title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 2mm; }
-.valuation-id { font-size: 10pt; font-weight: bold; text-align: center; margin-bottom: 1mm; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-.info-table { width: 100%; border-collapse: collapse; margin-bottom: 5mm; font-size: 8pt; }
-.info-table td { border: 1px solid #d3d3d3; padding: 1.5mm 2mm; vertical-align: middle; }
-.info-table .label-cell { font-weight: bold; width: 28mm; }
-.info-table .value-cell { width: 57mm; }
+body {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 8pt;
+  line-height: 1.3;
+  color: #000;
+}
 
-.financial-table { width: 100%; border-collapse: collapse; margin-bottom: 3mm; font-size: 8pt; }
-.financial-table th { background-color: #b8cce4; font-weight: bold; padding: 2mm; text-align: center; border: 1px solid #d3d3d3; }
-.financial-table td { padding: 1.5mm 2mm; border: 1px solid #d3d3d3; }
-.financial-table .total-row { font-weight: bold; background-color: #e6e6e6; }
+/* ─── Page header (used on every page) ─── */
 
-.page-break { page-break-after: always; }
+.report-header {
+  background-color: #b8cce4;
+  padding: 4mm 5mm;
+  margin-bottom: 3mm;
+  position: relative;
+  min-height: 18mm;
+}
+
+.report-title {
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1mm;
+}
+
+.report-subtitle {
+  font-size: 9pt;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+
+.valuation-id {
+  font-size: 10pt;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 1mm;
+}
+
+.section-title {
+  background-color: #b8cce4;
+  font-size: 9pt;
+  font-weight: bold;
+  padding: 2mm 3mm;
+  margin-bottom: 2mm;
+  margin-top: 3mm;
+}
+
+/* ─── Info table (page 1 provider/equipment/contract) ─── */
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 3mm;
+  font-size: 8pt;
+}
+
+.info-table td {
+  border: 1px solid #d3d3d3;
+  padding: 1.2mm 2mm;
+  vertical-align: middle;
+}
+
+.info-table .label-cell {
+  font-weight: bold;
+  background-color: #dce6f1;
+  width: 25mm;
+  white-space: nowrap;
+}
+
+.info-table .value-cell {
+  width: auto;
+}
+
+/* ─── Financial table (page 1) ─── */
+
+.financial-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 3mm;
+  font-size: 8pt;
+}
+
+.financial-table th {
+  background-color: #b8cce4;
+  font-weight: bold;
+  padding: 2mm 2mm;
+  text-align: center;
+  border: 1px solid #999;
+  font-size: 8pt;
+}
+
+.financial-table td {
+  padding: 1.5mm 2mm;
+  border: 1px solid #d3d3d3;
+}
+
+.financial-table .total-row {
+  font-weight: bold;
+  background-color: #e6e6e6;
+}
+
+.financial-table .subtotal-row {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+/* ─── Detail tables (pages 2-7) ─── */
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 3mm;
+  font-size: 7.5pt;
+}
+
+.detail-table th {
+  background-color: #b8cce4;
+  font-weight: bold;
+  padding: 1.5mm 2mm;
+  text-align: center;
+  border: 1px solid #999;
+  font-size: 7.5pt;
+  white-space: nowrap;
+}
+
+.detail-table td {
+  padding: 1.2mm 2mm;
+  border: 1px solid #d3d3d3;
+  vertical-align: middle;
+}
+
+.detail-table .total-row td {
+  font-weight: bold;
+  background-color: #e6e6e6;
+}
+
+.detail-table .subtotal-row td {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+/* ─── Period info ─── */
+
+.period-info {
+  margin-bottom: 3mm;
+  font-size: 8pt;
+}
+
+.period-info table {
+  border-collapse: collapse;
+}
+
+.period-info td {
+  padding: 1mm 3mm;
+}
+
+.period-label {
+  font-weight: bold;
+}
+
+/* ─── Utility classes ─── */
+
 .text-center { text-align: center; }
 .text-right { text-align: right; }
+.text-left { text-align: left; }
 .bold { font-weight: bold; }
+.nowrap { white-space: nowrap; }
+
+.text-muted {
+  color: #666;
+  font-style: italic;
+}
+
+.amount {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-size: 8pt;
+}
+
+/* ─── Page break ─── */
+
+.page-break {
+  page-break-after: always;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.page {
+  position: relative;
+}
+
+/* ─── Signature block (page 7) ─── */
+
+.signature-block {
+  margin-top: 15mm;
+  width: 100%;
+}
+
+.signature-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.signature-cell {
+  width: 33.33%;
+  text-align: center;
+  padding: 5mm 10mm;
+  vertical-align: bottom;
+}
+
+.signature-line {
+  border-top: 1px solid #000;
+  padding-top: 2mm;
+  font-size: 8pt;
+  font-weight: bold;
+}
+
+.signature-label {
+  font-size: 7pt;
+  color: #333;
+  margin-top: 1mm;
+}
+
+/* ─── Footer ─── */
+
+.page-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 7pt;
+  color: #666;
+  text-align: center;
+  padding-top: 2mm;
+  border-top: 0.5px solid #ccc;
+}
+
+/* ─── Estado badges ─── */
+
+.estado-badge {
+  display: inline-block;
+  padding: 0.5mm 3mm;
+  border-radius: 2mm;
+  font-size: 7pt;
+  font-weight: bold;
+}
+
+.estado-pendiente { background-color: #fff3cd; color: #856404; }
+.estado-aprobada { background-color: #d4edda; color: #155724; }
+.estado-rechazada { background-color: #f8d7da; color: #721c24; }
+.estado-borrador { background-color: #e2e3e5; color: #383d41; }
+
+/* ─── Empty state ─── */
+
+.empty-state {
+  text-align: center;
+  padding: 10mm;
+  color: #999;
+  font-style: italic;
+  font-size: 9pt;
+}
