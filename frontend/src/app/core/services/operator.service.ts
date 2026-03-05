@@ -21,10 +21,33 @@ interface ApiResponse<T> {
   pagination?: unknown;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: { page: number; limit: number; total: number; total_pages: number };
+}
+
 @Injectable({ providedIn: 'root' })
 export class OperatorService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/operators`;
+
+  getAllPaginated(params?: { page?: number; limit?: number; search?: string; estado?: string; proyecto_id?: number }): Observable<PaginatedResponse<Operator>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.estado) httpParams = httpParams.set('status', params.estado);
+    if (params?.proyecto_id) httpParams = httpParams.set('proyecto_id', params.proyecto_id.toString());
+    return this.http.get<ApiResponse<Operator[]>>(this.apiUrl, { params: httpParams }).pipe(
+      map((response) => {
+        const data = (response && 'data' in response ? response.data : response) as Operator[];
+        const pagination = (response?.['pagination'] as PaginatedResponse<Operator>['pagination']) ?? {
+          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        };
+        return { data: Array.isArray(data) ? data : [], pagination };
+      })
+    );
+  }
 
   getAll(filters?: Record<string, string | number | undefined>): Observable<Operator[]> {
     let params = new HttpParams();

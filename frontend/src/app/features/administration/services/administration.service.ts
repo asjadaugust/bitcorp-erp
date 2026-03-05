@@ -1,8 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
 
 export interface CostCenter {
   id: string;
@@ -82,6 +92,22 @@ export class AdministrationService {
   private providersUrl = `${environment.apiUrl}/providers`;
 
   // Cost Centers
+  getCostCentersPaginated(params?: { page?: number; limit?: number; search?: string }): Observable<PaginatedResponse<CostCenter>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/cost-centers`, { params: httpParams }).pipe(
+      map((response) => {
+        const data = ((response?.['data'] ?? response) as CostCenter[]);
+        const pagination = (response?.['pagination'] as PaginatedResponse<CostCenter>['pagination']) ?? {
+          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        };
+        return { data: Array.isArray(data) ? data : [], pagination };
+      })
+    );
+  }
+
   getCostCenters(): Observable<CostCenter[]> {
     return this.http.get<{ data: CostCenter[] }>(`${this.apiUrl}/cost-centers`).pipe(map((res) => res.data || res as unknown as CostCenter[]));
   }
@@ -109,8 +135,16 @@ export class AdministrationService {
   }
 
   // Accounts Payable (Spanish snake_case DTOs)
-  getAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http.get<{ data: AccountsPayable[] }>(this.apUrl).pipe(map((res) => res.data || res as unknown as AccountsPayable[]));
+  getAccountsPayable(params?: {
+    page?: number;
+    limit?: number;
+    estado?: string;
+  }): Observable<PaginatedResponse<AccountsPayable>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.estado) httpParams = httpParams.set('estado', params.estado);
+    return this.http.get<PaginatedResponse<AccountsPayable>>(this.apUrl, { params: httpParams });
   }
 
   getAccountsPayableById(id: number): Observable<AccountsPayable> {
@@ -134,6 +168,23 @@ export class AdministrationService {
   }
 
   // Payment Schedules (English properties from Entity)
+  getPaymentSchedulesPaginated(params?: { page?: number; limit?: number; estado?: string; search?: string }): Observable<PaginatedResponse<PaymentSchedule>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.estado) httpParams = httpParams.set('estado', params.estado);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<Record<string, unknown>>(this.psUrl, { params: httpParams }).pipe(
+      map((response) => {
+        const data = ((response?.['data'] ?? response) as PaymentSchedule[]);
+        const pagination = (response?.['pagination'] as PaginatedResponse<PaymentSchedule>['pagination']) ?? {
+          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        };
+        return { data: Array.isArray(data) ? data : [], pagination };
+      })
+    );
+  }
+
   getPaymentSchedules(): Observable<PaymentSchedule[]> {
     return this.http.get<{ data: PaymentSchedule[] }>(this.psUrl).pipe(map((res) => res.data || res as unknown as PaymentSchedule[]));
   }

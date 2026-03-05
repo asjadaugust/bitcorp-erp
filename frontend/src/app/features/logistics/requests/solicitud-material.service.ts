@@ -64,6 +64,16 @@ export interface RequerimientoDetalle extends Requerimiento {
   detalles: DetalleRequerimiento[];
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
 export interface CotizacionLogistica {
   id: number;
   numero_cotizacion: number | null;
@@ -80,11 +90,12 @@ export class SolicitudMaterialService {
   }
 
   // Solicitudes Material
-  getSolicitudes(params?: { page?: number; limit?: number }): Observable<SolicitudMaterial[]> {
+  getSolicitudes(params?: { page?: number; limit?: number; search?: string }): Observable<PaginatedResponse<SolicitudMaterial>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
-    return this.http.get<SolicitudMaterial[]>(`${this.baseUrl}/solicitudes-material`, {
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PaginatedResponse<SolicitudMaterial>>(`${this.baseUrl}/solicitudes-material`, {
       params: httpParams,
     });
   }
@@ -111,11 +122,12 @@ export class SolicitudMaterialService {
   }
 
   // Requerimientos
-  getRequerimientos(params?: { page?: number; limit?: number }): Observable<Requerimiento[]> {
+  getRequerimientos(params?: { page?: number; limit?: number; search?: string }): Observable<PaginatedResponse<Requerimiento>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
-    return this.http.get<Requerimiento[]>(`${this.baseUrl}/requerimientos`, { params: httpParams });
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PaginatedResponse<Requerimiento>>(`${this.baseUrl}/requerimientos`, { params: httpParams });
   }
 
   getRequerimiento(id: number): Observable<RequerimientoDetalle> {

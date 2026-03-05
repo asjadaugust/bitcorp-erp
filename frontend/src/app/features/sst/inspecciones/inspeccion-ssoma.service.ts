@@ -83,9 +83,12 @@ export interface ActoCondicionInseguro {
 
 export interface PaginatedResponse<T> {
   data: T[];
-  page: number;
-  limit: number;
-  total: number;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -95,19 +98,21 @@ export class InspeccionSsomaService {
 
   // --- Inspecciones SSOMA ---
 
-  getInspecciones(
-    page = 1,
-    limit = 100,
-    tipo_inspeccion?: string,
-    nivel_riesgo?: string,
-    estado?: string
-  ): Observable<PaginatedResponse<InspeccionSsomaLista>> {
-    let params = new HttpParams().set('page', page).set('limit', limit);
-    if (tipo_inspeccion) params = params.set('tipo_inspeccion', tipo_inspeccion);
-    if (nivel_riesgo) params = params.set('nivel_riesgo', nivel_riesgo);
-    if (estado) params = params.set('estado', estado);
+  getInspecciones(params?: {
+    page?: number;
+    limit?: number;
+    tipo_inspeccion?: string;
+    nivel_riesgo?: string;
+    estado?: string;
+  }): Observable<PaginatedResponse<InspeccionSsomaLista>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.tipo_inspeccion) httpParams = httpParams.set('tipo_inspeccion', params.tipo_inspeccion);
+    if (params?.nivel_riesgo) httpParams = httpParams.set('nivel_riesgo', params.nivel_riesgo);
+    if (params?.estado) httpParams = httpParams.set('estado', params.estado);
     return this.http.get<PaginatedResponse<InspeccionSsomaLista>>(`${this.baseUrl}/inspecciones`, {
-      params,
+      params: httpParams,
     });
   }
 
@@ -150,18 +155,20 @@ export class InspeccionSsomaService {
 
   // --- Reportes Acto/Condicion ---
 
-  getReportes(
-    page = 1,
-    limit = 100,
-    tipo_reporte?: string,
-    estado?: string
-  ): Observable<PaginatedResponse<ReporteActoCondicionLista>> {
-    let params = new HttpParams().set('page', page).set('limit', limit);
-    if (tipo_reporte) params = params.set('tipo_reporte', tipo_reporte);
-    if (estado) params = params.set('estado', estado);
+  getReportes(params?: {
+    page?: number;
+    limit?: number;
+    tipo_reporte?: string;
+    estado?: string;
+  }): Observable<PaginatedResponse<ReporteActoCondicionLista>> {
+    let httpParams = new HttpParams();
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.tipo_reporte) httpParams = httpParams.set('tipo_reporte', params.tipo_reporte);
+    if (params?.estado) httpParams = httpParams.set('estado', params.estado);
     return this.http.get<PaginatedResponse<ReporteActoCondicionLista>>(
       `${this.baseUrl}/reportes-acto-condicion`,
-      { params }
+      { params: httpParams }
     );
   }
 
