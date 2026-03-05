@@ -22,6 +22,7 @@ from app.api.cuentas_por_pagar import router as router_cuentas_por_pagar
 from app.api.dashboard import router as router_dashboard
 from app.api.empleados import router as router_empleados
 from app.api.evaluacion_proveedor import router as router_evaluacion_proveedor
+from app.api.equipo_asociaciones import router as router_equipo_asociaciones
 from app.api.equipos import router as router_equipos
 from app.api.gastos_obra import router as router_gastos_obra
 from app.api.inoperatividad import router as router_inoperatividad
@@ -78,6 +79,11 @@ router_api.include_router(router_tenant, prefix="/tenant", tags=["Tenant"])
 
 # Fase 2 — Core Equipment Domain
 router_api.include_router(router_equipos, prefix="/equipment", tags=["Equipos"])
+router_api.include_router(
+    router_equipo_asociaciones,
+    prefix="/equipment/associations",
+    tags=["Equipo Asociaciones"],
+)
 router_api.include_router(router_contratos, prefix="/contracts", tags=["Contratos"])
 router_api.include_router(router_reportes, prefix="/reports", tags=["Reportes"])
 router_api.include_router(
