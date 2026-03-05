@@ -80,6 +80,7 @@ body {
   line-height: var(--type-body-line-height);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 // Container
@@ -97,11 +98,12 @@ body {
 
 // Cards
 .card {
-  background: white;
+  background-color: #ffffff;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
+  transform: translateZ(0); // GPU compositing for crisp text on Windows
 
   &--hover {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -256,9 +258,10 @@ body {
 .table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background-color: #ffffff;
   border-radius: var(--radius-md);
   overflow: hidden;
+  transform: translateZ(0); // GPU compositing for crisp text on Windows
 
   thead {
     background: var(--primary-900);
@@ -587,7 +590,7 @@ body {
   animation: fadeIn 0.3s ease-out;
 
   &-content {
-    background: white;
+    background-color: #ffffff;
     border-radius: var(--radius-lg);
     padding: 0; // Padding handled by internal components or shared layout
     max-width: 600px;
@@ -597,6 +600,7 @@ body {
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--grey-200);
     animation: slideUp 0.3s ease-out;
+    transform: translateZ(0); // GPU compositing for crisp text on Windows
   }
 }
 
