@@ -330,23 +330,18 @@ def upgrade() -> None:
         INSERT INTO sst.incidente
             (legacy_id, fecha_incidente, tipo_incidente, severidad,
              ubicacion, descripcion, acciones_tomadas,
-             proyecto_id, reportado_por, estado)
-        SELECT i.lid, i.fecha::timestamp, i.tipo, i.sev, i.ubic, i.descr, i.acc,
-               p.id, i.rep, i.est
-        FROM proyectos.edt p
-        CROSS JOIN (VALUES
+             reportado_por, estado)
+        VALUES
             ('INC-001','2024-01-18 10:30:00','ACCIDENTE_LEVE','MENOR',
              'Km 45+200 Panamericana Norte',
              'Operador sufrió golpe menor en mano al manipular herramienta',
              'Primeros auxilios aplicados, operador continuó labores',
-             'PRJ001',1,'CERRADO'),
+             1,'CERRADO'),
             ('INC-002','2024-02-05 14:00:00','INCIDENTE_PELIGROSO','MODERADO',
              'Km 12+800 Panamericana Norte',
              'Desprendimiento de material en talud durante excavación',
              'Zona acordonada, evaluación geotécnica solicitada',
-             'PRJ001',1,'ABIERTO')
-        ) AS i(lid, fecha, tipo, sev, ubic, descr, acc, prj_legacy, rep, est)
-        WHERE p.legacy_id = i.prj_legacy
+             1,'ABIERTO')
         ON CONFLICT (legacy_id) DO NOTHING
     """))
 

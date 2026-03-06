@@ -57,28 +57,44 @@ def upgrade() -> None:
     """))
 
     conn.execute(sa.text("""
-        UPDATE proyectos.edt SET empresa_id = 1 WHERE empresa_id IS NULL
+        DO $$ BEGIN
+            IF EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_schema = 'proyectos' AND table_name = 'edt'
+                AND column_name = 'empresa_id'
+            ) THEN
+                UPDATE proyectos.edt SET empresa_id = 1 WHERE empresa_id IS NULL;
+            END IF;
+        END $$
     """))
 
     conn.execute(sa.text("""
-        UPDATE proyectos.edt SET
-            ubicacion = CASE (id % 10)
-                WHEN 0 THEN 'Cajamarca'    WHEN 1 THEN 'Lima'
-                WHEN 2 THEN 'Cusco'        WHEN 3 THEN 'Arequipa'
-                WHEN 4 THEN 'Piura'        WHEN 5 THEN 'La Libertad'
-                WHEN 6 THEN 'Junin'        WHEN 7 THEN 'Lambayeque'
-                WHEN 8 THEN 'Ancash'       ELSE 'Huancavelica'
-            END,
-            fecha_inicio = '2024-01-01'::date + ((id % 12) * interval '1 month'),
-            fecha_fin    = '2024-07-01'::date + ((id % 12) * interval '1 month'),
-            cliente = CASE (id % 5)
-                WHEN 0 THEN 'MTC - Ministerio de Transportes'
-                WHEN 1 THEN 'Gobierno Regional de Cajamarca'
-                WHEN 2 THEN 'Provias Nacional'
-                WHEN 3 THEN 'Gobierno Regional de Lima'
-                ELSE 'Municipalidad Provincial'
-            END
-        WHERE ubicacion IS NULL
+        DO $$ BEGIN
+            IF EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_schema = 'proyectos' AND table_name = 'edt'
+                AND column_name = 'ubicacion'
+            ) THEN
+                UPDATE proyectos.edt SET
+                    ubicacion = CASE (id % 10)
+                        WHEN 0 THEN 'Cajamarca'    WHEN 1 THEN 'Lima'
+                        WHEN 2 THEN 'Cusco'        WHEN 3 THEN 'Arequipa'
+                        WHEN 4 THEN 'Piura'        WHEN 5 THEN 'La Libertad'
+                        WHEN 6 THEN 'Junin'        WHEN 7 THEN 'Lambayeque'
+                        WHEN 8 THEN 'Ancash'       ELSE 'Huancavelica'
+                    END,
+                    fecha_inicio = '2024-01-01'::date + ((id % 12) * interval '1 month'),
+                    fecha_fin    = '2024-07-01'::date + ((id % 12) * interval '1 month'),
+                    cliente = CASE (id % 5)
+                        WHEN 0 THEN 'MTC - Ministerio de Transportes'
+                        WHEN 1 THEN 'Gobierno Regional de Cajamarca'
+                        WHEN 2 THEN 'Provias Nacional'
+                        WHEN 3 THEN 'Gobierno Regional de Lima'
+                        ELSE 'Municipalidad Provincial'
+                    END
+                WHERE ubicacion IS NULL;
+            END IF;
+        END $$
     """))
 
     # ── 0A2. Fix administracion.centro_costo — set tenant_id ────────────
@@ -480,7 +496,33 @@ def upgrade() -> None:
           AND EXISTS (SELECT 1 FROM aprobaciones.plantilla_aprobacion LIMIT 1)
     """))
 
-    # ── 3F. aprobaciones.respuesta_adhoc (12 rows) ─────────────────────
+    # ── 3F. aprobaciones.solicitud_adhoc (6 rows) ──────────────────────
+    conn.execute(sa.text("""
+        INSERT INTO aprobaciones.solicitud_adhoc
+            (tenant_id, usuario_solicitante_id, titulo, descripcion,
+             aprobadores, usuarios_cc, logica_aprobacion, estado, fecha_creacion)
+        SELECT
+            1,
+            40,
+            'Solicitud Adhoc #' || gs,
+            'Descripción de solicitud adhoc generada para datos de prueba',
+            '[]'::jsonb,
+            '[]'::jsonb,
+            CASE (gs % 2)
+                WHEN 0 THEN 'ALL_APPROVE'
+                ELSE 'FIRST_APPROVES'
+            END,
+            CASE (gs % 3)
+                WHEN 0 THEN 'APROBADO'
+                WHEN 1 THEN 'RECHAZADO'
+                ELSE 'PENDIENTE'
+            END,
+            NOW() - ((30 - gs) * interval '1 day')
+        FROM generate_series(1, 6) gs
+        WHERE NOT EXISTS (SELECT 1 FROM aprobaciones.solicitud_adhoc LIMIT 1)
+    """))
+
+    # ── 3G. aprobaciones.respuesta_adhoc (12 rows) ─────────────────────
     conn.execute(sa.text("""
         INSERT INTO aprobaciones.respuesta_adhoc
             (tenant_id, solicitud_adhoc_id, aprobador_id,
@@ -516,10 +558,9 @@ def upgrade() -> None:
              created_at, updated_at)
         SELECT
             'INS-' || LPAD((gs + 9)::text, 4, '0'),
-            (SELECT id FROM equipo.checklist_plantilla ORDER BY id LIMIT 1
-             OFFSET (gs - 1) % GREATEST((SELECT COUNT(*) FROM equipo.checklist_plantilla), 1)),
-            ((gs - 1) % 679) + 1,
-            ((gs - 1) % 533) + 1,
+            ((gs - 1) % GREATEST((SELECT COUNT(*) FROM equipo.checklist_plantilla), 1)) + 1,
+            ((gs - 1) % GREATEST((SELECT COUNT(*) FROM equipo.equipo), 1)) + 1,
+            ((gs - 1) % GREATEST((SELECT COUNT(*) FROM rrhh.trabajador), 1)) + 1,
             '2024-01-15'::date + (gs * interval '1 day'),
             '07:00'::time + ((gs % 4) * interval '1 hour'),
             '08:30'::time + ((gs % 4) * interval '1 hour'),

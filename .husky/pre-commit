@@ -34,12 +34,15 @@ npx lint-staged
 echo "Running dead code check..."
 npm run deadcode 2>/dev/null || echo "⚠️  Dead code detected. Run 'npm run deadcode' to see unused exports."
 
-# Run tests
-npm run test:backend
-
-if [ $? -ne 0 ]; then
-  echo "❌ Tests failed. Please fix before committing."
-  exit 1
+# Run backend tests (skip if dev container not running)
+if docker-compose ps backend 2>/dev/null | grep -q "running\|Up"; then
+  npm run test:backend
+  if [ $? -ne 0 ]; then
+    echo "❌ Tests failed. Please fix before committing."
+    exit 1
+  fi
+else
+  echo "⚠️  Dev backend container not running — skipping backend tests."
 fi
 
 echo "✅ Pre-commit checks passed!"
