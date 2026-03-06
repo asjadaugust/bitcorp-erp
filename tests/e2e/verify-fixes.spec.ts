@@ -6,7 +6,7 @@ test.describe('UI Verification', () => {
   test.beforeAll(async ({ request }) => {
     // 1. Login via API to get token
     const loginRes = await request.post('http://localhost:3400/api/auth/login', {
-      data: { username: 'admin', password: 'admin123' },
+      data: { username: 'admin', password: 'Admin@123' },
     });
     const loginBody = await loginRes.json();
     authToken = loginBody.data?.access_token || loginBody.access_token || loginBody.token;
@@ -86,7 +86,7 @@ test.describe('UI Verification', () => {
     // Login
     await page.goto('http://localhost:3420/login');
     await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[type="password"]', 'admin123');
+    await page.fill('input[type="password"]', 'Admin@123');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/.*\/app/);
   });

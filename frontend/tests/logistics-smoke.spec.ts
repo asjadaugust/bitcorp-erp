@@ -4,7 +4,7 @@ import { test, expect, Page } from '@playwright/test';
 async function login(page: Page) {
   await page.goto('/login');
   await page.locator('#username').fill('admin');
-  await page.locator('#password').fill('admin123');
+  await page.locator('#password').fill('Admin@123');
   await page.getByRole('button', { name: 'Login' }).click();
   // Wait for navigation to complete
   await page.waitForURL(/.*app/, { timeout: 10000 });
@@ -32,20 +32,19 @@ test.describe('Logistics Module Smoke Tests', () => {
     await page.locator('#precio_unitario').fill('50.00');
 
     await page.getByRole('button', { name: 'Guardar' }).click();
-    
+
     // Allow time for toast/navigation
     await page.waitForURL(/.*\/logistics\/products/);
-    
+
     // 2. Verify in List
     // Search for the new product
     await page.locator('input[placeholder="Buscar productos..."]').fill(testCode);
     await page.keyboard.press('Enter');
-    
+
     // Wait for table to filter
     await expect(page.locator('table')).toContainText(testCode);
     // Verify Status Badge (Activo)
     await expect(page.locator(`.badge-status-available`)).toContainText('Activo');
-
   });
 
   test('should register movements (Ingreso/Salida)', async ({ page }) => {
@@ -57,7 +56,7 @@ test.describe('Logistics Module Smoke Tests', () => {
 
     // Check Badge text
     await expect(page.locator('.badge-status-available')).toHaveText('INGRESO');
-    
+
     // Fill Form (Basic)
     await page.locator('#numero_documento').fill(`DOC-IN-${Date.now()}`);
     // Add Item
@@ -72,7 +71,7 @@ test.describe('Logistics Module Smoke Tests', () => {
     // 2. Register Salida
     await page.getByRole('button', { name: 'Registrar Salida' }).click();
     await expect(page).toHaveURL(/.*\/movements\/new\?type=salida/);
-    
+
     // Check Badge text
     await expect(page.locator('.badge-status-retired')).toHaveText('SALIDA');
   });

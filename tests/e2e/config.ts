@@ -14,7 +14,7 @@ export const TEST_CONFIG = {
   // Test Users
   ADMIN_USER: {
     username: 'admin',
-    password: 'admin123',
+    password: 'Admin@123',
     email: 'admin@bitcorp.local',
   },
 

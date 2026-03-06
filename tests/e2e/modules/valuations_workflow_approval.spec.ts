@@ -5,7 +5,7 @@ test.describe('Valuations Workflow - Approval Process (WS-2 & WS-3)', () => {
     // Login as admin
     await page.goto('/login');
     await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[name="password"]', 'admin123');
+    await page.fill('input[name="password"]', 'Admin@123');
     await page.click('button:has-text("Iniciar Sesión")');
     // Wait for redirect to /app or /dashboard
     await page.waitForURL(/\/app|\/dashboard/);

@@ -8,7 +8,7 @@ test('Verify Application State', async ({ page }) => {
 
   // Try generic selectors
   await page.fill('input[type="text"]', 'admin');
-  await page.fill('input[type="password"]', 'admin123');
+  await page.fill('input[type="password"]', 'Admin@123');
   await page.click('button'); // Generic button click
 
   await page.waitForURL('**/dashboard', { timeout: 10000 });

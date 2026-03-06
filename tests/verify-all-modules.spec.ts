@@ -5,7 +5,7 @@ test.describe('Verify All Modules with Data', () => {
     // Login as admin
     await page.goto('http://localhost:3401');
     await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[name="password"]', 'admin123');
+    await page.fill('input[name="password"]', 'Admin@123');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard', { timeout: 10000 });
   });
