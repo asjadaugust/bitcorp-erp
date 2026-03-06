@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.logging import obtener_logger
@@ -14,7 +14,7 @@ from app.esquemas.equipo_edt import (
     EquipoEdtListaDto,
     ValidacionPorcentaje,
 )
-from app.modelos.equipo import EquipoCombustible, EquipoEdt
+from app.modelos.equipo import EquipoCombustible, EquipoEdt, ParteDiario
 
 logger = obtener_logger(__name__)
 
@@ -96,13 +96,24 @@ class ServicioEquipoAsociaciones:
 
     # --- EquipoEdt ---
 
+    async def _get_parte_legacy_id(self, parte_diario_id: int) -> str | None:
+        """Look up legacy_id for a ParteDiario by its integer PK."""
+        result = await self.db.execute(
+            select(ParteDiario.legacy_id).where(ParteDiario.id == parte_diario_id)
+        )
+        return result.scalar()
+
     async def listar_edt(
         self, parte_diario_id: int | None = None
     ) -> list[EquipoEdtListaDto]:
         """Listar registros de equipo EDT con filtro opcional por parte_diario_id."""
         consulta = select(EquipoEdt)
         if parte_diario_id is not None:
-            consulta = consulta.where(EquipoEdt.parte_diario_id == parte_diario_id)
+            conditions = [EquipoEdt.parte_diario_id == parte_diario_id]
+            pd_legacy_id = await self._get_parte_legacy_id(parte_diario_id)
+            if pd_legacy_id:
+                conditions.append(EquipoEdt.parte_diario_legacy_id == pd_legacy_id)
+            consulta = consulta.where(or_(*conditions))
         consulta = consulta.order_by(EquipoEdt.id.desc())
         resultado = await self.db.execute(consulta)
         entidades = list(resultado.scalars().all())
@@ -168,9 +179,13 @@ class ServicioEquipoAsociaciones:
 
     async def validar_porcentaje(self, parte_diario_id: int) -> ValidacionPorcentaje:
         """Validar que los porcentajes de EDT suman 100% para un parte diario."""
+        conditions = [EquipoEdt.parte_diario_id == parte_diario_id]
+        pd_legacy_id = await self._get_parte_legacy_id(parte_diario_id)
+        if pd_legacy_id:
+            conditions.append(EquipoEdt.parte_diario_legacy_id == pd_legacy_id)
         resultado = await self.db.execute(
             select(func.coalesce(func.sum(EquipoEdt.porcentaje), 0)).where(
-                EquipoEdt.parte_diario_id == parte_diario_id
+                or_(*conditions)
             )
         )
         total = float(resultado.scalar() or 0)

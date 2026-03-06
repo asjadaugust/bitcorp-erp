@@ -25,6 +25,7 @@ import { AeroButtonComponent } from '../../core/design-system';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 import { TabItem } from '../../shared/components/page-layout/page-layout.component';
 import { CombustiblePanelComponent } from '../equipment/associations/combustible-panel.component';
+import { EdtPanelComponent } from '../equipment/associations/edt-panel.component';
 
 @Component({
   selector: 'app-valuation-detail',
@@ -40,6 +41,7 @@ import { CombustiblePanelComponent } from '../equipment/associations/combustible
     AeroTabsComponent,
     AeroDataGridComponent,
     CombustiblePanelComponent,
+    EdtPanelComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -154,12 +156,46 @@ import { CombustiblePanelComponent } from '../equipment/associations/combustible
               </div>
               <div class="info-item">
                 <span class="label">Proveedor</span>
-                <p>{{ valuation?.proveedor_nombre || '-' }}</p>
+                <p>
+                  {{
+                    resumenData?.['proveedor_razon_social'] || valuation?.proveedor_nombre || '-'
+                  }}
+                </p>
               </div>
+              @if (resumenData?.['proveedor_ruc']) {
+                <div class="info-item">
+                  <span class="label">RUC Proveedor</span>
+                  <p>{{ resumenData?.['proveedor_ruc'] }}</p>
+                </div>
+              }
               <div class="info-item">
                 <span class="label">Tipo de Tarifa</span>
                 <p>{{ valuation?.tipoTarifa || '-' }}</p>
               </div>
+              @if (resumenData?.['modalidad']) {
+                <div class="info-item">
+                  <span class="label">Modalidad</span>
+                  <p>{{ resumenData?.['modalidad'] }}</p>
+                </div>
+              }
+              @if (resumenData?.['moneda']) {
+                <div class="info-item">
+                  <span class="label">Moneda</span>
+                  <p>{{ resumenData?.['moneda'] }}</p>
+                </div>
+              }
+              @if (resumenData?.['tipo_cambio']) {
+                <div class="info-item">
+                  <span class="label">Tipo de Cambio</span>
+                  <p>{{ resumenData?.['tipo_cambio'] }}</p>
+                </div>
+              }
+              @if (resumenData?.['minimo_por']) {
+                <div class="info-item">
+                  <span class="label">Mínimo Por</span>
+                  <p>{{ resumenData?.['minimo_por'] }} — {{ resumenData?.['cantidad_minima'] }}</p>
+                </div>
+              }
             </div>
           </section>
 
@@ -176,73 +212,93 @@ import { CombustiblePanelComponent } from '../equipment/associations/combustible
                   </tr>
                 </thead>
                 <tbody>
-                  @if (valuationSummary?.horas_trabajadas !== null) {
-                    <tr class="row-header">
-                      <td colspan="4"><strong>Horas Trabajadas</strong></td>
-                    </tr>
+                  <tr class="row-header">
+                    <td colspan="4"><strong>Valorización</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Cantidad a Valorizar</td>
+                    <td class="text-right">{{ resumenData?.['cantidad_a_valorizar'] }}</td>
+                    <td class="text-right">
+                      {{ resumenData?.['precio_unitario'] | currency: 'USD' }}
+                    </td>
+                    <td class="text-right">
+                      {{ resumenData?.['valorizacion_bruta'] | currency: 'USD' }}
+                    </td>
+                  </tr>
+                  @if (resumenData?.['descuento_combustible']) {
                     <tr>
-                      <td>Horas en operación</td>
-                      <td class="text-right">{{ valuationSummary?.horas_trabajadas }}</td>
-                      <td class="text-right">{{ valuation?.tarifa | currency: 'USD' }}</td>
-                      <td class="text-right">
-                        {{ valuationSummary?.monto_horas | currency: 'USD' }}
-                      </td>
-                    </tr>
-                  }
-                  @if (
-                    valuationSummary?.horas_stand_by !== null &&
-                    valuationSummary!.horas_stand_by! > 0
-                  ) {
-                    <tr>
-                      <td>Horas Stand By</td>
-                      <td class="text-right">{{ valuationSummary?.horas_stand_by }}</td>
-                      <td class="text-right">
-                        {{ valuationSummary?.tarifa_stand_by | currency: 'USD' }}
-                      </td>
-                      <td class="text-right">
-                        {{ valuationSummary?.monto_stand_by | currency: 'USD' }}
-                      </td>
-                    </tr>
-                  }
-                  @if (
-                    valuationSummary?.penalidad_exceso !== null &&
-                    valuationSummary!.penalidad_exceso! > 0
-                  ) {
-                    <tr>
-                      <td>Penalidad por exceso</td>
+                      <td>Descuento Combustible</td>
                       <td class="text-right">-</td>
                       <td class="text-right">-</td>
                       <td class="text-right text-danger">
-                        -{{ valuationSummary?.penalidad_exceso | currency: 'USD' }}
+                        -{{ resumenData?.['descuento_combustible'] | currency: 'USD' }}
                       </td>
                     </tr>
                   }
-                  @if (valuationSummary?.descuentos !== null && valuationSummary!.descuentos! > 0) {
+                  @if (resumenData?.['descuento_manipuleo']) {
                     <tr>
-                      <td>Descuentos (Anexo B)</td>
+                      <td>Descuento Manipuleo</td>
                       <td class="text-right">-</td>
                       <td class="text-right">-</td>
                       <td class="text-right text-danger">
-                        -{{ valuationSummary?.descuentos | currency: 'USD' }}
+                        -{{ resumenData?.['descuento_manipuleo'] | currency: 'USD' }}
+                      </td>
+                    </tr>
+                  }
+                  @if (resumenData?.['descuento_gasto_obra']) {
+                    <tr>
+                      <td>Descuento Gasto en Obra</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right text-danger">
+                        -{{ resumenData?.['descuento_gasto_obra'] | currency: 'USD' }}
+                      </td>
+                    </tr>
+                  }
+                  @if (resumenData?.['descuento_adelanto']) {
+                    <tr>
+                      <td>Descuento Adelanto</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right text-danger">
+                        -{{ resumenData?.['descuento_adelanto'] | currency: 'USD' }}
+                      </td>
+                    </tr>
+                  }
+                  @if (resumenData?.['descuento_exceso_combustible']) {
+                    <tr>
+                      <td>Exceso Combustible</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right">-</td>
+                      <td class="text-right text-danger">
+                        -{{ resumenData?.['descuento_exceso_combustible'] | currency: 'USD' }}
+                      </td>
+                    </tr>
+                  }
+                  @if (resumenData?.['total_descuento']) {
+                    <tr class="row-subtotal">
+                      <td colspan="3"><em>Total Descuentos</em></td>
+                      <td class="text-right text-danger">
+                        <em>-{{ resumenData?.['total_descuento'] | currency: 'USD' }}</em>
                       </td>
                     </tr>
                   }
                   <tr class="row-total">
-                    <td colspan="3"><strong>Subtotal</strong></td>
+                    <td colspan="3"><strong>Valorización Neta</strong></td>
                     <td class="text-right">
-                      <strong>{{ valuationSummary?.subtotal | currency: 'USD' }}</strong>
+                      <strong>{{ resumenData?.['valorizacion_neta'] | currency: 'USD' }}</strong>
                     </td>
                   </tr>
-                  @if (valuationSummary?.igv !== null) {
+                  @if (resumenData?.['igv_monto']) {
                     <tr>
-                      <td colspan="3">IGV (18%)</td>
-                      <td class="text-right">{{ valuationSummary?.igv | currency: 'USD' }}</td>
+                      <td colspan="3">IGV ({{ resumenData?.['igv_porcentaje'] || 18 }}%)</td>
+                      <td class="text-right">{{ resumenData?.['igv_monto'] | currency: 'USD' }}</td>
                     </tr>
                   }
                   <tr class="row-grand-total">
-                    <td colspan="3"><strong>Total</strong></td>
+                    <td colspan="3"><strong>Total con IGV</strong></td>
                     <td class="text-right">
-                      <strong>{{ valuationSummary?.total | currency: 'USD' }}</strong>
+                      <strong>{{ resumenData?.['total_con_igv'] | currency: 'USD' }}</strong>
                     </td>
                   </tr>
                 </tbody>
@@ -458,10 +514,56 @@ import { CombustiblePanelComponent } from '../equipment/associations/combustible
               [dense]="true"
               [footerRow]="partesFooter"
               [showColumnChooser]="true"
+              [templates]="{ edt_resumen: edtResumenTpl }"
+              (rowClick)="onParteRowClick($event)"
               emptyMessage="No hay partes diarios vinculados a esta valorización."
               emptyIcon="fa-clipboard-list"
+              gridId="valorizacion-partes"
             ></aero-data-grid>
+            <ng-template #edtResumenTpl let-row>
+              @if (row['edt_count'] > 0) {
+                <div class="edt-cell">
+                  <span class="edt-summary">{{ row['edt_resumen'] }}</span>
+                  <span
+                    class="edt-badge"
+                    [class.complete]="row['edt_porcentaje_total'] === 100"
+                    [class.incomplete]="row['edt_porcentaje_total'] !== 100"
+                  >
+                    {{ row['edt_porcentaje_total'] }}%
+                  </span>
+                </div>
+              } @else {
+                <span class="edt-empty"> <i class="fa-solid fa-plus-circle"></i> Asignar EDT </span>
+              }
+            </ng-template>
           </section>
+
+          <!-- EDT Modal -->
+          @if (selectedParteForEdt) {
+            <div class="modal" (click)="closeEdtModal()" tabindex="0" role="button">
+              <div
+                class="modal-content modal-lg"
+                (click)="$event.stopPropagation()"
+                tabindex="0"
+                role="dialog"
+              >
+                <div class="modal-header">
+                  <h2>EDT — Parte #{{ selectedParteForEdt['numero_parte'] }}</h2>
+                  <aero-button
+                    variant="text"
+                    iconCenter="fa-xmark"
+                    (clicked)="closeEdtModal()"
+                  ></aero-button>
+                </div>
+                <div class="modal-body">
+                  <app-edt-panel
+                    [parteDiarioId]="selectedParteForEdt['id']"
+                    (saved)="closeEdtModal()"
+                  ></app-edt-panel>
+                </div>
+              </div>
+            </div>
+          }
         }
 
         <!-- ═══ TAB 4: COMBUSTIBLE ═══ -->
@@ -2435,6 +2537,51 @@ import { CombustiblePanelComponent } from '../equipment/associations/combustible
         box-shadow: var(--shadow-lg);
       }
 
+      .modal-content.modal-lg {
+        max-width: 720px;
+      }
+
+      .edt-cell {
+        display: flex;
+        align-items: center;
+        gap: var(--s-8);
+      }
+
+      .edt-summary {
+        font-size: 12px;
+        color: var(--grey-700);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 140px;
+      }
+
+      .edt-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 1px 6px;
+        border-radius: var(--radius-sm, 4px);
+      }
+
+      .edt-badge.complete {
+        background: var(--semantic-green-100, #dcfce7);
+        color: var(--semantic-green-700, #15803d);
+      }
+
+      .edt-badge.incomplete {
+        background: var(--semantic-yellow-100, #fef9c3);
+        color: var(--semantic-yellow-700, #a16207);
+      }
+
+      .edt-empty {
+        font-size: 12px;
+        color: var(--primary-500);
+        cursor: pointer;
+        i {
+          margin-right: 4px;
+        }
+      }
+
       .modal-header {
         padding: var(--s-16) var(--s-24);
         border-bottom: 1px solid var(--grey-200);
@@ -2788,6 +2935,14 @@ export class ValuationDetailComponent implements OnInit {
       format: '1.2-2',
     },
     {
+      key: 'otros_descuentos',
+      label: 'Otros Desc.',
+      type: 'number',
+      width: '95px',
+      format: '1.2-2',
+      hidden: true,
+    },
+    {
       key: 'cantidad_efectiva',
       label: 'Cant. Efectiva',
       type: 'number',
@@ -2796,12 +2951,22 @@ export class ValuationDetailComponent implements OnInit {
       bold: true,
     },
     {
+      key: 'descuento_cantidad_minima',
+      label: 'Desc. Mín.',
+      type: 'number',
+      width: '95px',
+      format: '1.2-2',
+      hidden: true,
+    },
+    {
       key: 'cantidad_minima',
       label: 'Cant. Mínima',
       type: 'number',
       width: '110px',
       format: '1.2-2',
     },
+    { key: 'actividad', label: 'Actividad', width: '180px' },
+    { key: 'edt_resumen', label: 'EDT', width: '200px', type: 'template' },
   ];
 
   combustibleColumns: DataGridColumn[] = [
@@ -2870,7 +3035,9 @@ export class ValuationDetailComponent implements OnInit {
       fecha: 'Totales',
       diferencia: this.sumField(this.partesData, 'diferencia'),
       horas_precalentamiento: this.sumField(this.partesData, 'horas_precalentamiento'),
+      otros_descuentos: this.sumField(this.partesData, 'otros_descuentos'),
       cantidad_efectiva: this.sumField(this.partesData, 'cantidad_efectiva'),
+      descuento_cantidad_minima: this.sumField(this.partesData, 'descuento_cantidad_minima'),
       cantidad_minima: this.sumField(this.partesData, 'cantidad_minima'),
     };
   }
@@ -2903,6 +3070,7 @@ export class ValuationDetailComponent implements OnInit {
   showConformidadModal = false;
   showAddGastoModal = false;
   showAddAdelantoModal = false;
+  selectedParteForEdt: Record<string, unknown> | null = null;
 
   // New Gasto form
   newGasto = {
@@ -3032,6 +3200,12 @@ export class ValuationDetailComponent implements OnInit {
       error: (error) => {
         console.error('Error loading valuation summary:', error);
       },
+    });
+    this.valuationService.getResumen(id).subscribe({
+      next: (data) => {
+        this.resumenData = data;
+      },
+      error: () => {},
     });
   }
 
@@ -3889,6 +4063,18 @@ export class ValuationDetailComponent implements OnInit {
     if (['APROBADO', 'PAGADO'].includes(estado)) return 'success';
     if (['PENDIENTE', 'EN_REVISION', 'VALIDADO', 'BORRADOR'].includes(estado)) return 'warning';
     return 'danger';
+  }
+
+  onParteRowClick(row: Record<string, unknown>): void {
+    this.selectedParteForEdt = row;
+  }
+
+  closeEdtModal(): void {
+    this.selectedParteForEdt = null;
+    // Refresh partes data to reflect EDT changes
+    if (this.valuation) {
+      this.loadPartes(this.valuation.id);
+    }
   }
 
   editValuation(): void {
