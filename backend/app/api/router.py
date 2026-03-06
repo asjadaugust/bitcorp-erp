@@ -40,6 +40,7 @@ from app.api.proveedores import router as router_proveedores
 from app.api.registro_trabajador import router as router_registro_trabajador
 
 # Fase 5 — Secondary Modules
+from app.api.edt import router as router_edt
 from app.api.proyectos import router as router_proyectos
 from app.api.reportes import router as router_reportes
 from app.api.reportes_analiticos import router as router_reportes_analiticos
@@ -148,6 +149,7 @@ router_api.include_router(
 
 # Fase 5 — Secondary Modules
 router_api.include_router(router_proyectos, prefix="/projects", tags=["Proyectos"])
+router_api.include_router(router_edt, prefix="/edt", tags=["EDT"])
 router_api.include_router(router_empleados, prefix="/hr/employees", tags=["Empleados"])
 router_api.include_router(
     router_registro_trabajador,

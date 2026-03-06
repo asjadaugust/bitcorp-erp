@@ -7,13 +7,25 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroCardComponent,
+  AeroBadgeComponent,
+} from '../../../core/design-system';
+import type { BadgeVariant } from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-provider-documents',
   standalone: true,
-  imports: [AeroButtonComponent, CommonModule, ReactiveFormsModule, DropdownComponent],
+  imports: [
+    AeroButtonComponent,
+    AeroCardComponent,
+    AeroBadgeComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    DropdownComponent,
+  ],
   template: `
     <div class="documents-section">
       <div class="section-header">
@@ -133,21 +145,42 @@ import { ConfirmService } from '../../../core/services/confirm.service';
 
       <!-- List -->
       <div class="documents-grid" *ngIf="!loading && documentsList.length > 0">
-        <div class="document-card" *ngFor="let doc of documentsList">
-          <div class="card-header">
-            <div class="doc-info">
-              <h4>{{ getDocumentTypeLabel(doc.tipo_documento) }}</h4>
-              <span class="doc-number" *ngIf="doc.numero_documento"
-                ># {{ doc.numero_documento }}</span
-              >
-            </div>
-            <div class="badges">
-              <span class="badge" [ngClass]="getExpirationBadgeClass(doc.fecha_vencimiento)">
-                {{ getExpirationText(doc.fecha_vencimiento) }}
-              </span>
-            </div>
+        <aero-card
+          [title]="getDocumentTypeLabel(doc.tipo_documento)"
+          [subtitle]="doc.numero_documento ? '# ' + doc.numero_documento : ''"
+          [hasHeaderActions]="true"
+          appearance="bordered"
+          *ngFor="let doc of documentsList"
+        >
+          <div header-actions>
+            <aero-badge [variant]="getExpirationVariant(doc)">{{
+              getExpirationText(doc.fecha_vencimiento)
+            }}</aero-badge>
+            <a
+              [href]="doc.archivo_url"
+              target="_blank"
+              class="btn-icon"
+              *ngIf="doc.archivo_url"
+              title="Ver documento"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+            <aero-button
+              variant="tertiary"
+              size="small"
+              iconCenter="fa-pen"
+              title="Editar"
+              (clicked)="editDocument(doc)"
+            ></aero-button>
+            <aero-button
+              variant="tertiary"
+              size="small"
+              iconCenter="fa-trash"
+              title="Eliminar"
+              (clicked)="deleteDocument(doc.id)"
+            ></aero-button>
           </div>
-          <div class="card-body">
+          <div class="doc-details">
             <div class="doc-detail" *ngIf="doc.fecha_emision">
               <span class="label">Emisión:</span>
               <span>{{ doc.fecha_emision | date: 'dd/MM/yyyy' }}</span>
@@ -160,32 +193,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
               <p>{{ doc.observaciones }}</p>
             </div>
           </div>
-          <div class="card-actions">
-            <a
-              [href]="doc.archivo_url"
-              target="_blank"
-              class="btn-icon"
-              *ngIf="doc.archivo_url"
-              title="Ver documento"
-            >
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </a>
-            <aero-button
-              variant="ghost"
-              size="small"
-              iconCenter="fa-pen"
-              title="Editar"
-              (clicked)="editDocument(doc)"
-            ></aero-button>
-            <aero-button
-              variant="ghost"
-              size="small"
-              iconCenter="fa-trash"
-              title="Eliminar"
-              (clicked)="deleteDocument(doc.id)"
-            ></aero-button>
-          </div>
-        </div>
+        </aero-card>
       </div>
 
       <div class="empty-state" *ngIf="!loading && documentsList.length === 0 && !showForm">
@@ -256,67 +264,29 @@ import { ConfirmService } from '../../../core/services/confirm.service';
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: var(--s-16);
       }
-      .document-card {
-        background: var(--grey-100);
-        border: 1px solid var(--grey-200);
-        border-radius: var(--s-8);
-        padding: var(--s-16);
+      .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        color: var(--grey-600);
+        border-radius: var(--radius-sm);
+        text-decoration: none;
+        &:hover {
+          background: var(--grey-100);
+          color: var(--primary-700);
+        }
+      }
+      .doc-details {
         display: flex;
         flex-direction: column;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
-      }
-      .document-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      }
-      .card-header {
-        margin-bottom: var(--s-12);
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-      }
-      .doc-info h4 {
-        font-size: var(--type-body-size);
-        font-weight: 600;
-        margin: 0 0 var(--s-4) 0;
-        color: var(--grey-900);
-      }
-      .doc-number {
-        color: var(--grey-600);
-        font-size: var(--type-bodySmall-size);
-      }
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-12);
-        font-size: var(--type-label-size);
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-      .badge-ok {
-        background: var(--success-100);
-        color: var(--success-700);
-      }
-      .badge-warning {
-        background: var(--warning-100);
-        color: var(--warning-700);
-      }
-      .badge-danger {
-        background: var(--danger-100);
-        color: var(--danger-700);
-      }
-      .card-body {
-        flex: 1;
-        margin-bottom: var(--s-12);
-        border-top: 1px solid var(--grey-100);
-        padding-top: var(--s-12);
+        gap: var(--s-4);
       }
       .doc-detail {
         display: flex;
         gap: var(--s-8);
         font-size: var(--type-bodySmall-size);
-        margin-bottom: var(--s-4);
         color: var(--grey-700);
       }
       .label {
@@ -325,20 +295,13 @@ import { ConfirmService } from '../../../core/services/confirm.service';
         min-width: 80px;
       }
       .doc-notes {
-        margin-top: var(--s-12);
+        margin-top: var(--s-8);
         font-size: var(--type-bodySmall-size);
         color: var(--grey-600);
         font-style: italic;
         background: var(--grey-50);
         padding: var(--s-8);
         border-radius: var(--s-4);
-      }
-      .card-actions {
-        display: flex;
-        gap: var(--s-8);
-        justify-content: flex-end;
-        border-top: 1px solid var(--grey-100);
-        padding-top: var(--s-12);
       }
       .empty-state {
         text-align: center;
@@ -466,16 +429,15 @@ export class ProviderDocumentsComponent implements OnInit {
     return labels[type] || type;
   }
 
-  getExpirationBadgeClass(date?: string | Date): string {
-    if (!date) return 'badge-ok';
-    const expiry = new Date(date);
+  getExpirationVariant(doc: ProviderDocument): BadgeVariant {
+    if (!doc.fecha_vencimiento) return 'neutral';
+    const expiry = new Date(doc.fecha_vencimiento);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return 'badge-danger';
-    if (diffDays < 30) return 'badge-warning';
-    return 'badge-ok';
+    if (diffDays < 0) return 'error';
+    if (diffDays < 30) return 'warning';
+    return 'success';
   }
 
   getExpirationText(date?: string | Date): string {

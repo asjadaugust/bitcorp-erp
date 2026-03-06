@@ -1,6 +1,6 @@
 """Esquemas Pydantic para proveedores."""
 
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -29,29 +29,55 @@ class ProveedorDetalleDto(ProveedorListaDto):
 
 class ContactoProveedorDto(BaseModel):
     id: int
-    provider_id: int
-    contact_name: str
-    position: str | None = None
-    primary_phone: str | None = None
-    secondary_phone: str | None = None
-    email: str | None = None
-    secondary_email: str | None = None
-    contact_type: str
-    is_primary: bool
-    status: str
+    proveedor_id: int
+    nombre_contacto: str
+    cargo: str | None = None
+    telefono_principal: str | None = None
+    telefono_secundario: str | None = None
+    correo: str | None = None
+    correo_secundario: str | None = None
+    tipo_contacto: str
+    es_principal: bool
+    estado: str
 
 
 class InfoFinancieraDto(BaseModel):
     id: int
-    provider_id: int
-    bank_name: str
-    account_number: str
+    proveedor_id: int
+    nombre_banco: str
+    numero_cuenta: str
     cci: str | None = None
-    account_holder_name: str | None = None
-    account_type: str | None = None
-    currency: str
-    is_primary: bool
-    status: str
+    nombre_titular: str | None = None
+    tipo_cuenta: str | None = None
+    moneda: str
+    es_principal: bool
+    estado: str
+
+
+class DocumentoProveedorDto(BaseModel):
+    id: int
+    proveedor_id: int
+    tipo_documento: str
+    numero_documento: str | None = None
+    fecha_emision: date | None = None
+    fecha_vencimiento: date | None = None
+    archivo_url: str | None = None
+    observaciones: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class LogProveedorDto(BaseModel):
+    id: int
+    proveedor_id: int
+    accion: str
+    campo: str | None = None
+    valor_anterior: str | None = None
+    valor_nuevo: str | None = None
+    observaciones: str | None = None
+    usuario_id: int | None = None
+    nombre_usuario: str | None = None
+    created_at: datetime | None = None
 
 
 # ─── Input DTOs ───────────────────────────────────────────────────────────
@@ -77,21 +103,60 @@ class ProveedorActualizar(BaseModel):
 
 
 class ContactoCrear(BaseModel):
-    contact_name: str = Field(..., min_length=1, max_length=255)
-    position: str | None = None
-    primary_phone: str | None = None
-    secondary_phone: str | None = None
-    email: str | None = None
-    secondary_email: str | None = None
-    contact_type: str = "general"
-    is_primary: bool = False
+    nombre_contacto: str = Field(..., min_length=1, max_length=255)
+    cargo: str | None = None
+    telefono_principal: str | None = None
+    telefono_secundario: str | None = None
+    correo: str | None = None
+    correo_secundario: str | None = None
+    tipo_contacto: str = "general"
+    es_principal: bool = False
+
+
+class ContactoActualizar(BaseModel):
+    nombre_contacto: str | None = None
+    cargo: str | None = None
+    telefono_principal: str | None = None
+    telefono_secundario: str | None = None
+    correo: str | None = None
+    correo_secundario: str | None = None
+    tipo_contacto: str | None = None
+    es_principal: bool | None = None
 
 
 class InfoFinancieraCrear(BaseModel):
-    bank_name: str = Field(..., min_length=1, max_length=255)
-    account_number: str = Field(..., min_length=1, max_length=50)
+    nombre_banco: str = Field(..., min_length=1, max_length=255)
+    numero_cuenta: str = Field(..., min_length=1, max_length=50)
     cci: str | None = None
-    account_holder_name: str | None = None
-    account_type: str | None = None
-    currency: str = "PEN"
-    is_primary: bool = False
+    nombre_titular: str | None = None
+    tipo_cuenta: str | None = None
+    moneda: str = "PEN"
+    es_principal: bool = False
+
+
+class InfoFinancieraActualizar(BaseModel):
+    nombre_banco: str | None = None
+    numero_cuenta: str | None = None
+    cci: str | None = None
+    nombre_titular: str | None = None
+    tipo_cuenta: str | None = None
+    moneda: str | None = None
+    es_principal: bool | None = None
+
+
+class DocumentoCrear(BaseModel):
+    tipo_documento: str = Field(..., min_length=1, max_length=100)
+    numero_documento: str | None = None
+    fecha_emision: date | None = None
+    fecha_vencimiento: date | None = None
+    archivo_url: str | None = None
+    observaciones: str | None = None
+
+
+class DocumentoActualizar(BaseModel):
+    tipo_documento: str | None = None
+    numero_documento: str | None = None
+    fecha_emision: date | None = None
+    fecha_vencimiento: date | None = None
+    archivo_url: str | None = None
+    observaciones: str | None = None

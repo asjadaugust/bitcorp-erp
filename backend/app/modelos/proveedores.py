@@ -133,6 +133,63 @@ class InfoFinancieraProveedor(Base):
     )
 
 
+# ─── Provider Documents ─────────────────────────────────────────────────
+
+
+class DocumentoProveedor(Base):
+    """Modelo para proveedores.documento_proveedor."""
+
+    __tablename__ = "documento_proveedor"
+    __table_args__ = {"schema": "proveedores"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    proveedor_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("proveedores.proveedor.id"), nullable=False
+    )
+    tipo_documento: Mapped[str] = mapped_column(String(100), nullable=False)
+    numero_documento: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    fecha_emision: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    fecha_vencimiento: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    archivo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tenant_id: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    created_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+# ─── Provider Audit Logs ────────────────────────────────────────────────
+
+
+class LogProveedor(Base):
+    """Modelo para proveedores.log_proveedor."""
+
+    __tablename__ = "log_proveedor"
+    __table_args__ = {"schema": "proveedores"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    proveedor_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("proveedores.proveedor.id"), nullable=False
+    )
+    accion: Mapped[str] = mapped_column(String(50), nullable=False)
+    campo: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    valor_anterior: Mapped[str | None] = mapped_column(Text, nullable=True)
+    valor_nuevo: Mapped[str | None] = mapped_column(Text, nullable=True)
+    observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
+    usuario_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tenant_id: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 # ─── Legacy: Criterios & Evaluaciones ───────────────────────────────────
 
 
