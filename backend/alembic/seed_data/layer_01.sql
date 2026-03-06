@@ -5,7 +5,7 @@
 
 -- ─── proyectos.edt (255 rows) ───
 -- Source: tbl_A02001_EDT
-INSERT INTO proyectos.edt (legacy_id, codigo, nombre, descripcion, unidad_operativa_id, estado, is_active)
+INSERT INTO proyectos.edt (legacy_id, codigo, nombre, codigo_alfanumerico, unidad_operativa_id, estado, is_active)
 VALUES
   ('94', '01.01', '01.01___RA.12-Ruta12: Conservación Rutinaria Antes Periódico (55.56 KM)', 'RA.12', (SELECT id FROM sistema.unidad_operativa WHERE legacy_id = '06.CAA'), 'ACTIVO', TRUE),
   ('95', '01.02', '01.02___RA.18-Ruta18: Conservación Rutinaria Antes Periódico (43.84 KM)', 'RA.18', (SELECT id FROM sistema.unidad_operativa WHERE legacy_id = '06.CAA'), 'ACTIVO', TRUE),

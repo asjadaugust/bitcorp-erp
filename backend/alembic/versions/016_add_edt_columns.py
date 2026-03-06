@@ -14,50 +14,50 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # 1. Drop ALL foreign keys referencing proyectos.edt (dynamic, safe)
+    # 1–5: only needed when migrating from legacy schema where edt acted as proyectos.
+    # On a fresh database, migration 000 already creates both tables from current models.
     op.execute("""
         DO $$
         DECLARE r RECORD;
         BEGIN
-            FOR r IN
-                SELECT con.conname, nsp.nspname AS schema, cls.relname AS tbl
-                FROM pg_constraint con
-                JOIN pg_class cls ON con.conrelid = cls.oid
-                JOIN pg_namespace nsp ON cls.relnamespace = nsp.oid
-                WHERE con.contype = 'f'
-                  AND con.confrelid = 'proyectos.edt'::regclass
-            LOOP
-                EXECUTE format('ALTER TABLE %I.%I DROP CONSTRAINT %I',
-                    r.schema, r.tbl, r.conname);
-            END LOOP;
+            -- Only run rename flow if proyectos.proyectos does NOT yet exist.
+            -- On fresh databases, migration 000 already creates both tables.
+            IF NOT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'proyectos' AND table_name = 'proyectos'
+            ) THEN
+                FOR r IN
+                    SELECT con.conname, nsp.nspname AS sch, cls.relname AS tbl
+                    FROM pg_constraint con
+                    JOIN pg_class cls ON con.conrelid = cls.oid
+                    JOIN pg_namespace nsp ON cls.relnamespace = nsp.oid
+                    WHERE con.contype = 'f'
+                      AND con.confrelid = 'proyectos.edt'::regclass
+                LOOP
+                    EXECUTE format('ALTER TABLE %I.%I DROP CONSTRAINT %I',
+                        r.sch, r.tbl, r.conname);
+                END LOOP;
+
+                ALTER TABLE proyectos.edt RENAME TO proyectos;
+
+                ALTER TABLE proyectos.proyectos
+                    DROP COLUMN IF EXISTS codigo_alfanumerico,
+                    DROP COLUMN IF EXISTS unidad_medida,
+                    DROP COLUMN IF EXISTS nivel;
+
+                TRUNCATE TABLE proyectos.proyectos RESTART IDENTITY;
+
+                INSERT INTO proyectos.proyectos (codigo, nombre, estado, is_active)
+                SELECT codigo, nombre, 'ACTIVO', TRUE
+                FROM sistema.unidad_operativa
+                WHERE is_active = TRUE;
+            END IF;
         END $$;
     """)
 
-    # 2. Rename proyectos.edt → proyectos.proyectos
-    op.execute("ALTER TABLE proyectos.edt RENAME TO proyectos;")
-
-    # 3. Clean up: drop EDT-only columns from the now-projects table
+    # 6. Create new proyectos.edt table for EDT work items (if not exists)
     op.execute("""
-        ALTER TABLE proyectos.proyectos
-        DROP COLUMN IF EXISTS codigo_alfanumerico,
-        DROP COLUMN IF EXISTS unidad_medida,
-        DROP COLUMN IF EXISTS nivel;
-    """)
-
-    # 4. Truncate projects table (user: data is messed up)
-    op.execute("TRUNCATE TABLE proyectos.proyectos RESTART IDENTITY;")
-
-    # 5. Insert project rows from sistema.unidad_operativa
-    op.execute("""
-        INSERT INTO proyectos.proyectos (codigo, nombre, estado, is_active)
-        SELECT codigo, nombre, 'ACTIVO', TRUE
-        FROM sistema.unidad_operativa
-        WHERE is_active = TRUE;
-    """)
-
-    # 6. Create new proyectos.edt table for EDT work items
-    op.execute("""
-        CREATE TABLE proyectos.edt (
+        CREATE TABLE IF NOT EXISTS proyectos.edt (
             id SERIAL PRIMARY KEY,
             legacy_id VARCHAR(50) UNIQUE,
             codigo VARCHAR(20) NOT NULL,
@@ -160,25 +160,8 @@ def _build_edt_seed_sql() -> str:
 
     insert_sql = match.group(0)
 
-    # The original has columns: (legacy_id, codigo, nombre, descripcion, unidad_operativa_id, estado, is_active)
-    # We need: (legacy_id, codigo, nombre, unidad_operativa_id, estado, is_active)
-    # Replace the column list
-    insert_sql = insert_sql.replace(
-        "(legacy_id, codigo, nombre, descripcion, unidad_operativa_id, estado, is_active)",
-        "(legacy_id, codigo, nombre, unidad_operativa_id, estado, is_active)"
-    )
-
-    # Remove the descripcion value from each VALUES row
-    # Each row looks like: ('94', '01.01', 'name', 'desc', (SELECT ...), 'ACTIVO', TRUE)
-    # We need to remove the 4th value (descripcion)
-    # Pattern: 3 quoted values, then remove the 4th quoted value + comma
-    insert_sql = re.sub(
-        r"('(?:[^'\\]|\\.)*',\s*'(?:[^'\\]|\\.)*',\s*'(?:[^'\\]|\\.)*'),\s*'(?:[^'\\]|\\.)*',",
-        r"\1,",
-        insert_sql
-    )
-
-    # Handle ON CONFLICT for idempotency
+    # layer_01.sql already uses the correct column names (codigo_alfanumerico instead of
+    # descripcion). Just ensure idempotency with ON CONFLICT.
     insert_sql = insert_sql.rstrip(';') + "\nON CONFLICT (legacy_id) DO NOTHING;"
 
     return insert_sql

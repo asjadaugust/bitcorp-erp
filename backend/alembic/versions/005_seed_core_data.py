@@ -54,18 +54,11 @@ def upgrade() -> None:
         sa.text(
             """
         INSERT INTO proyectos.edt
-            (legacy_id, codigo, nombre, descripcion, ubicacion,
-             fecha_inicio, fecha_fin, presupuesto, estado, is_active)
+            (legacy_id, codigo, nombre, estado, is_active)
         VALUES
-            ('PRJ001','CARRETERA-001','Carretera Panamericana Norte - Tramo 1',
-             'Rehabilitacion y mejoramiento de carretera','Ancash',
-             '2024-01-01','2024-12-31',5000000.00,'ACTIVO',true),
-            ('PRJ002','CARRETERA-002','Carretera Longitudinal de la Sierra - Tramo 2',
-             'Construccion de carretera','Ayacucho',
-             '2024-03-01','2025-02-28',8000000.00,'ACTIVO',true),
-            ('PRJ003','MANTENIMIENTO-001','Mantenimiento Rutinario Lima-Callao',
-             'Mantenimiento periodico de vias','Lima',
-             '2024-02-01','2024-08-31',1500000.00,'ACTIVO',true)
+            ('PRJ001','CARRETERA-001','Carretera Panamericana Norte - Tramo 1','ACTIVO',true),
+            ('PRJ002','CARRETERA-002','Carretera Longitudinal de la Sierra - Tramo 2','ACTIVO',true),
+            ('PRJ003','MANTENIMIENTO-001','Mantenimiento Rutinario Lima-Callao','ACTIVO',true)
         ON CONFLICT (legacy_id) DO NOTHING
     """
         )
@@ -337,14 +330,14 @@ def upgrade() -> None:
         sa.text(
             """
         INSERT INTO equipo.parte_diario
-            (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
+            (legacy_id, equipo_id, trabajador_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
              horas_trabajadas, horas_precalentamiento, combustible_consumido,
              observaciones, estado, tenant_id)
-        SELECT 'DR001', e.id, w.id, p.id, '2024-01-15',
+        SELECT 'DR001', e.id, w.id, '2024-01-15',
                '08:00','17:00',1000.0,1008.0,8.0,0,45.5,'Trabajo normal','APROBADO',1
-        FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
-        WHERE e.legacy_id='EQ001' AND w.legacy_id='OPR001' AND p.legacy_id='PRJ001'
+        FROM equipo.equipo e, rrhh.trabajador w
+        WHERE e.legacy_id='EQ001' AND w.legacy_id='OPR001'
         ON CONFLICT DO NOTHING
     """
         )
@@ -354,14 +347,14 @@ def upgrade() -> None:
         sa.text(
             """
         INSERT INTO equipo.parte_diario
-            (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
+            (legacy_id, equipo_id, trabajador_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
              horas_trabajadas, horas_precalentamiento, combustible_consumido,
              observaciones, estado, tenant_id)
-        SELECT 'DR002', e.id, w.id, p.id, '2024-01-15',
+        SELECT 'DR002', e.id, w.id, '2024-01-15',
                '08:00','17:00',500.0,508.0,8.0,0,42.0,'Trabajo normal','APROBADO',1
-        FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
-        WHERE e.legacy_id='EQ002' AND w.legacy_id='OPR002' AND p.legacy_id='PRJ001'
+        FROM equipo.equipo e, rrhh.trabajador w
+        WHERE e.legacy_id='EQ002' AND w.legacy_id='OPR002'
         ON CONFLICT DO NOTHING
     """
         )
@@ -371,14 +364,14 @@ def upgrade() -> None:
         sa.text(
             """
         INSERT INTO equipo.parte_diario
-            (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
+            (legacy_id, equipo_id, trabajador_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
              horas_trabajadas, horas_precalentamiento, combustible_consumido,
              observaciones, estado, tenant_id)
-        SELECT 'DR003', e.id, w.id, p.id, '2024-01-16',
+        SELECT 'DR003', e.id, w.id, '2024-01-16',
                '08:00','17:00',1008.0,1016.0,8.0,0,44.0,'Trabajo normal','APROBADO',1
-        FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
-        WHERE e.legacy_id='EQ001' AND w.legacy_id='OPR001' AND p.legacy_id='PRJ001'
+        FROM equipo.equipo e, rrhh.trabajador w
+        WHERE e.legacy_id='EQ001' AND w.legacy_id='OPR001'
         ON CONFLICT DO NOTHING
     """
         )
@@ -388,14 +381,14 @@ def upgrade() -> None:
         sa.text(
             """
         INSERT INTO equipo.parte_diario
-            (legacy_id, equipo_id, trabajador_id, proyecto_id, fecha,
+            (legacy_id, equipo_id, trabajador_id, fecha,
              hora_inicio, hora_fin, horometro_inicial, horometro_final,
              horas_trabajadas, horas_precalentamiento, combustible_consumido,
              observaciones, estado, tenant_id)
-        SELECT 'DR004', e.id, w.id, p.id, '2024-03-10',
+        SELECT 'DR004', e.id, w.id, '2024-03-10',
                '08:00','17:00',100.0,108.0,8.0,0,50.0,'Inicio en proyecto 2','APROBADO',1
-        FROM equipo.equipo e, rrhh.trabajador w, proyectos.edt p
-        WHERE e.legacy_id='EQ004' AND w.legacy_id='OPR003' AND p.legacy_id='PRJ002'
+        FROM equipo.equipo e, rrhh.trabajador w
+        WHERE e.legacy_id='EQ004' AND w.legacy_id='OPR003'
         ON CONFLICT DO NOTHING
     """
         )
