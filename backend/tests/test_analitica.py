@@ -30,8 +30,9 @@ async def test_utilizacion_equipo_existente() -> None:
         resp = await c.get(f"/api/analytics/equipment/{equipo_id}/utilization")
     assert resp.status_code == 200
     d = resp.json()["data"]
-    campos = ["equipo_id", "total_horas", "dias_con_reporte",
-              "promedio_diario", "utilizacion_porcentaje"]
+    campos = ["equipo_id", "codigo_equipo", "horas_totales", "horas_trabajadas",
+              "horas_inactivas", "tasa_utilizacion", "costo_por_hora", "costo_total",
+              "periodo_inicio", "periodo_fin"]
     for campo in campos:
         assert campo in d
 
@@ -45,20 +46,20 @@ async def test_utilizacion_equipo_periodo() -> None:
         if not equipos:
             pytest.skip("No hay equipos")
         equipo_id = equipos[0]["id"]
-        resp = await c.get(f"/api/analytics/equipment/{equipo_id}/utilization?period=90d")
+        resp = await c.get(f"/api/analytics/equipment/{equipo_id}/utilization?fecha_inicio=2025-01-01&fecha_fin=2025-03-31")
     assert resp.status_code == 200
     assert resp.json()["success"] is True
 
 
 @pytest.mark.asyncio
 async def test_utilizacion_equipo_inexistente() -> None:
-    """Debe retornar datos vacíos para equipo sin reportes."""
+    """Debe retornar estructura válida para equipo sin reportes."""
     async with await _cliente_auth() as c:
         resp = await c.get("/api/analytics/equipment/99999/utilization")
     assert resp.status_code == 200
     d = resp.json()["data"]
-    assert d["total_horas"] == 0
-    assert d["dias_con_reporte"] == 0
+    assert isinstance(d["horas_totales"], (int, float))
+    assert isinstance(d["horas_trabajadas"], (int, float))
 
 
 # --- Tendencia de utilización ---
@@ -78,7 +79,7 @@ async def test_tendencia_utilizacion() -> None:
     datos = resp.json()["data"]
     assert isinstance(datos, list)
     if len(datos) > 0:
-        for campo in ["mes", "total_horas", "dias_con_reporte", "promedio_diario"]:
+        for campo in ["fecha", "tasa_utilizacion", "horas_trabajadas", "costo"]:
             assert campo in datos[0]
 
 
@@ -86,7 +87,7 @@ async def test_tendencia_utilizacion() -> None:
 async def test_tendencia_utilizacion_meses() -> None:
     """Debe aceptar parámetro months."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/analytics/equipment/1/utilization-trend?months=3")
+        resp = await c.get("/api/analytics/equipment/1/utilization-trend?fecha_inicio=2025-01-01&fecha_fin=2025-03-31")
     assert resp.status_code == 200
 
 
@@ -100,7 +101,8 @@ async def test_utilizacion_flota() -> None:
         resp = await c.get("/api/analytics/fleet/utilization")
     assert resp.status_code == 200
     d = resp.json()["data"]
-    for campo in ["total_equipos", "equipos_con_actividad", "total_horas", "promedio_por_equipo"]:
+    for campo in ["total_equipos", "equipos_activos", "tasa_utilizacion_promedio", "costo_total",
+                  "mejores_equipos", "equipos_sub_utilizados"]:
         assert campo in d
     assert isinstance(d["total_equipos"], int)
 
@@ -120,7 +122,8 @@ async def test_metricas_combustible() -> None:
         resp = await c.get(f"/api/analytics/equipment/{equipo_id}/fuel")
     assert resp.status_code == 200
     d = resp.json()["data"]
-    for campo in ["equipo_id", "total_galones", "costo_total", "galones_por_hora"]:
+    for campo in ["equipo_id", "total_combustible_consumido", "promedio_combustible_por_hora",
+                  "costo_total_combustible", "costo_promedio_por_hora", "eficiencia"]:
         assert campo in d
 
 
@@ -177,5 +180,5 @@ async def test_analitica_tipos_numericos() -> None:
     async with await _cliente_auth() as c:
         resp = await c.get("/api/analytics/equipment/99999/utilization")
     d = resp.json()["data"]
-    assert isinstance(d["total_horas"], (int, float))
-    assert isinstance(d["utilizacion_porcentaje"], (int, float))
+    assert isinstance(d["horas_totales"], (int, float))
+    assert isinstance(d["tasa_utilizacion"], (int, float))

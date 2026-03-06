@@ -60,7 +60,7 @@ class TareaProgramada(Base):
         Integer, ForeignKey("sistema.usuario.id"), nullable=True
     )
     proyecto_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("proyectos.edt.id"), nullable=True
+        Integer, ForeignKey("proyectos.proyectos.id"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False

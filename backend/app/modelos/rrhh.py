@@ -224,7 +224,7 @@ class DetalleTareo(Base):
         index=True,
     )
     proyecto_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("proyectos.edt.id"), nullable=True, index=True
+        Integer, ForeignKey("proyectos.proyectos.id"), nullable=True, index=True
     )
     fecha: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     horas_trabajadas: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)

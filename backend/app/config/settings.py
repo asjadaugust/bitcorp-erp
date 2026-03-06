@@ -45,6 +45,10 @@ class Configuracion(BaseSettings):
     smtp_from: str = "noreply@bitcorp.com"
     email_log_only: bool = True
 
+    # Integraciones externas
+    decolecta_api_token: str = ""
+    decolecta_api_url: str = "https://api.decolecta.com/v1"
+
     # Archivos
     max_file_size: int = 10485760
     upload_path: str = "/tmp/uploads"
