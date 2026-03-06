@@ -48,7 +48,7 @@ docker-compose exec backend npm run seed:typeorm
 
 # 7. Login with default credentials
 # Username: admin
-# Password: admin123
+# Password: Admin@123
 ```
 
 ### Verify Installation
@@ -73,7 +73,7 @@ curl http://localhost:3410/health
 # Test login endpoint
 curl -X POST http://localhost:3410/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}' \
+  -d '{"username":"admin","password":"Admin@123"}' \
   | jq .
 # Expected: access_token and refresh_token in response
 ```

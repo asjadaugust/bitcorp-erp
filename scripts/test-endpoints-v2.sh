@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Configuration
 API_BASE_URL="${API_BASE_URL:-http://localhost:3400}"
 ADMIN_USER="${ADMIN_USER:-admin}"
-ADMIN_PASS="${ADMIN_PASS:-admin123}"
+ADMIN_PASS="${ADMIN_PASS:-Admin@123}"
 
 # Counters
 TOTAL_TESTS=0

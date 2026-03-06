@@ -52,7 +52,7 @@ async def obtener_token_admin() -> str:
     """Get admin JWT token for authenticated tests."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as c:
-        resp = await c.post("/api/auth/login", json={"username": "admin", "password": "admin123"})
+        resp = await c.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
         return resp.json()["data"]["access_token"]
 ```
 

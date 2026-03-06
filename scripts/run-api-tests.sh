@@ -40,13 +40,13 @@ Options (after command):
 
 Examples:
   $0 quick
-  $0 auth --email admin@bitcorp.com --password admin123
+  $0 auth --email admin@bitcorp.com --password Admin@123
   $0 shell --output my-report.md
   $0 all
 
 ${YELLOW}Default credentials:${NC}
   Email: admin@bitcorp.com
-  Password: admin123
+  Password: Admin@123
 
 EOF
   exit 0
@@ -56,7 +56,7 @@ fi
 COMMAND="${1:-quick}"
 BASE_URL="http://localhost:3400"
 EMAIL="admin@bitcorp.com"
-PASSWORD="admin123"
+PASSWORD="Admin@123"
 OUTPUT_FILE=""
 
 # Parse additional arguments

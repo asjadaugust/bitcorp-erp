@@ -89,7 +89,7 @@ docker-compose -f deploy/docker-compose.prod.yml up -d
 
 | Role              | Username    | Password      |
 | ----------------- | ----------- | ------------- |
-| **Administrator** | `admin`     | `admin123`    |
+| **Administrator** | `admin`     | `Admin@123`   |
 | **Operator**      | `operator1` | `operator123` |
 
 ---

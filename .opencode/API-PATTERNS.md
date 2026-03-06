@@ -1,3 +1,8 @@
+> LOCAL CACHE — Primary read source for Claude Code (zero-MCP-call fast path).
+> Canonical source: https://bitcorp-erp.atlassian.net/wiki/spaces/BitCorp/pages/164198 (API Patterns & Standards)
+> To refresh: `atlassian-docs refresh api-patterns`
+> Last synced: 2026-03-05
+
 # BitCorp ERP - API Development Patterns
 
 ## Overview

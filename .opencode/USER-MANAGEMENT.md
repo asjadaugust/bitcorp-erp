@@ -1,3 +1,8 @@
+> LOCAL CACHE — Primary read source for Claude Code (zero-MCP-call fast path).
+> Canonical source: https://bitcorp-erp.atlassian.net/wiki/spaces/BitCorp/pages/196820 (User Management & Roles)
+> To refresh: `atlassian-docs refresh user-management`
+> Last synced: 2026-03-05
+
 # BitCorp ERP - User Management & Role Hierarchy
 
 ## Overview

@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # Configuration
 API_URL=${API_URL:-http://localhost:3400}
 ADMIN_USER=${ADMIN_USER:-admin}
-ADMIN_PASS=${ADMIN_PASS:-admin123}
+ADMIN_PASS=${ADMIN_PASS:-Admin@123}
 OPERATOR_USER=${OPERATOR_USER:-operador1}
 OPERATOR_PASS=${OPERATOR_PASS:-demo123}
 

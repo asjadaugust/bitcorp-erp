@@ -1,3 +1,8 @@
+> LOCAL CACHE — Primary read source for Claude Code (zero-MCP-call fast path).
+> Canonical source: https://bitcorp-erp.atlassian.net/wiki/spaces/BitCorp/pages/66401 (Multi-Tenancy Architecture)
+> To refresh: `atlassian-docs refresh multi-tenancy`
+> Last synced: 2026-03-05
+
 # BitCorp ERP - Multi-Tenancy Architecture Guide
 
 ## Overview

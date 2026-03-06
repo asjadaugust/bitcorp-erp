@@ -74,6 +74,7 @@ services:
       ENVIRONMENT: development
       PORT: "3410"
       PYTHONPATH: /app
+      DECOLECTA_API_TOKEN: sk_11724.3oAYTg76y6NYSV2oZpIR2O7mUBKguz06
     ports:
       - "3410:3410"
     volumes:

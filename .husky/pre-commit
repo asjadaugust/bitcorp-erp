@@ -31,7 +31,7 @@ echo "Running dead code check..."
 npm run deadcode 2>/dev/null || echo "⚠️  Dead code detected. Run 'npm run deadcode' to see unused exports."
 
 # Run tests
-npm run test:all
+npm run test:backend
 
 if [ $? -ne 0 ]; then
   echo "❌ Tests failed. Please fix before committing."

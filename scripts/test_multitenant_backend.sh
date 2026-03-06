@@ -12,7 +12,7 @@ echo ""
 
 BASE_URL="http://localhost:3400"
 ADMIN_USER="admin"
-ADMIN_PASS="admin123"
+ADMIN_PASS="Admin@123"
 
 echo "Step 1: Testing Login Endpoint"
 echo "-------------------------------"
