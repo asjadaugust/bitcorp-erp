@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 export interface BreadcrumbItem {
   label: string;
@@ -10,7 +11,7 @@ export interface BreadcrumbItem {
 @Component({
   selector: 'aero-breadcrumbs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <nav class="aero-breadcrumbs" aria-label="Breadcrumb">
       <button *ngIf="showBack" type="button" class="aero-breadcrumbs__back" (click)="onBack()">
@@ -28,7 +29,7 @@ export interface BreadcrumbItem {
           <ng-container *ngIf="!last">
             <a
               class="aero-breadcrumbs__link"
-              [href]="item.url || '#'"
+              [routerLink]="item.url || null"
               (click)="onNavigate($event, item, i)"
             >
               <i
@@ -147,7 +148,6 @@ export class AeroBreadcrumbsComponent {
   @Output() back = new EventEmitter<void>();
 
   onNavigate(event: Event, item: BreadcrumbItem, index: number): void {
-    event.preventDefault();
     this.navigate.emit({ item, index });
   }
 

@@ -1,8 +1,11 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { BackButtonComponent } from '../back-button/back-button.component';
+import { Component, Input, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { AeroTabsComponent } from '../aero-tabs/aero-tabs.component';
+import {
+  AeroBreadcrumbsComponent,
+  BreadcrumbItem,
+} from '../../../core/design-system/breadcrumbs/aero-breadcrumbs.component';
 
 export interface TabItem {
   label: string;
@@ -12,36 +15,24 @@ export interface TabItem {
   exact?: boolean;
 }
 
-export interface Breadcrumb {
-  label: string;
-  url?: string;
-}
+/** @deprecated Use BreadcrumbItem from aero-breadcrumbs instead */
+export type Breadcrumb = BreadcrumbItem;
 
 @Component({
   selector: 'app-page-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, BackButtonComponent, AeroTabsComponent],
+  imports: [CommonModule, RouterModule, AeroBreadcrumbsComponent, AeroTabsComponent],
   template: `
     <div class="page-container">
       <!-- Header -->
       <div class="page-header">
         <div class="header-main">
           <div class="page-title-wrapper">
-            <app-back-button *ngIf="backUrl" [url]="backUrl" class="mr-4"></app-back-button>
-            <div *ngIf="icon && !backUrl" class="icon-wrapper">
+            <div *ngIf="icon" class="icon-wrapper">
               <i [class]="'fa-solid ' + icon"></i>
             </div>
             <div class="title-content">
               <h1>{{ title }}</h1>
-              <div class="breadcrumb" *ngIf="breadcrumbs.length">
-                <ng-container *ngFor="let item of breadcrumbs; let last = last">
-                  <ng-container *ngIf="!last">
-                    <a [routerLink]="item.url" class="breadcrumb-link">{{ item.label }}</a>
-                    <span class="separator">›</span>
-                  </ng-container>
-                  <span *ngIf="last" class="breadcrumb-current">{{ item.label }}</span>
-                </ng-container>
-              </div>
             </div>
           </div>
 
@@ -49,6 +40,12 @@ export interface Breadcrumb {
             <ng-content select="[actions]"></ng-content>
           </div>
         </div>
+        <aero-breadcrumbs
+          *ngIf="breadcrumbs.length || backUrl"
+          [items]="breadcrumbs"
+          [showBack]="!!backUrl"
+          (back)="goBack()"
+        ></aero-breadcrumbs>
       </div>
 
       <!-- Tab Navigation (Optional) -->
@@ -176,34 +173,6 @@ export interface Breadcrumb {
         line-height: 1.2;
       }
 
-      .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-        font-size: var(--type-bodySmall-size);
-        color: var(--grey-700);
-      }
-
-      .breadcrumb-link {
-        color: var(--grey-700);
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-
-      .breadcrumb-link:hover {
-        color: var(--primary-500);
-      }
-
-      .separator {
-        color: var(--grey-400);
-        font-weight: bold;
-      }
-
-      .breadcrumb-current {
-        color: var(--primary-500);
-        font-weight: 500;
-      }
-
       .header-actions {
         display: flex;
         gap: var(--s-12);
@@ -329,9 +298,20 @@ export interface Breadcrumb {
 export class PageLayoutComponent {
   @Input() title = '';
   @Input() icon = '';
-  @Input() breadcrumbs: Breadcrumb[] = [];
+  @Input() breadcrumbs: BreadcrumbItem[] = [];
   @Input() loading = false;
   @Input() tabs?: TabItem[];
   @Input() subtabs?: TabItem[];
   @Input() backUrl?: string;
+
+  private router = inject(Router);
+  private location = inject(Location);
+
+  goBack(): void {
+    if (this.backUrl) {
+      this.router.navigate([this.backUrl]);
+    } else {
+      this.location.back();
+    }
+  }
 }

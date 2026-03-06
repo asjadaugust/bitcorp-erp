@@ -1,39 +1,50 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BackButtonComponent } from '../back-button/back-button.component';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { AeroButtonComponent } from '../../../core/design-system';
+import {
+  AeroBreadcrumbsComponent,
+  BreadcrumbItem,
+} from '../../../core/design-system/breadcrumbs/aero-breadcrumbs.component';
 
 @Component({
   selector: 'app-form-container',
   standalone: true,
-  imports: [CommonModule, BackButtonComponent, AeroButtonComponent],
+  imports: [CommonModule, AeroButtonComponent, AeroBreadcrumbsComponent],
   template: `
     <div class="form-container">
       <!-- Header -->
       <div class="page-header">
-        <div class="header-content">
-          <app-back-button *ngIf="backUrl" [url]="backUrl" class="mr-2"></app-back-button>
-          <div class="icon-wrapper">
-            <i class="fa-solid" [class]="icon"></i>
+        <div class="header-top">
+          <div class="header-content">
+            <div class="icon-wrapper">
+              <i class="fa-solid" [class]="icon"></i>
+            </div>
+            <div class="title-group">
+              <h1>{{ title }}</h1>
+              <p class="subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+            </div>
           </div>
-          <div class="title-group">
-            <h1>{{ title }}</h1>
-            <p class="subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+          <div class="header-actions" *ngIf="showActions">
+            <aero-button variant="secondary" iconLeft="fa-times" (clicked)="handleCancel()"
+              >Cancelar</aero-button
+            >
+            <aero-button
+              variant="primary"
+              [iconLeft]="submitIcon"
+              [disabled]="disableSubmit"
+              [loading]="loading"
+              (clicked)="handleSubmit()"
+              >{{ loading ? loadingText : submitLabel }}</aero-button
+            >
           </div>
         </div>
-        <div class="header-actions" *ngIf="showActions">
-          <aero-button variant="secondary" iconLeft="fa-times" (clicked)="handleCancel()"
-            >Cancelar</aero-button
-          >
-          <aero-button
-            variant="primary"
-            [iconLeft]="submitIcon"
-            [disabled]="disableSubmit"
-            [loading]="loading"
-            (clicked)="handleSubmit()"
-            >{{ loading ? loadingText : submitLabel }}</aero-button
-          >
-        </div>
+        <aero-breadcrumbs
+          *ngIf="breadcrumbs.length || backUrl"
+          [items]="breadcrumbs"
+          [showBack]="!!backUrl"
+          (back)="goBack()"
+        ></aero-breadcrumbs>
       </div>
 
       <!-- Form Content -->
@@ -70,10 +81,16 @@ import { AeroButtonComponent } from '../../../core/design-system';
       /* Header */
       .page-header {
         display: flex;
+        flex-direction: column;
+        gap: var(--s-8);
+        margin-bottom: var(--s-24);
+      }
+
+      .header-top {
+        display: flex;
         justify-content: space-between;
         align-items: flex-start;
         gap: var(--s-24);
-        margin-bottom: var(--s-24);
         flex-wrap: wrap;
       }
 
@@ -197,7 +214,7 @@ export class FormContainerComponent {
   @Input() title = '';
   @Input() subtitle = '';
   @Input() icon = 'fa-plus';
-  @Input() breadcrumbs: { label: string; link?: string }[] = [];
+  @Input() breadcrumbs: BreadcrumbItem[] = [];
   @Input() submitLabel = 'Guardar';
   @Input() submitIcon = 'fa-save';
   @Input() disableSubmit = false;
@@ -209,6 +226,9 @@ export class FormContainerComponent {
 
   @Output() submitted = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
+
+  private router = inject(Router);
+  private location = inject(Location);
 
   isSubmitted = false;
 
@@ -225,5 +245,13 @@ export class FormContainerComponent {
 
   resetValidation(): void {
     this.isSubmitted = false;
+  }
+
+  goBack(): void {
+    if (this.backUrl) {
+      this.router.navigate([this.backUrl]);
+    } else {
+      this.location.back();
+    }
   }
 }

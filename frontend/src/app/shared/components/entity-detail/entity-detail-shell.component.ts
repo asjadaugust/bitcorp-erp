@@ -1,8 +1,12 @@
-import { Component, ContentChild, Directive, Input, TemplateRef } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, ContentChild, Directive, inject, Input, TemplateRef } from '@angular/core';
+import { CommonModule, DatePipe, Location } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { EntityDetailSidebarCardComponent } from './entity-detail-sidebar-card.component';
 import { AuditInfo, EntityDetailHeader, NotFoundConfig } from './entity-detail.types';
+import {
+  AeroBreadcrumbsComponent,
+  BreadcrumbItem,
+} from '../../../core/design-system/breadcrumbs/aero-breadcrumbs.component';
 
 /**
  * Marker directive: use the attribute `entity-sidebar-actions` on an ng-container
@@ -39,7 +43,13 @@ export class EntitySidebarActionsDirective {}
 @Component({
   selector: 'app-entity-detail-shell',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailSidebarCardComponent, DatePipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EntityDetailSidebarCardComponent,
+    DatePipe,
+    AeroBreadcrumbsComponent,
+  ],
   template: `
     <div class="detail-container">
       <div class="container">
@@ -58,31 +68,40 @@ export class EntitySidebarActionsDirective {}
             <div class="detail-main card">
               <!-- Header -->
               <div class="detail-header">
-                <div class="header-content">
-                  @if (header.icon) {
-                    <div class="icon-wrapper">
-                      <i [class]="header.icon"></i>
-                    </div>
-                  }
-                  <div class="title-group">
-                    <h1>{{ header.title }}</h1>
-                    @if (header.codeBadge || header.subtitle) {
-                      <div class="header-meta">
-                        @if (header.codeBadge) {
-                          <span class="code-badge">{{ header.codeBadge }}</span>
-                        }
-                        @if (header.subtitle) {
-                          <p class="text-subtitle">{{ header.subtitle }}</p>
-                        }
+                <div class="header-row">
+                  <div class="header-content">
+                    @if (header.icon) {
+                      <div class="icon-wrapper">
+                        <i [class]="header.icon"></i>
                       </div>
                     }
+                    <div class="title-group">
+                      <h1>{{ header.title }}</h1>
+                      @if (header.codeBadge || header.subtitle) {
+                        <div class="header-meta">
+                          @if (header.codeBadge) {
+                            <span class="code-badge">{{ header.codeBadge }}</span>
+                          }
+                          @if (header.subtitle) {
+                            <p class="text-subtitle">{{ header.subtitle }}</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div class="detail-status">
+                    <span class="status-badge" [ngClass]="header.statusClass">
+                      {{ header.statusLabel }}
+                    </span>
                   </div>
                 </div>
-                <div class="detail-status">
-                  <span class="status-badge" [ngClass]="header.statusClass">
-                    {{ header.statusLabel }}
-                  </span>
-                </div>
+                @if (breadcrumbs.length || backUrl) {
+                  <aero-breadcrumbs
+                    [items]="breadcrumbs"
+                    [showBack]="!!backUrl"
+                    (back)="goBack()"
+                  ></aero-breadcrumbs>
+                }
               </div>
 
               <!-- Below-header slot (tabs bar, stats grid, etc.) -->
@@ -177,10 +196,16 @@ export class EntitySidebarActionsDirective {}
 
       .detail-header {
         display: flex;
+        flex-direction: column;
+        gap: var(--s-8);
+        margin-bottom: var(--s-24);
+      }
+
+      .header-row {
+        display: flex;
         justify-content: space-between;
         align-items: flex-start;
         gap: var(--s-24);
-        margin-bottom: var(--s-24);
         flex-wrap: wrap;
       }
 
@@ -245,9 +270,26 @@ export class EntityDetailShellComponent {
   /** Spinner label */
   @Input() loadingText = 'Cargando...';
 
+  /** Breadcrumb trail below the header */
+  @Input() breadcrumbs: BreadcrumbItem[] = [];
+
+  /** Back URL — shows back button in breadcrumb row */
+  @Input() backUrl?: string;
+
   // Unused — kept for future slot-detection if needed
   @ContentChild(EntitySidebarActionsDirective, { read: TemplateRef })
   sidebarActionsRef?: TemplateRef<unknown>;
+
+  private router = inject(Router);
+  private location = inject(Location);
+
+  goBack(): void {
+    if (this.backUrl) {
+      this.router.navigate([this.backUrl]);
+    } else {
+      this.location.back();
+    }
+  }
 
   get notFoundResolved(): NotFoundConfig {
     return (
