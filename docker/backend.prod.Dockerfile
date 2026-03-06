@@ -1,32 +1,15 @@
-FROM node:20-alpine AS builder
-
+FROM python:3.12-slim AS base
 WORKDIR /app
 
-# Copy backend package files only
-COPY package*.json ./
-RUN npm install
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy backend source code
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir -e "."
+
 COPY . .
-RUN npm run build
-
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Copy backend package files only
-COPY package*.json ./
-# Remove prepare script to prevent husky from running, but allow other scripts (like bcrypt)
-RUN npm pkg delete scripts.prepare
-# Install production dependencies (bcrypt needs scripts to run)
-RUN npm install --only=production
-
-# Copy compiled code from builder
-COPY --from=builder /app/dist ./dist
 
 EXPOSE 3400
 
-CMD ["node", "dist/index.js"]
-
-
-
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3400"]
