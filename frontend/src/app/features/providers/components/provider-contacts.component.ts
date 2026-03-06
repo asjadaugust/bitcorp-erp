@@ -7,7 +7,11 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroCardComponent,
+  AeroBadgeComponent,
+} from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface Contacto {
@@ -28,7 +32,14 @@ interface Contacto {
 @Component({
   selector: 'app-provider-contacts',
   standalone: true,
-  imports: [AeroButtonComponent, CommonModule, ReactiveFormsModule, DropdownComponent],
+  imports: [
+    AeroButtonComponent,
+    AeroCardComponent,
+    AeroBadgeComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    DropdownComponent,
+  ],
   template: `
     <div class="contacts-section">
       <div class="section-header">
@@ -108,9 +119,9 @@ interface Contacto {
 
       <!-- List -->
       <div class="contacts-grid" *ngIf="!loading && contactsList.length > 0">
-        <div class="contact-card" *ngFor="let contact of contactsList">
-          <div class="card-header">
-            <div class="header-content">
+        <aero-card appearance="bordered" *ngFor="let contact of contactsList">
+          <div class="contact-card-header">
+            <div class="header-left">
               <div class="avatar-circle">
                 {{ contact.nombre_contacto ? contact.nombre_contacto[0] : 'C' }}
               </div>
@@ -118,22 +129,22 @@ interface Contacto {
                 <h4>{{ contact.nombre_contacto }}</h4>
                 <span class="position" *ngIf="contact.cargo">{{ contact.cargo }}</span>
                 <div class="badges">
-                  <span class="badge badge-primary" *ngIf="contact.es_principal">Principal</span>
-                  <span class="badge badge-type">{{
+                  <aero-badge variant="primary" *ngIf="contact.es_principal">Principal</aero-badge>
+                  <aero-badge variant="neutral">{{
                     getContactTypeLabel(contact.tipo_contacto)
-                  }}</span>
+                  }}</aero-badge>
                 </div>
               </div>
             </div>
             <div class="card-actions" *ngIf="!readOnly">
               <aero-button
-                variant="ghost"
+                variant="tertiary"
                 size="small"
                 iconCenter="fa-pen"
                 (clicked)="editContact(contact)"
               ></aero-button>
               <aero-button
-                variant="ghost"
+                variant="tertiary"
                 size="small"
                 iconCenter="fa-trash"
                 (clicked)="deleteContact(contact.id!)"
@@ -141,7 +152,7 @@ interface Contacto {
             </div>
           </div>
 
-          <div class="card-body">
+          <div class="contact-details">
             <div class="contact-detail" *ngIf="contact.correo">
               <i class="fa-solid fa-envelope" title="Email"></i>
               <span>{{ contact.correo }}</span>
@@ -151,7 +162,7 @@ interface Contacto {
               <span>{{ contact.telefono_principal }}</span>
             </div>
           </div>
-        </div>
+        </aero-card>
       </div>
 
       <div class="empty-state" *ngIf="!loading && contactsList.length === 0 && !showForm">
@@ -211,31 +222,14 @@ interface Contacto {
         gap: var(--s-16);
       }
 
-      /* Card Styles */
-      .contact-card {
-        background: var(--grey-100);
-        border: 1px solid var(--grey-200);
-        border-radius: var(--s-12);
-        transition: all 0.2s ease-in-out;
-        display: flex;
-        flex-direction: column;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
-          border-color: var(--primary-200);
-        }
-      }
-
-      .card-header {
+      .contact-card-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        padding: var(--s-20);
-        border-bottom: 1px solid var(--grey-100);
+        padding: var(--s-16) var(--s-20) var(--s-12);
       }
 
-      .header-content {
+      .header-left {
         display: flex;
         gap: var(--s-12);
         align-items: flex-start;
@@ -278,31 +272,15 @@ interface Contacto {
         display: flex;
         gap: var(--s-8);
         margin-top: var(--s-8);
-      }
-      .badge {
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      .badge-primary {
-        background: var(--primary-50);
-        color: var(--primary-700);
-        border: 1px solid var(--primary-100);
-      }
-      .badge-type {
-        background: var(--grey-100);
-        color: var(--grey-700);
-        border: 1px solid var(--grey-200);
+        flex-wrap: wrap;
       }
 
-      .card-body {
-        padding: var(--s-20);
+      .contact-details {
+        padding: var(--s-12) var(--s-20) var(--s-16);
         display: flex;
         flex-direction: column;
-        gap: var(--s-12);
+        gap: var(--s-10);
+        border-top: 1px solid var(--grey-200);
       }
 
       .contact-detail {
@@ -321,8 +299,8 @@ interface Contacto {
 
       .card-actions {
         display: flex;
-        gap: var(--s-8);
-        justify-content: flex-end;
+        gap: var(--s-4);
+        flex-shrink: 0;
       }
 
       .empty-state {
