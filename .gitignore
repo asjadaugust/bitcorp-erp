@@ -102,6 +102,7 @@ backend/swagger-api.json
 
 # Documentation
 docs/*
+!docs/database*
 !docs/PRD-Markdown/
 !docs/flexible-approval-design/
 !docs/design-tokens.json
