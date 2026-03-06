@@ -19,7 +19,7 @@ import {
 } from '../../shared/components/entity-detail/entity-detail.types';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 
 @Component({
   selector: 'app-timesheet-detail',
@@ -39,6 +39,8 @@ import { AeroButtonComponent } from '../../core/design-system';
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="'/operaciones/timesheets'"
+      [breadcrumbs]="breadcrumbs"
     >
       <!-- Stats below header -->
       <div entity-header-below *ngIf="timesheet">
@@ -107,13 +109,6 @@ import { AeroButtonComponent } from '../../core/design-system';
           (clicked)="rejectTimesheet()"
           >Rechazar Planilla</aero-button
         >
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          routerLink="/operaciones/timesheets"
-          >Volver a Lista</aero-button
-        >
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -159,6 +154,13 @@ export class TimesheetDetailComponent implements OnInit {
   };
 
   auditInfo: AuditInfo = { entries: [] };
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Planillas', url: '/operaciones/timesheets' },
+      { label: this.timesheet?.periodo || 'Detalle' },
+    ];
+  }
 
   notFoundConfig: NotFoundConfig = {
     icon: 'fa-solid fa-clipboard-user',

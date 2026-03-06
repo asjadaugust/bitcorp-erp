@@ -13,7 +13,7 @@ import {
   AuditInfo,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 
 @Component({
   selector: 'app-solicitud-equipo-detail',
@@ -32,6 +32,8 @@ import { AeroButtonComponent } from '../../core/design-system';
       [entity]="solicitud"
       [header]="header"
       [auditInfo]="auditInfo"
+      [backUrl]="'/equipment/solicitudes'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles de la solicitud..."
     >
       <!-- MAIN CONTENT -->
@@ -135,16 +137,6 @@ import { AeroButtonComponent } from '../../core/design-system';
               >Rechazar Solicitud</aero-button
             >
           }
-
-          <hr class="sidebar-divider" />
-
-          <aero-button
-            variant="ghost"
-            iconLeft="fa-arrow-left"
-            [fullWidth]="true"
-            routerLink="/equipment/solicitudes"
-            >Volver a Lista</aero-button
-          >
         }
       </ng-container>
 
@@ -348,6 +340,13 @@ export class SolicitudEquipoDetailComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private confirmSvc = inject(ConfirmService);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Solicitudes de Equipo', url: '/equipment/solicitudes' },
+      { label: this.solicitud?.codigo || 'Detalle' },
+    ];
+  }
 
   solicitud: SolicitudEquipo | null = null;
   loading = false;

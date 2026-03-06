@@ -28,6 +28,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
       icon="fa-clipboard-check"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/providers/evaluaciones"
     >
       <app-actions-container actions>
         <aero-button variant="secondary" iconLeft="fa-pen" (clicked)="editEvaluacion()">
@@ -40,9 +41,6 @@ import { ConfirmService } from '../../../core/services/confirm.service';
           (clicked)="deleteEvaluacion()"
         >
           {{ deleting ? 'Eliminando...' : 'Eliminar' }}
-        </aero-button>
-        <aero-button variant="tertiary" iconLeft="fa-arrow-left" (clicked)="goBack()">
-          Volver a Lista
         </aero-button>
       </app-actions-container>
 
@@ -304,9 +302,5 @@ export class EvaluacionDetailComponent implements OnInit {
           });
         }
       });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/providers/evaluaciones']);
   }
 }

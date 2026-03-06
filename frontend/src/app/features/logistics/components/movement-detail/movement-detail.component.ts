@@ -12,7 +12,7 @@ import {
   DataGridColumn,
 } from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
-import { AeroButtonComponent } from '../../../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-movement-detail',
@@ -30,6 +30,8 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       [entity]="movement"
       [loading]="loading"
       [auditInfo]="auditInfo"
+      [backUrl]="'/logistics/movements'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del movimiento..."
     >
       <!-- ── TAB NAVIGATION ───────────────────────────────────── -->
@@ -186,13 +188,6 @@ import { AeroButtonComponent } from '../../../../core/design-system';
           >Ver Detalle Items</aero-button
         >
         <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          (clicked)="goBack()"
-          >Volver a Lista</aero-button
-        >
-        <aero-button
           variant="danger"
           iconLeft="fa-ban"
           [fullWidth]="true"
@@ -303,6 +298,13 @@ export class MovementDetailComponent implements OnInit {
   private router = inject(Router);
   private inventoryService = inject(InventoryService);
   private confirmSvc = inject(ConfirmService);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Movimientos', url: '/logistics/movements' },
+      { label: this.movement?.numero_documento || 'Detalle' },
+    ];
+  }
 
   movement: Movement | null = null;
   loading = true;

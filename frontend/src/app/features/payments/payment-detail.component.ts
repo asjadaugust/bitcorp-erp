@@ -8,7 +8,7 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -22,6 +22,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       [entity]="payment"
       [header]="header"
       [auditInfo]="auditInfo"
+      [backUrl]="'/payments'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del pago..."
     >
       <!-- ── BELOW HEADER: amount section ────────────────────── -->
@@ -270,13 +272,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           (clicked)="viewValuation()"
           >Ver Valorización</aero-button
         >
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          routerLink="/payments"
-          >Volver a Lista</aero-button
-        >
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -445,6 +440,13 @@ export class PaymentDetailComponent implements OnInit {
   private router = inject(Router);
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Pagos', url: '/payments' },
+      { label: this.payment?.numero_pago || 'Detalle' },
+    ];
+  }
 
   payment: PaymentRecordDetail | null = null;
   loading = false;

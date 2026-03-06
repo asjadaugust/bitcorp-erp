@@ -39,6 +39,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
       icon="fa-id-card"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/rrhh/worker-registry"
     >
       <app-actions-container actions>
         <aero-button variant="secondary" iconLeft="fa-pen" (clicked)="editRegistro()">
@@ -51,9 +52,6 @@ import { ConfirmService } from '../../../core/services/confirm.service';
           (clicked)="deleteRegistro()"
         >
           {{ deleting ? 'Eliminando...' : 'Eliminar' }}
-        </aero-button>
-        <aero-button variant="tertiary" iconLeft="fa-arrow-left" (clicked)="goBack()">
-          Volver a Lista
         </aero-button>
       </app-actions-container>
 
@@ -405,9 +403,5 @@ export class RegistroDetailComponent implements OnInit {
         });
       }
     });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/rrhh/worker-registry']);
   }
 }

@@ -31,6 +31,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
       icon="fa-file-lines"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/sst/reportes-acto"
     >
       <app-actions-container actions>
         <aero-button variant="secondary" iconLeft="fa-pen" (clicked)="editReporte()">
@@ -43,9 +44,6 @@ import { ConfirmService } from '../../../core/services/confirm.service';
           (clicked)="deleteReporte()"
         >
           {{ deleting ? 'Eliminando...' : 'Eliminar' }}
-        </aero-button>
-        <aero-button variant="tertiary" iconLeft="fa-arrow-left" (clicked)="goBack()">
-          Volver a Lista
         </aero-button>
       </app-actions-container>
 
@@ -324,9 +322,5 @@ export class ReporteDetailComponent implements OnInit {
         });
       }
     });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/sst/reportes-acto']);
   }
 }

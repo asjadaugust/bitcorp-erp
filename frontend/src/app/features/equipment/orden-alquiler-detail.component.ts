@@ -11,7 +11,7 @@ import {
   TabConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 
 @Component({
   selector: 'app-orden-alquiler-detail',
@@ -29,6 +29,8 @@ import { AeroButtonComponent } from '../../core/design-system';
       [entity]="orden"
       [loading]="loading"
       [auditInfo]="auditInfo"
+      [backUrl]="'/equipment/ordenes-alquiler'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando orden de alquiler..."
     >
       <!-- ── TABS ────────────────────────────────────── -->
@@ -232,16 +234,6 @@ import { AeroButtonComponent } from '../../core/design-system';
           [fullWidth]="true"
           (clicked)="cancelar()"
           >Cancelar Orden</aero-button
-        >
-
-        <hr class="sidebar-divider" />
-
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          routerLink="/equipment/ordenes-alquiler"
-          >Volver a la Lista</aero-button
         >
       </ng-container>
     </app-entity-detail-shell>
@@ -462,6 +454,13 @@ export class OrdenAlquilerDetailComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private confirmSvc = inject(ConfirmService);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Órdenes de Alquiler', url: '/equipment/ordenes-alquiler' },
+      { label: this.orden?.codigo || 'Detalle' },
+    ];
+  }
 
   orden: OrdenAlquiler | null = null;
   loading = false;

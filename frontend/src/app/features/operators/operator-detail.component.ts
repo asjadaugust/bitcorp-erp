@@ -20,7 +20,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 import {
   AeroBadgeComponent,
   BadgeVariant,
@@ -44,6 +44,8 @@ import {
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="'/operators'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del operador..."
     >
       <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
@@ -196,13 +198,6 @@ import {
           (clicked)="viewReports()"
           >Ver Reportes</aero-button
         >
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left-long"
-          [fullWidth]="true"
-          (clicked)="navigateToList()"
-          >Volver a Lista</aero-button
-        >
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -296,6 +291,13 @@ export class OperatorDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Operadores', url: '/operators' },
+      { label: this.operator?.nombre_completo || 'Detalle' },
+    ];
+  }
 
   operator: Operator | null = null;
   loading = true;

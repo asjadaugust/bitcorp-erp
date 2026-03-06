@@ -39,6 +39,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
       icon="fa-magnifying-glass"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/sst/inspecciones"
     >
       <app-actions-container actions>
         <aero-button variant="secondary" iconLeft="fa-pen" (clicked)="editInspeccion()">
@@ -51,9 +52,6 @@ import { ConfirmService } from '../../../core/services/confirm.service';
           (clicked)="deleteInspeccion()"
         >
           {{ deleting ? 'Eliminando...' : 'Eliminar' }}
-        </aero-button>
-        <aero-button variant="tertiary" iconLeft="fa-arrow-left" (clicked)="goBack()">
-          Volver a Lista
         </aero-button>
       </app-actions-container>
 
@@ -440,9 +438,5 @@ export class InspeccionDetailComponent implements OnInit {
         });
       }
     });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/sst/inspecciones']);
   }
 }

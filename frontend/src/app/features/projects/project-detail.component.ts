@@ -11,7 +11,7 @@ import {
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -30,6 +30,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       [entity]="project"
       [header]="header"
       [auditInfo]="auditInfo"
+      [backUrl]="'/projects'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del proyecto..."
     >
       <div entity-header-below>
@@ -142,13 +144,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           [fullWidth]="true"
           (clicked)="assignResources()"
           >Asignar Recursos</aero-button
-        >
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          (clicked)="navigateTo('/projects')"
-          >Volver a Lista</aero-button
         >
         <div class="sidebar-divider"></div>
         <aero-button
@@ -314,6 +309,10 @@ export class ProjectDetailComponent implements OnInit {
   private router = inject(Router);
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [{ label: 'Proyectos', url: '/projects' }, { label: this.project?.nombre || 'Detalle' }];
+  }
 
   project: Project | null = null;
   loading = true;

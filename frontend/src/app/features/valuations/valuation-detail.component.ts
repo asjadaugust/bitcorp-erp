@@ -21,7 +21,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 import { TabItem } from '../../shared/components/page-layout/page-layout.component';
 import { CombustiblePanelComponent } from '../equipment/associations/combustible-panel.component';
@@ -50,6 +50,8 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="'/equipment/valuations'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles de la valorización..."
     >
       <!-- ── BELOW HEADER: deadline timeline ──────────────────── -->
@@ -943,13 +945,6 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
             iconLeft="fa-pen-to-square"
             (clicked)="editValuation()"
             >Editar Detalles</aero-button
-          >
-          <aero-button
-            variant="ghost"
-            [fullWidth]="true"
-            iconLeft="fa-arrow-left-long"
-            routerLink="/equipment/valuations"
-            >Volver a Lista</aero-button
           >
           <aero-button
             variant="danger"
@@ -3142,6 +3137,13 @@ export class ValuationDetailComponent implements OnInit {
         { date: this.valuation?.createdAt, label: 'Valorización creada' },
       ],
     };
+  }
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Valorizaciones', url: '/equipment/valuations' },
+      { label: this.valuation?.numeroValorizacion || 'Detalle' },
+    ];
   }
 
   notFoundConfig: NotFoundConfig = {

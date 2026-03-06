@@ -32,6 +32,7 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-sy
       icon="fa-cash-register"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/administracion/petty-cash"
     >
       <app-actions-container actions>
         @if (caja?.estatus === 'ABIERTA') {
@@ -47,9 +48,6 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-sy
             {{ closing ? 'Cerrando...' : 'Cerrar Caja' }}
           </aero-button>
         }
-        <aero-button variant="tertiary" iconLeft="fa-arrow-left" (clicked)="goBack()">
-          Volver a Lista
-        </aero-button>
       </app-actions-container>
 
       @if (caja) {
@@ -264,9 +262,5 @@ export class PettyCashDetailComponent implements OnInit {
     if (this.caja) {
       this.router.navigate(['/administracion/petty-cash', this.caja.id, 'edit']);
     }
-  }
-
-  goBack(): void {
-    this.router.navigate(['/administracion/petty-cash']);
   }
 }
