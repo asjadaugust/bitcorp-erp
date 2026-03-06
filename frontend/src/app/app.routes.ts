@@ -345,6 +345,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
       },
+      // Presupuestos (APU + Budgets)
+      {
+        path: 'presupuestos',
+        loadChildren: () =>
+          import('./features/budgets/budgets.routes').then((m) => m.BUDGETS_ROUTES),
+      },
       // Checklists
       {
         path: 'checklists',

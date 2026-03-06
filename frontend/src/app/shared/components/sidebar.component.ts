@@ -375,11 +375,9 @@ export class SidebarComponent implements OnInit {
   currentUrl = this.router.url;
 
   ngOnInit() {
-    this.router.events
-      .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe((e) => {
-        this.currentUrl = (e as NavigationEnd).urlAfterRedirects;
-      });
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((e) => {
+      this.currentUrl = (e as NavigationEnd).urlAfterRedirects;
+    });
   }
 
   @Input() collapsed = true;
@@ -400,7 +398,12 @@ export class SidebarComponent implements OnInit {
       route: '/sst',
       icon: 'fa-solid fa-user-shield',
       children: [
-        { label: 'Incidentes', route: '/sst', icon: 'fa-solid fa-triangle-exclamation', exact: true },
+        {
+          label: 'Incidentes',
+          route: '/sst',
+          icon: 'fa-solid fa-triangle-exclamation',
+          exact: true,
+        },
         { label: 'Inspecciones', route: '/sst/inspecciones', icon: 'fa-solid fa-magnifying-glass' },
         { label: 'Reportes A/C', route: '/sst/reportes-acto', icon: 'fa-solid fa-file-lines' },
       ],
@@ -410,11 +413,31 @@ export class SidebarComponent implements OnInit {
       route: '/administracion',
       icon: 'fa-solid fa-briefcase',
       children: [
-        { label: 'Centros de Costo', route: '/administracion/cost-centers', icon: 'fa-solid fa-building-columns' },
-        { label: 'Cuentas por Pagar', route: '/administracion/accounts-payable', icon: 'fa-solid fa-file-invoice-dollar' },
-        { label: 'Cronograma', route: '/administracion/payment-schedules', icon: 'fa-solid fa-calendar-check' },
-        { label: 'Caja Chica', route: '/administracion/petty-cash', icon: 'fa-solid fa-cash-register' },
-        { label: 'Caja y Banco', route: '/administracion/bank-cash', icon: 'fa-solid fa-building-columns' },
+        {
+          label: 'Centros de Costo',
+          route: '/administracion/cost-centers',
+          icon: 'fa-solid fa-building-columns',
+        },
+        {
+          label: 'Cuentas por Pagar',
+          route: '/administracion/accounts-payable',
+          icon: 'fa-solid fa-file-invoice-dollar',
+        },
+        {
+          label: 'Cronograma',
+          route: '/administracion/payment-schedules',
+          icon: 'fa-solid fa-calendar-check',
+        },
+        {
+          label: 'Caja Chica',
+          route: '/administracion/petty-cash',
+          icon: 'fa-solid fa-cash-register',
+        },
+        {
+          label: 'Caja y Banco',
+          route: '/administracion/bank-cash',
+          icon: 'fa-solid fa-building-columns',
+        },
       ],
     },
     {
@@ -434,8 +457,16 @@ export class SidebarComponent implements OnInit {
       children: [
         { label: 'Productos', route: '/logistics/products', icon: 'fa-solid fa-box' },
         { label: 'Movimientos', route: '/logistics/movements', icon: 'fa-solid fa-dolly' },
-        { label: 'Solicitudes', route: '/logistics/material-requests', icon: 'fa-solid fa-file-lines' },
-        { label: 'Requerimientos', route: '/logistics/requirements', icon: 'fa-solid fa-clipboard-list' },
+        {
+          label: 'Solicitudes',
+          route: '/logistics/material-requests',
+          icon: 'fa-solid fa-file-lines',
+        },
+        {
+          label: 'Requerimientos',
+          route: '/logistics/requirements',
+          icon: 'fa-solid fa-clipboard-list',
+        },
         { label: 'Categorías', route: '/logistics/categories', icon: 'fa-solid fa-tags' },
       ],
     },
@@ -445,7 +476,11 @@ export class SidebarComponent implements OnInit {
       icon: 'fa-solid fa-handshake',
       children: [
         { label: 'Lista', route: '/providers', icon: 'fa-solid fa-list', exact: true },
-        { label: 'Evaluaciones', route: '/providers/evaluaciones', icon: 'fa-solid fa-clipboard-check' },
+        {
+          label: 'Evaluaciones',
+          route: '/providers/evaluaciones',
+          icon: 'fa-solid fa-clipboard-check',
+        },
       ],
     },
     {
@@ -454,6 +489,21 @@ export class SidebarComponent implements OnInit {
       icon: 'fa-solid fa-tractor',
     },
     { label: 'Operadores', route: '/operators', icon: 'fa-solid fa-id-card' },
+    {
+      label: 'Presupuestos',
+      route: '/presupuestos',
+      icon: 'fa-solid fa-calculator',
+      children: [
+        {
+          label: 'Presupuestos',
+          route: '/presupuestos',
+          icon: 'fa-solid fa-file-invoice-dollar',
+          exact: true,
+        },
+        { label: 'APUs', route: '/presupuestos/apus', icon: 'fa-solid fa-calculator' },
+        { label: 'Insumos', route: '/presupuestos/insumos', icon: 'fa-solid fa-boxes-stacked' },
+      ],
+    },
     { label: 'Checklists', route: '/checklists', icon: 'fa-solid fa-clipboard-check' },
     {
       label: 'Analítica',
