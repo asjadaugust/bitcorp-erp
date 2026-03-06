@@ -1429,7 +1429,9 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
     if (changes['data']) {
       this.selectedRows.clear();
       this.expandedRows.clear();
-      this.currentPage = 1;
+      if (!this.serverSide) {
+        this.currentPage = 1;
+      }
     }
   }
 
