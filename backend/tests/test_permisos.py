@@ -96,31 +96,43 @@ async def test_permisos_rol_listar() -> None:
 async def test_permiso_asignar_revocar() -> None:
     """Debe asignar y revocar un permiso de un rol."""
     async with await _cliente_auth() as c:
-        # Asignar permiso 1 al rol 10 (ADMIN, que no tiene permisos asignados)
+        # Crear un permiso temporal para evitar conflictos con seed data
         resp = await c.post(
-            "/api/permissions/roles/10/permisos",
-            json={"permiso_id": 1},
+            "/api/permissions/",
+            json={"proceso": "TEST_AR", "modulo": "TEST_AR_MOD", "permiso": "TEST_AR_PERM"},
+        )
+        assert resp.status_code == 201
+        permiso_id = resp.json()["data"]["id"]
+
+        # Asignar al rol 1 (ADMIN, siempre existe en seed)
+        resp = await c.post(
+            "/api/permissions/roles/1/permisos",
+            json={"permiso_id": permiso_id},
         )
         assert resp.status_code == 201
         d = resp.json()["data"]
-        assert d["rol_id"] == 10
-        assert d["permiso_id"] == 1
+        assert d["rol_id"] == 1
+        assert d["permiso_id"] == permiso_id
 
         # Verificar que aparece en la lista
-        resp = await c.get("/api/permissions/roles/10/permisos")
+        resp = await c.get("/api/permissions/roles/1/permisos")
         assert resp.status_code == 200
         ids = [x["permiso_id"] for x in resp.json()["data"]]
-        assert 1 in ids
+        assert permiso_id in ids
 
         # Revocar
-        resp = await c.delete("/api/permissions/roles/10/permisos/1")
+        resp = await c.delete(f"/api/permissions/roles/1/permisos/{permiso_id}")
         assert resp.status_code == 204
 
         # Verificar que ya no aparece
-        resp = await c.get("/api/permissions/roles/10/permisos")
+        resp = await c.get("/api/permissions/roles/1/permisos")
         assert resp.status_code == 200
         ids = [x["permiso_id"] for x in resp.json()["data"]]
-        assert 1 not in ids
+        assert permiso_id not in ids
+
+        # Limpiar: eliminar el permiso temporal
+        resp = await c.delete(f"/api/permissions/{permiso_id}")
+        assert resp.status_code == 204
 
 
 # ─── Usuario-Rol-UO ─────────────────────────────────────────────────────────

@@ -24,7 +24,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.modelos.base import Base
 from app.modelos.proveedores import Proveedor  # noqa: F401
-from app.modelos.proyectos import Edt
+from app.modelos.proyectos import Proyecto
 from app.modelos.rrhh import Trabajador
 
 
@@ -563,7 +563,7 @@ class ParteDiario(Base):
         Integer, ForeignKey("rrhh.trabajador.id"), nullable=True
     )
     proyecto_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("proyectos.edt.id"), nullable=True
+        Integer, ForeignKey("proyectos.proyectos.id"), nullable=True
     )
     valorizacion_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("equipo.valorizacion_equipo.id"), nullable=True
@@ -630,7 +630,7 @@ class ParteDiario(Base):
 
     equipo: Mapped[Equipo] = relationship("Equipo", lazy="joined")
     trabajador: Mapped[Trabajador | None] = relationship("Trabajador", lazy="joined")
-    proyecto: Mapped[Edt | None] = relationship("Edt", lazy="joined")
+    proyecto: Mapped[Proyecto | None] = relationship("Proyecto", lazy="joined")
     valorizacion: Mapped[ValorizacionEquipo | None] = relationship(
         "ValorizacionEquipo", lazy="select"
     )

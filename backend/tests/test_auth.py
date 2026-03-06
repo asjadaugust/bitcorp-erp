@@ -12,7 +12,7 @@ async def _crear_cliente() -> AsyncClient:
 
 @pytest.mark.asyncio
 async def test_login_credenciales_validas() -> None:
-    """Login con admin/admin123 debe retornar tokens y datos de usuario."""
+    """Login con admin/Admin@123 debe retornar tokens y datos de usuario."""
     async with await _crear_cliente() as c:
         resp = await c.post(
             "/api/auth/login", json={"username": "admin", "password": "Admin@123"}

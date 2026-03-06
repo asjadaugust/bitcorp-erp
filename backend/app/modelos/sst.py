@@ -35,7 +35,7 @@ class Incidente(Base):
     descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
     acciones_tomadas: Mapped[str | None] = mapped_column(Text, nullable=True)
     proyecto_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("proyectos.edt.id"), nullable=True, index=True
+        Integer, ForeignKey("proyectos.proyectos.id"), nullable=True, index=True
     )
     reportado_por: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("sistema.usuario.id"), nullable=True

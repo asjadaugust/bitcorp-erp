@@ -1,6 +1,6 @@
 """Seed test users for local development and mobile app testing.
 
-Creates the following users (all with password 'admin123'):
+Creates the following users (all with password 'Admin@123'):
   - admin       → Director General (rol_id=1)
   - director    → Director de Proyecto (rol_id=2)
   - jefe_equipo → Jefe de Equipo (rol_id=3)
@@ -20,8 +20,8 @@ down_revision = "003_seed_demo"
 branch_labels = None
 depends_on = None
 
-# bcrypt hash for 'admin123' — generated with bcrypt cost 10.
-# Verified with: from passlib.context import CryptContext; CryptContext(schemes=["bcrypt"]).verify("admin123", HASH)
+# bcrypt hash for 'Admin@123' — generated with bcrypt cost 10.
+# Verified with: from passlib.context import CryptContext; CryptContext(schemes=["bcrypt"]).verify("Admin@123", HASH)
 PASSWORD_HASH = "$2b$10$4caVqdjHJdnPj8rLMTX/vO7K.v2IkS9Usw1tGSP6cvCCfeZMvRoV6"
 
 
