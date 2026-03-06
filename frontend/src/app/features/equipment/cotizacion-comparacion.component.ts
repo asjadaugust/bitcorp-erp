@@ -10,7 +10,10 @@ import {
 import { ProviderService } from '../../core/services/provider.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { firstValueFrom } from 'rxjs';
-import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
+import {
+  PageLayoutComponent,
+  Breadcrumb,
+} from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
 import { AeroButtonComponent } from '../../core/design-system';
 
@@ -26,12 +29,14 @@ import { AeroButtonComponent } from '../../core/design-system';
     AeroButtonComponent,
   ],
   template: `
-    <app-page-layout>
-      <app-page-card [title]="pageTitle" [subtitle]="pageSubtitle">
+    <app-page-layout
+      [title]="pageTitle"
+      icon="fa-scale-balanced"
+      [breadcrumbs]="breadcrumbs"
+      [backUrl]="backUrl"
+    >
+      <app-page-card [subtitle]="pageSubtitle">
         <ng-container header-actions>
-          <aero-button variant="secondary" size="small" iconLeft="arrow_back" (click)="goBack()">
-            Volver a Solicitud
-          </aero-button>
           <aero-button
             variant="primary"
             size="small"
@@ -790,6 +795,8 @@ export class CotizacionComparacionComponent implements OnInit {
   private router = inject(Router);
 
   solicitudId!: number;
+  backUrl = '';
+  breadcrumbs: Breadcrumb[] = [];
   comparacion: ComparacionResponse | null = null;
   providers: { id: number; razon_social: string; ruc: string }[] = [];
   loading = true;
@@ -827,6 +834,13 @@ export class CotizacionComparacionComponent implements OnInit {
 
   ngOnInit() {
     this.solicitudId = Number(this.route.snapshot.paramMap.get('solicitudId'));
+    this.backUrl = `/equipment/solicitudes/${this.solicitudId}`;
+    this.breadcrumbs = [
+      { label: 'Inicio', url: '/app' },
+      { label: 'Equipos', url: '/equipment' },
+      { label: 'Solicitud', url: this.backUrl },
+      { label: 'Cuadro Comparativo' },
+    ];
     this.loadData();
     this.loadProviders();
   }
@@ -957,10 +971,6 @@ export class CotizacionComparacionComponent implements OnInit {
     this.cotizacionService.rechazar(cot.id).subscribe({
       next: () => this.loadData(),
     });
-  }
-
-  goBack() {
-    this.router.navigate(['../../solicitudes', this.solicitudId], { relativeTo: this.route });
   }
 
   getEstadoColor(estado: string): string {

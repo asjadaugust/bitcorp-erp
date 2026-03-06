@@ -12,7 +12,7 @@ import {
   AuditInfo,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 
 @Component({
   selector: 'app-vale-combustible-detail',
@@ -30,6 +30,8 @@ import { AeroButtonComponent } from '../../core/design-system';
       [entity]="vale"
       [loading]="loading"
       [auditInfo]="auditInfo"
+      [backUrl]="'/equipment/vales-combustible'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando vale de combustible..."
     >
       <!-- ── ACTIONS ─────────────────────────────────── -->
@@ -62,13 +64,6 @@ import { AeroButtonComponent } from '../../core/design-system';
           (clicked)="anular()"
           data-testid="btn-anular"
           >Anular</aero-button
-        >
-        <aero-button
-          variant="ghost"
-          [fullWidth]="true"
-          iconLeft="fa-arrow-left"
-          routerLink="/equipment/vales-combustible"
-          >Volver a Lista</aero-button
         >
       </ng-container>
 
@@ -339,6 +334,13 @@ export class ValeCombustibleDetailComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private confirmSvc = inject(ConfirmService);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Vales de Combustible', url: '/equipment/vales-combustible' },
+      { label: this.vale?.codigo || 'Detalle' },
+    ];
+  }
 
   vale: ValeCombustible | null = null;
   loading = false;

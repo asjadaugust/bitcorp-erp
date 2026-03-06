@@ -13,7 +13,7 @@ import {
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -36,6 +36,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="'/providers'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del proveedor..."
     >
       <!-- ── BELOW HEADER: tab bar ───────────────────────────── -->
@@ -199,13 +201,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           >Ver Equipos</aero-button
         >
         <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          routerLink="/providers"
-          >Volver a Lista</aero-button
-        >
-        <aero-button
           variant="danger"
           iconLeft="fa-trash-can"
           [fullWidth]="true"
@@ -311,6 +306,13 @@ export class ProviderDetailComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
   router = inject(Router);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Proveedores', url: '/providers' },
+      { label: this.provider?.razon_social || 'Detalle' },
+    ];
+  }
 
   provider: Provider | null = null;
   loading = true;

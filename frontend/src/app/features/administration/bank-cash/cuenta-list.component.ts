@@ -1,7 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { BankCashService, CuentaCajaBanco } from './bank-cash.service';
 import {
   AeroDataGridComponent,
@@ -11,7 +10,6 @@ import {
   PageLayoutComponent,
   Breadcrumb,
 } from '../../../shared/components/page-layout/page-layout.component';
-import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
 import { AeroButtonComponent } from '../../../core/design-system';
@@ -25,7 +23,6 @@ import { ADMINISTRACION_TABS } from '../administracion-tabs';
     ReactiveFormsModule,
     AeroDataGridComponent,
     PageLayoutComponent,
-    ActionsContainerComponent,
     PageCardComponent,
     FormSectionComponent,
     AeroButtonComponent,
@@ -37,13 +34,8 @@ import { ADMINISTRACION_TABS } from '../administracion-tabs';
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
       [tabs]="tabs"
+      backUrl="/administracion/bank-cash"
     >
-      <app-actions-container actions>
-        <aero-button variant="secondary" iconLeft="fa-arrow-left" (clicked)="navigateBack()">
-          Volver a Caja y Banco
-        </aero-button>
-      </app-actions-container>
-
       <app-page-card [noPadding]="true">
         <aero-data-grid
           [gridId]="'cuenta-list'"
@@ -138,7 +130,6 @@ import { ADMINISTRACION_TABS } from '../administracion-tabs';
 export class CuentaListComponent implements OnInit {
   private readonly bankCashService = inject(BankCashService);
   private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
 
   tabs = ADMINISTRACION_TABS;
   cuentas: CuentaCajaBanco[] = [];
@@ -221,9 +212,5 @@ export class CuentaListComponent implements OnInit {
         this.submitting = false;
       },
     });
-  }
-
-  navigateBack(): void {
-    this.router.navigate(['/administracion/bank-cash']);
   }
 }

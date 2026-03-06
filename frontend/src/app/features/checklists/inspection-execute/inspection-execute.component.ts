@@ -55,6 +55,7 @@ interface InspectionFormData {
       icon="fa-clipboard-check"
       [breadcrumbs]="breadcrumbs"
       [loading]="loading"
+      backUrl="/checklists/inspections"
     >
       <!-- Step Indicator -->
       <div class="steps-indicator" *ngIf="currentStep > 0">

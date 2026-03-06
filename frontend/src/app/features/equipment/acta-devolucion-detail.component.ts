@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ActaDevolucionService, ActaDevolucion } from '../../core/services/acta-devolucion.service';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { Breadcrumb } from '../../shared/components/page-layout/page-layout.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 import {
   EntityDetailShellComponent,
   EntityDetailHeader,
@@ -30,6 +29,8 @@ import {
       [entity]="acta"
       [loading]="loading"
       [auditInfo]="auditInfo"
+      [backUrl]="'/equipment/actas-devolucion'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del acta..."
     >
       <!-- ── TABS NAVIGATION ──────────────────────────────────── -->
@@ -256,16 +257,6 @@ import {
           [fullWidth]="true"
           (clicked)="anular()"
           >Anular Acta</aero-button
-        >
-
-        <hr class="sidebar-divider" />
-
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          routerLink="/equipment/actas-devolucion"
-          >Volver a la Lista</aero-button
         >
       </ng-container>
     </app-entity-detail-shell>
@@ -521,6 +512,13 @@ export class ActaDevolucionDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private confirmSvc = inject(ConfirmService);
 
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Actas de Devolución', url: '/equipment/actas-devolucion' },
+      { label: this.acta?.codigo || 'Detalle' },
+    ];
+  }
+
   acta: ActaDevolucion | null = null;
   loading = false;
   mostrarFirma = false;
@@ -543,12 +541,6 @@ export class ActaDevolucionDetailComponent implements OnInit {
   auditInfo: AuditInfo = {
     entries: [],
   };
-
-  breadcrumbs: Breadcrumb[] = [
-    { label: 'Equipo', url: '/equipment' },
-    { label: 'Actas de Devolución', url: '/equipment/actas-devolucion' },
-    { label: 'Detalle' },
-  ];
 
   ngOnInit() {
     const id = parseInt(this.route.snapshot.paramMap.get('id')!);

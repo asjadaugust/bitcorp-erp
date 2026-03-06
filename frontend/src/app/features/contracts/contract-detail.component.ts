@@ -37,7 +37,7 @@ import {
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
 import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 
 @Component({
   selector: 'app-contract-detail',
@@ -61,6 +61,8 @@ import { AeroButtonComponent } from '../../core/design-system';
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="'/equipment/contracts'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del contrato..."
     >
       <!-- ── MAIN CONTENT ────────────────────────────────────── -->
@@ -465,13 +467,6 @@ import { AeroButtonComponent } from '../../core/design-system';
             >Cancelar</aero-button
           >
         }
-        <aero-button
-          variant="ghost"
-          [fullWidth]="true"
-          iconLeft="fa-arrow-left"
-          routerLink="/equipment/contracts"
-          >Volver a Lista</aero-button
-        >
       </ng-container>
 
       <!-- ── SIDEBAR AFTER (extra cards below audit) ─────────── -->
@@ -1302,6 +1297,13 @@ export class ContractDetailComponent implements OnInit {
   router = inject(Router);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Contratos', url: '/equipment/contracts' },
+      { label: this.contract?.numero_contrato || 'Detalle' },
+    ];
+  }
 
   contract: Contract | null = null;
   valuations: Valuation[] = [];

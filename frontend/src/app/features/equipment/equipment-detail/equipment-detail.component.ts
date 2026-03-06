@@ -28,7 +28,7 @@ import {
 } from '../../../core/design-system/data-grid/aero-data-grid.component';
 import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-list.component';
 import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tabs.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../../core/design-system';
 
 @Component({
   selector: 'app-equipment-detail',
@@ -49,6 +49,8 @@ import { AeroButtonComponent } from '../../../core/design-system';
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="'/equipment'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del equipo..."
     >
       <div entity-header-below>
@@ -384,14 +386,6 @@ import { AeroButtonComponent } from '../../../core/design-system';
           (clicked)="deleteEquipment()"
           >Eliminar Equipo</aero-button
         >
-        <hr class="sidebar-divider" />
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          routerLink="/equipment"
-          >Volver a Lista</aero-button
-        >
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -592,6 +586,13 @@ export class EquipmentDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   loading = true;
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Equipos', url: '/equipment' },
+      { label: this.equipment?.codigo_equipo || 'Detalle' },
+    ];
+  }
+
   equipment: Equipment | null = null;
   activeTab = 'general';
   dailyReports: Record<string, unknown>[] = [];

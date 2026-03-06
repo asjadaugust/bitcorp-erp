@@ -17,7 +17,7 @@ import { AeroTabsComponent } from '../../../../shared/components/aero-tabs/aero-
 import { TabItem } from '../../../../shared/components/page-layout/page-layout.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AeroButtonComponent } from '../../../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-product-detail',
@@ -37,6 +37,8 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       [header]="header"
       [entity]="product"
       [loading]="loading"
+      [backUrl]="'/logistics/products'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del producto..."
     >
       <!-- ── BELOW HEADER: tab bar ───────────────────────────── -->
@@ -175,13 +177,6 @@ import { AeroButtonComponent } from '../../../../core/design-system';
           >Ver Movimientos</aero-button
         >
         <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left-long"
-          [fullWidth]="true"
-          (clicked)="navigateToList()"
-          >Volver a Lista</aero-button
-        >
-        <aero-button
           variant="danger"
           iconLeft="fa-trash-can"
           [fullWidth]="true"
@@ -298,6 +293,13 @@ export class ProductDetailComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Productos', url: '/logistics/products' },
+      { label: this.product?.nombre || 'Detalle' },
+    ];
+  }
 
   product: Product | null = null;
   loading = true;

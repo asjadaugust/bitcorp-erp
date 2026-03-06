@@ -30,6 +30,7 @@ import {
   AeroInputComponent,
   AeroBadgeComponent,
 } from '../../../core/design-system';
+import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-breadcrumbs.component';
 
 @Component({
   selector: 'app-operator-daily-report',
@@ -56,6 +57,8 @@ import {
       "
       icon="fa-clipboard-list"
       [subtitle]="isViewMode ? 'Consulta de registro histórico' : 'Registro de trabajo diario'"
+      [breadcrumbs]="breadcrumbs"
+      [backUrl]="isViewMode ? '/operator/history' : '/operator/dashboard'"
       [showActions]="!isViewMode"
       [showFooter]="!isViewMode"
       [submitLabel]="isEditMode ? 'Actualizar' : 'Enviar Parte'"
@@ -573,9 +576,6 @@ import {
 
         <!-- View Mode Actions -->
         <div class="view-actions" *ngIf="isViewMode">
-          <aero-button variant="secondary" iconLeft="fa-arrow-left" (clicked)="goBack()"
-            >Volver</aero-button
-          >
           <aero-button
             *ngIf="reportId"
             variant="primary"
@@ -1108,6 +1108,11 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   isEditMode = false;
   isViewMode = false;
   reportId: number | null = null;
+  breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Inicio', url: '/app' },
+    { label: 'Operador', url: '/operator/dashboard' },
+    { label: 'Parte Diario' },
+  ];
   locationResult: LocationResult | null = null;
   locationError: string | null = null;
   uploadingPhotos = false;

@@ -11,7 +11,7 @@ import {
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
 
 @Component({
   selector: 'app-maintenance-detail',
@@ -24,6 +24,8 @@ import { AeroButtonComponent } from '../../core/design-system';
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="backUrl"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del mantenimiento..."
     >
       <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
@@ -92,13 +94,6 @@ import { AeroButtonComponent } from '../../core/design-system';
             >Marcar Completado</aero-button
           >
         }
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left"
-          [fullWidth]="true"
-          (clicked)="goBack()"
-          >Volver a Equipo</aero-button
-        >
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -179,6 +174,20 @@ export class MaintenanceDetailComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
   private snackBar = inject(MatSnackBar);
   router = inject(Router);
+
+  get backUrl(): string {
+    return this.record?.equipoId ? `/equipment/${this.record.equipoId}` : '/equipment/maintenance';
+  }
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Equipos', url: '/equipment' },
+      ...(this.record?.equipoId
+        ? [{ label: 'Equipo', url: `/equipment/${this.record.equipoId}` }]
+        : []),
+      { label: this.record?.descripcion || 'Mantenimiento' },
+    ];
+  }
 
   record: MaintenanceRecord | null = null;
   loading = true;

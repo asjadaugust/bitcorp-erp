@@ -10,7 +10,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../../../shared/components/entity-detail';
-import { AeroButtonComponent } from '../../../../core/design-system';
+import { AeroButtonComponent, BreadcrumbItem } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-employee-detail',
@@ -23,6 +23,8 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       [header]="header"
       [auditInfo]="auditInfo"
       [notFound]="notFoundConfig"
+      [backUrl]="'/rrhh/employees'"
+      [breadcrumbs]="breadcrumbs"
       loadingText="Cargando detalles del empleado..."
     >
       <!-- MAIN CONTENT -->
@@ -121,13 +123,6 @@ import { AeroButtonComponent } from '../../../../core/design-system';
           (clicked)="editEmployee()"
           >Editar</aero-button
         >
-        <aero-button
-          variant="ghost"
-          iconLeft="fa-arrow-left-long"
-          [fullWidth]="true"
-          (clicked)="navigateToList()"
-          >Volver a Lista</aero-button
-        >
       </ng-container>
     </app-entity-detail-shell>
   `,
@@ -184,6 +179,17 @@ export class EmployeeDetailComponent implements OnInit {
   private employeeService = inject(EmployeeService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
+  get breadcrumbs(): BreadcrumbItem[] {
+    return [
+      { label: 'Empleados', url: '/rrhh/employees' },
+      {
+        label: this.employee?.nombres
+          ? `${this.employee.nombres} ${this.employee.apellido_paterno || ''}`.trim()
+          : 'Detalle',
+      },
+    ];
+  }
 
   employee: Employee | null = null;
   loading = true;
