@@ -7,7 +7,11 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroCardComponent,
+  AeroBadgeComponent,
+} from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface InfoFinanciera {
@@ -26,7 +30,14 @@ interface InfoFinanciera {
 @Component({
   selector: 'app-provider-financial-info',
   standalone: true,
-  imports: [AeroButtonComponent, CommonModule, ReactiveFormsModule, DropdownComponent],
+  imports: [
+    AeroButtonComponent,
+    AeroCardComponent,
+    AeroBadgeComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    DropdownComponent,
+  ],
   template: `
     <div class="financial-info-section">
       <div class="section-header">
@@ -112,31 +123,31 @@ interface InfoFinanciera {
 
       <!-- List -->
       <div class="financial-list" *ngIf="!loading && financialInfoList.length > 0">
-        <div class="financial-card" *ngFor="let info of financialInfoList">
-          <div class="card-header">
-            <div class="bank-info">
-              <h4>{{ info.nombre_banco }}</h4>
-              <div class="bank-badges">
-                <span class="badge badge-primary" *ngIf="info.es_principal">Principal</span>
-                <span class="badge badge-currency">{{ info.moneda }}</span>
-              </div>
-            </div>
-            <div class="actions" *ngIf="!readOnly">
+        <aero-card
+          [title]="info.nombre_banco"
+          [hasHeaderActions]="true"
+          appearance="bordered"
+          *ngFor="let info of financialInfoList"
+        >
+          <div header-actions>
+            <aero-badge variant="primary" *ngIf="info.es_principal">Principal</aero-badge>
+            <aero-badge variant="neutral">{{ info.moneda }}</aero-badge>
+            <ng-container *ngIf="!readOnly">
               <aero-button
-                variant="ghost"
+                variant="tertiary"
                 size="small"
                 iconCenter="fa-pen"
                 (clicked)="editFinancialInfo(info)"
               ></aero-button>
               <aero-button
-                variant="ghost"
+                variant="tertiary"
                 size="small"
                 iconCenter="fa-trash"
                 (clicked)="deleteFinancialInfo(info.id!)"
               ></aero-button>
-            </div>
+            </ng-container>
           </div>
-          <div class="card-body">
+          <div class="account-rows">
             <div class="info-row">
               <i class="fa-solid fa-hashtag" title="Número de Cuenta"></i>
               <span class="value">{{ info.numero_cuenta }}</span>
@@ -150,7 +161,7 @@ interface InfoFinanciera {
               <span class="value">{{ info.nombre_titular }}</span>
             </div>
           </div>
-        </div>
+        </aero-card>
       </div>
 
       <div class="empty-state" *ngIf="!loading && financialInfoList.length === 0 && !showForm">
@@ -209,64 +220,7 @@ interface InfoFinanciera {
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: var(--s-16);
       }
-      .financial-card {
-        background: var(--grey-100);
-        border: 1px solid var(--grey-200);
-        border-radius: var(--s-12);
-        transition: all 0.2s ease-in-out;
-        display: flex;
-        flex-direction: column;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
-          border-color: var(--primary-200);
-        }
-      }
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        padding: var(--s-20);
-        border-bottom: 1px solid var(--grey-100);
-        background: transparent;
-      }
-      .bank-info {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-4);
-      }
-      .bank-info h4 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--grey-900);
-      }
-      .bank-badges {
-        display: flex;
-        gap: var(--s-8);
-        margin-top: var(--s-4);
-      }
-      .badge {
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      .badge-primary {
-        background: var(--primary-50);
-        color: var(--primary-700);
-        border: 1px solid var(--primary-100);
-      }
-      .badge-currency {
-        background: var(--grey-100);
-        color: var(--grey-700);
-        border: 1px solid var(--grey-200);
-      }
-      .card-body {
-        padding: var(--s-20);
+      .account-rows {
         display: flex;
         flex-direction: column;
         gap: var(--s-12);
@@ -283,14 +237,6 @@ interface InfoFinanciera {
           width: 16px;
           text-align: center;
         }
-      }
-      .label {
-        font-weight: 500;
-        color: var(--grey-500);
-        font-size: 12px;
-        text-transform: uppercase;
-        margin-right: var(--s-4);
-        display: none; /* Icons replace labels for cleaner look */
       }
       .value {
         font-family: monospace;
