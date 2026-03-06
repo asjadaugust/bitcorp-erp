@@ -1,4 +1,4 @@
-"""Esquemas Pydantic para proyectos (EDT)."""
+"""Esquemas Pydantic para proyectos."""
 
 from pydantic import BaseModel, Field
 

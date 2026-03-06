@@ -42,6 +42,8 @@ from app.modelos.equipo import (
     AnalisisCombustible,
     ContratoAdenda,
     Equipo,
+    EquipoCombustible,
+    EquipoEdt,
     GastoEnObra,
     ParteDiario,
     ValeCombustible,
@@ -186,10 +188,10 @@ def _a_detalle_dto(v: ValorizacionEquipo) -> ValorizacionDetalleDto:
         costo_combustible=_num(v.costo_combustible),
         cargos_adicionales=_num(v.cargos_adicionales),
         tipo_cambio=_num(v.tipo_cambio),
-        descuento_porcentaje=float(v.descuento_porcentaje),
-        descuento_monto=float(v.descuento_monto),
-        igv_porcentaje=float(v.igv_porcentaje),
-        igv_monto=float(v.igv_monto),
+        descuento_porcentaje=float(v.descuento_porcentaje or 0),
+        descuento_monto=float(v.descuento_monto or 0),
+        igv_porcentaje=float(v.igv_porcentaje or 18),
+        igv_monto=float(v.igv_monto or 0),
         importe_manipuleo=_num(v.importe_manipuleo),
         importe_gasto_obra=_num(v.importe_gasto_obra),
         importe_adelanto=_num(v.importe_adelanto),
@@ -250,6 +252,16 @@ class ServicioValorizacion:
         if not v:
             raise NoEncontradoError("Valorizacion", val_id)
         return v
+
+    @staticmethod
+    def _cantidad_legacy(val: ValorizacionEquipo, contrato) -> float:
+        """Return horas_trabajadas, or derive from costo_base/tarifa for legacy."""
+        cantidad = float(val.horas_trabajadas or 0)
+        if not cantidad and contrato and contrato.tarifa:
+            tarifa_val = float(contrato.tarifa)
+            if tarifa_val > 0 and val.costo_base:
+                cantidad = round(float(val.costo_base) / tarifa_val, 4)
+        return cantidad
 
     # ─── Listar ───────────────────────────────────────────────────────
 
@@ -969,9 +981,9 @@ class ServicioValorizacion:
             cantidad_minima=float(contrato.cantidad_minima) if contrato and contrato.cantidad_minima else None,
             moneda=contrato.moneda if contrato else None,
             tipo_cambio=_num(val.tipo_cambio),
-            precio_manipuleo=float(contrato.precio_manipuleo) if contrato else None,
-            # Financial
-            cantidad_a_valorizar=float(val.horas_trabajadas or 0),
+            precio_manipuleo=float(contrato.precio_manipuleo) if contrato and contrato.precio_manipuleo is not None else None,
+            # Financial — derive cantidad when horas_trabajadas is NULL (legacy)
+            cantidad_a_valorizar=self._cantidad_legacy(val, contrato),
             precio_unitario=float(contrato.tarifa) if contrato and contrato.tarifa else 0,
             valorizacion_bruta=float(val.costo_base or 0),
             descuento_combustible=float(val.costo_combustible or 0),
@@ -996,18 +1008,19 @@ class ServicioValorizacion:
         """Tab 2: All valuations for the same contract/equipment."""
         val = await self._obtener_o_404(tenant_id, val_id)
         if not val.contrato_id:
-            return []
-
-        result = await self.db.execute(
-            select(ValorizacionEquipo)
-            .where(
-                ValorizacionEquipo.contrato_id == val.contrato_id,
-                ValorizacionEquipo.equipo_id == val.equipo_id,
-                ValorizacionEquipo.tenant_id == tenant_id,
+            # Legacy record without FK — show at least the current valorizacion
+            vals = [val]
+        else:
+            result = await self.db.execute(
+                select(ValorizacionEquipo)
+                .where(
+                    ValorizacionEquipo.contrato_id == val.contrato_id,
+                    ValorizacionEquipo.equipo_id == val.equipo_id,
+                    ValorizacionEquipo.tenant_id == tenant_id,
+                )
+                .order_by(ValorizacionEquipo.fecha_inicio.asc())
             )
-            .order_by(ValorizacionEquipo.fecha_inicio.asc())
-        )
-        vals = list(result.scalars().unique().all())
+            vals = list(result.scalars().unique().all())
 
         # Derive unit and rate from contract
         contrato = val.contrato_rel
@@ -1027,7 +1040,7 @@ class ServicioValorizacion:
                 periodo=v.periodo,
                 fecha_inicio=v.fecha_inicio,
                 fecha_fin=v.fecha_fin,
-                cantidad=float(v.horas_trabajadas or 0),
+                cantidad=self._cantidad_legacy(v, contrato),
                 unidad_medida=unidad,
                 precio_unitario=tarifa,
                 valorizacion_bruta=float(v.costo_base or 0),
@@ -1053,6 +1066,26 @@ class ServicioValorizacion:
         reportes = await self._cargar_reportes(
             val.equipo_id, val.fecha_inicio, val.fecha_fin
         )
+
+        # Load EDT assignments for all partes in one query
+        parte_ids = [r.id for r in reportes]
+        legacy_to_id = {r.legacy_id: r.id for r in reportes if r.legacy_id}
+        edt_map: dict[int, list[EquipoEdt]] = {}
+        if parte_ids:
+            conditions = [EquipoEdt.parte_diario_id.in_(parte_ids)]
+            if legacy_to_id:
+                conditions.append(
+                    EquipoEdt.parte_diario_legacy_id.in_(list(legacy_to_id.keys()))
+                )
+            edt_result = await self.db.execute(
+                select(EquipoEdt).where(or_(*conditions))
+            )
+            for edt in edt_result.scalars().all():
+                pid = edt.parte_diario_id or legacy_to_id.get(
+                    edt.parte_diario_legacy_id
+                )
+                if pid:
+                    edt_map.setdefault(pid, []).append(edt)
 
         items = []
         for r in reportes:
@@ -1081,6 +1114,9 @@ class ServicioValorizacion:
                 cant_efectiva = max(0.0, 1.0 - precalent)
                 cant_min = 1.0
 
+            # Descuento cantidad mínima: difference when effective < minimum
+            desc_cant_min = max(0.0, cant_min - cant_efectiva) if cant_efectiva < cant_min else 0.0
+
             # Operator info from joined trabajador
             op_dni = None
             op_nombre = None
@@ -1092,6 +1128,17 @@ class ServicioValorizacion:
                     r.trabajador.nombres or "",
                 ]
                 op_nombre = " ".join(p for p in parts if p)
+
+            # EDT aggregation
+            edts = edt_map.get(r.id, [])
+            edt_count = len(edts)
+            edt_porcentaje_total = sum(float(e.porcentaje or 0) for e in edts)
+            actividades = [e.actividad for e in edts if e.actividad]
+            actividad = ", ".join(actividades) if actividades else None
+            edt_parts = [
+                f"@{int(e.porcentaje)}% {e.edt_nombre}" for e in edts if e.edt_nombre
+            ]
+            edt_resumen = " | ".join(edt_parts) if edt_parts else None
 
             items.append(ParteDetalleDto(
                 id=r.id,
@@ -1106,8 +1153,14 @@ class ServicioValorizacion:
                 odometro_final=float(r.odometro_final) if r.odometro_final else None,
                 diferencia=round(diferencia, 2),
                 horas_precalentamiento=round(precalent, 2),
+                otros_descuentos=0,
                 cantidad_efectiva=round(cant_efectiva, 4),
+                descuento_cantidad_minima=round(desc_cant_min, 4),
                 cantidad_minima=round(cant_min, 4),
+                actividad=actividad,
+                edt_resumen=edt_resumen,
+                edt_count=edt_count,
+                edt_porcentaje_total=round(edt_porcentaje_total, 2),
                 estado=r.estado,
             ))
         return items
@@ -1122,7 +1175,7 @@ class ServicioValorizacion:
             val.equipo_id, val.fecha_inicio, val.fecha_fin
         )
 
-        items = []
+        items: list[CombustibleDetalleItemDto] = []
         total_gln = 0.0
         total_imp = 0.0
         for v in vales:
@@ -1143,8 +1196,32 @@ class ServicioValorizacion:
             total_gln += gln
             total_imp += monto
 
+        # Legacy fuel records (EquipoCombustible linked by valorizacion_legacy_id)
+        if not items and val.legacy_id:
+            legacy_result = await self.db.execute(
+                select(EquipoCombustible)
+                .where(EquipoCombustible.valorizacion_legacy_id == val.legacy_id)
+                .order_by(EquipoCombustible.fecha.asc())
+            )
+            for lv in legacy_result.scalars().all():
+                gln = float(lv.cantidad or 0)
+                pu = float(lv.precio_unitario_sin_igv or 0)
+                monto = float(lv.importe or 0) or round(gln * pu, 2)
+                items.append(CombustibleDetalleItemDto(
+                    id=lv.id,
+                    fecha=lv.fecha,
+                    numero_vale=str(lv.numero_vale_salida or ''),
+                    tipo_combustible=lv.horometro_odometro or 'DIESEL',
+                    cantidad_galones=gln,
+                    precio_unitario=pu,
+                    monto_total=monto,
+                ))
+                total_gln += gln
+                total_imp += monto
+
         precio_prom = total_imp / total_gln if total_gln > 0 else 0
-        total_horas = float(val.horas_trabajadas or 0)
+        contrato = val.contrato_rel
+        total_horas = self._cantidad_legacy(val, contrato)
         ratio = total_gln / total_horas if total_horas > 0 else 0
 
         return CombustibleDetalleDto(

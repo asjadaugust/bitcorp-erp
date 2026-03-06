@@ -529,8 +529,14 @@ class ParteDetalleDto(BaseModel):
     odometro_final: float | None = None
     diferencia: float = 0
     horas_precalentamiento: float = 0
+    otros_descuentos: float = 0
     cantidad_efectiva: float = 0
+    descuento_cantidad_minima: float = 0
     cantidad_minima: float = 0
+    actividad: str | None = None
+    edt_resumen: str | None = None
+    edt_count: int = 0
+    edt_porcentaje_total: float = 0
     estado: str | None = None
 
 

@@ -1,14 +1,27 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   AeroDataGridComponent,
   DataGridColumn,
 } from '../../../core/design-system/data-grid/aero-data-grid.component';
 import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
+import {
+  AeroDropdownComponent,
+  DropdownOption,
+} from '../../../core/design-system/dropdown/aero-dropdown.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { EdtService, EdtDropdownItem } from '../../../core/services/edt.service';
 import {
   EquipoAsociacionesService,
   EquipoEdtLista,
@@ -25,15 +38,33 @@ import {
     AeroDataGridComponent,
     AeroButtonComponent,
     AeroBadgeComponent,
+    AeroDropdownComponent,
     PageCardComponent,
   ],
   template: `
     <app-page-card title="EDT (Estructura de Desglose de Trabajo)" [noPadding]="true">
       <div header-actions>
-        <aero-button variant="secondary" size="small" iconLeft="fa-plus" (clicked)="toggleForm()">
+        <aero-button
+          variant="secondary"
+          size="small"
+          iconLeft="fa-plus"
+          [disabled]="!showForm && validation.total >= 100"
+          (clicked)="toggleForm()"
+        >
           {{ showForm ? 'Cancelar' : 'Agregar EDT' }}
         </aero-button>
       </div>
+
+      <!-- Error banner -->
+      @if (errorMessage) {
+        <div class="edt-error-banner">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>{{ errorMessage }}</span>
+          <button class="close-btn" (click)="errorMessage = null">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      }
 
       <!-- Percentage validation bar -->
       <div class="percentage-bar-wrapper">
@@ -58,12 +89,13 @@ import {
           <div class="inline-form">
             <div class="form-group">
               <label class="form-label">Nombre EDT</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="formData.edt_nombre"
-                placeholder="Nombre del EDT"
-              />
+              <aero-dropdown
+                [options]="edtOptions"
+                [searchable]="true"
+                placeholder="Seleccione EDT"
+                [(ngModel)]="formData.edt_id"
+                (ngModelChange)="onEdtSelected($event)"
+              ></aero-dropdown>
             </div>
             <div class="form-group">
               <label class="form-label">Porcentaje (%)</label>
@@ -91,7 +123,9 @@ import {
                 variant="primary"
                 size="small"
                 iconLeft="fa-check"
-                [disabled]="saving"
+                [disabled]="
+                  saving || !formData.edt_id || !formData.porcentaje || formData.porcentaje <= 0
+                "
                 (clicked)="addEdt()"
               >
                 {{ saving ? 'Guardando...' : 'Agregar' }}
@@ -106,10 +140,52 @@ import {
         [columns]="columns"
         [data]="edtList"
         [loading]="loadingList"
+        [templates]="{ porcentaje: porcentajeRef }"
         [actionsTemplate]="actionsRef"
         emptyMessage="No hay registros EDT"
         emptyIcon="fa-sitemap"
       ></aero-data-grid>
+
+      <ng-template #porcentajeRef let-row>
+        @if (editingId === row['id']) {
+          <div class="inline-edit" (click)="$event.stopPropagation()">
+            <input
+              type="number"
+              class="form-control inline-edit-input"
+              [(ngModel)]="editPorcentaje"
+              min="0"
+              max="100"
+              step="0.01"
+            />
+            <button class="icon-btn confirm" (click)="saveEditPorcentaje(row)" title="Guardar">
+              <i class="fa-solid fa-check"></i>
+            </button>
+            <button class="icon-btn cancel" (click)="cancelEdit()" title="Cancelar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        } @else {
+          <div class="porcentaje-display" (click)="$event.stopPropagation()">
+            <span class="porcentaje-value">{{ row['porcentaje'] }}%</span>
+            <button class="icon-btn edit" (click)="startEdit(row)" title="Editar porcentaje">
+              <i class="fa-solid fa-pencil"></i>
+            </button>
+          </div>
+        }
+      </ng-template>
+
+      <!-- Footer with Guardar -->
+      <div class="edt-footer">
+        <aero-button
+          variant="primary"
+          size="small"
+          iconLeft="fa-check"
+          [disabled]="!validation.valid"
+          (clicked)="save()"
+        >
+          Guardar
+        </aero-button>
+      </div>
 
       <ng-template #actionsRef let-row>
         <div
@@ -132,6 +208,29 @@ import {
   `,
   styles: [
     `
+      .edt-error-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px var(--s-16);
+        background: var(--semantic-red-50, #fff1f1);
+        color: var(--semantic-red-700, #da1e28);
+        font-size: 13px;
+        font-weight: 500;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .edt-error-banner .close-btn {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: var(--semantic-red-700, #da1e28);
+        cursor: pointer;
+        padding: 2px 6px;
+        font-size: 14px;
+      }
+
       .percentage-bar-wrapper {
         padding: var(--s-16);
         border-bottom: 1px solid var(--grey-200);
@@ -206,24 +305,86 @@ import {
         gap: 4px;
         justify-content: center;
       }
+
+      .porcentaje-display {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: flex-end;
+      }
+      .porcentaje-value {
+        font-weight: 600;
+      }
+
+      .inline-edit {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        justify-content: flex-end;
+      }
+      .inline-edit-input {
+        width: 80px;
+        padding: 4px 8px;
+        text-align: right;
+      }
+
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        line-height: 1;
+      }
+      .icon-btn.edit {
+        color: var(--grey-500);
+        opacity: 0.5;
+        transition: opacity 0.15s;
+      }
+      .icon-btn.edit:hover {
+        opacity: 1;
+        color: var(--primary-500);
+      }
+      .icon-btn.confirm {
+        color: var(--semantic-green-500, #198038);
+      }
+      .icon-btn.cancel {
+        color: var(--semantic-red-500, #da1e28);
+      }
+
+      .edt-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: var(--s-16);
+        border-top: 1px solid var(--grey-200);
+      }
     `,
   ],
 })
 export class EdtPanelComponent implements OnInit, OnChanges {
   @Input() parteDiarioId!: string | number;
+  @Output() saved = new EventEmitter<void>();
 
   private service = inject(EquipoAsociacionesService);
   private confirmService = inject(ConfirmService);
-  private snackBar = inject(MatSnackBar);
+  private edtService = inject(EdtService);
 
   edtList: Record<string, unknown>[] = [];
+  edtOptions: DropdownOption[] = [];
+  private edtDropdownItems: EdtDropdownItem[] = [];
   loadingList = false;
   saving = false;
   showForm = false;
+  errorMessage: string | null = null;
+
+  editingId: number | null = null;
+  editPorcentaje = 0;
 
   validation: ValidacionPorcentaje = { valid: false, total: 0 };
 
   formData: EquipoEdtCrear = {
+    edt_id: undefined,
     edt_nombre: '',
     porcentaje: undefined,
     actividad: '',
@@ -233,18 +394,41 @@ export class EdtPanelComponent implements OnInit, OnChanges {
     {
       key: 'porcentaje',
       label: 'Porcentaje (%)',
-      type: 'number',
+      type: 'template',
       align: 'right',
-      width: '120px',
-      bold: true,
+      width: '160px',
     },
     { key: 'edt_nombre', label: 'EDT', type: 'text' },
     { key: 'actividad', label: 'Actividad', type: 'text' },
   ];
 
   ngOnInit(): void {
+    this.loadEdtOptions();
     if (this.parteDiarioId) {
       this.loadData();
+    }
+  }
+
+  loadEdtOptions(): void {
+    this.edtService.getDropdownOptions().subscribe({
+      next: (items) => {
+        this.edtDropdownItems = items;
+        this.edtOptions = items.map((e) => ({
+          value: e.id,
+          label: `[${e.codigo}]${e.codigo_alfanumerico ? ' ' + e.codigo_alfanumerico + ' —' : ''} ${e.nombre}`,
+        }));
+      },
+      error: () => {
+        this.edtOptions = [];
+      },
+    });
+  }
+
+  onEdtSelected(edtId: unknown): void {
+    const item = this.edtDropdownItems.find((e) => e.id === edtId);
+    if (item) {
+      this.formData.edt_nombre = item.nombre;
+      this.formData.edt_id = item.id;
     }
   }
 
@@ -284,21 +468,26 @@ export class EdtPanelComponent implements OnInit, OnChanges {
     this.showForm = !this.showForm;
     if (this.showForm) {
       this.resetForm();
+      this.errorMessage = null;
     }
   }
 
   addEdt(): void {
-    if (!this.formData.edt_nombre || !this.formData.porcentaje) {
-      this.snackBar.open('Complete nombre EDT y porcentaje', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['snackbar-warning'],
-      });
+    if (!this.formData.edt_id || !this.formData.porcentaje) {
+      return;
+    }
+
+    const projectedTotal = (this.validation?.total || 0) + this.formData.porcentaje;
+    if (projectedTotal > 100) {
+      this.errorMessage = `No se puede agregar. El total sería ${projectedTotal}% (máximo 100%).`;
       return;
     }
 
     this.saving = true;
+    this.errorMessage = null;
     const payload: EquipoEdtCrear = {
       parte_diario_id: Number(this.parteDiarioId),
+      edt_id: this.formData.edt_id,
       edt_nombre: this.formData.edt_nombre,
       porcentaje: this.formData.porcentaje,
       actividad: this.formData.actividad,
@@ -308,19 +497,54 @@ export class EdtPanelComponent implements OnInit, OnChanges {
       next: () => {
         this.saving = false;
         this.showForm = false;
+        this.errorMessage = null;
         this.resetForm();
         this.loadData();
-        this.snackBar.open('EDT agregado exitosamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success'],
-        });
       },
       error: () => {
         this.saving = false;
-        this.snackBar.open('Error al agregar EDT', 'Cerrar', {
-          duration: 4000,
-          panelClass: ['snackbar-error'],
-        });
+        this.errorMessage = 'Error al agregar EDT.';
+      },
+    });
+  }
+
+  startEdit(row: Record<string, unknown>): void {
+    this.editingId = row['id'] as number;
+    this.editPorcentaje = (row['porcentaje'] as number) || 0;
+    this.errorMessage = null;
+  }
+
+  cancelEdit(): void {
+    this.editingId = null;
+    this.editPorcentaje = 0;
+    this.errorMessage = null;
+  }
+
+  saveEditPorcentaje(row: Record<string, unknown>): void {
+    const id = row['id'] as number;
+    const oldValue = (row['porcentaje'] as number) || 0;
+    const newValue = this.editPorcentaje;
+
+    if (newValue <= 0) {
+      this.errorMessage = 'El porcentaje debe ser mayor a 0%.';
+      return;
+    }
+
+    const projectedTotal = (this.validation?.total || 0) - oldValue + newValue;
+    if (projectedTotal > 100) {
+      this.errorMessage = `No se puede guardar. El total sería ${projectedTotal}% (máximo 100%).`;
+      return;
+    }
+
+    this.errorMessage = null;
+    this.service.updateEdt(id, { porcentaje: newValue }).subscribe({
+      next: () => {
+        this.editingId = null;
+        this.editPorcentaje = 0;
+        this.loadData();
+      },
+      error: () => {
+        this.errorMessage = 'Error al actualizar porcentaje.';
       },
     });
   }
@@ -331,21 +555,21 @@ export class EdtPanelComponent implements OnInit, OnChanges {
         const id = row['id'] as number;
         this.service.deleteEdt(id).subscribe({
           next: () => {
+            this.errorMessage = null;
             this.loadData();
-            this.snackBar.open('EDT eliminado', 'Cerrar', {
-              duration: 3000,
-              panelClass: ['snackbar-success'],
-            });
           },
           error: () => {
-            this.snackBar.open('Error al eliminar EDT', 'Cerrar', {
-              duration: 4000,
-              panelClass: ['snackbar-error'],
-            });
+            this.errorMessage = 'Error al eliminar EDT.';
           },
         });
       }
     });
+  }
+
+  save(): void {
+    if (this.validation.valid) {
+      this.saved.emit();
+    }
   }
 
   clampPercentage(value: number): number {
@@ -354,6 +578,7 @@ export class EdtPanelComponent implements OnInit, OnChanges {
 
   private resetForm(): void {
     this.formData = {
+      edt_id: undefined,
       edt_nombre: '',
       porcentaje: undefined,
       actividad: '',

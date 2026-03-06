@@ -1,4 +1,4 @@
-"""Servicio para proyectos (EDT).
+"""Servicio para proyectos.
 """
 
 from datetime import date
@@ -15,7 +15,7 @@ from app.esquemas.proyecto import (
     ProyectoDetalleDto,
     ProyectoListaDto,
 )
-from app.modelos.proyectos import Edt
+from app.modelos.proyectos import Proyecto
 
 logger = obtener_logger(__name__)
 
@@ -24,7 +24,7 @@ def _fecha_str(val: date | None) -> str | None:
     return val.isoformat() if val else None
 
 
-def _a_lista_dto(e: Edt) -> ProyectoListaDto:
+def _a_lista_dto(e: Proyecto) -> ProyectoListaDto:
     return ProyectoListaDto(
         id=e.id,
         codigo=e.codigo,
@@ -38,7 +38,7 @@ def _a_lista_dto(e: Edt) -> ProyectoListaDto:
     )
 
 
-def _a_detalle_dto(e: Edt) -> ProyectoDetalleDto:
+def _a_detalle_dto(e: Proyecto) -> ProyectoDetalleDto:
     return ProyectoDetalleDto(
         id=e.id,
         codigo=e.codigo,
@@ -64,7 +64,7 @@ def _parse_date(val: str | None) -> date | None:
 
 
 class ServicioProyecto:
-    """Servicio para gestión de proyectos (EDT)."""
+    """Servicio para gestión de proyectos."""
 
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
@@ -78,21 +78,21 @@ class ServicioProyecto:
         limite: int = 20,
     ) -> tuple[list[ProyectoListaDto], int]:
         """Listar proyectos con filtros y paginación."""
-        consulta = select(Edt).where(Edt.is_active.is_(True))
+        consulta = select(Proyecto).where(Proyecto.is_active.is_(True))
 
         if estado:
-            consulta = consulta.where(Edt.estado == estado)
+            consulta = consulta.where(Proyecto.estado == estado)
         if busqueda:
             patron = f"%{busqueda}%"
             consulta = consulta.where(
-                Edt.nombre.ilike(patron) | Edt.codigo.ilike(patron)
+                Proyecto.nombre.ilike(patron) | Proyecto.codigo.ilike(patron)
             )
 
         consulta_conteo = select(func.count()).select_from(consulta.subquery())
         resultado_conteo = await self.db.execute(consulta_conteo)
         total: int = resultado_conteo.scalar_one()
 
-        consulta = consulta.order_by(Edt.created_at.desc())
+        consulta = consulta.order_by(Proyecto.created_at.desc())
         offset = (pagina - 1) * limite
         consulta = consulta.offset(offset).limit(limite)
 
@@ -105,7 +105,7 @@ class ServicioProyecto:
     async def obtener_por_id(self, proyecto_id: int) -> ProyectoDetalleDto:
         """Obtener proyecto por ID."""
         resultado = await self.db.execute(
-            select(Edt).where(Edt.id == proyecto_id, Edt.is_active.is_(True))
+            select(Proyecto).where(Proyecto.id == proyecto_id, Proyecto.is_active.is_(True))
         )
         entidad = resultado.scalars().first()
         if not entidad:
@@ -114,14 +114,13 @@ class ServicioProyecto:
 
     async def crear(self, datos: ProyectoCrear, usuario_id: int) -> ProyectoDetalleDto:
         """Crear un nuevo proyecto."""
-        # Verificar código único
         existente = await self.db.execute(
-            select(Edt).where(Edt.codigo == datos.codigo)
+            select(Proyecto).where(Proyecto.codigo == datos.codigo)
         )
         if existente.scalars().first():
             raise ConflictoError(f"Ya existe un proyecto con código '{datos.codigo}'")
 
-        entidad = Edt(
+        entidad = Proyecto(
             codigo=datos.codigo,
             nombre=datos.nombre,
             descripcion=datos.descripcion,
@@ -144,7 +143,7 @@ class ServicioProyecto:
     ) -> ProyectoDetalleDto:
         """Actualizar un proyecto existente."""
         resultado = await self.db.execute(
-            select(Edt).where(Edt.id == proyecto_id, Edt.is_active.is_(True))
+            select(Proyecto).where(Proyecto.id == proyecto_id, Proyecto.is_active.is_(True))
         )
         entidad = resultado.scalars().first()
         if not entidad:
@@ -166,7 +165,7 @@ class ServicioProyecto:
     async def eliminar(self, proyecto_id: int) -> None:
         """Eliminar (soft delete) un proyecto."""
         resultado = await self.db.execute(
-            select(Edt).where(Edt.id == proyecto_id, Edt.is_active.is_(True))
+            select(Proyecto).where(Proyecto.id == proyecto_id, Proyecto.is_active.is_(True))
         )
         entidad = resultado.scalars().first()
         if not entidad:
@@ -179,7 +178,7 @@ class ServicioProyecto:
     async def obtener_estadisticas(self, proyecto_id: int) -> dict[str, Any]:
         """Obtener estadísticas del proyecto."""
         resultado = await self.db.execute(
-            select(Edt).where(Edt.id == proyecto_id, Edt.is_active.is_(True))
+            select(Proyecto).where(Proyecto.id == proyecto_id, Proyecto.is_active.is_(True))
         )
         entidad = resultado.scalars().first()
         if not entidad:

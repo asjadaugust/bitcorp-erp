@@ -29,6 +29,12 @@ export const OPERATIONS_ROUTES: Routes = [
       ),
   },
 
+  // EDT
+  {
+    path: 'edt',
+    loadComponent: () => import('./edt-list.component').then((m) => m.EdtListComponent),
+  },
+
   // Scheduling
   {
     path: 'scheduling',
