@@ -41,6 +41,7 @@ class Proveedor(Base):
     telefono: Mapped[str | None] = mapped_column(String(50), nullable=True)
     correo_electronico: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    estado: Mapped[str | None] = mapped_column(String(50), default="ACTIVO", nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

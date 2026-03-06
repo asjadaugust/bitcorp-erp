@@ -40,6 +40,7 @@ def _a_lista_dto(p: Proveedor) -> ProveedorListaDto:
         id=p.id, ruc=p.ruc, razon_social=p.razon_social,
         nombre_comercial=p.nombre_comercial, tipo_proveedor=p.tipo_proveedor,
         telefono=p.telefono, correo_electronico=p.correo_electronico, is_active=p.is_active,
+        estado=p.estado or ("ACTIVO" if p.is_active else "EMPRESA_CERRADA"),
     )
 
 
@@ -48,6 +49,7 @@ def _a_detalle_dto(p: Proveedor) -> ProveedorDetalleDto:
         id=p.id, ruc=p.ruc, razon_social=p.razon_social,
         nombre_comercial=p.nombre_comercial, tipo_proveedor=p.tipo_proveedor,
         telefono=p.telefono, correo_electronico=p.correo_electronico, is_active=p.is_active,
+        estado=p.estado or ("ACTIVO" if p.is_active else "EMPRESA_CERRADA"),
         legacy_id=p.legacy_id, direccion=p.direccion,
         estado_contribuyente=p.estado_contribuyente,
         condicion_contribuyente=p.condicion_contribuyente,
@@ -210,6 +212,8 @@ class ServicioProveedor:
         for campo, valor in datos.model_dump(exclude_unset=True).items():
             anterior = str(getattr(p, campo, None))
             setattr(p, campo, valor)
+            if campo == "estado" and valor is not None:
+                p.is_active = valor == "ACTIVO"
             await self._registrar_log(
                 tenant_id, prov_id, "ACTUALIZAR", campo=campo,
                 anterior=anterior, nuevo=str(valor), user_id=user_id,

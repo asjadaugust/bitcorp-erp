@@ -14,11 +14,8 @@ import { ProviderContactsComponent } from './components/provider-contacts.compon
 import { ProviderFinancialInfoComponent } from './components/provider-financial-info.component';
 import { ProviderDocumentsComponent } from './components/provider-documents.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
-import {
-  DropdownComponent,
-  DropdownOption,
-} from '../../shared/components/dropdown/dropdown.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, AeroDropdownComponent } from '../../core/design-system';
+import { DropdownOption } from '../../shared/components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-provider-form',
@@ -34,7 +31,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     ProviderFinancialInfoComponent,
     ProviderDocumentsComponent,
     FormContainerComponent,
-    DropdownComponent,
+    AeroDropdownComponent,
     AeroButtonComponent,
   ],
   template: `
@@ -125,20 +122,21 @@ import { AeroButtonComponent } from '../../core/design-system';
 
             <div class="form-group">
               <label for="tipo_proveedor">Tipo de Proveedor</label>
-              <app-dropdown
+              <aero-dropdown
                 formControlName="tipo_proveedor"
                 [options]="providerTypeOptions"
-                [placeholder]="'Seleccionar...'"
-              ></app-dropdown>
+                [multiple]="true"
+                [placeholder]="'Seleccionar tipos...'"
+              ></aero-dropdown>
             </div>
 
             <div class="form-group">
-              <label for="is_active">Estado</label>
-              <app-dropdown
-                formControlName="is_active"
-                [options]="statusOptions"
-                [placeholder]="'Seleccionar...'"
-              ></app-dropdown>
+              <label for="estado">Estado</label>
+              <aero-dropdown
+                formControlName="estado"
+                [options]="estadoOptions"
+                [placeholder]="'Seleccionar estado...'"
+              ></aero-dropdown>
             </div>
 
             <div class="form-group">
@@ -355,9 +353,12 @@ export class ProviderFormComponent implements OnInit {
     { label: 'Mixto / Otro', value: 'MIXTO' },
   ];
 
-  statusOptions: DropdownOption[] = [
-    { label: 'Activo', value: true },
-    { label: 'Inactivo', value: false },
+  estadoOptions: DropdownOption[] = [
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'En Evaluación', value: 'EN_EVALUACION' },
+    { label: 'Homologado', value: 'HOMOLOGADO' },
+    { label: 'Lista Negra', value: 'LISTA_NEGRA' },
+    { label: 'Empresa Cerrada', value: 'EMPRESA_CERRADA' },
   ];
 
   fieldLabels: Record<string, string> = {
@@ -378,8 +379,8 @@ export class ProviderFormComponent implements OnInit {
     this.providerForm = this.fb.group({
       ruc: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11)]],
       razon_social: ['', Validators.required],
-      tipo_proveedor: ['', Validators.required],
-      is_active: [true, Validators.required],
+      tipo_proveedor: [[] as string[]],
+      estado: ['ACTIVO', Validators.required],
       direccion: [''],
       nombre_comercial: [''],
       telefono: [''],
@@ -406,11 +407,22 @@ export class ProviderFormComponent implements OnInit {
     this.loading = true;
     this.providerService.getById(id).subscribe({
       next: (provider: any) => {
+        const tipoRaw: string = provider['tipo_proveedor'] || '';
+        const tipoArray: string[] = tipoRaw
+          ? tipoRaw
+              .split(',')
+              .map((t: string) => t.trim())
+              .filter(Boolean)
+          : [];
+
+        const estado: string =
+          provider['estado'] ?? (provider['is_active'] ? 'ACTIVO' : 'EMPRESA_CERRADA');
+
         this.providerForm.patchValue({
           ruc: provider['ruc'],
           razon_social: provider['razon_social'],
-          tipo_proveedor: provider['tipo_proveedor'] || '',
-          is_active: provider['is_active'],
+          tipo_proveedor: tipoArray,
+          estado,
           direccion: provider['direccion'] || '',
           nombre_comercial: provider['nombre_comercial'] || '',
           telefono: provider['telefono'] || '',
@@ -442,7 +454,14 @@ export class ProviderFormComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const providerData = this.providerForm.value;
+    const formValue = this.providerForm.value;
+    const tipoArray: string[] = Array.isArray(formValue.tipo_proveedor)
+      ? formValue.tipo_proveedor
+      : [];
+    const providerData = {
+      ...formValue,
+      tipo_proveedor: tipoArray.join(',') || null,
+    };
 
     const request$ =
       this.isEditMode && this.providerId

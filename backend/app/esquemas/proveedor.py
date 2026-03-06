@@ -16,6 +16,7 @@ class ProveedorListaDto(BaseModel):
     telefono: str | None = None
     correo_electronico: str | None = None
     is_active: bool
+    estado: str | None = "ACTIVO"
 
 
 class ProveedorDetalleDto(ProveedorListaDto):
@@ -100,6 +101,7 @@ class ProveedorActualizar(BaseModel):
     direccion: str | None = None
     telefono: str | None = None
     correo_electronico: str | None = None
+    estado: str | None = None
 
 
 class ContactoCrear(BaseModel):
