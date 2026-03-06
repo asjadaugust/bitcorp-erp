@@ -32,5 +32,5 @@ fi
 
 echo "✅ All migrations completed successfully!"
 echo "🔐 You can now login with:"
-echo "   - Admin: admin / admin123"
+echo "   - Admin: admin / Admin@123"
 echo "   - Operator: operator / operator123"

@@ -11,7 +11,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Swagger UI**: http://localhost:3410/docs
 - **PostgreSQL**: port 3440 (internal)
 - **Redis**: port 3460 (internal)
-- **Default credentials**: `admin` / `admin123`
+- **Default credentials**: `admin` / `Admin@123`
+
+---
+
+## Documentation Source
+
+For read queries, `.opencode/` files are the fast path (no MCP calls). Use `atlassian-docs` skill for writes, changelog updates, and explicit refreshes.
+
+- **Space**: https://bitcorp-erp.atlassian.net/wiki/spaces/BitCorp
+- **Local cache**: `.opencode/` files — primary read source (zero MCP calls)
+- **Skill**: `atlassian-docs` — for writes, changelog, Jira, and `refresh` commands
+- **Local CLAUDE.md files**: canonical for operational config only (ports, commands, forbidden practices)
 
 ---
 
@@ -107,25 +118,11 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `perf`, `chore`
 
 ---
 
-### Multi-Tenancy (Separate Database per Company)
+For deep architecture docs, see Confluence (`atlassian-docs` skill):
 
-Each company tenant has its **own PostgreSQL database** (`bitcorp_empresa_{code}`). A central `bitcorp_sistema` database stores the company registry and platform admins.
-
-- Every authenticated request carries `id_empresa` in the JWT payload
-- Tenant middleware resolves the JWT → looks up `sistema.empresas` → sets tenant context
-- All services receive tenant-scoped async database sessions
-
-See `.opencode/MULTITENANCY.md` for full architecture.
-
----
-
-### Role Hierarchy
-
-5-tier: `ADMIN_SISTEMA` → `ADMIN` → `DIRECTOR` → `JEFE_EQUIPO` → `OPERADOR`
-Plus special-purpose roles: `HR`, `CONTABILIDAD`, `ALMACEN`.
-
-JWT payload includes `id_empresa`, `rol`, `id_usuario`. Role guards are enforced in controllers.
-See `.opencode/USER-MANAGEMENT.md` for the full permission matrix.
+- **Multi-Tenancy**: page `66401` — separate DB per company, tenant context middleware
+- **Role Hierarchy**: page `196820` — 5-tier: `ADMIN_SISTEMA` → `ADMIN` → `DIRECTOR` → `JEFE_EQUIPO` → `OPERADOR`
+- **API Patterns**: page `164198` — response shapes, DTOs, error codes
 
 ---
 
@@ -133,14 +130,18 @@ See `.opencode/USER-MANAGEMENT.md` for the full permission matrix.
 
 Before marking any feature done:
 
-1. Update `001_init_schema.sql` (if schema changed) and `002_seed.sql`
-2. Implement backend changes (controller → service → DTO)
-3. Implement frontend changes
-4. Navigate to the feature in the browser manually
-5. Check `docker-compose logs -f backend` — no errors
-6. Check `docker-compose logs -f frontend` — no errors
-7. Check browser console — no errors
-8. Commit with conventional commit format using the local git config
+0. Read `.opencode/` files for relevant business rules (or `atlassian-docs refresh` if stale)
+1. Check for existing Jira issue in BIT project (create Story/Bug if none)
+2. Update schema files if needed (`001_init_schema.sql`, `002_seed.sql`)
+3. Implement backend changes (controller → service → DTO)
+4. Implement frontend changes
+5. Navigate to the feature in the browser manually
+6. Check `docker-compose logs -f backend` — no errors
+7. Check `docker-compose logs -f frontend` — no errors
+8. Check browser console — no errors
+9. Commit with conventional commit format (include `BIT-###` if applicable)
+10. Changelog auto-updated by PostToolUse hook (verify in Confluence if needed)
+11. Transition Jira issue to Done (if applicable)
 
 ---
 
@@ -202,13 +203,14 @@ For full command reference, see `./dora/docs/SKILL.md`.
 Scoped `CLAUDE.md` files extend these instructions. Claude Code auto-loads them
 when editing files in those directories. For cross-cutting tasks, read manually.
 
-| Task involves…                                                     | File                           |
-| ------------------------------------------------------------------ | ------------------------------ |
-| Angular, components, SCSS, UI, Aero, templates, design system      | `frontend/CLAUDE.md`           |
-| FastAPI, SQLAlchemy, Pydantic, routers, services, schemas, backend | `backend/CLAUDE.md`            |
-| Multi-tenant sessions, per-company DB isolation                    | `.opencode/MULTITENANCY.md`    |
-| API patterns, DTOs, response shapes, pagination                    | `.opencode/API-PATTERNS.md`    |
-| Role permissions, user lifecycle                                   | `.opencode/USER-MANAGEMENT.md` |
+| Task involves…                                                     | Local File (operational config) | Confluence Page (canonical knowledge) |
+| ------------------------------------------------------------------ | ------------------------------- | ------------------------------------- |
+| Angular, components, SCSS, UI, Aero, templates, design system      | `frontend/CLAUDE.md`            | —                                     |
+| FastAPI, SQLAlchemy, Pydantic, routers, services, schemas, backend | `backend/CLAUDE.md`             | —                                     |
+| Multi-tenant sessions, per-company DB isolation                    | `.opencode/MULTITENANCY.md`     | Page `66401` (Multi-Tenancy Arch)     |
+| API patterns, DTOs, response shapes, pagination                    | `.opencode/API-PATTERNS.md`     | Page `164198` (API Patterns)          |
+| Role permissions, user lifecycle                                   | `.opencode/USER-MANAGEMENT.md`  | Page `196820` (User Management)       |
+| Skills, agents, Claude workflow                                    | `.opencode/AGENT-GUIDE.md`      | Page `196846` (Agent & Skills Guide)  |
 
 <!-- rtk-instructions v2 -->
 
@@ -318,6 +320,8 @@ rtk diff                # Ultra-compact diffs
 rtk docker ps           # Compact container list
 rtk docker images       # Compact image list
 rtk docker logs <c>     # Deduplicated logs
+rtk docker-compose up   # Compact compose output
+rtk docker-compose ps   # Compact compose output
 rtk kubectl get         # Compact resource list
 rtk kubectl logs        # Deduplicated pod logs
 ```

@@ -110,7 +110,7 @@ INSERT INTO sistema.rol_permiso (rol_id, permiso_id) VALUES
 -- Administrador
 (5, 11), (5, 12);
 
--- Users (passwords all hash to 'admin123')
+-- Users (passwords all hash to 'Admin@123')
 INSERT INTO sistema.usuario (legacy_id, nombre_usuario, contrasena, nombres, apellidos, correo_electronico, telefono, rol_id, unidad_operativa_id) VALUES
 ('USR001', 'admin', '$2b$10$4caVqdjHJdnPj8rLMTX/vO7K.v2IkS9Usw1tGSP6cvCCfeZMvRoV6', 'Admin', 'Sistema', 'admin@bitcorp.pe', '999000111', 1, 1),
 ('USR002', 'director', '$2b$10$4caVqdjHJdnPj8rLMTX/vO7K.v2IkS9Usw1tGSP6cvCCfeZMvRoV6', 'Carlos', 'Ramírez', 'cramirez@bitcorp.pe', '999000222', 2, 1),

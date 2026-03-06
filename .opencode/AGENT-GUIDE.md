@@ -1,3 +1,8 @@
+> LOCAL CACHE — Primary read source for Claude Code (zero-MCP-call fast path).
+> Canonical source: https://bitcorp-erp.atlassian.net/wiki/spaces/BitCorp/pages/196846 (Agent & Skills Guide)
+> To refresh: `atlassian-docs refresh agent-guide`
+> Last synced: 2026-03-05
+
 # BitCorp ERP - OpenCode Agent Guide
 
 ## Overview
