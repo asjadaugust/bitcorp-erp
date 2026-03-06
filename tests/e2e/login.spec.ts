@@ -9,7 +9,7 @@ test.describe('Login Tests', () => {
   test('should login successfully with admin credentials', async ({ page }) => {
     // Fill in login form
     await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[type="password"]', 'admin123');
+    await page.fill('input[type="password"]', 'Admin@123');
 
     // Click login button
     await page.click('button[type="submit"]');
@@ -104,7 +104,7 @@ test.describe('Login Tests', () => {
   test('should navigate between modules after login', async ({ page }) => {
     // Login
     await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[type="password"]', 'admin123');
+    await page.fill('input[type="password"]', 'Admin@123');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard', { timeout: 20000 });
     await page.waitForLoadState('networkidle');
@@ -124,7 +124,7 @@ test.describe('Login Tests', () => {
   test('should logout successfully', async ({ page }) => {
     // Login
     await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[type="password"]', 'admin123');
+    await page.fill('input[type="password"]', 'Admin@123');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard', { timeout: 20000 });
     await page.waitForLoadState('networkidle');

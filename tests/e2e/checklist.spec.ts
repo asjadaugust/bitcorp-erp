@@ -13,7 +13,7 @@ test.describe('Checklist Management', () => {
     const loginResponse = await request.post(`${API_URL}/api/auth/login`, {
       data: {
         username: 'admin',
-        password: 'admin123',
+        password: 'Admin@123',
       },
     });
 

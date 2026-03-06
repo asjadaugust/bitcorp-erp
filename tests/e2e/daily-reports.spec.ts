@@ -5,7 +5,7 @@ test.describe('Daily Reports', () => {
     // Login as admin (who has access to daily reports list)
     await page.goto('http://localhost:3420/login');
     await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[type="password"]', 'admin123');
+    await page.fill('input[type="password"]', 'Admin@123');
     await page.click('button[type="submit"]');
 
     // Wait for dashboard

@@ -5,7 +5,7 @@ test.describe('Checklist Management', () => {
     // Login
     await page.goto('http://localhost:4200/login');
     await page.fill('input[name="email"]', 'admin@bitcorp.com');
-    await page.fill('input[name="password"]', 'Admin123!');
+    await page.fill('input[name="password"]', 'Admin@123!');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard');
   });
@@ -215,7 +215,7 @@ test.describe('Checklist Template Management', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4200/login');
     await page.fill('input[name="email"]', 'admin@bitcorp.com');
-    await page.fill('input[name="password"]', 'Admin123!');
+    await page.fill('input[name="password"]', 'Admin@123!');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard');
   });

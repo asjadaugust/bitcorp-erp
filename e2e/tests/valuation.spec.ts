@@ -5,7 +5,7 @@ test.describe('Valuation Flow', () => {
     // Login as Admin
     await page.goto('/login');
     await page.fill('input[name="email"]', 'admin@bitcorp.com');
-    await page.fill('input[name="password"]', 'admin123');
+    await page.fill('input[name="password"]', 'Admin@123');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/dashboard');
   });
