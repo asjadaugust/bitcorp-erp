@@ -48,7 +48,8 @@ async def _reset_sequences():
                         ON c_tbl.oid = d.refobjid
                     WHERE s.schemaname IN (
                         'sistema', 'equipo', 'proyectos',
-                        'rrhh', 'logistica', 'public', 'proveedores'
+                        'rrhh', 'logistica', 'public', 'proveedores',
+                        'presupuestos'
                     )
                 LOOP
                     EXECUTE format(

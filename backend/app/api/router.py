@@ -41,6 +41,9 @@ from app.api.registro_trabajador import router as router_registro_trabajador
 
 # Fase 5 — Secondary Modules
 from app.api.edt import router as router_edt
+from app.api.insumos import router as router_insumos
+from app.api.apus import router as router_apus
+from app.api.presupuestos import router as router_presupuestos
 from app.api.proyectos import router as router_proyectos
 from app.api.reportes import router as router_reportes
 from app.api.reportes_analiticos import router as router_reportes_analiticos
@@ -176,6 +179,13 @@ router_api.include_router(router_licitaciones, prefix="/tenders", tags=["Licitac
 router_api.include_router(router_checklists, prefix="/checklists", tags=["Checklists"])
 router_api.include_router(
     router_tareas_programadas, prefix="/scheduling", tags=["Tareas Programadas"]
+)
+
+# Fase 6 — Presupuestos (APU + Budgets)
+router_api.include_router(router_insumos, prefix="/insumos", tags=["Insumos"])
+router_api.include_router(router_apus, prefix="/apus", tags=["APUs"])
+router_api.include_router(
+    router_presupuestos, prefix="/presupuestos", tags=["Presupuestos"]
 )
 
 # Legacy Features — Catalog (SUNAT reference tables)
