@@ -327,9 +327,37 @@ export class ProviderDetailComponent implements OnInit {
       subtitle: this.provider?.nombre_comercial
         ? `${this.provider.nombre_comercial}`
         : 'Sin nombre comercial',
-      statusLabel: this.provider?.is_active ? 'Activo' : 'Inactivo',
-      statusClass: this.provider?.is_active ? 'status-APROBADO' : 'status-CANCELADO',
+      statusLabel: this.getEstadoLabel(),
+      statusClass: this.getEstadoClass(),
     };
+  }
+
+  private static readonly ESTADO_LABELS: Record<string, string> = {
+    ACTIVO: 'Activo',
+    EN_EVALUACION: 'En Evaluación',
+    HOMOLOGADO: 'Homologado',
+    LISTA_NEGRA: 'Lista Negra',
+    EMPRESA_CERRADA: 'Empresa Cerrada',
+  };
+
+  private static readonly ESTADO_CLASSES: Record<string, string> = {
+    ACTIVO: 'status-APROBADO',
+    EN_EVALUACION: 'status-EN_REVISION',
+    HOMOLOGADO: 'status-ACTIVO',
+    LISTA_NEGRA: 'status-CANCELADO',
+    EMPRESA_CERRADA: 'status-INACTIVO',
+  };
+
+  getEstadoLabel(): string {
+    const estado =
+      this.provider?.estado ?? (this.provider?.is_active ? 'ACTIVO' : 'EMPRESA_CERRADA');
+    return ProviderDetailComponent.ESTADO_LABELS[estado] ?? estado;
+  }
+
+  getEstadoClass(): string {
+    const estado =
+      this.provider?.estado ?? (this.provider?.is_active ? 'ACTIVO' : 'EMPRESA_CERRADA');
+    return ProviderDetailComponent.ESTADO_CLASSES[estado] ?? 'status-INACTIVO';
   }
 
   get auditInfo(): AuditInfo {
