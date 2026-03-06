@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="utf-8">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+body {
+    /* Falling back to Outfit/Inter to simulate Universal Sans if local fonts aren't available */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    color: #072b45;
+    /* primary-900 */
+    line-height: 1.5;
+    background-color: #ffffff;
+    font-size: 11pt;
+    padding: 0;
+    margin: 0;
+}
+
+/* Page Margins for Print */
+@page {
+    margin: 2cm;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Outfit', -apple-system, sans-serif;
+    color: #072b45;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 700;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+h1 {
+    font-size: 24pt;
+    border-bottom: 3px solid #0077cd;
+    /* primary-500 */
+    padding-bottom: 8px;
+    color: #072b45;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+}
+
+h2 {
+    font-size: 18pt;
+    border-bottom: 2px solid #ebf3f8;
+    /* primary-100 */
+    padding-bottom: 6px;
+    color: #0077cd;
+    /* primary-500 */
+}
+
+h3 {
+    font-size: 16pt;
+    color: #e37222;
+    /* accent-500 */
+    margin-top: 2em;
+}
+
+h4 {
+    font-size: 14pt;
+    color: #072b45;
+    background-color: #f6f7f8;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border-left: 4px solid #006fc9;
+    /* semantic-blue-500 */
+}
+
+a {
+    color: #0077cd;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 16px 0;
+    border: 1px solid #ebf3f8;
+    border-radius: 8px;
+    overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+th,
+td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #ebf3f8;
+    font-size: 10pt;
+}
+
+th {
+    background-color: #f6f7f8;
+    /* grey-100 */
+    color: #072b45;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:nth-child(even) td {
+    background-color: #fafbfc;
+}
+
+tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+blockquote {
+    border-left: 4px solid #0077cd;
+    background-color: #ebf3f8;
+    /* primary-100 */
+    padding: 12px 16px;
+    margin: 16px 0;
+    color: #072b45;
+    font-style: italic;
+    border-radius: 0 8px 8px 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+code {
+    background-color: #f6f7f8;
+    color: #e37222;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+}
+
+pre {
+    background-color: #072b45;
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+pre code {
+    background-color: transparent;
+    color: #ffffff;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #ebf3f8;
+    margin: 40px 0;
+}
+
+ul,
+ol {
+    margin-bottom: 20px;
+    padding-left: 24px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+/* Checkboxes in Markdwon lists */
+li input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: #0077cd;
+}
+
+img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 16px 0;
+    box-shadow: 0 4px 12px rgba(7, 43, 69, 0.1);
+    display: block;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+    </style>
+    </head>
+    <body>
+    <h1>PRD: Funciones de innovación de IA/ML — BitCorp ERP</h1>
+<p><strong>Producto</strong>: BitCorp ERP (Gestión de alquiler de equipos de construcción)
+<strong>Cliente</strong>: Grupo Aramsa, Perú
+<strong>Versión del documento</strong>: 1.0
+<strong>Fecha</strong>: 2026-03-05
+<strong>Estado</strong>: BORRADOR: Aprobación pendiente del propietario del producto
+<strong>Autor</strong>: Equipo de ingeniería</p>
+<hr />
+<h2>Tabla de contenido</h2>
+<ol>
+<li><a href="#1-resumen-ejecutivo">Resumen ejecutivo</a></li>
+<li><a href="#2-contexto-empresarial">Contexto empresarial</a></li>
+<li><a href="#3-metas--métricas-de-éxito">Metas y métricas de éxito</a></li>
+<li><a href="#4-línea-base-del-sistema-actual">Línea base del sistema actual</a></li>
+<li><a href="#5-catalogo-de-funciones">Catálogo de funciones</a></li>
+<li><a href="#categoría-1-análisis-predictivo">Categoría 1: Análisis predictivo</a></li>
+<li><a href="#categoría-2-detección-de-anomalías">Categoría 2: Detección de anomalías</a></li>
+<li><a href="#categoría-3-optimización--investigación-de-operaciones">Categoría 3: Optimización e investigación de operaciones</a></li>
+<li><a href="#categoría-4-lenguaje-natural--llm">Categoría 4: Lenguaje natural y LLM</a></li>
+<li><a href="#categoría-5-visión por computadora">Categoría 5: Visión por computadora</a></li>
+<li><a href="#categoría-6-automatización-inteligente">Categoría 6: Automatización inteligente</a></li>
+<li><a href="#categoría-7-inteligencia-estratégica">Categoría 7: Inteligencia Estratégica</a></li>
+<li><a href="#6-características-del escaparate-factor-wow">Características del escaparate ("Factor sorpresa")</a></li>
+<li><a href="#7-fases-de-implementación">Fases de implementación</a></li>
+<li><a href="#8-arquitectura-técnica">Arquitectura técnica</a></li>
+<li><a href="#9-dependencias--riesgos">Dependencias y riesgos</a></li>
+<li><a href="#10-aprobación--aprobación">Aprobación y aprobación</a></li>
+</ol>
+<hr />
+<h2>1. Resumen ejecutivo</h2>
+<p>BitCorp ERP gestiona el ciclo de vida completo del alquiler de equipos de construcción, desde solicitudes y contratos, pasando por operaciones diarias y valoraciones mensuales hasta pagos. Actualmente, el sistema maneja <strong>56 modelos de datos</strong>, <strong>más de 50 servicios backend</strong>, <strong>48 rutas API</strong> y <strong>25 módulos de funciones frontend</strong> con <strong>cero capacidades de IA/ML</strong>.</p>
+<p>Este PRD propone <strong>47 funciones de IA/ML en 7 categorías</strong> que aprovechan los ricos datos operativos ya recopilados (horas, combustible, tiempo de inactividad, mantenimiento, costos, asignaciones de operadores) para ofrecer:</p>
+<ul>
+<li><strong>Mantenimiento predictivo</strong> para evitar costosas averías</li>
+<li><strong>Detección de anomalías</strong> para detectar fraudes, robos y problemas de calidad de los datos</li>
+<li><strong>Solucionadores de optimización</strong> para asignación de equipos/operadores</li>
+<li><strong>Interfaces de lenguaje natural</strong> (Claude API) para acceso conversacional al ERP</li>
+<li><strong>Visión por computadora</strong> para OCR y análisis de fotografías</li>
+<li><strong>Automatización inteligente</strong> para reducir la entrada manual de datos</li>
+<li><strong>Paneles de control estratégico</strong> para la toma de decisiones ejecutivas</li>
+</ul>
+<p><strong>Justificación de la inversión</strong>: Estas características transforman a BitCorp de un sistema de mantenimiento de registros a una plataforma de decisiones inteligente, creando una diferenciación competitiva al tiempo que reducen los costos operativos a través de análisis predictivos y optimización.</p>
+<hr />
+<h2>2. Contexto empresarial</h2>
+<h3>2.1 Puntos débiles actuales</h3>
+<table>
+<thead>
+<tr>
+<th>Punto de dolor</th>
+<th>Impacto</th>
+<th>Características que lo abordan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Las averías de los equipos son reactivas, no previstas</td>
+<td>Costos de inactividad, reparaciones de emergencia, retrasos en proyectos</td>
+<td>1.1, 6.4, 3.3</td>
+</tr>
+<tr>
+<td>El robo/desperdicio de combustible pasa desapercibido</td>
+<td>Pérdidas financieras del 5 al 15% del presupuesto de combustible</td>
+<td>2.1, 2.2</td>
+</tr>
+<tr>
+<td>La entrada manual de informes diarios es lenta y propensa a errores</td>
+<td>Frustración del operador, problemas de calidad de los datos</td>
+<td>6.1, 2.3</td>
+</tr>
+<tr>
+<td>La asignación de equipos es manual y subóptima</td>
+<td>Equipo inactivo en un proyecto mientras otro lo necesita</td>
+<td>3.1, 7.6</td>
+</tr>
+<tr>
+<td>El análisis de contratos requiere leer decenas de páginas</td>
+<td>Penalizaciones incumplidas, condiciones desfavorables</td>
+<td>4.2</td>
+</tr>
+<tr>
+<td>No hay visibilidad entre sistemas para los ejecutivos</td>
+<td>Decisiones tomadas sobre información incompleta</td>
+<td>7.1, 7.2, 7.4, 4.1</td>
+</tr>
+<tr>
+<td>Anomalías de valoración detectadas tarde</td>
+<td>Disputas de pago, fuga de ingresos</td>
+<td>2.4, 6.6</td>
+</tr>
+<tr>
+<td>Vencimientos de documentos/certificados rastreados manualmente</td>
+<td>Riesgo de cumplimiento, paros operativos</td>
+<td>6.7</td>
+</tr>
+</tbody>
+</table>
+<h3>2.2 Usuarios y partes interesadas</h3>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th style="text-align: center;">Conteo (est.)</th>
+<th>Interés primario</th>
+<th>Características clave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Director/CEO</strong></td>
+<td style="text-align: center;">2-3</td>
+<td>Supervisión estratégica, optimización de flotas</td>
+<td>4.1, 7.1, 7.2, 7.4, ¡GUAU 1-3</td>
+</tr>
+<tr>
+<td><strong>Gerente de Proyecto (PM)</strong></td>
+<td style="text-align: center;">5-10</td>
+<td>Operaciones diarias, rendimiento de los equipos</td>
+<td>1.1, 2.1, 2.2, 6.1, 3.1</td>
+</tr>
+<tr>
+<td><strong>Gerente de Finanzas</strong></td>
+<td style="text-align: center;">2-3</td>
+<td>Control de costes, exactitud de pagos</td>
+<td>2,4, 1,3, 3,4, 7,5</td>
+</tr>
+<tr>
+<td><strong>Operador / Supervisor</strong></td>
+<td style="text-align: center;">20-50</td>
+<td>Entrada de datos rápida, menos errores</td>
+<td>6.1, 4.3, 6.5</td>
+</tr>
+<tr>
+<td><strong>Gerente de Adquisiciones</strong></td>
+<td style="text-align: center;">2-3</td>
+<td>Gestión de proveedores, negociación de contratos</td>
+<td>4.2, 3.5, 7.3</td>
+</tr>
+<tr>
+<td><strong>Gerente de mantenimiento</strong></td>
+<td style="text-align: center;">2-3</td>
+<td>Mantenimiento preventivo, programación</td>
+<td>1.1, 6.4, 3.3</td>
+</tr>
+<tr>
+<td><strong>Gerente de Seguridad (SST)</strong></td>
+<td style="text-align: center;">1-2</td>
+<td>Prevención de incidentes, cumplimiento</td>
+<td>2,5, 4,5, 5,3</td>
+</tr>
+<tr>
+<td><strong>Gerente de Logística</strong></td>
+<td style="text-align: center;">1-2</td>
+<td>Optimización de inventario</td>
+<td>2.7</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. Metas y métricas de éxito</h2>
+<h3>3.1 Objetivos comerciales</h3>
+<table>
+<thead>
+<tr>
+<th>Gol</th>
+<th>Objetivo</th>
+<th>Medición</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reducir el tiempo de inactividad no planificado de los equipos</td>
+<td>-30% dentro de los 6 meses posteriores al despliegue</td>
+<td>Comparando registros <code>periodo_inoperatividad</code> antes/después</td>
+</tr>
+<tr>
+<td>Detectar anomalías de combustible de forma proactiva</td>
+<td>Detecte más del 80 % de las anomalías en 24 horas</td>
+<td>Recuperación de detección de anomalías versus resultados de auditoría manual</td>
+</tr>
+<tr>
+<td>Reducir el tiempo de entrada de informes diarios</td>
+<td>-50% de tiempo por informe</td>
+<td>Encuesta de usuarios + análisis de sesión</td>
+</tr>
+<tr>
+<td>Mejorar la tasa de utilización de equipos</td>
+<td>+10 % de utilización de toda la flota</td>
+<td>cálculos de utilización <code>parte_diario</code></td>
+</tr>
+<tr>
+<td>Acelerar la toma de decisiones ejecutivas</td>
+<td>Visibilidad entre sistemas en tiempo real</td>
+<td>Comentarios cualitativos del CEO</td>
+</tr>
+</tbody>
+</table>
+<h3>3.2 Objetivos técnicos</h3>
+<table>
+<thead>
+<tr>
+<th>Gol</th>
+<th>Objetivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tiempo de respuesta de la función AI</td>
+<td>&lt; 2 segundos para funciones basadas en reglas, &lt; 10 segundos para funciones LLM</td>
+</tr>
+<tr>
+<td>Precisión del modelo (cuando corresponda)</td>
+<td>&gt; 80 % de precisión en la detección de anomalías, &gt; 70 % en las predicciones</td>
+</tr>
+<tr>
+<td>Aislamiento multiinquilino</td>
+<td>Todos los modelos y datos de IA estrictamente limitados al inquilino</td>
+</tr>
+<tr>
+<td>Estabilidad del sistema</td>
+<td>Degradación cero del rendimiento del ERP existente</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>4. Línea base del sistema actual</h2>
+<h3>4.1 Activos de datos existentes</h3>
+<table>
+<thead>
+<tr>
+<th>Fuente de datos</th>
+<th>Modelo(s)</th>
+<th style="text-align: center;">Registros (est.)</th>
+<th>Relevancia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Informes diarios</td>
+<td><code>parte_diario</code>, <code>parte_diario_detalle</code></td>
+<td style="text-align: center;">10K+</td>
+<td>Horas, horómetro, producción, retrasos, combustible</td>
+</tr>
+<tr>
+<td>Vales de combustible</td>
+<td><code>vale_combustible</code>, <code>análisis_combustible</code></td>
+<td style="text-align: center;">5K+</td>
+<td>Seguimiento del consumo, ratios gal/hr</td>
+</tr>
+<tr>
+<td>Mantenimiento</td>
+<td><code>programa_mantenimiento</code>, <code>mantenimiento_equipo</code></td>
+<td style="text-align: center;">2K+</td>
+<td>Historial de mantenimiento programado/no programado</td>
+</tr>
+<tr>
+<td>Registro de Equipos</td>
+<td><code>equipo</code>, <code>tipo_equipo</code></td>
+<td style="text-align: center;">100+</td>
+<td>Inventario de flota, estado, especificaciones</td>
+</tr>
+<tr>
+<td>Contratos</td>
+<td><code>contrato_adenda</code>, <code>contrato_obligacion</code></td>
+<td style="text-align: center;">200+</td>
+<td>Términos, tarifas, obligaciones</td>
+</tr>
+<tr>
+<td>Valoraciones</td>
+<td><code>valorizacion_equipo</code>, <code>valorizacion_detalle</code></td>
+<td style="text-align: center;">1K+</td>
+<td>Cálculos de facturación mensual</td>
+</tr>
+<tr>
+<td>Inoperabilidad</td>
+<td><code>periodo_inoperatividad</code></td>
+<td style="text-align: center;">500+</td>
+<td>Registros de tiempo de inactividad con causas</td>
+</tr>
+<tr>
+<td>Operadores</td>
+<td><code>operador</code>, <code>operador_habilidad</code>, <code>certificacion_operador</code></td>
+<td style="text-align: center;">50+</td>
+<td>Habilidades, certificaciones, disponibilidad</td>
+</tr>
+<tr>
+<td>Incidentes de seguridad</td>
+<td><code>incidente_sst</code>, <code>reporte_acto_condicion</code></td>
+<td style="text-align: center;">200+</td>
+<td>Registros de incidentes, causas fundamentales</td>
+</tr>
+<tr>
+<td>Pagos</td>
+<td><code>registro_pago</code>, <code>cuenta_por_pagar</code></td>
+<td style="text-align: center;">1K+</td>
+<td>Historial de pagos, retrasos</td>
+</tr>
+<tr>
+<td>Proyectos</td>
+<td><code>proyecto</code>, <code>equipo_edt</code></td>
+<td style="text-align: center;">20+</td>
+<td>Desglose del trabajo, presupuestos</td>
+</tr>
+<tr>
+<td>Proveedores</td>
+<td><code>proveedor</code>, <code>evaluacion_proveedor</code></td>
+<td style="text-align: center;">50+</td>
+<td>Evaluaciones de desempeño</td>
+</tr>
+</tbody>
+</table>
+<h3>4.2 Capacidades de análisis existentes</h3>
+<p>El sistema ya cuenta con un servicio de analítica (<code>app/servicios/analitica.py</code>) que proporciona:
+- Métricas de utilización de la flota (total, activa, % promedio, 5 principales, subutilizadas)
+- Utilización por equipo (horas trabajadas, inactivo, costo de combustible/hora)
+- Tendencias de utilización diaria.
+- Métricas de combustible (consumo, ratio por hora, coste, índice de eficiencia)
+- Métricas de mantenimiento (total, costo, pendiente)</p>
+<p><strong>Brecha</strong>: Estos son <strong>descriptivos</strong> (lo que pasó). Las funciones de IA agregan capacidades <strong>predictivas</strong> (qué sucederá), <strong>prescriptivas</strong> (qué hacer) y <strong>cognitivas</strong> (comprender el lenguaje natural).</p>
+<h3>4.3 Tareas programadas existentes</h3>
+<p>El servicio cron (<code>app/servicios/cron.py</code>) ya maneja:
+- Alertas de vencimiento de mantenimiento (anticipación de 7 días)
+- Alertas de vencimiento de contrato (anticipación de 30 días)
+- Alertas de vencimiento de certificación de operador (30 días de anticipación)</p>
+<p><strong>Oportunidad</strong>: Amplíe esta infraestructura para el reentrenamiento de modelos de IA, escaneos de detección de anomalías y generación de alertas predictivas.</p>
+<hr />
+<h2>5. Catálogo de funciones</h2>
+<h3>Categoría 1: Análisis predictivo</h3>
+<blockquote>
+<p><strong>Tema</strong>: Pasar de operaciones reactivas a proactivas pronosticando el rendimiento, los costos y la demanda de los equipos.</p>
+</blockquote>
+<hr />
+<h4>Característica 1.1: Predicción de fallas del equipo</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Árboles mejorados con gradiente (scikit-learn)</p>
+<p><strong>Descripción</strong>
+Prediga la probabilidad de avería del equipo en los próximos 7, 14 y 30 días utilizando patrones históricos de retraso mecánico, registros de mantenimiento y tendencias horométricas. Muestre puntuaciones de riesgo en la página de detalles del equipo y en el panel de mantenimiento.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de mantenimiento</strong>, quiero ver qué equipo tiene más probabilidades de fallar en los próximos 7 a 30 días para poder programar el mantenimiento preventivo antes de que ocurran averías.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] El sistema calcula una puntuación de riesgo de falla (0-100%) por unidad de equipo
+- [] Las puntuaciones de riesgo se actualizan diariamente mediante un trabajo programado
+- [] El panel muestra los equipos clasificados por riesgo de falla con gravedad codificada por colores (verde/amarillo/naranja/rojo)
+- [ ] Al hacer clic en una fila de equipo se muestran los factores que contribuyen (por ejemplo, "Delta horométrica alta", "Mantenimiento atrasado", "Patrón de retraso reciente")
+- [ ] Las alertas de umbral de riesgo (&gt;70%) generan notificaciones para el Gerente de Mantenimiento
+- [] El modelo se vuelve a entrenar semanalmente con nuevos datos.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>parte_diario</code> — horas_trabajadas, horometro_inicial/final, códigos de retraso
+- <code>programa_mantenimiento</code> — fechas de finalización programadas vs. reales
+- <code>periodo_inoperatividad</code> — eventos y causas históricos de tiempo de inactividad
+- <code>equipo</code> — tipo_equipo, estado, fecha_ingreso (edad)</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo de inactividad no planificado al permitir el mantenimiento proactivo
+- Reducción estimada del 20 al 30 % en los costos de reparación de emergencia</p>
+<hr />
+<h4>Característica 1.2: Previsión de utilización</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Profeta / SARIMAX</p>
+<p><strong>Descripción</strong>
+Pronostique las tasas de utilización de la flota y por equipo para los próximos 30, 60 y 90 días en función de los patrones de uso históricos, las tendencias estacionales y los cronogramas de los proyectos.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero ver la utilización proyectada de la flota para el próximo trimestre para poder tomar decisiones informadas sobre la compra y el alquiler de equipos y la dotación de personal para el proyecto.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] El sistema genera pronósticos de utilización de 30/60/90 días por equipo y para toda la flota
+- [] El gráfico de pronóstico superpone la tendencia histórica con intervalos de confianza
+- [] Se puede acceder a los pronósticos desde el panel de análisis
+- [ ] Modelo de cuentas para estacionalidad (temporadas de construcción) y cronogramas de proyectos.
+- [] Seguimiento de la precisión del pronóstico: registros del sistema previstos versus reales para una mejora continua
+- [] Alerta cuando la utilización prevista cae por debajo del umbral configurable (p. ej., &lt;50 %)</p>
+<p><strong>Fuentes de datos</strong>
+- <code>parte_diario</code> — datos de utilización diaria (horas_trabajadas / horas_disponibles)
+- <code>contrato_adenda</code> — fechas de inicio/finalización del contrato que indican las ventanas de demanda
+- <code>solicitud_equipo</code> — solicitudes de equipos como principales indicadores de demanda</p>
+<p><strong>Impacto empresarial</strong>
+- Permite decisiones proactivas sobre el tamaño de la flota.
+- Previene tanto los costos de equipos inactivos como la escasez de capacidad</p>
+<hr />
+<h4>Característica 1.3: Previsión del consumo de combustible</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: Profeta / Regresión lineal</p>
+<p><strong>Descripción</strong>
+Prediga el consumo de combustible por equipo por semana/mes para respaldar la planificación presupuestaria y las adquisiciones precisas.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Finanzas</strong>, quiero pronósticos precisos del consumo de combustible para poder establecer presupuestos realistas y negociar acuerdos de compra de combustible al por mayor.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Predicciones de consumo de combustible semanales y mensuales por equipo y por proyecto
+- [ ] El pronóstico considera la línea base del tipo de equipo, los patrones de utilización y los factores estacionales.
+- [] Vista comparativa del presupuesto: costo de combustible previsto versus presupuesto asignado
+- [] Alertas cuando el gasto proyectado excede el umbral presupuestario (% configurable)
+- [] Visualización de precisión histórica que muestra la precisión del pronóstico anterior</p>
+<p><strong>Fuentes de datos</strong>
+- <code>vale_combustible</code> — cantidades de combustible, fechas, asignaciones de equipos
+- <code>analisis_combustible</code> — datos de análisis de eficiencia de combustible
+- <code>parte_diario</code> — horas trabajadas (intensidad de uso)
+- <code>tipo_equipo</code> — tasas de consumo esperadas por tipo</p>
+<p><strong>Impacto empresarial</strong>
+- Presupuestos de combustible más precisos (actualmente estimados manualmente)
+- Identifica oportunidades de ahorro de costos a través de la optimización de adquisiciones.</p>
+<hr />
+<h4>Característica 1.4: Puntuación del riesgo de renovación del contrato</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Regresión logística / XGBoost</p>
+<p><strong>Descripción</strong>
+Califique cada contrato activo según la probabilidad de renovación (0-100 %) según la utilización del equipo, el historial de pagos, la frecuencia de inoperabilidad y las puntuaciones de evaluación de proveedores.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero saber qué contratos corren el riesgo de no renovarse para poder abordar los problemas de manera proactiva y planificar los cambios de flota.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Cada contrato activo muestra una puntuación de riesgo de renovación con factores contribuyentes
+- [] Contratos ordenados por riesgo en una vista dedicada
+- [ ] Los factores de riesgo son explicables (p. ej., "Baja utilización: 35%", "2 pagos atrasados", "Evaluación del proveedor: 2,1/5")
+- [ ] Línea de tendencia que muestra cómo ha cambiado el riesgo durante el período del contrato
+- [ ] Alertas para contratos de alto riesgo (&gt;60% de probabilidad de no renovación)</p>
+<p><strong>Fuentes de datos</strong>
+- <code>contrato_adenda</code> — términos del contrato, fechas, tarifas
+- <code>valorizacion_equipo</code> — facturación y utilización mensual
+- <code>registro_pago</code> — puntualidad del pago
+- <code>periodo_inoperatividad</code> — frecuencia del tiempo de inactividad
+- <code>evaluacion_proveedor</code> — puntuaciones de satisfacción de proveedores</p>
+<p><strong>Impacto empresarial</strong>
+- Retención proactiva del contrato
+- Mejor planificación de la flota cuando se prevén no renovaciones</p>
+<hr />
+<h4>Característica 1.5: Previsión de costes de mantenimiento</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Regresor de bosque aleatorio</p>
+<p><strong>Descripción</strong>
+Prediga los costos de mantenimiento del próximo mes por tipo de equipo y por proyecto para respaldar la asignación presupuestaria.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Finanzas</strong>, quiero pronosticar los gastos de mantenimiento para poder asignar presupuestos con precisión y evitar sorpresas.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Predicción de costos de mantenimiento mensual por tipo de equipo y por proyecto
+- [ ] Desglose por tipo de mantenimiento (preventivo, correctivo, emergencia)
+- [ ] Comparación con promedios y tendencias históricas
+- [] Alertas de variación presupuestaria cuando los costos previstos exceden la asignación
+- [ ] El modelo considera la antigüedad del equipo, la intensidad de uso y el historial de mantenimiento.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>programa_mantenimiento</code> — registros de mantenimiento con costos
+- <code>equipo</code> — antigüedad y tipo de equipo
+- <code>parte_diario</code> — intensidad de uso
+- <code>centro_costo</code> — asignaciones presupuestarias</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce la variación presupuestaria en las líneas de mantenimiento.
+- Permite una gestión proactiva de costes.</p>
+<hr />
+<h4>Característica 1.6: Previsión de la demanda de equipos</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Serie temporal + Regresión</p>
+<p><strong>Descripción</strong>
+Prediga la demanda de tipo de equipo por proyecto para el próximo trimestre en función de los patrones históricos de solicitudes y las fases del proyecto.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero anticipar qué tipos de equipos se necesitarán el próximo trimestre para poder negociar previamente los alquileres y evitar retrasos en el proyecto.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Previsión de demanda trimestral por tipo de equipo y proyecto
+- [ ] Mapa de calor de demanda visual (tipo de equipo × mes)
+- [ ] Comparación con la capacidad actual de la flota
+- [ ] Análisis de deficiencias: "Necesitará 3 excavadoras adicionales en el segundo trimestre"
+- [] Seguimiento de precisión histórica</p>
+<p><strong>Fuentes de datos</strong>
+- <code>solicitud_equipo</code> — solicitudes históricas de equipos (tipo, cantidad, fechas)
+- <code>equipo_edt</code> — asignaciones de equipo a proyecto
+- <code>contrato_adenda</code> — períodos de contrato que indican la demanda</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce la adquisición de equipos de emergencia.
+- Optimiza las decisiones de compra/alquiler a largo plazo</p>
+<hr />
+<h4>Característica 1.7: Predicción del valor de reventa de equipos</h4>
+<p><strong>Prioridad</strong>: BAJA-MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Regresor de bosque aleatorio</p>
+<p><strong>Descripción</strong>
+Prediga el momento óptimo para vender maquinaria pesada propia pronosticando su valor de reventa futuro en comparación con los costos de mantenimiento proyectados y la curva de depreciación.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Finanzas</strong>, quiero que el sistema me diga exactamente cuándo una excavadora deja de ser rentable para conservar y mantener suficiente valor residual para vender, de modo que podamos maximizar nuestro retorno sobre los activos.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Curva de depreciación prevista trazada contra los costos de mantenimiento proyectados.
+- [ ] Calcula el "Punto de Reemplazo Óptimo" (punto de inflexión donde mantener la máquina cuesta más que reemplazarla).
+- [ ] Considera las tendencias actuales del mercado para equipos pesados ​​usados ​​(web scraping o entrada de índice manual).
+- [ ] Alerta 6 meses antes de la ventana de reemplazo óptima prevista.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>equipo</code> — precio de compra, antigüedad, modelo.
+- <code>programa_mantenimiento</code> — costos de mantenimiento históricos y proyectados.
+- <code>parte_diario</code> — horómetro acumulativo (desgaste).</p>
+<p><strong>Impacto empresarial</strong>
+- Maximiza la rentabilidad del ciclo de vida de los activos.
+- Transforma la renovación de la flota de una suposición reactiva a una estrategia financiera basada en datos.</p>
+<hr />
+<h4>Característica 1.7: Predicción de retraso en el pago</h4>
+<p><strong>Prioridad</strong>: BAJA-MEDIA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Regresión logística</p>
+<p><strong>Descripción</strong>
+Prediga qué valoraciones probablemente experimentarán retrasos en los pagos, por proveedor, para respaldar la planificación del flujo de caja.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Finanzas</strong>, quiero saber qué pagos es probable que se retrasen para poder administrar el flujo de caja de manera proactiva y escalarlo temprano.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Cada valoración pendiente muestra una probabilidad de retraso (%)
+- [] Lista clasificada de pagos "en riesgo" en el panel de finanzas
+- [ ] Factores contribuyentes visibles (historial de proveedores, monto de valoración, temporada)
+- [] Integración con vistas de programación de pagos existentes</p>
+<p><strong>Fuentes de datos</strong>
+- <code>registro_pago</code> — fechas de pago históricas versus fechas de vencimiento
+- <code>valorizacion_equipo</code> — importes y fechas de valoración
+- <code>proveedor</code>: historial de pagos a proveedores</p>
+<p><strong>Impacto empresarial</strong>
+- Mejora de la gestión del flujo de caja.
+- Escalamiento más temprano para pagos en riesgo</p>
+<hr />
+<h3>Categoría 2: Detección de anomalías</h3>
+<blockquote>
+<p><strong>Tema</strong>: Identifique proactivamente problemas de calidad de datos, posibles fraudes y anomalías operativas antes de que se conviertan en problemas costosos.</p>
+</blockquote>
+<hr />
+<h4>Característica 2.1 — Anomalías en el consumo de combustible</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: Bosque de aislamiento / Puntuación Z</p>
+<p><strong>Descripción</strong>
+Detecte proporciones anormales de galones por hora en comparación con las líneas base del tipo de equipo. Señala posibles robos de combustible, ineficiencias mecánicas o errores de entrada de datos.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero recibir alertas cuando algún equipo muestre un consumo anormal de combustible para poder investigar posibles robos o problemas mecánicos de inmediato.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] El sistema calcula galones/hora de referencia por tipo de equipo a partir de datos históricos
+- [ ] Cada entrada de vale de combustible se compara con la línea de base
+- [ ] Anomalías marcadas con gravedad: ADVERTENCIA (1,5-2 veces el valor inicial), CRÍTICA (&gt;2 veces el valor inicial)
+- [] Alertas de anomalía enviadas a través del sistema de notificación con enlace al bono específico
+- [] Vista del panel que muestra todas las anomalías activas con tendencias
+- [ ] Umbral de sensibilidad configurable por tipo de equipo
+- [ ] Despido por falso positivo con seguimiento de motivos</p>
+<p><strong>Fuentes de datos</strong>
+- <code>vale_combustible</code> — cantidad_galones, id_equipo, fecha
+- <code>parte_diario</code> — horas_trabajadas para el mismo periodo
+- <code>tipo_equipo</code> — valores de referencia esperados en gal/hr</p>
+<p><strong>Impacto empresarial</strong>
+- Los puntos de referencia de la industria sugieren que entre el 5% y el 15% de los costos de combustible se pierden por robo o desperdicio.
+- Incluso una tasa de detección del 50% representa ahorros significativos</p>
+<hr />
+<h4>Característica 2.2: Detección de manipulación del horómetro/odómetro</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: basada en reglas + media móvil</p>
+<p><strong>Descripción</strong>
+Detecte lecturas imposibles del horómetro/odómetro: inversiones (final &lt;inicial), saltos poco realistas (por ejemplo, más de 50 horas en un día), progresión cero durante las horas de trabajo informadas y desviaciones significativas del promedio móvil.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero que el sistema detecte automáticamente lecturas horométricas sospechosas para que la precisión de la facturación y el seguimiento del equipo no se vean comprometidos.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Validación en tiempo real en la entrada del informe diario: advierte al operador antes del envío
+- [] El escaneo por lotes posterior al envío detecta lecturas que se escapan
+- [ ] Reglas de detección:
+  - Inversión: <code>horometro_final &lt; horometro_inicial</code>
+  - Brecha: <code>horometro_inicial de hoy != horometro_final de ayer</code>
+  - Excesivo: <code>horometro_final - horometro_inicial &gt; 24</code> (imposibilidad física)
+  - Trabajo cero: <code>horas_trabajadas &gt; 0</code> pero <code>horometro_delta = 0</code>
+- [] Los registros marcados aparecen en una cola de revisión de "Calidad de los datos"
+- [ ] Clasificación de gravedad: ERROR (imposible), ADVERTENCIA (sospechoso)
+- [ ] Impacto en los cálculos de valoración resaltados</p>
+<p><strong>Fuentes de datos</strong>
+- <code>parte_diario</code> — horometro_inicial, horometro_final, horas_trabajadas
+- Reportes diarios secuenciales por equipo (series de tiempo)</p>
+<p><strong>Impacto empresarial</strong>
+- Previene errores de facturación causados por datos incorrectos del horómetro
+- Disuade la manipulación de datos
+- Mejora la precisión de la programación de mantenimiento (basada en horómetro)</p>
+<hr />
+<h4>Característica 2.3: Indicadores de calidad del informe diario</h4>
+<p><strong>Prioridad</strong>: MEDIA-ALTA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: basada en reglas + detección de valores atípicos</p>
+<p><strong>Descripción</strong>
+Marque informes diarios con patrones sospechosos que indiquen problemas de calidad de los datos: cero horas con producción reportada, campos obligatorios faltantes, horas que exceden la duración del turno o valores atípicos estadísticos en las métricas de producción.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero que los informes diarios con problemas de calidad se marquen automáticamente para poder centrar mi tiempo de revisión en los informes que necesitan atención.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Puntuación de calidad (A/B/C/D) asignada a cada informe diario
+- [] Categorías de banderas: INCONSISTENCIA, MISSING_DATA, OUTLIER, IMPOSSIBLE_VALUE
+- [ ] Banderas específicas:
+  - Cero horas pero producción distinta de cero.
+  - Horas &gt; turno máximo (por ejemplo, &gt;14 horas)
+  - Falta operador o asignación de proyecto
+  - Valores de producción &gt;2σ de la media por tipo de equipo
+- [] El panel de PM muestra un resumen de calidad del informe diario con desglose
+- [ ] Seguimiento de tendencias de calidad por operador y proyecto</p>
+<p><strong>Fuentes de datos</strong>
+- <code>parte_diario</code> — todos los campos (horas, producción, retrasos, operador)
+- <code>parte_diario_detalle</code> — desglose detallado
+- Distribuciones históricas por tipo de equipo y proyecto.</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo de PM dedicado a revisar los informes diarios en ~40%
+- Mejora la calidad general de los datos para análisis posteriores.</p>
+<hr />
+<h4>Característica 2.4 — Anomalías en el cálculo de valoración</h4>
+<p><strong>Prioridad</strong>: MEDIA-ALTA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: puntuación Z frente a media histórica</p>
+<p><strong>Descripción</strong>
+Señale las valoraciones que se desvíen significativamente de los rangos esperados por tipo de contrato, tipo de equipo y patrones históricos.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Finanzas</strong>, quiero recibir alertas cuando una valoración parezca anormalmente alta o baja en comparación con las expectativas para poder verificar los cálculos antes de la aprobación.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Cada valoración comparada con la media histórica ± 2σ para el mismo equipo/tipo de contrato
+- [] Indicadores de anomalía: DEMASIADO ALTO, DEMASIADO BAJO, PRIMERA_OCCURRENCIA (sin línea de base)
+- [ ] Factores contribuyentes mostrados (por ejemplo, "25% por encima del promedio de 6 meses para este contrato")
+- [] La bandera aparece en el flujo de trabajo de aprobación de valoración.
+- [ ] Informe resumido de anomalías mensual para Finanzas</p>
+<p><strong>Fuentes de datos</strong>
+- <code>valorizacion_equipo</code> — montos calculados, equipo, contrato
+- <code>contrato_adenda</code> — tipo de tarifa y tarifas
+- Distribuciones de valoración histórica.</p>
+<p><strong>Impacto empresarial</strong>
+- Previene errores de facturación y disputas de pago
+- Aumenta la confianza en el proceso de valoración mensual.</p>
+<hr />
+<h4>Característica 2.5: Agrupación de incidentes de seguridad</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Agrupación DBSCAN</p>
+<p><strong>Descripción</strong>
+Detecte grupos de incidentes de seguridad por ubicación, período de tiempo y tipo que puedan indicar problemas de seguridad sistémicos que requieran intervención.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de seguridad</strong>, quiero identificar patrones en incidentes de seguridad (grupos por proyecto, tiempo o tipo) para poder implementar medidas preventivas específicas.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] La detección de clústeres se ejecuta semanalmente en datos de incidentes
+- [ ] Clústeres identificados por: proyecto, tipo de incidente, ventana de tiempo, gravedad
+- [] Mapa visual de conglomerados que muestra las concentraciones de incidentes
+- [] Alerta cuando se detecta un nuevo clúster (3+ incidentes de tipo similar en 30 días en el mismo proyecto)
+- [] El informe del grupo incluye acciones recomendadas según los tipos de incidentes.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>incidente_sst</code> — registros de incidentes (tipo, ubicación, fecha, gravedad)
+- <code>reporte_acto_condicion</code> — informes de cuasi accidentes
+- <code>proyecto</code> — ubicaciones del proyecto</p>
+<p><strong>Impacto empresarial</strong>
+- Identifica problemas de seguridad sistémicos antes de que causen incidentes graves.
+- Admite documentación de cumplimiento normativo</p>
+<hr />
+<h4>Característica 2.6: Degradación del desempeño del proveedor</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Media móvil + Umbral</p>
+<p><strong>Descripción</strong>
+Alerta cuando la confiabilidad, el tiempo de actividad del equipo o los tiempos de respuesta de un proveedor caen significativamente con respecto a su base histórica.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Adquisiciones</strong>, quiero una alerta temprana cuando el desempeño de un proveedor esté disminuyendo para poder intervenir antes de que afecte las operaciones.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Puntuación de rendimiento móvil de 90 días por proveedor (compuesto de tiempo de actividad, respuesta y calidad)
+- [] Alerta cuando la puntuación cae &gt;15% desde el inicio de 6 meses
+- [ ] Visualización de tendencias por proveedor
+- [] Integración con vistas de evaluación de proveedores existentes
+- [ ] Factores de degradación detallados (por ejemplo, "El tiempo de actividad disminuyó del 95 % al 82 %")</p>
+<p><strong>Fuentes de datos</strong>
+- <code>evaluacion_proveedor</code> — puntuaciones de evaluación manual
+- <code>periodo_inoperatividad</code> — tiempo de inactividad del equipo por equipo del proveedor
+- <code>programa_mantenimiento</code> — tiempos de respuesta de mantenimiento</p>
+<p><strong>Impacto empresarial</strong>
+- Gestión proactiva de proveedores.
+- Base basada en datos para la renegociación de contratos o cambio de proveedor.</p>
+<hr />
+<h4>Característica 2.7: Predicción de desabastecimiento de inventario</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: Suavizado exponencial</p>
+<p><strong>Descripción</strong>
+Prediga cuándo se agotarán los artículos logísticos (piezas, consumibles) en función de las tendencias de consumo, los tiempos de reordenamiento y los patrones estacionales.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Logística</strong>, quiero saber qué artículos tienen tendencia a agotarse para poder reordenarlos antes de que se agoten y detengamos las operaciones.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Fecha de agotamiento prevista por artículo según la tasa de consumo
+- [ ] Artículos ordenados por urgencia (días hasta agotar existencias)
+- [ ] Considera el tiempo de entrega para reordenar
+- [] Alerta en umbrales configurables (por ejemplo, "10 días para agotarse")
+- [ ] Ajuste de consumo estacional</p>
+<p><strong>Fuentes de datos</strong>
+- <code>producto</code> — niveles actuales de existencias
+- <code>movimiento_inventario</code> — historial de consumo
+- <code>solicitud_material</code> — señales de demanda</p>
+<p><strong>Impacto empresarial</strong>
+- Evita paradas operativas por falta de piezas.
+- Optimiza los costos de mantenimiento de inventario.</p>
+<hr />
+<h3>Categoría 3: Investigación de operaciones y optimización</h3>
+<blockquote>
+<p><strong>Tema</strong>: Aplicar la optimización matemática a problemas de asignación, programación y gestión de recursos que actualmente se resuelven mediante juicio manual.</p>
+</blockquote>
+<hr />
+<h4>Característica 3.1: Optimizador de asignación de equipo a proyecto</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: Programación lineal (PuLP / scipy)</p>
+<p><strong>Descripción</strong>
+Resuelva el problema de asignación: asigne N unidades de equipo disponibles a M demandas del proyecto, minimizando el costo total (transporte + tiempo de inactividad + penalizaciones por desajuste) y al mismo tiempo satisfaciendo todas las restricciones.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero que el sistema recomiende la asignación óptima de equipos entre proyectos, minimizando los costos y garantizando que se satisfagan todas las necesidades del proyecto.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Entrada: equipos disponibles (con ubicación actual), demandas del proyecto (tipo, cantidad, fechas)
+- [ ] Salida: matriz de asignación recomendada con costo total
+- [ ] Restricciones: compatibilidad del tipo de equipo, ventanas de disponibilidad, costos de transporte
+- [ ] Comparación con asignación actual: “Ahorro potencial: S/. X,XXX/mes”
+- [] Modo What-if: ajustar las entradas y resolver
+- [ ] El usuario puede aceptar/rechazar/modificar recomendaciones</p>
+<p><strong>Fuentes de datos</strong>
+- <code>equipo</code> — inventario de flota, asignaciones actuales, estado
+- <code>solicitud_equipo</code> — demandas del proyecto
+- <code>proyecto</code> — ubicaciones del proyecto
+- <code>contrato_adenda</code> — tarifas de alquiler</p>
+<p><strong>Impacto empresarial</strong>
+- Una asignación óptima puede reducir los costes de la flota entre un 10% y un 20%
+- Elimina los equipos inactivos y satisface todas las demandas.</p>
+<hr />
+<h4>Característica 3.1b: Optimización dinámica de precios para alquileres salientes</h4>
+<p><strong>Prioridad</strong>: BAJA-MEDIA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: Aprendizaje por refuerzo/Modelos de elasticidad</p>
+<p><strong>Descripción</strong>
+Si ARAMSA alquila sus propios equipos inactivos a terceros (subarrendamiento), este algoritmo sugiere el precio de alquiler óptimo en función de la demanda actual del mercado, la disponibilidad de la competencia y la depreciación de la máquina específica.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente Comercial</strong>, quiero que el sistema sugiera la tarifa de alquiler más rentable para nuestra maquinaria inactiva para no dejar dinero sobre la mesa cuando la demanda es alta y no perder acuerdos cuando la demanda es baja.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Analiza las tasas históricas de ganancias/pérdidas de alquiler frente a los precios cotizados.
+- [] Sugiere tarifas diarias/por hora para alquileres salientes según la estacionalidad y la utilización actual de la flota (inventarios).
+- [ ] Cálculo del "precio mínimo" que garantiza que el alquiler cubra los costos mínimos de depreciación y mantenimiento.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>cotizacion_proveedor</code> (Histórico de cotizaciones de salida si está disponible).
+- <code>equipo</code>: disponibilidad actual y costos de mantenimiento.</p>
+<p><strong>Impacto empresarial</strong>
+- Maximiza los ingresos de la flota propia durante los períodos de menor actividad del proyecto.
+- Reemplaza las hojas de tarifas estáticas con tarifas dinámicas que maximizan las ganancias.</p>
+<hr />
+<h4>Característica 3.2: Optimizador de asignación de equipos de operador</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: Algoritmo húngaro / CSP</p>
+<p><strong>Descripción</strong>
+Asigne de manera óptima operadores a los equipos según sus habilidades, certificaciones, disponibilidad, historial de desempeño y ubicación, maximizando la eficiencia operativa general.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero que el sistema recomiende el mejor operador para cada equipo según sus calificaciones y su historial de desempeño.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Puntuación coincidente por par operador-equipo basada en:
+  - Certificaciones requeridas versus certificaciones de operador
+  - Competencia con el tipo de equipo
+  - Rendimiento histórico en equipos similares.
+  - Disponibilidad y preferencias de turno.
+- [] Recomendaciones clasificadas para cada asignación de equipo
+- [ ] Cumplimiento de restricciones: sin doble reserva, cumplimiento de la certificación
+- [ ] Matriz de asignación visual
+- [] Capacidad de anulación con seguimiento de motivos</p>
+<p><strong>Fuentes de datos</strong>
+- <code>operador</code> — perfiles de operador
+- <code>operador_habilidad</code> — habilidades y niveles de competencia
+- <code>certificacion_operador</code> — certificaciones con fechas de vencimiento
+- <code>disponibilidad_operador</code> — horarios de disponibilidad
+- <code>parte_diario</code> — rendimiento histórico por tipo de equipo</p>
+<p><strong>Impacto empresarial</strong>
+- Un mejor ajuste entre el operador y el equipo mejora la productividad
+- Garantiza el cumplimiento de la certificación automáticamente.</p>
+<hr />
+<h4>Característica 3.3: Optimización del programa de mantenimiento</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: Programación de restricciones (OR-Tools)</p>
+<p><strong>Descripción</strong>
+Minimice el tiempo de inactividad de toda la flota programando el mantenimiento durante períodos de baja utilización, equilibrando la urgencia del mantenimiento con las necesidades operativas.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de mantenimiento</strong>, quiero un programa de mantenimiento optimizado que minimice el tiempo de inactividad de la flota programando el trabajo durante los períodos de baja utilización.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Entrada: fechas de vencimiento de mantenimiento (a partir de umbrales horométricos), pronósticos de utilización, disponibilidad de la tripulación
+- [ ] Resultado: calendario de mantenimiento optimizado que minimiza el tiempo de inactividad total de la flota
+- [ ] Restricciones: máximos mantenimientos simultáneos, capacidad de la tripulación, prioridad de los equipos críticos
+- [ ] Comparación: "La programación optimizada ahorra X horas de tiempo productivo en comparación con la programación por orden de llegada"
+- [] Calendario de arrastrar y soltar para ajustes manuales
+- [] Reoptimización cuando cambian las entradas</p>
+<p><strong>Fuentes de datos</strong>
+- <code>programa_mantenimiento</code> — programas y tipos de mantenimiento
+- <code>parte_diario</code> — patrones de utilización (identifica ventanas de bajo uso)
+- <code>equipo</code> — criticidad del equipo y asignaciones de proyectos</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo productivo perdido por mantenimiento entre un 15 y un 25 %.
+- Equilibra la carga de trabajo de mantenimiento entre la tripulación</p>
+<hr />
+<h4>Característica 3.4: Optimización del calendario de pagos</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Programación de LP</p>
+<p><strong>Descripción</strong>
+Optimice el calendario de pagos para maximizar el flujo de caja respetando los plazos contractuales y aprovechando los descuentos por pago anticipado cuando estén disponibles.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Finanzas</strong>, quiero un cronograma de pagos optimizado que maximice nuestra posición de efectivo y al mismo tiempo cumpla con todas las obligaciones a tiempo.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Entrada: pagos pendientes con fechas de vencimiento, montos y condiciones de descuento
+- [ ] Salida: calendario de pagos optimizado con posición de caja diaria proyectada
+- [ ] Restricciones: fechas de vencimiento, saldo mínimo de caja, umbrales de descuento por pago anticipado
+- [ ] Comparación de escenarios: “Calendario optimizado ahorra S/. X,XXX en descuentos/intereses”
+- [] Anulación manual con advertencias de violación de restricciones</p>
+<p><strong>Fuentes de datos</strong>
+- <code>cuenta_por_pagar</code> — cuentas por pagar con fechas de vencimiento
+- <code>registro_pago</code> — historial de pagos
+- <code>caja_banco</code> — posición de caja actual</p>
+<p><strong>Impacto empresarial</strong>
+- Mejora de la gestión del flujo de caja.
+- Captar descuentos por pago anticipado cuando sea beneficioso</p>
+<hr />
+<h4>Característica 3.5: Comparación de tasas de contrato</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: Clasificación estadística + percentil</p>
+<p><strong>Descripción</strong>
+Analice las tarifas de contratos históricas por tipo de equipo, modalidad y proveedor para proporcionar puntos de referencia de negociación e identificar tarifas por encima o por debajo del mercado.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Adquisiciones</strong>, quiero saber cómo se compara la tarifa de un contrato propuesto con nuestras tarifas históricas y puntos de referencia del mercado para poder negociar mejores condiciones.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Tarifas de referencia por tipo de equipo + modalidad (horario, diario, mensual)
+- [ ] Clasificación percentil: "Esta tasa está en el percentil 75 de sus contratos"
+- [ ] Análisis de tendencias: tasas en el tiempo
+- [ ] Comparación de proveedores: mismo tipo de equipo entre proveedores
+- [] Comparación de autocompletar en la creación de nuevos contratos
+- [] Alerta cuando la tasa propuesta está por encima del percentil 80</p>
+<p><strong>Fuentes de datos</strong>
+- <code>contrato_adenda</code> — tarifas históricas por tipo y modalidad
+- <code>tipo_equipo</code> — clasificaciones de equipos
+- <code>proveedor</code> — información del proveedor
+- <code>cotizacion_proveedor</code> — datos de cotización</p>
+<p><strong>Impacto empresarial</strong>
+- Soporte de negociación basado en datos.
+- Identifica contratos sobrevalorados para renegociación.</p>
+<hr />
+<h4>Característica 3.6: Ajuste del tamaño de la flota</h4>
+<p><strong>Prioridad</strong>: MEDIA-ALTA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: Análisis de decisiones multicriterio</p>
+<p><strong>Descripción</strong>
+Recomiende qué equipo agregar, quitar o reemplazar según los datos de utilización, los costos de mantenimiento, los pronósticos de demanda y el análisis de antigüedad.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero recomendaciones basadas en datos sobre la composición de la flota (qué equipos conservar, agregar o eliminar gradualmente) para optimizar los costos totales de la flota.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Puntuación por equipo: valor (utilización × ingresos) frente a coste (mantenimiento + tiempo de inactividad + depreciación)
+- [ ] Recomendaciones a nivel de flota: "Eliminar 2 camiones volquete infrautilizados y agregar 1 excavadora"
+- [ ] Datos de respaldo para cada recomendación
+- [] Simulador What-if: cambiar la composición de la flota y ver el impacto proyectado
+- [ ] Generación de informe de revisión anual</p>
+<p><strong>Fuentes de datos</strong>
+- <code>equipo</code> — inventario de flota, antigüedad, tipo
+- <code>parte_diario</code> — datos de utilización
+- <code>programa_mantenimiento</code> — costos de mantenimiento
+- <code>periodo_inoperatividad</code> — historial de tiempo de inactividad
+- <code>valorizacion_equipo</code> — contribución a los ingresos
+- <code>solicitud_equipo</code> — patrones de demanda</p>
+<p><strong>Impacto empresarial</strong>
+- Previene el desperdicio de capital en equipos infrautilizados
+- Garantiza que la flota coincida con los patrones de demanda reales.</p>
+<hr />
+<h4>Característica 3.7 — Programador de minimización de "alquiler muerto" (despacho diario)</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: programación heurística/laboral</p>
+<p><strong>Descripción</strong>
+Optimizar el despacho diario de equipos a los frentes de trabajo en base a mínimos contractuales. Garantiza que los equipos alquilados accedan a su Tarifa Horaria con Horas Mínimas antes que utilizar maquinaria propia o alquileres sin cuotas.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero que el sistema les diga a mis despachadores exactamente qué máquinas usar hoy para no dejar accidentalmente una máquina inactiva por la que ya estamos obligados a pagar un mínimo de 180 horas al mes.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Lee los términos del contrato (CORP-GEM-F-001 / Anexo B) para identificar máquinas con cuotas horarias/diarias mínimas.
+- [] Realiza un seguimiento de las horas acumuladas actuales frente al objetivo de cuota mensual en tiempo real.
+- [ ] Genera una recomendación de despacho diario priorizando las máquinas en riesgo de no alcanzar sus mínimos.
+- [] Alertas cuando la demanda del proyecto es demasiado baja para satisfacer todas las cuotas mínimas en la flota alquilada.
+- [] Opción para anular manualmente con seguimiento de motivos.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>contrato_adenda</code> — tipos de tarifas y cláusulas mínimas de hora/día.
+- <code>parte_diario</code> — horas acumuladas trabajadas en el ciclo de facturación actual.
+- <code>solicitud_equipo</code> — demanda diaria/frentes de trabajo.</p>
+<p><strong>Impacto empresarial</strong>
+- Eliminación directa de penalizaciones “Stand-by” pagadas a terceros proveedores.
+- Maximiza el ROI en contratos de alquiler rígidos.</p>
+<hr />
+<h4>Característica 3.8: Ruta óptima para camiones cisterna de combustible (Ruta para vehículos)</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: Problema de enrutamiento de inventario (IRP)</p>
+<p><strong>Descripción</strong>
+Calcule la ruta diaria óptima para el camión cisterna de combustible (Cisterna de Combustible) a través de grandes sitios de proyectos, garantizando que toda la maquinaria pesada se reabastezca de combustible justo a tiempo y minimizando la distancia de viaje del camión cisterna.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Logística</strong>, quiero una ruta optimizada para nuestro camión cisterna de combustible para que ninguna excavadora se quede sin gasolina a mitad de turno y el camión cisterna no pierda tiempo conduciendo sin rumbo por un proyecto de carretera de 50 km.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Entrada: Ubicaciones GPS (o frentes de trabajo asignados) de maquinaria pesada activa.
+- [ ] Entrada: Niveles de combustible actuales previstos (usando modelos con Característica 1.3).
+- [ ] Salida: Ruta paso a paso o lista de secuencia para el operador del camión cisterna.
+- [ ] Restricción: Capacidad del buque cisterna vs. demanda total de reabastecimiento de combustible.
+- [ ] Concilia automáticamente la finalización de la ruta con los Vales de Combustible reales (CORP-LA-F-004) presentados.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>vale_combustible</code> — eventos de reabastecimiento de combustible históricos y actuales.
+- <code>parte_diario</code> — utilización correlacionada con el consumo de combustible.
+- <code>equipo_edt</code> — ubicación actual/asignación del frente de trabajo.</p>
+<p><strong>Impacto empresarial</strong>
+- Evita costosas paradas operativas por falta de combustible en los equipos.
+- Optimiza el tiempo del operador del camión cisterna y el uso de combustible.
+- Refuerza el circuito de auditoría de los bonos de combustible.</p>
+<hr />
+<h3>Categoría 4: Lenguaje Natural y LLM</h3>
+<blockquote>
+<p><strong>Tema</strong>: Haga que todo el ERP sea accesible a través de lenguaje natural, automatice el análisis de documentos y genere narrativas legibles por humanos a partir de datos.</p>
+</blockquote>
+<hr />
+<h4>Característica 4.1: BitCorp Copilot (Asistente ERP conversacional)</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Alta | <strong>Tecnología</strong>: Claude API + SQL/llamada de función</p>
+<p><strong>Descripción</strong>
+Interfaz de chat donde cualquier usuario puede hacer preguntas en español y obtener respuestas en vivo de la base de datos. El copiloto traduce el lenguaje natural en consultas, las ejecuta de forma segura (solo lectura) y devuelve respuestas formateadas con tablas, gráficos y recomendaciones.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>CEO/Director</strong>, quiero hacer las preguntas sobre ERP en español sencillo, como "¿Cuantos equipos están inoperativos hoy y por qué?" — y obtenga respuestas instantáneas sin tener que navegar por varias páginas.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Panel de chat accesible desde cualquier página de ERP (barra lateral deslizable o widget flotante)
+- [] Admite consultas en lenguaje natural en español
+- [] Tipos de consulta: recuentos, agregaciones, comparaciones, rangos de tiempo, listas filtradas
+- [ ] Formatos de respuesta: texto plano, tablas, resumen estadístico
+- [ ] Sólo lectura: no se modifican datos a través del chat
+- [] Consciente del contexto: comprende la terminología del dominio ERP
+- [ ] Memoria de conversación dentro de la sesión
+- [] Consultar el registro de auditoría por seguridad
+- [ ] Alternativa: "No pude entender eso. Intente preguntar sobre equipos, contratos, proyectos u operaciones".
+- [] Ejemplos de indicaciones proporcionadas para nuevos usuarios</p>
+<p><strong>Consultas de ejemplo</strong>
+- "¿Cuantas horas de trabajo el equipo EX-001 en enero?"
+- "¿Cual es el equipo con mayor consumo de combustible este mes?"
+- "Muestrame los contratos que vencen en los próximos 30 días"
+- "¿Qué operadores tienen certificaciones vencidas?"
+- "Comparar utilización de febrero vs marzo por tipo de equipo"</p>
+<p><strong>Fuentes de datos</strong>
+- Todos los esquemas de bases de datos accesibles mediante generación SQL de solo lectura
+- Metadatos de esquema para la comprensión de consultas.</p>
+<p><strong>Impacto empresarial</strong>
+- Hace que se pueda acceder a más de 120 páginas de ERP a través de una única interfaz
+- Reduce el tiempo de obtención de información de minutos a segundos
+- El mayor "factor sorpresa" para demostraciones ejecutivas</p>
+<hr />
+<h4>Característica 4.2: Analizador de cláusulas contractuales</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Claude API (análisis de documentos)</p>
+<p><strong>Descripción</strong>
+Sube un PDF del contrato y haz que el sistema extraiga información clave: tipo de tarifa, tarifas, mínimos, penalizaciones, obligaciones y fechas importantes. Complete automáticamente los campos de creación de contratos a partir de los datos extraídos.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Adquisiciones</strong>, quiero cargar un contrato en PDF y que el sistema extraiga todos los términos clave para no tener que leer manualmente más de 30 páginas y correr el riesgo de perder obligaciones.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Interfaz de carga de PDF en la página de creación de contrato
+- [ ] Extractos: tipo de tarifa, tarifas, garantías mínimas, cláusulas penales, fechas de inicio/fin, partidos, obligaciones
+- [] Campos extraídos presentados para su revisión antes de completar automáticamente el formulario
+- [ ] Destaca cláusulas o términos inusuales que se desvían de los contratos estándar
+- [ ] Admite contratos de varias páginas en español
+- [] Puntuaciones de confianza por campo extraído
+- [] Se requiere revisión humana antes de guardar (sin guardado automático)</p>
+<p><strong>Fuentes de datos</strong>
+- PDF de contrato cargados
+- Esquema <code>contrato_adenda</code> para mapeo de campos
+- Contratos históricos como línea base de referencia.</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo de revisión de contratos de horas a minutos
+- Capta obligaciones que podrían omitirse en la revisión manual</p>
+<hr />
+<h4>Característica 4.3: Generador de narrativa de informes diarios</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Claude API</p>
+<p><strong>Descripción</strong>
+Generar automáticamente el campo "observaciones" en los informes diarios a partir de los datos numéricos ya ingresados (horas, producción, retrasos, consumo de combustible).</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Operador</strong>, quiero que el sistema sugiera una narrativa de observaciones basada en los números que ya ingresé para poder enviar informes más rápido con documentación más completa.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Botón "Generar Observaciones" en el formulario de informe diario
+- [ ] La narrativa incluye: resumen del estado del equipo, eventos notables, explicaciones de retrasos.
+- [ ] Generado en español apropiado para informes de campo
+- [] Editable antes del envío (solo sugerencia)
+- [ ] Contextual: hace referencia a retrasos específicos, anomalías en la producción
+- [ ] NO reemplaza la capacidad del operador para escribir observaciones manuales</p>
+<p><strong>Fuentes de datos</strong>
+- Campos del formulario <code>parte_diario</code> (entrada actual)
+- <code>parte_diario_detalle</code> — retrasos y averías en la producción
+- Informes históricos para el mismo equipo (patrones)</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo de finalización del informe entre 5 y 10 minutos por informe
+- Mejora la calidad de la documentación para el seguimiento de auditoría.</p>
+<hr />
+<h4>Característica 4.4: Resumen ejecutivo de valoración</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Claude API</p>
+<p><strong>Descripción</strong>
+Genere automáticamente un resumen ejecutivo en lenguaje sencillo de los datos financieros de valoración mensuales, destacando métricas, variaciones y tendencias clave.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero un resumen en lenguaje sencillo de cada valoración mensual (no solo números) que me diga qué es importante y qué necesita atención.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Botón "Generar resumen" en la vista de valoración
+- [] El resumen incluye: monto total de valoración, comparación con el mes anterior, variaciones notables, aspectos destacados del equipo
+- [ ] Escrito en español amigable para ejecutivos
+- [ ] Información útil resaltada (p. ej., "Equipo EX-003 infrautilizado en un 25 %; considere la reasignación")
+- [ ] Exportable como parte del informe de valoración en PDF</p>
+<p><strong>Fuentes de datos</strong>
+- <code>valorizacion_equipo</code> — valoraciones actuales e históricas
+- <code>valorizacion_detalle</code> — detalles de la línea de pedido
+- <code>contrato_adenda</code> — términos del contrato para contexto</p>
+<p><strong>Impacto empresarial</strong>
+- Ahorra tiempo ejecutivo en reuniones de revisión de valoración.
+- Destaca problemas que podrían estar ocultos en hojas de cálculo.</p>
+<hr />
+<h4>Característica 4.5: Seguridad 5: Asistente de causa raíz</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Claude API + RAG</p>
+<p><strong>Descripción</strong>
+Guíe el análisis de la causa raíz de los 5 por qué para incidentes de seguridad sugiriendo causas raíz basadas en incidentes históricos similares (RAG – Generación Aumentada de Recuperación).</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Seguridad</strong>, quiero un análisis de los 5 por qués asistido por IA que sugiera las causas fundamentales de incidentes pasados similares para que podamos aprovechar el conocimiento institucional.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Disponible en el formulario de informe de incidentes durante la entrada 5-Why
+- [] Recupera incidentes históricos similares por tipo, ubicación, equipo
+- [] Sugiere posibles causas fundamentales basadas en conclusiones de incidentes similares.
+- [] Cada sugerencia vinculada al incidente fuente para su verificación.
+- [] El operador puede aceptar, modificar o rechazar sugerencias.
+- [] Aprende de las sugerencias aceptadas para mejorar futuras recomendaciones.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>incidente_sst</code> — registros de incidentes
+- <code>reporte_acto_condicion</code> — campos por_que_1 a por_que_5
+- Análisis históricos de causa raíz (integrados para RAG)</p>
+<p><strong>Impacto empresarial</strong>
+- Acelera la investigación de incidentes
+- Previene incidentes recurrentes al sacar a la luz patrones históricos</p>
+<hr />
+<h4>Característica 4.6: Narrativa de evaluación de proveedores</h4>
+<p><strong>Prioridad</strong>: BAJA-MEDIA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Claude API</p>
+<p><strong>Descripción</strong>
+Genere automáticamente resúmenes de evaluación estructurados a partir de datos de puntuación de proveedores, creando informes de evaluación profesionales y coherentes.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Adquisiciones</strong>, quiero narrativas de evaluación de proveedores generadas automáticamente que pueda incluir en los informes de adquisiciones y compartir con la gerencia.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Botón "Generar evaluación" en la página de evaluación de proveedores
+- [] La narrativa cubre: puntuación general, fortalezas, debilidades, comparación con pares, recomendación.
+- [] Estructura consistente en todas las evaluaciones de proveedores.
+- [] Editable antes de la finalización
+- [ ] Comparación histórica: "El rendimiento mejoró un 12% respecto a la última evaluación"</p>
+<p><strong>Fuentes de datos</strong>
+- <code>evaluacion_proveedor</code> — datos de puntuación en todas las categorías
+- Evaluaciones históricas para análisis de tendencias.
+- <code>proveedor</code> — información del perfil del proveedor</p>
+<p><strong>Impacto empresarial</strong>
+- Documentación de evaluación consistente y profesional.
+- Ahorra ~30 minutos por informe de evaluación</p>
+<hr />
+<h4>Característica 4.7: Búsqueda inteligente entre módulos</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Claude API (enrutamiento por intención)</p>
+<p><strong>Descripción</strong>
+Barra de búsqueda unificada que dirige consultas en lenguaje natural al módulo correcto con filtros aplicados previamente. Actúa como una alternativa ligera al Copilot completo.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>cualquier usuario</strong>, quiero escribir lo que estoy buscando en una barra de búsqueda, como "contratos de excavadoras vencidos", y ser llevado directamente a la página correcta con los filtros aplicados.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Barra de búsqueda global en la navegación superior
+- [] Entiende la intención: tipo de entidad (equipo, contrato, operador, etc.) + filtros (intervalo de fechas, estado, tipo)
+- [] Rutas a la página del módulo correcto con filtros aplicados previamente
+- [] Alternativa: si la intención no está clara, muestra resultados categorizados de todos los módulos
+- [] Búsquedas recientes guardadas para un acceso rápido
+- [] Admite entrada de texto y voz (meta ambiciosa)</p>
+<p><strong>Fuentes de datos</strong>
+- Registro de módulos (mapeo de entidades a rutas)
+- Filtrar esquema por módulo.
+- Historial de consultas para personalización.</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo de navegación en más de 120 páginas
+- Reduce la curva de aprendizaje para nuevos usuarios.</p>
+<hr />
+<h3>Categoría 5: Visión por computadora</h3>
+<blockquote>
+<p><strong>Tema</strong>: Extraiga datos estructurados de imágenes y fotografías para reducir la entrada manual de datos y mejorar los procesos de verificación.</p>
+</blockquote>
+<hr />
+<h4>Característica 5.1: Análisis fotográfico del informe diario</h4>
+<p><strong>Prioridad</strong>: MEDIA-ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: API de Claude Vision</p>
+<p><strong>Descripción</strong>
+Analice fotografías de equipos adjuntas a informes diarios para evaluar el estado, detectar daños visibles y verificar la identidad del equipo.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero un análisis de IA de las fotografías diarias del equipo para poder detectar tendencias de daños y verificar el estado del equipo sin revisar cada foto manualmente.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Las fotos adjuntas a los informes diarios se analizan automáticamente
+- [ ] Resultados del análisis: evaluación de la condición (buena/regular/mala), problemas visibles detectados, verificación de la identidad del equipo
+- [] Alertas de daños cuando se detectan nuevos daños en comparación con fotos anteriores
+- [] Seguimiento de la tendencia de la condición por equipo a lo largo del tiempo
+- [] Análisis visible en la página de revisión del informe diario
+- [ ] PM puede marcar falsos positivos</p>
+<p><strong>Fuentes de datos</strong>
+- <code>parte_diario_foto</code> — fotos del equipo
+- <code>equipo</code> — imágenes de referencia del equipo y detalles</p>
+<p><strong>Impacto empresarial</strong>
+- Early damage detection prevents costly repairs
+- Seguimiento automatizado del estado para disputas de arrendamiento/devolución</p>
+<hr />
+<h4>Característica 5.1b: Inspección automatizada de entrega y devolución de equipos</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: API de Claude Vision</p>
+<p><strong>Descripción</strong>
+Agilizar el proceso de "Acta de Entrega" (CORP-GEM-F-010) mediante el uso de visión por computadora para leer los indicadores del tablero (horómetro, nivel de combustible) y escanear el exterior en busca de daños específicamente durante los eventos de entrega/devolución.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero tomar una fotografía del tablero y de la máquina durante la entrega, y hacer que la IA registre instantáneamente el nivel de combustible, el horómetro y las abolladuras preexistentes para que nunca tengamos disputas con los proveedores al regresar.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] UI móvil primero para el evento de entrega.
+- [] La IA extrae la lectura exacta del horómetro y el porcentaje del indicador de combustible de las fotos del tablero.
+- [ ] Análisis diferencial: compara fotos de "Devolución" con fotos de "Entrega" para resaltar nuevos daños.
+- [ ] Autocompleta el formulario CORP-GEM-F-010.</p>
+<p><strong>Fuentes de datos</strong>
+- Fotografías de Entrega y Devolución (dashboards y exterior 360).
+- <code>parte_diario</code> para cruzar las lecturas finales del horómetro.</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce drásticamente los costos de disputas con terceros proveedores sobre daños y niveles de combustible.
+- Acelera el proceso de desmovilización.</p>
+<hr />
+<h4>Característica 5.2: OCR del comprobante de combustible</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: API de Claude Vision</p>
+<p><strong>Descripción</strong>
+Fotografía de los vales de combustible y fecha de extracción del auto, galones, precio y proveedor. Valide de forma cruzada los datos extraídos con las entradas manuales.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Operador</strong>, quiero tomar una foto del comprobante de combustible y que el sistema complete los detalles automáticamente para pasar menos tiempo ingresando datos.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Cámara/interfaz de carga en el formulario de vale de combustible
+- [ ] Extractos: fecha, cantidad (galones), precio unitario, total, nombre del proveedor, número de comprobante
+- [] Rellena previamente los campos del formulario con datos extraídos
+- [ ] Indicadores de confianza por campo (verde = confianza alta, amarillo = revisión)
+- [] Validación cruzada contra entradas manuales cuando ambas existen
+- [] Alertas de discrepancia cuando el OCR y la entrada manual no coinciden</p>
+<p><strong>Fuentes de datos</strong>
+- Fotos del bono de combustible (capturadas o cargadas)
+- <code>vale_combustible</code> — campos de formulario para población</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo de entrada de datos del comprobante de combustible entre un 60 y un 80 %.
+- Proporciona una capa de verificación contra errores manuales.</p>
+<hr />
+<h4>Característica 5.3 — Verificación de fotos de lista de verificación</h4>
+<p><strong>Prioridad</strong>: BAJA-MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: API de Claude Vision</p>
+<p><strong>Descripción</strong>
+Para los elementos de la lista de verificación que requieren fotografías, verifique que la fotografía muestre el componente correcto y la condición esperada.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de seguridad</strong>, quiero estar seguro de que las fotografías de la lista de verificación realmente muestren el componente requerido en la condición esperada, no solo fotografías aleatorias tomadas para satisfacer el requisito.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Las fotos de los elementos de la lista de verificación <code>requiere_foto</code> se analizan automáticamente
+- [ ] Verificación: ¿la foto coincide con el tipo de componente esperado?
+- [] Evaluación de la condición basada en los requisitos de los elementos de la lista de verificación
+- [] Marcar fotos sospechosas (componente incorrecto, borrosas, duplicadas de otro elemento)
+- [] Resultado de la verificación visible en la revisión de la lista de verificación</p>
+<p><strong>Fuentes de datos</strong>
+- <code>checklist_detalle</code> — elementos de la lista de verificación con la bandera <code>requiere_foto</code>
+- Fotos asociadas
+- Descripciones de elementos de la lista de verificación para el contexto</p>
+<p><strong>Impacto empresarial</strong>
+- Garantiza la calidad del cumplimiento de la lista de verificación.
+- Reduce la aprobación de las inspecciones de seguridad.</p>
+<hr />
+<h4>Característica 5.4 — OCR de facturas para cuentas por pagar</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: API de Claude Vision</p>
+<p><strong>Descripción</strong>
+Escanee facturas de proveedores y complete automáticamente los campos de cuentas por pagar (cuenta_por_pagar), reduciendo la entrada manual de datos y los errores de transcripción.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>miembro del equipo de Finanzas</strong>, quiero cargar una imagen de factura y que el sistema extraiga todos los detalles automáticamente para poder procesar las cuentas por pagar más rápido y con menos errores.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Cargar interfaz en la página de creación de cuentas por pagar
+- [ ] Extractos: nombre del proveedor/RUC, número de factura, fecha, rubros, montos, impuestos, total
+- [] Mapea el proveedor extraído a los registros de "proveedor" existentes
+- [ ] Pre-llenado de campos del formulario <code>cuenta_por_pagar</code>
+- [] Puntuación de confianza por campo
+- [] Revisión y confirmación humana antes de guardar
+- [] Soporte de carga por lotes para múltiples facturas</p>
+<p><strong>Fuentes de datos</strong>
+- Imágenes/escaneos de facturas
+- <code>proveedor</code> — coincidencia de nombres de proveedores
+- <code>cuenta_por_pagar</code> — campos de destino</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo de procesamiento de facturas entre un 50 y un 70 %.
+- Elimina errores de transcripción</p>
+<hr />
+<h3>Categoría 6: Automatización inteligente</h3>
+<blockquote>
+<p><strong>Tema</strong>: Reduzca la entrada manual de datos, automatice las decisiones rutinarias y agregue protecciones inteligentes a los flujos de trabajo cotidianos.</p>
+</blockquote>
+<hr />
+<h4>Característica 6.1: Precarga de informe diario inteligente</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Basado en reglas + Coincidencia de patrones</p>
+<p><strong>Descripción</strong>
+Transfiera automáticamente el horometro_final de ayer como horometro_inicial de hoy y sugiera el mismo operador, proyecto, turno y equipo según patrones recientes.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Operador</strong>, quiero que el formulario de informe diario venga precargado con mis valores habituales para que solo tenga que actualizar lo que cambió, no volver a ingresar todo desde cero.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] <code>horometro_inicial</code> autocompletado desde el <code>horometro_final</code> del día anterior
+- [ ] Operador, proyecto, turno sugerido del patrón de los últimos 3 días
+- [ ] Equipo preseleccionado si el operador normalmente trabaja con el mismo
+- [] Valores precargados claramente marcados como "sugeridos" (estilo diferente)
+- [] Borrar con un clic para restablecer sugerencias
+- [] Funciona tanto para la creación de nuevos informes diarios como para su continuación.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>parte_diario</code> — registros del día anterior para el mismo equipo/operador
+- Historial de informes recientes del usuario (últimos 7 días)</p>
+<p><strong>Impacto empresarial</strong>
+- Reducción estimada de más del 50 % en el tiempo de entrada de informes diarios
+- Reduce los errores de entrada de datos (especialmente la continuidad del horometro)
+- Máxima satisfacción del usuario para los operadores (ahorro de tiempo diario)</p>
+<hr />
+<h4>Característica 6.2: Enrutamiento de aprobación inteligente</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: basado en reglas + árbol de decisión</p>
+<p><strong>Descripción</strong>
+Enrute automáticamente las solicitudes de aprobación al aprobador correcto según la cantidad, el tipo, el proyecto y la jerarquía organizativa. Predecir la probabilidad de aprobación basándose en patrones históricos.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>solicitante</strong>, quiero que mis aprobaciones se envíen automáticamente a la persona adecuada según el tipo y la cantidad, sin que tenga que averiguar quién aprueba qué.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Reglas de enrutamiento basadas en: tipo de solicitud, umbral de monto, proyecto, departamento
+- [] Escalamiento automático para montos superiores al umbral
+- [ ] Indicador de probabilidad de aprobación (por ejemplo, "Basado en solicitudes similares, tasa de aprobación del 85%)"
+- [] Enrutamiento alternativo cuando el aprobador principal no está disponible
+- [] UI de administración de reglas de enrutamiento para administradores
+- [] Registro de auditoría para decisiones de enrutamiento</p>
+<p><strong>Fuentes de datos</strong>
+- <code>aprobacion_solicitud</code> — historial de aprobación
+- <code>aprobacion_plantilla</code> — plantillas de aprobación
+- Jerarquía de usuarios y roles.</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce el tiempo del ciclo de aprobación
+- Elimina errores de enrutamiento y cuellos de botella</p>
+<hr />
+<h4>Característica 6.3: Autocompletar contrato a partir de cotización</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Mapeo de campos basado en reglas</p>
+<p><strong>Descripción</strong>
+Al crear un nuevo contrato, complete automáticamente los campos coincidentes de la cotización del proveedor seleccionado, lo que reduce la entrada de datos duplicados.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de adquisiciones</strong>, quiero que los campos del contrato se completen automáticamente a partir de la cotización aceptada para no volver a ingresar información que ya se capturó.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Botón "Crear contrato a partir de cotización" en la página de detalles de la cotización
+- [ ] Automapas: tipos de equipos, cantidades, tarifas propuestas, proveedores, fechas
+- [] Comparación lado a lado: valores de cotización versus campos de contrato
+- [] Anulación manual para cualquier campo
+- [ ] Destaca campos que difieren de la cotización</p>
+<p><strong>Fuentes de datos</strong>
+- <code>cotizacion_proveedor</code> — detalles de la cotización
+- <code>contrato_adenda</code> — campos del contrato para completar</p>
+<p><strong>Impacto empresarial</strong>
+- Elimina la entrada de datos duplicados
+- Reduce el tiempo de creación de contratos y los errores.</p>
+<hr />
+<h4>Característica 6.4: Activador de mantenimiento inteligente</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: ML basado en reglas + adaptable</p>
+<p><strong>Descripción</strong>
+Cree automáticamente registros de mantenimiento cuando se alcancen los umbrales horométricos, con umbrales adaptativos basados en la condición del equipo y los patrones de uso.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de mantenimiento</strong>, quiero que el mantenimiento se active automáticamente cuando el equipo alcance los intervalos de servicio, con umbrales adaptativos que tengan en cuenta las condiciones reales.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Umbrales base por tipo de equipo (por ejemplo, cada 250 horas)
+- [] Ajuste adaptativo: aumentar la frecuencia para equipos de alto uso, disminuir para equipos de bajo uso
+- [] Crea automáticamente una tarea de mantenimiento con detalles precargados
+- [ ] Notificación al equipo de mantenimiento cuando se desencadenan incendios.
+- [] Panel que muestra los próximos activadores (horómetro de distancia hasta el siguiente servicio)
+- [] Anulación: el administrador de mantenimiento puede ajustar los umbrales por equipo
+- [ ] Considera el horometro real de <code>parte_diario</code>, no solo el tiempo del calendario</p>
+<p><strong>Fuentes de datos</strong>
+- <code>parte_diario</code> — lecturas acumuladas del horómetro
+- <code>programa_mantenimiento</code> — cronogramas y umbrales de mantenimiento
+- <code>equipo</code> — tipo de equipo y especificaciones</p>
+<p><strong>Impacto empresarial</strong>
+- Evita la falta de mantenimiento que provoca averías
+- Pasa del mantenimiento basado en calendario al mantenimiento basado en el uso</p>
+<hr />
+<h4>Característica 6.5 — Clasificación automática del código de retraso</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: TF-IDF + Vecino más cercano (o Claude API)</p>
+<p><strong>Descripción</strong>
+Sugiera automáticamente el código de retraso apropiado cuando un operador ingresa una descripción de retraso en texto libre, lo que reduce los errores de clasificación.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Operador</strong>, quiero que el sistema sugiera el código de demora correcto cuando describo lo que sucedió, para no tener que buscar en un largo menú desplegable de códigos que no memorizo.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Campo de entrada de texto donde el operador describe el retraso en texto libre
+- [] Los 3 códigos de retraso principales sugeridos con puntuaciones de confianza
+- [] El operador selecciona el código correcto (o escribe más para obtener mejores sugerencias)
+- [] Aprendizaje: rastrea qué sugerencias se aceptan/rechazan
+- [] Admite entrada de texto en español
+- [] Regresar al menú desplegable completo si no se encuentra una buena coincidencia</p>
+<p><strong>Fuentes de datos</strong>
+- <code>catalogo</code> — catálogo de códigos de retraso con descripciones
+- <code>parte_diario_detalle</code> — descripciones de retrasos históricos y códigos seleccionados</p>
+<p><strong>Impacto empresarial</strong>
+- Informes de retrasos más rápidos y precisos
+- Reduce la clasificación errónea del código de retraso</p>
+<hr />
+<h4>Característica 6.6 — Verificación de cordura de valoración</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: Intervalos de confianza estadísticos</p>
+<p><strong>Descripción</strong>
+Verificación independiente basada en ML después del cálculo de valoración: señala discrepancias entre los montos calculados y los rangos esperados según patrones históricos.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Finanzas</strong>, quiero una verificación independiente de la cordura de los cálculos de valoración: una segunda opinión que detecte errores en la lógica de cálculo antes de aprobarlos.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Se ejecuta automáticamente después del cálculo de valoración
+- [] Compara: cantidad calculada versus cantidad prevista en función de los insumos (horas, tarifas, tipo de equipo)
+- [ ] Señala discrepancias que superan el umbral configurable (p. ej., ±15 %)
+- [] Muestra el rango esperado con intervalo de confianza
+- [] Indicador de pasa/falla en la pantalla de aprobación de valoración
+- [ ] Explicación detallada de cualquier discrepancia</p>
+<p><strong>Fuentes de datos</strong>
+- <code>valorizacion_equipo</code> — valoraciones calculadas
+- <code>parte_diario</code> — horas de entrada/utilización
+- <code>contrato_adenda</code> — tarifas y condiciones
+- Valoraciones históricas para la línea de base.</p>
+<p><strong>Impacto empresarial</strong>
+- La capa de verificación independiente reduce los errores de facturación
+- Aumenta la confianza en el proceso de valoración.</p>
+<hr />
+<h4>Característica 6.7: Puntuación de prioridad de caducidad de documentos</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja | <strong>Tecnología</strong>: Modelo de riesgo ponderado</p>
+<p><strong>Descripción</strong>
+Mejore las alertas de vencimiento existentes con puntuación de riesgo de ML: clasifique qué vencimientos representan el mayor riesgo operativo según la criticidad del equipo, la importancia del tipo de documento y los patrones de uso.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Proyecto</strong>, quiero saber qué documentos vencidos son más importantes para renovar primero (no solo una lista plana de todos los elementos vencidos) para poder concentrarme en lo que más importa.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Puntuación de riesgo (1-10) por documento/certificado vencido
+- [ ] Factores de puntuación: utilización del equipo (uso elevado = mayor prioridad), tipo de documento (crítico para la seguridad = mayor), requisitos del proyecto
+- [] Lista de prioridades ordenada: los vencimientos de mayor riesgo primero
+- [ ] Urgencia codificada por colores: ROJO (vencido, alto riesgo), NARANJA (vencido pronto, alto riesgo), AMARILLO (vencido, bajo riesgo)
+- [] Integración con el sistema de notificación existente.
+- [ ] Pesos configurables por tipo de documento</p>
+<p><strong>Fuentes de datos</strong>
+- <code>certificacion_operador</code> — certificaciones de operador con vencimiento
+- <code>contrato_adenda</code> — fechas del contrato
+- <code>equipo</code> — documentos del equipo (SOAT, inspecciones)
+- <code>parte_diario</code> — utilización del equipo (para ponderación de criticidad)</p>
+<p><strong>Impacto empresarial</strong>
+- Centra la atención en los vencimientos de mayor riesgo.
+- Previene paros operativos debido a documentos críticos vencidos</p>
+<hr />
+<h3>Categoría 7: Inteligencia Estratégica</h3>
+<blockquote>
+<p><strong>Tema</strong>: Transformar datos operativos en conocimientos estratégicos para la toma de decisiones ejecutivas.</p>
+</blockquote>
+<hr />
+<h4>Característica 7.1: Panel de control del costo total de propiedad (TCO)</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Media-Alta | <strong>Tecnología</strong>: Agregación estadística + ML de tendencias</p>
+<p><strong>Descripción</strong>
+Calcule el TCO real por unidad de equipo: costo de alquiler + combustible + mantenimiento + costo del tiempo de inactividad + transporte, con comparación y tendencias.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero ver el costo total real de cada equipo (no solo el alquiler, sino también el combustible, el mantenimiento y el tiempo de inactividad) para poder identificar qué activos son rentables y cuáles son una fuente de dinero.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] TCO por equipo: alquiler + combustible + mantenimiento + tiempo de inactividad (calculado como pérdida de ingresos) + transporte
+- [ ] TCO por hora/día/mes para comparar entre diferentes tamaños de equipos
+- [] Comparación entre pares: mismo tipo de equipo, mismo tipo entre proveedores
+- [ ] Gráficos de tendencias: TCO a lo largo del tiempo por equipo
+- [ ] Resumen y tendencias del TCO a nivel de flota
+- [] Desglose desde nivel de flota → tipo de equipo → equipo individual
+- [] Exportar a PDF/Excel para presentaciones en foros</p>
+<p><strong>Fuentes de datos</strong>
+- <code>valorizacion_equipo</code> — costos de alquiler
+- <code>vale_combustible</code> — costos de combustible
+- <code>programa_mantenimiento</code> — costos de mantenimiento
+- <code>periodo_inoperatividad</code> — registros de tiempo de inactividad
+- <code>contrato_adenda</code> — tarifas contratadas para el cálculo del coste del tiempo de inactividad</p>
+<p><strong>Impacto empresarial</strong>
+- Primera visión completa de los costos reales de los equipos.
+- Permite tomar decisiones sobre flotas basadas en datos</p>
+<hr />
+<h4>Característica 7.2: Análisis de rentabilidad del proyecto</h4>
+<p><strong>Prioridad</strong>: ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Agregación + Pronóstico</p>
+<p><strong>Descripción</strong>
+Realice un seguimiento de la contribución de los costos de los equipos a la rentabilidad del proyecto, comparando los costos reales con los presupuestos con la posición prevista al final del período.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero ver cómo los costos de los equipos impactan la rentabilidad de cada proyecto (y pronosticar dónde terminaremos al cierre del período) para poder intervenir tempranamente en proyectos que exceden el presupuesto.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Desglose de costos de equipos por proyecto: alquiler, combustible, mantenimiento, por unidad de equipo
+- [ ] Comparación entre presupuesto y real con análisis de varianza
+- [] Costo previsto al final del período basado en la tasa de ejecución actual
+- [] Alerta cuando los costos proyectados exceden el umbral presupuestario
+- [] Comparación entre proyectos
+- [] Desglose de los factores de costos específicos</p>
+<p><strong>Fuentes de datos</strong>
+- <code>centro_costo</code> — presupuestos por proyecto/centro de costos
+- <code>valorizacion_equipo</code> — costos reales del equipo
+- <code>vale_combustible</code> — costos de combustible por proyecto
+- <code>equipo_edt</code> — asignaciones de equipo a proyecto</p>
+<p><strong>Impacto empresarial</strong>
+- Intervención temprana en proyectos que exceden el presupuesto.
+- Mejor gestión de costos a nivel de proyecto</p>
+<hr />
+<h4>Característica 7.3: Cuadro de mando de proveedores mejorado con ML</h4>
+<p><strong>Prioridad</strong>: MEDIA-ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: compuesto ponderado con pesos ajustados automáticamente</p>
+<p><strong>Descripción</strong>
+Puntuación automatizada de proveedores que combina métricas objetivas (tiempo de actividad del equipo, tasas de inoperabilidad, respuesta de mantenimiento, puntualidad de la entrega) con evaluaciones manuales, utilizando ponderaciones ajustadas automáticamente en función de la importancia de las métricas.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Gerente de Adquisiciones</strong>, quiero un cuadro de mando de proveedores completo y actualizado automáticamente que combine datos concretos con evaluaciones manuales para poder tomar decisiones de adquisiciones objetivas.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Puntuación compuesta por proveedor (0-100)
+- [ ] Métricas objetivas (calculadas automáticamente): % de tiempo de actividad del equipo, tasa de inoperabilidad, tiempo de respuesta de mantenimiento, puntualidad de entrega
+- [ ] Métricas subjetivas (de evaluaciones): calificación de calidad, comunicación, profesionalismo
+- [] Ajuste de ponderación automático basado en la variación de la métrica (las métricas de alta variación obtienen una mayor ponderación)
+- [ ] Tendencia histórica por proveedor
+- [] Clasificación de pares dentro de la categoría de tipo de equipo
+- [] Integración con vistas de evaluación de proveedores existentes</p>
+<p><strong>Fuentes de datos</strong>
+- <code>evaluacion_proveedor</code> — puntuaciones de evaluación manual
+- <code>periodo_inoperatividad</code> — tiempo de inactividad del equipo por proveedor
+- <code>programa_mantenimiento</code> — datos de respuesta de mantenimiento
+- <code>contrato_adenda</code> — datos de entrega y cumplimiento</p>
+<p><strong>Impacto empresarial</strong>
+- Comparación objetiva de proveedores para decisiones de adquisiciones.
+- Identifica proveedores de alto y bajo rendimiento.</p>
+<hr />
+<h4>Característica 7.4: Mapa de riesgo operativo</h4>
+<p><strong>Prioridad</strong>: MEDIA-ALTA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: Puntuación de riesgo compuesta</p>
+<p><strong>Descripción</strong>
+Mapa de calor visual que muestra el riesgo en todos los proyectos combinando incidentes de seguridad, mantenimiento vencido, vencimientos de documentos y tasas de inoperabilidad en una puntuación de riesgo unificada.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero una única imagen que muestre qué proyectos tienen el mayor riesgo operativo en todas las dimensiones (seguridad, mantenimiento, cumplimiento y rendimiento) para poder centrar la atención ejecutiva donde más se necesita.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [] Puntuación de riesgo (1-10) por proyecto en 4 dimensiones: seguridad, mantenimiento, cumplimiento y rendimiento
+- [] Mapa de calor visual: proyectos × dimensiones de riesgo, codificados por colores
+- [ ] Puntuación general del riesgo del proyecto (compuesto ponderado)
+- [] Desglose: haga clic en el proyecto para ver los factores de riesgo que contribuyen
+- [ ] Tendencia semanal: ¿el riesgo mejora o empeora?
+- [ ] Umbrales configurables para niveles de riesgo
+- [] Alerta cuando algún proyecto cruza el umbral de riesgo crítico</p>
+<p><strong>Fuentes de datos</strong>
+- <code>incidente_sst</code> — incidentes de seguridad por proyecto
+- <code>programa_mantenimiento</code> — mantenimiento vencido por proyecto
+- Datos de caducidad: documentos caducados por proyecto.
+- <code>periodo_inoperatividad</code> — tasas de tiempo de inactividad por proyecto</p>
+<p><strong>Impacto empresarial</strong>
+- Visibilidad del riesgo a nivel ejecutivo en una sola vista
+- Permite la gestión proactiva de riesgos.</p>
+<hr />
+<h4>Característica 7.5: Comentario de IA sobre presupuesto versus real</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Baja-Media | <strong>Tecnología</strong>: Claude API + Datos financieros</p>
+<p><strong>Descripción</strong>
+Genere automáticamente comentarios en lenguaje natural sobre las variaciones de costos, explicando por qué ocurrieron y prediciendo la posición al final del período.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero comentarios generados por IA sobre las variaciones presupuestarias, no solo números, sino explicaciones de por qué los costos fueron superiores o inferiores y qué esperar en el futuro.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Botón "Generar comentario" sobre el presupuesto versus el informe real
+- [] El comentario cubre: las 3 variaciones principales con explicaciones, factores contribuyentes, dirección de la tendencia.
+- [ ] Predicción: "Al ritmo de ejecución actual, el proyecto X finalizará S/. Y por encima o por debajo del presupuesto"
+- [ ] Idioma: español amigable para ejecutivos
+- [] Consciente del contexto: hace referencia a eventos específicos (por ejemplo, "El tiempo de inactividad del equipo EX-005 en la semana 3 generó el 40% de la variación de mantenimiento")
+- [ ] Exportable con el informe financiero</p>
+<p><strong>Fuentes de datos</strong>
+- <code>centro_costo</code> — presupuestos
+- <code>valorizacion_equipo</code>, <code>vale_combustible</code>, <code>programa_mantenimiento</code> — costos reales
+- <code>periodo_inoperatividad</code> — eventos contribuyentes</p>
+<p><strong>Impacto empresarial</strong>
+- Transforma informes financieros de números a narrativas.
+- Ahorra tiempo ejecutivo al comprender las variaciones.</p>
+<hr />
+<h4>Característica 7.6: Uso compartido de equipos entre proyectos</h4>
+<p><strong>Prioridad</strong>: MEDIA | <strong>Complejidad</strong>: Media | <strong>Tecnología</strong>: O Coincidencia/Asignación</p>
+<p><strong>Descripción</strong>
+Identifique equipos inactivos en un proyecto que podrían satisfacer la demanda de otro proyecto, incluido el análisis de costos de transferencia y el cálculo de beneficios netos.</p>
+<p><strong>Historia de usuario</strong></p>
+<blockquote>
+<p>Como <strong>Director</strong>, quiero ver oportunidades para compartir equipos entre proyectos: qué equipo está inactivo, dónde, quién lo necesita y si vale la pena el costo de la transferencia.</p>
+</blockquote>
+<p><strong>Criterios de aceptación</strong>
+- [ ] Panel que muestra: equipos inactivos (con ubicación) + demandas insatisfechas (con ubicación)
+- [] Recomendaciones de coincidencia: "EX-003 inactivo en el Proyecto A puede satisfacer la demanda en el Proyecto B"
+- [ ] Análisis de costos: costo de transferencia versus alquiler de una nueva unidad
+- [ ] Cálculo del beneficio neto por recomendación
+- [] Un clic para iniciar el flujo de trabajo de transferencia de equipos
+- [] Filtra por tipo de equipo, ventana de tiempo, proyecto.</p>
+<p><strong>Fuentes de datos</strong>
+- <code>equipo</code> — asignaciones actuales y estado
+- <code>parte_diario</code> — utilización (identifica el equipo verdaderamente inactivo)
+- <code>solicitud_equipo</code> — demandas incumplidas
+- <code>proyecto</code> — ubicaciones del proyecto (para estimación de costos de transferencia)</p>
+<p><strong>Impacto empresarial</strong>
+- Reduce los costos de equipos inactivos.
+- Evita alquileres innecesarios de equipos nuevos.</p>
+<hr />
+<h2>6. Funciones de exhibición ("Factor sorpresa")</h2>
+<p>Estas tres características están diseñadas para brindar la máxima impresión ejecutiva y combinan múltiples capacidades.</p>
+<h3>WOW 1: BitCorp Copilot: ERP conversacional</h3>
+<p><strong>Fusiona</strong>: Función 4.1 (Copilot) + datos relevantes de todas las categorías</p>
+<p>El CEO escribe en español: <em>"Muestrame los equipos con mas combustible de lo normal este mes y cuanto nos cuesta"</em> y recibe:</p>
+<ol>
+<li>Una tabla formateada de equipos con consumo anormal de combustible (de la Característica 2.1)</li>
+<li>Cálculo del impacto en los costos por equipo.</li>
+<li>Acciones sugeridas ("Investigar EX-007 — 2,3x consumo base, ahorro potencial de S/. 4.200/mes")</li>
+<li>Navegación con un clic a las páginas relevantes</li>
+</ol>
+<p><strong>Por qué impresiona</strong>: Hace que todo el ERP de 120 páginas sea accesible a través de una conversación. Cualquier duda, cualquier dato, respuesta instantánea.</p>
+<hr />
+<h3>WOW 2: Simulador digital de flota gemela</h3>
+<p><strong>Fusiona</strong>: Funciones 3.1 (Asignación de equipos) + 3.6 (Adecuado tamaño de la flota) + 1.2 (Previsión de utilización)</p>
+<p><strong>Nueva capacidad</strong>: herramienta hipotética en la que el director general introduce un escenario ("Agregar 3 excavadoras, retirar 2 camiones volquete de la flota") y el sistema simula el impacto en:</p>
+<ul>
+<li>Tasas de utilización de la flota (próximos 6 meses)</li>
+<li>Costes totales (alquiler + mantenimiento + combustible)</li>
+<li>Cobertura del proyecto (qué proyectos ganan/pierden capacidad)</li>
+<li>Cambios en la carga de mantenimiento.</li>
+</ul>
+<p>Utiliza simulación Monte Carlo con distribuciones históricas reales, junto con el solucionador de asignación OR.</p>
+<p><strong>Por qué impresiona</strong>: transforma el ERP de un sistema de mantenimiento de registros a una herramienta de planificación estratégica. Decisiones respaldadas por resultados simulados, no por intuiciones.</p>
+<p><strong>Criterios de aceptación</strong>
+- [] Generador de escenarios: agregar/eliminar/reemplazar unidades de equipo
+- [ ] Simulación de 6 meses con intervalos de confianza
+- [ ] Comparación lado a lado: flota actual versus flota propuesta
+- [ ] Métricas de impacto: utilización, coste, cobertura, mantenimiento
+- [] Guardar y comparar múltiples escenarios
+- [] Monte Carlo con más de 1000 iteraciones para mayor confianza estadística
+- [ ] Visual: curvas de utilización, cascada de costos, matriz de cobertura</p>
+<hr />
+<h3>WOW 3: Radar de anomalías: panel de señales múltiples</h3>
+<p><strong>Fusiona</strong>: Funciones 2.1 (Combustible) + 2.2 (Horómetro) + 2.3 (Calidad del informe) + 2.4 (Valoración) + 2.5 (Seguridad) + 2.6 (Proveedor)</p>
+<p><strong>Nueva capacidad</strong>: Panel de control único de "radar de amenazas" que fusiona todos los detectores de anomalías en una vista unificada con:</p>
+<ul>
+<li>Puntuación de gravedad de anomalías en tiempo real (1-10)</li>
+<li>Resúmenes de investigación generados por LLM por anomalía</li>
+<li>Desglose de registros de origen con un solo clic</li>
+<li>Acciones correctivas sugeridas</li>
+<li>Tendencias históricas de frecuencia de anomalías.</li>
+</ul>
+<p><strong>Por qué impresiona</strong>: visualmente atractivo, proactivo y completo. Una pantalla para ver todo lo que necesita atención.</p>
+<p><strong>Criterios de aceptación</strong>
+- [] Panel unificado con tarjetas de anomalías agrupadas por tipo
+- [] Puntuación de gravedad (1-10) por anomalía con código de colores
+- [] Resumen de investigación generado por LLM por anomalía (Claude API)
+- [] Enlace del registro fuente para cada anomalía
+- [ ] Acciones correctivas sugeridas por tipo de anomalía
+- [] Filtrar por: tipo, gravedad, proyecto, rango de fechas
+- [ ] Gráfico de tendencias: frecuencia de anomalías en el tiempo
+- [] Flujo de trabajo de resolución de anomalías (reconocer → investigar → resolver)</p>
+<hr />
+<h2>7. Fases de implementación</h2>
+<h3>Fase 1: Ganancias rápidas (semanas 1 a 4)</h3>
+<p><strong>Objetivo</strong>: Ofrecer valor inmediato al usuario con funciones basadas en reglas que no requieren capacitación en aprendizaje automático.</p>
+<table>
+<thead>
+<tr>
+<th>Característica</th>
+<th style="text-align: center;">Esfuerzo</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6.1 Precarga del informe diario inteligente</td>
+<td style="text-align: center;">3-5 días</td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>2.2 Manipulación del horómetro/odómetro</td>
+<td style="text-align: center;">3-4 días</td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>2.1 Anomalías en el consumo de combustible</td>
+<td style="text-align: center;">4-5 días</td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>6.7 Puntuación de prioridad de caducidad de documentos</td>
+<td style="text-align: center;">2-3 días</td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>6.4 Activador de mantenimiento inteligente</td>
+<td style="text-align: center;">4-5 días</td>
+<td>Ninguno</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Requisitos previos</strong>: Configure la estructura del paquete <code>app/servicios/ml/</code> y el enrutador <code>app/api/ia.py</code>.</p>
+<p><strong>Criterios de salida</strong>: las 5 funciones implementadas, probadas y visibles en la interfaz de usuario del ERP.</p>
+<hr />
+<h3>Fase 2: Core ML (semanas 5 a 12)</h3>
+<p><strong>Objetivo</strong>: entrenar e implementar los primeros modelos de aprendizaje automático utilizando datos históricos.</p>
+<table>
+<thead>
+<tr>
+<th>Característica</th>
+<th style="text-align: center;">Esfuerzo</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1 Predicción de fallas del equipo</td>
+<td style="text-align: center;">2-3 semanas</td>
+<td><code>parte_diario</code> histórico suficiente + datos de mantenimiento</td>
+</tr>
+<tr>
+<td>1.2 Previsión de utilización</td>
+<td style="text-align: center;">1-2 semanas</td>
+<td>Más de 6 meses de datos de informes diarios</td>
+</tr>
+<tr>
+<td>3.1 Asignación de equipo a proyecto</td>
+<td style="text-align: center;">2-3 semanas</td>
+<td>Datos de equipos y proyectos</td>
+</tr>
+<tr>
+<td>3.2 Asignación de operador-equipo</td>
+<td style="text-align: center;">1-2 semanas</td>
+<td>Habilidades del operador y datos de certificación</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Requisitos previos</strong>: Fase 1 completa, infraestructura de aprendizaje automático (canal de capacitación de modelos, control de versiones, cron de reentrenamiento).</p>
+<p><strong>Nuevas dependencias</strong>: <code>scikit-learn</code>, <code>profhet</code>, <code>scipy</code>/<code>pulp</code></p>
+<p><strong>Criterios de salida</strong>: modelos entrenados, validados (&gt;70% de precisión en datos reservados) y predicciones de entrega.</p>
+<hr />
+<h3>Fase 3: Integración LLM (semanas 8-14)</h3>
+<p><strong>Objetivo</strong>: Integrar Claude API para funciones de lenguaje natural. Puede superponerse con la Fase 2.</p>
+<table>
+<thead>
+<tr>
+<th>Característica</th>
+<th style="text-align: center;">Esfuerzo</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4.1 Copiloto de BitCorp (Asistente de NL)</td>
+<td style="text-align: center;">3-4 semanas</td>
+<td>Metadatos de esquema, capa de seguridad de consultas</td>
+</tr>
+<tr>
+<td>4.2 Analizador de cláusulas contractuales</td>
+<td style="text-align: center;">1-2 semanas</td>
+<td>Infraestructura de carga de PDF</td>
+</tr>
+<tr>
+<td>5.1 Análisis fotográfico del informe diario</td>
+<td style="text-align: center;">1-2 semanas</td>
+<td>El almacenamiento de fotografías ya existe</td>
+</tr>
+<tr>
+<td>5.2 Comprobante de combustible OCR</td>
+<td style="text-align: center;">1-2 semanas</td>
+<td>Componente de cámara/carga</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Requisitos previos</strong>: Claude API aprovisionada, presupuesto de uso aprobado, paquete <code>app/servicios/llm/</code>.</p>
+<p><strong>Nuevas dependencias</strong>: SDK de Python <code>antrópico</code></p>
+<p><strong>Criterios de salida</strong>: El copiloto responde consultas con precisión, el OCR reduce el tiempo de entrada de datos en un 50 %+.</p>
+<hr />
+<h3>Fase 4: Inteligencia Avanzada (Semanas 12-24)</h3>
+<p><strong>Objetivo</strong>: implementar las funciones más complejas y las tres capacidades de exhibición "sorprendentes".</p>
+<table>
+<thead>
+<tr>
+<th>Característica</th>
+<th style="text-align: center;">Esfuerzo</th>
+<th>Dependencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7.1 Panel de control del coste total de propiedad</td>
+<td style="text-align: center;">2-3 semanas</td>
+<td>Todas las fuentes de datos de costes integradas</td>
+</tr>
+<tr>
+<td>7.4 Mapa de riesgo operacional</td>
+<td style="text-align: center;">2-3 semanas</td>
+<td>Detectores de anomalías de la Fase 1</td>
+</tr>
+<tr>
+<td>3.3 Optimización del programa de mantenimiento</td>
+<td style="text-align: center;">2-3 semanas</td>
+<td>OR-Tools, previsiones de utilización de la fase 2</td>
+</tr>
+<tr>
+<td>WOW 2: Simulador digital de flota gemela</td>
+<td style="text-align: center;">3-4 semanas</td>
+<td>Solucionador de asignaciones + previsión de la Fase 2</td>
+</tr>
+<tr>
+<td>WOW 3: Panel de radar de anomalías</td>
+<td style="text-align: center;">2-3 semanas</td>
+<td>Todos los detectores de anomalías de la Fase 1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Requisitos previos</strong>: Fases 1 a 3 completas (se basa en capacidades anteriores).</p>
+<p><strong>Nuevas dependencias</strong>: <code>ortools</code> (Google OR-Tools)</p>
+<p><strong>Criterios de salida</strong>: Demostración ejecutiva lista con las tres características sorprendentes funcionales.</p>
+<hr />
+<h3>Funciones restantes (posteriores a la fase 4)</h3>
+<p>Las funciones que no se encuentran en las fases 1 a 4 tienen prioridad para iteraciones posteriores:
+- 1.3, 1.4, 1.5, 1.6, 1.7 (modelos predictivos adicionales)
+- 2.3, 2.4, 2.5, 2.6, 2.7 (detectores de anomalías adicionales)
+- 3.4, 3.5 (funciones OR adicionales)
+- 4.3, 4.4, 4.5, 4.6, 4.7 (funciones LLM adicionales)
+- 5.3, 5.4 (características CV adicionales)
+- 6.2, 6.3, 6.5, 6.6 (automatización adicional)
+- 7.2, 7.3, 7.5, 7.6 (características estratégicas adicionales)</p>
+<hr />
+<h2>8. Arquitectura técnica</h2>
+<h3>8.1 Nuevos paquetes de backend</h3>
+<pre><code>aplicación/
+├── servicios/
+│ ├── ml/ # NUEVO: capa de servicio ML
+│ │ ├── __init__.py
+│ │ ├── modelo_base.py # Clase base para modelos ML
+│ │ ├── prediccion_fallas.py # Característica 1.1
+│ │ ├── pronostico_utilizacion.py # Característica 1.2
+│ │ ├── anomalia_combustible.py # Característica 2.1
+│ │ ├── detección_horometro.py # Característica 2.2
+│ │ ├── optimizacion_asignacion.py # Característica 3.1
+│ │ └── ...
+│ ├── llm/ # NUEVO: capa de integración LLM
+│ │ ├── __init__.py
+│ │ ├── cliente_claude.py # Envoltorio del cliente Claude API
+│ │ ├── copiloto.py # Característica 4.1
+│ │ ├── analizador_contrato.py # Característica 4.2
+│ │ ├── vision.py # Características 5.x
+│ │ └── ...
+│ └── ia/ # NUEVO: Orquestación de IA
+│ ├── __init__.py
+│ ├── prefill_inteligente.py # Característica 6.1
+│ ├── trigger_mantenimiento.py # Característica 6.4
+│ ├── prioridad_vencimiento.py # Característica 6.7
+│ └── ...
+├──api/
+│ └── ia.py # NUEVO: rutas API de función AI
+├──esquemas/
+│ └── ia.py # NUEVO: AI presenta DTO
+</code></pre>
+<h3>8.2 Nuevas dependencias de Python</h3>
+<table>
+<thead>
+<tr>
+<th>Paquete</th>
+<th>Versión</th>
+<th>Utilizado para</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scikit-aprende</code></td>
+<td>≥1,4</td>
+<td>Clasificación, regresión, detección de anomalías</td>
+</tr>
+<tr>
+<td><code>profeta</code></td>
+<td>≥1,1</td>
+<td>Previsión de series temporales</td>
+</tr>
+<tr>
+<td><code>picante</code></td>
+<td>≥1,12</td>
+<td>Optimización, estadísticas</td>
+</tr>
+<tr>
+<td><code>pulpa</code></td>
+<td>≥2,7</td>
+<td>Programación lineal</td>
+</tr>
+<tr>
+<td><code>oherramientas</code></td>
+<td>≥9,8</td>
+<td>Programación de restricciones (Fase 4)</td>
+</tr>
+<tr>
+<td><code>antrópico</code></td>
+<td>≥0,40</td>
+<td>Cliente Claude API</td>
+</tr>
+</tbody>
+</table>
+<h3>8.3 Cambios de infraestructura</h3>
+<table>
+<thead>
+<tr>
+<th>Cambiar</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Almacenamiento de modelos</td>
+<td>Modelos serializados en Redis o sistema de archivos (por inquilino)</td>
+</tr>
+<tr>
+<td>Trabajos cron</td>
+<td>Agregar programas de reentrenamiento de modelos y escaneo de anomalías</td>
+</tr>
+<tr>
+<td>Limitación de tasa API</td>
+<td>Límites de uso de Claude API por inquilino por día</td>
+</tr>
+<tr>
+<td>Carga de archivos</td>
+<td>Carga de PDF e imágenes para funciones de CV (ampliar las existentes)</td>
+</tr>
+</tbody>
+</table>
+<h3>8.4 Cumplimiento de arrendamientos múltiples</h3>
+<p>Todas las funciones de IA <strong>DEBEN</strong> mantener el aislamiento de los inquilinos:
+- Modelos de aprendizaje automático entrenados por inquilino con datos específicos del inquilino
+- No hay fuga de datos entre inquilinos en entrenamiento o inferencia
+- Las llamadas a la API de Claude incluyen el contexto del inquilino, nunca datos entre inquilinos.
+- Almacenamiento de modelos codificado por ID de inquilino
+- Los puntos finales API imponen el alcance de los inquilinos a través del middleware existente</p>
+<hr />
+<h2>9. Dependencias y riesgos</h2>
+<h3>9.1 Riesgos técnicos</h3>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th style="text-align: center;">Probabilidad</th>
+<th style="text-align: center;">Impacto</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Datos históricos insuficientes para los modelos ML</td>
+<td style="text-align: center;">Medio</td>
+<td style="text-align: center;">Alto</td>
+<td>Comience con enfoques basados ​​en reglas; establecer umbrales mínimos de datos para la activación del modelo</td>
+</tr>
+<tr>
+<td>La latencia de la API de Claude afecta la UX</td>
+<td style="text-align: center;">Bajo</td>
+<td style="text-align: center;">Medio</td>
+<td>Procesamiento asíncrono, transmisión de respuestas, almacenamiento en caché de respuestas</td>
+</tr>
+<tr>
+<td>Precisión del modelo por debajo del umbral útil</td>
+<td style="text-align: center;">Medio</td>
+<td style="text-align: center;">Medio</td>
+<td>Mejora iterativa; recurrir al sistema basado en reglas cuando el aprendizaje automático tiene un rendimiento inferior</td>
+</tr>
+<tr>
+<td>Complejidad del aislamiento del modelo multiinquilino</td>
+<td style="text-align: center;">Bajo</td>
+<td style="text-align: center;">Alto</td>
+<td>Patrones arquitectónicos claros; pruebas automatizadas por inquilino</td>
+</tr>
+<tr>
+<td>Claude API sobrecostos</td>
+<td style="text-align: center;">Medio</td>
+<td style="text-align: center;">Medio</td>
+<td>Límites de uso por inquilino, almacenamiento en caché, optimización rápida</td>
+</tr>
+</tbody>
+</table>
+<h3>9.2 Riesgos comerciales</h3>
+<table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th style="text-align: center;">Probabilidad</th>
+<th style="text-align: center;">Impacto</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Resistencia de los usuarios a las sugerencias de IA</td>
+<td style="text-align: center;">Medio</td>
+<td style="text-align: center;">Medio</td>
+<td>Sólo sugerencias, nunca acciones automáticas; indicadores claros de confianza</td>
+</tr>
+<tr>
+<td>Fatiga de falsos positivos (detección de anomalías)</td>
+<td style="text-align: center;">Alto</td>
+<td style="text-align: center;">Medio</td>
+<td>Sensibilidad ajustable, bucle de retroalimentación falso positivo</td>
+</tr>
+<tr>
+<td>Dependencia excesiva de la IA para decisiones críticas</td>
+<td style="text-align: center;">Bajo</td>
+<td style="text-align: center;">Alto</td>
+<td>IA únicamente como asesoramiento; se requiere aprobación humana para todas las acciones</td>
+</tr>
+<tr>
+<td>Calidad de los datos insuficiente para la formación</td>
+<td style="text-align: center;">Medio</td>
+<td style="text-align: center;">Alto</td>
+<td>Las mejoras en la calidad de los datos en la Fase 1 (características 2.2, 2.3) alimentan las fases posteriores</td>
+</tr>
+</tbody>
+</table>
+<h3>9.3 Requisitos previos</h3>
+<table>
+<thead>
+<tr>
+<th>Requisito previo</th>
+<th>Requerido para</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Más de 6 meses de datos de informes diarios</td>
+<td>Capacitación en ML (Fase 2)</td>
+<td>Para verificar</td>
+</tr>
+<tr>
+<td>Claude API y presupuesto de Claude</td>
+<td>Características del LLM (Fase 3)</td>
+<td>Aprovisionar</td>
+</tr>
+<tr>
+<td>Infraestructura cron existente</td>
+<td>Trabajos programados</td>
+<td>Disponible (<code>app/servicios/cron.py</code>)</td>
+</tr>
+<tr>
+<td>Infraestructura de almacenamiento de fotografías</td>
+<td>Características del CV (Fase 3)</td>
+<td>Disponible (<code>parte_diario_foto</code>)</td>
+</tr>
+<tr>
+<td>Patrones de servicio de análisis</td>
+<td>Arquitectura de servicios de aprendizaje automático</td>
+<td>Disponible (<code>app/servicios/analitica.py</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>10. Aprobación y aprobación</h2>
+<h3>Revisión de prioridad de funciones</h3>
+<p>Por favor revise cada categoría y marque su decisión:</p>
+<table>
+<thead>
+<tr>
+<th>Categoría</th>
+<th style="text-align: center;">Características</th>
+<th>Decisión</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Análisis predictivo</td>
+<td style="text-align: center;">1,1 – 1,7</td>
+<td>[ ] Aprobado / [ ] Diferido / [ ] Modificado</td>
+</tr>
+<tr>
+<td>2. Detección de anomalías</td>
+<td style="text-align: center;">2.1 – 2.7</td>
+<td>[ ] Aprobado / [ ] Diferido / [ ] Modificado</td>
+</tr>
+<tr>
+<td>3. Optimización y O</td>
+<td style="text-align: center;">3.1 – 3.6</td>
+<td>[ ] Aprobado / [ ] Diferido / [ ] Modificado</td>
+</tr>
+<tr>
+<td>4. Lenguaje Natural y LLM</td>
+<td style="text-align: center;">4.1 – 4.7</td>
+<td>[ ] Aprobado / [ ] Diferido / [ ] Modificado</td>
+</tr>
+<tr>
+<td>5. Visión por computadora</td>
+<td style="text-align: center;">5.1 – 5.4</td>
+<td>[ ] Aprobado / [ ] Diferido / [ ] Modificado</td>
+</tr>
+<tr>
+<td>6. Automatización inteligente</td>
+<td style="text-align: center;">6.1 – 6.7</td>
+<td>[ ] Aprobado / [ ] Diferido / [ ] Modificado</td>
+</tr>
+<tr>
+<td>7. Inteligencia Estratégica</td>
+<td style="text-align: center;">7,1 – 7,6</td>
+<td>[ ] Aprobado / [ ] Diferido / [ ] Modificado</td>
+</tr>
+</tbody>
+</table>
+<h3>Fase de aprobación</h3>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Línea de tiempo</th>
+<th>Decisión</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fase 1: Ganancias rápidas</td>
+<td>Semanas 1-4</td>
+<td>[ ] Aprobado / [ ] Modificado</td>
+</tr>
+<tr>
+<td>Fase 2: ML central</td>
+<td>Semanas 5-12</td>
+<td>[ ] Aprobado / [ ] Modificado</td>
+</tr>
+<tr>
+<td>Fase 3: Integración LLM</td>
+<td>Semanas 8-14</td>
+<td>[ ] Aprobado / [ ] Modificado</td>
+</tr>
+<tr>
+<td>Fase 4: Avanzado</td>
+<td>Semanas 12-24</td>
+<td>[ ] Aprobado / [ ] Modificado</td>
+</tr>
+</tbody>
+</table>
+<h3>Cerrar sesión</h3>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Nombre</th>
+<th>Fecha</th>
+<th>Firma</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Propietario del producto</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Líder Técnico</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Director/Patrocinador</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Notas y comentarios</h3>
+<p><em>Espacio para comentarios de órdenes de compra, modificaciones de funciones, cambios de prioridad y requisitos adicionales.</em></p>
+<hr />
+<blockquote>
+<p><strong>Documento generado</strong>: 2026-03-05
+<strong>Próxima acción</strong>: revisión del propietario del producto y selección de funciones
+<strong>Contacto</strong>: Equipo de ingeniería</p>
+</blockquote>
+    </body>
+    </html>

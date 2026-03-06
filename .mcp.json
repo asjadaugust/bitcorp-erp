@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dora": {
+      "type": "stdio",
+      "command": "/usr/local/bin/dora",
+      "args": ["mcp"]
+    }
+  }
+}
