@@ -204,6 +204,7 @@ export class TimesheetListComponent implements OnInit {
 
   tabs: TabItem[] = [
     { label: 'Proyectos', route: '/operaciones/projects', icon: 'fa-folder-open' },
+    { label: 'EDT', route: '/operaciones/edt', icon: 'fa-sitemap' },
     { label: 'Programación', route: '/operaciones/scheduling', icon: 'fa-calendar-days' },
     { label: 'Planillas', route: '/operaciones/timesheets', icon: 'fa-clipboard-user' },
   ];
