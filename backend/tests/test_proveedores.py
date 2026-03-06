@@ -125,7 +125,7 @@ async def test_agregar_y_listar_contactos() -> None:
         prov_id = r["data"]["id"]
         r2 = await c.post(
             f"/api/providers/{prov_id}/contacts",
-            json={"contact_name": "Juan Pérez", "contact_type": "general"},
+            json={"nombre_contacto": "Juan Pérez", "tipo_contacto": "general"},
         )
         assert r2.status_code == 201
         resp = await c.get(f"/api/providers/{prov_id}/contacts")
@@ -144,9 +144,9 @@ async def test_agregar_y_listar_info_financiera() -> None:
         r2 = await c.post(
             f"/api/providers/{prov_id}/financial-info",
             json={
-                "bank_name": "BCP",
-                "account_number": "19120001234567",
-                "currency": "PEN",
+                "nombre_banco": "BCP",
+                "numero_cuenta": "19120001234567",
+                "moneda": "PEN",
             },
         )
         assert r2.status_code == 201
