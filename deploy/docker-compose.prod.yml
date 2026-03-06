@@ -29,18 +29,20 @@ services:
       dockerfile: ../docker/backend.prod.Dockerfile
     container_name: bitcorp-backend-prod
     environment:
-      NODE_ENV: production
+      ENVIRONMENT: production
       PORT: 3400
+      DATABASE_URL: postgresql+asyncpg://bitcorp:bitcorp_password@postgres:5432/bitcorp_prod
       DB_HOST: postgres
       DB_PORT: 5432
       POSTGRES_USER: bitcorp
       POSTGRES_PASSWORD: bitcorp_password
       POSTGRES_DB: bitcorp_prod
+      REDIS_URL: redis://redis:6379
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET:-production_secret_key_change_me}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-production_refresh_secret_key_change_me}
-      CORS_ORIGIN: "https://${DOMAIN},http://localhost,http://localhost:3420"
+      CORS_ORIGINS: "https://${DOMAIN},http://localhost,http://localhost:3420"
     ports:
       - "3400:3400"
     depends_on:
@@ -57,15 +59,24 @@ services:
     container_name: bitcorp-frontend-prod
     ports:
       - "3420:80"
-      - "3421:443"
-    volumes:
-      - ${SSL_CERT_PATH:-/etc/ssl/certs/fullchain.pem}:/etc/nginx/ssl/fullchain.pem:ro
-      - ${SSL_KEY_PATH:-/etc/ssl/private/privkey.pem}:/etc/nginx/ssl/privkey.pem:ro
     depends_on:
       - backend
     restart: always
     networks:
       - bitcorp-network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: bitcorp-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - bitcorp-network
+    depends_on:
+      - frontend
+      - backend
 
 networks:
   bitcorp-network:
